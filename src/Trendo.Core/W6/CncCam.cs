@@ -48,7 +48,7 @@ public sealed record CamResult(string Gcode, List<CamPath> Paths, List<string> W
 /// mindestens Radius − <see cref="Clearance"/>); Verstöße werden weggelassen und gemeldet. Selbst schneidende Konturen werden abgelehnt. Stellen, an die der
 /// Fräser nicht herankommt (Engstellen), werden mit Lage gemeldet. Konturen werden vorher leicht geglättet (Douglas-Peucker, <see cref="SimplifyTol"/>; die
 /// Abweichung wird dem Versatz zugeschlagen). Zustellung in Stufen bis zur Tiefe, Haltestege auf Außenkonturen, Löcher vor dem Umriss.</summary>
-public static class CncCam
+public static partial class CncCam
 {
     static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
     static readonly CultureInfo De = CultureInfo.GetCultureInfo("de-DE");
@@ -92,6 +92,7 @@ public static class CncCam
         if (s.ToolD <= 0 || s.Depth <= 0 || s.StepDown <= 0 || s.Feed <= 0 || s.Plunge <= 0) throw new ArgumentException("Fräser-Ø, Tiefe, Zustellung und Vorschübe müssen größer als 0 sein.");
         if (s.Tabs > 0 && (s.TabH <= 0 || s.TabH >= s.Depth)) throw new ArgumentException("Haltestege: Höhe muss größer als 0 und kleiner als die Tiefe sein.");
         var r = s.ToolD / 2; var warn = new List<string>();
+        source = DropFrame(source, s, warn, ct); // T-0759: eindeutiger Zeichnungsrahmen mit Schriftfeld wird nicht gefräst
         // verschieben: linke untere Ecke aufs Nullpunkt
         double sx = 0, sy = 0;
         if (s.ToOrigin) { sx = -source.Min(c => c.Pts.Min(p => p.X)); sy = -source.Min(c => c.Pts.Min(p => p.Y)); }
@@ -149,12 +150,19 @@ public static class CncCam
             }
         }
         // T-0747-fix: selbst schneidende Konturen (Acht) ablehnen – innen und außen sind dort nicht eindeutig
-        var crossing = new bool[cs.Count];
+        var crossing = new bool[cs.Count]; var annClosed = new bool[cs.Count];
         for (var i = 0; i < cs.Count; i++)
             if (cs[i].Closed && !dup[i] && s.Mode != "auf" && SelfIntersects(cs[i].Pts, ct))
             {
                 crossing[i] = true;
                 warn.Add($"{Name(i)} ausgelassen: die Kontur kreuzt sich selbst (z. B. eine Acht) – dann ist nicht klar, was innen und außen ist. Bitte in der Zeichnung in einzelne geschlossene Umrisse auflösen.");
+            }
+            else if (cs[i].Closed && !dup[i] && s.Mode != "auf" && IsAnnotationLayer(cs[i].Layer))
+            {
+                // T-0759: geschlossene Linie auf einer Bemaßungs-/Mittellinien-Ebene (z. B. Lochkreis) – nicht fräsen. Was darin oder daran liegt, hängt davon
+                // ab, ob sie doch eine Kante ist (Loch oder Teil) – es wird wie bei einer sich kreuzenden Kontur ausgelassen.
+                crossing[i] = true; annClosed[i] = true;
+                warn.Add($"{Name(i)} nicht gefräst: geschlossene Linie auf der Ebene {cs[i].Layer} (Bemaßung, Mittel- oder Hilfslinien, z. B. Lochkreis).");
             }
         // T-0747-fix2: Konturen in oder an einer abgelehnten, sich selbst kreuzenden Kontur – innen/außen ist dort nicht sicher zu deuten (ein Loch würde
         // sonst als Umriss gefräst und größer). Auslassen und melden.
@@ -175,7 +183,9 @@ public static class CncCam
                 if (!cs[j].Contains(pr.X, pr.Y) && Winding(cs[j].Pts, pr) == 0 && !Touches(cs[i].Pts, cs[i].Closed, cs[j].Pts, ct)) continue;
                 if (!cs[i].Closed) continue; // offene Konturen werden ohnehin nur als Gravur gefräst
                 unsure[i] = true;
-                warn.Add(crossing[j]
+                warn.Add(annClosed[j]
+                    ? $"{Name(i)} ausgelassen: liegt in oder an Kontur {j + 1} auf der Ebene {cs[j].Layer} (Bemaßung/Mittellinie) – wäre sie doch eine Kante, wäre diese Kontur Loch statt Teil oder umgekehrt; das lässt sich nicht sicher sagen. Bitte die Linie auf eine andere Ebene legen oder löschen."
+                    : crossing[j]
                     ? $"{Name(i)} ausgelassen: liegt in oder an Kontur {j + 1}, die sich selbst kreuzt – ob sie Loch oder Teil ist, lässt sich nicht sicher sagen. Bitte die Zeichnung bereinigen."
                     : $"{Name(i)} ausgelassen: liegt in oder an der offenen Kontur {j + 1} – ob sie Loch oder Teil ist, lässt sich nicht sicher sagen. Bitte den Umriss in der Zeichnung schließen.");
             }
@@ -296,19 +306,94 @@ public static class CncCam
         void SkipAs(int i, string why) { if (!Open(i)) return; unsure[i] = true; warn.Add($"{Name(i)} ausgelassen: {why}"); }
         const string Budget = "Prüfaufwand zu groß – die Kontur liegt am oder im Rahmen eines unklaren Linienverbunds und wird vorsichtshalber ausgelassen.";
 
+        // T-0759: Verbünde offener Linien (auch über Kreuzungen, Berührungen mitten auf einer Linie und über Ebenen hinweg) und die Bereiche, die sie mit
+        // geschlossenen Konturen einschließen. Ein Verbund ohne Kreis (Baum, z. B. Mittelkreuz, Bemaßung mit Pfeilen) kann für sich keinen Umriss
+        // bilden; was er mit geschlossenen Konturen einschließt, findet Enclosures. Reicht das Arbeitsbudget nicht, bleibt alles wie bisher.
+        var tolE = ChainTol + 1e-9;
+        SegGrid? cgShared = null;
+        SegGrid ClosedGrid() => cgShared ??= BuildGrid(Enumerable.Range(0, cs.Count).Where(i => cs[i].Closed && !dup[i] && !crossing[i]).Select(i => ((IReadOnlyList<(double X, double Y)>)cs[i].Pts, true, i)), Math.Max(r, tolE), ct);
+        var rowIdxE = new Dictionary<int, RowIndex>();
+        bool InCE(int i, (double X, double Y) q) { if (!rowIdxE.TryGetValue(i, out var ri)) rowIdxE[i] = ri = new RowIndex(cs[i].Pts); return ri.Contains(q.X, q.Y); }
+        OpenNet? net = null; List<(List<int> Contours, List<int> Structs)>? encl = null;
+        if (s.Mode != "auf" && cs.Any(c => !c.Closed && c.Pts.Count >= 2))
+        {
+            net = AnalyzeOpen(cs, j => !cs[j].Closed && cs[j].Pts.Count >= 2, tolE, 30_000_000, ct);
+            if (!net.Exhausted) encl = Enclosures(cs, net, ClosedGrid(), i => cs[i].Closed && !dup[i] && !crossing[i], InCE, i => allBox[i], tolE, 60_000_000, ct);
+            if (net.Exhausted || encl is null) warn.Add("Sehr viele Linien berühren oder kreuzen sich – der Prüfaufwand für Linienverbünde ist zu groß; sie werden wie bisher vorsichtig behandelt (Konturen in Linienverbünden mit Stoß werden ausgelassen).");
+        }
+        bool Analysed() => net is { Exhausted: false } && encl is not null;
+        // T-0759: Ein Linienverbund ohne Kreis (Baum) schließt für sich keinen Bereich ein – mit einer gedachten Schließsehne über eine Lücke aber schon
+        // (wie bei der Regel für offene Umrisse; z. B. „[“ und „]“ mit 0,2 mm Spalt). Ausgenommen werden deshalb nur Bäume, deren Linien alle auf einer
+        // sicher erkannten Bemaßungs-/Mittellinien-Ebene liegen (keine Kanten) und in deren konvexer Hülle keine geschlossene Kontur ganz liegt.
+        long annWork = 0;
+        bool AnnotationTreeFree(List<int> members, List<(double X, double Y)> pts)
+        {
+            if (!members.All(j => IsAnnotationLayer(cs[j].Layer))) return false;
+            var h = Hull(pts); if (h.Count < 3) return true;
+            double hx0 = h.Min(p => p.X), hy0 = h.Min(p => p.Y), hx1 = h.Max(p => p.X), hy1 = h.Max(p => p.Y);
+            for (var i = 0; i < cs.Count; i++)
+            {
+                if (!cs[i].Closed || dup[i]) continue;
+                if (++annWork > 50_000_000) return false; // Prüfaufwand zu groß: vorsichtig schützen
+                if ((annWork & 4095) == 0) ct.ThrowIfCancellationRequested();
+                var b = boxes[i];
+                if (b.Item1 < hx0 || b.Item2 < hy0 || b.Item3 > hx1 || b.Item4 > hy1) continue;
+                var all = true;
+                foreach (var v in cs[i].Pts) { if (++annWork > 50_000_000) return false; if (!InConvex(h, v, 1e-6)) { all = false; break; } }
+                if (all) return false;
+            }
+            return true;
+        }
         // a) Linienverbund mit Stoß (Gruppe samt über Spalte angeschlossener Ketten)
         var jgroups = cs.Select((c, j) => (c, j)).Where(t => t.c.JunctionGroup >= 0).GroupBy(t => t.c.JunctionGroup).ToList();
         if (jgroups.Count > 0)
         {
-            warn.Add($"{jgroups.Count} Linienverbund/-verbünde (zusammen {jgroups.Sum(g => g.Count())} Linien, z. B. ab Kontur {jgroups[0].First().j + 1}) nicht zu Umrissen verkettet: an einem Punkt stoßen mehr als zwei Linien zusammen oder die Enden liegen nicht eindeutig. Diese Linien werden nicht gefräst (außer als Gravur), Konturen darin werden ausgelassen.");
+            warn.Add($"{jgroups.Count} Linienverbund/-verbünde (zusammen {jgroups.Sum(g => g.Count())} Linien, z. B. ab Kontur {jgroups[0].First().j + 1}) nicht zu Umrissen verkettet: an einem Punkt stoßen mehr als zwei Linien zusammen oder die Enden liegen nicht eindeutig. Diese Linien werden nicht gefräst (außer als Gravur), Konturen darin werden ausgelassen{(Analysed() ? ", wenn der Verbund einen Bereich einschließen kann" : "")}.");
+            var doneComp = new HashSet<int>();
             foreach (var grp in jgroups)
             {
                 ct.ThrowIfCancellationRequested();
-                var pts = new List<(double X, double Y)>(); foreach (var (c, _) in grp) pts.AddRange(c.Pts);
                 var first = grp.First().j;
+                var pts = new List<(double X, double Y)>();
+                if (Analysed())
+                {
+                    var comp = net!.Comp[first];
+                    if (!doneComp.Add(comp)) continue; // Verbund schon geschützt
+                    foreach (var j in net.Members[comp]) pts.AddRange(cs[j].Pts);
+                    if (!net.Cyclic[comp] && AnnotationTreeFree(net.Members[comp], pts)) continue; // T-0759: Bemaßung/Mittellinie als Baum – keine Kante
+                }
+                else foreach (var (c, _) in grp) pts.AddRange(c.Pts);
                 Protect(pts, i => SkipAs(i, $"liegt im Linienverbund ab Kontur {first + 1} (oder teilweise darin), an dem mehr als zwei Linien zusammenstoßen – welcher Umriss gemeint ist und ob sie Loch oder Teil ist, lässt sich nicht sicher sagen. Bitte die Umrisse in der Zeichnung trennen oder als Polylinie zeichnen."), i => SkipAs(i, Budget));
             }
         }
+        // T-0759: Verbund ohne Stoß, der für sich einen Bereich einschließt (sich kreuzende oder mitten auf einer Linie endende Linien, z. B. „#“)
+        if (Analysed())
+            for (var comp = 0; comp < net!.Members.Count; comp++)
+            {
+                if (!net.Cyclic[comp] || net.Members[comp].Any(j => cs[j].JunctionGroup >= 0)) continue;
+                ct.ThrowIfCancellationRequested();
+                var pts = new List<(double X, double Y)>(); foreach (var j in net.Members[comp]) pts.AddRange(cs[j].Pts);
+                var first = net.Members[comp].Min();
+                // Was die Linien des Verbunds allein einschließen, liegt in ihrer konvexen Hülle. Eine geschlossene Kontur, die die Hülle (samt
+                // Kettentoleranz) weder berührt noch schneidet, liegt in keinem solchen Bereich – ihre Lesart (Loch oder Teil) hängt nicht von diesem
+                // Verbund ab (sonst würde schon der Rahmen der Hülle ausreichen, um z. B. Löcher neben dichten Gravurlinien auszulassen). Bereiche aus
+                // Verbund und geschlossenen Konturen prüft c) getrennt. Reicht das Budget nicht, wird nicht verschont (vorsichtig).
+                var hullV = Hull(pts); long spareWork = 0;
+                bool OutsideHull(int i)
+                {
+                    if (hullV.Count < 3 || !cs[i].Closed) return false;
+                    var pp = cs[i].Pts; var hn = hullV.Count;
+                    foreach (var v in pp) { Tick(); if ((spareWork += 8) > 20_000_000 || InConvexLog(hullV, v, -tolE)) return false; }
+                    for (var k = 0; k < pp.Count; k++)
+                    {
+                        var a0 = pp[k]; var b0 = pp[(k + 1) % pp.Count];
+                        if ((spareWork += hn) > 20_000_000) return false;
+                        for (var t = 0; t < hn; t++) { Tick(); if (SegSeg(a0, b0, hullV[t], hullV[(t + 1) % hn]) <= tolE) return false; }
+                    }
+                    return true;
+                }
+                Protect(pts, i => SkipAs(i, $"liegt in einem Bereich, den die offenen Linien ab Kontur {first + 1} einschließen (sie kreuzen oder berühren sich) – welcher Umriss gemeint ist und ob sie Loch oder Teil ist, lässt sich nicht sicher sagen. Bitte den Umriss in der Zeichnung als geschlossene Polylinie zeichnen."), i => SkipAs(i, Budget), OutsideHull);
+            }
 
         // b) T-0747-fix17/18: offener Linienzug (oder Stoß-Verbund), der mit mindestens zwei Enden (≤ 0,1 mm, gleiche Ebene) an dieselbe geschlossene Kontur C
         // stößt und teilweise außerhalb von C liegt, schließt zusammen mit dem Rand von C einen Bereich ein (U vor einer Kerbe, auch eine einzelne gerade
@@ -324,7 +409,7 @@ public static class CncCam
             {
                 var closedOk = Enumerable.Range(0, cs.Count).Where(i => cs[i].Closed && !dup[i] && !crossing[i]).ToArray();
                 var tolT = ChainTol + 1e-9;
-                var cg = BuildGrid(closedOk.Select(i => ((IReadOnlyList<(double X, double Y)>)cs[i].Pts, true, i)), Math.Max(r, tolT), ct);
+                var cg = ClosedGrid(); // T-0759: dasselbe Raster wie für die Linienverbünde (gleiche Konturen, gleiche Zellgröße)
                 var rowIdx = new Dictionary<int, RowIndex>();
                 RowIndex Ri(int i) { if (!rowIdx.TryGetValue(i, out var ri)) rowIdx[i] = ri = new RowIndex(cs[i].Pts); return ri; }
                 bool NearC(int cTag, (double X, double Y) v, double d) =>
@@ -507,6 +592,56 @@ public static class CncCam
                 }
             }
         }
+        // c) T-0759: Bereiche, die Linienverbünde mit geschlossenen Konturen einschließen, auch wenn kein einzelner Linienzug zwei Enden an derselben
+        // Kontur hat – zwei Linien zwischen zwei Platten (Brücke), U aus sich kreuzenden Überständen, Sehne auf einer anderen Ebene. Ausgelassen werden
+        // die beteiligten Konturen und alles in der Hülle aus Konturen ∪ Linien, das nicht ganz in einer der beteiligten Konturen liegt (dort bleibt die
+        // Tiefe in jeder Lesart gleich).
+        if (encl is { Count: > 0 })
+        {
+            EnsureIndex();
+            var gridC = new Dictionary<int, SegGrid>();
+            bool InsideOf(int i, int c)
+            {
+                var bc = boxes[c]; var bi = boxes[i];
+                if (bi.Item1 < bc.Item1 || bi.Item2 < bc.Item2 || bi.Item3 > bc.Item3 || bi.Item4 > bc.Item4) return false;
+                var pp = cs[i].Pts; var step = Math.Max(1, pp.Count / 64);
+                for (var k = 0; k < pp.Count; k += step) { Tick(); if (!InCE(c, pp[k])) return false; }
+                if (!gridC.TryGetValue(c, out var gc)) gridC[c] = gc = BuildGrid([((IReadOnlyList<(double X, double Y)>)cs[c].Pts, true, 0)], AvgLen(cs[c].Pts, true) * 2, ct);
+                for (var k = 0; k < pp.Count; k++)
+                {
+                    Tick(); var a0 = pp[k]; var b0 = pp[(k + 1) % pp.Count];
+                    if (gc.Any(Math.Min(a0.X, b0.X) - 1e-6, Math.Min(a0.Y, b0.Y) - 1e-6, Math.Max(a0.X, b0.X) + 1e-6, Math.Max(a0.Y, b0.Y) + 1e-6, t => SegSeg(a0, b0, gc.Segs[t].A, gc.Segs[t].B) <= 1e-6)) return false;
+                }
+                return true;
+            }
+            foreach (var (gcs, gss) in encl)
+            {
+                ct.ThrowIfCancellationRequested();
+                var first = gss.SelectMany(st => net!.Members[st]).Min();
+                var why = $"die offenen Linien ab Kontur {first + 1} schließen zusammen mit Kontur {string.Join(", ", gcs.Take(6).Select(c => c + 1))}{(gcs.Count > 6 ? " …" : "")} einen Bereich ein (auch über Kreuzungen oder andere Ebenen) – welcher Umriss gemeint ist und ob die Kontur Loch oder Teil ist, lässt sich nicht sicher sagen. Bitte den Umriss in der Zeichnung schließen oder die Linien löschen.";
+                foreach (var c in gcs) SkipAs(c, why);
+                var pts = new List<(double X, double Y)>();
+                foreach (var c in gcs) pts.AddRange(cs[c].Pts);
+                foreach (var st in gss) foreach (var j in net!.Members[st]) pts.AddRange(cs[j].Pts);
+                var hull = Hull(pts); const double e = 1e-6;
+                double gx0 = pts.Min(p => p.X), gy0 = pts.Min(p => p.Y), gx1 = pts.Max(p => p.X), gy1 = pts.Max(p => p.Y);
+                for (var q = NextA(Lower(minXs!, gx0 - maxW - e)); q < byMinX!.Length && minXs![q] <= gx1 + e; q = NextA(q + 1))
+                {
+                    Tick(); var i = byMinX[q]; var bi = boxes[i];
+                    if (bi.Item3 < gx0 - e || bi.Item2 > gy1 + e || bi.Item4 < gy0 - e) continue;
+                    if (gcs.Any(c => InsideOf(i, c))) continue; // ganz in einer beteiligten Kontur: Tiefe bleibt
+                    if (bi.Item1 >= gx0 - e && bi.Item2 >= gy0 - e && bi.Item3 <= gx1 + e && bi.Item4 <= gy1 + e) { SkipAs(i, why); continue; } // 1.
+                    var pp = cs[i].Pts; var hitIn = hull.Count >= 3 && InConvexLog(hull, pp[0], -e); // 2.
+                    for (var k = 1; k < pp.Count && !hitIn; k++)
+                    {
+                        Tick(); var v = pp[k];
+                        if (v.X <= gx0 + e || v.X >= gx1 - e || v.Y <= gy0 + e || v.Y >= gy1 - e) continue;
+                        if (hull.Count >= 3 && InConvexLog(hull, v, e)) hitIn = true; // 3.
+                    }
+                    if (hitIn) SkipAs(i, why);
+                }
+            }
+        }
         // Art je Kontur (T-0747-fix5: Kandidaten für „liegt in“ aus einem Raster der Rahmen statt aus allen Konturen)
         var closedBoxes = boxes.Where((_, j) => cs[j].Closed).ToList();
         var spanAll = closedBoxes.Count == 0 ? 1 : Math.Max(closedBoxes.Max(b => b.Item3) - closedBoxes.Min(b => b.Item1), closedBoxes.Max(b => b.Item4) - closedBoxes.Min(b => b.Item2));
@@ -575,7 +710,8 @@ public static class CncCam
         foreach (var w in cw) if (w is not null) warn.AddRange(w);
         // T-0747-fix: jede Bahn gegen ALLE geschlossenen Konturen prüfen (Strecke zu Strecke)
         // T-0747-fix3: ALLE Konturen sind Hindernis – auch offene und ausgelassene (ein offener Umriss ist trotzdem ein Teil)
-        var obstacles = new RefGrid(cs.Select((c, i) => ((IReadOnlyList<(double X, double Y)>)c.Pts, c.Closed, i)).Where(t => !dup[t.i]), r, ct, r); // Doppel nur einmal; T-0758: feineres Raster, gleiche Treffer (Abfragen reichen den Radius über die Bahn hinaus)
+        // T-0759: offene Linien auf Bemaßungs-/Mittellinien-Ebenen sind kein Hindernis (keine Kante); was sie einschließen, ist oben schon ausgelassen
+        var obstacles = new RefGrid(cs.Select((c, i) => ((IReadOnlyList<(double X, double Y)>)c.Pts, c.Closed, i)).Where(t => !dup[t.i] && (t.Closed || !IsAnnotationLayer(cs[t.i].Layer))), r, ct, r); // Doppel nur einmal; T-0758: feineres Raster, gleiche Treffer (Abfragen reichen den Radius über die Bahn hinaus)
         var paths = new List<CamPath>();
         using var curs = new ThreadLocal<SegGrid.Cursor>(() => new SegGrid.Cursor()); // ein Merker je Thread (nicht je Kontur – er ist so groß wie das Raster)
         var hits = new (int Tag, double D)[cs.Count]; // T-0747-fix5: parallel prüfen (Raster nur lesen, Merker je Thread), danach in Reihenfolge übernehmen
@@ -658,7 +794,7 @@ public static class CncCam
             }
         }
         g.Append("M5\nM30\n");
-        if (n == 0) throw new InvalidOperationException("Es blieb keine fräsbare Kontur übrig: " + string.Join(" ", warn));
+        if (n == 0) throw new InvalidOperationException("Es blieb keine fräsbare Kontur übrig: " + string.Join(" ", SummarizeWarnings(warn))); // T-0759: zusammengefasst
         return new CamResult(g.ToString(), order, warn, sx, sy, cs);
     }
 

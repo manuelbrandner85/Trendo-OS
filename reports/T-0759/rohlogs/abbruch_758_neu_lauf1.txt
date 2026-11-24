@@ -1,0 +1,40 @@
+    0 Fehler
+    0 Fehler
+== alt p1_diag_gravur_200_10000.dxf
+Abbruch nach 300 ms: OperationCanceledException 3 ms nach dem Abbrechen
+Abbruch nach 1000 ms: OperationCanceledException 0 ms nach dem Abbrechen
+Abbruch nach 2000 ms: OperationCanceledException 2 ms nach dem Abbrechen
+Abbruch nach 4000 ms: OperationCanceledException 1 ms nach dem Abbrechen
+ohne Abbruch: 7717 ms
+== neu p1_diag_gravur_200_10000.dxf
+Abbruch nach 300 ms: OperationCanceledException 13 ms nach dem Abbrechen
+Abbruch nach 1000 ms: OperationCanceledException 4 ms nach dem Abbrechen
+Abbruch nach 2000 ms: OperationCanceledException 195 ms nach dem Abbrechen
+Abbruch nach 4000 ms: OperationCanceledException 56 ms nach dem Abbrechen
+ohne Abbruch: 3737 ms
+== alt p1_diag_gravur_5000_10000.dxf
+Abbruch nach 300 ms: OperationCanceledException 5 ms nach dem Abbrechen
+Abbruch nach 1000 ms: OperationCanceledException 1 ms nach dem Abbrechen
+Abbruch nach 2000 ms: OperationCanceledException 1 ms nach dem Abbrechen
+Abbruch nach 4000 ms: OperationCanceledException 1 ms nach dem Abbrechen
+ohne Abbruch: 55981 ms
+== neu p1_diag_gravur_5000_10000.dxf
+Abbruch nach 300 ms: OperationCanceledException 14 ms nach dem Abbrechen
+Abbruch nach 1000 ms: OperationCanceledException 0 ms nach dem Abbrechen
+Abbruch nach 2000 ms: OperationCanceledException 1 ms nach dem Abbrechen
+Abbruch nach 4000 ms: OperationCanceledException 1 ms nach dem Abbrechen
+ohne Abbruch: 56918 ms
+== alt r2_diag_3000_loch25x4000.dxf
+Abbruch nach 300 ms: OperationCanceledException 28 ms nach dem Abbrechen
+Abbruch nach 1000 ms: OperationCanceledException 9 ms nach dem Abbrechen
+Abbruch nach 2000 ms: OperationCanceledException 56 ms nach dem Abbrechen
+Abbruch nach 4000 ms: war schon fertig nach 4003 ms
+ohne Abbruch: 2276 ms
+== neu r2_diag_3000_loch25x4000.dxf
+Abbruch nach 300 ms: OperationCanceledException 63 ms nach dem Abbrechen
+Abbruch nach 1000 ms: OperationCanceledException 2 ms nach dem Abbrechen
+Abbruch nach 2000 ms: OperationCanceledException 0 ms nach dem Abbrechen
+Abbruch nach 4000 ms: war schon fertig nach 4010 ms
+ohne Abbruch: 1737 ms
+
+[exited with code 0]

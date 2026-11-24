@@ -240,7 +240,7 @@ public partial class MainWindow
         var kinds = r.Paths.GroupBy(p => p.Kind).Select(g => $"{g.Count()} {(g.Key == "aussen" ? "außen" : g.Key == "innen" ? "innen" : "auf der Linie")}");
         var size = r.Contours.Count == 0 ? "" : $", Teil {Fach.F(r.Contours.Max(c => c.Box.MaxX), 1)} × {Fach.F(r.Contours.Max(c => c.Box.MaxY), 1)} mm";
         return $"„{j.CamSource}“: {r.Paths.Count} Fräsbahnen ({string.Join(", ", kinds)}){size}, Fräser Ø {Fach.F(j.ToolD, 1)} mm, Tiefe {Fach.F(j.Depth, 1)} mm in {Math.Ceiling(j.Depth / j.StepDown - 1e-9):0} Stufen{(j.CamTabs > 0 ? $", {j.CamTabs} Haltestege" : "")}."
-            + (r.Warnings.Count == 0 ? "" : " ⚠ " + string.Join(" ", r.Warnings));
+            + (r.Warnings.Count == 0 ? "" : " ⚠ " + string.Join(" ", CncCam.SummarizeWarnings(r.Warnings))); // T-0759: höchstens 20 je Art
     }
 
     Task ArchDxfPick() => ProgramPickThen(AK, "arch-dxf-file", "DXF-Grundriss", ArchImportExts, false, f => ImportDrawingFile(AK, f[0]));
