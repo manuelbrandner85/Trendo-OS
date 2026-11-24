@@ -71,7 +71,7 @@ public partial class MainWindow
     private Control OssView()
     {
         var sp = new StackPanel { Spacing = 8, Children = { P("Finde freie Programme auf GitHub. Ein Klick auf „Installieren & starten“ lädt das Programm von der offiziellen Projektseite, richtet es ein und startet es – ohne Admin. Alles lässt sich unter „Programme“ wieder entfernen. Installer laufen nie ohne deine eigene Bestätigung nach einer Signaturprüfung.") } };
-        sp.Children.Add(GitHubInstallerCard()); sp.Children.Add(GitHubStartCard()); // T-0762: wartender Installer mit Ampel
+        sp.Children.Add(GitHubInstallerCard()); sp.Children.Add(GitHubCheckCard()); sp.Children.Add(GitHubStartCard()); // T-0762: wartender Installer mit Ampel
         var q = new TextBox { Name = "oss-query", Text = _ossQuery, PlaceholderText = "z. B. markdown editor", Width = 300 };
         q.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) _ = OssSearch(q.Text ?? ""); };
         sp.Children.Add(new WrapPanel { Children = { q, Act("oss-search", "Suchen", () => _ = OssSearch(q.Text ?? ""), true) } });

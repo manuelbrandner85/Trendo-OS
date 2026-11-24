@@ -128,7 +128,8 @@ public partial class MainWindow
         var dir = GitHubProgramDir(e);
         var locks = new GitHubApps.FileLocks(GitHubApps.ExecutableFiles(dir).Append(exe).Distinct(StringComparer.OrdinalIgnoreCase));
         var approved = GitHubApps.List(_deps.ToolsRoot).FirstOrDefault(x => x.Id == e.Id)?.StartApproved;
-        return new BambuLock(locks, approved is not null && approved == GitHubApps.FolderHashAll(dir));
+        var print = GitHubApps.Fingerprint(dir, GitHubApps.ExecSet(dir, exe)); // L1: Index + ausführbare Inhalte (wie beim Start-Tor)
+        return new BambuLock(locks, approved is not null && approved == print.Key && print.LinkCount == 0);
     }
 
     /// <summary>B3: Modell direkt in Trendo für den Druck vorbereiten (Bambu Studio im Hintergrund) – danach „Hochladen und drucken“.</summary>
@@ -143,7 +144,7 @@ public partial class MainWindow
         {
             if (!_bambuGateOpen && GitHubEntryFor(exe) is { } ghe) { GitHubGate(ghe, exe, () => { _bambuGateOpen = true; _ = PrepareForPrint().ContinueWith(_ => _bambuGateOpen = false, TaskScheduler.FromCurrentSynchronizationContext()); }); return; } // T-0762 N3b
             // T-0762 Z3c: Programmdateien bis zum Ende des Laufs gesperrt; vorher prüfen, dass der Ordner noch der freigegebene ist
-            using var held = BambuHold(exe);
+            using var held = await Task.Run(() => BambuHold(exe)); // L1: Prüfen im Hintergrund
             if (held is { Ok: false }) { _prMsg = "Bambu Studio hat sich seit der Freigabe verändert – bitte über „In Bambu Studio öffnen“ erneut bestätigen."; Show("3d-druck"); return; }
             var r = await Task.Run(() => Cli.Run(exe, BambuStudioCli.SliceArgs(f, out3mf), Path.GetDirectoryName(f), 600_000));
             ok = r.Ok && File.Exists(out3mf);

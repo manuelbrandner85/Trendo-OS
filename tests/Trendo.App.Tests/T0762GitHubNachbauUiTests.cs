@@ -64,7 +64,7 @@ public class T0762_GitHubNachbau_Ui
         Assert.Null(w.GitHubPendingInstaller); Assert.Equal(0, runs);
         // erneut, jetzt ausführen
         Assert.Null(await w.GitHubInstall(Repo("beispiel/tool"))); Pump();
-        var exe = await w.GitHubConfirmInstaller(); Pump();
+        var exe = await w.GitHubConfirmInstaller(); Pump(); await w.GitHubStartCheckTask; Pump();
         Assert.Equal(1, runs); Assert.EndsWith("tool.exe", exe);
         // Z1b: auch nach dem Installer (und auch bei Grün) ist der erste Start ein eigener Schritt – Karte ohne Häkchen, eigener Klick
         Assert.Empty(l.Opened);
@@ -187,7 +187,7 @@ public class T0762_GitHubNachbau_Ui
         var zip = Path.Combine(root, "dl.zip");
         using (var z = System.IO.Compression.ZipFile.Open(zip, System.IO.Compression.ZipArchiveMode.Create)) using (var s = new StreamWriter(z.CreateEntry("b/b.exe").Open())) s.Write("MZ unsigniert");
         w.GitHubFetchOverride = _ => Task.FromResult<(GitHubApps.Release, string?)>((new GitHubApps.Release("v2.0", "", [new("b-windows-x64.zip", "https://github.com/a/b/releases/download/v2.0/b-windows-x64.zip", new FileInfo(zip).Length, null)]), zip));
-        Assert.NotNull(await w.GitHubInstall(Repo("a/b"))); Pump();
+        Assert.NotNull(await w.GitHubInstall(Repo("a/b"))); Pump(); await w.GitHubStartCheckTask; Pump();
         Assert.Empty(l.Opened); // „Installieren & starten“ startet Unsigniertes nicht
         var pend = w.GitHubPendingStart!;
         Assert.Equal(GitHubApps.Ampel.Rot, pend.Check.Ampel); // echte Authenticode-Prüfung
@@ -203,32 +203,32 @@ public class T0762_GitHubNachbau_Ui
         var entry = Assert.Single(GitHubApps.List(w.ToolsRootForTests));
         Assert.NotNull(entry.StartApproved);
         // erlaubt: nächster Start ohne Rückfrage
-        Assert.True(w.GitHubLaunch(entry)); Assert.Equal(2, l.Opened.Count); Assert.Null(w.GitHubPendingStart);
+        w.GitHubLaunch(entry); await w.GitHubStartCheckTask; Pump(); Assert.Equal(2, l.Opened.Count); Assert.Null(w.GitHubPendingStart);
         // Programmdatei geändert: erneut fragen – N6: Start von „Programme“ springt zur Karte „Erster Start“
         File.AppendAllText(exe, "neu");
         w.Show("components"); Pump();
-        w.Find<Button>("btn-gh-start-" + entry.Id).Press(); Pump();
+        w.Find<Button>("btn-gh-start-" + entry.Id).Press(); Pump(); await w.GitHubStartCheckTask; Pump();
         Assert.Equal("oss", w.CurrentView); Assert.NotNull(w.TryFind<Border>("oss-firststart-card"));
         Assert.NotNull(w.GitHubPendingStart); Assert.Equal(2, l.Opened.Count);
         w.GitHubCancelStart();
         // N2: Erlaubnis gilt für den Ordner – eine neue Skript-/DLL-Datei daneben fragt erneut; Startdatei signiert, DLL nicht → Gelb
         w.GitHubAcceptStartRisk(false);
-        Assert.False(w.GitHubLaunch(entry)); w.GitHubAcceptStartRisk(true); Assert.True(w.GitHubConfirmStart()); Assert.Equal(3, l.Opened.Count);
+        w.GitHubLaunch(entry); await w.GitHubStartCheckTask; Pump(); w.GitHubAcceptStartRisk(true); Assert.True(w.GitHubConfirmStart()); Assert.Equal(3, l.Opened.Count);
         File.WriteAllText(Path.Combine(Path.GetDirectoryName(exe)!, "helfer.dll"), "MZ");
-        Assert.False(w.GitHubLaunch(entry)); Assert.Equal(3, l.Opened.Count); w.GitHubCancelStart();
+        w.GitHubLaunch(entry); await w.GitHubStartCheckTask; Pump(); Assert.Equal(3, l.Opened.Count); w.GitHubCancelStart();
         w.GitHubSignatureOverride = f => f.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? new SignatureInfo(SigState.Gueltig, "Beispiel GmbH", "Gültig signiert (in der Datei).") : new SignatureInfo(SigState.Unsigniert, null, "Die Datei ist nicht signiert.");
-        Assert.False(w.GitHubLaunch(entry));
+        w.GitHubLaunch(entry); await w.GitHubStartCheckTask; Pump();
         Assert.Equal(GitHubApps.Ampel.Gelb, w.GitHubPendingStart!.Check.Ampel); Assert.Contains("helfer.dll", w.GitHubPendingStart!.Check.Text);
         w.GitHubCancelStart();
         // alles gültig signiert (Signatur ersetzt): Z1b – trotzdem eigener Schritt, Grün ohne Häkchen; Text nennt ehrlich, was eine Signatur nicht abdeckt
         w.GitHubSignatureOverride = _ => new SignatureInfo(SigState.Gueltig, "Beispiel GmbH", "Gültig signiert (in der Datei).");
-        Assert.False(w.GitHubLaunch(entry)); Assert.Equal(3, l.Opened.Count);
+        w.GitHubLaunch(entry); await w.GitHubStartCheckTask; Pump(); Assert.Equal(3, l.Opened.Count);
         Assert.Equal(GitHubApps.Ampel.Gruen, w.GitHubPendingStart!.Check.Ampel);
         Assert.Contains("Daten- und Skriptdateien kann eine Signatur nicht abdecken", w.GitHubPendingStart!.Check.Text);
         Assert.True(w.GitHubConfirmStart()); Assert.Equal(4, l.Opened.Count);
         // Z1a: Erlaubnis gilt für ALLE Dateien des Ordners – auch eine geänderte Textdatei fragt erneut
         File.WriteAllText(Path.Combine(Path.GetDirectoryName(exe)!, "liesmich.txt"), "neu");
-        Assert.False(w.GitHubLaunch(entry)); Assert.Equal(4, l.Opened.Count); w.GitHubCancelStart();
+        w.GitHubLaunch(entry); await w.GitHubStartCheckTask; Pump(); Assert.Equal(4, l.Opened.Count); Assert.NotNull(w.GitHubPendingStart); w.GitHubCancelStart();
         w.Close();
     }
 
@@ -353,12 +353,81 @@ public class T0762_GitHubNachbau_Ui
         Assert.Equal(1, runs); // die Datei war während des Laufs gesperrt (Prüfung im Ersatz-Lauf)
         if (w.SetupFinishShown) { w.Find<Button>("setup-overlay-done").Press(); Pump(); }
         // Z3a: Start des Herstellerprogramms – erst Karte, dann eigener Klick; danach ohne Rückfrage
-        Assert.False(w.KiSourceStart("lmstudio")); Pump();
+        Assert.False(w.KiSourceStart("lmstudio")); Pump(); await w.GitHubStartCheckTask; Pump();
         Assert.Empty(l.Opened); Assert.NotNull(w.GitHubPendingStart); Assert.Equal("oss", w.CurrentView);
         w.GitHubAcceptStartRisk(true); Assert.True(w.GitHubConfirmStart()); Pump();
         Assert.Single(l.Opened, o => o.EndsWith("LM Studio.exe"));
-        Assert.True(w.KiSourceStart("lmstudio")); Assert.Equal(2, l.Opened.Count);
+        w.KiSourceStart("lmstudio"); await w.GitHubStartCheckTask; Pump(); Assert.Equal(2, l.Opened.Count);
         Assert.NotNull(GitHubApps.ExternalApproval(w.ToolsRootForTests, "ki:lmstudio"));
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "T-0762 L1 (UI, Signatur ersetzt und künstlich verlangsamt): „Starten“ kehrt sofort zurück, Prüfung läuft im Hintergrund mit Fortschritt und „Abbrechen“; nach Erlaubnis nur Index + ausführbare Inhalte")]
+    public async Task L1_click_returns_immediately()
+    {
+        var (w, l, root) = Ui.Open();
+        var zip = Path.Combine(root, "dl.zip");
+        using (var z = System.IO.Compression.ZipFile.Open(zip, System.IO.Compression.ZipArchiveMode.Create))
+        {
+            using (var s = new StreamWriter(z.CreateEntry("b/b.exe").Open())) s.Write("MZ");
+            for (var i = 0; i < 60; i++) using (var s = new StreamWriter(z.CreateEntry($"b/lib{i}.dll").Open())) s.Write("MZ" + i);
+            for (var i = 0; i < 400; i++) using (var s = new StreamWriter(z.CreateEntry($"b/daten/d{i}.dat").Open())) s.Write(new string('x', 2000));
+        }
+        w.GitHubFetchOverride = _ => Task.FromResult<(GitHubApps.Release, string?)>((new GitHubApps.Release("v2.0", "", [new("b-windows-x64.zip", "https://github.com/a/b/releases/download/v2.0/b-windows-x64.zip", new FileInfo(zip).Length, null)]), zip));
+        Assert.NotNull(await w.GitHubInstall(Repo("a/b"), start: false)); Pump();
+        if (w.SetupFinishShown) { w.Find<Button>("setup-overlay-done").Press(); Pump(); }
+        var entry = Assert.Single(GitHubApps.List(w.ToolsRootForTests));
+        w.GitHubSignatureOverride = _ => { Thread.Sleep(25); return new SignatureInfo(SigState.Gueltig, "Beispiel GmbH", "Gültig signiert (in der Datei)."); }; // 61 × 25 ms ≈ 1,5 s
+        w.Show("oss"); Pump();
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        w.GitHubLaunch(entry);
+        var click = sw.ElapsedMilliseconds;
+        Assert.True(click < 300, $"Klick dauerte {click} ms");
+        Assert.True(w.GitHubStartChecking);
+        w.Show("oss"); Pump();
+        Assert.NotNull(w.TryFind<Border>("oss-check-card")); // Fortschritt mit Abbrechen, Oberfläche bedienbar
+        w.Show("components"); Pump(); w.Show("oss"); Pump();
+        w.Find<Button>("oss-check-cancel").Press(); Pump();
+        await w.GitHubStartCheckTask; Pump();
+        Assert.Null(w.GitHubPendingStart); Assert.Empty(l.Opened); Assert.False(w.GitHubStartChecking);
+        File.AppendAllText(GitHubApps.ExePath(w.ToolsRootForTests, entry), ""); // Sperren nach dem Abbrechen frei
+        // erneut, bis zur Karte (Grün), bestätigen
+        w.GitHubLaunch(entry); await w.GitHubStartCheckTask; Pump();
+        Assert.Equal(GitHubApps.Ampel.Gruen, w.GitHubPendingStart!.Check.Ampel);
+        Assert.True(w.GitHubConfirmStart()); Assert.Single(l.Opened);
+        // erlaubt: schneller Weg ohne Signaturprüfung (Signatur-Ersatz würde sonst wieder 1,5 s brauchen)
+        var calls = 0; w.GitHubSignatureOverride = _ => { calls++; return new SignatureInfo(SigState.Gueltig, "Beispiel GmbH", "ok"); };
+        sw.Restart(); w.GitHubLaunch(entry); Assert.True(sw.ElapsedMilliseconds < 300);
+        await w.GitHubStartCheckTask; Pump();
+        Assert.Equal(2, l.Opened.Count); Assert.Equal(0, calls);
+        // Index: geänderte Datendatei (nicht gelesen, nur Verzeichnisdaten) fragt erneut
+        File.WriteAllText(Path.Combine(w.ToolsRootForTests, entry.Id, "b", "daten", "d0.dat"), "anders");
+        w.GitHubLaunch(entry); await w.GitHubStartCheckTask; Pump();
+        Assert.Equal(2, l.Opened.Count); Assert.NotNull(w.GitHubPendingStart); w.GitHubCancelStart();
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "T-0762 L2 (UI): mit Verknüpfung im Programmordner wird keine Erlaubnis gespeichert – jeder Start fragt (übersprungen ohne Windows)")]
+    public async Task L2_links_always_ask()
+    {
+        if (!OperatingSystem.IsWindows()) { Assert.Skip("Nur Windows."); return; }
+        var (w, l, root) = Ui.Open();
+        var zip = Path.Combine(root, "dl.zip");
+        using (var z = System.IO.Compression.ZipFile.Open(zip, System.IO.Compression.ZipArchiveMode.Create)) using (var s = new StreamWriter(z.CreateEntry("b/b.exe").Open())) s.Write("MZ");
+        w.GitHubFetchOverride = _ => Task.FromResult<(GitHubApps.Release, string?)>((new GitHubApps.Release("v2.0", "", [new("b-windows-x64.zip", "https://github.com/a/b/releases/download/v2.0/b-windows-x64.zip", new FileInfo(zip).Length, null)]), zip));
+        Assert.NotNull(await w.GitHubInstall(Repo("a/b"), start: false)); Pump();
+        var entry = Assert.Single(GitHubApps.List(w.ToolsRootForTests));
+        var outside = Path.Combine(root, "draussen"); Directory.CreateDirectory(outside);
+        Assert.True(Cli.Run("cmd", ["/d", "/c", "mklink", "/J", Path.Combine(w.ToolsRootForTests, entry.Id, "b", "plugins"), outside]).Ok);
+        w.GitHubSignatureOverride = _ => new SignatureInfo(SigState.Gueltig, "Beispiel GmbH", "ok");
+        w.GitHubLaunch(entry); await w.GitHubStartCheckTask; Pump();
+        Assert.Equal(GitHubApps.Ampel.Gelb, w.GitHubPendingStart!.Check.Ampel); Assert.Contains("nicht gespeichert", w.GitHubPendingStart!.Check.Text);
+        w.GitHubAcceptStartRisk(true); Assert.True(w.GitHubConfirmStart()); Assert.Single(l.Opened);
+        Assert.Null(Assert.Single(GitHubApps.List(w.ToolsRootForTests)).StartApproved);
+        w.GitHubLaunch(entry); await w.GitHubStartCheckTask; Pump();
+        Assert.NotNull(w.GitHubPendingStart); Assert.Single(l.Opened); // fragt wieder
+        w.GitHubCancelStart();
+        Directory.Delete(Path.Combine(w.ToolsRootForTests, entry.Id, "b", "plugins"));
         w.Close();
     }
 
@@ -404,7 +473,7 @@ public class T0762_GitHubNachbau_Ui
             // 3. Starten über den echten Weg der App (N4): „Starten“ → Tor GitHubLaunch → Karte „Erster Start“ (Ampel) → Häkchen → eigener Klick.
             //    Das Testfenster hat einen Test-Starter: er nimmt den Pfad entgegen, den Trendo starten würde; diese Datei startet der Lauf als eigenen Prozess.
             w.Show("components"); Pump();
-            w.Find<Button>("btn-gh-start-" + entry.Id).Press(); Pump();
+            w.Find<Button>("btn-gh-start-" + entry.Id).Press(); Pump(); await w.GitHubStartCheckTask; Pump();
             var held = w.GitHubPendingStart;
             Assert.NotNull(held); Assert.Empty(l.Opened); Assert.Equal("oss", w.CurrentView);
             L($"„Starten“ unter Programme: nicht gestartet, Karte „Erster Start“ – Ampel {held!.Check.Ampel} ({held.Check.Title}), Ordner-Prüfsumme {held.Check.Sha256}");

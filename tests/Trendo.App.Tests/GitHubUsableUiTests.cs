@@ -37,7 +37,7 @@ public class GitHubUsableUiTests
         w.Find<CheckBox>("oss-installer-risk").IsChecked = true; Pump();
         Assert.True(w.Find<Button>("oss-installer-run").IsEnabled);
         Assert.Null(args); // das Häkchen allein führt nichts aus
-        var exe = await w.GitHubConfirmInstaller(); Pump();
+        var exe = await w.GitHubConfirmInstaller(); Pump(); await w.GitHubStartCheckTask; Pump();
         Assert.EndsWith("YouTube Music.exe", exe);
         Assert.Contains("/S", args!);
         Assert.Empty(l.Opened); // T-0762 Z1b: erster Start ist ein eigener Schritt (Karte „Erster Start“)

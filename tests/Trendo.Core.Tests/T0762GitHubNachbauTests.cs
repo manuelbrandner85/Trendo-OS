@@ -372,7 +372,7 @@ public class T0762GitHubNachbauTests
         Assert.Equal(GitHubApps.Ampel.Gruen, GitHubApps.CheckProgramFolder(exe, d, Ok).Ampel);
         // Z1a: Prüfsumme über ALLE Dateien – auch eine Text-/Datendatei ändert sie
         var h1 = GitHubApps.FolderHashAll(d);
-        Assert.Equal(h1, allSigned.Sha256);
+        Assert.Equal(GitHubApps.Fingerprint(d, GitHubApps.ExecSet(d, exe)).Key, allSigned.Sha256); // L1: Ergebnis = Fingerabdruck
         File.WriteAllText(Path.Combine(d, "liesmich.txt"), "geändert");
         var h2 = GitHubApps.FolderHashAll(d); Assert.NotEqual(h1, h2);
         File.WriteAllText(Path.Combine(d, "neu.dat"), "x");
@@ -405,5 +405,87 @@ public class T0762GitHubNachbauTests
         GitHubApps.ApproveExternal(tools, "ki:lmstudio", "abc"); GitHubApps.ApproveExternal(tools, "ki:jan", "def");
         Assert.Equal("abc", GitHubApps.ExternalApproval(tools, "ki:lmstudio")); Assert.Equal("def", GitHubApps.ExternalApproval(tools, "ki:jan"));
         Directory.Delete(tools, true);
+    }
+
+    // ───────────── Vierte Prüfrunde (L1–L3) ─────────────
+
+    [Fact(DisplayName = "T-0762 L1: Fingerabdruck = Index aller Dateien (ohne Lesen) + SHA-256 nur der ausführbaren Inhalte; Datendatei geändert → Index anders, ausführbare Summe gleich")]
+    public void L1_fingerprint()
+    {
+        var d = Tmp(); var exe = Path.Combine(d, "app.exe"); File.WriteAllText(exe, "MZ"); File.WriteAllText(Path.Combine(d, "a.dll"), "MZ1"); File.WriteAllText(Path.Combine(d, "daten.bin"), "1234");
+        var p1 = GitHubApps.Fingerprint(d, GitHubApps.ExecSet(d, exe));
+        Assert.Equal(2, p1.ExecSha.Count); Assert.Equal(3, p1.FileCount);
+        File.WriteAllText(Path.Combine(d, "daten.bin"), "12345");
+        var p2 = GitHubApps.Fingerprint(d, GitHubApps.ExecSet(d, exe));
+        Assert.NotEqual(p1.Index, p2.Index); Assert.Equal(p1.ExecHash, p2.ExecHash); Assert.NotEqual(p1.Key, p2.Key);
+        File.WriteAllText(Path.Combine(d, "a.dll"), "MZ2");
+        Assert.NotEqual(p2.ExecHash, GitHubApps.Fingerprint(d, GitHubApps.ExecSet(d, exe)).ExecHash);
+        Assert.Equal(GitHubApps.CheckProgramFolder(exe, d, _ => new SignatureInfo(SigState.Gueltig, "X", "ok")).Sha256, GitHubApps.Fingerprint(d, GitHubApps.ExecSet(d, exe)).Key);
+        Directory.Delete(d, true);
+    }
+
+    [WindowsFact(DisplayName = "T-0762 L1c: Signaturergebnis je Datei-Inhalt nur im Speicher – zweite Prüfung derselben Dateien ruft Windows nicht erneut auf")]
+    public void L1_signature_cache()
+    {
+        var d = Tmp(); var exe = Path.Combine(d, "where.exe"); File.Copy(Path.Combine(Environment.SystemDirectory, "where.exe"), exe);
+        File.WriteAllText(Path.Combine(d, "x.dll"), "MZ-eigene-" + Guid.NewGuid());
+        var before = GitHubApps.SignatureCacheCount;
+        var print = GitHubApps.Fingerprint(d, GitHubApps.ExecSet(d, exe));
+        var c1 = GitHubApps.CheckProgramFolder(exe, d, print);
+        Assert.True(GitHubApps.SignatureCacheCount >= before + 1);
+        var mid = GitHubApps.SignatureCacheCount;
+        var c2 = GitHubApps.CheckProgramFolder(exe, d, print);
+        Assert.Equal(mid, GitHubApps.SignatureCacheCount); Assert.Equal(c1.Ampel, c2.Ampel);
+        Directory.Delete(d, true);
+    }
+
+    [Fact(DisplayName = "T-0762 L3: package.json mit „main“ im Programmordner → Gelb mit Nennung")]
+    public void L3_package_main()
+    {
+        var d = Tmp(); var exe = Path.Combine(d, "app.exe"); File.WriteAllText(exe, "MZ");
+        Directory.CreateDirectory(Path.Combine(d, "resources", "app"));
+        File.WriteAllText(Path.Combine(d, "resources", "app", "package.json"), """{"name":"x","main":"start.txt"}""");
+        var c = GitHubApps.CheckProgramFolder(exe, d, _ => new SignatureInfo(SigState.Gueltig, "X", "ok"));
+        Assert.Equal(GitHubApps.Ampel.Gelb, c.Ampel); Assert.Contains("resources/app/package.json", c.Text);
+        File.WriteAllText(Path.Combine(d, "resources", "app", "package.json"), """{"name":"x"}""");
+        Assert.Equal(GitHubApps.Ampel.Gruen, GitHubApps.CheckProgramFolder(exe, d, _ => new SignatureInfo(SigState.Gueltig, "X", "ok")).Ampel);
+        Directory.Delete(d, true);
+    }
+
+    public sealed class MessungFactAttribute : FactAttribute { public MessungFactAttribute() { if (Environment.GetEnvironmentVariable("TRENDO_MESSUNG") != "1" || !OperatingSystem.IsWindows()) Skip = "Übersprungen – Messung nur mit TRENDO_MESSUNG=1 (legt bis 1,9 GB Testdaten an)."; } }
+
+    [MessungFact(DisplayName = "T-0762 L1 Messung: alt (FolderHashAll) gegen neu (Fingerabdruck) bei 3 000 Dateien/286 MB und 20 000 Dateien/1,9 GB, erste Prüfung mit echten System-DLLs (warm)")]
+    public void L1_measure()
+    {
+        var log = new System.Text.StringBuilder($"T-0762 L1 Messung · {DateTimeOffset.Now:yyyy-MM-dd HH:mm zzz} · {Environment.ProcessorCount} Kerne\n");
+        var slower = new List<string>();
+        var dlls = Directory.EnumerateFiles(Environment.SystemDirectory, "*.dll").Where(f => { try { var n = new FileInfo(f).Length; return n > 20_000 && n < 600_000; } catch (IOException) { return false; } }).Take(1000).ToList();
+        foreach (var (files, mb, ndll) in new[] { (3000, 286, 300), (20000, 1900, 1000) })
+        {
+            var d = Tmp(); var exe = Path.Combine(d, "app.exe"); File.Copy(Path.Combine(Environment.SystemDirectory, "notepad.exe"), exe); File.SetAttributes(exe, FileAttributes.Normal);
+            long dllBytes = 0;
+            for (var i = 0; i < ndll && i < dlls.Count; i++) { var t = Path.Combine(d, "bin", (i / 100).ToString(), Path.GetFileName(dlls[i])); Directory.CreateDirectory(Path.GetDirectoryName(t)!); File.Copy(dlls[i], t); File.SetAttributes(t, FileAttributes.Normal); dllBytes += new FileInfo(t).Length; }
+            var rest = files - 1 - Math.Min(ndll, dlls.Count); var each = Math.Max(1, (mb * 1024L * 1024L - dllBytes) / rest);
+            var buf = new byte[each]; new Random(1).NextBytes(buf);
+            for (var i = 0; i < rest; i++) { var t = Path.Combine(d, "daten", (i / 500).ToString(), $"d{i}.dat"); Directory.CreateDirectory(Path.GetDirectoryName(t)!); File.WriteAllBytes(t, buf); }
+            long total = Directory.EnumerateFiles(d, "*", SearchOption.AllDirectories).Sum(f => new FileInfo(f).Length);
+            log.AppendLine($"\n## {files} Dateien, {total / 1048576.0:0} MB, davon {Math.Min(ndll, dlls.Count)} echte System-DLLs ({dllBytes / 1048576.0:0} MB)");
+            GitHubApps.FolderHashAll(d); // aufwärmen
+            var sw = System.Diagnostics.Stopwatch.StartNew(); GitHubApps.FolderHashAll(d); var alt = sw.Elapsed;
+            log.AppendLine($"alt – Start mit Erlaubnis (FolderHashAll, liest alle Dateien): {alt.TotalSeconds:0.00} s");
+            sw.Restart(); var p = GitHubApps.Fingerprint(d, GitHubApps.ExecSet(d, exe)); var neu = sw.Elapsed;
+            log.AppendLine($"neu – Start mit Erlaubnis (Index + SHA-256 der {p.ExecSha.Count} ausführbaren Dateien): {neu.TotalSeconds:0.00} s (im Hintergrund)");
+            sw.Restart(); GitHubApps.FolderIndex(d); log.AppendLine($"neu – Bestätigen (nur Index, Verzeichnisdaten): {sw.Elapsed.TotalSeconds:0.000} s");
+            sw.Restart(); var c1 = GitHubApps.CheckProgramFolder(exe, d, p); var first = sw.Elapsed;
+            log.AppendLine($"neu – erste Prüfung, Signaturen von {p.ExecSha.Count} Dateien (echtes WinVerifyTrust): {first.TotalSeconds:0.00} s → {c1.Ampel}");
+            sw.Restart(); GitHubApps.CheckProgramFolder(exe, d, p); log.AppendLine($"neu – zweite Prüfung (Signatur-Zwischenspeicher im Speicher): {sw.Elapsed.TotalSeconds:0.00} s");
+            Directory.Delete(d, true);
+            if (neu > alt + TimeSpan.FromSeconds(0.5)) slower.Add($"{files}: neu {neu.TotalSeconds:0.00} s > alt {alt.TotalSeconds:0.00} s");
+        }
+        log.AppendLine("\nKalt (leerer Dateicache) nicht gemessen: den Windows-Dateicache zu leeren braucht Administratorrechte. Alle Werte warm; die Prüfung läuft in der App im Hintergrund.");
+        var repo = AppContext.BaseDirectory; while (!File.Exists(Path.Combine(repo, "Trendo.sln"))) repo = Path.GetDirectoryName(repo)!;
+        var outDir = Path.Combine(repo, "reports", "T-0762"); Directory.CreateDirectory(outDir);
+        File.WriteAllText(Path.Combine(outDir, "l1-messung.txt"), log.ToString().Replace(Environment.UserName, "<user>", StringComparison.OrdinalIgnoreCase));
+        Assert.Empty(slower);
     }
 }

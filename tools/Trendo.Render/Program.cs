@@ -527,6 +527,8 @@ else if (shot == "seite")
             win.GitHubSignatureOverride = f => Environment.GetEnvironmentVariable("TRENDO_OSS_DEMO") == "gruen" || f.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? new Trendo.Core.Sys.SignatureInfo(Trendo.Core.Sys.SigState.Gueltig, "Beispiel GmbH", "Gültig signiert (in der Datei).") : new Trendo.Core.Sys.SignatureInfo(Trendo.Core.Sys.SigState.Unsigniert, null, "Die Datei ist nicht signiert.");
             var t2 = win.GitHubInstall(new OssRepo("beispiel/werkzeug", "Ein freies Werkzeug", "https://github.com/beispiel/werkzeug", "https://github.com/beispiel/werkzeug.git", 10, "MIT", "C#", DateTimeOffset.UtcNow));
             while (!t2.IsCompleted) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(10); }
+            var chk = win.GitHubStartCheckTask; while (!chk.IsCompleted) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(10); } // L1: Prüfung läuft im Hintergrund
+            Dispatcher.UIThread.RunJobs();
             win.GitHubFetchOverride = null;
             if (win.SetupFinishShown) win.GetLogicalDescendants().OfType<Button>().First(b => b.Name == "setup-overlay-done").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         }

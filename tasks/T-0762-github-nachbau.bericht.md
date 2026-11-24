@@ -21,7 +21,7 @@
 - `dotnet build Trendo.sln -c Release` → 0 Fehler.
 - Core gezielt (`T0762|W5_X10|GitHub|W4Oss|PromptActionTests|SystemPagesTests|NoFixedUser|DevBuild|Authenticode`): **Bestanden, 132 von 132**. Darin echt: Authenticode auf `notepad.exe` (Grün) und auf selbst geschriebener Datei (Rot), echter Python-unittest-Lauf für den Abgleich.
 - App gezielt: `T0762_GitHubNachbau_Ui` 4 (3 bestanden, PC-Lauf ohne Variable übersprungen), `W5_X10_Ui` 1, `GitHubUsableUiTests` 3, `GitHubNet_Ui` 3, `GitHubPlus_Ui` 4, `GitHubProgramsUiTests` 2, `T0711_HuelleEtappe1b_Ui` 11, `CodeEditor_Ui` 1, `PromptBarTests` 6 – alle 0 Fehler. Darin echt: `dotnet build` eines Projekts aus „Open Source“ über den Bauanleitungs-Knopf (Exit 0, Hallo.dll entsteht), Python-Testlauf im Nachbau-Abgleich.
-- PC-Lauf `TRENDO_PC_LAUF=1 … -method …Pc_run_real_github` → bestanden (12 s). Rohlog `reports/T-0762/x06-echtlauf.log`, SHA-256 `3cd7565d1dbbcab30dc0f7e851af0c0eab58666c47a0a3138e7838523aef20ed (Stand fix3)`.
+- PC-Lauf `TRENDO_PC_LAUF=1 … -method …Pc_run_real_github` → bestanden (12 s). Rohlog `reports/T-0762/x06-echtlauf.log`, SHA-256 `ad3079704780f26795dc784de3108c11149d2a11ad843566647331e6660a3a74 (Stand fix4)`.
 - Rot-Grün: die neuen Tests bauen auf altem Code nicht (Methoden fehlen); `Installer_is_usable` schlägt auf altem Code fehl (Installer lief sofort).
 - Kein Volltest (macht die Hauptsitzung).
 
@@ -102,3 +102,23 @@ Zusätzlich berührt: `src/Trendo.App/MainWindow.KiSourceSetup.cs` (nur Startste
 Wenn T-0764 `KiSourceInstall` auf `FreigabeAsync`/`Approvals.Execute` umstellt, kann die Rückfrage aus Punkt 1 dort zusammengefasst werden – Ampel-Text und Sperre bleiben nötig.
 
 Tests fix3: Build 0 Fehler. Core `T0762|GitHub|W4Oss|W5_X10|PromptActionTests` 128/128 (darin T0762 21). App: `T0762_GitHubNachbau_Ui` 10 (9 bestanden, PC-Lauf separat bestanden), `KiSourceSetupUiTests` 2, `GitHubUsableUiTests` 3, `GitHubProgramsUiTests` 2, `GitHubNet_Ui` 3, `GitHubPlus_Ui` 4, `CodeEditor_Ui` 1, `BambuPro_Ui` 1, `W5_X10_Ui` 1 – 0 Fehler. PC-Lauf neu: SHA-256 `3cd7565d1dbbcab30dc0f7e851af0c0eab58666c47a0a3138e7838523aef20ed`. Render-Vorführung neu: `TRENDO_OSS_DEMO=gruen`.
+
+## Vierte Prüfrunde (fix4, auf @0ee09c70a)
+| Punkt | Änderung | Test/Beleg |
+|---|---|---|
+| L1a | Erlaubnis an einen Fingerabdruck (`GitHubApps.Fingerprint`, neue Datei `GitHubAppsStartCheck.cs`): Index über alle Dateien aus den Verzeichnisdaten (relativer Pfad, Größe, Änderungs- und Erstellzeit, Attribute – ohne die Dateien zu lesen) + Verknüpfungen (Pfad + Ziel) + volle SHA-256 nur der ausführbaren Inhalte (die ohnehin gesperrt werden). Abweichung → erneute Frage. Eine Datei-ID (FileIndex) ist nicht im Index: sie bräuchte je Datei ein Öffnen (bei 20 000 Dateien teuer); Größe + Zeiten + SHA der ausführbaren Inhalte decken Änderungen ab, Zeitstempel kann ein Prozess desselben Benutzers allerdings zurücksetzen (siehe unten) | Core `L1_fingerprint`, UI `L1_click_returns_immediately` (geänderte Datendatei → erneute Frage) |
+| L1b | Prüfung im Hintergrund (`Task.Run`): Sperren, Fingerabdruck und – beim ersten Mal – Signaturen; Karte „Prüfe …“ mit Fortschritt und „Abbrechen“; „Starten“ kehrt sofort zurück, die Oberfläche bleibt bedienbar. Beim Bestätigen kein zweites Lesen: nur Index (Verzeichnisdaten) und SHA-256 der Startdatei werden erneut verglichen; die ausführbaren Inhalte sind seit der Prüfung gesperrt. Entfernen/Neu einrichten bricht eine laufende Prüfung ab und gibt die Sperren sofort frei | UI `L1_click_returns_immediately` (Klick < 300 ms bei künstlich 1,5 s langer Prüfung, Fortschrittskarte, Abbrechen gibt Sperren frei; erlaubter Start ohne Signaturprüfung), `GitHubProgramsUiTests` (Entfernen während der Prüfung, 3× wiederholt) |
+| L1c | Signaturergebnis je Datei-SHA-256 nur im Speicher dieses Trendo-Laufs (kein Cache auf der Platte, der „signiert“ vortäuschen könnte; „nicht prüfbar“ wird nicht gemerkt) | Core `L1_signature_cache` (echte Prüfung, zweiter Durchlauf ruft Windows nicht erneut auf) |
+| L2 | Mit Verknüpfungen im Programmordner wird keine Erlaubnis gespeichert – jeder Start fragt; im Text genannt | UI `L2_links_always_ask` (echte Junction) |
+| L3 | `package.json` mit „main“ im Programmordner → Gelb mit Nennung | Core `L3_package_main` |
+| (3) | **Systembedingt:** Freigabe-Dateien (`github-programme.json`, `start-freigaben.json`) und die Herkunftsdatei liegen im Ordner der Person. Ein Programm, das mit denselben Benutzerrechten läuft, kann sie ändern (und Zeitstempel zurücksetzen) – sie sind gegen Prozesse desselben Benutzers keine Sicherheitsgrenze, sondern Schutz vor versehentlichem Start ausgetauschter Dateien. | – |
+
+**Messung (warm, 16 Kerne, Rohdaten `reports/T-0762/l1-messung.txt`, SHA-256 `89f7e9adb0f8392114f419282477fbe9aeafc7b39022f934320c770454fe001c`; Test `L1_measure`, nur mit `TRENDO_MESSUNG=1`):**
+| Ordner | Start mit Erlaubnis alt (`FolderHashAll`, UI-Thread) | neu (Fingerabdruck, Hintergrund) | Bestätigen neu (nur Index) | erste Prüfung neu (echtes WinVerifyTrust) | zweite Prüfung (Zwischenspeicher) |
+|---|---|---|---|---|---|
+| 3 000 Dateien / 286 MB, 300 echte System-DLLs | 0,74 s | 0,10 s | 0,019 s | 3,52 s (Grün) | 0,01 s |
+| 20 000 Dateien / 1,9 GB, 1 000 echte System-DLLs | 7,61 s | 0,27 s | 0,039 s | 5,64 s (Gelb) | 0,02 s |
+Kalt (leerer Dateicache) habe ich NICHT gemessen – den Windows-Dateicache zu leeren braucht Administratorrechte. Die Vergleichswerte der Gegenprüfung (kalt 12,7 s / 86,8 s) betrafen das Lesen aller Dateien; neu werden kalt nur die ausführbaren Inhalte gelesen, und alles läuft im Hintergrund mit „Abbrechen“.
+
+Tests fix4: Build 0 Fehler. Core `T0762|GitHub|W4Oss|W5_X10|PromptActionTests` 131 bestanden, 1 übersprungen (Messung ohne Variable). App: `T0762_GitHubNachbau_Ui` 12 (11 bestanden, PC-Lauf separat bestanden), `KiSourceSetupUiTests` 2, `GitHubUsableUiTests` 3, `GitHubProgramsUiTests` 2, `GitHubNet_Ui` 3, `GitHubPlus_Ui` 4, `BambuPro_Ui` 1, `CodeEditor_Ui` 1, `W5_X10_Ui` 1 – 0 Fehler. PC-Lauf neu: SHA-256 `ad3079704780f26795dc784de3108c11149d2a11ad843566647331e6660a3a74`. Grüne Karte neu gerendert und angesehen; die Fortschrittskarte „Prüfe …“ ist nur im UI-Test geprüft (kurzlebig, nicht gerendert).
+Bestehende Tests angepasst (nicht geschwächt): wo ein Start erwartet wird, wartet der Test jetzt auf die Hintergrund-Prüfung (`GitHubStartCheckTask`).

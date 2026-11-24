@@ -128,34 +128,8 @@ public static partial class GitHubApps
     /// <summary>N2/Z1: Programm mit seinem ganzen Ordner prüfen. Grün nur, wenn die Startdatei und alle signierbaren Programme/Bibliotheken gültig signiert sind,
     /// es keine nicht signierbaren ausführbaren Inhalte (Skripte, Konfiguration, Pakete) und keine Verknüpfungen gibt. Sonst Gelb mit Namen; Startdatei unsigniert = Rot.
     /// <see cref="InstallerCheck.Sha256"/> ist die Prüfsumme über alle Dateien des Ordners (<see cref="FolderHashAll"/>).</summary>
-    public static InstallerCheck CheckProgramFolder(string exe, string dir, Func<string, Sys.SignatureInfo>? check = null, FileStream? locked = null)
-    {
-        var main = CheckProgram(exe, check, locked);
-        var hash = FolderHashAll(dir);
-        var files = ExecutableFiles(dir);
-        bool IsExe(string f) => string.Equals(Path.GetFullPath(f), Path.GetFullPath(exe), StringComparison.OrdinalIgnoreCase);
-        var others = files.Where(f => !IsExe(f)).ToList();
-        var links = ReparsePoints(dir);
-        string Rel(string f) => Path.GetRelativePath(dir, f).Replace('\\', '/');
-        static string Names(IEnumerable<string> n) { var l = n.ToList(); return string.Join(", ", l.Take(5)) + (l.Count > 5 ? $" und {l.Count - 5} weitere" : ""); }
-        var scope = $" Geprüft wird der ganze Programmordner ({files.Count} ausführbare Datei(en)); die Start-Erlaubnis gilt nur, solange sich keine Datei im Ordner ändert.";
-        if (main.Ampel != Ampel.Gruen) return main with { Sha256 = hash, Text = main.Text + scope };
-        if (files.Count > MaxExecutables)
-            return main with { Ampel = Ampel.Gelb, Title = "Startdatei signiert, Ordner zu groß zum Prüfen", Text = main.Text + scope + $" Es sind mehr als {MaxExecutables} – Trendo prüft nicht alle und kann den Ordner deshalb nicht bestätigen.", Sha256 = hash, NeedsRiskConsent = true };
-        var check2 = check ?? Sys.Authenticode.Check;
-        var unsigned = others.Where(f => SignableExt.Contains(Path.GetExtension(f).ToLowerInvariant()) && check2(f).State != Sys.SigState.Gueltig).ToList();
-        var unsignable = others.Where(f => !SignableExt.Contains(Path.GetExtension(f).ToLowerInvariant())).ToList();
-        var problems = new List<string>();
-        if (unsigned.Count > 0) problems.Add($"Nicht gültig signiert: {Names(unsigned.Select(Rel))}.");
-        if (unsignable.Count > 0) problems.Add($"{unsignable.Count} Datei(en) nicht signierbar/prüfbar (Skripte, Konfiguration, Pakete, die das Programm ausführen oder laden kann): {Names(unsignable.Select(Rel))}.");
-        if (links.Count > 0) problems.Add($"Verknüpfung(en) im Ordner, die woandershin zeigen: {Names(links.Select(l => $"{l.Rel} → {l.Target}"))}.");
-        var signer = main.Publisher ?? "einem unbekannten Herausgeber";
-        if (problems.Count == 0)
-            return main with { Sha256 = hash, Text = $"„{Path.GetFileName(exe)}“ ist ein fremdes Programm von GitHub und läuft mit deinen Rechten (ohne Admin). Geprüft: Programme und Bibliotheken sind signiert von {signer} ({files.Count} Datei(en)). Daten- und Skriptdateien kann eine Signatur nicht abdecken. Sperrlisten fragt Trendo nicht ab." + scope };
-        var n = unsigned.Count + unsignable.Count + links.Count;
-        return main with { Ampel = Ampel.Gelb, Title = $"Startdatei signiert, {n} weitere Datei(en) nicht bestätigt", Sha256 = hash, NeedsRiskConsent = true,
-            Text = $"„{Path.GetFileName(exe)}“ ist signiert von {signer}. " + string.Join(" ", problems) + " Das Programm kann diese beim Start laden oder ausführen – die Signatur der Startdatei deckt sie nicht ab." + scope };
-    }
+    public static InstallerCheck CheckProgramFolder(string exe, string dir, Func<string, Sys.SignatureInfo>? check = null, FileStream? locked = null) =>
+        CheckProgramFolder(exe, dir, Fingerprint(dir, ExecSet(dir, exe)), check); // L1: Ergebnis-Prüfsumme = Fingerabdruck (Index + ausführbare Inhalte)
 
     /// <summary>Z3a: Start-Erlaubnis für Programme, die nicht in der GitHub-Liste stehen (z. B. KI-Programme vom Hersteller), gebunden an die Ordner-Prüfsumme.</summary>
     public const string ExternalApprovalsFile = "start-freigaben.json";
