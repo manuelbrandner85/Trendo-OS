@@ -111,7 +111,11 @@ public sealed class Integrations(ApprovalGate gate, ProjectStore projects, IProc
         if (Rbac.Has(by, Permission.ManageSoftware)) return; // Erwachsene: wie bisher, ohne Prüfsummen-Rechnen
         void No(string what) => Rbac.DemandSoftware(by, "start " + what, audit, Rbac.NurErwachseneStart);
         foreach (var t in userTargets)
-            if (t is not null && Sys.Software.NeedsSoftwareRight(t, TrustedProgramPath)) No(Path.GetFileName(t.Trim('"')));
+        {
+            if (t is null) continue;
+            if (Sys.Software.NeedsSoftwareRight(t, TrustedProgramPath)) No(Path.GetFileName(t.Trim('"')));
+            else if (t.IndexOfAny(Path.GetInvalidPathChars()) < 0 && Directory.Exists(t.Trim('"'))) No("Ordner im Windows-Explorer"); // M3: Kinder nutzen Trendos Dateimanager
+        }
         if (exe is not null)
         {
             if (exeUserChosen) { if (Sys.Software.NeedsSoftwareRight(exe, TrustedProgramPath)) No(Path.GetFileName(exe)); }

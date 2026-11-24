@@ -25,8 +25,10 @@ public partial class MainWindow
     {
         // T-0317: passende Skills als Claude-Code-Skills in den Projektordner legen – Claude Code nutzt sie wie eigene
         if (studio is not null) try { Directory.CreateDirectory(folder); Skills.ExportForClaude(folder, null, studio); ClaudeTeamExport(folder, studio); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        // T-0764 (4. Prüfrunde H): Claude Code im Terminal kann Befehle ausführen – im Kinderprofil nicht (vor Testersatz und Testmodus geprüft)
+        if (!DarfAusfuehren("claude.terminal", out var nein)) { _claudeMsg = nein; RefreshKiPage(); return; }
         var args = ClaudeCode.OpenArgs(prompt, system);
-        _core.Audit.Append(Principal.LocalOwner.Name, "claude.open", Path.GetFileName(folder));
+        _core.Audit.Append(CurrentPrincipal.Name, "claude.open", Path.GetFileName(folder));
         if (ClaudeOpenOverride is { } o) { o(folder, args); return; }
         if (ClaudeSandboxed("Claude Code im Ordner öffnen")) return;
         var exe = ClaudeExe(); if (exe is null) { _claudeMsg = "Claude Code ist nicht installiert."; RefreshKiPage(); return; }
@@ -117,6 +119,7 @@ public partial class MainWindow
     /// <summary>Einen Claude-Lauf starten und jede Ausgabezeile weitergeben. Arbeitsordner = Projekt (bzw. leerer Temp-Ordner für Fragen).</summary>
     public async Task<int> ClaudeRun(IReadOnlyList<string> args, string dir, Action<string> line, CancellationToken ct)
     {
+        if (!DarfAusfuehren("claude.agent", out var nein)) throw new InvalidOperationException(nein); // T-0764 (H): KI-Agent mit Shell-Werkzeug
         if (!ClaudeEmbedApproved) throw new InvalidOperationException("Eingebettete Claude-Nutzung über das Abo wartet auf die Freigabe durch Anthropic. Nutze „In Claude Code öffnen“.");
         if (ClaudeRunOverride is { } o) return await o(args, dir, line, ct);
         if (_opt.Isolated) throw new InvalidOperationException("Testmodus: Claude wird nicht gestartet."); // Tests und Vorschaubilder nutzen nie das echte Abo

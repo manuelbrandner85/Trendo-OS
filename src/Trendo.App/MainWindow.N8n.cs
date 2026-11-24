@@ -117,6 +117,7 @@ public partial class MainWindow
 
     public async Task AutomationStart(string which)
     {
+        if (!DarfAusfuehren("automation.start " + which, out var nein)) { _n8nMsg = nein; Show("ablaeufe"); return; } // T-0764 (H): n8n/Node-RED führen Abläufe mit Befehlen aus
         await EnsureAutoApi();
         if (AutomationHttpOverride is not null && which == "n8n") { _n8nFakeRunning = true; StartAutoTimer(); _n8nMsg = "✓ n8n läuft."; Show("ablaeufe"); return; }
         var node = which == "node-red";

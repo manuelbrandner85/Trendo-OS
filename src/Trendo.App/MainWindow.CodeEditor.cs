@@ -112,6 +112,7 @@ public partial class MainWindow
     bool CodeMayStart(out string why)
     {
         why = "";
+        if (!DarfAusfuehren("ausfuehren", out why)) return false; // T-0764 (H): Ausführen, Testen, Bauen, Paket – im Kinderprofil nie (vor dem Testmodus geprüft)
         if (_ceRunCts is not null) throw new InvalidOperationException("Es läuft schon ein Programm. Warte, bis es fertig ist – oder klick auf „Abbrechen“.");
         if (_opt.Isolated && CodeRunOverride is null && !CodeRealToolsInTests) { why = "Testmodus: Trendo startet keine Programme."; return false; }
         return true;
@@ -208,10 +209,11 @@ public partial class MainWindow
         command = command.Trim();
         if (command.Length == 0) return;
         _ceTab = "terminal";
+        if (!DarfAusfuehren("terminal", out var notAllowed)) { _ceTerm += notAllowed + "\n"; return; } // T-0764 (H)
         if (_ceRunCts is not null) throw new InvalidOperationException("Es läuft schon ein Programm. Warte, bis es fertig ist – oder klick auf „Abbrechen“.");
         _ceTerm += $"{Path.GetFileName(root)}> {command}\n";
         if (_opt.Isolated && !CodeRealToolsInTests) { _ceTerm += "Testmodus: Trendo startet keine Programme.\n"; return; }
-        _core.Audit.Append(Principal.LocalOwner.Name, "code.terminal", $"{Path.GetFileName(root)}: {(command.Length > 200 ? command[..200] + " …" : command)}");
+        _core.Audit.Append(CurrentPrincipal.Name, "code.terminal", $"{Path.GetFileName(root)}: {(command.Length > 200 ? command[..200] + " …" : command)}");
         DevBuild.Cmd cmd;
         if (OperatingSystem.IsWindows())
         {

@@ -61,6 +61,7 @@ public static class Software
     public static bool NeedsSoftwareRight(string target, Func<string, bool>? trusted = null)
     {
         if (string.IsNullOrWhiteSpace(target)) return false;
+        if (target.Any(char.IsControl)) return true; // T-0764 (N4): Steuerzeichen im Ziel – nie ohne Recht
         var t = target.Trim().Trim('"');
         if (t.StartsWith("file:", StringComparison.OrdinalIgnoreCase))
         {

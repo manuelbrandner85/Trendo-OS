@@ -24,7 +24,7 @@ public class RechteKernFix2
     [InlineData(@"D:\foto.jpg", false)]
     [InlineData("https://example.org/setup.exe", false)]
     [InlineData("ms-settings:appsfeatures", false)]
-    [InlineData("shell:RecycleBinFolder", false)]
+    [InlineData("shell:RecycleBinFolder", true)] // 4. Prüfrunde M3: Papierkorb nur noch in Trendos Dateimanager, nicht im Windows-Explorer
     public void Recht_noetig(string target, bool needs) => Assert.Equal(needs, Software.NeedsSoftwareRight(target));
 
     [Fact(DisplayName = "T-0764 N-C: Trendo-eigene Programme gelten als vertrauenswürdig, fremde .exe nicht; Kind startet keine fremde .exe, Erwachsene schon")]

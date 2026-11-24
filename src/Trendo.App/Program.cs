@@ -102,7 +102,7 @@ class Program
             var rc = 0;
             // T-0764 (Gegenprüfung M2): Rolle aus dem Profil dieses Datenordners – ein Kinderprofil installiert auch über die Kommandozeile nichts
             var cli = CliPrincipal(core);
-            if (Arg("--install-deps") is { } wanted && CliSoftwareRefused(core, cli, wanted, Console.Out, Arg("--pin")) is { } refusedRc) return refusedRc;
+            if (Arg("--install-deps") is { } wanted && CliSoftwareRefused(core, cli, wanted, Console.Out, Arg("--pin")) is { } refusedRc) return refusedRc; Trendo.Core.Sys.ProgramTrust.RegisterStore(dm.ToolsRoot, Path.Combine(PersonStore.BaseOf(core.DataRoot), "sicherheit")); // T-0764 (M1): Vertrauensliste
             if (Arg("--install-deps") == "vollpaket")
             {
                 // genau der Weg nach dem Setup (SetupVollpaket): eigene, geprüfte Kopien im Werkzeugordner, schon installierte Programme zählen nicht

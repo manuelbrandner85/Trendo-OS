@@ -29,7 +29,23 @@ public partial class MainWindow
     private void Launch(string target) => LaunchAs(target);
 
     /// <summary>T-0764 (2. Prüfrunde N-C): Starten als angemeldete Person – der Kern prüft Rolle und Ziel. Abgelehnt: Hinweis, kein Absturz, false.</summary>
-    internal bool LaunchAs(string target) => LaunchTry(() => _core.Integrations.LaunchDirect(CurrentPrincipal, target, _core.Audit));
+    internal bool LaunchAs(string target)
+    {
+        // T-0764 (4. Prüfrunde M3): Ordner öffnet ein Kinderprofil in Trendos eigenem Dateimanager, nie im Windows-Explorer
+        if (!CanManageSoftware && !string.IsNullOrWhiteSpace(target) && target.IndexOfAny(Path.GetInvalidPathChars()) < 0 && Directory.Exists(target))
+        { _core.Audit.Append(CurrentPrincipal.Name, "ordner.trendo-dateien", Path.GetFileName(Path.TrimEndingDirectorySeparator(target))); FilesGo(target); return true; }
+        return LaunchTry(() => _core.Integrations.LaunchDirect(CurrentPrincipal, target, _core.Audit));
+    }
+
+    /// <summary>T-0764 (4. Prüfrunde H): Programme, Skripte und Befehle ausführen (Code-Werkstatt, Terminal, n8n, Claude Code, Hochladen) – nur
+    /// Erwachsene. Kinderprofil: Protokoll „rbac.denied“, Hinweis, false.</summary>
+    internal bool DarfAusfuehren(string what, out string why)
+    {
+        why = "";
+        try { Rbac.DemandSoftware(CurrentPrincipal, "code " + what, _core.Audit, NurErwachseneAusfuehren); return true; }
+        catch (UnauthorizedAccessException e) { why = e.Message; Toast(e.Message); return false; }
+    }
+    public const string NurErwachseneAusfuehren = "Programme, Skripte und Befehle ausführen darf nur ein Erwachsenen-Profil. Schreiben und Speichern geht weiter.";
     internal bool LaunchAs(string exe, string arg, bool userExe = false) => LaunchTry(() => _core.Integrations.LaunchDirect(CurrentPrincipal, exe, _core.Audit, arg, userExe));
     /// <param name="internalCall">T-0764 (P3-2): fester Aufruf aus Trendos Code (Programm und Parameter legt der Code fest).</param>
     internal bool LaunchArgsAs(string exe, IReadOnlyList<string> args, bool internalCall = true) => LaunchTry(() => _core.Integrations.LaunchArgs(CurrentPrincipal, exe, _core.Audit, args, internalCall));

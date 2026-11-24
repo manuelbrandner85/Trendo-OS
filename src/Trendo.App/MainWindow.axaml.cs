@@ -91,6 +91,13 @@ public sealed partial class MainWindow : Window
         else _deps.LocateVollpaket = VollpaketStart.Find;
         // T-0764 (2. Prüfrunde N-C/N-D): .exe in Trendos eigenen Ordnern (Werkzeuge, Programm, Portable) gelten als vertrauenswürdig – andere startet nur ein Erwachsenen-Profil
         // T-0764 (P3-1): Vertrauen nach Herkunft – Kennungsdatei mit SHA-256 im Programmordner (Werkzeug- und Portable-Ordner) und Trendo selbst; kein reiner Pfadvergleich
+        // T-0764 (4. Prüfrunde M1): Vertrauensliste mit HMAC in Trendos Datenbereich („sicherheit“ im Hauptordner – gilt für alle Personen)
+        var trustDir = Path.Combine(PersonStore.BaseOf(core.DataRoot), "sicherheit");
+        Trendo.Core.Sys.ProgramTrust.RegisterStore(_deps.ToolsRoot, trustDir);
+        Trendo.Core.Sys.ProgramTrust.RegisterStore(Path.Combine(core.DataRoot, "werkzeuge"), trustDir);
+        if (!UserSettings.Load(core.DataRoot).Child) // einmalige Übernahme alter Kennungen nur in einem Erwachsenen-Profil
+            try { Trendo.Core.Sys.ProgramTrust.MigrateMarkers(Principal.LocalOwner, [_deps.ToolsRoot, Path.Combine(core.DataRoot, "werkzeuge")]); }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
         core.Integrations.TrustedProgramPath = p => string.Equals(p, Environment.ProcessPath, StringComparison.OrdinalIgnoreCase)
             || Trendo.Core.Sys.ProgramTrust.Verified(p, [_deps.ToolsRoot, Path.Combine(core.DataRoot, "werkzeuge")]);
         InitVollpaketOnline(); // ohne Vollpaket: dieselben Pakete vom GitHub-Release

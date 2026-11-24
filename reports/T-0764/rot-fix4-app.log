@@ -1,0 +1,14 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    ROT H: Code-Werkstatt – Kind: Ausführen und Terminal verlangen das Recht (Kern-Protokoll rbac.denied) [FAIL]
+      Assert.Contains() Failure: Filter not matched in collection
+      Collection: [AuditEntry { Seq = 1, At = 24.11.2026 17:09:06 +01:00, Actor = core, Action = core.start, Detail = v0.2.0-p1 secrets=InMemory (Test-Fallback, nicht persistent) offline=False protokoll=hash-kette, PrevHash = GENESIS, Hash = 6F63AF23BD520FB0D91FB457875F9C2ED54889BFDE85669D68CFBE5A5FA25518, Mac = , Kid =  }, AuditEntry { Seq = 2, At = 24.11.2026 17:09:07 +01:00, Actor = app, Action = app.first_start, Detail = Standardkonfiguration angelegt, PrevHash = 6F63AF23BD520FB0D91FB457875F9C2ED54889BFDE85669D68CFBE5A5FA25518, Hash = 84C96DE1550CB60061F0B7E3873F062FE02F62269EBB7AB12806222C06E1B6F3, Mac = , Kid =  }, AuditEntry { Seq = 3, At = 24.11.2026 17:09:07 +01:00, Actor = lokaler-besitzer, Action = research.session.end, Detail = , PrevHash = 84C96DE1550CB60061F0B7E3873F062FE02F62269EBB7AB12806222C06E1B6F3, Hash = E3D42BA9BB90E07862AE2D5E292474B8923F0FE7B0A5C64D66EBB33FB6E7542A, Mac = , Kid =  }, AuditEntry { Seq = 4, At = 24.11.2026 17:09:07 +01:00, Actor = selbstheilung, Action = heal.repair, Detail = folders=Repaired, json=Ok, tmp=Ok, disk=Ok, audit=Ok, PrevHash = E3D42BA9BB90E07862AE2D5E292474B8923F0FE7B0A5C64D66EBB33FB6E7542A, Hash = 4702F58182F623722BC6B0855C1456AF21786CC1642BBC1AB2BE3CB46D59C09D, Mac = , Kid =  }]
+      Stack Trace:
+        tests\Trendo.App.Tests\RotFix4App.cs(30,0): at Trendo.App.Tests.RotFix4Ui.H()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Finished:    Trendo.App.Tests (ID = '58e9065834aaf50eb1941796ccde0402a06a67163c4db756409f9196e41714a0')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 1, Skipped: 0, Not Run: 0, Time: 12,035s

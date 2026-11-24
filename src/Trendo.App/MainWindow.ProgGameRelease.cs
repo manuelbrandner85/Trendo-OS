@@ -141,6 +141,7 @@ public partial class MainWindow
     void GameReleaseUpload(ProgramDocument d, string target)
     {
         _gameUploadAsk = null;
+        if (!DarfAusfuehren("game.upload", out var nein)) { _progMsg[GK] = nein; Show(GK); return; } // T-0764 (H): startet cmd.exe mit butler/SteamCMD
         var package = target == "steam" ? _gamePackages.FirstOrDefault(Directory.Exists) : _gamePackages.FirstOrDefault(f => f.EndsWith("-web.zip", StringComparison.OrdinalIgnoreCase));
         if (package is null) { _progMsg[GK] = "Zuerst „Pakete bauen“."; Show(GK); return; }
         if (GameRelease.Upload(d.Data, target, package) is not { } cmd) { _progMsg[GK] = target == "steam" ? "Bitte zuerst deine Steam App-ID und deinen Anmeldenamen eintragen." : "Bitte zuerst deine itch.io-Seite eintragen (dein-name/dein-spiel)."; Show(GK); return; }

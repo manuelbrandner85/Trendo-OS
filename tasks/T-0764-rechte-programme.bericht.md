@@ -233,6 +233,35 @@ Ein bestehender Test ist an die strengere Regel angepasst: In `RechteKernFix2Ui.
 - Quellcode-Programme starten über `cmd.exe /c`. Weil System32 kein „fester Ort“ in diesem Sinn ist, startet sie ein Kinderprofil nicht (strenger als nötig, bewusst so).
 - Das Ziel einer `.lnk` wird nicht aufgelöst; für Kinder ist sie gesperrt.
 
+## Vierte Prüfrunde (Commit „T-0764 fix4“)
+
+Grundlage ist die Gegenprüfung von `f8492745c`.
+
+**Rot auf f8492745c:** 14 von 14 rot. Die Testdateien gab es nur für diesen Beleg, sie sind nicht eingecheckt; sie starten nichts echt (Testmodus, FakeLauncher).
+- `reports/T-0764/rot-fix4-core.log`: 13 von 13 (M1, M2, M3, N1, N2, N3 mit 7 Fällen, N4).
+- `rot-fix4-app.log`: 1 von 1 (H).
+
+| Befund | Was geändert | Test (grün) |
+|---|---|---|
+| H Code-Werkstatt und weitere Befehlswege | Neu `DarfAusfuehren` (Kern: `Rbac.DemandSoftware`). Im Kinderprofil startet bei Ausführen, Testen, Bauen, Paket und Terminal der Code-Werkstatt nichts. Der Hinweis lautet „Programme, Skripte und Befehle ausführen darf nur ein Erwachsenen-Profil“ und wird vor dem Testmodus geprüft. Damit laufen .ps1, .bat, .cmd, .vbs und .js für Kinder nie. Nachgesucht wurde mit `powershell`, `cmd.exe`, `/c`, `-Command`, `--python`, `bash`, `wscript`, `cscript` und `Process.Start` mit Befehlszeile. Ebenso abgesichert sind: Claude Code im Terminal (`ClaudeOpen`), der eingebettete Claude-Agent (`ClaudeRun`, KI mit Shell-Werkzeug), n8n/Node-RED starten (`AutomationStart`) und Spiele hochladen (`cmd /k butler/steamcmd`). Blender `--python` (Kreatur-Werkstatt, Kleidung) läuft nur mit Trendos eigenen, festen Skripten; Blender selbst gilt für Kinder als Interpreter (siehe N3). | App `RechteKernFix4Ui.Code_Werkstatt` (Kind: beide Wege abgelehnt, Hinweis sichtbar; Erwachsene: unverändert), `Weitere_Befehlswege` |
+| M1 Fälschbare Kennung | Die Vertrauensliste liegt jetzt in Trendos Datenbereich (`<Hauptordner>\sicherheit\programm-vertrauen.json`). Jeder Eintrag aus Pfad und SHA-256 trägt einen HMAC-SHA256. Der Schlüssel ist zufällig, per DPAPI (CurrentUser) geschützt und wird nur beim Einrichten durch Trendo erzeugt. `.trendo-portable.json` im Programmordner ist nur noch ein Hinweis. Alte Kennungen übernimmt Trendo einmalig in einem Erwachsenen-Profil, ohne Rückfrage und nur für unveränderte Dateien. Die Programmordner werden mit `RegisterStore` angemeldet (keine globale Einstellung, daher keine Wechselwirkung zwischen parallelen Tests). Der Hinweis zu den Grenzen steht in Alltagssprache auf der Seite „Personen“, sobald es ein Kinderprofil gibt. | Core `RechteKernFix4.Liste_mit_HMAC` (gefälschte Kennung, Eintrag ohne gültigen HMAC und veränderte Prüfsumme werden abgelehnt; Schlüsseldatei echt per DPAPI geschützt), `Uebernahme`; App `Hinweis_sichtbar` |
+| M2 Feste Orte | Für Kinder gelten fest nur „Programme“ und „Programme (x86)“. `%LOCALAPPDATA%\Programs` und die winget-Ablage gelten nur mit gültigem Listeneintrag oder gültiger Authenticode-Signatur des erwarteten Herausgebers. Dafür wird `Authenticode.Check` (WinVerifyTrust, T-0755) wiederverwendet. Die Zuordnung `ExpectedPublishers` ist bewusst klein (Code.exe → Microsoft Corporation); unbekannte Programme brauchen einen Listeneintrag. | Core `Feste_Orte_streng`; **echt** `Signatur_Herausgeber`: das installierte VS Code an diesem PC, WinVerifyTrust plus Herausgeber-Abgleich |
+| M3 Ordner | Im Kinderprofil öffnet `LaunchAs(Ordner)` Trendos eigenen Dateimanager. Das gilt für alle Aufrufer, unter anderem „Im System öffnen“, „Ordner öffnen“ bei Downloads, „Ordner zeigen“ und „Ordner“ in Dateilisten. Der Kern lehnt Ordner und `shell:` für Kinder ab, auch den Papierkorb im Explorer. Zwei bestehende Testfälle (`shell:RecycleBinFolder` in Fix2 und Fix3) sind deshalb von „erlaubt“ auf „braucht das Recht“ umgestellt. | App `Ordner_im_Dateimanager` (Kind: Dateimanager, nichts gestartet; Erwachsene: wie bisher); Core `Ordner` |
+| N1 Zwischenspeicher | Es gibt keinen Zwischenspeicher mehr: Vor jedem Start im Kinderprofil wird die Prüfsumme neu gerechnet. Bei Erwachsenen wird gar nicht gerechnet. | Core `Neu_rechnen_und_DLL` (gleich groß, gleich datiert, ausgetauscht) |
+| N2 DLL | Die Liste erfasst `.exe` und `.dll`. Jede `.dll` im Ordner der `.exe` muss eingetragen und unverändert sein. | Core `Neu_rechnen_und_DLL` (hineingelegte und ausgetauschte DLL) |
+| N3 Interpreter | Neu in der Liste: hh, mmc, msbuild, installutil, regasm, regsvcs, forfiles, wsl, wslg, explorer, pcalua, cmstp, msdt, odbcconf, dotnet, csc, tclsh, Rscript, blender, soffice. bash, pythonw, py, conhost, schtasks, certutil und bitsadmin standen schon drin. Blender und soffice laufen für Kinder nur mit fest von Trendo gesetzten Parametern. | Core `Interpreter` (13 Fälle, Start und freie Parameter) |
+| N4 Steuerzeichen | Ein Ziel mit `char.IsControl` braucht das Recht. | Core `Steuerzeichen` |
+
+**Tests:**
+- Build: 0 Fehler.
+- Core gezielt: 262 von 262 grün (`gruen-fix4-core.log`).
+- App gezielt: 262 Testklassen (alle Klassen der berührten Seiten: Code-Werkstatt, Claude, n8n, Spiele, Dateimanager, Downloads, Starten, Sys11, 3D/Kreatur/Blender, Updates, KI-Quellen/-Bibliothek, Python-KI, Freigaben, KI-Brücke, RechteKern*; EveryButton_Alltag) – 1152 Tests, 0 Fehler, 5 übersprungen, **Exitcode 0** (`gruen-fix4-app.log`). **Testlauf mit Exitcode 1 (seit fix3):** Derselbe Lauf mit dem Stand vor der Korrektur endete mit „Foreground threads were left running“, Exitcode 1, 0 Fehler (`rot-fix4-app-lauf-exitcode1.log`). Die 18 seit fix3 neu im Lauf enthaltenen Klassen enden einzeln alle mit Exitcode 0, ebenso das Paar Kreatur_Ui + RechteKernFix3Ui. Als Ursache haben meine eigenen Testklassen statische Ersatz-Hooks gesetzt und wieder zurückgesetzt, die parallel laufende Klassen mitbenutzen: `KreaturRunOverride` (RechteKernFix3Ui), `ConnRunOverride` (RechteKernFix1Ui) und `ClaudeOpenOverride` (zunächst in RechteKernFix4Ui). Diese Tests prüfen jetzt ohne statische Hooks (über `BlenderPath`/`ToolStartAllowed` und das Protokoll). Danach endet derselbe Lauf mit Exitcode 0. **Ehrlich:** Der genaue Thread ist nicht per Stack nachgewiesen (kein dotnet-dump/-stack auf dem PC). Belegt ist nur „vorher 1 Lauf mit Exitcode 1 → nachher 1 Lauf mit Exitcode 0“ bei gleicher Klassenliste.
+
+**Grenzen (ehrlich):**
+- Unter einem gemeinsamen Windows-Konto ist der Kinderschutz keine harte Grenze. Ein Programm dieses Kontos kann den DPAPI-Schlüssel ebenso entschlüsseln und Dateien in Trendos Ordnern ändern.
+- Wirksamer Kinderschutz braucht ein eigenes Windows-Standardkonto. So steht es auch auf der Personen-Seite.
+- Direkte `Process.Start`-Aufrufe für bekannte Werkzeuge (ffmpeg, mpv, Ollama, KI-Server, Musik-Werkzeuge, Blender und Unreal außerhalb der Kreatur-Werkstatt) sind weiter nicht einzeln über `ToolStartAllowed` geführt. Ihre Pfade stammen aus Trendos Erkennung beziehungsweise aus der geprüften tools.json.
+
 ## Abnahmekriterien
 
 | # | Kriterium | Urteil |

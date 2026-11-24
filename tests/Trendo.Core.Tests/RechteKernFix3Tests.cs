@@ -14,6 +14,7 @@ public class RechteKernFix3
     {
         var f = new Fixture();
         var tools = Path.Combine(f.Root, "werkzeuge"); Directory.CreateDirectory(tools);
+        ProgramTrust.RegisterStore(tools, Path.Combine(f.Root, "sicherheit")); // 4. Prüfrunde: Vertrauensliste mit HMAC im Datenbereich
         f.Core.Integrations.TrustedProgramPath = p => ProgramTrust.Verified(p, [tools]); // wie die App: nach Herkunft
         return (f, tools);
     }
@@ -82,7 +83,7 @@ public class RechteKernFix3
     [InlineData("http://example.org/", false)]
     [InlineData("mailto:info@example.org", false)]
     [InlineData("ms-settings:appsfeatures", false)]
-    [InlineData("shell:RecycleBinFolder", false)]
+    [InlineData("shell:RecycleBinFolder", true)] // 4. Prüfrunde M3: Kinder öffnen keinen Windows-Explorer (auch nicht den Papierkorb)
     [InlineData("ms-appinstaller:?source=https://example.org/x.appinstaller", true)]
     [InlineData("search-ms:query=x", true)]
     [InlineData("ms-msdt:/id x", true)]

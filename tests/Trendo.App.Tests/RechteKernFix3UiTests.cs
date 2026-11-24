@@ -46,27 +46,22 @@ public class RechteKernFix3Ui
         }
     }
 
-    [AvaloniaFact(DisplayName = "T-0764 P3-4 UI: Blender-Pfad aus tools.json – im Kinderprofil nur von festem Ort; ein umgebogener Pfad wird nicht gestartet")]
-    public async Task Werkzeugpfad_tools_json()
+    [AvaloniaFact(DisplayName = "T-0764 P3-4 UI: Blender-Pfad aus tools.json – im Kinderprofil nur von festem Ort; ein umgebogener Pfad wird nicht genutzt")]
+    public void Werkzeugpfad_tools_json()
     {
-        var prev = MainWindow.KreaturRunOverride;
-        try
+        // 4. Prüfrunde (Testlauf): ohne die statische KreaturRunOverride – sie wurde von parallel laufenden Klassen (Kreatur_Ui) mitbenutzt.
+        // Geprüft wird der gemeinsame Weg: gespeicherter Pfad (tools.json) → BlenderPath, den Kreatur-Werkstatt und 3D-Studio starten.
+        foreach (var child in new[] { true, false })
         {
-            foreach (var child in new[] { true, false })
+            var (w, _, root) = Open(child);
+            try
             {
-                var (w, _, root) = Open(child);
-                try
-                {
-                    var foreign = Path.Combine(root, "fremd", "blender.exe"); Directory.CreateDirectory(Path.GetDirectoryName(foreign)!); File.WriteAllText(foreign, "MZ");
-                    File.WriteAllText(Path.Combine(root, "tools.json"), JsonSerializer.Serialize(new Dictionary<string, string> { ["blender"] = foreign }));
-                    string? used = null;
-                    MainWindow.KreaturRunOverride = (exe, _, _) => { used = exe; return Task.FromResult(""); };
-                    await w.KreaturBuild(sichtbar: false);
-                    if (child) Assert.NotEqual(foreign, used); else Assert.Equal(foreign, used);
-                }
-                finally { w.Close(); }
+                var foreign = Path.Combine(root, "fremd", "blender.exe"); Directory.CreateDirectory(Path.GetDirectoryName(foreign)!); File.WriteAllText(foreign, "MZ");
+                File.WriteAllText(Path.Combine(root, "tools.json"), JsonSerializer.Serialize(new Dictionary<string, string> { ["blender"] = foreign }));
+                if (child) { Assert.NotEqual(foreign, w.BlenderPath); Assert.False(w.ToolStartAllowed(foreign)); }
+                else { Assert.Equal(foreign, w.BlenderPath); Assert.True(w.ToolStartAllowed(foreign)); }
             }
+            finally { w.Close(); }
         }
-        finally { MainWindow.KreaturRunOverride = prev; }
     }
 }

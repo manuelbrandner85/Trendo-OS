@@ -211,22 +211,20 @@ public class RechteKernFix1Ui
     public async Task Weitere_Wege_Kind()
     {
         var (w, _, _) = OpenChild();
-        var conn = 0; var prev = MainWindow.ConnRunOverride;
         try
         {
             var npm = 0; w.AutomationInstallOverride = (_, _) => { npm++; return Task.FromResult(true); };
-            MainWindow.ConnRunOverride = (_, args, _, _, _) => { if (args.Contains("plugin")) conn++; return Task.FromResult((0, "")); }; // Seite „Verbindungen“ fragt beim Zeichnen gh ab – gezählt wird nur der Plugin-Aufruf
             var pc = 0; w.UninstallPcOverride = () => pc++;
             await w.AutomationInstall("n8n");
             await w.SewingSetup();
             await w.WebAxeSetup();
             await w.ClaudeExtRun(["plugin", "install", "x"], "fertig");
             w.StickOnlyFinish();
-            Assert.Equal(0, npm); Assert.Equal(0, conn); Assert.Equal(0, pc);
+            Assert.Equal(0, npm); Assert.Equal(0, pc); // Claude-Plugins: abgelehnt vor jedem Aufruf (im Testmodus startet ohnehin nichts) – ohne statischen Ersatz, der parallel laufende Klassen stört
             Assert.Equal(5, w.Core.Audit.ReadAll().Count(a => a.Action == "rbac.denied" && a.Actor == "kinderprofil"));
             Assert.Equal(Rbac.NurErwachseneSoftware, w.SewingMessage);
             Assert.DoesNotContain(w.Core.Audit.ReadAll(), a => a.Action == "setup.nur-stick");
         }
-        finally { MainWindow.ConnRunOverride = prev; w.Close(); }
+        finally { w.Close(); }
     }
 }
