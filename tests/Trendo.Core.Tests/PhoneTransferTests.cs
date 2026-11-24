@@ -23,7 +23,32 @@ public class PhoneTransferTests
     [InlineData("x\u202Egpj.exe", "xgpj.exe")] // Befund N1: Richtungszeichen tarnt „.exe“ als „.jpg“
     [InlineData("a\u200Bb\uFEFF.txt", "ab.txt")]
     [InlineData("Cafe\u0301.txt", "Caf\u00E9.txt")] // NFC
+    [InlineData("Urlaub \U0001F334.jpg", "Urlaub \U0001F334.jpg")] // Befund R2-N2: Emoji bleiben
+    [InlineData("\U0001F600.png", "\U0001F600.png")] // Endung bleibt
+    [InlineData("a\uD800b.txt", "ab.txt")] // ungepaartes Surrogat fliegt raus
     public void Clean_names(string raw, string expected) => Assert.Equal(expected, PhoneTransfer.CleanName(raw, "ersatz"));
+
+    [Fact(DisplayName = "T-0767 R2-N2: Kürzen schneidet kein Emoji in der Mitte durch")]
+    public void Long_emoji_name()
+    {
+        var n = PhoneTransfer.CleanName(new string('x', 115) + "\U0001F334\U0001F334.jpg", "e");
+        Assert.True(n.Length <= 120);
+        Assert.EndsWith(".jpg", n);
+        Assert.DoesNotContain(System.Text.Rune.ReplacementChar, n.EnumerateRunes());
+    }
+
+    [Fact(DisplayName = "T-0767 R2-M1: viele gleichnamige Dateien – ab 50 mit Zeitstempel, bleibt schnell")]
+    public async Task Many_same_names_fast()
+    {
+        var d = Temp();
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        for (var i = 0; i < 300; i++) await PhoneTransfer.ReceiveAsync(new MemoryStream([]), d, "leer.txt", 10);
+        Assert.Equal(300, Directory.GetFiles(d).Length);
+        Assert.True(sw.Elapsed < TimeSpan.FromSeconds(15), $"zu langsam: {sw.Elapsed}");
+        Assert.Contains(Directory.GetFiles(d), f => Path.GetFileName(f) == "leer (50).txt");
+        Assert.DoesNotContain(Directory.GetFiles(d), f => Path.GetFileName(f) == "leer (51).txt");
+        Directory.Delete(d, true);
+    }
 
     [Fact(DisplayName = "T-0767: überlange Namen werden auf 120 Zeichen gekürzt, die Endung bleibt")]
     public void Long_name()
@@ -71,6 +96,16 @@ public class PhoneTransferTests
         var got = await PhoneTransfer.ReceiveAsync(new MemoryStream([1, 2, 3]), d, "setup.exe", 100, markOutside: true);
         Assert.True(got.Risky);
         if (OperatingSystem.IsWindows()) Assert.Contains("ZoneId=3", File.ReadAllText(got.Path + ":Zone.Identifier"));
+        // Befund R2-N1: Laufwerk ohne Datenströme (FAT32/exFAT) → riskante Datei wird entschärft (.txt angehängt), harmlose bleibt
+        PhoneTransfer.MarkOverride = _ => false;
+        try
+        {
+            var exe = await PhoneTransfer.ReceiveAsync(new MemoryStream([1]), d, "tool.exe", 100, markOutside: true);
+            Assert.Equal("tool.exe.txt", Path.GetFileName(exe.Path)); Assert.True(exe.Risky);
+            var jpg = await PhoneTransfer.ReceiveAsync(new MemoryStream([1]), d, "bild.jpg", 100, markOutside: true);
+            Assert.Equal("bild.jpg", Path.GetFileName(jpg.Path));
+        }
+        finally { PhoneTransfer.MarkOverride = null; }
         Directory.Delete(d, true);
     }
 

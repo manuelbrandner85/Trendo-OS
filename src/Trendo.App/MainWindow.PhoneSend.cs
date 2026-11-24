@@ -34,6 +34,15 @@ public partial class MainWindow
 
     DateTime _phonePurgedAt;
 
+    /// <summary>Befund R2-M1/R2-N1: eine Meldung je Sendung („12 Dateien vom Handy“), mit Warnung bei Programmdateien.</summary>
+    public static string PhoneFilesToast(string device, IReadOnlyList<PhoneTransfer.Received> files)
+    {
+        var head = files.Count == 1 ? $"Vom Handy ({device}): {Path.GetFileName(files[0].Path)}" : $"{files.Count} Dateien vom Handy ({device})";
+        var risky = files.Where(f => f.Risky).Select(f => Path.GetFileName(f.Path)).ToList();
+        return risky.Count == 0 ? head
+            : head + $"\n⚠ Programmdatei – nur öffnen, wenn du der Quelle vertraust: {string.Join(", ", risky.Take(3))}{(risky.Count > 3 ? " …" : "")}";
+    }
+
     /// <summary>Befund N4: Was länger als 24 Stunden für ein Handy bereitlag, verschwindet – beim Start des Handy-Zugangs und höchstens einmal je Minute.</summary>
     public void PhonePurgeOutbox(bool force = false)
     {

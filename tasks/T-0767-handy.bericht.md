@@ -59,3 +59,15 @@
 
 Tests fix1: Core `PhoneTransferTests|PhoneAccessTests|W7PhoneLinkTests|W7Tests|NoFixedUserTests` → 50 bestanden, 5 übersprungen, 0 Fehler. App `PhoneSendT0767Tests`, `PhoneEasyTests`, `W7_Ui` → Total 16, Failed 0, Skipped 1 (nur Linux). Belege unter `reports/T-0767/` neu erzeugt.
 Offen: die bildschirmfüllende Handy-App (`/app`) hat noch blaue Flächen (nicht Teil dieser Befunde). Cookie 30 Tage weicht vom früheren Wunsch „dauerhaft verbunden“ ab: wer Trendo am Handy 30 Tage nicht öffnet, scannt neu – bitte bestätigen.
+
+## Nachbesserung fix2 (zweite Prüfrunde von 0af8cc0ce)
+Der Nutzer hat die 30 Tage Cookie-Gültigkeit bestätigt.
+
+| Befund | Änderung | Test |
+|---|---|---|
+| R2-M1 viele Dateien je Sendung | Höchstens 200 Dateien je Sendung (`PhoneLinkServer.MaxFilesPerRequest`), sonst 400 mit Hinweis. Alles oder nichts: scheitert eine Sendung (zu viele Dateien, zu groß, Abbruch, Feldfehler), wird das bereits Angekommene dieser Sendung gelöscht. `UniqueTarget` zählt nur bis 50 hoch, danach Zeitstempel und Zufallsteil. Ein Audit-Eintrag und eine Meldung je Sendung („12 Dateien vom Handy“, neuer Rückruf `onFiles`); das Lauf-Protokoll schreibt weiter je Datei | App `Server_flow_with_run_log` (201 leere Dateien → 400, Eingang unverändert, unter 30 s); Core `Many_same_names_fast` (300 gleichnamige Dateien, „(50)“ ja, „(51)“ nein, unter 15 s); App `Files_toast` |
+| R2-N1 Warnung kommt nicht an | Warnung „⚠ Programmdatei – nur öffnen, wenn du der Quelle vertraust“ in der PC-Meldung, in der Antwort ans Handy (`warn`) und auf der Handy-Seite. Lässt sich das Fremd-Kennzeichen nicht schreiben (FAT32/exFAT), bekommt eine riskante Datei „.txt“ angehängt (`tool.exe.txt`) | Core `Mark_of_the_web` (Laufwerk ohne Datenströme nachgestellt: `.exe` → `.exe.txt`, `.jpg` bleibt); App `Server_flow_with_run_log` (`warn: [setup.exe]`, Hinweis im Protokoll); App `Files_toast` |
+| R2-N2 Emoji entfernt | Namen werden über Unicode-Zeichen (`EnumerateRunes`) gefiltert. Entfernt werden nur Format-, Steuer- und ungepaarte Surrogat-Zeichen. Beim Kürzen wird kein Emoji zerteilt | Core `Clean_names` (`Urlaub 🌴.jpg` bleibt, `😀.png` bleibt mit Endung, ungepaartes Surrogat raus); Core `Long_emoji_name` |
+| Hinweis Stand | Belege werden nach dem Code-Commit mit dem committeten Stand neu erzeugt (eigener Commit), `SHA256SUMS.txt` aktualisiert | – |
+
+Tests fix2: Core `PhoneTransferTests|PhoneAccessTests|W7PhoneLinkTests|W7Tests|NoFixedUserTests` → 55 bestanden, 5 übersprungen, 0 Fehler. App `PhoneSendT0767Tests`, `PhoneEasyTests`, `W7_Ui` → Total 17, Failed 0, Skipped 1 (nur Linux).

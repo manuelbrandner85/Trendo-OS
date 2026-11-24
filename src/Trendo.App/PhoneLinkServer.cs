@@ -47,6 +47,8 @@ public sealed class PhoneLinkServer : IAsyncDisposable
     /// <summary>Befund M1: Textfelder im Upload (nur „sha“) sind höchstens 128 Byte lang, höchstens 1000 Stück.</summary>
     public const int MaxFieldBytes = 128;
     public const int MaxFields = 1000;
+    /// <summary>Befund R2-M1: höchstens 200 Dateien je Sendung – mehr ergibt 400, und nichts aus dieser Sendung bleibt liegen.</summary>
+    public const int MaxFilesPerRequest = 200;
     readonly WebApplication _app;
     public IReadOnlyList<IPAddress> Addresses { get; }
     public int Port { get; }
@@ -58,7 +60,8 @@ public sealed class PhoneLinkServer : IAsyncDisposable
     /// <param name="run">T-0767: Protokoll für „Lauf aufzeichnen“ (anonymisiert); schreibt nur, solange es läuft.</param>
     /// <param name="maxFileBytes">Größenlimit je Datei vom Handy (Standard 2 GB).</param>
     public static async Task<PhoneLinkServer> StartAsync(PhoneAccess link, IReadOnlyList<IPAddress> addresses, int port, string inbox, string outbox, AuditLog audit,
-        Action<string, string> onFile, Action<string, string> onText, IPhoneRemote? remote = null, PhoneRunLog? run = null, long maxFileBytes = PhoneTransfer.DefaultMaxBytes)
+        Action<string, string> onFile, Action<string, string> onText, IPhoneRemote? remote = null, PhoneRunLog? run = null, long maxFileBytes = PhoneTransfer.DefaultMaxBytes,
+        Action<string, IReadOnlyList<PhoneTransfer.Received>>? onFiles = null)
     {
         var bind = addresses.Where(PhoneAccess.AllowedAddress).Distinct().ToList();
         if (bind.Count == 0) throw new InvalidOperationException("Kein Heimnetz gefunden. Ist der PC mit dem WLAN oder LAN verbunden?");
@@ -138,7 +141,10 @@ public sealed class PhoneLinkServer : IAsyncDisposable
                 return Results.BadRequest();
             var reader = new Microsoft.AspNetCore.WebUtilities.MultipartReader(boundary, c.Request.Body) { HeadersLengthLimit = 8 * 1024, BodyLengthLimit = maxFileBytes + 64 * 1024 };
             var fields = 0;
-            var saved = new List<string>(); var sums = new List<string>(); var phoneSums = new Queue<string>();
+            var phoneSums = new Queue<string>();
+            var got = new List<(PhoneTransfer.Received File, string Phone)>();
+            // Alles oder nichts: scheitert die Sendung, wird auch das schon Angekommene dieser Sendung wieder gelöscht
+            void Undo() { foreach (var g in got) try { File.Delete(g.File.Path); } catch (IOException) { } catch (UnauthorizedAccessException) { } }
             try
             {
                 while (await reader.ReadNextSectionAsync(c.RequestAborted) is { } section)
@@ -147,9 +153,9 @@ public sealed class PhoneLinkServer : IAsyncDisposable
                     if (!(cd.FileName.HasValue || cd.FileNameStar.HasValue))
                     {
                         // Befund M1: Textfelder nie unbegrenzt lesen – höchstens 128 Byte, höchstens 1000 Felder, sonst 400
-                        if (++fields > MaxFields) return Results.BadRequest();
+                        if (++fields > MaxFields) { Undo(); return Results.BadRequest(); }
                         var small = await ReadSmallAsync(section.Body, MaxFieldBytes, c.RequestAborted);
-                        if (small is null) return Results.BadRequest();
+                        if (small is null) { Undo(); return Results.BadRequest(); }
                         if (cd.Name.Value == "sha")
                         {
                             var v = small.Trim().ToLowerInvariant();
@@ -157,28 +163,51 @@ public sealed class PhoneLinkServer : IAsyncDisposable
                         }
                         continue;
                     }
+                    if (got.Count >= MaxFilesPerRequest)
+                    {
+                        Undo();
+                        run?.Record(PhoneRunLog.Steps.PhoneToPc, d.Id, c.Connection.RemoteIpAddress, ok: false, note: $"mehr als {MaxFilesPerRequest} Dateien in einer Sendung, nichts behalten");
+                        return Results.Content($"Bitte höchstens {MaxFilesPerRequest} Dateien auf einmal schicken.", "text/plain; charset=utf-8", Encoding.UTF8, 400);
+                    }
                     var raw = cd.FileNameStar.HasValue ? cd.FileNameStar.Value : cd.FileName.Value;
-                    var got = await PhoneTransfer.ReceiveAsync(section.Body, inbox, raw, maxFileBytes, c.RequestAborted, markOutside: true);
-                    var phone = phoneSums.Count > 0 ? phoneSums.Dequeue() : "";
-                    var match = phone.Length == 0 ? "Prüfsumme am Handy nicht gebildet" : phone == got.Sha256 ? "Prüfsumme gleich (am Handy und am PC gebildet)" : "Prüfsumme ABWEICHEND";
-                    if (got.Risky) match += " · Vorsicht: Programm- oder Verknüpfungsdatei, nur öffnen, wenn du sie kennst";
-                    saved.Add(Path.GetFileName(got.Path)); sums.Add(got.Sha256);
-                    audit.Append("handy", "phonelink.file", $"{d.Name}: {Path.GetFileName(got.Path)} ({got.Bytes} B, sha256 {got.Sha256[..16]})");
-                    run?.Record(PhoneRunLog.Steps.PhoneToPc, d.Id, c.Connection.RemoteIpAddress, bytes: got.Bytes, sha: got.Sha256, ok: phone.Length == 0 || phone == got.Sha256, note: match);
-                    onFile(d.Name, got.Path);
+                    var one = await PhoneTransfer.ReceiveAsync(section.Body, inbox, raw, maxFileBytes, c.RequestAborted, markOutside: true);
+                    got.Add((one, phoneSums.Count > 0 ? phoneSums.Dequeue() : ""));
                 }
             }
             catch (PhoneTransfer.TooLargeException e)
             {
+                Undo();
                 run?.Record(PhoneRunLog.Steps.PhoneToPc, d.Id, c.Connection.RemoteIpAddress, ok: false, note: "zu groß, nicht angenommen");
                 return Results.Content(e.Message, "text/plain; charset=utf-8", Encoding.UTF8, 413);
             }
             catch (Exception e) when (e is IOException or InvalidDataException or OperationCanceledException or BadHttpRequestException)
             {
+                Undo();
                 run?.Record(PhoneRunLog.Steps.PhoneToPc, d.Id, c.Connection.RemoteIpAddress, ok: false, note: "Übertragung abgebrochen, nichts gespeichert");
                 return Results.BadRequest();
             }
-            return Results.Ok(new { saved, sha256 = sums });
+            // Erst nach der ganzen Sendung: ein Protokolleintrag je Datei, EIN Audit-Eintrag und EINE Meldung für die Sendung
+            foreach (var (f, phone) in got)
+            {
+                var match = phone.Length == 0 ? "Prüfsumme am Handy nicht gebildet" : phone == f.Sha256 ? "Prüfsumme gleich (am Handy und am PC gebildet)" : "Prüfsumme ABWEICHEND";
+                if (f.Risky) match += " · ⚠ Programmdatei – nur öffnen, wenn du der Quelle vertraust";
+                run?.Record(PhoneRunLog.Steps.PhoneToPc, d.Id, c.Connection.RemoteIpAddress, bytes: f.Bytes, sha: f.Sha256, ok: phone.Length == 0 || phone == f.Sha256, note: match);
+            }
+            if (got.Count > 0)
+            {
+                var names = got.Select(g => $"{Path.GetFileName(g.File.Path)} ({g.File.Bytes} B, sha256 {g.File.Sha256[..16]})").ToList();
+                audit.Append("handy", "phonelink.file", $"{d.Name}: {got.Count} Datei(en), {got.Sum(g => g.File.Bytes)} B" +
+                    (got.Any(g => g.File.Risky) ? $", davon {got.Count(g => g.File.Risky)} Programmdatei(en)" : "") + ": " +
+                    string.Join("; ", names.Take(10)) + (names.Count > 10 ? $"; … und {names.Count - 10} weitere" : ""));
+                if (onFiles is not null) onFiles(d.Name, got.Select(g => g.File).ToList());
+                else foreach (var g in got) onFile(d.Name, g.File.Path);
+            }
+            return Results.Ok(new
+            {
+                saved = got.Select(g => Path.GetFileName(g.File.Path)),
+                sha256 = got.Select(g => g.File.Sha256),
+                warn = got.Where(g => g.File.Risky).Select(g => Path.GetFileName(g.File.Path)),
+            });
         });
 
         app.MapPost("/api/text", async (HttpContext c) =>
@@ -552,9 +581,9 @@ hello();tick();setInterval(tick,10000);fetch('/api/apps').then(function(r){retur
         "f.onchange=function(){if(!f.files.length)return;var list=Array.prototype.slice.call(f.files);hashAll(list,0,[]).then(function(sums){var d=new FormData();" +
         "for(var i=0;i<list.length;i++){d.append('sha',sums[i]);d.append('f',list[i]);}var x=new XMLHttpRequest();x.open('POST','/api/upload');" +
         "x.upload.onprogress=function(e){if(e.lengthComputable)st.textContent='Wird gesendet … '+Math.round(e.loaded*100/e.total)+' %';};" +
-        "x.onload=function(){if(x.status==401){st.textContent='Nicht mehr verbunden – der PC hat dieses Handy entfernt.';off();}else if(x.status==413){st.textContent=x.responseText||'Datei zu groß.';}" +
+        "x.onload=function(){if(x.status==401){st.textContent='Nicht mehr verbunden – der PC hat dieses Handy entfernt.';off();}else if(x.status==413||(x.status==400&&x.responseText)){st.textContent=x.responseText||'Datei zu groß.';}" +
         "else if(x.status==200){var j=JSON.parse(x.responseText),same=0;for(var k=0;k<j.sha256.length;k++)if(j.sha256[k]===sums[k])same++;" +
-        "st.textContent='✓ '+j.saved.length+' Datei(en) am PC angekommen'+(same?' · Prüfsumme gleich: '+same:'')+'.';}else st.textContent='Senden hat nicht geklappt ('+x.status+').';f.value='';};" +
+        "st.textContent='✓ '+j.saved.length+' Datei(en) am PC angekommen'+(same?' · Prüfsumme gleich: '+same:'')+'.'+(j.warn&&j.warn.length?' ⚠ Programmdatei – nur öffnen, wenn du der Quelle vertraust: '+j.warn.join(', '):'');}else st.textContent='Senden hat nicht geklappt ('+x.status+').';f.value='';};" +
         "x.onerror=function(){st.textContent='Keine Verbindung zum PC.';};x.send(d);});};" +
         "function sendText(){var t=document.getElementById('t'),s=document.getElementById('tst');if(!t.value)return;var d=new FormData();d.append('text',t.value);" +
         "fetch('/api/text',{method:'POST',body:d}).then(function(r){s.textContent=r.ok?'✓ Am PC angekommen.':'Hat nicht geklappt.';if(r.ok)t.value='';}).catch(function(){s.textContent='Keine Verbindung zum PC.';});}" +

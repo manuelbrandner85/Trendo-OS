@@ -41,11 +41,24 @@ public static class PhoneTransfer
     public static bool IsRisky(string name) => RiskyExt.Contains(Path.GetExtension(name)) || Path.GetFileName(name).Equals("desktop.ini", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>Befund N2: „Aus dem Internet/fremd“-Kennzeichen (Mark-of-the-Web, Zone 3) – Windows fragt dann vor dem Ausführen nach.</summary>
-    public static void MarkFromOutside(string path)
+    /// <returns>false, wenn das Kennzeichen nicht geschrieben werden konnte (z. B. FAT32/exFAT ohne Datenströme, oder kein Windows).</returns>
+    public static bool MarkFromOutside(string path)
     {
-        if (!OperatingSystem.IsWindows()) return;
-        try { File.WriteAllText(path + ":Zone.Identifier", "[ZoneTransfer]\r\nZoneId=3\r\n"); }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException or NotSupportedException) { } // z. B. FAT32-Stick ohne Datenströme
+        if (MarkOverride is { } fake) return fake(path);
+        if (!OperatingSystem.IsWindows()) return false;
+        try { File.WriteAllText(path + ":Zone.Identifier", "[ZoneTransfer]\r\nZoneId=3\r\n"); return true; }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or NotSupportedException) { return false; } // z. B. FAT32-Stick ohne Datenströme
+    }
+
+    /// <summary>Nur für Tests: Laufwerk ohne Datenströme nachstellen.</summary>
+    public static Func<string, bool>? MarkOverride { get; set; }
+
+    /// <summary>Befund R2-N1: Konnte eine riskante Datei nicht als „fremd“ gekennzeichnet werden, bekommt sie „.txt“ angehängt –
+    /// ein Doppelklick startet sie dann nicht.</summary>
+    static string Defuse(string dir, string target)
+    {
+        var safe = UniqueTarget(dir, Path.GetFileName(target) + ".txt");
+        try { File.Move(target, safe); return safe; } catch (IOException) { return target; }
     }
 
     /// <summary>Dateiname vom Handy oder für das Handy: nur der Name ohne Pfad, keine Steuer- und Sonderzeichen, keine Windows-Gerätenamen (CON, NUL …),
@@ -56,14 +69,27 @@ public static class PhoneTransfer
         s = s[(s.LastIndexOf('/') + 1)..];
         // Befund N1: Richtungs- und andere Formatzeichen (z. B. U+202E, lässt „x<U+202E>gpj.exe“ wie „xexe.jpg“ aussehen) entfernen, Unicode einheitlich (NFC)
         try { s = s.Normalize(NormalizationForm.FormC); } catch (ArgumentException) { }
-        s = new string(s.Where(ch => !char.IsControl(ch) && !char.IsSurrogate(ch) && char.GetUnicodeCategory(ch) != System.Globalization.UnicodeCategory.Format && Array.IndexOf(Bad, ch) < 0).ToArray()).Trim().Trim('.', ' ');
+        // Befund R2-N2: über Unicode-Zeichen (Runen) filtern – Emoji bleiben, ungepaarte Surrogate (liefert EnumerateRunes als U+FFFD) fliegen raus
+        var sb = new StringBuilder(s.Length);
+        foreach (var r in s.EnumerateRunes())
+        {
+            if (r == Rune.ReplacementChar || Rune.IsControl(r) || Rune.GetUnicodeCategory(r) == System.Globalization.UnicodeCategory.Format) continue;
+            if (r.IsAscii && Array.IndexOf(Bad, (char)r.Value) >= 0) continue;
+            sb.Append(r.ToString());
+        }
+        s = sb.ToString().Trim().Trim('.', ' ');
         if (s.Length == 0) s = fallback;
         var ext = Path.GetExtension(s);
         var stem = s[..^ext.Length];
         if (ext.Length > 16) { stem = s; ext = ""; }
         var dot = stem.IndexOf('.');
         if (Reserved.Contains(dot < 0 ? stem.TrimEnd() : stem[..dot].TrimEnd())) stem = "_" + stem;
-        if (stem.Length + ext.Length > MaxNameLength) stem = stem[..(MaxNameLength - ext.Length)].TrimEnd(' ', '.');
+        if (stem.Length + ext.Length > MaxNameLength)
+        {
+            var cut = MaxNameLength - ext.Length;
+            if (cut > 0 && char.IsHighSurrogate(stem[cut - 1])) cut--; // kein halbes Emoji
+            stem = stem[..cut].TrimEnd(' ', '.');
+        }
         return stem + ext;
     }
 
@@ -71,8 +97,11 @@ public static class PhoneTransfer
     public static string UniqueTarget(string dir, string name)
     {
         var target = Path.Combine(dir, name);
+        // Befund R2-M1: nur bis 50 hochzählen, danach Zeitstempel und Zufallsteil (sonst wird jede weitere gleichnamige Datei langsamer)
         for (var i = 2; File.Exists(target) || Directory.Exists(target); i++)
-            target = Path.Combine(dir, $"{Path.GetFileNameWithoutExtension(name)} ({i}){Path.GetExtension(name)}");
+            target = Path.Combine(dir, i <= 50
+                ? $"{Path.GetFileNameWithoutExtension(name)} ({i}){Path.GetExtension(name)}"
+                : $"{Path.GetFileNameWithoutExtension(name)} ({DateTime.Now:yyyyMMdd-HHmmss}-{Guid.NewGuid().ToString("N")[..6]}){Path.GetExtension(name)}");
         return target;
     }
 
@@ -112,8 +141,9 @@ public static class PhoneTransfer
                 try { File.Move(part, target); break; }
                 catch (IOException) when (attempt < 1000 && File.Exists(part) && (File.Exists(target) || Directory.Exists(target))) { }
             }
-            if (markOutside) MarkFromOutside(target);
-            return new(target, total, sha, IsRisky(name));
+            var risky = IsRisky(name);
+            if (markOutside && !MarkFromOutside(target) && risky) target = Defuse(dir, target);
+            return new(target, total, sha, risky);
         }
         catch
         {

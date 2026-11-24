@@ -81,6 +81,28 @@ public class PhoneSendT0767Tests
         }
         Assert.False(File.Exists(Path.Combine(inbox, "feld.jpg")));
 
+        // Befund R2-M1: mehr als 200 Dateien in einer Sendung → 400, nichts bleibt liegen, schnell
+        var before = Directory.GetFiles(inbox).Length;
+        var swMany = Stopwatch.StartNew();
+        using (var f = new MultipartFormDataContent())
+        {
+            for (var i = 0; i <= PhoneLinkServer.MaxFilesPerRequest; i++) f.Add(new ByteArrayContent([]), "f", "leer.txt");
+            var many = await a.PostAsync("/api/upload", f, ct);
+            Assert.Equal(HttpStatusCode.BadRequest, many.StatusCode);
+            Assert.Contains("höchstens", await many.Content.ReadAsStringAsync(ct));
+        }
+        Assert.Equal(before, Directory.GetFiles(inbox).Length);
+        Assert.True(swMany.Elapsed < TimeSpan.FromSeconds(30), $"zu langsam: {swMany.Elapsed}");
+
+        // Befund R2-N1: Programmdatei → Warnung in der Antwort ans Handy
+        using (var f = new MultipartFormDataContent())
+        {
+            f.Add(new ByteArrayContent([0x4D, 0x5A]), "f", "setup.exe");
+            var warn = await (await a.PostAsync("/api/upload", f, ct)).Content.ReadAsStringAsync(ct);
+            Assert.Contains("\"warn\":[\"setup.exe\"]", warn);
+        }
+        Assert.Contains(run.Entries, e => e.Step == PhoneRunLog.Steps.PhoneToPc && e.Note.Contains("⚠ Programmdatei"));
+
         // Befund N5: POST von einer fremden Seite (Origin) → 403; von der eigenen Seite → angenommen
         var foreign = new HttpRequestMessage(HttpMethod.Post, "/api/text") { Content = new FormUrlEncodedContent(new Dictionary<string, string> { ["text"] = "x" }) };
         foreign.Headers.Add("Origin", "http://evil.example");
@@ -123,6 +145,15 @@ public class PhoneSendT0767Tests
         Assert.All(PhoneRunLog.Evaluate(run.Entries), c => Assert.True(c.Ok, c.Name + ": " + c.Detail));
         Assert.DoesNotContain(run.Entries, e => e.Device.Contains("Handy") || e.Network.Contains("127."));
         Directory.Delete(d, true);
+    }
+
+    [Fact(DisplayName = "T-0767 R2-M1/R2-N1: eine Meldung je Sendung, mit Warnung bei Programmdateien")]
+    public void Files_toast()
+    {
+        Assert.Equal("Vom Handy (A): foto.jpg", MainWindow.PhoneFilesToast("A", [new("C:/x/foto.jpg", 1, "s")]));
+        var many = MainWindow.PhoneFilesToast("A", Enumerable.Range(0, 12).Select(i => new PhoneTransfer.Received($"C:/x/{i}.jpg", 1, "s", i == 3)).ToList());
+        Assert.StartsWith("12 Dateien vom Handy (A)", many);
+        Assert.Contains("⚠ Programmdatei – nur öffnen, wenn du der Quelle vertraust", many);
     }
 
     [AvaloniaFact(DisplayName = "T-0767 (UI): Lauf aufzeichnen → „Datei senden …“ an ein Handy → Entfernen → Aufzeichnung speichern; Kabel-Weg ehrlich")]
