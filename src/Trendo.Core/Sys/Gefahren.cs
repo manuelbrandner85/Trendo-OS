@@ -186,15 +186,31 @@ public static partial class SystemScan
 
     static readonly string[] ScriptExt = [".js", ".mjs", ".cjs"];
 
-    [GeneratedRegex(@"(?i)(?:^|[\s""'\\/(])(?:powershell|pwsh)(?:\.exe)?(?=[""'\s]|$)")] private static partial Regex InnerPowerShell();
+    /// <summary>T-0755 Fix5 / T-0757 Fix1/Fix2: Aufruf von PowerShell irgendwo in den Argumenten – mit oder ohne Pfad (auch in Anführungszeichen mit Leerzeichen),
+    /// nach Leerraum, Anführungszeichen, Pfadtrenner, Befehlstrennern (&amp; |) und den cmd-Trennern @ , ; = ( ), auch direkt hinter /c, /k, /r
+    /// (<c>/q/cpowershell</c>). Ende des Namens auch an „/“ (<c>powershell.exe/NoP</c>).</summary>
+    [GeneratedRegex(@"(?i)(?:(?<=^|[\s""'\\/(@,;=)&|])|(?<=/[ckr]))(?:powershell|pwsh)(?:\.exe)?(?=[""'\s)&|,;/]|$)")] private static partial Regex InnerPowerShell();
 
-    /// <summary>T-0755 Fix5: Steht in den Argumenten ein Aufruf von PowerShell (mit oder ohne Pfad/Anführungszeichen), wird der Teil danach
-    /// bis zum nächsten Befehlstrenner (&amp; oder |) auf einen verschlüsselten Befehl geprüft.</summary>
+    /// <summary>T-0757 Fix3: einzige Ausnahme – PowerShell als Wert des Schalters <c>--shell</c> in genau der Form <c>--shell powershell</c> bzw.
+    /// <c>--shell=powershell</c> (ohne Pfad, ohne .exe). Eine echo/rem-Ausnahme gibt es nicht mehr: Sie ließ sich wiederholt umgehen
+    /// (<c>echo\..\…\powershell.exe</c>, <c>for … ( cmd /c echo ) do powershell</c>). Lieber ein Fehlalarm als eine Lücke.</summary>
+    [GeneratedRegex(@"(?i)(?:^|\s)--shell(?:=|[ ]+)$")] private static partial Regex ShellValue();
+
+    /// <summary>T-0757 Fix2: Verschleierung durch Anführungszeichen entfernen – <c>""</c> und ein <c>"</c> mitten im Wort (<c>pow""ershell</c>, <c>"power"shell</c>).</summary>
+    static string Unquote(string s) => Regex.Replace(s.Replace("\"\"", ""), @"(?<=\w)""(?=\w)", "");
+
+    /// <summary>T-0755 Fix5 / T-0757 Fix1–Fix3: Steht in den Argumenten – gleich welches Programm sie bekommt (cmd, start, conhost, forfiles, wmic, mshta,
+    /// pcalua, rundll32, bash, node …) – ein Aufruf von PowerShell, wird der Teil danach bis zum nächsten Befehlstrenner (&amp; oder |) auf einen
+    /// verschlüsselten Befehl geprüft. Vorher werden alle <c>^</c> und verschleiernde Anführungszeichen entfernt. Auch hinter echo oder rem gilt
+    /// das als Fund (bewusster Fehlalarm, sichere Seite). Ausgenommen ist nur <c>--shell powershell</c> / <c>--shell=powershell</c>, wenn danach
+    /// kein weiterer Befehl folgt (kein &amp; | ; oder Zeilenumbruch).</summary>
     public static bool EncodedInnerPowerShell(string args)
     {
+        args = Unquote(args.Replace("^", ""));
         foreach (Match m in InnerPowerShell().Matches(args))
         {
             var rest = args[(m.Index + m.Length)..];
+            if (ShellValue().IsMatch(args[..m.Index]) && !m.Value.Contains('.') && rest.IndexOfAny(['&', '|', ';', '\n', '\r']) < 0) continue;
             var cut = rest.IndexOfAny(['&', '|']); if (cut >= 0) rest = rest[..cut];
             if (Encoded().IsMatch(rest)) return true;
         }

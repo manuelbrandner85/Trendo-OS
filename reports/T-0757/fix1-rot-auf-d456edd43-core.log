@@ -1,0 +1,122 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-fix1-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:12.74]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:13.29]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:13.32]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:00:13.65]     T-0757 Fix1 MITTEL 3: zweiter Titel im selben PS2Recomp-Ordner läuft durch, auch wenn der erste Arbeitsordner weg ist; alte Dateien werden ersetzt [FAIL]
+[xUnit.net 00:00:13.65]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:00:13.65]                    ↓ (pos 2)
+[xUnit.net 00:00:13.65]       Expected: "fertig"
+[xUnit.net 00:00:13.65]       Actual:   "fehler"
+[xUnit.net 00:00:13.65]                    ↑ (pos 2)
+[xUnit.net 00:00:13.65]       Stack Trace:
+[xUnit.net 00:00:13.65]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-fix1-rot\tests\Trendo.Core.Tests\T0757Fix1Tests.cs(105,0): at Trendo.Core.Tests.T0757Fix1Tests.Mittel_zweiter_titel()
+[xUnit.net 00:00:13.65]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:13.65]       Output:
+[xUnit.net 00:00:13.65]         fehler: „Erzeugten Code einsortieren“: Im PS2Recomp-Ordner liegen noch 2 Code-Dateien, die dieser Arbeitsordner nicht selbst einsortiert hat (z. B. src/runner/spiel_a.cpp). Trendo löscht sie nicht und mischt keinen Code. Bitte PS2Recomp frisch einrichten oder im ursprünglichen Projekt portieren.
+[xUnit.net 00:00:13.66]     T-0757 Fix1 NIEDRIG 6: BOOT2 mit Unterordner oder doppeltem Backslash zeigt auf eine Spiel-Disc [FAIL]
+[xUnit.net 00:00:13.66]       Assert.Contains() Failure: Sub-string not found
+[xUnit.net 00:00:13.66]       String:    "(frei)"
+[xUnit.net 00:00:13.66]       Not found: "SYSTEM.CNF"
+[xUnit.net 00:00:13.66]       Stack Trace:
+[xUnit.net 00:00:13.66]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-fix1-rot\tests\Trendo.Core.Tests\T0757Fix1Tests.cs(151,0): at Trendo.Core.Tests.T0757Fix1Tests.Niedrig_boot2_unterordner()
+[xUnit.net 00:00:13.66]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:13.66]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:13.73]     T-0757 Fix1 MITTEL 3: fremde Reste im PS2Recomp-Ordner blockieren schon bei den Voraussetzungen – nichts wird gestartet [FAIL]
+[xUnit.net 00:00:13.73]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:00:13.73]                  ↓ (pos 0)
+[xUnit.net 00:00:13.73]       Expected: "blockiert"
+[xUnit.net 00:00:13.73]       Actual:   "fehler"
+[xUnit.net 00:00:13.73]                  ↑ (pos 0)
+[xUnit.net 00:00:13.73]       Stack Trace:
+[xUnit.net 00:00:13.73]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-fix1-rot\tests\Trendo.Core.Tests\T0757Fix1Tests.cs(121,0): at Trendo.Core.Tests.T0757Fix1Tests.Mittel_konflikt_vor_dem_start()
+[xUnit.net 00:00:13.73]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:13.73]       Output:
+[xUnit.net 00:00:13.73]         fehler: „Erzeugten Code einsortieren“: Im PS2Recomp-Ordner liegen noch 1 Code-Dateien, die dieser Arbeitsordner nicht selbst einsortiert hat (z. B. src/runner/fremd.cpp). Trendo löscht sie nicht und mischt keinen Code. Bitte PS2Recomp frisch einrichten oder im ursprünglichen Projekt portieren. · 3 Aufrufe
+[xUnit.net 00:00:13.74]     T-0757 Fix1 NIEDRIG 4: weitere Weitergabeverbote und verneinte Lizenzkennzeichen werden abgewiesen [FAIL]
+[xUnit.net 00:00:13.74]       Weitergabe verboten.
+[xUnit.net 00:00:13.74]       Stack Trace:
+[xUnit.net 00:00:13.74]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-fix1-rot\tests\Trendo.Core.Tests\T0757Fix1Tests.cs(138,0): at Trendo.Core.Tests.T0757Fix1Tests.Niedrig_lizenzwoerter_und_verneinung()
+[xUnit.net 00:00:13.74]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:13.74]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:13.77]     T-0757 Fix1 MITTEL 2: auch mshta, pcalua, rundll32, bash und node, die PowerShell mit verschlüsseltem Befehl starten, sind rot [FAIL]
+[xUnit.net 00:00:13.77]       C:\WINDOWS\system32\mshta.exe vbscript:Execute("CreateObject(""WScript.Shell"").Run ""powershell -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkA"",0:close") → Gelb Startet ein Skript
+[xUnit.net 00:00:13.77]       Stack Trace:
+[xUnit.net 00:00:13.77]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-fix1-rot\tests\Trendo.Core.Tests\T0757Fix1Tests.cs(25,0): at Trendo.Core.Tests.T0757Fix1Tests.Red(String cmd)
+[xUnit.net 00:00:13.77]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-fix1-rot\tests\Trendo.Core.Tests\T0757Fix1Tests.cs(68,0): at Trendo.Core.Tests.T0757Fix1Tests.Mittel_andere_startprogramme_rot()
+[xUnit.net 00:00:13.77]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:13.77]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:13.77]     T-0757 Fix1 HOCH: cmd-Varianten (call, /r, /q/c, if, for, start mit Schaltern, start/min, @ , ; /cpowershell), Pfade mit Leerzeichen, conhost mit Schaltern und forfiles sind rot [FAIL]
+[xUnit.net 00:00:13.77]       C:\WINDOWS\system32\cmd.exe /c call powershell -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkA → Gelb Startet ein Skript
+[xUnit.net 00:00:13.77]       Stack Trace:
+[xUnit.net 00:00:13.77]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-fix1-rot\tests\Trendo.Core.Tests\T0757Fix1Tests.cs(25,0): at Trendo.Core.Tests.T0757Fix1Tests.Red(String cmd)
+[xUnit.net 00:00:13.77]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-fix1-rot\tests\Trendo.Core.Tests\T0757Fix1Tests.cs(54,0): at Trendo.Core.Tests.T0757Fix1Tests.Hoch_cmd_varianten_rot()
+[xUnit.net 00:00:13.77]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:13.77]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:13.78]   Finished:    Trendo.Core.Tests
+  Fehler T-0757 Fix1 MITTEL 3: zweiter Titel im selben PS2Recomp-Ordner läuft durch, auch wenn der erste Arbeitsordner weg ist; alte Dateien werden ersetzt [287 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+             ↓ (pos 2)
+Expected: "fertig"
+Actual:   "fehler"
+             ↑ (pos 2)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0757Fix1Tests.Mittel_zweiter_titel() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-fix1-rot\tests\Trendo.Core.Tests\T0757Fix1Tests.cs:line 105
+--- End of stack trace from previous location ---
+  Standardausgabemeldungen:
+ fehler: „Erzeugten Code einsortieren“: Im PS2Recomp-Ordner liegen noch 2 Code-Dateien, die dieser Arbeitsordner nicht selbst einsortiert hat (z. B. src/runner/spiel_a.cpp). Trendo löscht sie nicht und mischt keinen Code. Bitte PS2Recomp frisch einrichten oder im ursprünglichen Projekt portieren.
+
+
+  Fehler T-0757 Fix1 NIEDRIG 6: BOOT2 mit Unterordner oder doppeltem Backslash zeigt auf eine Spiel-Disc [14 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Sub-string not found
+String:    "(frei)"
+Not found: "SYSTEM.CNF"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0757Fix1Tests.Niedrig_boot2_unterordner() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-fix1-rot\tests\Trendo.Core.Tests\T0757Fix1Tests.cs:line 151
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0757 Fix1 MITTEL 3: fremde Reste im PS2Recomp-Ordner blockieren schon bei den Voraussetzungen – nichts wird gestartet [63 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "blockiert"
+Actual:   "fehler"
+           ↑ (pos 0)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0757Fix1Tests.Mittel_konflikt_vor_dem_start() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-fix1-rot\tests\Trendo.Core.Tests\T0757Fix1Tests.cs:line 121
+--- End of stack trace from previous location ---
+  Standardausgabemeldungen:
+ fehler: „Erzeugten Code einsortieren“: Im PS2Recomp-Ordner liegen noch 1 Code-Dateien, die dieser Arbeitsordner nicht selbst einsortiert hat (z. B. src/runner/fremd.cpp). Trendo löscht sie nicht und mischt keinen Code. Bitte PS2Recomp frisch einrichten oder im ursprünglichen Projekt portieren. · 3 Aufrufe
+
+
+  Fehler T-0757 Fix1 NIEDRIG 4: weitere Weitergabeverbote und verneinte Lizenzkennzeichen werden abgewiesen [11 ms]
+  Fehlermeldung:
+   Weitergabe verboten.
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0757Fix1Tests.Niedrig_lizenzwoerter_und_verneinung() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-fix1-rot\tests\Trendo.Core.Tests\T0757Fix1Tests.cs:line 138
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0757 Fix1 MITTEL 2: auch mshta, pcalua, rundll32, bash und node, die PowerShell mit verschlüsseltem Befehl starten, sind rot [28 ms]
+  Fehlermeldung:
+   C:\WINDOWS\system32\mshta.exe vbscript:Execute("CreateObject(""WScript.Shell"").Run ""powershell -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkA"",0:close") → Gelb Startet ein Skript
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0757Fix1Tests.Red(String cmd) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-fix1-rot\tests\Trendo.Core.Tests\T0757Fix1Tests.cs:line 25
+   at Trendo.Core.Tests.T0757Fix1Tests.Mittel_andere_startprogramme_rot() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-fix1-rot\tests\Trendo.Core.Tests\T0757Fix1Tests.cs:line 68
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0757 Fix1 HOCH: cmd-Varianten (call, /r, /q/c, if, for, start mit Schaltern, start/min, @ , ; /cpowershell), Pfade mit Leerzeichen, conhost mit Schaltern und forfiles sind rot [3 ms]
+  Fehlermeldung:
+   C:\WINDOWS\system32\cmd.exe /c call powershell -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkA → Gelb Startet ein Skript
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0757Fix1Tests.Red(String cmd) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-fix1-rot\tests\Trendo.Core.Tests\T0757Fix1Tests.cs:line 25
+   at Trendo.Core.Tests.T0757Fix1Tests.Hoch_cmd_varianten_rot() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-fix1-rot\tests\Trendo.Core.Tests\T0757Fix1Tests.cs:line 54
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 6
+     Nicht bestanden: 6
+ Gesamtzeit: 16,2022 Sekunden

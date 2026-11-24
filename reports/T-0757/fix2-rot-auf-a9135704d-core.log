@@ -1,0 +1,53 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-fix2-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:04.40]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:05.00]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:05.03]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:00:05.21]     T-0757 Fix2 NIEDRIG 2: Verschleierung mit Anführungszeichen und „/“ am Programmnamen ist rot [FAIL]
+[xUnit.net 00:00:05.21]       C:\WINDOWS\system32\cmd.exe /c pow""ershell -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkA → Gelb Startet ein Skript
+[xUnit.net 00:00:05.21]       Stack Trace:
+[xUnit.net 00:00:05.21]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-fix2-rot\tests\Trendo.Core.Tests\T0757Fix2Tests.cs(66,0): at Trendo.Core.Tests.T0757Fix2Tests.Niedrig_verschleierung()
+[xUnit.net 00:00:05.21]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.21]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:05.42]     T-0757 Fix2 NIEDRIG 5: „not released under CC0“ und „NOT available under the MIT License“ werden abgewiesen [FAIL]
+[xUnit.net 00:00:05.42]       This game is not released under CC0.
+[xUnit.net 00:00:05.42]       Stack Trace:
+[xUnit.net 00:00:05.42]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-fix2-rot\tests\Trendo.Core.Tests\T0757Fix2Tests.cs(77,0): at Trendo.Core.Tests.T0757Fix2Tests.Niedrig_lizenz_verneinung()
+[xUnit.net 00:00:05.42]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.42]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:05.42]     T-0757 Fix2 MITTEL: „echo“/„rem“ nur als erstes Befehlswort ausgenommen – als Fenstertitel, Variable oder vor ; bleibt es rot [FAIL]
+[xUnit.net 00:00:05.42]       C:\WINDOWS\system32\cmd.exe /c start "echo" powershell -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkA → Gelb Startet ein Skript
+[xUnit.net 00:00:05.42]       Stack Trace:
+[xUnit.net 00:00:05.42]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-fix2-rot\tests\Trendo.Core.Tests\T0757Fix2Tests.cs(38,0): at Trendo.Core.Tests.T0757Fix2Tests.Mittel_echo_nur_als_erstes_wort()
+[xUnit.net 00:00:05.42]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.42]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:05.43]   Finished:    Trendo.Core.Tests
+  Fehler T-0757 Fix2 NIEDRIG 2: Verschleierung mit Anführungszeichen und „/“ am Programmnamen ist rot [125 ms]
+  Fehlermeldung:
+   C:\WINDOWS\system32\cmd.exe /c pow""ershell -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkA → Gelb Startet ein Skript
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0757Fix2Tests.Niedrig_verschleierung() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-fix2-rot\tests\Trendo.Core.Tests\T0757Fix2Tests.cs:line 66
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Bestanden T-0757 Fix2 NIEDRIG 5 (echte Dateien): keine Lizenzdatei im NuGet-Cache wird wegen einer Verneinung oder eines neuen Ausschlussworts abgewiesen [205 ms]
+  Fehler T-0757 Fix2 NIEDRIG 5: „not released under CC0“ und „NOT available under the MIT License“ werden abgewiesen [7 ms]
+  Fehlermeldung:
+   This game is not released under CC0.
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0757Fix2Tests.Niedrig_lizenz_verneinung() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-fix2-rot\tests\Trendo.Core.Tests\T0757Fix2Tests.cs:line 77
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0757 Fix2 MITTEL: „echo“/„rem“ nur als erstes Befehlswort ausgenommen – als Fenstertitel, Variable oder vor ; bleibt es rot [2 ms]
+  Fehlermeldung:
+   C:\WINDOWS\system32\cmd.exe /c start "echo" powershell -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkA → Gelb Startet ein Skript
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0757Fix2Tests.Mittel_echo_nur_als_erstes_wort() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-fix2-rot\tests\Trendo.Core.Tests\T0757Fix2Tests.cs:line 38
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 4
+     Bestanden: 1
+     Nicht bestanden: 3
+ Gesamtzeit: 8,1009 Sekunden

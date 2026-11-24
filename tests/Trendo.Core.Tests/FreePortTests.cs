@@ -227,7 +227,7 @@ public class FreePortTests(ITestOutputHelper output)
         return Task.FromResult(new Cli.Result(0, "ok", ""));
     };
 
-    static FreePort.Job Job(string r, string recomp, string work = "arbeit") { var proj = Path.Combine(r, "projekt"); return new(Own, Elf(proj), License(proj), recomp, [], Path.Combine(r, work)); }
+    static FreePort.Job Job(string r, string recomp, string work = "arbeit") { var proj = Path.Combine(r, "projekt"); return new(Own, Elf(proj), License(proj), recomp, [], Path.Combine(r, work), RightsConfirmed: true); }
 
     [Fact(DisplayName = "Freies Spiel: Ablauf mit nachgebildeten Werkzeugen bis zur Ergebnisdatei mit SHA-256, Liste der Dateien und Protokoll")]
     public async Task Run_to_result()
@@ -259,7 +259,7 @@ public class FreePortTests(ITestOutputHelper output)
         Assert.Equal("fertig", (await FreePort.RunAsync(Job(r, recomp, "a"), AllThere, FakeTools(calls, "alt_von_spiel_A"), null, null, CancellationToken.None)).Status);
         var objA = Path.Combine(recomp, "build", "ps2EntryRunner.dir", "Release", "alt_von_spiel_A.obj");
         Assert.True(File.Exists(objA));
-        var o = await FreePort.RunAsync(Job(r, recomp, "b"), AllThere, FakeTools(calls, "spiel_B"), null, null, CancellationToken.None);
+        var o = await FreePort.RunAsync(Job(r, recomp, "a"), AllThere, FakeTools(calls, "spiel_B"), null, null, CancellationToken.None);
         Assert.Equal("fertig", o.Status);
         Assert.False(File.Exists(Path.Combine(runner, "alt_von_spiel_A.cpp")));
         Assert.False(File.Exists(Path.Combine(recomp, "ps2xRuntime", "include", "alt_von_spiel_A.h")));
@@ -268,7 +268,7 @@ public class FreePortTests(ITestOutputHelper output)
         Assert.True(File.Exists(Path.Combine(runner, "main.cpp")));
         Assert.DoesNotContain("alt_von_spiel_A", File.ReadAllText(o.ResultPath!));
         // Eine Datei von PS2Recomp würde überschrieben: Fehler statt still ersetzen
-        var c = await FreePort.RunAsync(Job(r, recomp, "c"), AllThere, FakeTools(calls, "main"), null, null, CancellationToken.None);
+        var c = await FreePort.RunAsync(Job(r, recomp, "a"), AllThere, FakeTools(calls, "main"), null, null, CancellationToken.None);
         Assert.Equal("fehler", c.Status);
         Assert.Contains("gehört zu PS2Recomp", c.Message);
         Assert.Equal("// gehört PS2Recomp", File.ReadAllText(Path.Combine(runner, "main.cpp")));
@@ -284,13 +284,13 @@ public class FreePortTests(ITestOutputHelper output)
         var zero = new string('0', 64);
         File.WriteAllText(Path.Combine(rt, FreePort.Manifest), $"../ps2xRuntimeAlt/opfer.txt\t{FreePort.Sha256(victim)}\nsrc/runner/eigene-datei.cpp\nsrc/runner/eigene-datei.cpp\t{zero}\nsrc/runner/../../x.cpp\t{zero}\n");
         var outDir = Path.Combine(r, "aus"); Directory.CreateDirectory(outDir); File.WriteAllText(Path.Combine(outDir, "game.cpp"), "// neu");
-        var placed = FreePort.Distribute(outDir, recomp);
+        var placed = FreePort.Distribute(outDir, recomp, Path.Combine(r, "arbeit"));
         Assert.Equal(["src/runner/game.cpp"], placed);
         Assert.True(File.Exists(victim));
         Assert.True(File.Exists(own));
         // eigene Datei nachträglich geändert: wird nicht gelöscht und nicht still überschrieben
         File.WriteAllText(Path.Combine(rt, "src", "runner", "game.cpp"), "// von Hand geändert");
-        Assert.Throws<IOException>(() => FreePort.Distribute(outDir, recomp));
+        Assert.Throws<IOException>(() => FreePort.Distribute(outDir, recomp, Path.Combine(r, "arbeit")));
         Assert.Equal("// von Hand geändert", File.ReadAllText(Path.Combine(rt, "src", "runner", "game.cpp")));
         Assert.Contains("\t", File.ReadAllText(Path.Combine(rt, FreePort.Manifest)));
     }

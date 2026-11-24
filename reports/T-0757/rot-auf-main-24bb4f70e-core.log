@@ -1,0 +1,109 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:14.21]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:15.40]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:15.45]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:00:15.77]     T-0757 R2: eigene SYSTEM.CNF eines Homebrew-Projekts (BOOT2 = cdrom0:\MEINSPIEL.ELF;1) ist erlaubt, Disc-Kennungen nicht [FAIL]
+[xUnit.net 00:00:15.77]       Assert.Null() Failure: Value is not null
+[xUnit.net 00:00:15.77]       Expected: null
+[xUnit.net 00:00:15.77]       Actual:   "Neben der Datei liegt die SYSTEM.CNF einer Spiel-D"···
+[xUnit.net 00:00:15.77]       Stack Trace:
+[xUnit.net 00:00:15.77]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-rot\tests\Trendo.Core.Tests\T0757RestpunkteTests.cs(95,0): at Trendo.Core.Tests.T0757RestpunkteTests.R2_eigene_system_cnf()
+[xUnit.net 00:00:15.77]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:15.77]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:16.03]     T-0757 C: cmd mit ^ – powershell^.exe, p^owershell, -e^nc und Base64 mit ^ sind rot „Versteckter Befehl“ [FAIL]
+[xUnit.net 00:00:16.03]       C:\WINDOWS\system32\cmd.exe /c powershell^.exe -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkA → Gelb Startet ein Skript
+[xUnit.net 00:00:16.03]       Stack Trace:
+[xUnit.net 00:00:16.03]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-rot\tests\Trendo.Core.Tests\T0757RestpunkteTests.cs(234,0): at Trendo.Core.Tests.T0757RestpunkteTests.C_caret_rot()
+[xUnit.net 00:00:16.03]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:16.03]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:16.04]     T-0757 C: kein Fehlalarm – cmd /c echo powershell -e … und dotnet tool --shell powershell -e … sind nicht „Versteckter Befehl“ [FAIL]
+[xUnit.net 00:00:16.04]       Assert.NotEqual() Failure: Strings are equal
+[xUnit.net 00:00:16.04]       Expected: Not "Versteckter Befehl"
+[xUnit.net 00:00:16.04]       Actual:       "Versteckter Befehl"
+[xUnit.net 00:00:16.04]       Stack Trace:
+[xUnit.net 00:00:16.04]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-rot\tests\Trendo.Core.Tests\T0757RestpunkteTests.cs(242,0): at Trendo.Core.Tests.T0757RestpunkteTests.C_kein_fehlalarm()
+[xUnit.net 00:00:16.04]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:16.04]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:16.51]     T-0757 B (echt): eine Junction als Element zählt mit Größe 0 – der Inhalt des Ziels wird nicht mitgezählt [FAIL]
+[xUnit.net 00:00:16.51]       Assert.Null() Failure: Value is not null
+[xUnit.net 00:00:16.51]       Expected: null
+[xUnit.net 00:00:16.51]       Actual:   "das Element ist größer als der Papierkorb (100 Byt"···
+[xUnit.net 00:00:16.51]       Stack Trace:
+[xUnit.net 00:00:16.51]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-rot\tests\Trendo.Core.Tests\T0757RestpunkteTests.cs(192,0): at Trendo.Core.Tests.T0757RestpunkteTests.B_junction_groesse_null()
+[xUnit.net 00:00:16.51]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:16.51]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:16.55]     T-0757 R1: angehängter MIT-Satz in einer sonst unfreien Datei (Weitergabe-/Kopierverbot, vertraulich) gilt nicht als MIT [FAIL]
+[xUnit.net 00:00:16.55]       Diese Software darf nicht weitergegeben werden. Kopieren verboten.
+[xUnit.net 00:00:16.55]       Stack Trace:
+[xUnit.net 00:00:16.55]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-rot\tests\Trendo.Core.Tests\T0757RestpunkteTests.cs(43,0): at Trendo.Core.Tests.T0757RestpunkteTests.R1_mit_in_unfreier_datei()
+[xUnit.net 00:00:16.55]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:16.55]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:16.75]     T-0757 R3: eine untergeschobene trendo-einsortiert.txt im PS2Recomp-Ordner löscht keine PS2Recomp-Datei, auch mit richtiger Prüfsumme [FAIL]
+[xUnit.net 00:00:16.75]       PS2Recomp-Datei wurde gelöscht
+[xUnit.net 00:00:16.75]       Stack Trace:
+[xUnit.net 00:00:16.75]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-rot\tests\Trendo.Core.Tests\T0757RestpunkteTests.cs(117,0): at Trendo.Core.Tests.T0757RestpunkteTests.R3_untergeschobene_liste_loescht_nichts()
+[xUnit.net 00:00:16.75]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:16.75]       Output:
+[xUnit.net 00:00:16.75]         fertig: ps2EntryRunner.exe gebaut, SHA-256 579f5a9c678adfa58d33c11b24b0e34ab3722cb16edc2a94a2a1d9a337c3b360
+[xUnit.net 00:00:16.76]   Finished:    Trendo.Core.Tests
+  Bestanden T-0757 B (echt, nur lesend): ohne MaxCapacity gilt die Windows-Formel 10 % der ersten 40 GB + 5 % vom Rest, nicht 5 % [209 ms]
+  Fehler T-0757 R2: eigene SYSTEM.CNF eines Homebrew-Projekts (BOOT2 = cdrom0:\MEINSPIEL.ELF;1) ist erlaubt, Disc-Kennungen nicht [31 ms]
+  Fehlermeldung:
+   Assert.Null() Failure: Value is not null
+Expected: null
+Actual:   "Neben der Datei liegt die SYSTEM.CNF einer Spiel-D"···
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0757RestpunkteTests.R2_eigene_system_cnf() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-rot\tests\Trendo.Core.Tests\T0757RestpunkteTests.cs:line 95
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Bestanden T-0757 R1 (echte Dateien): echte MIT-, BSD-, Apache-2.0- und zlib-Texte aus dem NuGet-Cache gelten weiter als frei [140 ms]
+  Fehler T-0757 C: cmd mit ^ – powershell^.exe, p^owershell, -e^nc und Base64 mit ^ sind rot „Versteckter Befehl“ [125 ms]
+  Fehlermeldung:
+   C:\WINDOWS\system32\cmd.exe /c powershell^.exe -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkA → Gelb Startet ein Skript
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0757RestpunkteTests.C_caret_rot() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-rot\tests\Trendo.Core.Tests\T0757RestpunkteTests.cs:line 234
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0757 C: kein Fehlalarm – cmd /c echo powershell -e … und dotnet tool --shell powershell -e … sind nicht „Versteckter Befehl“ [8 ms]
+  Fehlermeldung:
+   Assert.NotEqual() Failure: Strings are equal
+Expected: Not "Versteckter Befehl"
+Actual:       "Versteckter Befehl"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0757RestpunkteTests.C_kein_fehlalarm() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-rot\tests\Trendo.Core.Tests\T0757RestpunkteTests.cs:line 242
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0757 B (echt): eine Junction als Element zählt mit Größe 0 – der Inhalt des Ziels wird nicht mitgezählt [467 ms]
+  Fehlermeldung:
+   Assert.Null() Failure: Value is not null
+Expected: null
+Actual:   "das Element ist größer als der Papierkorb (100 Byt"···
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0757RestpunkteTests.B_junction_groesse_null() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-rot\tests\Trendo.Core.Tests\T0757RestpunkteTests.cs:line 192
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0757 R1: angehängter MIT-Satz in einer sonst unfreien Datei (Weitergabe-/Kopierverbot, vertraulich) gilt nicht als MIT [42 ms]
+  Fehlermeldung:
+   Diese Software darf nicht weitergegeben werden. Kopieren verboten.
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0757RestpunkteTests.R1_mit_in_unfreier_datei() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-rot\tests\Trendo.Core.Tests\T0757RestpunkteTests.cs:line 43
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0757 R3: eine untergeschobene trendo-einsortiert.txt im PS2Recomp-Ordner löscht keine PS2Recomp-Datei, auch mit richtiger Prüfsumme [199 ms]
+  Fehlermeldung:
+   PS2Recomp-Datei wurde gelöscht
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0757RestpunkteTests.R3_untergeschobene_liste_loescht_nichts() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0757-rot\tests\Trendo.Core.Tests\T0757RestpunkteTests.cs:line 117
+--- End of stack trace from previous location ---
+  Standardausgabemeldungen:
+ fertig: ps2EntryRunner.exe gebaut, SHA-256 579f5a9c678adfa58d33c11b24b0e34ab3722cb16edc2a94a2a1d9a337c3b360
+
+
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 8
+     Bestanden: 2
+     Nicht bestanden: 6
+ Gesamtzeit: 21,3649 Sekunden
