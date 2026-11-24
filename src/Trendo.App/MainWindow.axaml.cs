@@ -89,6 +89,8 @@ public sealed partial class MainWindow : Window
         _deps.OllamaUp = opt.Isolated ? () => Task.FromResult(false) : _ollama.IsUpAsync;
         if (opt.Isolated) _deps.ToolsRoot = Path.Combine(core.DataRoot, "werkzeuge"); // Tests richten nie etwas im echten Werkzeugordner ein
         else _deps.LocateVollpaket = VollpaketStart.Find;
+        // T-0764 (2. Prüfrunde N-C/N-D): .exe in Trendos eigenen Ordnern (Werkzeuge, Programm, Portable) gelten als vertrauenswürdig – andere startet nur ein Erwachsenen-Profil
+        core.Integrations.TrustedProgramPath = p => Under(p, _deps.ToolsRoot) || Under(p, AppContext.BaseDirectory) || Under(p, Path.Combine(core.DataRoot, "werkzeuge"));
         InitVollpaketOnline(); // ohne Vollpaket: dieselben Pakete vom GitHub-Release
         StartupTrace.Mark("ctor.deps");
         _settings = UserSettings.Load(core.DataRoot);
@@ -611,10 +613,10 @@ public sealed partial class MainWindow : Window
                     case "code": await OpenStudio("CORE-07", "Webseite bauen"); break;
                     case "office": Show("office"); break;
                     case "security": await OpenStudio("CORE-11", "Daten schützen"); break;
-                    case "blender": if (a.Target() is { } bl) _core.Integrations.LaunchDirect(Principal.LocalOwner, bl, _core.Audit); break;
-                    case "unreal": if (a.Target() is { } ue) _core.Integrations.LaunchDirect(Principal.LocalOwner, ue, _core.Audit); break;
+                    case "blender": if (a.Target() is { } bl) LaunchAs(bl); break;
+                    case "unreal": if (a.Target() is { } ue) LaunchAs(ue); break;
                     default:
-                        if (a.Target() is { } t) _core.Integrations.LaunchDirect(Principal.LocalOwner, t, _core.Audit);
+                        if (a.Target() is { } t) LaunchAs(t);
                         break;
                 }
             };
@@ -629,7 +631,7 @@ public sealed partial class MainWindow : Window
         DockLift(trash); _dockButtons["trash"] = trash;
         ToolTip.SetTip(trash, "Papierkorb"); Avalonia.Automation.AutomationProperties.SetName(trash, "Papierkorb");
         ToolTip.SetPlacement(trash, Avalonia.Controls.PlacementMode.Top); ToolTip.SetVerticalOffset(trash, -6);
-        trash.Click += (_, _) => _core.Integrations.LaunchDirect(Principal.LocalOwner, OperatingSystem.IsWindows() ? "shell:RecycleBinFolder" : "trash://", _core.Audit);
+        trash.Click += (_, _) => LaunchAs(OperatingSystem.IsWindows() ? "shell:RecycleBinFolder" : "trash://");
         Border Sep() => new() { Width = 1, Height = 32, VerticalAlignment = VerticalAlignment.Center, Background = Brush.Parse(C("#26FFFFFF", "#1F000000")) };
         var webSep = Sep(); webSep.Bind(IsVisibleProperty, _dockWeb.GetObservable(IsVisibleProperty));
         var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { DockWord(StartButton(), "Start"), Sep(), bar, webSep, _dockWeb, Sep(), trash } };
@@ -1153,7 +1155,7 @@ public sealed partial class MainWindow : Window
                 else if (c.Mode == DeliveryMode.Guided)
                 {
                     var b = new Button { Name = "btn-guide-" + c.Id, Content = "Installieren (offiziell)", IsEnabled = !_core.Offline && c.OfficialUrl is not null };
-                    b.Click += (_, _) => { _core.Integrations.LaunchDirect(Principal.LocalOwner, c.OfficialUrl!, _core.Audit); _depLog.Text = $"{c.Name}: offizielle Seite geöffnet. Nach der Installation hier neu prüfen."; };
+                    b.Click += (_, _) => { LaunchAs(c.OfficialUrl!); _depLog.Text = $"{c.Name}: offizielle Seite geöffnet. Nach der Installation hier neu prüfen."; };
                     right = b;
                 }
                 else
@@ -1298,7 +1300,7 @@ public sealed partial class MainWindow : Window
             if (comp.Mode == DeliveryMode.Guided)
             {
                 var g = new Button { Name = "btn-guide-" + comp.Id, Content = "Offiziellen Installer öffnen", IsEnabled = !_core.Offline };
-                g.Click += (_, _) => { _core.Integrations.LaunchDirect(Principal.LocalOwner, comp.OfficialUrl!, _core.Audit); _depLog.Text = $"{comp.Name}: Herstellerseite geöffnet. Nach der Installation das Studio erneut öffnen – der Pfad wird dann automatisch übernommen."; };
+                g.Click += (_, _) => { LaunchAs(comp.OfficialUrl!); _depLog.Text = $"{comp.Name}: Herstellerseite geöffnet. Nach der Installation das Studio erneut öffnen – der Pfad wird dann automatisch übernommen."; };
                 btns.Children.Add(g);
             }
             else
@@ -1344,7 +1346,7 @@ public sealed partial class MainWindow : Window
             var box = new TextBox { Name = "txt-key-" + k.Id, PasswordChar = '•', PlaceholderText = "Schlüssel hier einfügen", Width = 320 };
             var res = new TextBlock { Name = "key-state-" + k.Id, Text = has ? "gespeichert" : "kein Schlüssel", Foreground = Muted, FontSize = 11 };
             var get = new Button { Name = "btn-getkey-" + k.Id, Content = "Schlüssel holen", IsEnabled = !_core.Offline };
-            get.Click += (_, _) => _core.Integrations.LaunchDirect(Principal.LocalOwner, k.KeyUrl, _core.Audit);
+            get.Click += (_, _) => LaunchAs(k.KeyUrl);
             var save = new Button { Name = "btn-savekey-" + k.Id, Content = "Prüfen & speichern", IsEnabled = !_core.Offline };
             save.Click += async (_, _) =>
             {
@@ -1371,7 +1373,7 @@ public sealed partial class MainWindow : Window
             var res = new TextBlock { Name = "ki-key-state-" + c.Id, Text = has ? "gespeichert" : "kein Schlüssel", Foreground = Muted, FontSize = 11 };
             var get = new Button { Name = "btn-ki-getkey-" + c.Id, Content = "Schlüssel holen", IsEnabled = !_core.Offline };
             ToolTip.SetTip(get, "Öffnet die offizielle Seite: " + c.KeyUrl);
-            get.Click += (_, _) => _core.Integrations.LaunchDirect(Principal.LocalOwner, c.KeyUrl, _core.Audit);
+            get.Click += (_, _) => LaunchAs(c.KeyUrl);
             var save = new Button { Name = "btn-ki-savekey-" + c.Id, Content = "Prüfen & speichern", IsEnabled = !_core.Offline };
             var use = new CheckBox { Name = "ki-cloud-use-" + c.Id, Content = $"Als Ersatz-KI nutzen (Fragen gehen dann an {c.Name})", IsChecked = on, IsEnabled = has, Foreground = Text };
             var reverting = false;

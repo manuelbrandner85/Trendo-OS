@@ -729,7 +729,7 @@ public partial class MainWindow
         var (r, _) = Studio3D.ExportBlend(bl, spec, blend);
         if (!r.Ok || !File.Exists(blend)) { Say("Blender konnte das Objekt nicht öffnen: " + Short(r.Err.Length > 0 ? r.Err : r.Out), "3d"); return; }
         _last3dFile = blend;
-        _core.Integrations.LaunchDirect(Principal.LocalOwner, bl, _core.Audit, blend);
+        LaunchAs(bl, blend);
         Say($"Blender öffnet {Path.GetFileName(blend)}.", "3d");
     }
 
@@ -750,7 +750,7 @@ public partial class MainWindow
     private void ShowFolder()
     {
         var target = _last3dFile is { } f && File.Exists(f) ? Path.GetDirectoryName(f)! : Folder3D;
-        if (_last3dFile is { } file && File.Exists(file)) { var (exe, args) = DesktopPlatform.RevealCommand(file); _core.Integrations.LaunchDirect(Principal.LocalOwner, exe, _core.Audit, args); }
+        if (_last3dFile is { } file && File.Exists(file)) { var (exe, args) = DesktopPlatform.RevealCommand(file); LaunchAs(exe, args); }
         else Launch(target);
         Say(_last3dFile is { } name && File.Exists(name) ? $"Ordner geöffnet, Datei: {Path.GetFileName(name)}." : "Ordner geöffnet.", "3d");
     }

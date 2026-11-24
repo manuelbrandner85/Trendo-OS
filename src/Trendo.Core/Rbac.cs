@@ -47,10 +47,13 @@ public static class Rbac
 
     /// <summary>T-0764: Prüfung an jedem Installations- und Entfernen-Weg im Kern. Ohne Recht: Protokolleintrag „rbac.denied“ mit dem Vorgang
     /// und <see cref="UnauthorizedAccessException"/> mit einem verständlichen Satz – es wird nichts geändert.</summary>
-    public static void DemandSoftware(Principal p, string what, AuditLog? audit = null)
+    public static void DemandSoftware(Principal p, string what, AuditLog? audit = null, string? message = null)
     {
         if (Has(p, Permission.ManageSoftware)) return;
         audit?.Append(p.Name, "rbac.denied", $"{p.Role} fehlt {Permission.ManageSoftware}: {what}");
-        throw new UnauthorizedAccessException(NurErwachseneSoftware);
+        throw new UnauthorizedAccessException(message ?? NurErwachseneSoftware);
     }
+
+    /// <summary>T-0764 (2. Prüfrunde N-D): Hinweis, wenn ein Kinderprofil ein Programm oder einen Installer starten möchte.</summary>
+    public const string NurErwachseneStart = "Programme starten und einrichten darf nur ein Erwachsenen-Profil. Dokumente, Bilder, Musik und Videos kannst du weiter öffnen.";
 }

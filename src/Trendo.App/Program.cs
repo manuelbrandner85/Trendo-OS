@@ -16,10 +16,30 @@ class Program
     internal static Principal CliPrincipal(TrendoCore core) => Principal.ForProfile(UserSettings.Load(core.DataRoot).Child);
 
     /// <summary>T-0764: Kommandozeilen-Installation im Kinderprofil abweisen – verständliche Meldung, Protokoll „rbac.denied“, Rückgabewert 4. Sonst null.</summary>
-    internal static int? CliSoftwareRefused(TrendoCore core, Principal cli, string what, TextWriter o)
+    /// <remarks>T-0764 (2. Prüfrunde N-B): Gibt es auf diesem PC weitere Personen oder ist für dieses Profil eine Anmeldung eingerichtet, braucht die
+    /// Kommandozeile die PIN/das Passwort dieses (Erwachsenen-)Profils (<c>--pin</c>), geprüft mit <see cref="ProfileLock.Verify"/>. Sonst könnte ein Kind
+    /// ohne <c>--data-root</c> als Hauptprofil installieren. Die PIN wird nie protokolliert oder ausgegeben. Ohne Personen und ohne Sperre bleibt alles wie bisher.</remarks>
+    internal static int? CliSoftwareRefused(TrendoCore core, Principal cli, string what, TextWriter o, string? pin = null)
     {
-        try { Rbac.DemandSoftware(cli, "cli.install-deps " + what, core.Audit); return null; }
+        try { Rbac.DemandSoftware(cli, "cli.install-deps " + what, core.Audit); }
         catch (UnauthorizedAccessException e) { o.WriteLine("FAIL  " + e.Message + " (Datenordner gehört zu einem Kinderprofil)"); return 4; }
+        var persons = new PersonStore(PersonStore.BaseOf(core.DataRoot)).All().Count > 0;
+        var lk = new ProfileLock(core.DataRoot);
+        if (!persons && !lk.Enabled) return null;
+        if (!lk.Enabled)
+        {
+            core.Audit.Append(cli.Name, "rbac.denied", "cli.install-deps ohne Anmeldung (Personen angelegt)");
+            o.WriteLine("FAIL  Auf diesem PC gibt es mehrere Personen. Installieren über die Kommandozeile geht erst, wenn dieses Profil eine PIN oder ein Passwort hat (Einstellungen → Personen & Konten) – dann mit --pin aufrufen.");
+            return 4;
+        }
+        if (pin is null || !lk.Verify(pin))
+        {
+            core.Audit.Append(cli.Name, "rbac.denied", "cli.install-deps PIN fehlt oder falsch");
+            o.WriteLine("FAIL  Bitte die PIN bzw. das Passwort dieses Profils mit --pin angeben. Es wurde nichts installiert.");
+            return 4;
+        }
+        core.Audit.Append(cli.Name, "cli.anmeldung.ok", "install-deps");
+        return null;
     }
 
     [STAThread]
@@ -82,7 +102,7 @@ class Program
             var rc = 0;
             // T-0764 (Gegenprüfung M2): Rolle aus dem Profil dieses Datenordners – ein Kinderprofil installiert auch über die Kommandozeile nichts
             var cli = CliPrincipal(core);
-            if (Arg("--install-deps") is { } wanted && CliSoftwareRefused(core, cli, wanted, Console.Out) is { } refusedRc) return refusedRc;
+            if (Arg("--install-deps") is { } wanted && CliSoftwareRefused(core, cli, wanted, Console.Out, Arg("--pin")) is { } refusedRc) return refusedRc;
             if (Arg("--install-deps") == "vollpaket")
             {
                 // genau der Weg nach dem Setup (SetupVollpaket): eigene, geprüfte Kopien im Werkzeugordner, schon installierte Programme zählen nicht

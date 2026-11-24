@@ -336,7 +336,7 @@ public partial class MainWindow
             foreach (var (k, v) in env) lines.Add($"set \"{k}={v.Replace("\"", "")}\"");
             lines.Add($"\"{exe}\" {args}"); lines.Add("echo."); lines.Add("echo (Programm beendet - eine Taste schliesst das Fenster)"); lines.Add("pause >nul");
             await File.WriteAllLinesAsync(cmd, lines, new System.Text.UTF8Encoding(false));
-            _core.Integrations.LaunchArgs(Principal.LocalOwner, Path.Combine(Environment.SystemDirectory, "cmd.exe"), _core.Audit, ["/c", cmd]);
+            LaunchArgsAs(Path.Combine(Environment.SystemDirectory, "cmd.exe"), ["/c", cmd]);
             _core.Audit.Append(Principal.LocalOwner.Name, "source.start", e.Repo);
         }
         catch (Exception ex) when (ex is InvalidOperationException or IOException or System.ComponentModel.Win32Exception or UnauthorizedAccessException)

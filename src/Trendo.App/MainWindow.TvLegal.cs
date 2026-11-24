@@ -43,7 +43,7 @@ public partial class MainWindow
     {
         if (TvLegalOpenOverride is { } o) { o(url); return; }
         _core.Audit.Append(Principal.LocalOwner.Name, "tv.legal.open", url);
-        _core.Integrations.LaunchDirect(Principal.LocalOwner, url, _core.Audit);
+        LaunchAs(url);
     }
 
     Control TvLegalView()

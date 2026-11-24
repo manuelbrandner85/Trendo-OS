@@ -124,12 +124,13 @@ public partial class MainWindow
     {
         if (Directory.Exists(path)) { FilesGo(path); return; }
         // T-0764 (Gegenprüfung M3): Installer, Pakete und Skripte nur mit dem Recht „Programme verwalten“ – vor Testersatz und Testmodus geprüft
-        if (Trendo.Core.Sys.Software.IsInstallerLike(path))
-            try { Rbac.DemandSoftware(CurrentPrincipal, "datei.oeffnen " + Path.GetFileName(path), _core.Audit); }
+        // T-0764 (2. Prüfrunde N-D): im Kinderprofil auch jede .exe außerhalb von Trendos Programmordnern, Verknüpfungen und .hta/.cpl/…
+        if (Trendo.Core.Sys.Software.NeedsSoftwareRight(path, _core.Integrations.TrustedProgramPath))
+            try { Rbac.DemandSoftware(CurrentPrincipal, "datei.oeffnen " + Path.GetFileName(path), _core.Audit, Rbac.NurErwachseneStart); }
             catch (UnauthorizedAccessException e) { FilesMessage = e.Message; Show(FK); return; }
         if (FilesOpenOverride is { } o) { o(path); return; }
         if (Path.GetExtension(path).Equals(".tdoc", StringComparison.OrdinalIgnoreCase) || _opt.Isolated) { FilesMessage = "Öffnen: " + Path.GetFileName(path); Show(FK); return; }
-        _core.Integrations.LaunchDirect(Principal.LocalOwner, path, _core.Audit);
+        LaunchAs(path);
     }
 
     public string? FilesPreview { get; private set; }
@@ -394,7 +395,7 @@ public partial class MainWindow
         var viewBtn = Tb("fb-view", G(view == "liste" ? "▦" : "☰", 14), view == "liste" ? "Ansicht: Symbole" : "Ansicht: Liste", () => { FilesView = view == "liste" ? "symbole" : "liste"; Show(FK); });
         var hidden = new CheckBox { Name = "fb-hidden", Content = "Ausgeblendete Elemente", IsChecked = Files.ShowHidden, FontSize = 12, Foreground = Text, VerticalAlignment = VerticalAlignment.Center };
         hidden.IsCheckedChanged += (_, _) => { if (Files.ShowHidden != (hidden.IsChecked == true)) { Files.ShowHidden = hidden.IsChecked == true; Show(FK); } };
-        var sysOpen = Tb("fb-system", G("⇱", 14), "Im System öffnen", () => { if (!_opt.Isolated) _core.Integrations.LaunchDirect(Principal.LocalOwner, CurDir, _core.Audit); }, true);
+        var sysOpen = Tb("fb-system", G("⇱", 14), "Im System öffnen", () => { if (!_opt.Isolated) LaunchAs(CurDir); }, true);
 
         // Seitenleiste
         var side = new StackPanel { Name = "fb-side", Spacing = 1 };
@@ -571,7 +572,7 @@ public partial class MainWindow
                 var title = new TextBlock { Text = PlaceName(FilesDir), FontWeight = FontWeight.Bold, FontSize = 14, Foreground = Text, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0) };
                 var more = Tb("fb-more", G("⋯", 15), "Aktionen", () => { });
                 var macMenu = new MenuFlyout(); foreach (var hm in HistoryItems()) macMenu.Items.Add(hm); macMenu.Items.Add(new Separator()); more.Flyout = macMenu;
-                foreach (var am in new[] { Mi("Neuer Ordner", () => FilesNewFolder()), Mi("Umbenennen", () => { _fbRenaming = true; Show(FK); }), Mi("Kopieren", () => FilesCopy(false)), Mi("Ausschneiden", () => FilesCopy(true)), Mi("Einfügen", FilesPaste), Mi("In den Papierkorb legen", FilesTrash), Mi("Im System-Finder zeigen", () => { if (!_opt.Isolated) _core.Integrations.LaunchDirect(Principal.LocalOwner, CurDir, _core.Audit); }) }) macMenu.Items.Add(am);
+                foreach (var am in new[] { Mi("Neuer Ordner", () => FilesNewFolder()), Mi("Umbenennen", () => { _fbRenaming = true; Show(FK); }), Mi("Kopieren", () => FilesCopy(false)), Mi("Ausschneiden", () => FilesCopy(true)), Mi("Einfügen", FilesPaste), Mi("In den Papierkorb legen", FilesTrash), Mi("Im System-Finder zeigen", () => { if (!_opt.Isolated) LaunchAs(CurDir); }) }) macMenu.Items.Add(am);
                 var left = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2, VerticalAlignment = VerticalAlignment.Center, Children = { back, fwd, title } };
                 if (WinCaps() is { } mcaps) { var sc = sideBox.Child; sideBox.Child = null; sideBox.Child = new DockPanel { Children = { DockTop(new Border { Height = 38, Child = mcaps }), sc! } }; Draggable(sideBox); } // Finder: Ampel oben in der Seitenleiste
                 var right = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center, Children = { viewBtn, sortBox, more, del, search } };

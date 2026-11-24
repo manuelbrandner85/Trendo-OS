@@ -26,7 +26,7 @@ public partial class MainWindow
     void RevealInFolder(string file)
     {
         var (exe, args) = DesktopPlatform.RevealCommand(file); // Windows markiert die Datei im Explorer, Linux öffnet den Ordner
-        _core.Integrations.LaunchDirect(Principal.LocalOwner, exe, _core.Audit, args);
+        LaunchAs(exe, args);
     }
 
     static string SizeText(long bytes) => bytes >= 1L << 30 ? $"{bytes / (double)(1L << 30):0.0} GB" : $"{Math.Max(1, bytes / (1 << 20))} MB";

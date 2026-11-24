@@ -149,11 +149,11 @@ public partial class MainWindow
             Line(bi, Act("bm-import-run", "Einlesen", () => Try(V, () => { var n = Bookmarks.ImportHtml(File.ReadAllText(Clean(bi))); foreach (var b in n) Bookmarks.Add(_core.DataRoot, b); Say($"{n.Count} Lesezeichen eingelesen.", V); })),
                 Act("bm-export", "Als HTML speichern", () => Try(V, () => { var f = Path.Combine(WorkFolder("lesezeichen"), "lesezeichen.html"); File.WriteAllText(f, Bookmarks.ExportHtml(Bookmarks.Load(_core.DataRoot))); Say("Gespeichert: " + f, V); }))), list)));
 
-        var priv = Line(); foreach (var b in browsers) if (Web.PrivateArg(b.Id) is { } arg) { var path = b.Path; priv.Children.Add(Act("priv-" + b.Id, b.Name + " privat", () => { if (!_core.Offline) _core.Integrations.LaunchDirect(Principal.LocalOwner, path, _core.Audit, arg); })); }
+        var priv = Line(); foreach (var b in browsers) if (Web.PrivateArg(b.Id) is { } arg) { var path = b.Path; priv.Children.Add(Act("priv-" + b.Id, b.Name + " privat", () => { if (!_core.Offline) LaunchAs(path, arg); })); }
         var tor = Web.TorPaths.Select(Environment.ExpandEnvironmentVariables).FirstOrDefault(File.Exists);
         sp.Children.Add(Card(Section("Privates Fenster in deinem Browser", "Trendo öffnet ein privates Fenster deines installierten Browsers – es speichert keinen Verlauf. Der Tor-Browser verschleiert zusätzlich deinen Standort – Trendo öffnet nur die offizielle Seite.",
             browsers.Count == 0 ? P("Kein bekannter Browser gefunden.") : priv,
-            Line(tor is not null ? Act("tor-open", "Tor-Browser starten", () => _core.Integrations.LaunchDirect(Principal.LocalOwner, tor, _core.Audit)) : Act("tor-get", "Tor-Browser offiziell holen", () => { if (_core.Offline) { Say("Offline-Modus: Die Tor-Seite kann nicht geöffnet werden.", V); return; } Launch(Web.TorOfficial); Say("Offizielle Tor-Seite geöffnet – nach der Installation hier „Tor-Browser starten“.", V); })))));
+            Line(tor is not null ? Act("tor-open", "Tor-Browser starten", () => LaunchAs(tor)) : Act("tor-get", "Tor-Browser offiziell holen", () => { if (_core.Offline) { Say("Offline-Modus: Die Tor-Seite kann nicht geöffnet werden.", V); return; } Launch(Web.TorOfficial); Say("Offizielle Tor-Seite geöffnet – nach der Installation hier „Tor-Browser starten“.", V); })))));
 
         var eng = Line(); var cur = Web.Engine(_core.DataRoot);
         foreach (var (id, name, _) in Web.Engines) eng.Children.Add(Act("engine-" + id, (cur == id ? "✓ " : "") + name, () => { Web.SetEngine(_core.DataRoot, id); Show(V); }, cur == id));

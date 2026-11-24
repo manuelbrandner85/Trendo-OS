@@ -1,0 +1,42 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    ROT N-D: Kind öffnet vlc-3.0.21-win64.exe / .lnk / .hta im Dateimanager nicht [FAIL]
+      Assert.Empty() Failure: Collection was not empty
+      Collection: ["C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-tes"···, "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-tes"···, "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-tes"···, "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-tes"···, "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-tes"···]
+      Stack Trace:
+        tests\Trendo.App.Tests\RotFix2Tests.cs(48,0): at Trendo.App.Tests.RotFix2.ND()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    ROT N-E/N-F: KI-Brücke fragt bei „Zurück zu Version …“ (upd-rollback); „Vorlage laden“ fragt nicht [FAIL]
+      Assert.True() Failure
+      Expected: True
+      Actual:   False
+      Stack Trace:
+        tests\Trendo.App.Tests\RotFix2Tests.cs(54,0): at Trendo.App.Tests.RotFix2.NEF()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    ROT N-C: Kind startet eine .exe aus der Suche/Downloads nicht [FAIL]
+      Assert.Empty() Failure: Collection was not empty
+      Collection: ["C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-tes"···]
+      Stack Trace:
+        tests\Trendo.App.Tests\RotFix2Tests.cs(40,0): at Trendo.App.Tests.RotFix2.NC()
+        --- End of stack trace from previous location ---
+    ROT N-A: Kind – Python-KI aus einem Studio (Wissen: Dokumente) lädt nichts [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: 0
+      Actual:   1
+      Stack Trace:
+        tests\Trendo.App.Tests\RotFix2Tests.cs(31,0): at Trendo.App.Tests.RotFix2.NA()
+        --- End of stack trace from previous location ---
+    ROT N-G: Erwachsene – n8n wird erst nach eigener Rückfrage eingerichtet (Nein = nichts) [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: 0
+      Actual:   1
+      Stack Trace:
+        tests\Trendo.App.Tests\RotFix2Tests.cs(65,0): at Trendo.App.Tests.RotFix2.NG()
+        --- End of stack trace from previous location ---
+  Finished:    Trendo.App.Tests (ID = 'e59e38da1f207a335067d389fe89e3eb1fda8f3e720a31408adbc3cda626199e')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 5, Errors: 0, Failed: 5, Skipped: 0, Not Run: 0, Time: 8,209s

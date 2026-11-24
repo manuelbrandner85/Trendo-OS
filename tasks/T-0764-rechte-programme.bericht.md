@@ -167,6 +167,45 @@ Die unabhängige Gegenprüfung von `fbbed41b9` fand Wege, über die ein Kinderpr
 4. `LaunchDirect(` mit vom Nutzer gewählten Dateien: Offline-Installer (erste Runde) und Dateimanager (M3).
    - **Nicht vollständig geprüft:** übrige `LaunchDirect`-/`Launch`-Ziele (feste Programmpfade, URLs, Ordner). Ein Kind kann dort ein Programm starten, aber keinen Installer aus einer gewählten Datei.
 
+## Zweite Prüfrunde (Commit „T-0764 fix2“)
+
+Die Prüfung von `4cdd1c7e6` hat alle zehn ersten Befunde als behoben bestätigt und neue Wege gefunden.
+
+**Rot auf 4cdd1c7e6:**
+- `reports/T-0764/rot-fix2-app.log`: 5 von 5 rot (N-A, N-C, N-D, N-E/N-F, N-G).
+- `reports/T-0764/rot-fix2-cli-familie.log`: Familien-PC, Hauptprofil ohne `--pin` → Paket eingerichtet, Exit 0.
+- Die Rot-Tests starten keine echten Programme: FakeLauncher, Downloads/Schritte/npm ersetzt.
+- Der Kodierungsfehler in `rot-fix1-cli-kinderprofil.log` („�“ statt „…“ in der Fortschrittszeile) ist berichtigt; die Prüfsumme in `SHA256SUMS.txt` ist neu.
+
+| Befund | Was geändert | Test (grün) |
+|---|---|---|
+| N-A Python-KI aus Studios | Neu `KiPyInstall` für die Studio-Aufrufer (Musik: Spuren, Analyse, Stimmen, eigene Stimme; Wissen; Vision; IFC; Open3D): Rolle zuerst, dann `FreigabeAsync(Wirkung("ki.pyapp", Modell))`, Ausführung nur in `Approvals.Execute`. Ablehnungen und Tor-Fehler kommen als `InvalidOperationException` mit verständlichem Satz, die alle Aufrufer schon abfangen (kein Absturz). Die eigentliche Einrichtung `KiPyInstallCore` prüft die Rolle als erste Zeile; die KI-Bibliothek ruft sie in ihrem eigenen Tor auf. Akteur ist `CurrentPrincipal`. | `RechteKernFix2Ui.PythonKi`: Kind → kein Download, kein Schritt, auch über die Seite „Wissen“. Erwachsene → „Nein“: nichts; „Ja“: Download erst nach `execution.start`. |
+| N-B Kommandozeile Familien-PC | Gibt es weitere Personen oder ist für das Profil eine Anmeldung eingerichtet, braucht `--install-deps` die PIN bzw. das Passwort dieses Profils (`--pin`, geprüft mit `ProfileLock.Verify`). Ohne Anmeldung, aber mit Personen: Exit 4 mit dem Hinweis, erst eine PIN festzulegen. Die PIN wird nie ausgegeben oder protokolliert. Ohne Personen und ohne Sperre bleibt alles wie bisher. **Hinweis:** Eine PIN auf der Kommandozeile ist in der Prozessliste sichtbar. | **echt** `RechteKernFix2Ui.Kommandozeile_Familie`: ohne Sperre 4; ohne PIN 4; falsche PIN 4; richtige PIN 0 und Paket da; PIN nicht in Ausgabe und Dateien. |
+| N-C Starten zentral | `Integrations.LaunchDirect/LaunchArgs` prüfen Rolle und Ziel selbst (`DemandLaunch`). Erwachsene: wie bisher. Kinderprofil: Dokumente, Ordner, Adressen und Trendo-eigene Programme ja; Installer, Skripte, Verknüpfungen und fremde .exe nein. Andere Rollen (Agent, API): weiter gar nicht. Alle 32 Aufrufer in der App laufen über `LaunchAs`/`LaunchArgsAs` mit `CurrentPrincipal`; eine Ablehnung zeigt einen Hinweis, es gibt keinen Absturz. Trendo-Ordner kommen über `Integrations.TrustedProgramPath` (Werkzeugordner, Programmordner, Portable-Ordner; nicht `.entfernt`). | Core `RechteKernFix2.Zentral_im_Kern`; App `RechteKernFix2Ui.Starten_zentral` (Suche/Downloads/Desktop-Ziel über `OpenHit`, Dateimanager). Der bestehende Test „Direktstart: nur Owner“ bleibt unverändert grün. |
+| N-D Umgehungen | `IsInstallerLike` erkennt zusätzlich .lnk, .url, .cpl, .hta, .application, .appref-ms, .msu, .jar, .diagcab, .settingcontent-ms, .gadget und .msc. Neu `NeedsSoftwareRight`: jede .exe außerhalb von Trendos Programmordnern. Meldung für Kinder: `Rbac.NurErwachseneStart`. **Abweichung:** Das Ziel einer .lnk wird nicht aufgelöst; Verknüpfungen öffnet ein Kinderprofil gar nicht. | Core `RechteKernFix2.Recht_noetig` (17 Fälle); App `Starten_zentral` (13 Dateiarten). |
+| N-E Rückkehr/Update | `RollbackNow` mit Rollenprüfung; Knöpfe „Zurück zu Version …“ und „jetzt installieren“ sind für Kinder gesperrt; das Installieren von Hand prüft die Rolle; `upd-` steht in der Namensregel der KI-Brücke. Automatische Updates nach der Einstellung eines Erwachsenen laufen weiter (Sicherheitsupdates). | `RechteKernFix2Ui.Rueckkehr` (Ersatz-Updater: Kind → nicht gefragt, Erwachsene → einmal). |
+| N-F „laden“ | Die Textregel greift nur noch bei Programmbezug (herunterladen, install, deinstall, auswerf, „Programm … laden/einrichten/entfernen/starten“, „KI/Modell laden“, „Zurück zu Version“); „Ja, laden“ erkennt der Knopfname. | Core `RechteKernFix2.Laden_nur_mit_Programmbezug`; `RechteKernFix1.Bruecke_fragt` weiter grün. |
+| N-G npm-Pakete | n8n/Node-RED, FreeSewing und axe-core laufen über `FreigabeAsync` und `Approvals.Execute` (Zwei-Schritt) – zusätzlich zur Rollenprüfung aus fix1. | `RechteKernFix2Ui.N8n_Zwei_Schritte` („Nein“: nichts; „Ja“: Einrichtung erst im Tor). FreeSewing und axe-core: Im Testmodus endet der Weg vor npm, die Rückfrage ist also nur im Code belegt (**NICHT GETESTET**). |
+
+**Tests der zweiten Runde:**
+- Build: 0 Fehler.
+- Core gezielt (RechteKernFix2/Fix1/RechteKern, SYS11_TrendoProgramme, SYS07_Auswerfen, FreigabenKern, Dependencies_Core, alle Klassen aus Tests.cs, TrendoMcpTests und Sys11Tests): 198 von 198 grün. Log: `gruen-fix2-core.log`.
+- App gezielt: 242 Testklassen – alle Klassen mit Bezug zu KiPy, Musik, Wissen, Vision, IFC/Open3D, Updates, Starten/Downloads/Suche, Dateimanager, n8n/FreeSewing/axe, KI-Quellen, Claude, KI-Brücke, W1*, Freigaben und RechteKern, dazu EveryButton_Alltag; ohne Browser- und Echtlauf-Klassen. Ergebnis: 1084 Tests, 0 Fehler, 5 übersprungen. Log: `gruen-fix2-app.log`.
+
+**Suchmuster dieser Runde und Ergebnis:**
+1. `Integrations.LaunchDirect(` / `LaunchArgs(` in `src/Trendo.App`:
+   - 32 Stellen sind auf `LaunchAs`/`LaunchArgsAs` umgestellt.
+   - Ausnahme: `FachprogrammAdapter` (Programs.cs:417–418). Er startet katalogisierte Programme nur nach Freigabe im Tor, weiter als Besitzer.
+2. `KiPyInstall(`: alle 8 Studio-Aufrufer gehen jetzt über die Freigabe; die KI-Bibliothek ruft `KiPyInstallCore` in ihrem Tor auf.
+3. `Updater.RollbackTo` / `InstallUpdateNow`: Knöpfe und Rückkehr sind geprüft.
+4. `InstallArgs(` / npm: alle drei Wege über das Tor.
+
+**Verbleibende ungeprüfte Wege (ehrlich):**
+- Direkte `Process.Start`-Aufrufe ohne `Integrations` (rund 100 Stellen) starten bekannte Werkzeuge: ffmpeg, mpv, Ollama, KI-Server, Programme aus dem Werkzeugordner, cmd für Quellcode-Programme. Ob irgendwo eine vom Nutzer gewählte fremde Datei so gestartet wird, ist nicht einzeln belegt.
+- Das Ziel einer `.lnk` wird nicht aufgelöst; für Kinder ist sie gesperrt.
+- Eine PIN auf der Kommandozeile ist in der Prozessliste sichtbar.
+- Ein Erwachsenen-Profil ohne PIN neben einem Kinderprofil hebt die Trennung über „Wechseln“ weiter auf (bekannter Hinweis aus T-0713).
+
 ## Abnahmekriterien
 
 | # | Kriterium | Urteil |

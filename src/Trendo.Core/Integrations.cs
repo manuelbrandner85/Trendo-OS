@@ -95,18 +95,36 @@ public sealed class Integrations(ApprovalGate gate, ProjectStore projects, IProc
         return gate.Request(by, OpenUrl, $"URL im Standardbrowser öffnen: {u.Host}", u.AbsoluteUri, resumable: true);
     }
 
-    /// <summary>Direkter Start durch den lokalen Owner per Klick (Dock/Schnellstart). Kein Agent darf das; wird auditiert.</summary>
+    /// <summary>T-0764 (2. Prüfrunde N-C): Trendos eigene Programmordner (Werkzeugordner, Programmordner, Portable-Ordner) – .exe darin gelten
+    /// als vertrauenswürdig. Setzt die App; ohne Angabe ist keine .exe vertrauenswürdig.</summary>
+    public Func<string, bool>? TrustedProgramPath { get; set; }
+
+    /// <summary>T-0764: Wer darf direkt starten, und braucht das Ziel das Recht „Programme verwalten“? Erwachsene (Besitzer) dürfen alles; das
+    /// Kinderprofil darf Dokumente, Ordner, Adressen und Trendos eigene Programme öffnen, aber keine Installer, Skripte, Verknüpfungen und
+    /// keine fremde .exe. Andere Rollen (Agenten, API) dürfen gar nicht direkt starten.</summary>
+    void DemandLaunch(Principal by, AuditLog audit, IEnumerable<string?> userTargets, string? exe = null)
+    {
+        if (by != Principal.ChildProfile) Rbac.Demand(by, Permission.ApproveAction, audit);
+        foreach (var t in userTargets)
+            if (t is not null && Sys.Software.NeedsSoftwareRight(t, TrustedProgramPath))
+                Rbac.DemandSoftware(by, "start " + Path.GetFileName(t.Trim('"')), audit, Rbac.NurErwachseneStart);
+        if (exe is not null && Sys.Software.IsInstallerLike(exe)) Rbac.DemandSoftware(by, "start " + Path.GetFileName(exe), audit, Rbac.NurErwachseneStart);
+    }
+
+    /// <summary>Direkter Start per Klick (Dock/Schnellstart, Dateien öffnen). Kein Agent darf das; wird auditiert.
+    /// T-0764: Rolle und Ziel werden hier geprüft (<see cref="DemandLaunch"/>) – alle Aufrufer profitieren.</summary>
     public void LaunchDirect(Principal by, string target, AuditLog audit)
     {
-        Rbac.Demand(by, Permission.ApproveAction, audit);
+        DemandLaunch(by, audit, [target]);
         audit.Append(by.Name, "user.direct_launch", target);
         launcher.Open(target);
     }
 
     /// <summary>Startet ein Programm mit genau einer Datei/URL als Argument (kein Shell-Parsing).</summary>
-    public void LaunchDirect(Principal by, string exe, AuditLog audit, string arg)
+    /// <param name="userExe">T-0764: Das Programm hat die Person selbst gewählt (eigene Verknüpfung) – dann gilt für die .exe dieselbe Prüfung wie für Dateien.</param>
+    public void LaunchDirect(Principal by, string exe, AuditLog audit, string arg, bool userExe = false)
     {
-        Rbac.Demand(by, Permission.ApproveAction, audit);
+        DemandLaunch(by, audit, userExe ? [exe, File.Exists(arg) ? arg : null] : [File.Exists(arg) ? arg : null], exe);
         audit.Append(by.Name, "user.direct_launch", $"{Path.GetFileName(exe)} {arg}");
         launcher.OpenWith(exe, arg);
     }
@@ -114,7 +132,7 @@ public sealed class Integrations(ApprovalGate gate, ProjectStore projects, IProc
     /// <summary>T-0203: externes Programm mit der aktuellen Datei (geplant von <see cref="ExternalApps.Plan"/>).</summary>
     public void LaunchArgs(Principal by, string exe, AuditLog audit, IReadOnlyList<string> args)
     {
-        Rbac.Demand(by, Permission.ApproveAction, audit);
+        DemandLaunch(by, audit, args.Where(File.Exists), exe);
         audit.Append(by.Name, "user.direct_launch", $"{Path.GetFileName(exe)} {string.Join(" ", args)}");
         launcher.OpenWithArgs(exe, args);
     }

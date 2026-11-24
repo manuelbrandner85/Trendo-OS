@@ -45,10 +45,26 @@ public static class Software
     public static bool IsInstallerLike(string path)
     {
         var ext = Path.GetExtension(path).ToLowerInvariant();
-        if (ext is ".msi" or ".msp" or ".msix" or ".msixbundle" or ".appx" or ".appxbundle" or ".appinstaller" or ".bat" or ".cmd" or ".ps1" or ".psm1" or ".vbs" or ".vbe" or ".wsf" or ".wsh" or ".js" or ".jse" or ".reg" or ".scr" or ".com" or ".pif") return true;
+        if (ext is ".msi" or ".msp" or ".msix" or ".msixbundle" or ".appx" or ".appxbundle" or ".appinstaller" or ".bat" or ".cmd" or ".ps1" or ".psm1" or ".vbs" or ".vbe" or ".wsf" or ".wsh" or ".js" or ".jse" or ".reg" or ".scr" or ".com" or ".pif"
+            or ".lnk" or ".url" or ".cpl" or ".hta" or ".application" or ".appref-ms" or ".msu" or ".jar" or ".diagcab" or ".settingcontent-ms" or ".gadget" or ".msc") return true; // T-0764 N-D
         if (ext is not ".exe") return false;
         var n = Path.GetFileNameWithoutExtension(path).ToLowerInvariant();
         return n.Contains("setup") || n.Contains("install") || n.Contains("unins") || n.Contains("update") || n.Contains("deinstall");
+    }
+
+    /// <summary>T-0764 (2. Prüfrunde N-C/N-D): Braucht das Öffnen dieses Ziels das Recht „Programme verwalten“? Ja bei Installern, Paketen, Skripten,
+    /// Verknüpfungen (.lnk/.url – ihr Ziel ist nicht geprüft) und bei jeder .exe außerhalb von Trendos eigenen Programmordnern
+    /// (<paramref name="trusted"/>). Adressen (https:, ms-settings:, shell: …), Ordner und Dokumente: nein.</summary>
+    public static bool NeedsSoftwareRight(string target, Func<string, bool>? trusted = null)
+    {
+        if (string.IsNullOrWhiteSpace(target)) return false;
+        var t = target.Trim().Trim('"');
+        if (Regex.IsMatch(t, @"^[A-Za-z][A-Za-z0-9+.\-]+:(?![\\/])") || t.Contains("://", StringComparison.Ordinal)) return false; // Adresse, kein Dateipfad (C:\ ist eine Datei)
+        string full;
+        try { full = Path.GetFullPath(t); } catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { return true; }
+        if (Directory.Exists(full)) return false;
+        if (IsInstallerLike(full)) return true;
+        return Path.GetExtension(full).Equals(".exe", StringComparison.OrdinalIgnoreCase) && !(trusted?.Invoke(full) ?? false);
     }
 
     /// <summary>T-0764: Offline-Installer starten – nur Erwachsene, und nur, wenn die Prüfsumme jetzt (beim Start) noch stimmt.

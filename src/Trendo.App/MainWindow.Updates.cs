@@ -116,6 +116,16 @@ public partial class MainWindow
         finally { _updateBusy = false; if (CurrentView == "updates") Show("updates"); }
     }
 
+    /// <summary>T-0764 (2. Prüfrunde N-E): zur gesicherten Version zurück – nur Erwachsene (eine ältere Version könnte Sperren nicht kennen).
+    /// Liefert false, wenn abgelehnt oder die Version fehlt.</summary>
+    public bool RollbackNow(string version)
+    {
+        if (!DarfSoftware("trendo.rollback " + version, "updates")) { _updateMsg = Rbac.NurErwachseneSoftware; return false; }
+        _core.Audit.Append(CurrentPrincipal.Name, "update.rollback", version);
+        if (Updater.RollbackTo(Boot.BackupDir, version)) return true;
+        _updateMsg = "Die vorherige Version ist nicht mehr da."; Show("updates"); return false;
+    }
+
     /// <summary>U2 + U5: Sicherung der laufenden Version, Fenster merken, Einrichtungsbildschirm zeigen, installieren, neu starten.</summary>
     public void InstallUpdateNow()
     {
@@ -162,8 +172,8 @@ public partial class MainWindow
         row.Children.Add(Sp(check));
         if (_updateReady is { } v)
         {
-            var now = new Button { Name = "upd-install", Content = $"Version {v} jetzt installieren" };
-            now.Click += (_, _) => InstallUpdateNow();
+            var now = new Button { Name = "upd-install", Content = $"Version {v} jetzt installieren", IsEnabled = CanManageSoftware };
+            now.Click += (_, _) => { if (DarfSoftware("trendo.update " + v, "updates")) InstallUpdateNow(); }; // T-0764: von Hand nur Erwachsene (automatische Updates laut Einstellung bleiben)
             row.Children.Add(Sp(now));
         }
         var news = new Button { Name = "upd-news", Content = "Was ist neu?" }; news.Click += (_, _) => Show("neu");
@@ -177,8 +187,9 @@ public partial class MainWindow
         var hasBackup = Directory.Exists(Boot.BackupDir) && Directory.GetFiles(Boot.BackupDir, "*.nupkg").Length > 0;
         if (hasBackup && good is not null && good != Updater.Current)
         {
-            var rb = new Button { Name = "upd-rollback", Content = $"Zurück zu Version {good}" };
-            rb.Click += (_, _) => { _core.Audit.Append(Principal.LocalOwner.Name, "update.rollback", good); if (!Updater.RollbackTo(Boot.BackupDir, good)) { _updateMsg = "Die vorherige Version ist nicht mehr da."; Show("updates"); } };
+            var rb = new Button { Name = "upd-rollback", Content = $"Zurück zu Version {good}", IsEnabled = CanManageSoftware };
+            if (!CanManageSoftware) ToolTip.SetTip(rb, Rbac.NurErwachseneSoftware);
+            rb.Click += (_, _) => RollbackNow(good);
             back.Children.Add(rb);
         }
         sp.Children.Add(WCard(back));

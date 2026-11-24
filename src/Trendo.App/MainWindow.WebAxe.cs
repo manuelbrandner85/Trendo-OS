@@ -37,9 +37,13 @@ public partial class MainWindow
         else if (npm is null) _axeMsg = "⚠ Node.js mit npm fehlt – zuerst unter Programme „Node.js“ einrichten.";
         else
         {
+            // T-0764 (2. Prüfrunde N-G): eigene Rückfrage, Laden nur im Freigabe-Tor
+            const string pkg = "axe-core+jsdom";
+            var w = new Wirkung("deps.npm", pkg, "Barrierefreiheits-Prüfung einrichten?", "Pakete: axe-core und jsdom (npm, offizielle Quelle, feste Fassungen, ohne Installationsskripte)\n\nTrendo lädt die Pakete mit npm auf diesen PC.", "Einrichten");
+            if (await FreigabeAsync(w) is not { } approvalId) { _axeMsg = "Abgebrochen – es wurde nichts eingerichtet."; Show("dev"); return; }
             _axeMsg = "axe-core und jsdom werden aus der offiziellen npm-Quelle geladen (feste Fassungen, ohne Installationsskripte) …"; Show("dev");
             Directory.CreateDirectory(AxeDir);
-            var r = await Task.Run(() => Cli.Run(npm, AxeCheck.InstallArgs(AxeDir), AxeDir, 600_000));
+            var r = await _core.Approvals.Execute(approvalId, "deps.npm", pkg, () => Task.Run(() => Cli.Run(npm, AxeCheck.InstallArgs(AxeDir), AxeDir, 600_000)));
             var ok = r.Ok && AxeCheck.Ready(AxeDir);
             _core.Audit.Append(Principal.LocalOwner.Name, "deps.npm", $"axe-core@{AxeCheck.AxeVersion} jsdom@{AxeCheck.JsdomVersion}" + (ok ? "" : " (fehlgeschlagen)"));
             _axeMsg = ok ? "✓ axe-core ist eingerichtet." : "⚠ Einrichten ging nicht: " + (r.Err.Length > 0 ? r.Err : r.Out).Trim().Split('\n')[0];

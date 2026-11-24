@@ -59,7 +59,7 @@ public partial class MainWindow
                     var up = Directory.GetFiles(dir, "*.uproject")[0];
                     _core.Audit.Append(Principal.LocalOwner.Name, "game.unreal_project", e.Version);
                     var exe = GameStudio.EditorExe(e);
-                    if (File.Exists(exe)) _core.Integrations.LaunchDirect(Principal.LocalOwner, exe, _core.Audit, up);
+                    if (File.Exists(exe)) LaunchAs(exe, up);
                     Say($"Projekt „{Path.GetFileName(dir)}“ für Unreal {e.Version} angelegt." + (File.Exists(exe) ? " Der Editor startet (das dauert)." : ""), "spiele");
                 }
                 catch (Exception ex) { Say("Hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex), "spiele"); }
@@ -73,7 +73,7 @@ public partial class MainWindow
             if (!File.Exists(f) || !f.EndsWith(".uproject", StringComparison.OrdinalIgnoreCase)) { Say("Das ist keine vorhandene .uproject-Datei.", "spiele"); return; }
             if (engines.Count == 0) { Say("Unreal Engine ist nicht installiert – das Projekt kann erst nach der Installation geöffnet werden.", "spiele"); return; }
             var exe = GameStudio.EditorExe(engines[0]);
-            if (File.Exists(exe)) { _core.Integrations.LaunchDirect(Principal.LocalOwner, exe, _core.Audit, f); Say($"Unreal öffnet „{Path.GetFileNameWithoutExtension(f)}“ (das dauert).", "spiele"); }
+            if (File.Exists(exe)) { LaunchAs(exe, f); Say($"Unreal öffnet „{Path.GetFileNameWithoutExtension(f)}“ (das dauert).", "spiele"); }
             else { Launch(f); Say("Unreal-Editor nicht gefunden – das Projekt wird mit der zugeordneten App geöffnet.", "spiele"); }
         }) } });
         sp.Children.Add(Card(ue));

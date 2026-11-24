@@ -26,12 +26,34 @@ public partial class MainWindow
 
     private Control AppsPage(string title, Control body) => Page(title, new StackPanel { Spacing = 8, Children = { AppsNav(), body } });
 
-    private void Launch(string target) => _core.Integrations.LaunchDirect(Principal.LocalOwner, target, _core.Audit);
+    private void Launch(string target) => LaunchAs(target);
+
+    /// <summary>T-0764 (2. Prüfrunde N-C): Starten als angemeldete Person – der Kern prüft Rolle und Ziel. Abgelehnt: Hinweis, kein Absturz, false.</summary>
+    internal bool LaunchAs(string target) => LaunchTry(() => _core.Integrations.LaunchDirect(CurrentPrincipal, target, _core.Audit));
+    internal bool LaunchAs(string exe, string arg, bool userExe = false) => LaunchTry(() => _core.Integrations.LaunchDirect(CurrentPrincipal, exe, _core.Audit, arg, userExe));
+    internal bool LaunchArgsAs(string exe, IReadOnlyList<string> args) => LaunchTry(() => _core.Integrations.LaunchArgs(CurrentPrincipal, exe, _core.Audit, args));
+    /// <summary>Letzte abgelehnte Startmeldung (Tests, Anzeige).</summary>
+    public string LastLaunchRefused { get; private set; } = "";
+    static bool Under(string path, string dir)
+    {
+        try
+        {
+            var d = Path.TrimEndingDirectorySeparator(Path.GetFullPath(dir)) + Path.DirectorySeparatorChar;
+            return Path.GetFullPath(path).StartsWith(d, StringComparison.OrdinalIgnoreCase) && !Path.GetFullPath(path).Contains(Path.DirectorySeparatorChar + ".entfernt" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+        }
+        catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { return false; }
+    }
+
+    bool LaunchTry(Action a)
+    {
+        try { a(); return true; }
+        catch (UnauthorizedAccessException e) { LastLaunchRefused = e.Message; Toast(e.Message); return false; }
+    }
 
     private Control FileRow(FileInfo f, int i, string prefix, string? player = null)
     {
         var open = new Button { Name = $"{prefix}-open-{i}", Content = "Öffnen", FontSize = 11, Padding = new Thickness(10, 2) };
-        open.Click += (_, _) => { if (player is not null) _core.Integrations.LaunchDirect(Principal.LocalOwner, player, _core.Audit, f.FullName); else Launch(f.FullName); };
+        open.Click += (_, _) => { if (player is not null) LaunchAs(player, f.FullName); else Launch(f.FullName); };
         var folder = new Button { Name = $"{prefix}-folder-{i}", Content = "Ordner", FontSize = 11, Padding = new Thickness(10, 2) };
         folder.Click += (_, _) => Launch(f.DirectoryName ?? "");
         return new Border { Background = TileBg, CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 5), Child = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = {

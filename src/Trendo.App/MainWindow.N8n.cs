@@ -59,19 +59,29 @@ public partial class MainWindow
     {
         var (pkg, dir) = which == "node-red" ? ("node-red", NodeRedDir) : ("n8n", N8nDir);
         if (!DarfSoftware("npm.install " + pkg, "ablaeufe")) { _n8nAsk = ""; _n8nMsg = Rbac.NurErwachseneSoftware; Show("ablaeufe"); return; } // T-0764: Rolle vor Testmodus und Download
-        _n8nAsk = ""; _n8nMsg = $"{pkg} wird aus der offiziellen npm-Quelle geladen … (einige Minuten)"; Show("ablaeufe");
-        bool ok;
-        if (AutomationInstallOverride is { } fake) ok = await fake(pkg, dir);
-        else if (_opt.Isolated) ok = false;
-        else
+        _n8nAsk = "";
+        // T-0764 (2. Prüfrunde N-G): eigene Rückfrage, Laden nur im Freigabe-Tor
+        var w = new Wirkung("deps.npm", pkg, $"{pkg} einrichten?", $"Paket: {pkg} (npm, offizielle Quelle)\nZiel: Trendo-Ordner für Abläufe\n\nTrendo lädt das Paket mit npm auf diesen PC (einige Minuten).", "Einrichten");
+        if (await FreigabeAsync(w) is not { } approvalId) { _n8nMsg = $"{pkg}: abgebrochen – es wurde nichts eingerichtet."; Show("ablaeufe"); return; }
+        _n8nMsg = $"{pkg} wird aus der offiziellen npm-Quelle geladen … (einige Minuten)"; Show("ablaeufe");
+        bool ok; string? err = null;
+        try
         {
-            var npm = Cli.Find("npm") ?? Cli.Find("npm.cmd");
-            if (npm is null) { _n8nMsg = "⚠ Node.js mit npm fehlt – zuerst unter Programme „Node.js“ einrichten."; Show("ablaeufe"); return; }
-            Directory.CreateDirectory(dir);
-            var r = await Task.Run(() => Cli.Run(npm, N8n.InstallArgs(dir, pkg), dir, 1_800_000));
-            ok = r.Ok && File.Exists(N8n.Exe(dir, pkg == "node-red" ? "node-red" : "n8n"));
-            if (!ok) { _n8nMsg = "⚠ Einrichten ging nicht: " + Short(r.Err.Length > 0 ? r.Err : r.Out); Show("ablaeufe"); return; }
+            ok = await _core.Approvals.Execute(approvalId, "deps.npm", pkg, async () =>
+            {
+                if (AutomationInstallOverride is { } fake) return await fake(pkg, dir);
+                if (_opt.Isolated) return false;
+                var npm = Cli.Find("npm") ?? Cli.Find("npm.cmd");
+                if (npm is null) { err = "⚠ Node.js mit npm fehlt – zuerst unter Programme „Node.js“ einrichten."; return false; }
+                Directory.CreateDirectory(dir);
+                var r = await Task.Run(() => Cli.Run(npm, N8n.InstallArgs(dir, pkg), dir, 1_800_000));
+                var good = r.Ok && File.Exists(N8n.Exe(dir, pkg == "node-red" ? "node-red" : "n8n"));
+                if (!good) err = "⚠ Einrichten ging nicht: " + Short(r.Err.Length > 0 ? r.Err : r.Out);
+                return good;
+            });
         }
+        catch (ApprovalException e) { ok = false; err = e.Message; }
+        if (err is not null) { _n8nMsg = err; Show("ablaeufe"); return; }
         _core.Audit.Append(CurrentPrincipal.Name, "automatik.eingerichtet", pkg + (ok ? "" : " (fehlgeschlagen)"));
         _n8nMsg = ok ? $"✓ {pkg} ist eingerichtet – „Starten“." : $"⚠ {pkg} konnte nicht eingerichtet werden."; Show("ablaeufe");
     }

@@ -23,7 +23,7 @@ public partial class MainWindow
         {
             var u = Browsers.Normalize(url.Text ?? "", Trendo.Core.Sys.Web.SearchUrl(_core.DataRoot));
             if (u is null) { msg.Text = "Diese Adresse öffnet Trendo nicht (nur http und https)."; return; }
-            if (exe is null) Launch(u.AbsoluteUri); else _core.Integrations.LaunchDirect(Principal.LocalOwner, exe, _core.Audit, u.AbsoluteUri);
+            if (exe is null) Launch(u.AbsoluteUri); else LaunchAs(exe, u.AbsoluteUri);
             msg.Text = $"Geöffnet: {u.Host}";
         }
         url.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) Go(null); };

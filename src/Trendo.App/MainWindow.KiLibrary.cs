@@ -216,7 +216,7 @@ public partial class MainWindow
             {
             if (KiPyApps.For(m.Runtime) is { } pyApp)
             {
-                await KiPyInstall(m, pyApp);
+                await KiPyInstallCore(m, pyApp); // im Freigabe-Tor dieser Seite
                 _core.Audit.Append(CurrentPrincipal.Name, "ki.library.install", $"{m.Id} {m.License}");
                 _kiLibMsg = $"{m.Name} ist eingerichtet. Mit „Ausprobieren“ kannst du es gleich testen."; _kiTry = m.Id;
                 return true;

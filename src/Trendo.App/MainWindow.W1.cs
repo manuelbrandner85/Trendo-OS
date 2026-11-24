@@ -116,7 +116,7 @@ public partial class MainWindow
             case "filter": _studioFilter = arg; Show("studios"); break;
             case "project": Show("projects"); break;
             case "add": OpenAddHub("alles", arg); break;
-            default: _core.Integrations.LaunchDirect(Principal.LocalOwner, h.Target, _core.Audit); break;
+            default: LaunchAs(h.Target); break;
         }
     }
 }

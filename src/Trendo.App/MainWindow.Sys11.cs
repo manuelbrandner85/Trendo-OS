@@ -86,7 +86,7 @@ public partial class MainWindow
         var list = new StackPanel { Spacing = 4 };
         foreach (var (s, i) in Software.Shortcuts(_core.DataRoot).Select((s, i) => (s, i)))
             list.Children.Add(Line(P($"{s.Name}: {Path.GetFileName(s.Exe)} {string.Join(' ', s.Args)}"),
-                Act($"sc-run-{i}", "Starten", () => Try(V, () => { _core.Integrations.LaunchDirect(Principal.LocalOwner, s.Exe, _core.Audit, string.Join(' ', s.Args.Select(a => a.Contains(' ') ? $"\"{a}\"" : a))); Say(s.Name + " gestartet.", V); })),
+                Act($"sc-run-{i}", "Starten", () => Try(V, () => { Say(LaunchAs(s.Exe, string.Join(' ', s.Args.Select(a => a.Contains(' ') ? $"\"{a}\"" : a)), userExe: true) ? s.Name + " gestartet." : LastLaunchRefused, V); })),
                 Act($"sc-del-{i}", "Entfernen", () => { Software.RemoveShortcut(_core.DataRoot, s.Name); Say("Entfernt.", V); })));
         sp.Children.Add(Card(Section("Eigene Verknüpfungen", "Ein Programm mit festen Einstellungen starten – z. B. einen Ordner direkt öffnen.",
             Line(sn, se, sa, Act("sc-add", "Anlegen", () => Try(V, () => { Software.AddShortcut(_core.DataRoot, Clean(sn), Clean(se), sa.Text ?? ""); Say("Verknüpfung angelegt.", V); }), true)), list)));
