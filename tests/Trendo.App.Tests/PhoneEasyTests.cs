@@ -110,7 +110,9 @@ public class PhoneEasyTests
 
         var dev = Assert.Single(access.Devices());
         var again = await phone.GetAsync("/", ct); // dauerhaft: jeder Besuch verlängert den Schlüssel im Handy
-        Assert.Contains(again.Headers.GetValues("Set-Cookie"), c => c.StartsWith(PhoneLinkServer.Cookie + "=") && c.Contains("max-age=31536000"));
+        // T-0767 Befund M3: Schlüssel im Handy gilt 30 Tage ab dem letzten Besuch (vorher 1 Jahr), jeder Besuch verlängert
+        Assert.True(PhoneLinkServer.CookieLife <= TimeSpan.FromDays(30));
+        Assert.Contains(again.Headers.GetValues("Set-Cookie"), c => c.StartsWith(PhoneLinkServer.Cookie + "=") && c.Contains("max-age=" + (int)PhoneLinkServer.CookieLife.TotalSeconds));
         access.SetRemote(dev.Id, true);
         Assert.Contains("/app", await phone.GetStringAsync("/", ct));
         var shell = await phone.GetStringAsync("/fern", ct); // alter Link führt zur App

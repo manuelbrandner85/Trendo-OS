@@ -114,7 +114,7 @@ public partial class MainWindow
         await EnsurePhoneServerAsync();
         // Netz wechselt (Tailscale meldet sich später an, anderes WLAN): alle 30 Sekunden prüfen und neue Adressen dazunehmen
         var t = new DispatcherTimer { Interval = TimeSpan.FromSeconds(30) };
-        t.Tick += async (_, _) => { if (_phoneServer is not null && PhoneAccess.Devices().Count > 0) await EnsurePhoneServerAsync(); };
+        t.Tick += async (_, _) => { PhonePurgeOutbox(); if (_phoneServer is not null && PhoneAccess.Devices().Count > 0) await EnsurePhoneServerAsync(); };
         t.Start();
         Closed += (_, _) => t.Stop();
     }
@@ -175,6 +175,7 @@ public partial class MainWindow
             _phoneTimer.Tick += (_, _) =>
             {
                 if (CurrentView != "handy") { _phoneTimer!.Stop(); return; }
+                PhonePurgeOutbox();
                 PhoneRenewOffer();
                 if (PhoneSignature() != _phoneSig) Show("handy");
             };
@@ -263,6 +264,7 @@ public partial class MainWindow
                     BigButton("phone-where-away", "Überall – auch unterwegs", () => { _phoneWhere = "away"; _phoneTsPhoneDone = false; Show("handy"); return Task.CompletedTask; }, false),
                 } });
                 body.Children.Add(P("Zuhause ist am schnellsten eingerichtet. „Überall“ nutzt Tailscale – ein kostenloses, verschlüsseltes Privatnetz nur für deine Geräte. Trendo richtet es mit dir zusammen ein.", null, 12.5));
+                body.Children.Add(PhoneHomeNote());
                 break;
 
             case "ts-install":
@@ -342,6 +344,7 @@ public partial class MainWindow
         var offer = PhoneAccess.CurrentOffer();
         if (host is null || offer is null || _phoneServer is null) return;
         var away = PhoneAccess.IsTailscale(host);
+        if (!away) body.Children.Add(PhoneHomeNote()); // Befund M3
         body.Children.Add(Ok(away ? $"PC ist bereit – über Tailscale ({host})." : $"PC ist bereit – im Heimnetz{(_phoneSsid is { Length: > 0 } s ? $" „{s}“" : "")} ({host})."));
         var url = PhoneAccess.PairUrl(host, _phoneServer.Port, offer.Secret);
         if (step == "confirm")

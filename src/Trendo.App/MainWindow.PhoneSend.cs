@@ -22,13 +22,32 @@ public partial class MainWindow
     /// alles, was nur für dieses Handy bereitlag, wird gelöscht.</summary>
     public void PhoneRemoveDevice(string id, string name)
     {
+        // Befund M2: Schlüssel-Hashes vor dem Löschen merken – nur eine Abweisung mit genau diesem alten Schlüssel belegt die Sperre
+        var dev = PhoneAccess.Devices().FirstOrDefault(d => d.Id == id);
         PhoneAccess.Remove(id);
         try { PhoneTransfer.DropDevice(PhoneOutbox, id); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
         _core.Audit.Append(Principal.LocalOwner.Name, "phonelink.removed", name);
-        PhoneRun.Record(PhoneRunLog.Steps.Removed, id, null, note: "am PC entfernt, Schlüssel gelöscht");
+        PhoneRun.RecordRemoved(id, dev is null ? [] : [dev.TokenHash, .. dev.More ?? []], note: "am PC entfernt, Schlüssel gelöscht");
         Toast($"{name} ist nicht mehr verbunden.");
         Show("handy");
     }
+
+    DateTime _phonePurgedAt;
+
+    /// <summary>Befund N4: Was länger als 24 Stunden für ein Handy bereitlag, verschwindet – beim Start des Handy-Zugangs und höchstens einmal je Minute.</summary>
+    public void PhonePurgeOutbox(bool force = false)
+    {
+        if (!force && DateTime.UtcNow - _phonePurgedAt < TimeSpan.FromMinutes(1)) return;
+        _phonePurgedAt = DateTime.UtcNow;
+        try { PhoneTransfer.PurgeExpired(PhoneOutbox, DateTime.UtcNow); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+    }
+
+    /// <summary>Befund M3: ehrlich sagen, dass das Heimnetz ohne Verschlüsselung läuft.</summary>
+    Control PhoneHomeNote() => new TextBlock
+    {
+        Name = "phone-home-note", TextWrapping = TextWrapping.Wrap, FontSize = 12.5, Foreground = Brush.Parse("#F5C451"),
+        Text = "Zuhause läuft die Verbindung unverschlüsselt durchs WLAN – nur im eigenen, passwortgeschützten WLAN nutzen. Unterwegs (Tailscale) ist sie verschlüsselt.",
+    };
 
     async Task PhoneSendPickAsync(string id, string name)
     {

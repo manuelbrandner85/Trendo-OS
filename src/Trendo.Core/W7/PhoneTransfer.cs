@@ -29,7 +29,24 @@ public static class PhoneTransfer
         public long Max { get; } = max;
     }
 
-    public sealed record Received(string Path, long Bytes, string Sha256);
+    /// <param name="Risky">Programm- oder Verknüpfungsdatei (.exe, .lnk, .bat …) – Trendo warnt davor, sie zu öffnen.</param>
+    public sealed record Received(string Path, long Bytes, string Sha256, bool Risky = false);
+
+    static readonly HashSet<string> RiskyExt = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".exe", ".com", ".scr", ".msi", ".msix", ".appx", ".lnk", ".url", ".scf", ".bat", ".cmd", ".ps1", ".psm1", ".vbs", ".vbe", ".js", ".jse", ".wsf", ".wsh", ".hta", ".cpl", ".jar", ".reg", ".dll",
+    };
+
+    /// <summary>Befund N2: Dateien, die beim Öffnen etwas ausführen oder umleiten können.</summary>
+    public static bool IsRisky(string name) => RiskyExt.Contains(Path.GetExtension(name)) || Path.GetFileName(name).Equals("desktop.ini", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>Befund N2: „Aus dem Internet/fremd“-Kennzeichen (Mark-of-the-Web, Zone 3) – Windows fragt dann vor dem Ausführen nach.</summary>
+    public static void MarkFromOutside(string path)
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        try { File.WriteAllText(path + ":Zone.Identifier", "[ZoneTransfer]\r\nZoneId=3\r\n"); }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or NotSupportedException) { } // z. B. FAT32-Stick ohne Datenströme
+    }
 
     /// <summary>Dateiname vom Handy oder für das Handy: nur der Name ohne Pfad, keine Steuer- und Sonderzeichen, keine Windows-Gerätenamen (CON, NUL …),
     /// keine führenden Punkte (versteckt), höchstens 120 Zeichen mit erhaltener Endung.</summary>
@@ -37,7 +54,9 @@ public static class PhoneTransfer
     {
         var s = (raw ?? "").Replace('\\', '/');
         s = s[(s.LastIndexOf('/') + 1)..];
-        s = new string(s.Where(ch => !char.IsControl(ch) && Array.IndexOf(Bad, ch) < 0).ToArray()).Trim().Trim('.', ' ');
+        // Befund N1: Richtungs- und andere Formatzeichen (z. B. U+202E, lässt „x<U+202E>gpj.exe“ wie „xexe.jpg“ aussehen) entfernen, Unicode einheitlich (NFC)
+        try { s = s.Normalize(NormalizationForm.FormC); } catch (ArgumentException) { }
+        s = new string(s.Where(ch => !char.IsControl(ch) && !char.IsSurrogate(ch) && char.GetUnicodeCategory(ch) != System.Globalization.UnicodeCategory.Format && Array.IndexOf(Bad, ch) < 0).ToArray()).Trim().Trim('.', ' ');
         if (s.Length == 0) s = fallback;
         var ext = Path.GetExtension(s);
         var stem = s[..^ext.Length];
@@ -59,7 +78,7 @@ public static class PhoneTransfer
 
     /// <summary>Nimmt eine Datei an: schreibt erst eine versteckte Teil-Datei, prüft die Größe beim Lesen, bildet SHA-256 und benennt erst am Ende um.
     /// Bei Abbruch oder zu großer Datei bleibt nichts liegen.</summary>
-    public static async Task<Received> ReceiveAsync(Stream source, string dir, string? rawName, long maxBytes, CancellationToken ct = default)
+    public static async Task<Received> ReceiveAsync(Stream source, string dir, string? rawName, long maxBytes, CancellationToken ct = default, bool markOutside = false)
     {
         Directory.CreateDirectory(dir);
         var part = Path.Combine(dir, "." + Guid.NewGuid().ToString("N")[..12] + ".teil");
@@ -83,10 +102,18 @@ public static class PhoneTransfer
                 await dst.FlushAsync(ct);
             }
             sha = Convert.ToHexStringLower(hash.GetHashAndReset());
-            var target = UniqueTarget(dir, CleanName(rawName, $"vom-handy-{DateTime.Now:yyyyMMdd-HHmmss}"));
+            var name = CleanName(rawName, $"vom-handy-{DateTime.Now:yyyyMMdd-HHmmss}");
             if (OperatingSystem.IsWindows()) File.SetAttributes(part, FileAttributes.Normal);
-            File.Move(part, target);
-            return new(target, total, sha);
+            // Befund N3: zwei Übertragungen mit gleichem Namen gleichzeitig – nimmt eine den Namen, bekommt die andere die nächste Nummer
+            string target;
+            for (var attempt = 0; ; attempt++)
+            {
+                target = UniqueTarget(dir, name);
+                try { File.Move(part, target); break; }
+                catch (IOException) when (attempt < 1000 && File.Exists(part) && (File.Exists(target) || Directory.Exists(target))) { }
+            }
+            if (markOutside) MarkFromOutside(target);
+            return new(target, total, sha, IsRisky(name));
         }
         catch
         {
@@ -189,7 +216,15 @@ public sealed class PhoneRunLog
     readonly List<Entry> _entries = [];
     readonly Dictionary<string, string> _alias = [];
     readonly HashSet<string> _removed = [];
+    /// <summary>Befund M2: Schlüssel-Hashes entfernter Handys → Gerätekennung. Nur eine Abweisung mit genau so einem Schlüssel belegt die Sperre.</summary>
+    readonly Dictionary<string, string> _removedHashes = [];
+    readonly Dictionary<string, int> _rejectedPerDevice = [];
+    public const int MaxRejectedPerDevice = 20;
+    public const int MaxEntries = 5000;
     DateTime _start;
+
+    /// <summary>Abweisungen mit unbekanntem oder fremdem Schlüssel – nur gezählt, nicht einzeln protokolliert und nie als Beleg gewertet.</summary>
+    public int OtherRejected { get; private set; }
 
     public bool Active { get; private set; }
     public DateTime Started => _start;
@@ -197,7 +232,7 @@ public sealed class PhoneRunLog
 
     public void Start(DateTime? utcNow = null)
     {
-        lock (_lock) { _entries.Clear(); _alias.Clear(); _removed.Clear(); _start = utcNow ?? DateTime.UtcNow; Active = true; }
+        lock (_lock) { _entries.Clear(); _alias.Clear(); _removed.Clear(); _removedHashes.Clear(); _rejectedPerDevice.Clear(); OtherRejected = 0; _start = utcNow ?? DateTime.UtcNow; Active = true; }
     }
 
     /// <summary>Netzart statt Adresse: „Heimnetz“, „Tailscale“, „Loopback (Test am PC)“, „PC“ (ohne Gegenstelle).</summary>
@@ -224,8 +259,34 @@ public sealed class PhoneRunLog
             if (!Active) return;
             var dev = deviceKey is null ? "–" : _alias.TryGetValue(deviceKey, out var a) ? a : _alias[deviceKey] = $"Gerät {_alias.Count + 1}";
             if (step == Steps.Removed && deviceKey is not null) _removed.Add(dev);
+            if (_entries.Count >= MaxEntries) return;
             _entries.Add(new(t, Math.Round((t - _start).TotalSeconds, 1), step, dev, Network(from), bytes, sha, ok, Clean(note)));
         }
+    }
+
+    /// <summary>Handy entfernt: merkt sich (vor dem Löschen) die Schlüssel-Hashes des Geräts, damit eine spätere Abweisung genau diesem Gerät zugeordnet wird.</summary>
+    public void RecordRemoved(string deviceKey, IEnumerable<string> tokenHashes, string note = "", DateTime? utcNow = null)
+    {
+        if (!Active) return;
+        lock (_lock) foreach (var h in tokenHashes.Where(h => !string.IsNullOrEmpty(h))) _removedHashes[h.ToLowerInvariant()] = deviceKey;
+        Record(Steps.Removed, deviceKey, null, note: note, utcNow: utcNow);
+    }
+
+    /// <summary>Der Handy-Zugang hat eine Anfrage mit ungültigem Schlüssel abgewiesen. Gehört der Schlüssel zu einem im Lauf entfernten Handy,
+    /// wird die Abweisung diesem Gerät zugeordnet (höchstens 20 Einträge je Gerät); sonst wird sie nur gezählt.</summary>
+    public void RecordRejectedToken(string? token, IPAddress? from, string note = "", DateTime? utcNow = null)
+    {
+        if (!Active || string.IsNullOrEmpty(token)) return;
+        var h = PhoneAccess.TokenHash(token);
+        string? dev;
+        lock (_lock)
+        {
+            if (!_removedHashes.TryGetValue(h, out dev)) { OtherRejected++; return; }
+            var n = _rejectedPerDevice.GetValueOrDefault(dev);
+            if (n >= MaxRejectedPerDevice) return;
+            _rejectedPerDevice[dev] = n + 1;
+        }
+        Record(Steps.Rejected, dev, from, note: note, utcNow: utcNow);
     }
 
     /// <summary>Wurde schon ein Gerät entfernt? (Dann zählt eine Abweisung als Nachweis der Sperre.)</summary>
@@ -245,7 +306,9 @@ public sealed class PhoneRunLog
         var down = e.Where(x => x.Step is Steps.PcToPhone && x.Ok && x.Sha256 is not null && provided.Contains(x.Sha256)).ToList();
         var cableDown = e.Where(x => x.Step == Steps.CablePush && x.Ok && x.Sha256 is not null).ToList();
         var removedAt = e.FirstOrDefault(x => x.Step == Steps.Removed)?.At;
-        var rejected = removedAt is { } r && e.Any(x => x.Step == Steps.Rejected && x.At >= r);
+        // Befund M2: nur eine Abweisung DESSELBEN entfernten Geräts (sein alter Schlüssel) nach dem Entfernen belegt die Sperre
+        var rejected = e.Where(x => x.Step == Steps.Removed && x.Device != "–")
+            .Any(rm => e.Any(x => x.Step == Steps.Rejected && x.Device == rm.Device && x.At >= rm.At));
         return
         [
             new("Kopplung per QR-Code", paired, paired ? "Einmal-Code eingelöst" : "keine Kopplung im Lauf"),
@@ -254,7 +317,7 @@ public sealed class PhoneRunLog
             new("Datei PC → Handy", down.Count + cableDown.Count > 0, down.Count + cableDown.Count == 0 ? "keine Datei vollständig abgeholt"
                 : $"{down.Count} über das Heimnetz vollständig gesendet (Prüfsumme wie bereitgestellt), {cableDown.Count} per Kabel"),
             new("Entfernen", removedAt is not null, removedAt is null ? "nicht entfernt" : "Gerät am PC entfernt"),
-            new("Sperre nach Entfernen", rejected, rejected ? "Anfrage danach abgewiesen" : "keine Anfrage nach dem Entfernen beobachtet"),
+            new("Sperre nach Entfernen", rejected, rejected ? "dasselbe Handy wurde danach mit seinem alten Schlüssel abgewiesen" : "keine Anfrage des entfernten Handys danach beobachtet"),
         ];
     }
 
@@ -262,7 +325,8 @@ public sealed class PhoneRunLog
     public (string Report, string Raw, string Sums) Stop(string dir, string version, DateTime? utcNow = null)
     {
         List<Entry> e;
-        lock (_lock) { Active = false; e = [.. _entries]; }
+        int other;
+        lock (_lock) { Active = false; e = [.. _entries]; other = OtherRejected; }
         var end = utcNow ?? DateTime.UtcNow;
         Directory.CreateDirectory(dir);
         var stamp = _start.ToString("yyyyMMdd-HHmmss");
@@ -282,6 +346,7 @@ public sealed class PhoneRunLog
         sb.AppendLine("- Rohlog: `" + Path.GetFileName(raw) + "` (JSON Lines), Prüfsummen der Dateien: `" + Path.GetFileName(sums) + "`").AppendLine();
         sb.AppendLine("## Ergebnis").AppendLine();
         foreach (var c in Evaluate(e)) sb.AppendLine($"- {(c.Ok ? "✓" : "✗")} {c.Name}: {c.Detail}");
+        sb.AppendLine($"- Sonstige Abweisungen (unbekannter Schlüssel, zählen nicht als Beleg): {other}");
         sb.AppendLine().AppendLine("## Schritte").AppendLine();
         sb.AppendLine("| s | Schritt | Gerät | Netz | Größe | SHA-256 | Ergebnis | Hinweis |");
         sb.AppendLine("|---:|---|---|---|---:|---|---|---|");

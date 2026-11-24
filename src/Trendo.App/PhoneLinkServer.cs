@@ -42,6 +42,11 @@ public sealed class PhoneLinkServer : IAsyncDisposable
 {
     public const string Cookie = "trendo_handy";
     public const long MaxUpload = 2L << 30;
+    /// <summary>Befund M3: Schlüssel im Handy gilt 30 Tage ab dem letzten Besuch (vorher 1 Jahr) – wer Trendo regelmäßig öffnet, bleibt verbunden.</summary>
+    public static readonly TimeSpan CookieLife = TimeSpan.FromDays(30);
+    /// <summary>Befund M1: Textfelder im Upload (nur „sha“) sind höchstens 128 Byte lang, höchstens 1000 Stück.</summary>
+    public const int MaxFieldBytes = 128;
+    public const int MaxFields = 1000;
     readonly WebApplication _app;
     public IReadOnlyList<IPAddress> Addresses { get; }
     public int Port { get; }
@@ -69,9 +74,14 @@ public sealed class PhoneLinkServer : IAsyncDisposable
             var ip = ctx.Connection.RemoteIpAddress;
             if (ip is null || !PhoneAccess.AllowedAddress(ip)) { ctx.Response.StatusCode = 403; return; }
             if (!hosts.Contains(ctx.Request.Host.Host)) { ctx.Response.StatusCode = 421; return; }
+            // Befund N5: Formulare und Uploads nur von den eigenen Seiten (fremde Webseite im selben Browser darf nichts schicken)
+            if (!HttpMethods.IsGet(ctx.Request.Method) && !HttpMethods.IsHead(ctx.Request.Method)
+                && ctx.Request.Headers.Origin.ToString() is { Length: > 0 } origin
+                && !string.Equals(origin, "http://" + ctx.Request.Host.Value, StringComparison.OrdinalIgnoreCase))
+            { ctx.Response.StatusCode = 403; return; }
             ctx.Response.Headers["Cache-Control"] = "no-store";
             ctx.Response.Headers["X-Content-Type-Options"] = "nosniff";
-            ctx.Response.Headers["Referrer-Policy"] = "no-referrer";
+            ctx.Response.Headers["Referrer-Policy"] = "same-origin"; // nach außen nichts; bei „no-referrer“ schickt Chrome bei Formularen „Origin: null“ (Befund im Browser-Test)
             ctx.Response.Headers["Content-Security-Policy"] = "default-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src 'self' data: blob:";
             await next();
         });
@@ -82,14 +92,14 @@ public sealed class PhoneLinkServer : IAsyncDisposable
             var d = link.Verify(token);
             // T-0767: ein Handy mit altem Schlüssel (z. B. nach „Entfernen“) wird abgewiesen – im Lauf-Protokoll als Beleg der Sperre
             if (d is null && !string.IsNullOrEmpty(token) && run is { Active: true })
-                run.Record(PhoneRunLog.Steps.Rejected, null, c.Connection.RemoteIpAddress, note: $"{c.Request.Method} {Area(c.Request.Path)}");
+                run.RecordRejectedToken(token, c.Connection.RemoteIpAddress, note: $"{c.Request.Method} {Area(c.Request.Path)}");
             return d;
         }
         static string Area(PathString p) => p.Value is { } v && v.StartsWith("/api/", StringComparison.Ordinal) ? v : p.Value is { Length: > 1 } w ? "/" + w.Split('/', StringSplitOptions.RemoveEmptyEntries)[0] + "/…" : "/";
-        // Dauerhaft verbunden: bei jedem Öffnen gilt der Schlüssel im Handy wieder ein volles Jahr
+        // Verbunden bleiben: bei jedem Öffnen gilt der Schlüssel im Handy wieder 30 Tage
         bool Keep(HttpContext c)
         {
-            c.Response.Cookies.Append(Cookie, c.Request.Cookies[Cookie]!, new CookieOptions { HttpOnly = true, SameSite = SameSiteMode.Strict, Path = "/", MaxAge = TimeSpan.FromDays(365), IsEssential = true });
+            c.Response.Cookies.Append(Cookie, c.Request.Cookies[Cookie]!, new CookieOptions { HttpOnly = true, SameSite = SameSiteMode.Strict, Path = "/", MaxAge = CookieLife, IsEssential = true });
             return true;
         }
 
@@ -106,7 +116,7 @@ public sealed class PhoneLinkServer : IAsyncDisposable
             var form = await c.Request.ReadFormAsync();
             if (link.Redeem(secret, form["name"].ToString()) is not { } r)
                 return Results.Content(PhoneLinkPages.Message("Verbinden hat nicht geklappt", "Der Code ist abgelaufen oder schon benutzt. Scanne den neuen Code in Trendo."), "text/html; charset=utf-8", Encoding.UTF8, 410);
-            c.Response.Cookies.Append(Cookie, r.Token, new CookieOptions { HttpOnly = true, SameSite = SameSiteMode.Strict, Path = "/", MaxAge = TimeSpan.FromDays(365), IsEssential = true });
+            c.Response.Cookies.Append(Cookie, r.Token, new CookieOptions { HttpOnly = true, SameSite = SameSiteMode.Strict, Path = "/", MaxAge = CookieLife, IsEssential = true });
             audit.Append("handy", "phonelink.paired", $"{r.Device.Name} ({c.Connection.RemoteIpAddress})");
             run?.Record(PhoneRunLog.Steps.Paired, r.Device.Id, c.Connection.RemoteIpAddress, note: "Einmal-Code eingelöst, eigener Schlüssel (nur als SHA-256 gespeichert)");
             onText(r.Device.Name, "\u0001verbunden");
@@ -126,7 +136,8 @@ public sealed class PhoneLinkServer : IAsyncDisposable
             if (!Microsoft.Net.Http.Headers.MediaTypeHeaderValue.TryParse(c.Request.ContentType, out var type)
                 || Microsoft.Net.Http.Headers.HeaderUtilities.RemoveQuotes(type.Boundary).Value is not { Length: > 0 and <= 200 } boundary)
                 return Results.BadRequest();
-            var reader = new Microsoft.AspNetCore.WebUtilities.MultipartReader(boundary, c.Request.Body);
+            var reader = new Microsoft.AspNetCore.WebUtilities.MultipartReader(boundary, c.Request.Body) { HeadersLengthLimit = 8 * 1024, BodyLengthLimit = maxFileBytes + 64 * 1024 };
+            var fields = 0;
             var saved = new List<string>(); var sums = new List<string>(); var phoneSums = new Queue<string>();
             try
             {
@@ -135,17 +146,22 @@ public sealed class PhoneLinkServer : IAsyncDisposable
                     if (!Microsoft.Net.Http.Headers.ContentDispositionHeaderValue.TryParse(section.ContentDisposition, out var cd)) continue;
                     if (!(cd.FileName.HasValue || cd.FileNameStar.HasValue))
                     {
+                        // Befund M1: Textfelder nie unbegrenzt lesen – höchstens 128 Byte, höchstens 1000 Felder, sonst 400
+                        if (++fields > MaxFields) return Results.BadRequest();
+                        var small = await ReadSmallAsync(section.Body, MaxFieldBytes, c.RequestAborted);
+                        if (small is null) return Results.BadRequest();
                         if (cd.Name.Value == "sha")
                         {
-                            var v = (await new StreamReader(section.Body).ReadToEndAsync(c.RequestAborted)).Trim().ToLowerInvariant();
+                            var v = small.Trim().ToLowerInvariant();
                             phoneSums.Enqueue(v.Length == 64 && v.All(char.IsAsciiHexDigit) ? v : "");
                         }
                         continue;
                     }
                     var raw = cd.FileNameStar.HasValue ? cd.FileNameStar.Value : cd.FileName.Value;
-                    var got = await PhoneTransfer.ReceiveAsync(section.Body, inbox, raw, maxFileBytes, c.RequestAborted);
+                    var got = await PhoneTransfer.ReceiveAsync(section.Body, inbox, raw, maxFileBytes, c.RequestAborted, markOutside: true);
                     var phone = phoneSums.Count > 0 ? phoneSums.Dequeue() : "";
                     var match = phone.Length == 0 ? "Prüfsumme am Handy nicht gebildet" : phone == got.Sha256 ? "Prüfsumme gleich (am Handy und am PC gebildet)" : "Prüfsumme ABWEICHEND";
+                    if (got.Risky) match += " · Vorsicht: Programm- oder Verknüpfungsdatei, nur öffnen, wenn du sie kennst";
                     saved.Add(Path.GetFileName(got.Path)); sums.Add(got.Sha256);
                     audit.Append("handy", "phonelink.file", $"{d.Name}: {Path.GetFileName(got.Path)} ({got.Bytes} B, sha256 {got.Sha256[..16]})");
                     run?.Record(PhoneRunLog.Steps.PhoneToPc, d.Id, c.Connection.RemoteIpAddress, bytes: got.Bytes, sha: got.Sha256, ok: phone.Length == 0 || phone == got.Sha256, note: match);
@@ -227,7 +243,7 @@ public sealed class PhoneLinkServer : IAsyncDisposable
         {
             if (link.RedeemTransfer(code) is not { } r)
                 return Results.Content(PhoneLinkPages.Message("Link abgelaufen", "Öffne Trendo zuhause im WLAN und tippe noch einmal auf „Unterwegs-Zugang einrichten“."), "text/html; charset=utf-8", Encoding.UTF8, 410);
-            c.Response.Cookies.Append(Cookie, r.Token, new CookieOptions { HttpOnly = true, SameSite = SameSiteMode.Strict, Path = "/", MaxAge = TimeSpan.FromDays(365), IsEssential = true });
+            c.Response.Cookies.Append(Cookie, r.Token, new CookieOptions { HttpOnly = true, SameSite = SameSiteMode.Strict, Path = "/", MaxAge = CookieLife, IsEssential = true });
             audit.Append("handy", "phonelink.away.ok", r.Device.Name);
             return Results.Redirect("/?unterwegs=1");
         });
@@ -334,12 +350,21 @@ public sealed class PhoneLinkServer : IAsyncDisposable
             await remote!.ScrollAsync(x, y, dy, Desk(c)); return Results.Ok();
         });
 
+        try { PhoneTransfer.PurgeExpired(outbox, DateTime.UtcNow); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } // Befund N4
         await app.StartAsync();
         audit.Append("handy", "phonelink.start", string.Join(", ", bind) + ":" + port);
         return new PhoneLinkServer(app, bind, port);
     }
 
     /// <summary>Dateiname vom Handy: nur der Name, ohne Pfad; gleiche Namen bekommen eine Nummer.</summary>
+    /// <summary>Liest höchstens <paramref name="max"/> Byte; null, wenn der Abschnitt länger ist.</summary>
+    static async Task<string?> ReadSmallAsync(Stream body, int max, CancellationToken ct)
+    {
+        var buf = new byte[max + 1]; var n = 0; int r;
+        while (n < buf.Length && (r = await body.ReadAsync(buf.AsMemory(n), ct)) > 0) n += r;
+        return n > max ? null : Encoding.UTF8.GetString(buf, 0, n);
+    }
+
     internal static string SafeTarget(string dir, string fileName) =>
         PhoneTransfer.UniqueTarget(dir, PhoneTransfer.CleanName(fileName, $"vom-handy-{DateTime.Now:yyyyMMdd-HHmmss}"));
 
@@ -349,12 +374,12 @@ public sealed class PhoneLinkServer : IAsyncDisposable
 /// <summary>Die Seiten, die das Handy sieht: schlicht, groß, ohne fremde Dateien aus dem Netz.</summary>
 static class PhoneLinkPages
 {
-    const string Head = "<!doctype html><html lang=\"de\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><meta name=\"theme-color\" content=\"#0A1428\"><title>Trendo</title><style>" +
-        "body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#050B18;color:#E6EDF7}main{max-width:520px;margin:0 auto;padding:22px 16px 40px}" +
-        "h1{font-size:24px;margin:8px 0 4px}p{color:#9FB1CF;line-height:1.45}.card{background:#0E1B3A;border:1px solid #29436F;border-radius:16px;padding:16px;margin:14px 0}" +
+    const string Head = "<!doctype html><html lang=\"de\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><meta name=\"theme-color\" content=\"#121110\"><title>Trendo</title><style>" +
+        "body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#121110;color:#F3EBD8}main{max-width:520px;margin:0 auto;padding:22px 16px 40px}" +
+        "h1{font-size:24px;margin:8px 0 4px}p{color:#B8AD95;line-height:1.45}.card{background:#1C1A16;border:1px solid #3D3424;border-radius:16px;padding:16px;margin:14px 0}" +
         "button,.btn,input[type=submit]{display:block;width:100%;box-sizing:border-box;border:0;border-radius:12px;padding:16px;font-size:17px;font-weight:600;background:#D4A537;color:#1B1407;margin-top:10px;text-align:center;text-decoration:none}" +
-        ".sec{background:#2A2418;color:#F5E6C0;border:1px solid #6B5521}input[type=text],textarea{width:100%;box-sizing:border-box;border-radius:10px;border:1px solid #29436F;background:#081226;color:#E6EDF7;padding:12px;font-size:16px}" +
-        "li{list-style:none;border-bottom:1px solid #1A2B4D;padding:10px 0}li a{color:#F5C451;text-decoration:none;font-weight:600}ul{padding:0;margin:0}.ok{color:#4ADE80}.logo{font-size:30px}" +
+        ".sec{background:#2A2418;color:#F5E6C0;border:1px solid #6B5521}input[type=text],textarea{width:100%;box-sizing:border-box;border-radius:10px;border:1px solid #5A4A2A;background:#0D0C0A;color:#F3EBD8;padding:12px;font-size:16px}input:focus,textarea:focus{outline:2px solid #D4A537}" +
+        "li{list-style:none;border-bottom:1px solid #2E2819;padding:10px 0}li a{color:#F5C451;text-decoration:none;font-weight:600}ul{padding:0;margin:0}.ok{color:#4ADE80}.logo{font-size:30px;color:#F5C451}.note{font-size:14px;color:#D9C9A0;border-left:3px solid #D4A537;padding-left:10px}" +
         "</style></head><body><main><div class=\"logo\">◆ Trendo</div>";
     const string Foot = "</main></body></html>";
     static string E(string s) => WebUtility.HtmlEncode(s);
@@ -364,7 +389,7 @@ static class PhoneLinkPages
     public static string Pair(string secret) => Head +
         "<h1>Mit dem PC verbinden</h1><p>Dieses Handy wird mit Trendo auf dem PC verbunden. Danach kannst du Fotos und Dateien schicken – zuhause und unterwegs.</p>" +
         $"<form class=\"card\" method=\"post\" action=\"/p/{E(secret)}\"><label>Name für dieses Handy</label><input type=\"text\" name=\"name\" id=\"n\" maxlength=\"40\" value=\"Mein Handy\">" +
-        "<input type=\"submit\" value=\"Verbinden\"></form><p>Nur verbinden, wenn du gerade selbst vor deinem PC den Code gescannt hast.</p>" +
+        "<input type=\"submit\" value=\"Verbinden\"></form><p>Nur verbinden, wenn du gerade selbst vor deinem PC den Code gescannt hast.</p>" + "<p class=\"note\">Zuhause läuft die Verbindung unverschlüsselt durchs WLAN – nur im eigenen, passwortgeschützten WLAN nutzen. Unterwegs (Tailscale) ist sie verschlüsselt.</p>" +
         "<script>var u=navigator.userAgent,m=u.match(/;\\s*([^;)]+)\\s+Build/);if(m)document.getElementById('n').value=m[1].slice(0,40);else if(/iPhone/.test(u))document.getElementById('n').value='iPhone';</script>" + Foot;
 
     public const string Manifest = """
@@ -502,7 +527,7 @@ hello();tick();setInterval(tick,10000);fetch('/api/apps').then(function(r){retur
 """;
 
     public static string App(string device, string pc, bool remote = false, bool canAway = false) => Head +
-        $"<h1>Verbunden mit {E(pc)}</h1><p class=\"ok\">✓ {E(device)} ist mit Trendo verbunden.</p>" +
+        $"<h1>Verbunden mit {E(pc)}</h1><p class=\"ok\">✓ {E(device)} ist mit Trendo verbunden.</p>" + "<p class=\"note\">Zuhause läuft die Verbindung unverschlüsselt durchs WLAN – nur im eigenen, passwortgeschützten WLAN nutzen. Unterwegs (Tailscale) ist sie verschlüsselt.</p>" +
         (remote ? "<div class=\"card\"><b>Trendo bedienen</b><p>Trendo als App auf dem Handy: alle Programme und Studios, in Handy-Größe, mit dem Finger bedienen.</p><a class=\"btn\" id=\"fern\" href=\"/app\">Trendo öffnen</a></div>"
                 : "<div class=\"card\"><b>Trendo bedienen</b><p>Möchtest du Trendo komplett vom Handy aus bedienen? Am PC unter „Handy“ bei diesem Handy „Trendo bedienen erlauben“ antippen.</p></div>") +
         (remote ? "<div class=\"card\"><b>TV-Fernbedienung</b><p id=\"tvs\">Steuert TV &amp; Live am PC.</p><div class=\"tvr\">" +

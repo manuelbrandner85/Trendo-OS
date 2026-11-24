@@ -42,3 +42,20 @@
 - Im Render-Werkzeug meldet der Kabel-Weg „nicht verfügbar“, obwohl adb in `TrendoWerkzeuge\scrcpy` liegt – die adb-Suche (`ResolveAdbAsync`, unverändert) findet es dort im isolierten Render-Lauf nicht; in der echten App mit `AdbLocator` belegt, ohne Override nicht geprüft.
 
 **Status:** umgesetzt, gezielt getestet, echter Handy-Lauf ausstehend.
+
+## Nachbesserung fix1 (Gegenprüfung von a85396ef1)
+| Befund | Änderung | Test |
+|---|---|---|
+| M1 Feld „sha“ ohne Grenze | Textfelder im Upload höchstens 128 Byte und 1000 Stück, sonst 400; `MultipartReader.HeadersLengthLimit` 8 KB, `BodyLengthLimit` = Dateilimit + 64 KB | `Server_flow_with_run_log` (300-KB-Feld, 129-Byte-Feld, 1001 Felder → 400, keine Datei) |
+| M2 Sperre falsch positiv | `PhoneRunLog.RecordRemoved` merkt vor dem Löschen die Schlüssel-Hashes; `RecordRejectedToken` ordnet nur genau diese Schlüssel dem Gerät zu (höchstens 20 Einträge je Gerät), andere Abweisungen werden nur gezählt; `Evaluate` verlangt Abweisung desselben Geräts. Bericht zeigt „Sonstige Abweisungen“ | Core `Run_log` (50 fremde Schlüssel → kein ✓, Zähler 51; eigener alter Schlüssel → ✓, Deckel 20); App `Server_flow_with_run_log` (fremder Cookie → kein ✓) |
+| M3 Klartext + Cookie | Hinweis „Zuhause läuft die Verbindung unverschlüsselt …“ am PC (Schritt „Wo?“ und QR-Schritt) und auf der Handy-Seite (Kopplung, Startseite oben). Cookie 30 Tage ab letztem Besuch statt 1 Jahr (jeder Besuch verlängert) | `PhoneEasyTests.Remote_and_transfer` (max-age = 30 Tage; vorher 1 Jahr – Erwartung angepasst, nicht abgeschwächt), Bilder angesehen |
+| N1 Formatzeichen | NFC, Kategorie Cf (z. B. U+202E, U+200B, U+FEFF) entfernt | `Clean_names` mit `x` + U+202E + `gpj.exe` → `xgpj.exe`, NFC-Fall |
+| N2 Mark-of-the-Web | Empfangenes bekommt `:Zone.Identifier` mit ZoneId=3; .exe/.lnk/.url/.scf/.bat/.cmd/.ps1/desktop.ini u. a. → Hinweis „Vorsicht: Programm- oder Verknüpfungsdatei“ im Protokoll | Core `Mark_of_the_web` (Datenstrom gelesen) |
+| N3 parallele Namen | `File.Move` in Schleife mit nächster Nummer | Core `Parallel_same_name` (20 parallel → 20 Dateien, Inhalte bitgleich) |
+| N4 Aufräumen | `PurgeExpired` beim Start des Handy-Zugangs, im 30-s-Takt (Trendo-Start mit gekoppeltem Handy) und im Assistenten-Takt (höchstens 1×/min) | durch Start-Aufruf im Server abgedeckt; kein eigener Zeittest |
+| N5 Origin | POST/PUT/DELETE nur ohne Origin oder mit genau `http://<Host:Port>`, sonst 403. Dabei im echten Browser gefunden: mit `Referrer-Policy: no-referrer` schickt Chrome bei Formularen `Origin: null` → Kopplung scheiterte; Richtlinie jetzt `same-origin` (nach außen weiterhin nichts) | `Server_flow_with_run_log` (fremder Origin 403, eigener 200); `Real_browser_end_to_end` (Formular-Kopplung mit Origin-Prüfung) |
+| N6 Dunkel-Gold | Handy-Seiten (Kopplung, Startseite, Meldungen): Hintergrund, Karten, Rahmen, Eingabefelder, Listen gold/dunkel | Bildschirmfoto aus dem Browser-Test angesehen (nicht eingecheckt, zeigt den Rechnernamen) |
+| Randnotiz | Test-Adresse 192.0.2.57 (Dokumentationsnetz) | – |
+
+Tests fix1: Core `PhoneTransferTests|PhoneAccessTests|W7PhoneLinkTests|W7Tests|NoFixedUserTests` → 50 bestanden, 5 übersprungen, 0 Fehler. App `PhoneSendT0767Tests`, `PhoneEasyTests`, `W7_Ui` → Total 16, Failed 0, Skipped 1 (nur Linux). Belege unter `reports/T-0767/` neu erzeugt.
+Offen: die bildschirmfüllende Handy-App (`/app`) hat noch blaue Flächen (nicht Teil dieser Befunde). Cookie 30 Tage weicht vom früheren Wunsch „dauerhaft verbunden“ ab: wer Trendo am Handy 30 Tage nicht öffnet, scannt neu – bitte bestätigen.

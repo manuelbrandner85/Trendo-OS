@@ -154,7 +154,10 @@ public sealed class PhoneAccess(string dataRoot)
         ["advfirewall", "firewall", "add", "rule", "name=Trendo Handy", "dir=in", "action=allow", "protocol=TCP", $"localport={port}", "profile=any",
          "remoteip=localsubnet,100.64.0.0/10"];
 
-    static string Hash(string token) => Convert.ToHexStringLower(SHA256.HashData(Encoding.ASCII.GetBytes(token)));
+    static string Hash(string token) => TokenHash(token);
+
+    /// <summary>SHA-256 eines Geräteschlüssels, so wie er gespeichert wird (T-0767: Lauf-Protokoll erkennt den Schlüssel eines entfernten Handys).</summary>
+    public static string TokenHash(string token) => Convert.ToHexStringLower(SHA256.HashData(Encoding.ASCII.GetBytes(token ?? "")));
 
     /// <summary>Erlaubte Adressen für den Handy-Zugang: privates Heimnetz (10/8, 172.16/12, 192.168/16) oder Tailscale (100.64.0.0/10). Nie öffentlich.</summary>
     public static bool AllowedAddress(IPAddress ip)

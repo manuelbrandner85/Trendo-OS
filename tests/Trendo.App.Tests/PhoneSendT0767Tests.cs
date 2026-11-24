@@ -62,6 +62,33 @@ public class PhoneSendT0767Tests
         Assert.Equal(HttpStatusCode.OK, (await a.PostAsync("/api/upload", Form(photo, "b.jpg", new string('0', 64)), ct)).StatusCode);
         Assert.Contains(run.Entries, e => e.Step == PhoneRunLog.Steps.PhoneToPc && !e.Ok && e.Note.Contains("ABWEICHEND"));
 
+        // Befund M1: Textfeld „sha“ zu lang (300 KB) oder zu viele Felder → 400, nichts gespeichert
+        using (var f = new MultipartFormDataContent())
+        {
+            f.Add(new StringContent(new string('a', 300_000)), "sha");
+            f.Add(new ByteArrayContent(photo), "f", "feld.jpg");
+            Assert.Equal(HttpStatusCode.BadRequest, (await a.PostAsync("/api/upload", f, ct)).StatusCode);
+        }
+        using (var f = new MultipartFormDataContent())
+        {
+            f.Add(new StringContent(new string('a', PhoneLinkServer.MaxFieldBytes + 1)), "x");
+            Assert.Equal(HttpStatusCode.BadRequest, (await a.PostAsync("/api/upload", f, ct)).StatusCode);
+        }
+        using (var f = new MultipartFormDataContent())
+        {
+            for (var i = 0; i <= PhoneLinkServer.MaxFields; i++) f.Add(new StringContent("0"), "sha");
+            Assert.Equal(HttpStatusCode.BadRequest, (await a.PostAsync("/api/upload", f, ct)).StatusCode);
+        }
+        Assert.False(File.Exists(Path.Combine(inbox, "feld.jpg")));
+
+        // Befund N5: POST von einer fremden Seite (Origin) → 403; von der eigenen Seite → angenommen
+        var foreign = new HttpRequestMessage(HttpMethod.Post, "/api/text") { Content = new FormUrlEncodedContent(new Dictionary<string, string> { ["text"] = "x" }) };
+        foreign.Headers.Add("Origin", "http://evil.example");
+        Assert.Equal(HttpStatusCode.Forbidden, (await a.SendAsync(foreign, ct)).StatusCode);
+        var own = new HttpRequestMessage(HttpMethod.Post, "/api/text") { Content = new FormUrlEncodedContent(new Dictionary<string, string> { ["text"] = "x" }) };
+        own.Headers.Add("Origin", $"http://127.0.0.1:{srv.Port}");
+        Assert.Equal(HttpStatusCode.OK, (await a.SendAsync(own, ct)).StatusCode);
+
         // zu groß → 413 (oder Verbindung beendet), keine Datei, keine Teil-Datei
         try { var big = await a.PostAsync("/api/upload", Form(new byte[150_000], "gross.bin", null), ct); Assert.Equal((HttpStatusCode)413, big.StatusCode); }
         catch (HttpRequestException) { }
@@ -80,7 +107,15 @@ public class PhoneSendT0767Tests
         Assert.Contains(run.Entries, e => e.Step == PhoneRunLog.Steps.PcToPhone && e.Ok && e.Sha256 == Sha(docBytes));
 
         // Entfernen: sofort gesperrt, Bereitgestelltes gelöscht, Abweisung im Protokoll
-        access.Remove(devA.Id); PhoneTransfer.DropDevice(outbox, devA.Id); run.Record(PhoneRunLog.Steps.Removed, devA.Id, null);
+        run.RecordRemoved(devA.Id, [devA.TokenHash]); access.Remove(devA.Id); PhoneTransfer.DropDevice(outbox, devA.Id);
+        // Befund M2: ein Fremder mit erfundenem Schlüssel wird abgewiesen, belegt aber NICHT die Sperre des entfernten Handys
+        using (var stranger = new HttpClient(new HttpClientHandler { CookieContainer = new CookieContainer() }) { BaseAddress = baseUrl })
+        {
+            var req = new HttpRequestMessage(HttpMethod.Get, "/api/files"); req.Headers.Add("Cookie", PhoneLinkServer.Cookie + "=" + new string('e', 64));
+            Assert.Equal(HttpStatusCode.Unauthorized, (await stranger.SendAsync(req, ct)).StatusCode);
+        }
+        Assert.False(PhoneRunLog.Evaluate(run.Entries)[4].Ok);
+        Assert.Equal(1, run.OtherRejected);
         Assert.Equal(HttpStatusCode.Unauthorized, (await a.GetAsync("/api/files", ct)).StatusCode);
         Assert.Equal(HttpStatusCode.Unauthorized, (await a.PostAsync("/api/upload", Form(photo, "nach.jpg", null), ct)).StatusCode);
         Assert.False(File.Exists(Path.Combine(inbox, "nach.jpg")));
@@ -259,6 +294,9 @@ public class PhoneSendT0767Tests
             var arrived = Path.Combine(inbox, "Handy-Foto.jpg");
             Assert.Equal(Sha(upBytes), PhoneTransfer.Sha256File(arrived));
             L($"Handy → PC: {upBytes.Length} B, SHA-256 Quelle {Sha(upBytes)} = angekommen {PhoneTransfer.Sha256File(arrived)} · Seite meldet: {status}");
+            // Nur zum Ansehen (nicht für reports/: die Seite zeigt den Rechnernamen): TRENDO_T0767_SHOT=<datei.png>
+            if (Environment.GetEnvironmentVariable("TRENDO_T0767_SHOT") is { Length: > 0 } shot)
+                File.WriteAllBytes(shot, Convert.FromBase64String((await page.Call("Page.captureScreenshot", new { format = "png", captureBeyondViewport = true }, ct)).GetProperty("data").GetString()!));
 
             // 3. PC → Handy: „Datei senden“ für genau dieses Handy, auf der Handy-Seite antippen → Download im Browser
             var downSrc = Path.Combine(d, "Rechnung November.pdf"); var downBytes = RandomNumberGenerator.GetBytes(900_000); File.WriteAllBytes(downSrc, downBytes);
@@ -275,8 +313,8 @@ public class PhoneSendT0767Tests
             L($"PC → Handy: {downBytes.Length} B, SHA-256 bereitgestellt {offered.Sha256} = im Browser gespeichert {PhoneTransfer.Sha256File(got)}");
 
             // 4. Am PC entfernen → das Handy wird sofort abgewiesen (Liste und erneuter Upload)
+            run.RecordRemoved(dev.Id, [dev.TokenHash, .. dev.More ?? []], note: "am PC entfernt, Schlüssel gelöscht");
             access.Remove(dev.Id); PhoneTransfer.DropDevice(outbox, dev.Id);
-            run.Record(PhoneRunLog.Steps.Removed, dev.Id, null, note: "am PC entfernt, Schlüssel gelöscht");
             await Eval("load(); true");
             await Wait("document.getElementById('l').innerText.indexOf('nicht mehr mit dem PC verbunden')>=0", "Sperre in der Liste");
             await page.Call("DOM.setFileInputFiles", new { nodeId = input, files = new[] { upSrc } }, ct);
