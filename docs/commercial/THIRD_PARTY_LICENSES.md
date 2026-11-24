@@ -4,12 +4,12 @@ Phase 1. Stand 13.11.2026. Grundlage: `THIRD_PARTY.md`, `THIRD_PARTY_NUGET.md`, 
 
 ## Mitgelieferte Bibliotheken (im Setup)
 
-52 NuGet-Pakete in den Produktprojekten: 40 MIT, 9 Apache-2.0, 3 mit eigener Lizenzdatei.
+53 NuGet-Pakete in den Produktprojekten: 40 MIT, 10 Apache-2.0 (Wasmtime mit LLVM-Ausnahme, T-0766), 3 mit eigener Lizenzdatei.
 
 | Paket | Lizenz | Bewertung für den Verkauf |
 |---|---|---|
 | Avalonia, SkiaSharp, HarfBuzzSharp, Velopack, YamlDotNet, PDFsharp, Ical.Net, NLayer, SharpCompress, MQTTnet und weitere | MIT | kommerziell erlaubt, Lizenzhinweis mitliefern |
-| ZUGFeRD-csharp, NodaTime, PDFtoImage-Teile und weitere | Apache-2.0 | kommerziell erlaubt, Hinweis und ggf. NOTICE mitliefern |
+| ZUGFeRD-csharp, NodaTime, PDFtoImage-Teile, Wasmtime (Apache-2.0 WITH LLVM-exception, T-0766) und weitere | Apache-2.0 | kommerziell erlaubt, Hinweis und ggf. NOTICE mitliefern |
 | WeCantSpell.Hunspell 7.0.1 | wahlweise MPL 1.1, GPL 2.0 oder LGPL 2.1 (vom Hunspell-Projekt übernommen) | mit MPL 1.1 kommerziell nutzbar. Bei Änderungen an dieser Bibliothek müssen diese offengelegt werden. Trendo nutzt sie unverändert |
 | Avalonia.Angle.Windows.Natives | eigene Lizenzdatei (ANGLE, BSD-artig) | Lizenzdatei prüfen und mitliefern |
 | Schrift Inter, Atkinson Hyperlegible | SIL OFL 1.1 | erlaubt, Lizenztext liegt bei (`Assets/schriften/OFL-Atkinson.txt`) |

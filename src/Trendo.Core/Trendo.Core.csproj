@@ -9,6 +9,7 @@
     <PackageReference Include="Ical.Net" Version="5.2.4" /><!-- Alle Studios Runde 6: fremde .ics mit Regeln/Ausnahmen/Zeitzonen (MIT, mit NodaTime Apache-2.0) -->
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.14" />
     <PackageReference Include="MQTTnet" Version="5.2.0.1603" /><!-- Alle Studios Runde 5: Live-Messwerte im Zwilling (MIT), nur Abonnieren -->
+    <PackageReference Include="Wasmtime" Version="50.0.1" /><!-- T-0766: Sandbox für Funktions-Erweiterungen (WebAssembly/WASI), Apache-2.0 WITH LLVM-exception, Bytecode Alliance -->
     <PackageReference Include="ZUGFeRD-csharp" Version="18.0.1" /><!-- Alle Studios Runde 6: E-Rechnung ZUGFeRD/XRechnung (Apache-2.0) -->
     <PackageReference Include="NLayer" Version="1.16.0" />
     <PackageReference Include="PDFsharp" Version="6.2.4" />
@@ -18,6 +19,8 @@
     <PackageReference Include="YamlDotNet" Version="16.3.0" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Erweiterungen\csv-tabelle.wat" LogicalName="Trendo.Core.Erweiterungen.csv-tabelle.wat" /><!-- T-0766: Beispiel-Funktions-Erweiterung (Quelle) -->
+    <EmbeddedResource Include="Erweiterungen\csv-tabelle.wasm" LogicalName="Trendo.Core.Erweiterungen.csv-tabelle.wasm" /><!-- T-0766: daraus gebaut, Prüfsumme in csv-tabelle.wasm.sha256 -->
     <EmbeddedResource Include="WebAssets\trendo-three.js" />
     <EmbeddedResource Include="WebAssets\trendo-scroll.js" />
     <EmbeddedResource Include="WebAssets\trendo-motion.js" />

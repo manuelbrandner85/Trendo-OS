@@ -64,7 +64,10 @@ public partial class MainWindow
     {
         var third = ExtensionCatalog.IsRemote(e.Url);
         _extAsk = ("Erweiterung aus dem Katalog installieren?",
-            $"„{e.Name}“ {e.Version} · Art: {e.Kind} · {e.Description}\nQuelle: {(third ? e.Url + " – Katalog von Dritten, ungeprüft" : "mitgelieferter Katalog")}\nPrüfsumme {e.Sha256[..12]}… wird vor dem Installieren geprüft.",
+            $"„{e.Name}“ {e.Version} · Art: {e.Kind} · {e.Description}\nQuelle: {(third ? e.Url + " – Katalog von Dritten, ungeprüft" : "mitgelieferter Katalog")}\nPrüfsumme {e.Sha256[..12]}… wird vor dem Installieren geprüft."
+            // T-0766: bei Funktions-Erweiterungen die erbetenen Rechte schon vor der Installation zeigen (lokal aus der ZIP; aus dem Netz erst nach dem Laden)
+            + (e.Kind != Extensions.ModuleKind ? "" : ExtensionCatalog.LocalFile(_extCatSrcDir, e) is { } f && File.Exists(f) ? "\n" + ExtPeek(f)
+                : "\nFunktions-Erweiterung: läuft nur in der Sandbox. Ihre Rechte siehst du nach dem Laden und gibst sie in einem eigenen Schritt frei."),
             "Ja, installieren", () => ExtCatalogInstallNow(e));
         Show("erweiterungen");
         return Task.CompletedTask;

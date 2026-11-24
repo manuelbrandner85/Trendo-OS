@@ -6,7 +6,8 @@ using Trendo.Core;
 
 namespace Trendo.App;
 
-/// <summary>X-04: Erweiterungen (nur Daten: Vorlagen, Schrittlisten, Links, Textbausteine).</summary>
+/// <summary>X-04: Erweiterungen – Daten (Vorlagen, Schrittlisten, Links, Textbausteine) und seit T-0766 Funktions-Erweiterungen in der WebAssembly-Sandbox
+/// (Befehl im Studio „Projekte“, Rechte in eigenem Schritt freigeben und entziehen, Werkstatt zum Selbstbauen).</summary>
 public partial class MainWindow
 {
     public ExtensionStore Exts => new(_core.DataRoot, _core.Audit, _core.Approvals); // T-0241: Installieren/Entfernen nur mit Freigabe
@@ -32,7 +33,12 @@ public partial class MainWindow
                 var mf = z.Entries.FirstOrDefault(x => x.FullName == Extensions.ManifestFile || x.FullName.EndsWith("/" + Extensions.ManifestFile));
                 if (mf is not null) m = System.Text.Json.JsonSerializer.Deserialize<ExtManifest>(new StreamReader(mf.Open()).ReadToEnd(), new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             }
-            return m is null ? $"„{Path.GetFileName(path)}“ – Beschreibung nicht lesbar; Trendo prüft beim Installieren." : $"„{m.Name}“ {m.Version} von {m.Author} · Art: {m.Kind} · Lizenz {m.License}";
+            if (m is null) return $"„{Path.GetFileName(path)}“ – Beschreibung nicht lesbar; Trendo prüft beim Installieren.";
+            var head = $"„{m.Name}“ {m.Version} von {m.Author} · Art: {m.Kind} · Lizenz {m.License}";
+            // T-0766: Rechte vor der Installation verständlich zeigen – freigegeben werden sie erst danach in einem eigenen Schritt
+            return m.Kind != Extensions.ModuleKind ? head + "\nEnthält nur Daten (Vorlagen, Listen, Links), keine Programme."
+                : head + "\nFunktions-Erweiterung: läuft nur in der Sandbox – ohne Internet, ohne Zugriff auf andere Dateien, mit Zeit- und Speichergrenze.\nMöchte diese Rechte (freigeben erst nach dem Installieren, in einem eigenen Schritt):\n"
+                    + string.Join("\n", (m.Permissions ?? []).Select(r => "· " + ExtensionRights.Explain(r)));
         }
         catch (Exception e) when (e is IOException or InvalidDataException or System.Text.Json.JsonException or UnauthorizedAccessException) { return $"„{Path.GetFileName(path)}“ – {e.Message}"; }
     }
@@ -63,11 +69,14 @@ public partial class MainWindow
     {
         if (!File.Exists(path) && !Directory.Exists(path)) { Say("Nicht installiert: Ordner oder ZIP nicht gefunden.", "erweiterungen"); return; }
         var hash = ExtensionStore.SourceHash(path);
-        _extAsk = ("Erweiterung installieren?", $"{ExtPeek(path)}\nQuelle: {path}\nPrüfsumme {hash[..Math.Min(12, hash.Length)]}… · enthält nur Daten (Vorlagen, Listen, Links), keine Programme.", "Ja, installieren",
+        _extAsk = ("Erweiterung installieren?", $"{ExtPeek(path)}\nQuelle: {path}\nPrüfsumme {hash[..Math.Min(12, hash.Length)]}…", "Ja, installieren",
             () =>
             {
                 var (e, err) = Exts.Install(path, ExtApprove(ExtensionStore.InstallAction, "Erweiterung installieren: " + Path.GetFileName(path), hash));
-                return Task.FromResult(e is not null ? $"„{e.Manifest.Name}“ {e.Manifest.Version} installiert." : "Nicht installiert: " + string.Join(" ", err));
+                if (e is not null) _extShow = e.Manifest.Id;
+                return Task.FromResult(e is null ? "Nicht installiert: " + string.Join(" ", err)
+                    : e.Manifest.Kind == Extensions.ModuleKind ? $"„{e.Manifest.Name}“ {e.Manifest.Version} installiert. Noch ohne Rechte – „Rechte prüfen und freigeben“ ist der nächste Schritt."
+                    : $"„{e.Manifest.Name}“ {e.Manifest.Version} installiert.");
             });
         Show("erweiterungen");
     }
@@ -83,6 +92,10 @@ public partial class MainWindow
                 var dir = Path.Combine(SuiteFolder, DevStudio.SafeName(e.Manifest.Name));
                 if (!Directory.Exists(dir)) { Directory.CreateDirectory(dir); File.WriteAllText(Path.Combine(dir, CreationSuite.ListFile), Exts.EntryText(e)); }
                 _suiteOpen = dir; Show("vorhaben"); break;
+            case Extensions.ModuleKind:
+                // T-0766: ohne freigegebene Rechte zuerst die Rechte zeigen, sonst ins Studio „Projekte“, wo der Knopf liegt
+                if (Exts.GrantedRights(e).Count == 0) ExtAskGrant(e); else Show("projects");
+                break;
             default: _extShow = e.Manifest.Id; Show("erweiterungen"); break;
         }
     }
@@ -101,6 +114,7 @@ public partial class MainWindow
         var path = new TextBox { Name = "ext-path", PlaceholderText = "Ordner oder ZIP der Erweiterung" };
         left.Children.Add(new StackPanel { Spacing = 6, Children = { path, new WrapPanel { Children = { Act("ext-install", "Installieren", () => ExtInstall(path.Text?.Trim('"', ' ') ?? ""), true),
             new Border { Width = 6 }, Act("ext-sample", "Beispiel ausprobieren", () => ExtInstall(ExtensionSamples.WriteSample(Path.Combine(_core.DataRoot, "beispiele")))) } } } });
+        left.Children.Add(new Expander { Name = "ext-werkstatt", Header = new TextBlock { Text = "Eigene Erweiterung bauen", Foreground = Text, FontSize = 12.5 }, Content = ExtWorkshopCard(), IsExpanded = _extWsOpen, HorizontalAlignment = HorizontalAlignment.Stretch });
         left.Children.Add(new Expander { Name = "ext-catalog", Header = new TextBlock { Text = "Katalog (geprüfte Erweiterungen)", Foreground = Text, FontSize = 12.5 }, Content = ExtCatalogCard(), HorizontalAlignment = HorizontalAlignment.Stretch });
         left.Children.Add(H($"Installiert ({all.Count})", 13));
         if (all.Count == 0) left.Children.Add(P("Noch keine Erweiterungen installiert. „Beispiel ausprobieren“ zeigt, wie es geht.", Muted, 12));
@@ -130,23 +144,28 @@ public partial class MainWindow
             right = new StackPanel { Spacing = 10, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center, Children = {
                 new TextBlock { Text = "🧩", FontSize = 52, HorizontalAlignment = HorizontalAlignment.Center },
                 new TextBlock { Text = "Trendo erweitern", Foreground = Text, FontSize = 20, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Center },
-                P("Erweiterungen bringen neue Vorlagen, Schrittlisten, Links und Textbausteine. Sie enthalten nie Programme – das prüft Trendo bei jeder Installation.", Muted, 12.5) } };
+                P("Erweiterungen bringen neue Funktionen – etwa einen Umwandler für Projektdateien – sowie Vorlagen, Schrittlisten, Links und Textbausteine. Funktionen laufen nur in einer abgesicherten Sandbox: ohne Internet, ohne Zugriff auf fremde Dateien, und erst nachdem du ihre Rechte freigegeben hast.", Muted, 12.5) } };
         else
         {
             var x = sel; var idx = all.ToList().IndexOf(sel);
-            var use = Act($"ext-use-{idx}", x.Manifest.Kind switch { "seite" => "Im Baukasten öffnen", "vorhaben" => "Als Vorhaben anlegen", _ => "Anzeigen" }, () => ExtUse(x), true); use.IsEnabled = x.Enabled;
-            var remove = Act($"ext-remove-{idx}", "Entfernen", () => { _extAsk = ("Erweiterung entfernen?", $"„{x.Manifest.Name}“ {x.Manifest.Version} – ihre Dateien werden gelöscht. Damit angelegte Vorhaben und Seiten bleiben.", "Ja, entfernen", () => Task.FromResult(ExtRemoveApproved(x.Manifest.Id))); Show("erweiterungen"); });
+            var module = x.Manifest.Kind == Extensions.ModuleKind;
+            var granted = module ? Exts.GrantedRights(x) : [];
+            var use = Act($"ext-use-{idx}", x.Manifest.Kind switch { "seite" => "Im Baukasten öffnen", "vorhaben" => "Als Vorhaben anlegen", Extensions.ModuleKind => granted.Count == 0 ? "Rechte prüfen und freigeben" : "Im Studio „Projekte“ benutzen", _ => "Anzeigen" }, () => ExtUse(x), true); use.IsEnabled = x.Enabled;
+            var remove = Act($"ext-remove-{idx}", "Entfernen", () => { _extAsk = ("Erweiterung entfernen?", $"„{x.Manifest.Name}“ {x.Manifest.Version} – ihre Dateien{(module ? ", ihre Rechte und ihr eigener Datenordner" : "")} werden gelöscht. Damit angelegte Vorhaben, Seiten und Projektdateien bleiben.", "Ja, entfernen", () => Task.FromResult(ExtRemoveApproved(x.Manifest.Id))); Show("erweiterungen"); });
             var detail = new StackPanel { Name = "ext-detail", Spacing = 10 };
             detail.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 16, Children = {
                 new Border { Width = 84, Height = 84, CornerRadius = new CornerRadius(16), Background = Brush.Parse("#33D4A84B"), Child = new TextBlock { Text = x.Manifest.Name.Length > 0 ? x.Manifest.Name[..1].ToUpperInvariant() : "?", Foreground = GoldText(), FontSize = 40, FontWeight = FontWeight.Bold, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } },
                 new StackPanel { VerticalAlignment = VerticalAlignment.Center, Spacing = 2, Children = {
                     new TextBlock { Text = x.Manifest.Name, Foreground = Text, FontSize = 24, FontWeight = FontWeight.SemiBold },
                     new TextBlock { Text = $"{x.Manifest.Author} · Version {x.Manifest.Version} · Lizenz {x.Manifest.License} · {(x.Enabled ? "eingeschaltet" : "ausgeschaltet")}", Foreground = Muted, FontSize = 12 },
-                    new WrapPanel { Margin = new Thickness(0, 6, 0, 0), Children = { use, new Border { Width = 6 }, remove } } } } } });
+                    ExtButtons(use, remove, module && granted.Count > 0 ? Act($"ext-revoke-{idx}", "Rechte entziehen", () => { Exts.RevokeRights(x.Manifest.Id); Say($"Rechte von „{x.Manifest.Name}“ entzogen – ihr Knopf ist aus dem Studio „Projekte“ verschwunden.", "erweiterungen"); }) : null) } } } });
             detail.Children.Add(P(x.Manifest.Description, Text, 13));
-            detail.Children.Add(new TextBlock { Text = $"Geprüft: Prüfsumme (SHA-256) {x.Sha256[..16]}… · Art: {x.Manifest.Kind} · enthält keine Programme", Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
-            detail.Children.Add(H("Inhalt", 14));
-            if (x.Manifest.Kind == "links")
+            detail.Children.Add(new TextBlock { Text = module ? $"Geprüft: Prüfsumme (SHA-256) {x.Sha256[..16]}… · Modul {x.Manifest.ModuleSha256?[..16]}… · Funktions-Erweiterung, läuft nur in der Sandbox (WebAssembly)"
+                : $"Geprüft: Prüfsumme (SHA-256) {x.Sha256[..16]}… · Art: {x.Manifest.Kind} · enthält keine Programme", Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
+            if (module) ExtModuleDetail(detail, x, granted);
+            else detail.Children.Add(H("Inhalt", 14));
+            if (module) { }
+            else if (x.Manifest.Kind == "links")
             {
                 try
                 {

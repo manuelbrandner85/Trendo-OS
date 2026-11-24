@@ -13,7 +13,7 @@ public class W5_X04_CatalogUi
         var (w, _, _) = Ui.Open();
         w.Show("erweiterungen");
         w.Find<Button>("ext-cat-local").Press();
-        Assert.Equal(3, w.ExtCatalog.Count);
+        Assert.Equal(4, w.ExtCatalog.Count); // T-0766: plus Funktions-Erweiterung
         w.Find<Button>("ext-cat-install-0").Press(); Dispatcher.UIThread.RunJobs();
         Assert.Empty(w.Exts.All()); // T-0241: erst Rückfrage mit Prüfsumme
         Assert.NotNull(w.TryFind<Button>("ext-ask-yes"));

@@ -115,6 +115,14 @@ if (Environment.GetEnvironmentVariable("TRENDO_3D_DEMO") is { Length: > 0 } demo
   foreach (var i3 in new[] { 0, 1, 2 }) { win.Studio3DSelect(i3); win.Studio3DSetGroup("Lampe"); win.Studio3DSetMaterial(i3 == 1 ? "glas" : "chrom"); } win.Studio3DSelect(0); win.Studio3DStep = demo3d; if (demo3d == "rotate") { win.Studio3DGizmoMode = "rotate"; win.Studio3DStep = "modell"; } win.Show("3d"); }
 if (Environment.GetEnvironmentVariable("TRENDO_XR_EYE") is { Length: > 0 }) { win.Show("xr"); win.XrFile = Trendo.Core.XrSample.Write(Path.Combine(root, "beispiel.glb")); win.XrEye = true; win.Show("xr"); } // Modell-Pruefer aus Augenhoehe
 if (Environment.GetEnvironmentVariable("TRENDO_N8N_PRO") is { Length: > 0 }) { win.WfPro = true; win.Show("ablaeufe"); } // Abläufe Profi: n8n-Agenten-Arbeitsplatz
+if (Environment.GetEnvironmentVariable("TRENDO_EXT_DEMO") is { Length: > 0 } extDemo) // T-0766: Funktions-Erweiterung (Rechte, Werkstatt, Knopf im Studio „Projekte“)
+{
+    var xs = new Trendo.Core.ExtensionStore(core.DataRoot); xs.Install(Trendo.Core.ExtensionModuleSample.Write(Path.Combine(root, "beispiel-quelle")));
+    if (extDemo != "offen") xs.GrantRights(Trendo.Core.ExtensionModuleSample.Id);
+    win.ExtWorkshopNew("Zentrierte Tabelle"); win.ExtWorkshopBuild();
+    if (extDemo == "projekt") { var pid = core.Projects.CreateNamed("Kunden").Id; core.Projects.WriteFile(pid, "kunden.csv", "Name,Ort\nErika Muster,Köln\n"); win.ProjectSelected = pid; win.Show("projects"); }
+    else win.Show("erweiterungen");
+}
 if (Environment.GetEnvironmentVariable("TRENDO_GAME_ENGINES") is { Length: > 0 }) { win.EngineProbeOverride = win.EngineDetect; var ed = win.ProgramNew("spiele-programm", Environment.GetEnvironmentVariable("TRENDO_GAME_ENGINES") == "openworld" ? "openworld" : "retro-plattform"); win.GameSection = "Bauen"; win.Show("spiele-programm"); } // Spiele: Engines (Unreal, Unity, Godot, Blender) im Bereich Bauen
 if (Environment.GetEnvironmentVariable("TRENDO_3D_ENGINE") is { Length: > 0 }) { win.Show("3d"); } // 3D: Knöpfe „Für Engine“
 if (Environment.GetEnvironmentVariable("TRENDO_SCAN_COVERAGE") is { Length: > 0 }) // S4: Abdeckung beim Einscannen (Würfel, Kameras schräg rundum mit Lücke)

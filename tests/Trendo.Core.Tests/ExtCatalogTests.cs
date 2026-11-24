@@ -13,10 +13,10 @@ public class W5_X04_Catalog
         var root = Tmp(); var dir = Path.Combine(root, "kat");
         var f = ExtensionCatalog.BuildLocal(dir);
         var (list, err) = ExtensionCatalog.Parse(File.ReadAllText(f));
-        Assert.Empty(err); Assert.Equal(3, list.Count);
+        Assert.Empty(err); Assert.Equal(4, list.Count); // T-0766: plus Funktions-Erweiterung „CSV als Tabelle“
         var store = new ExtensionStore(root);
         foreach (var e in list) { var (x, er) = ExtensionCatalog.InstallVerified(store, e, ExtensionCatalog.LocalFile(dir, e)!); Assert.True(x is not null, string.Join(" ", er)); }
-        Assert.Equal(3, store.All().Count);
+        Assert.Equal(4, store.All().Count);
         var bad = list[0] with { Sha256 = new string('0', 64) };
         var (n, e2) = ExtensionCatalog.InstallVerified(new ExtensionStore(Tmp()), bad, ExtensionCatalog.LocalFile(dir, bad)!);
         Assert.Null(n); Assert.Contains("Prüfsumme", e2[0]);

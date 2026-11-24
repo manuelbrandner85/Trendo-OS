@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace Trendo.Core;
 
-/// <summary>X-04 Katalog: Liste von Erweiterungen (nur Daten) mit Prüfsumme. Quellen: mitgelieferter lokaler Katalog oder ein GitHub-Katalog.
+/// <summary>X-04 Katalog: Liste von Erweiterungen (Daten und Funktions-Erweiterungen in der Sandbox, T-0766) mit Prüfsumme. Quellen: mitgelieferter lokaler Katalog oder ein GitHub-Katalog.
 /// Core lädt nichts aus dem Netz (QA-019) – das Herunterladen macht die App, Core prüft nur.</summary>
 public sealed record CatalogEntry(string Id, string Name, string Version, string Kind, string Description, string Url, string Sha256);
 
@@ -71,7 +71,7 @@ public static class ExtensionCatalog
     {
         Directory.CreateDirectory(dir);
         var src = Path.Combine(dir, "quellen"); if (Directory.Exists(src)) Directory.Delete(src, true);
-        var dirs = new List<string> { ExtensionSamples.WriteSample(src), WriteTextSample(src), WriteLinksSample(src) };
+        var dirs = new List<string> { ExtensionSamples.WriteSample(src), WriteTextSample(src), WriteLinksSample(src), ExtensionModuleSample.Write(src) }; // T-0766: plus Funktions-Erweiterung
         var list = new List<CatalogEntry>();
         foreach (var d in dirs)
         {
