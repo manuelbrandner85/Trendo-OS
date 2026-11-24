@@ -95,7 +95,7 @@ public static partial class CncCam
         if (s.Tabs > 0 && (s.TabH <= 0 || s.TabH >= s.Depth)) throw new ArgumentException("Haltestege: Höhe muss größer als 0 und kleiner als die Tiefe sein.");
         var r = s.ToolD / 2; var warn = new List<string>();
         var frameUnsure = new HashSet<int>();
-        source = DropFrame(source, s, warn, frameUnsure, ct); // T-0759: eindeutiger Zeichnungsrahmen mit Schriftfeld wird nicht gefräst
+        source = DropFrame(source, s, warn, frameUnsure, ct); // T-0759-fix2: Verdacht auf Zeichnungsrahmen – nichts entfernt, Umriss und Inhalt ausgelassen
         // verschieben: linke untere Ecke aufs Nullpunkt
         double sx = 0, sy = 0;
         if (s.ToOrigin) { sx = -source.Min(c => c.Pts.Min(p => p.X)); sy = -source.Min(c => c.Pts.Min(p => p.Y)); }
@@ -204,7 +204,7 @@ public static partial class CncCam
         // T-0747-fix2: Konturen in oder an einer abgelehnten, sich selbst kreuzenden Kontur – innen/außen ist dort nicht sicher zu deuten (ein Loch würde
         // sonst als Umriss gefräst und größer). Auslassen und melden.
         var unsure = new bool[cs.Count];
-        foreach (var i in frameUnsure) if (!dup[i] && !crossing[i] && !unsure[i]) { unsure[i] = true; warn.Add($"{Name(i)} ausgelassen: liegt in einem Umriss, der Platte oder Zeichnungsrahmen sein kann (siehe oben) – als Teil wäre sie außen, als Loch innen zu fräsen."); }
+        foreach (var i in frameUnsure) if (!dup[i] && !crossing[i] && !unsure[i]) { unsure[i] = true; warn.Add($"{Name(i)} ausgelassen: Umriss oder Kontur darin, der Platte mit Beschriftungsfeld oder Zeichnungsrahmen sein kann (siehe oben) – als Teil wäre sie außen, als Loch innen zu fräsen."); }
         var allBox = cs.Select((c, i) => { if ((i & 255) == 0) ct.ThrowIfCancellationRequested(); return c.Box; }).ToArray(); // T-0747-fix18: Rahmen einmal (vorher je Paar neu berechnet)
         for (var j = 0; j < cs.Count; j++)
         {

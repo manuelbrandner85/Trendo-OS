@@ -78,3 +78,27 @@ Zusätzlich aus den Gegenfällen der Prüferin (Rotlauf zeigte Loch außen auch 
   `Plate_on_annotation_like_layer`, `Gaps_and_web_over_hole`, erweitert `Warnings_summarized`).
 - Kern-Klassen T0747_*, T0758_*, SPEC14_*, T0266, T0273, T0256, T0257, T0759: 164 von 164 bestanden.
 - App-Klassen SPEC14_Ui, T0747_DxfUi (Import mit Texten, Anzeige der Meldungen): 14 von 14 bestanden. Volltest nicht gelaufen (erst am Schluss vor dem Release).
+
+## Zweitprüfung behoben (T-0759-fix2)
+
+Befund der zweiten Prüfung von f3d703507: Eine echte Platte (Typenschild mit graviertem Text im unterteilten Eckfeld) erfüllte alle Bedingungen von fix1
+und ihre Löcher wurden wieder außen gefräst (g1–g4). Eine Platte mit Beschriftungsfeld ist von einem Zeichnungsrahmen nicht zu unterscheiden.
+
+**Entscheidung des Koordinators, umgesetzt:** Trendo entfernt einen Zeichnungsrahmen nie mehr automatisch.
+- `DropFrame` entfernt nichts. Die Erkennung (Rahmen-Ebenenname als ganzes Wort oder Normgröße mit 170–190 mm Eckfeld) dient nur noch der Meldung; bei
+  Verdacht werden Umriss und alle geschlossenen Konturen darin ausgelassen.
+- Die Meldung sagt, was passiert („nicht eindeutig, deshalb wird darin nichts gefräst, auch nicht der Umriss“), nennt den Grund (Ebene oder Blattgröße,
+  Eckfeld, Text) und gibt einen passenden Rat: Rahmen → Ebene ausblenden oder Rahmen löschen; Platte → Eckfeld-Linien und Text auf eigene Ebene legen und
+  ausblenden. „Ebene umbenennen“ nur, wenn der Verdacht vom Ebenennamen kommt.
+- Ausgeblendete Ebenen werden beim Einlesen wirklich ignoriert (Konturen schon bisher, Texte jetzt auch) – geprüft im Test: Rahmen-Ebene ausgeblendet →
+  Teile werden normal gefräst, Nullpunkt an den Teilen; Eckfeld-Ebene ausgeblendet → Platte außen, Löcher innen.
+- **Bewusst umgestellte Tests:** `Drawing_frame` erwartete bisher, dass ein erkannter Rahmen weggelassen und die Teile darin gefräst werden; er erwartet jetzt
+  „nichts gefräst“ mit ehrlicher Meldung, und der Weg über die ausgeblendete Rahmen-Ebene liefert die Teile. In `Plate_is_not_a_frame` erwartet die Kontrolle
+  „echter Rahmen“ jetzt ebenfalls „nichts gefräst“. Grund: Ein Typenschild sieht genauso aus wie ein Rahmen, und ein Loch außen ist schlimmer als fehlender
+  G-Code. Kein anderer Test wurde abgeschwächt. Die r_rahmen-Fälle der Prüfer und echte Rahmen (g6) liefern damit wie auf cf3a5ba1b keinen G-Code.
+- Neu: `Nameplate_is_never_milled_as_frame` (g1–g4, Meldung ehrlich, Weg über ausgeblendete Eckfeld-Ebene).
+- Alle übrigen Änderungen aus 671475769 und f3d703507 bleiben.
+
+**Prüfung:** Regression gegen cf3a5ba1b über 1 109 Fälle (`reports/T-0759/vergleich.md`, Abschnitt „Zweitprüfung behoben“): 0 Löcher außen, G-Code-Verlust
+gegenüber cf3a5ba1b nur bei Rahmen-Verdacht und in den schon in fix1 begründeten Fällen. Rotlauf auf f3d703507: 3 der neuen bzw. umgestellten Tests rot.
+Tests: Kern-Klassen T0747_*, T0758_*, SPEC14_*, T0266, T0273, T0256, T0257, T0759 – 165 von 165 bestanden; App-Klassen SPEC14_Ui, T0747_DxfUi – 14 von 14 bestanden. Volltest erst am Schluss vor dem Release.

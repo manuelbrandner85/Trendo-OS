@@ -82,3 +82,21 @@ fix1: **kein Fall mit Loch außen**, alle a1/a2/a3-Platten samt Löchern gefräs
 Prüfprogramme über alle Sätze: 758 80 Befunde, fix1 74. Kein neuer Befund. Weggefallen sind 4 in pruef16, 2 in pruef18 und 6 Fälle mit Loch außen bei der Prüferin.
 Die übrigen Befunde sind in beiden gleich (nur andere Laufzeit im Text). r_rahmen (pruef15) bleibt wie in 758 ohne G-Code, jetzt mit der Meldung
 „Rahmen oder Platte nicht eindeutig“ (die Prüferdateien haben keinen Text im Schriftfeld).
+
+## Zweitprüfung behoben (T-0759-fix2): Zeichnungsrahmen wird nie mehr entfernt
+
+Lauf gegen 758 über 1 109 Fälle (39 Sätze, 40 Gegenfälle aus `pruef1-T-0759`, 6 aus `pruef2-T-0759/cases4`). Rohwerte: `rohlogs/fix2_*`.
+Unterschiede: die 9 begründeten aus pruef16/pruef18, die 11 aus der Gegenprüfung (Tabelle oben, dort jetzt alle Rahmen-Fälle „kein G-Code“) und:
+
+| Fall (pruef2-T-0759/cases4) | 758 | f3d703507 (laut Prüfung) | fix2 | Begründung |
+|---|---|---|---|---|
+| g1_platte_rahmen_gravurtext_eckfeld | i2 | **Löcher außen** (Rahmen „erkannt“) | kein G-Code | Rahmen-Verdacht: nichts gefräst, Meldung mit Rat |
+| g2_platte_rahmen_text_ebene0 | i2 | **Löcher außen** | kein G-Code | wie g1 (Text auf Ebene „Gravur“) |
+| g3_a4_ebene0_text_mtext | i2 | **Löcher außen** | kein G-Code | Verdacht nur über die Blattgröße: Rat ohne „Ebene umbenennen“ |
+| g4_rahmen_linien_frame_text | i2 | **Löcher außen** | kein G-Code | wie g1 (FRAME aus Einzellinien, „1:1“) |
+| g5_platte_rahmen_text_ausserhalb_feld | i2 | nicht gemessen | kein G-Code | Rahmen-Verdacht (Ebene „Rahmen“ mit Eckfeld) |
+| g6_echter_rahmen_scheibe | a1i2 | nicht gemessen | kein G-Code | echter Rahmen: wie r_rahmen nichts gefräst; Weg: Rahmen-Ebene ausblenden |
+
+Prüfskript der Prüferin über alle Gegenfälle: 758 7 Fälle mit Loch außen, fix2 **0**. Gegenüber 758 verlieren nur Fälle mit Rahmen-Verdacht
+(f1, f1c, f2, f2b, f4, g1–g6) ihren G-Code, dazu wie schon in fix1 die Fälle, in denen 758 ein Loch außen fräste (o1–o3, t6) und t2 (Insel ausgelassen).
+Prüfprogramme: 758 80 Befunde, fix2 74, kein neuer. Rotlauf der neuen Tests auf f3d703507: 3 rot (`rohlogs/fix2_rotlauf_f3d7035.txt`), auf fix2 alle grün.

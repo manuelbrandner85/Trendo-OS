@@ -37,3 +37,5 @@ pruef20-T-0747-leistung/cases20
 pruef21-T-0747-hatchkapsel/cases21
 pruef21-T-0747-hatchkapsel/cases21h
 pruef18-T-0747-rueck/faelle
+pruef1-T-0759/cases
+pruef2-T-0759/cases4

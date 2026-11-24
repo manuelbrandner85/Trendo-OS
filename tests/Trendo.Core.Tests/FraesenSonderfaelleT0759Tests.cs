@@ -124,30 +124,48 @@ public class T0759_FraesenSonderfaelle(ITestOutputHelper log)
             + Line(-10, 287, -10, -10 + gap, layer) + Line(230, -10, 230, 40, layer) + Line(230, 40, 410, 40, layer) + Line(320, -10, 320, 40, layer);
     }
 
-    [Fact(DisplayName = "T-0759 Fall 5: Zeichnungsrahmen mit Schriftfeld wird erkannt und nicht gefräst, die Teile darin werden gefräst; Gegenfälle bleiben vorsichtig")]
+    /// <summary>DXF mit Ebenentabelle: die genannten Ebenen sind ausgeblendet (Farbe negativ), wie in CAD „Ebene aus“.</summary>
+    static string DxfHidden(string entities, params string[] hidden) => "0\nSECTION\n2\nHEADER\n9\n$INSUNITS\n70\n4\n0\nENDSEC\n0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nLAYER\n"
+        + string.Concat(hidden.Select(l => $"0\nLAYER\n2\n{l}\n70\n0\n62\n-7\n")) + "0\nENDTAB\n0\nENDSEC\n" + $"0\nSECTION\n2\nENTITIES\n{entities}0\nENDSEC\n0\nEOF\n";
+    const string Suspect = "nicht eindeutig, deshalb wird darin nichts gefräst";
+
+    // T-0759-fix2 (bewusste Entscheidung): Ein Zeichnungsrahmen wird nie mehr automatisch entfernt – eine Platte mit Beschriftungsfeld (Typenschild mit
+    // graviertem Text im unterteilten Eckfeld) sieht genauso aus. Bei Verdacht wird nichts gefräst; der Weg für den Nutzer ist, die Rahmen-Ebene auszublenden.
+    [Fact(DisplayName = "T-0759 Fall 5 (fix2): Verdacht auf Zeichnungsrahmen – nichts gefräst, ehrliche Meldung; Rahmen-Ebene ausgeblendet → Teile werden gefräst; Gegenfälle bleiben vorsichtig")]
     public void Drawing_frame()
     {
         var parts = Lw(Sq(0, 50, 100, 110)) + Circle(50, 80, 5) + Lw(Sq(150, 50, 250, 110)) + Circle(200, 80, 5);
         foreach (var (name, frame) in new[] { ("RAHMEN", Frame("RAHMEN")), ("Ebene 0, A3", Frame("0")), ("Spalt 0,05", Frame("RAHMEN", 0.05)) })
         {
             var (r, text) = Run(name, Dxf(frame + parts));
-            Assert.True(Around(r, "innen", 50, 80, 5) && Around(r, "innen", 200, 80, 5), $"{name}: Löcher fehlen");
-            Assert.True(PlateOut(r, 0, 50, 100, 110) && PlateOut(r, 150, 50, 250, 110), $"{name}: Platten fehlen");
-            Assert.Contains("Zeichnungsrahmen", text);
-            Assert.True(r!.ShiftX > -1 && r.ShiftX < 1 && r.ShiftY > -51 && r.ShiftY < -49, "Nullpunkt an den Teilen, nicht am Rahmen");
+            Assert.Null(r); Assert.Contains(Suspect, text); Assert.DoesNotContain("als Platte gefräst", text);
+            Assert.False(Around(r, "aussen", 50, 80, 5) || Around(r, "aussen", 200, 80, 5));
         }
-        // geschlossener Rahmen (Polylinie) mit Schriftfeld-Linien: vorher wurden die Platten als Löcher und die Kreise als Teile (außen) gefräst
+        // Rat bei Verdacht über den Ebenennamen: Ebene ausblenden – dann werden die Teile normal gefräst (Nullpunkt an den Teilen)
+        var (rn, rt) = Run("RAHMEN", Dxf(Frame("RAHMEN") + parts));
+        Assert.Contains("die Ebene „RAHMEN“ ausblenden", rt); Assert.Contains("Ebene umbenennen", rt);
+        foreach (var (name, frame, layer) in new[] { ("RAHMEN ausgeblendet", Frame("RAHMEN"), "RAHMEN"), ("Blatt-Ebene ausgeblendet", Frame("BLATT"), "BLATT") })
+        {
+            var (h, ht) = Run(name, DxfHidden(frame + parts, layer));
+            Assert.True(Around(h, "innen", 50, 80, 5) && Around(h, "innen", 200, 80, 5), $"{name}: Löcher fehlen – {ht}");
+            Assert.True(PlateOut(h, 0, 50, 100, 110) && PlateOut(h, 150, 50, 250, 110), $"{name}: Platten fehlen");
+            Assert.DoesNotContain("Zeichnungsrahmen", ht);
+            Assert.True(h!.ShiftX > -1 && h.ShiftX < 1 && h.ShiftY > -51 && h.ShiftY < -49, "Nullpunkt an den Teilen, nicht am Rahmen");
+        }
+        // Verdacht nur über die Blattgröße (Ebene 0): kein Rat „Ebene umbenennen“ (hilft dort nicht)
+        var (s0, st) = Run("Ebene 0, A3", Dxf(Frame("0") + parts));
+        Assert.Contains(Suspect, st); Assert.DoesNotContain("umbenennen", st); Assert.Contains("auf eine eigene Ebene legen und diese ausblenden", st);
+        // geschlossener Rahmen (Polylinie) mit Schriftfeld: früher Platten als Löcher und Kreise als Teile (außen) – jetzt nichts gefräst
         var (c, ctext) = Run("geschlossen", Dxf(Lw(Sq(-10, -10, 410, 287), "Rahmen") + Line(230, -10, 230, 40, "Rahmen") + Line(230, 40, 410, 40, "Rahmen") + Line(320, -10, 320, 40, "Rahmen") + Text(240, 20, "Werkstoff") + parts));
-        Assert.False(Around(c, "aussen", 50, 80, 5) || Around(c, "aussen", 200, 80, 5), "Loch außen gefräst");
-        Assert.True(Around(c, "innen", 50, 80, 5)); Assert.Contains("Zeichnungsrahmen", ctext);
-        // Gegenfall: „Rahmen“ ist eigentlich eine Platte 300 × 200 aus Linien mit Teilung (Stoß) und Löchern – keine Normgröße, Ebene 0: nicht als Rahmen
+        Assert.Null(c); Assert.Contains(Suspect, ctext);
+        // Gegenfall: „Rahmen“ ist eigentlich eine Platte 300 × 200 aus Linien mit Teilung (Stoß) und Löchern – keine Normgröße, Ebene 0: kein Verdacht
         var plateLike = Line(0, 0, 200, 0) + Line(200, 0, 300, 0) + Line(300, 0, 300, 200) + Line(300, 200, 0, 200) + Line(0, 200, 0, 0) + Line(200, 0, 200, 40) + Line(200, 40, 300, 40);
         var (p, ptext) = Run("Platte aus Linien", Dxf(plateLike + Circle(50, 100, 5) + Circle(150, 100, 5)));
         Assert.False(Around(p, "aussen", 50, 100, 5) || Around(p, "aussen", 150, 100, 5), "Loch der Platte außen gefräst");
         Assert.DoesNotContain("Zeichnungsrahmen", ptext);
-        // Gegenfall: Rahmen-Ebene, aber ein Teil berührt den Rahmen – nicht eindeutig, nichts außen
+        // Gegenfall: Rahmen-Ebene, aber ein Teil berührt den Rahmen – nichts außen
         var (t, ttext) = Run("Teil am Rahmen", Dxf(Frame("RAHMEN") + Lw(Sq(-10, 50, 100, 110)) + Circle(50, 80, 5)));
-        Assert.DoesNotContain("Zeichnungsrahmen", ttext); Assert.False(Around(t, "aussen", 50, 80, 5));
+        Assert.False(Around(t, "aussen", 50, 80, 5));
         // Gegenfall: Rahmen ohne Schriftfeld (geschlossenes Rechteck) – nicht von einer Platte zu unterscheiden, bleibt Platte (Kreise darin Löcher)
         var (n, ntext) = Run("ohne Schriftfeld", Dxf(Lw(Sq(-10, -10, 410, 287), "RAHMEN") + Circle(50, 80, 5)));
         Assert.DoesNotContain("Zeichnungsrahmen", ntext); Assert.True(Around(n, "innen", 50, 80, 5));
@@ -270,7 +288,7 @@ public class T0759_FraesenSonderfaelle(ITestOutputHelper log)
             var (r, text) = Run(name, Dxf(plate + Holes));
             NoHoleOutside(name, r, text);
             // Löcher innen (keine Rahmen-Deutung) oder ausgelassen mit Meldung – nie außen
-            Assert.True((Around(r, "innen", 60, 100, 8) && Around(r, "innen", 150, 100, 10)) || text.Contains("Rahmen oder Platte nicht eindeutig"), $"{name}: weder Löcher noch Meldung");
+            Assert.True((Around(r, "innen", 60, 100, 8) && Around(r, "innen", 150, 100, 10)) || (r is null && text.Contains(Suspect)), $"{name}: weder Löcher noch Meldung");
         }
         // mit Text im (nicht unterteilten) Eckfeld: nicht eindeutig
         var (t1, tt1) = Run("Text, nicht unterteilt", Dxf(Lw(Sq(0, 0, 300, 200), "Rahmen") + Corner(300, 0, 200, 50, "Rahmen") + Text(220, 20, "Teil 4711") + Holes));
@@ -278,10 +296,33 @@ public class T0759_FraesenSonderfaelle(ITestOutputHelper log)
         // unterteilt, aber ohne Text: nicht eindeutig
         var (t2, tt2) = Run("unterteilt, ohne Text", Dxf(Lw(Sq(0, 0, 300, 200), "Rahmen") + Corner(300, 0, 200, 50, "Rahmen") + Line(250, 0, 250, 50, "Rahmen") + Holes));
         NoHoleOutside("unterteilt, ohne Text", t2, tt2); Assert.Contains("nicht eindeutig", tt2);
-        // Kontrolle: echter Rahmen (Ebene Rahmen, Text im unterteilten Schriftfeld) – Teil außen, Loch darin innen
-        var (f, ft) = Run("echter Rahmen", Dxf(Lw(Sq(-10, -10, 410, 287), "Rahmen") + Line(230, -10, 230, 40, "Rahmen") + Line(230, 40, 410, 40, "Rahmen") + Line(320, -10, 320, 40, "Rahmen")
+        // fix2: auch ein Rahmen mit Text im unterteilten Schriftfeld wird nicht entfernt – nichts gefräst (Platte mit Typenschild-Feld sieht genauso aus)
+        var (f, ft) = Run("Rahmen mit Text, unterteilt", Dxf(Lw(Sq(-10, -10, 410, 287), "Rahmen") + Line(230, -10, 230, 40, "Rahmen") + Line(230, 40, 410, 40, "Rahmen") + Line(320, -10, 320, 40, "Rahmen")
             + Text(240, 20, "Werkstoff") + Lw(Sq(0, 50, 100, 110)) + Circle(50, 80, 5)));
-        Assert.Contains("Zeichnungsrahmen mit Schriftfeld erkannt", ft); Assert.True(Around(f, "innen", 50, 80, 5)); Assert.True(PlateOut(f, 0, 50, 100, 110));
+        Assert.Null(f); Assert.Contains(Suspect, ft);
+    }
+
+    [Fact(DisplayName = "T-0759-fix2 HOCH: Typenschild-Platte mit graviertem Text im unterteilten Eckfeld (g1 Ebene Rahmen, g2 Text auf Gravur, g3 A4 Ebene 0 mit MTEXT, g4 FRAME aus Linien mit „1:1“) – nie Loch außen, ehrliche Meldung")]
+    public void Nameplate_is_never_milled_as_frame()
+    {
+        static string MText(double x, double y, string t, string layer = "0") => G((0, "MTEXT"), (8, layer), (10, x), (20, y), (30, 0), (40, 5), (1, t));
+        string Div(string l) => Corner(300, 0, 200, 50, l) + Line(250, 0, 250, 50, l);
+        var cases = new (string Name, string Dxf)[]
+        {
+            ("g1", Lw(Sq(0, 0, 300, 200), "Rahmen") + Div("Rahmen") + Text(205, 20, "Typ A", "Rahmen")),
+            ("g2", Lw(Sq(0, 0, 300, 200), "Rahmen") + Div("Rahmen") + Text(205, 20, "Typ A", "Gravur")),
+            ("g3", Lw(Sq(0, 0, 297, 210)) + Line(117, 0, 117, 40) + Line(117, 40, 297, 40) + Line(200, 0, 200, 40) + MText(130, 20, "Seriennr")),
+            ("g4", Line(0, 0, 300, 0, "FRAME") + Line(300, 0, 300, 200, "FRAME") + Line(300, 200, 0, 200, "FRAME") + Line(0, 200, 0, 0, "FRAME") + Div("FRAME") + Text(260, 10, "1:1", "FRAME")),
+        };
+        foreach (var (name, plate) in cases)
+        {
+            var (r, text) = Run(name, Dxf(plate + Holes));
+            NoHoleOutside(name, r, text);
+            Assert.Null(r); Assert.Contains(Suspect, text); Assert.DoesNotContain("als Platte gefräst", text); Assert.DoesNotContain("normal gefräst", text);
+        }
+        // Weg für die Platte: Eckfeld-Linien und Text auf eigener Ebene, ausgeblendet → Platte außen, Löcher innen
+        var (w, wt) = Run("g1 Eckfeld ausgeblendet", DxfHidden(Lw(Sq(0, 0, 300, 200), "Rahmen") + Div("Feld") + Text(205, 20, "Typ A", "Feld") + Holes, "Feld"));
+        Assert.True(PlateOut(w, 0, 0, 300, 200) && Around(w, "innen", 60, 100, 8, 1) && Around(w, "innen", 150, 100, 10, 1), "Platte nach Ausblenden des Eckfelds fehlt – " + wt);
     }
 
     [Fact(DisplayName = "T-0759-fix1: Platte auf Ebene ACHSE/CENTER/Mitte/BEM wird gefräst (enthält Konturen); „Achse 1“, „Dimension 3mm“, Wortteile sind keine Hilfslinien-Ebenen")]

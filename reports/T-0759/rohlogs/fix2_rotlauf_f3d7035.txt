@@ -1,0 +1,4 @@
+T-0759-fix2 HOCH: Typenschild-Platte mit graviertem Text im unterteilten Eckfeld (g1 Ebene Rahmen, g2 Text auf Gravur, g3 A4 Ebene 0 mit MTEXT, g4 FRAME aus Linien mit „1
+T-0759-fix1 HOCH: Platte mit abgeteiltem Eckfeld wird nie als Zeichnungsrahmen gedeutet – kein Loch außen (Ebene Rahmen, Rahmen-Teil 1, FRAME aus Linien, A4 mit 180-mm-F
+T-0759 Fall 5 (fix2): Verdacht auf Zeichnungsrahmen – nichts gefräst, ehrliche Meldung; Rahmen-Ebene ausgeblendet → Teile werden gefräst; Gegenfälle bleiben vorsicht
+Fehler!      : Fehler:     3, erfolgreich:    10, übersprungen:     0, gesamt:    13, Dauer: 1 s - Trendo.Core.Tests.dll (net10.0)

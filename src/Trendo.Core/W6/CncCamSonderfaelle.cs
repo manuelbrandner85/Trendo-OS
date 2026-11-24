@@ -94,7 +94,7 @@ public static partial class CncCam
 
     /// <summary>T-0759-fix1: Lage aller Texte (TEXT/MTEXT) einer Zeichnung – für <see cref="CamSettings.Texts"/> (Beleg für ein Schriftfeld).</summary>
     public static List<(double X, double Y)> TextPoints(CadDrawing d) =>
-        d.Entities.Where(e => e.Kind == "text" && e.Points.Count > 0 && e.Points[0].Length >= 2 && double.IsFinite(e.Points[0][0]) && double.IsFinite(e.Points[0][1]))
+        d.Entities.Where(e => e.Kind == "text" && !e.Invisible && !d.Layers.Any(l => !l.Visible && string.Equals(l.Name, e.Layer, StringComparison.OrdinalIgnoreCase)) && e.Points.Count > 0 && e.Points[0].Length >= 2 && double.IsFinite(e.Points[0][0]) && double.IsFinite(e.Points[0][1]))
             .Select(e => (e.Points[0][0], e.Points[0][1])).ToList();
 
     /// <summary>Blattgrößen A0–A4 (mm) – Rahmen auf der Blattkante oder mit üblichem Heftrand (ISO 5457: 20 mm links, 10 mm sonst; auch 10 mm rundum).</summary>
@@ -109,13 +109,13 @@ public static partial class CncCam
         return false;
     }
 
-    /// <summary>T-0759: Zeichnungsrahmen mit Schriftfeld erkennen und weglassen. Nur wenn alles eindeutig ist:
+    /// <summary>T-0759: Verdacht auf Zeichnungsrahmen mit Schriftfeld erkennen (T-0759-fix2: nur noch melden und auslassen, nie entfernen). Verdacht, wenn:
     /// 1. ein Verbund (Linien-Stoß-Gruppe oder geschlossenes Rechteck samt daran hängender Linien) umfasst die ganze Zeichnung,
     /// 2. er besteht nur aus waagrechten und senkrechten Strecken, sein Rand ist ein vollständiges Rechteck (Spalte höchstens <see cref="ChainTol"/>),
     /// 3. alle übrigen Strecken bilden ein Schriftfeld in einer Ecke (höchstens ¾ der Breite und ½ der Höhe, die beiden inneren Kanten durchgezogen),
     /// 4. Ebenenname genau „Rahmen“/„Schriftfeld“/„Frame“ … – oder genormte Blatt-/Rahmengröße (A0–A4) mit Schriftfeld 170–190 mm breit (ISO 7200: 180 mm),
-    ///    und in jedem Fall (T-0759-fix1) Text im Schriftfeld und ein unterteiltes Schriftfeld; fehlt das, werden die Konturen darin ausgelassen
-    ///    („Rahmen oder Platte nicht eindeutig“) statt sie als Teile außen zu fräsen,
+    ///    T-0759-fix2: auch dann wird nichts entfernt – eine Platte mit Beschriftungsfeld sieht genauso aus; Umriss und Konturen darin werden ausgelassen
+    ///    und gemeldet (Rat: Rahmen-Ebene bzw. Eckfeld-Ebene ausblenden),
     /// 5. jede andere Kontur und jedes nicht gelesene Element liegt mit Abstand im Zeichenfeld (nicht am Rahmen, nicht im Schriftfeld), und es gibt
     ///    mindestens eine geschlossene Kontur darin.
     /// Sonst bleibt alles, wie es ist (ein Rahmen aus Linien mit Stößen lässt die Teile darin dann vorsichtshalber aus).</summary>
@@ -220,13 +220,11 @@ public static partial class CncCam
             var named = f.All(i => IsFrameLayer(src[i].Layer));
             var sheet = StandardSize(W, H) && tw >= 170 && tw <= 190;
             if (!named && !sheet) continue; // kein Hinweis auf einen Rahmen: Platte (wie bisher)
-            // T-0759-fix1: Von der Gestalt her sind „Platte mit Löchern“ und „Rahmen mit Teilen“ dasselbe. Name oder Blattgröße allein reichen nie; als Rahmen
-            // gilt er nur, wenn zusätzlich Text im Schriftfeld steht und das Schriftfeld unterteilt ist (mindestens eine weitere Linie darin).
+            // T-0759-fix2: Von der Gestalt her sind „Platte mit Löchern und Beschriftungsfeld“ (z. B. Typenschild mit graviertem Text im unterteilten
+            // Eckfeld) und „Zeichnungsrahmen mit Teilen“ dasselbe – auch Text und Unterteilung unterscheiden sie nicht. Der Rahmen wird deshalb nie
+            // entfernt; die Erkennung dient nur der Meldung, und im Umriss wird nichts gefräst.
             bool InTitle((double X, double Y) q) => q.X >= tx0 - tol && q.X <= tx1 + tol && q.Y >= ty0 - tol && q.Y <= ty1 + tol;
             var texts = s.Texts.Count(InTitle);
-            var divided = inner.Any(e =>
-                !(Math.Abs(e.A.X - e.B.X) <= 1e-6 && Math.Abs(e.A.X - vx) <= tol) && !(Math.Abs(e.A.Y - e.B.Y) <= 1e-6 && Math.Abs(e.A.Y - hy) <= tol) && InTitle(e.A) && InTitle(e.B));
-            var sure = texts > 0 && divided;
             // Inhalt: mit Abstand im Zeichenfeld, nicht im Schriftfeld
             bool Clear(double x0, double y0, double x1, double y1) =>
                 x0 > bx0 + tol && y0 > by0 + tol && x1 < bx1 - tol && y1 < by1 - tol && (x1 < tx0 - tol || x0 > tx1 + tol || y1 < ty0 - tol || y0 > ty1 + tol);
@@ -241,18 +239,15 @@ public static partial class CncCam
             }
             foreach (var u in unread) if (!Clear(u.MinX, u.MinY, u.MaxX, u.MaxY)) ok = false;
             if (!ok || closedInside == 0) continue;
-            if (!sure)
-            {
-                // Rahmen vermutet, aber nicht zweifelsfrei: nichts weglassen, die geschlossenen Konturen darin auslassen (als Teil wären sie außen, als Loch
-                // innen zu fräsen – im Zweifel lieber kein G-Code als ein Loch außen).
-                for (var i = 0; i < src.Count; i++) if (!fset.Contains(i) && src[i].Closed) unsureKids.Add(i);
-                warn.Add($"Rahmen oder Platte nicht eindeutig ({F(W, "0.#")} × {F(H, "0.#")} mm mit abgeteiltem Eckfeld{(named ? $", Ebene {src[f[0]].Layer}" : ", Blattgröße")}; "
-                    + $"{(texts == 0 ? "kein Text im Schriftfeld" : "")}{(texts == 0 && !divided ? ", " : "")}{(!divided ? "Schriftfeld nicht unterteilt" : "")}) – der Umriss wird als Platte gefräst, "
-                    + "die Konturen darin werden ausgelassen (als Teile wären sie außen, als Löcher innen zu fräsen). Ist es eine Platte: Ebene umbenennen; ist es ein Zeichnungsrahmen: Rahmen und Schriftfeld vor dem Fräsen löschen.");
-                return src;
-            }
-            warn.Add($"Zeichnungsrahmen mit Schriftfeld erkannt ({F(W, "0.#")} × {F(H, "0.#")} mm, {f.Count} Linienzug/-züge{(named ? $", Ebene {src[f[0]].Layer}" : ", Blattgröße")}, Text im unterteilten Schriftfeld) – er wird nicht gefräst, die Teile darin werden normal gefräst.");
-            return src.Where((_, i) => !fset.Contains(i)).ToList();
+            // Verdacht: Umriss und alles darin auslassen (als Platte wären die Konturen Löcher, als Rahmen Teile – im Zweifel kein G-Code statt Loch außen)
+            for (var i = 0; i < src.Count; i++) if (src[i].Closed) unsureKids.Add(i);
+            var size = $"{F(W, "0.#")} × {F(H, "0.#")} mm";
+            var why = named ? $"Ebene „{src[f[0]].Layer}“, abgeteiltes Eckfeld{(texts > 0 ? " mit Text" : "")}" : $"Blattgröße {size} mit {F(tw, "0")} mm breitem Eckfeld{(texts > 0 ? " mit Text" : "")}";
+            warn.Add($"Umriss {size} sieht wie ein Zeichnungsrahmen oder wie eine Platte mit Beschriftungsfeld aus ({why}) – nicht eindeutig, deshalb wird darin nichts gefräst, auch nicht der Umriss. "
+                + (named
+                    ? $"Ist es ein Zeichnungsrahmen: die Ebene „{src[f[0]].Layer}“ ausblenden oder den Rahmen löschen. Ist es eine Platte: die Eckfeld-Linien und den Text auf eine eigene Ebene legen und diese ausblenden, oder die Ebene umbenennen."
+                    : "Ist es ein Zeichnungsrahmen: Rahmen und Schriftfeld auf eine eigene Ebene legen und diese ausblenden oder löschen. Ist es eine Platte: die Eckfeld-Linien und den Text auf eine eigene Ebene legen und diese ausblenden."));
+            return src;
         }
         return src;
     }
