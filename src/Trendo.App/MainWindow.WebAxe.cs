@@ -29,8 +29,9 @@ public partial class MainWindow
         Show("dev");
     }
 
-    async Task WebAxeSetup()
+    internal async Task WebAxeSetup()
     {
+        if (!DarfSoftware("npm.install axe-core", "dev")) { _axeMsg = Rbac.NurErwachseneSoftware; Show("dev"); return; } // T-0764
         var npm = Cli.Find("npm") ?? Cli.Find("npm.cmd");
         if (_opt.Isolated) _axeMsg = "Testmodus: nichts installiert.";
         else if (npm is null) _axeMsg = "⚠ Node.js mit npm fehlt – zuerst unter Programme „Node.js“ einrichten.";

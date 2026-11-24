@@ -18,6 +18,8 @@ public partial class MainWindow
     public Func<IReadOnlyList<DriveSnapshot>>? DriveSourceOverride { get; set; }
     /// <summary>T-0764 Tests: ersetzt den echten Auswurf (cfgmgr32).</summary>
     public IDriveEjector? EjectorOverride { get; set; }
+    /// <summary>T-0764 Tests: ersetzt die Zuordnung Pfad → Datenträger (Junction, zwei Partitionen auf einem Gerät nachstellen).</summary>
+    public IDiskResolver? DiskResolverOverride { get; set; }
     public IReadOnlyList<DeviceInfo> Devices { get; private set; } = [];
     private IReadOnlyList<DeviceInfo> _devAdded = [], _devRemoved = []; private string _devMsg = "";
     private IReadOnlySet<string>? _devRemovable; // zuletzt gesehene Wechseldatenträger
@@ -82,11 +84,11 @@ public partial class MainWindow
     {
         var drive = CurrentDrives().FirstOrDefault(d => string.Equals(d.Root, root, StringComparison.OrdinalIgnoreCase));
         if (drive is null) return Done(new(false, $"Laufwerk {root} ist nicht (mehr) da."));
-        string[] protect = [Environment.SystemDirectory, AppContext.BaseDirectory, _core.DataRoot, _deps.ToolsRoot];
+        string[] protect = [Environment.SystemDirectory, AppContext.BaseDirectory, _core.DataRoot, _deps.ToolsRoot, _deps.VollpaketDir ?? "", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)]; // T-0764: auch Vollpaket und Benutzerordner
         IDriveEjector? ejector = EjectorOverride ?? (OperatingSystem.IsWindows() ? new WindowsDriveEjector() : null);
         if (ejector is null) return Done(new(false, "Auswerfen geht hier nur unter Windows. Unter Linux bitte im Dateimanager auswerfen."));
         _devEjecting = true;
-        try { return Done(await Task.Run(() => DeviceEject.Eject(drive.Root, drive.Type, protect, ejector, _core.Audit, CurrentPrincipal.Name))); }
+        try { return Done(await Task.Run(() => DeviceEject.Eject(drive.Root, drive.Type, protect, ejector, _core.Audit, CurrentPrincipal.Name, DiskResolverOverride))); }
         finally { _devEjecting = false; }
 
         EjectResult Done(EjectResult r)

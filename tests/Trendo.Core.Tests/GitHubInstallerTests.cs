@@ -59,7 +59,7 @@ public class GitHubInstallerTests
             Assert.True(File.Exists(GitHubApps.ExePath(Path.Combine(d, "tools"), e)));
             // per Installer eingerichtet: absoluter Pfad, entfernbar
             var outside = Path.Combine(d, "Programs", "Tool", "Tool.exe"); Directory.CreateDirectory(Path.GetDirectoryName(outside)!); File.WriteAllText(outside, "x");
-            var r = GitHubApps.Register(Path.Combine(d, "tools"), "o/tool", new("v2", "v2", []), A("Tool-Setup.exe"), outside, "ab", "MIT", "");
+            var r = GitHubApps.Register(Principal.LocalOwner, Path.Combine(d, "tools"), "o/tool", new("v2", "v2", []), A("Tool-Setup.exe"), outside, "ab", "MIT", "");
             Assert.Equal(outside, GitHubApps.ExePath(Path.Combine(d, "tools"), r));
             Assert.True(GitHubApps.Uninstall(Principal.LocalOwner, Path.Combine(d, "tools"), r.Id));
             Assert.Single(GitHubApps.List(Path.Combine(d, "tools")));

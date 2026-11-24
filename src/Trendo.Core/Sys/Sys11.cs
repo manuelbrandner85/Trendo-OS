@@ -22,8 +22,13 @@ public static class Software
         if (!sha.Equals(Regex.Replace(expectedSha256, @"\s", ""), StringComparison.OrdinalIgnoreCase)) throw new InvalidOperationException("Prüfsumme stimmt nicht – nichts entpackt.");
         var safe = SafeName(name);
         var dest = Path.Combine(toolsRoot, safe); if (Directory.Exists(dest)) Directory.Delete(dest, true);
-        Archives.Unpack(zip, dest); audit?.Append(by.Name, "portable.install", $"{safe} sha256={sha}"); return dest;
+        Archives.Unpack(zip, dest);
+        File.WriteAllText(Path.Combine(dest, PortableMarker), $"{{\"name\":\"{safe}\",\"sha256\":\"{sha}\",\"am\":\"{DateTime.Now:O}\"}}"); // T-0764: Kennung „von Trendo eingerichtet“
+        audit?.Append(by.Name, "portable.install", $"{safe} sha256={sha}"); return dest;
     }
+
+    /// <summary>T-0764: Kennungsdatei, die <see cref="InstallPortable"/> in jeden Programmordner schreibt – nur solche Ordner führt die Programm-Seite.</summary>
+    public const string PortableMarker = ".trendo-portable.json";
 
     /// <summary>Ordnername für ein Portable-Programm: Buchstaben, Ziffern, „-“, „_“ und „.“ – aber nie „.“, „..“ oder mit Punkt am Anfang
     /// (T-0764: „..“ zeigte vorher auf den übergeordneten Ordner, und „Ersetzen“ hätte ihn gelöscht).</summary>
@@ -32,6 +37,18 @@ public static class Software
         var safe = string.Concat((name ?? "").Where(c => char.IsLetterOrDigit(c) || c is '-' or '_' or '.')).TrimEnd('.');
         if (safe.Length == 0 || safe[0] == '.') throw new ArgumentException("Bitte einen Namen aus Buchstaben oder Ziffern.");
         return safe;
+    }
+
+    /// <summary>T-0764 (Gegenprüfung M3): Dateien, deren Öffnen etwas installiert, entfernt oder Befehle ausführt – Installer, Pakete, Skripte,
+    /// Registrierungsdateien und .exe mit „setup“, „install“, „unins“ oder „update“ im Namen. Sie brauchen das Recht „Programme verwalten“.
+    /// Normale Dokumente, Bilder und gewöhnliche Programme öffnen bleibt für alle erlaubt.</summary>
+    public static bool IsInstallerLike(string path)
+    {
+        var ext = Path.GetExtension(path).ToLowerInvariant();
+        if (ext is ".msi" or ".msp" or ".msix" or ".msixbundle" or ".appx" or ".appxbundle" or ".appinstaller" or ".bat" or ".cmd" or ".ps1" or ".psm1" or ".vbs" or ".vbe" or ".wsf" or ".wsh" or ".js" or ".jse" or ".reg" or ".scr" or ".com" or ".pif") return true;
+        if (ext is not ".exe") return false;
+        var n = Path.GetFileNameWithoutExtension(path).ToLowerInvariant();
+        return n.Contains("setup") || n.Contains("install") || n.Contains("unins") || n.Contains("update") || n.Contains("deinstall");
     }
 
     /// <summary>T-0764: Offline-Installer starten – nur Erwachsene, und nur, wenn die Prüfsumme jetzt (beim Start) noch stimmt.

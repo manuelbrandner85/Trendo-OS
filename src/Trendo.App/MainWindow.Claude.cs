@@ -211,22 +211,40 @@ public partial class MainWindow
         RefreshKiPage();
     }
 
+    /// <summary>T-0764: Ziel der Freigabe „Claude Code einrichten“.</summary>
+    public const string ClaudeInstallTarget = "claude-code";
     /// <summary>Claude Code mit dem offiziellen Installer von claude.ai einrichten – nur für diesen Benutzer, ohne Admin, nach Zustimmung.</summary>
+    /// <remarks>T-0764 (Gegenprüfung H3): Rolle zuerst (Kinderprofil: nichts), dann eigene Rückfrage (Wirkung „app.install claude-code“), ausgeführt nur im
+    /// Freigabe-Tor. Der Testmodus greift erst innerhalb der Ausführung – er verdeckt Rolle und Freigabe nicht.</remarks>
     public async Task ClaudeInstall()
     {
-        if (ClaudeSandboxed("den Claude-Code-Installer starten")) return;
-        _core.Audit.Append(Principal.LocalOwner.Name, "claude.install.start", "https://claude.ai/install.ps1");
-        _claudeMsg = "Claude Code wird aus der offiziellen Quelle (claude.ai) eingerichtet …"; RefreshKiPage();
+        if (!DarfSoftware("app.install " + ClaudeInstallTarget, "ki")) { _claudeMsg = Rbac.NurErwachseneSoftware; RefreshKiPage(); return; }
+        var w = new Wirkung("app.install", ClaudeInstallTarget, "Claude Code einrichten?",
+            "Programm: Claude Code (Anthropic)\nWoher: offizieller Installer https://claude.ai/install.ps1\n\nTrendo startet den Installer in PowerShell. Er richtet Claude Code nur für dich ein, ohne Administratorrechte.", "Einrichten");
+        if (await FreigabeAsync(w) is not { } approvalId) { _claudeMsg = "Claude Code: abgebrochen – es wurde nichts eingerichtet."; RefreshKiPage(); return; }
+        bool ran;
         try
         {
-            var psi = new ProcessStartInfo("powershell.exe") { UseShellExecute = false, CreateNoWindow = false, WorkingDirectory = Path.GetTempPath() };
-            foreach (var a in new[] { "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", "irm https://claude.ai/install.ps1 | iex" }) psi.ArgumentList.Add(a);
-            using var p = Process.Start(psi); if (p is not null) await p.WaitForExitAsync();
+            ran = await _core.Approvals.Execute(approvalId, "app.install", ClaudeInstallTarget, async () =>
+            {
+                if (ClaudeSandboxed("den Claude-Code-Installer starten")) return false;
+                _core.Audit.Append(CurrentPrincipal.Name, "claude.install.start", "https://claude.ai/install.ps1");
+                _claudeMsg = "Claude Code wird aus der offiziellen Quelle (claude.ai) eingerichtet …"; RefreshKiPage();
+                try
+                {
+                    var psi = new ProcessStartInfo("powershell.exe") { UseShellExecute = false, CreateNoWindow = false, WorkingDirectory = Path.GetTempPath() };
+                    foreach (var a in new[] { "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", "irm https://claude.ai/install.ps1 | iex" }) psi.ArgumentList.Add(a);
+                    using var p = Process.Start(psi); if (p is not null) await p.WaitForExitAsync();
+                }
+                catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException) { _claudeMsg = "Einrichten ließ sich nicht starten: " + Trendo.Core.FriendlyError.Say(e); }
+                return true;
+            });
         }
-        catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException) { _claudeMsg = "Einrichten ließ sich nicht starten: " + Trendo.Core.FriendlyError.Say(e); }
+        catch (ApprovalException e) { _claudeMsg = e.Message; RefreshKiPage(); return; }
+        if (!ran) return; // Testmodus: Freigabe eingelöst, nichts gestartet
         var s = await ClaudeCheck(true);
         _claudeMsg = s.Installed ? "Claude Code ist eingerichtet. Jetzt noch „Mit Claude verbinden“." : "Claude Code wurde nicht gefunden – bitte noch einmal versuchen.";
-        _core.Audit.Append(Principal.LocalOwner.Name, s.Installed ? "claude.install.ok" : "claude.install.fail", "");
+        _core.Audit.Append(CurrentPrincipal.Name, s.Installed ? "claude.install.ok" : "claude.install.fail", "");
         RefreshKiPage();
     }
 

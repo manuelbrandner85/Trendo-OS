@@ -58,6 +58,7 @@ public partial class MainWindow
     public async Task AutomationInstall(string which)
     {
         var (pkg, dir) = which == "node-red" ? ("node-red", NodeRedDir) : ("n8n", N8nDir);
+        if (!DarfSoftware("npm.install " + pkg, "ablaeufe")) { _n8nAsk = ""; _n8nMsg = Rbac.NurErwachseneSoftware; Show("ablaeufe"); return; } // T-0764: Rolle vor Testmodus und Download
         _n8nAsk = ""; _n8nMsg = $"{pkg} wird aus der offiziellen npm-Quelle geladen … (einige Minuten)"; Show("ablaeufe");
         bool ok;
         if (AutomationInstallOverride is { } fake) ok = await fake(pkg, dir);
@@ -71,7 +72,7 @@ public partial class MainWindow
             ok = r.Ok && File.Exists(N8n.Exe(dir, pkg == "node-red" ? "node-red" : "n8n"));
             if (!ok) { _n8nMsg = "⚠ Einrichten ging nicht: " + Short(r.Err.Length > 0 ? r.Err : r.Out); Show("ablaeufe"); return; }
         }
-        _core.Audit.Append(Principal.LocalOwner.Name, "automatik.eingerichtet", pkg + (ok ? "" : " (fehlgeschlagen)"));
+        _core.Audit.Append(CurrentPrincipal.Name, "automatik.eingerichtet", pkg + (ok ? "" : " (fehlgeschlagen)"));
         _n8nMsg = ok ? $"✓ {pkg} ist eingerichtet – „Starten“." : $"⚠ {pkg} konnte nicht eingerichtet werden."; Show("ablaeufe");
     }
 

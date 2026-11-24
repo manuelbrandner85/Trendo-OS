@@ -101,8 +101,10 @@ public partial class MainWindow
         ClaudeHomeOverride ?? (_opt.Isolated ? Path.Combine(_core.DataRoot, "claude-home") : Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)));
 
     /// <summary>Offizieller „claude“-Befehl für Erweiterungen – mit dem Claude-Ordner dieser Person.</summary>
-    async Task ClaudeExtRun(string[] args, string done)
+    internal async Task ClaudeExtRun(string[] args, string done)
     {
+        // T-0764: Plugins und MCP-Server für Claude Code hinzufügen/entfernen = Programme verwalten – nicht im Kinderprofil
+        if (!DarfSoftware("claude " + string.Join(' ', args.Take(3)), "verbindungen")) { _connMsg = Rbac.NurErwachseneSoftware; Show("verbindungen"); return; }
         var exe = ClaudeExe();
         if (exe is null && ConnRunOverride is null) { _connMsg = "Claude Code ist nicht installiert."; Show("verbindungen"); return; }
         var env = new Dictionary<string, string>();

@@ -52,7 +52,12 @@ public static class TrendoPrograms
                 if (name.StartsWith('.') || packages.Contains(name) || name.StartsWith(GitHubApps.Prefix, StringComparison.Ordinal) || name.StartsWith(SourceApps.Prefix, StringComparison.Ordinal)
                     || SamePath(portableRoot, toolsRoot) && name is "laufzeiten" or "ki-bibliothek" or "model") continue;
                 if (new DirectoryInfo(dir).Attributes.HasFlag(FileAttributes.ReparsePoint)) continue;
-                res.Add(new(name, Herkunft.Portable, name, dir, MainExe(dir), "", "Portable-ZIP (Prüfsumme beim Entpacken kontrolliert)", Size(dir)));
+                // T-0764 (Gegenprüfung N1): nur Ordner, die InstallPortable eingerichtet hat (Kennungsdatei). Ältere Stände ohne Kennung nur, wenn
+                // darin ein Programm liegt und der Name kein Trendo-Arbeitsordner ist (z. B. „rueckgaengig“ der Fotos).
+                var marked = File.Exists(Path.Combine(dir, Software.PortableMarker));
+                var exe = MainExe(dir);
+                if (!marked && (Reserved.Contains(name) || exe is null)) continue;
+                res.Add(new(name, Herkunft.Portable, name, dir, exe, "", marked ? "Portable-ZIP (Prüfsumme beim Entpacken kontrolliert)" : "Portable-Programm (älterer Stand ohne Kennung)", Size(dir)));
             }
         return res;
     }
@@ -65,6 +70,9 @@ public static class TrendoPrograms
         var name = Path.GetFileName(dir);
         return exes.FirstOrDefault(f => Path.GetFileNameWithoutExtension(f).Equals(name, StringComparison.OrdinalIgnoreCase)) ?? exes.OrderByDescending(f => new FileInfo(f).Length).FirstOrDefault();
     }
+
+    /// <summary>Arbeitsordner von Trendo im Portable-Ordner – nie ein Programm.</summary>
+    static readonly HashSet<string> Reserved = new(StringComparer.OrdinalIgnoreCase) { "rueckgaengig", "laufzeiten", "ki-bibliothek", "model", "temp", "tmp", "cache", "protokolle" };
 
     static long Size(string dir)
     {
@@ -149,6 +157,12 @@ public static class TrendoPrograms
         var root = CheckBackup(s, portableRoot, toolsRoot);
         var meta = Read(s.Ordner + ".json") ?? throw new InvalidOperationException("Die Sicherung ist unvollständig.");
         if (meta.Id != s.Id || meta.Id.StartsWith('.') || meta.Id.IndexOfAny(['/', '\\', ':']) >= 0) throw new ArgumentException("Diese Sicherung gehört nicht zu Trendo.");
+        // T-0764 (Gegenprüfung N2): ein GitHub-Eintrag aus der Sicherung muss genau zu diesem Ordner passen – gültiges Projekt, gleiche Kennung,
+        // Programmdatei relativ im Ordner (eine veränderte Beschreibung kann so keinen fremden Pfad in die Liste schmuggeln)
+        if (meta.GitHub is { } g && (meta.Art != Herkunft.GitHub || g.Id != meta.Id || !GitHubApps.ValidRepo(g.Repo) || GitHubApps.IdFor(g.Repo) != g.Id
+            || string.IsNullOrWhiteSpace(g.Exe) || Path.IsPathRooted(g.Exe) || g.Exe.Replace('\\', '/').Split('/').Any(x => x is ".." or ".")))
+            throw new ArgumentException("Die Sicherung ist verändert – es wird nichts wiederhergestellt.");
+        if (meta.Art == Herkunft.GitHub && meta.GitHub is null) throw new ArgumentException("Die Sicherung ist unvollständig – es wird nichts wiederhergestellt.");
         var dest = Path.Combine(root, meta.Id);
         if (Directory.Exists(dest)) throw new InvalidOperationException($"{meta.Name} ist schon wieder eingerichtet – die Sicherung bleibt liegen, es wird nichts überschrieben.");
         Directory.Move(s.Ordner, dest);

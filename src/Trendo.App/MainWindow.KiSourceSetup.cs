@@ -31,18 +31,27 @@ public partial class MainWindow
         return exe ?? (File.Exists(Path.Combine(dir, e.Exe)) ? Path.Combine(dir, e.Exe) : null);
     }
 
-    /// <summary>Herunterladen und einrichten (nach Bestätigung im Knopf). Liefert true, wenn das Programm danach da ist.</summary>
-    public async Task<bool> KiSourceInstall(string id)
+    /// <summary>Herunterladen und einrichten. Liefert true, wenn das Programm danach da ist.
+    /// T-0764 (Gegenprüfung H1): Rolle zuerst (vor jedem Download); dann Freigabe – <paramref name="karte"/> = Aufruf aus „Ja, laden“ einer sichtbaren
+    /// Rückfrage-Karte (KI-Quellen, Hub), sonst eigener Dialog (z. B. „Aktualisieren“). Laden, Einrichten und Installer-Start laufen nur im Freigabe-Tor.</summary>
+    public async Task<bool> KiSourceInstall(string id, bool karte = true)
     {
         var s = KiSourceSetups.For(id) ?? throw new ArgumentException("Unbekannte KI-Quelle.");
         var info = KiCatalog.Sources.First(x => x.Id == id);
         if (_core.Offline) { _srcMsg = "Trendo ist offline – zum Laden braucht es Internet."; return false; }
         if (_depBusy) return false;
+        if (!DarfSoftware("ki.source.install " + id, "ki-quellen")) { _srcMsg = Rbac.NurErwachseneSoftware; return false; }
+        const string action = "app.install"; var target = "ki-source:" + id;
+        var w = new Wirkung(action, target, $"{info.Name} laden?", $"Programm: {info.Name} (Lizenz {info.License})\nWoher: {s.Host}\n\nTrendo lädt die offizielle Version{(s.Portable ? " und richtet sie im Werkzeugordner ein." : " und startet den Installer des Herstellers.")}", "Laden");
+        var approvalId = karte ? FreigabeAusRueckfrage(w) : await FreigabeAsync(w);
+        if (approvalId is null) { _srcMsg = $"{info.Name}: nicht freigegeben – es wurde nichts geladen."; return false; }
         _depBusy = true; string? file = null;
-        _core.Audit.Append(Principal.LocalOwner.Name, "ki.source.install.start", $"{id} {info.License} {s.Host}");
+        _core.Audit.Append(CurrentPrincipal.Name, "ki.source.install.start", $"{id} {info.License} {s.Host}");
         BeginSetupOverlay($"{info.Name} wird eingerichtet");
         try
         {
+            await _core.Approvals.Execute(approvalId, action, target, async () =>
+            {
             string url, name; long size; GitHubApps.Release? rel = null; GitHubApps.Asset? asset = null;
             if (s.Repo is { } repo)
             {
@@ -68,19 +77,21 @@ public partial class MainWindow
                     if (p is not null) await p.WaitForExitAsync(SetupToken);
                 }
             }
+            return true;
+            });
             var exe = KiSourceExe(id);
             if (exe is null) throw new InvalidOperationException(s.Portable ? "Das Programm wurde nicht gefunden." : $"{info.Name} wurde nicht fertig installiert (Installer abgebrochen?).");
             KiSourceSettings.Update(_core.DataRoot, set => set.Disabled.Remove(id));
-            _core.Audit.Append(Principal.LocalOwner.Name, "ki.source.install.ok", $"{id} {Path.GetFileName(exe)}");
+            _core.Audit.Append(CurrentPrincipal.Name, "ki.source.install.ok", $"{id} {Path.GetFileName(exe)}");
             SetupOverlayProgress(3, 3, "Fertig ✓");
             _srcMsg = s.Portable ? $"{info.Name} ist eingerichtet. Mit „Starten“ läuft der lokale Server." : $"{info.Name} ist installiert. {info.Hint}";
             FinishSetupOverlay($"{info.Name} ist bereit", _srcMsg, []);
             return true;
         }
         catch (OperationCanceledException) when (SetupCancelRequested) { _srcMsg = $"{info.Name}: abgebrochen."; return false; }
-        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or IOException or UnauthorizedAccessException or InvalidDataException or System.Text.Json.JsonException or System.ComponentModel.Win32Exception)
+        catch (Exception ex) when (ex is ApprovalException or HttpRequestException or InvalidOperationException or IOException or UnauthorizedAccessException or InvalidDataException or System.Text.Json.JsonException or System.ComponentModel.Win32Exception)
         {
-            _core.Audit.Append(Principal.LocalOwner.Name, "ki.source.install.failed", $"{id}: {ex.Message}");
+            _core.Audit.Append(CurrentPrincipal.Name, "ki.source.install.failed", $"{id}: {ex.Message}");
             _srcMsg = $"{info.Name}: Einrichten hat nicht geklappt – {ex.Message}";
             FinishSetupOverlay("Einrichten nicht möglich", _srcMsg, [ex.Message]);
             return false;
@@ -102,14 +113,16 @@ public partial class MainWindow
             if (id == "ollama") Vollpaket.ConfigureOllama(psi, _deps.ToolsRoot);
             System.Diagnostics.Process.Start(psi);
         }
-        _core.Audit.Append(Principal.LocalOwner.Name, "ki.source.start", $"{id} {Path.GetFileName(exe)}");
+        _core.Audit.Append(CurrentPrincipal.Name, "ki.source.start", $"{id} {Path.GetFileName(exe)}");
         _srcMsg = $"{KiCatalog.Sources.First(x => x.Id == id).Name} startet – gleich unter „Suchen“ sichtbar.";
         return true;
     }
 
     /// <summary>Wunsch 27.10.2026: KI-Programm wieder entfernen – portable aus dem Werkzeugordner, Installer über ihren Deinstaller.</summary>
+    /// <remarks>T-0764 (Gegenprüfung H2): Rolle zuerst – ein Kinderprofil startet keinen Deinstaller (<see cref="UnauthorizedAccessException"/>).</remarks>
     public bool KiSourceRemove(string id)
     {
+        Rbac.DemandSoftware(CurrentPrincipal, "ki.source.remove " + id, _core.Audit);
         if (KiSourceSetups.For(id) is not { } s) return false;
         if (s.Portable)
         {
@@ -117,8 +130,8 @@ public partial class MainWindow
             return e is not null && GitHubApps.Uninstall(CurrentPrincipal, _deps.ToolsRoot, e.Id, _core.Audit);
         }
         if (KiSourceExe(id) is not { } exe) return false;
-        GitHubRunUninstaller(exe);
-        _core.Audit.Append(Principal.LocalOwner.Name, "ki.source.remove", id);
+        GitHubRunUninstaller(CurrentPrincipal, exe);
+        _core.Audit.Append(CurrentPrincipal.Name, "ki.source.remove", id);
         return true;
     }
 
@@ -136,11 +149,12 @@ public partial class MainWindow
             no.Click += (_, _) => { _srcAsk = null; Show("ki-quellen"); };
             sp.Children.Add(new TextBlock { Text = $"{src.Name} ({src.License}) von {s.Host} laden{(s.Portable ? " und einrichten" : " und den Installer starten")}?", Foreground = Text, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center, MaxWidth = 300, TextWrapping = TextWrapping.Wrap });
             sp.Children.Add(yes); sp.Children.Add(no);
+            yes.IsEnabled = CanManageSoftware; // T-0764: Kinderprofil – der Kern lehnt ohnehin ab
             return sp;
         }
-        var get = new Button { Name = "src-install-" + src.Id, Content = exe is null ? "Herunterladen & einrichten" : "Neu laden", Padding = new Thickness(8, 2), IsEnabled = !_core.Offline && !_depBusy,
+        var get = new Button { Name = "src-install-" + src.Id, Content = exe is null ? "Herunterladen & einrichten" : "Neu laden", Padding = new Thickness(8, 2), IsEnabled = !_core.Offline && !_depBusy && CanManageSoftware,
             Background = exe is null ? Accent : Brushes.Transparent };
-        ToolTip.SetTip(get, _core.Offline ? "Im Offline-Modus wird nichts geladen." : $"Offizielle Version von {s.Host}");
+        ToolTip.SetTip(get, !CanManageSoftware ? "Frag einen Erwachsenen – Laden geht nur in einem Erwachsenen-Profil." : _core.Offline ? "Im Offline-Modus wird nichts geladen." : $"Offizielle Version von {s.Host}");
         get.Click += (_, _) => { _srcAsk = src.Id; Show("ki-quellen"); };
         sp.Children.Add(get);
         if (exe is not null)
@@ -155,6 +169,7 @@ public partial class MainWindow
             sp.Children.Add(ConfirmRemoveButton("src:" + src.Id, "src-remove-" + src.Id, "ki-quellen", () =>
             {
                 try { _srcMsg = KiSourceRemove(src.Id) ? $"{src.Name} wurde entfernt." : $"{src.Name} war nicht eingerichtet."; }
+                catch (UnauthorizedAccessException ex) when (!CanManageSoftware) { _srcMsg = ex.Message; } // T-0764
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception) { _srcMsg = $"{src.Name} läuft noch oder ist gesperrt – bitte schließen und erneut versuchen. ({ex.Message})"; }
                 return Task.CompletedTask;
             }));

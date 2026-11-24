@@ -123,6 +123,10 @@ public partial class MainWindow
     public void FilesOpen(string path)
     {
         if (Directory.Exists(path)) { FilesGo(path); return; }
+        // T-0764 (Gegenprüfung M3): Installer, Pakete und Skripte nur mit dem Recht „Programme verwalten“ – vor Testersatz und Testmodus geprüft
+        if (Trendo.Core.Sys.Software.IsInstallerLike(path))
+            try { Rbac.DemandSoftware(CurrentPrincipal, "datei.oeffnen " + Path.GetFileName(path), _core.Audit); }
+            catch (UnauthorizedAccessException e) { FilesMessage = e.Message; Show(FK); return; }
         if (FilesOpenOverride is { } o) { o(path); return; }
         if (Path.GetExtension(path).Equals(".tdoc", StringComparison.OrdinalIgnoreCase) || _opt.Isolated) { FilesMessage = "Öffnen: " + Path.GetFileName(path); Show(FK); return; }
         _core.Integrations.LaunchDirect(Principal.LocalOwner, path, _core.Audit);

@@ -1,0 +1,72 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    ROT H2: Kind startet keinen Deinstaller (KiSourceRemove) [FAIL]
+      Assert.Throws() Failure: Exception type was not an exact match
+      Expected: typeof(System.UnauthorizedAccessException)
+      Actual:   typeof(System.ComponentModel.Win32Exception)
+      ---- System.ComponentModel.Win32Exception : An error occurred trying to start process 'C:\Users\<user>\AppData\Local\Temp\trendo-testlauf-22660-6b057ff9\trendo-ui-7abbe8adf8ce4b9b9b5aaed4e8b4a545\local\Programs\LM Studio\Uninstall LM Studio.exe' with working directory 'C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix1\tests\Trendo.App.Tests\bin\Release\net10.0'. The specified executable is not a valid application for this OS platform.
+      Stack Trace:
+        tests\Trendo.App.Tests\RotFix1Tests.cs(40,0): at Trendo.App.Tests.RotFix1.H2()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+        ----- Inner Stack Trace -----
+           at System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+           at System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+        src\Trendo.App\MainWindow.Programme.cs(262,0): at Trendo.App.MainWindow.GitHubRunUninstaller(String exe)
+        src\Trendo.App\MainWindow.KiSourceSetup.cs(120,0): at Trendo.App.MainWindow.KiSourceRemove(String id)
+        tests\Trendo.App.Tests\RotFix1Tests.cs(40,0): at Trendo.App.Tests.RotFix1.<>c__DisplayClass3_0.<H2>b__0()
+    ROT M3: Kind öffnet setup.exe im Dateimanager nicht [FAIL]
+      Assert.Empty() Failure: Collection was not empty
+      Collection: ["C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-tes"···]
+      Stack Trace:
+        tests\Trendo.App.Tests\RotFix1Tests.cs(56,0): at Trendo.App.Tests.RotFix1.M3()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    ROT H1: Kind lädt/startet LM-Studio-Installer nicht [FAIL]
+      Assert.Empty() Failure: Collection was not empty
+      Collection: ["download", "installer"]
+      Stack Trace:
+        tests\Trendo.App.Tests\RotFix1Tests.cs(30,0): at Trendo.App.Tests.RotFix1.H1()
+        --- End of stack trace from previous location ---
+    ROT H3: Kind – Claude-Code-Installer wird nicht (auch nicht im Testmodus) angestoßen [FAIL]
+      Assert.DoesNotContain() Failure: Filter matched in collection
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   ↓ (pos 4)
+      Collection: [AuditEntry { Seq = 1, At = 24.11.2026 13:15:57 +01:00, Actor = core, Action = core.start, Detail = v0.2.0-p1 secrets=InMemory (Test-Fallback, nicht persistent) offline=False protokoll=hash-kette, PrevHash = GENESIS, Hash = BD6C519C68FE66BD410EF2867BF844E86252A4CFD847DC9EA434344A0978A49F, Mac = , Kid =  }, AuditEntry { Seq = 2, At = 24.11.2026 13:15:57 +01:00, Actor = app, Action = app.first_start, Detail = Standardkonfiguration angelegt, PrevHash = BD6C519C68FE66BD410EF2867BF844E86252A4CFD847DC9EA434344A0978A49F, Hash = FFB63E9A09621648F9A6842C20FE578E15A73C2C741DEC9D403A665ABF44286B, Mac = , Kid =  }, AuditEntry { Seq = 3, At = 24.11.2026 13:15:58 +01:00, Actor = lokaler-besitzer, Action = research.session.end, Detail = , PrevHash = FFB63E9A09621648F9A6842C20FE578E15A73C2C741DEC9D403A665ABF44286B, Hash = 5F52CAE0877277723200B43F0B9B215AB4835B0B48797FA5C6BB12F9701C3381, Mac = , Kid =  }, AuditEntry { Seq = 4, At = 24.11.2026 13:15:58 +01:00, Actor = selbstheilung, Action = heal.repair, Detail = folders=Repaired, json=Ok, tmp=Ok, disk=Ok, audit=Ok, PrevHash = 5F52CAE0877277723200B43F0B9B215AB4835B0B48797FA5C6BB12F9701C3381, Hash = 608A7CD49F03A7187117A965525A61495C59171D9DD1AB6174048CC3C13B6B19, Mac = , Kid =  }, AuditEntry { Seq = 5, At = 24.11.2026 13:15:58 +01:00, Actor = lokaler-besitzer, Action = claude.testmodus, Detail = den Claude-Code-Installer starten, PrevHash = 608A7CD49F03A7187117A965525A61495C59171D9DD1AB6174048CC3C13B6B19, Hash = 17931E1D3EAB07F220E24474EB82E0B0AD5B144307925940E9F20F3ED0858DDB, Mac = , Kid =  }]
+      Stack Trace:
+        tests\Trendo.App.Tests\RotFix1Tests.cs(48,0): at Trendo.App.Tests.RotFix1.H3()
+        --- End of stack trace from previous location ---
+    ROT N1: „rueckgaengig“ ist kein Programm [FAIL]
+      Assert.DoesNotContain() Failure: Filter matched in collection
+                   ↓ (pos 0)
+      Collection: [Eintrag { Id = rueckgaengig, Art = Portable, Name = rueckgaengig, Ordner = C:\Users\<user>\AppData\Local\Temp\trendo-testlauf-22660-6b057ff9\trendo-rot-fd55276fc0a14d069a9fe620fc8e84c5\werkzeuge\rueckgaengig, Exe = C:\Users\<user>\AppData\Local\Temp\trendo-testlauf-22660-6b057ff9\trendo-rot-fd55276fc0a14d069a9fe620fc8e84c5\werkzeuge\rueckgaengig\x.exe, Version = , Quelle = Portable-ZIP (Prüfsumme beim Entpacken kontrolliert), Bytes = 1 }]
+      Stack Trace:
+        tests\Trendo.App.Tests\RotFix1Tests.cs(66,0): at Trendo.App.Tests.RotFix1.N1()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    ROT M1: KI-Brücke fragt bei „Ja, laden“ (src-install-yes) im Dokument [FAIL]
+      Assert.True() Failure
+      Expected: True
+      Actual:   False
+      Stack Trace:
+        tests\Trendo.App.Tests\RotFix1Tests.cs(60,0): at Trendo.App.Tests.RotFix1.M1()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Finished:    Trendo.App.Tests (ID = '4cb1e5372aa3395f239642f3eca1dd2136f59b83ef853105da24bdd2f528bf3e')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 6, Errors: 0, Failed: 6, Skipped: 0, Not Run: 0, Time: 2,498s
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    ROT Nachsuche: Kind richtet n8n (npm) nicht ein [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: 0
+      Actual:   1
+      Stack Trace:
+        tests\Trendo.App.Tests\RotFix1b.cs(18,0): at Trendo.App.Tests.RotFix1b.N8n()
+        --- End of stack trace from previous location ---
+  Finished:    Trendo.App.Tests (ID = '4cb1e5372aa3395f239642f3eca1dd2136f59b83ef853105da24bdd2f528bf3e')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 1, Skipped: 0, Not Run: 0, Time: 2,115s

@@ -76,7 +76,7 @@ public partial class MainWindow
             var id = s.Id;
             items.Add(new("kisrc:" + id, "ki", s.Name, "KI-Programm · " + s.Hint, KiSourceExe(id) is not null,
                 async () => { await KiSourceInstall(id); }, () => { Show("ki-quellen"); return Task.CompletedTask; },
-                () => { KiSourceRemove(id); return Task.CompletedTask; }, async () => { await KiSourceInstall(id); }, s.License));
+                () => { KiSourceRemove(id); return Task.CompletedTask; }, async () => { await KiSourceInstall(id, karte: false); }, s.License)); // T-0764: Aktualisieren mit eigener Rückfrage
         }
         items.Add(new("page:ki-internet", "ki", "Kostenlose Internet-KIs (OpenRouter)", "Chat, Bilder und Audio verstehen – kostenloses Konto, geht ins Internet", OpenRouterReady, null, () => { Show("ki-internet"); return Task.CompletedTask; }));
         items.Add(new("page:ki-bibliothek", "ki", "KI-Bibliothek", "Bilder, Videos, Sprache, Vorlesen und mehr – kostenlose KI nach Arten", false, null, () => { Show("ki-bibliothek"); return Task.CompletedTask; }));
@@ -86,7 +86,7 @@ public partial class MainWindow
             var entry = e;
             items.Add(new("gh:" + e.Id, "github", e.Repo, $"Von GitHub · Version {e.Version}", true, null,
                 () => { if (GitHubApps.ExePath(_deps.ToolsRoot, entry) is { } exe) Launch(exe); return Task.CompletedTask; },
-                () => { if (Path.IsPathRooted(entry.Exe) && File.Exists(entry.Exe)) GitHubRunUninstaller(entry.Exe); GitHubApps.Uninstall(CurrentPrincipal, _deps.ToolsRoot, entry.Id, _core.Audit); return Task.CompletedTask; },
+                () => { if (Path.IsPathRooted(entry.Exe) && File.Exists(entry.Exe)) GitHubRunUninstaller(CurrentPrincipal, entry.Exe); GitHubApps.Uninstall(CurrentPrincipal, _deps.ToolsRoot, entry.Id, _core.Audit); return Task.CompletedTask; },
                 async () => { await GitHubInstall(new OssRepo(entry.Repo, "", "https://github.com/" + entry.Repo, "https://github.com/" + entry.Repo + ".git", 0, entry.License, "", DateTimeOffset.Now)); }, entry.License));
         }
         // Erweiterungen

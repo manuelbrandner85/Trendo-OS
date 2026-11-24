@@ -98,7 +98,7 @@ public partial class MainWindow
                     var tag = m.Tag;
                     buttons.Children.Add(ConfirmRemoveButton("ollama:" + tag, "kilib-remove-" + m.Id, "ki-bibliothek", async () =>
                     {
-                        if (!DarfSoftware("ki.delete " + tag, "ki-bibliothek")) return; // T-0764: Kinderprofil entfernt keine KI
+                        if (!DarfSoftware("ki.delete " + tag, "ki-bibliothek")) { _kiLibMsg = Rbac.NurErwachseneSoftware; return; } // T-0764: Kinderprofil entfernt keine KI
                         var ok = await new OllamaBackend().DeleteAsync(tag);
                         _core.Audit.Append(CurrentPrincipal.Name, ok ? "ki.model.remove" : "ki.model.remove.failed", tag);
                         _kiLibMsg = ok ? $"{m.Name} wurde entfernt." : $"{m.Name} ließ sich nicht entfernen (läuft Ollama?).";

@@ -116,7 +116,7 @@ public partial class MainWindow
             var upd = _ghUpdates.TryGetValue(e.Id, out var newTag) ? Act("btn-gh-update-" + e.Id, $"Auf {newTag} aktualisieren", () => _ = GitHubUpdate(e), true) : null;
             var remove = RemoveButton("gh:" + e.Id, "btn-gh-remove-" + e.Id, () =>
             {
-                try { if (Path.IsPathRooted(e.Exe) && File.Exists(e.Exe)) GitHubRunUninstaller(e.Exe); _depLog.Text = GitHubApps.Uninstall(CurrentPrincipal, _deps.ToolsRoot, e.Id, _core.Audit) ? $"{e.Repo} wurde entfernt." : $"{e.Repo} war nicht installiert."; }
+                try { if (Path.IsPathRooted(e.Exe) && File.Exists(e.Exe)) GitHubRunUninstaller(CurrentPrincipal, e.Exe); _depLog.Text = GitHubApps.Uninstall(CurrentPrincipal, _deps.ToolsRoot, e.Id, _core.Audit) ? $"{e.Repo} wurde entfernt." : $"{e.Repo} war nicht installiert."; }
                 catch (UnauthorizedAccessException ex) when (!CanManageSoftware) { _depLog.Text = ex.Message; } // T-0764: Kern lehnt ab (Kinderprofil)
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _depLog.Text = $"{e.Repo} läuft noch oder ist gesperrt: bitte schließen und erneut versuchen. ({ex.Message})"; }
             });
@@ -246,13 +246,15 @@ public partial class MainWindow
                 .Select(d => GitHubApps.MainExe(d, repo.FullName)).FirstOrDefault(e => e is not null))
             ?? throw new InvalidOperationException("Der Installer ist durchgelaufen, aber Trendo findet das Programm nicht. Schau im Startmenü von Windows nach.");
         var sha = Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(io.File)));
-        GitHubApps.Register(_deps.ToolsRoot, repo.FullName, rel, asset, exe, sha, repo.LicenseId, repo.Description, _core.Audit);
+        GitHubApps.Register(CurrentPrincipal, _deps.ToolsRoot, repo.FullName, rel, asset, exe, sha, repo.LicenseId, repo.Description, _core.Audit);
         return exe;
     }
 
-    /// <summary>Per Installer eingerichtet: dessen Deinstaller still ausführen (NSIS, Inno, Squirrel).</summary>
-    void GitHubRunUninstaller(string exe)
+    /// <summary>Per Installer eingerichtet: dessen Deinstaller still ausführen (NSIS, Inno, Squirrel).
+    /// T-0764 (Gegenprüfung H2): Rolle als erste Zeile – ein Kinderprofil startet keinen Deinstaller.</summary>
+    internal void GitHubRunUninstaller(Principal by, string exe)
     {
+        Rbac.DemandSoftware(by, "github.uninstall.installer " + Path.GetFileName(exe), _core.Audit);
         var dir = Path.GetDirectoryName(exe)!;
         var (un, args) = Directory.EnumerateFiles(dir, "Uninstall*.exe").FirstOrDefault() is { } n ? (n, new[] { "/S" })
             : Directory.EnumerateFiles(dir, "unins*.exe").FirstOrDefault() is { } i ? (i, new[] { "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART" })
@@ -260,7 +262,7 @@ public partial class MainWindow
         if (un is null) return;
         var psi = new System.Diagnostics.ProcessStartInfo(un) { UseShellExecute = false }; foreach (var a in args) psi.ArgumentList.Add(a);
         System.Diagnostics.Process.Start(psi)?.WaitForExit(120_000);
-        _core.Audit.Append(Principal.LocalOwner.Name, "github.uninstall.installer", Path.GetFileName(un));
+        _core.Audit.Append(by.Name, "github.uninstall.installer", Path.GetFileName(un));
     }
 
     static async Task<GitHubApps.Release> GitHubLatestOrEmpty(string fullName, CancellationToken ct, bool fresh = false)

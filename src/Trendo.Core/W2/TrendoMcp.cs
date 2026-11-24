@@ -178,8 +178,16 @@ public static partial class ClaudeActions
 
     /// <summary>Muss der Nutzer im Chat zustimmen? Nur bei Wirkung nach außen oder wenn sich etwas nicht zurückholen lässt.
     /// Etwas innerhalb eines Dokuments zu löschen (Ebene, Stab, Zeile) lässt sich rückgängig machen und läuft deshalb ohne Nachfrage.</summary>
+    /// <summary>T-0764 (Gegenprüfung M1): Knöpfe, die Programme laden, installieren oder entfernen – immer mit Zustimmung, auch im rückgängig
+    /// machbaren Dokument. Erkannt am Namen (Rückfrage-Karten der Installationswege) und am Text („laden“, „install“, „deinstall“).</summary>
+    [GeneratedRegex(@"^(src-install|src-remove|hub-yes|hub-install|hub-update|hub-remove|setup-yes|btn-yes-|btn-install|btn-remove|btn-gh-|btn-src-remove|prog-detail-|trendo-prog-|claude-install|wiz-claude|kilib-|model-remove|portable-run|offline-|uninstall-|dev-eject)", RegexOptions.IgnoreCase)]
+    private static partial Regex SoftwareNameRx();
+    [GeneratedRegex(@"laden\b|herunterlad|install|deinstall|auswerf", RegexOptions.IgnoreCase)]
+    private static partial Regex SoftwareTextRx();
+
     public static bool NeedsConsent(string label, string name, bool undoableDocument)
     {
+        if (SoftwareNameRx().IsMatch(name ?? "") || SoftwareTextRx().IsMatch(label ?? "")) return true; // T-0764: Programme laden/installieren/entfernen
         var text = label + " " + name;
         if (!ConsentRx().IsMatch(text)) return false;
         var onlyDelete = DeleteRx().IsMatch(text) && !ConsentRx().IsMatch(DeleteRx().Replace(text, " "));

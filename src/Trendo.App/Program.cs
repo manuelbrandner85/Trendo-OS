@@ -12,6 +12,16 @@ class Program
     public static event Action<Exception>? UiErrorCaught;
     internal static void RaiseUiError(Exception e) => UiErrorCaught?.Invoke(e);
 
+    /// <summary>T-0764: Person der Kommandozeile = Rolle aus dem Profil des Datenordners (Kinderprofil → Rolle Benutzer).</summary>
+    internal static Principal CliPrincipal(TrendoCore core) => Principal.ForProfile(UserSettings.Load(core.DataRoot).Child);
+
+    /// <summary>T-0764: Kommandozeilen-Installation im Kinderprofil abweisen – verständliche Meldung, Protokoll „rbac.denied“, Rückgabewert 4. Sonst null.</summary>
+    internal static int? CliSoftwareRefused(TrendoCore core, Principal cli, string what, TextWriter o)
+    {
+        try { Rbac.DemandSoftware(cli, "cli.install-deps " + what, core.Audit); return null; }
+        catch (UnauthorizedAccessException e) { o.WriteLine("FAIL  " + e.Message + " (Datenordner gehört zu einem Kinderprofil)"); return 4; }
+    }
+
     [STAThread]
     public static int Main(string[] args)
     {
@@ -70,12 +80,15 @@ class Program
             if (Arg("--vollpaket") is { } vp) dm.VollpaketDir = Vollpaket.Locate([vp]) ?? throw new InvalidOperationException("Kein gültiges Vollpaket in " + vp);
             else dm.LocateVollpaket = VollpaketStart.Find;
             var rc = 0;
+            // T-0764 (Gegenprüfung M2): Rolle aus dem Profil dieses Datenordners – ein Kinderprofil installiert auch über die Kommandozeile nichts
+            var cli = CliPrincipal(core);
+            if (Arg("--install-deps") is { } wanted && CliSoftwareRefused(core, cli, wanted, Console.Out) is { } refusedRc) return refusedRc;
             if (Arg("--install-deps") == "vollpaket")
             {
                 // genau der Weg nach dem Setup (SetupVollpaket): eigene, geprüfte Kopien im Werkzeugordner, schon installierte Programme zählen nicht
                 if (dm.VollpaketDir is null && dm.LocateVollpaket?.Invoke() is { } found) dm.VollpaketDir = found;
                 if (dm.VollpaketDir is null) { Console.WriteLine("FAIL  kein Vollpaket gefunden"); return 1; }
-                try { Console.WriteLine($"PASS  {Vollpaket.InstallMissing(Principal.LocalOwner, dm.VollpaketDir, dm.ToolsRoot, core.Audit, Console.WriteLine)} Pakete eingerichtet"); }
+                try { Console.WriteLine($"PASS  {Vollpaket.InstallMissing(cli, dm.VollpaketDir, dm.ToolsRoot, core.Audit, Console.WriteLine)} Pakete eingerichtet"); }
                 catch (InvalidOperationException e) { Console.WriteLine("FAIL  " + e.Message); rc = 1; }
             }
             else if (Arg("--install-deps") is { } ids)
@@ -83,16 +96,16 @@ class Program
                 if (!dm.HasConsent)
                 {
                     if (!uiArgs.Contains("--accept-licenses")) { Console.WriteLine("Lizenz-Zustimmung fehlt (--accept-licenses)"); return 3; }
-                    dm.GiveConsent(Principal.LocalOwner);
+                    dm.GiveConsent(cli);
                 }
                 var list = ids == "auto" ? DependencyCatalog.All.Where(c => c.Mode is DeliveryMode.AutoUser or DeliveryMode.Included).ToList()
                     : ids == "vollpaket" ? DependencyCatalog.All.Where(c => c.Mode == DeliveryMode.Included).ToList() : ids.Split(',').Select(DependencyCatalog.Get).ToList();
                 foreach (var c in list)
                 {
-                    var req = core.Approvals.Request(Principal.LocalOwner, "deps.install", $"{c.Name} installieren", c.Id);
-                    core.Approvals.Approve(req.Id, new Principal(Arg("--approver") ?? "operator-cli", Role.Owner));
+                    var req = core.Approvals.Request(cli, "deps.install", $"{c.Name} installieren", c.Id);
+                    core.Approvals.Approve(req.Id, new Principal(Arg("--approver") ?? "operator-cli", cli.Role));
                     Console.WriteLine($"Freigabe {req.Id[..8]} erteilt für {c.Id}");
-                    var ok = dm.InstallAsync(Principal.LocalOwner, c, l => { if (l.Trim().Length > 0 && !l.Contains('\r') && l.Length < 200) Console.WriteLine($"  {c.Id}: {l.Trim()}"); }).GetAwaiter().GetResult();
+                    var ok = dm.InstallAsync(cli, c, l => { if (l.Trim().Length > 0 && !l.Contains('\r') && l.Length < 200) Console.WriteLine($"  {c.Id}: {l.Trim()}"); }).GetAwaiter().GetResult();
                     Console.WriteLine($"{(ok ? "PASS" : "FAIL")}  Installation {c.Name}"); if (!ok) rc = 1;
                 }
             }

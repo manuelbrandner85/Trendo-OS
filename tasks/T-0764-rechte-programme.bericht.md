@@ -15,7 +15,7 @@ Rot-Beleg: `reports/T-0764/rot-app-rechtekernui.log`. Auf dem alten Stand scheit
 **Jetzt:**
 - Neues Recht `Permission.ManageSoftware`. Nur die Rolle Besitzer hat es; das Kinderprofil ist Rolle Benutzer (`Principal.ForProfile`).
 - Neue Prüfung `Rbac.DemandSoftware(by, was, audit)`. Sie schreibt `rbac.denied` mit dem Vorgang ins Protokoll und wirft eine verständliche Meldung.
-- Jeder Installations- und Entfernen-Weg im Kern nimmt die Person (`Principal by`) als Pflichtparameter. Er lehnt ab, **bevor** etwas geladen, entpackt, gestartet oder gelöscht wird:
+- Die hier aufgezählten Installations- und Entfernen-Wege im Kern nehmen die Person (Nachtrag: die Gegenprüfung fand weitere Wege in der App, siehe Abschnitt „Nachbesserung“) (`Principal by`) als Pflichtparameter und lehnen ab, **bevor** etwas geladen, entpackt, gestartet oder gelöscht wird:
   - `Software.InstallPortable`, neu `Software.StartOfflineInstaller` (prüft beim Start zusätzlich die Prüfsumme erneut),
   - `Vollpaket.InstallPackage/InstallEach/InstallMissing/Uninstall`, `DependencyManager.InstallAsync`, `FachprogrammAdapter.InstallierenAsync`,
   - `GitHubApps.Install/Uninstall`, `SourceApps.BeginInstall` (neu, vor dem Laden)/`Register`/`Remove`,
@@ -137,6 +137,36 @@ Bestehende Tests sind nicht geschwächt. Die Signaturänderungen sind mechanisch
 - Bild `geraete.png` angesehen.
 - **Echter Auswurf: NICHT GETESTET.** An diesem PC steckt kein Wechseldatenträger (geprüft: nur `C:`, Typ 3). Einen fremden Stick des Nutzers werfe ich nicht aus. Voraussetzung für den Beleg: ein eigener Test-Stick, dann Seite „Geräte“ → „Auswerfen“.
 
+## Nachbesserung nach der Gegenprüfung (Commit „T-0764 fix1“)
+
+Die unabhängige Gegenprüfung von `fbbed41b9` fand Wege, über die ein Kinderprofil weiter installieren oder entfernen konnte. Rot-Belege (Stand `fbbed41b9`, Testdatei nur für den Beleg, nicht eingecheckt): `reports/T-0764/rot-fix1-app.log` (7 von 7 rot) und `reports/T-0764/rot-fix1-cli-kinderprofil.log` (Kommandozeile im Kinderprofil richtete ein Paket ein, Rückgabewert 0).
+
+| Befund | Was geändert | Test (grün) |
+|---|---|---|
+| H1 KI-Quellen (LM Studio, Jan, portable) | `KiSourceInstall`: zuerst die Rolle (vor jedem Download); dann Freigabe – `karte: true` bei „Ja, laden“/hub-yes, sonst eigener Dialog (Hub „Aktualisieren“); Laden, Einrichten und Installer-Start nur in `Approvals.Execute`; Knöpfe im Kinderprofil gesperrt; Protokoll-Akteur `CurrentPrincipal` | `RechteKernFix1Ui.KiQuelle_Installer` (Kind: kein Download, kein Installer, Knopf gesperrt; Erwachsene: Download erst nach `execution.start`; „Nein“ lädt nichts) |
+| H2 Deinstaller | `GitHubRunUninstaller(Principal by, …)` mit `Rbac.DemandSoftware` als erster Zeile (gilt für Programme.cs, AddHub.cs und KiSourceRemove); `KiSourceRemove` prüft zuerst; Meldung „nur Erwachsenen-Profil“ statt „läuft noch“/„nichts geändert“ | `RechteKernFix1Ui.Deinstaller_Kind` |
+| H3 Claude Code einrichten | Rolle zuerst; `FreigabeAsync(Wirkung("app.install","claude-code"))`; PowerShell-Installer nur in `Approvals.Execute`; der Testmodus greift erst innerhalb der Ausführung | `RechteKernFix1Ui.Claude_einrichten` (Kind: nichts; „Abbrechen“: `approval.denied`, nichts; „Ja“: `execution.start` vor `claude.testmodus`) |
+| M1 KI-Brücke | `ClaudeActions.NeedsConsent`: Knöpfe `src-install*`, `src-remove*`, `hub-yes/-install/-update/-remove`, `setup-yes`, `btn-yes-`, `btn-install`, `btn-remove`, `btn-gh-`, `prog-detail-`, `trendo-prog-`, `claude-install`, `wiz-claude`, `kilib-`, `model-remove`, `portable-run`, `offline-`, `uninstall-`, `dev-eject` sowie Texte mit „laden“, „herunterlad“, „install“, „deinstall“, „auswerf“ fragen immer. **Abweichung:** „entfern“ fragt nicht in jedem Fall, weil der bestehende Test „Stab entfernen“ im rückgängig machbaren Dokument ohne Rückfrage verlangt; Programme sind über Knopfnamen, „deinstall“ und das bestehende „Programm … entfernen“ abgedeckt. | Core `RechteKernFix1.Bruecke_fragt` (10 Fälle), `Bruecke_Dokument_bleibt`; bestehende `TrendoMcpTests` grün |
+| M2 Kommandozeile | `--install-deps …`: Person aus dem Profil des Datenordners (`CliPrincipal`); Kinderprofil → „FAIL … Erwachsenen-Profil“, Rückgabewert 4, Protokoll `rbac.denied`; Anfrage, Freigabe und Installation mit dieser Rolle | **echt**: `RechteKernFix1Ui.Kommandozeile_Kind` startet `TrendoOS.exe` mit einem lokalen Testpaket (Kind: Rückgabewert 4, nichts eingerichtet; Erwachsene: Rückgabewert 0, Paket da) |
+| M3 Dateimanager | `FilesOpen`: Installer, Pakete, Skripte und Registrierungsdateien (`Software.IsInstallerLike`: .msi/.msix/.appx/.bat/.cmd/.ps1/.vbs/.js/.reg/… und .exe mit setup/install/unins/update) brauchen `ManageSoftware` – geprüft vor Testersatz und Testmodus; Dokumente und gewöhnliche Programme bleiben für Kinder offen | `RechteKernFix1Ui.Dateien_Installer`, Core `RechteKernFix1.Installer_erkennen` (14 Fälle) |
+| M4 Auswurf-Schutz | `DeviceEject.Refuse` löst Schutzpfade auf (`WindowsDiskResolver.FinalPath` = `GetFinalPathNameByHandle`: Junction, Verknüpfung, subst) und vergleicht den physischen Datenträger (`IOCTL_STORAGE_GET_DEVICE_NUMBER`) von Schutzpfad und Ziel – deckt zwei Partitionen auf demselben Gerät ab; Schutzliste um Vollpaket-Ordner und Benutzerordner ergänzt. Nichts echt ausgeworfen. | Core `RechteKernFix1.Auswurf_ganzes_Geraet` (Zuordnung ersetzt), **echt nur lesen** `Auswurf_Aufloesung_echt` (Junction → Ziel, Datenträger von C:); App `RechteKernFix1Ui.Auswurf_selbes_Geraet` |
+| N1 Liste | `InstallPortable` schreibt die Kennung `.trendo-portable.json`; die Liste führt nur Ordner mit Kennung. Ältere Stände ohne Kennung erscheinen nur, wenn ein Programm darin liegt und der Name kein Trendo-Arbeitsordner ist (`rueckgaengig`, `laufzeiten`, …); sie sind als „älterer Stand ohne Kennung“ markiert. | Core `RechteKernFix1.Nur_echte_Programme` |
+| N2 Wiederherstellen | verlangt Art GitHub, `gh.Id == meta.Id`, `ValidRepo`, `IdFor(Repo) == Id` und einen relativen Programmpfad ohne `..`; sonst `ArgumentException`, nichts verschoben | Core `RechteKernFix1.Wiederherstellen_prueft_Sicherung` |
+| N3 Akteure/Meldungen | Akteur `CurrentPrincipal` in KiSourceInstall/Remove/Start, GitHubRunUninstaller, GitHubUpdate, n8n, FreeSewing; Ollama-Entfernen setzt die Seitenmeldung | durch die Tests oben (Akteur „kinderprofil“ im Protokoll) |
+
+**Systematische Nachsuche** (Muster und Ergebnis):
+1. `Process.Start(` / `new ProcessStartInfo(` in `src/Trendo.App` und `src/Trendo.Core`: 134 Treffer in 57 Dateien. Jede Fundstelle mit „install/einricht/setup/uninstall/deinstall/npm/pip/winget“ im Umfeld wurde gelesen. Neu gefunden und abgesichert (Rolle vor Testmodus und Download):
+   - `AutomationInstall` (n8n/Node-RED per npm),
+   - `SewingSetup` (FreeSewing per npm),
+   - `WebAxeSetup` (axe-core per npm),
+   - `ClaudeExtRun` (Plugins/MCP-Server für Claude Code hinzufügen, umschalten, entfernen),
+   - `StickOnlyFinish` (Trendo selbst vom PC entfernen).
+   Test: `RechteKernFix1Ui.Weitere_Wege_Kind`; rot auf `fbbed41b9` für n8n, siehe `rot-fix1-app.log`.
+2. `InstallArgs(`, `"install"`, `pip`, `winget`, `msiexec`, `Cli.Run(npm`: keine weiteren Funde. glTF-Transform läuft schon über das Tor (`deps.npm`), KiPy (uv) über das Tor der KI-Bibliothek.
+3. Öffentliche Kern-Methoden `Install*/Uninstall*/Register/Remove` (erste Runde) und dazu `GitHubApps.Register` (Installer-Weg) – jetzt mit `Principal`.
+4. `LaunchDirect(` mit vom Nutzer gewählten Dateien: Offline-Installer (erste Runde) und Dateimanager (M3).
+   - **Nicht vollständig geprüft:** übrige `LaunchDirect`-/`Launch`-Ziele (feste Programmpfade, URLs, Ordner). Ein Kind kann dort ein Programm starten, aber keinen Installer aus einer gewählten Datei.
+
 ## Abnahmekriterien
 
 | # | Kriterium | Urteil |
@@ -161,6 +191,12 @@ Belege liegen in `reports/T-0764/` mit `SHA256SUMS.txt`.
 - **App gezielt**, 57 Testklassen aller berührten Seiten (u. a. FreigabenKernUi, EveryButton_Alltag, Sys11_Programme_Ui, SYS04/06/07_Ui, StudioDepsUi, ComponentsUi, KiLibrary, GitHub*, SourceApps_Ui, LiveStudio, W1_Letter, X05_Ui, AudioPluginHost_Ui): 169 Tests, 0 Fehler, 3 übersprungen (Echtläufe mit Schalter). Log: `gruen-app-gezielt.log`.
 - **Nachlauf** nach der letzten Änderung (Fenstertitel „Programm“): ProgrammSeiteUi, StartMenu_Ui, RechteKernUi, SYS07_Auswerfen_Ui, FreigabenKernUi: 16 Tests, 0 Fehler. Log: `gruen-app-nachlauf.log`.
 - **Bilder** (angesehen, nicht im Repo, Pfade mit Benutzernamen): `prog-pflege`, `prog-programm`, `geraete`. Dunkel-Gold, je eine goldene Hauptaktion auf den neuen Flächen. Auf „Pflegen“ gab es schon vorher mehrere goldene Knöpfe; das ist nicht Teil dieses Pakets.
+
+**Nachbesserung (fix1):**
+- Build: 0 Fehler.
+- **Rot** auf `fbbed41b9`: `rot-fix1-app.log` (7 von 7 rot) und `rot-fix1-cli-kinderprofil.log` (Kommandozeile im Kinderprofil: Paket eingerichtet, Rückgabewert 0). M4 und N2 haben keinen Verhaltens-Rotbeleg: Ihre Tests brauchen neue Schnittstellen (Zuordnung, geprüfte Sicherung) und kompilieren auf dem alten Stand nicht.
+- **Core gezielt** (RechteKernFix1, RechteKern, SYS11_TrendoProgramme, SYS07_Auswerfen, TrendoMcpTests, GitHubApps/Installer, Sys11_Programme, Dependencies_Core, FreigabenKern, T0222_Vollpaket, SYS07_Devices): 121 von 121 grün. Log: `gruen-fix1-core.log`.
+- **App gezielt**, 117 Testklassen: alle Klassen der berührten Seiten, nämlich RechteKernFix1Ui (8), RechteKernUi, ProgrammSeiteUi, SYS07*, FreigabenKernUi, KiSourceSetupUiTests, Claude*, ClaudeBridge_Ui, Connections_Ui, N8nWorkspace_Ui, WebAxe_Ui, W0_SetupWizard, AppsAndSetupResumeTests, EveryButton_Alltag, GitHub*, KiLibrary, X05, StudiosBueroGeld_Ui, dazu alle Klassen mit Dateimanager-Bezug. Ausgenommen sind nur Browser- und Echtlauf-Klassen. Ergebnis: 550 Tests, 0 Fehler, 1 übersprungen. Log: `gruen-fix1-app.log`.
 
 ## Was NICHT geprüft wurde
 - Kein Volltest.

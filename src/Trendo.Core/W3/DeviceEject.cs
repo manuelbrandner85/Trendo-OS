@@ -7,6 +7,23 @@ namespace Trendo.Core;
 /// <summary>T-0764 (SYS-07): Ergebnis von „Sicher auswerfen“. <see cref="Ok"/> nur, wenn Windows das Gerät wirklich abgemeldet hat.</summary>
 public sealed record EjectResult(bool Ok, string Message);
 
+/// <summary>T-0764 (Gegenprüfung M4): Wohin zeigt ein Pfad wirklich (Verknüpfung, Junction, subst aufgelöst), und auf welchem physischen
+/// Datenträger liegt ein Laufwerk? Ausgeworfen wird das ganze Gerät – zwei Partitionen auf demselben Stick zählen also gemeinsam.</summary>
+public interface IDiskResolver
+{
+    /// <summary>Endgültiger Pfad (bei Fehlern der Pfad selbst).</summary>
+    string FinalPath(string path);
+    /// <summary>Physischer Datenträger (Gerätetyp, Gerätenummer) eines Laufwerks, null = unbekannt.</summary>
+    (int Type, int Number)? DiskOf(string driveRoot);
+}
+
+/// <summary>Ohne Betriebssystem-Hilfe: Pfad bleibt, Datenträger unbekannt (Vergleich nur über den Buchstaben).</summary>
+public sealed class PlainDiskResolver : IDiskResolver
+{
+    public string FinalPath(string path) => Path.GetFullPath(path);
+    public (int Type, int Number)? DiskOf(string driveRoot) => null;
+}
+
 /// <summary>Auswerfen eines Wechseldatenträgers (Tests ersetzen das Betriebssystem).</summary>
 public interface IDriveEjector
 {
@@ -21,13 +38,23 @@ public static class DeviceEject
 {
     /// <summary>Darf dieses Laufwerk ausgeworfen werden? null = ja, sonst der Grund (es wird dann nichts versucht).</summary>
     /// <param name="protectedPaths">Pfade, deren Laufwerk nie ausgeworfen wird (Windows-Ordner, Trendo-Programm, Trendo-Daten).</param>
-    public static string? Refuse(string driveRoot, DriveType type, IEnumerable<string> protectedPaths)
+    /// <param name="resolver">T-0764: löst Schutzpfade auf (Junction, Verknüpfung, subst) und vergleicht den physischen Datenträger –
+    /// ohne Angabe unter Windows der echte, sonst nur der Laufwerksbuchstabe.</param>
+    public static string? Refuse(string driveRoot, DriveType type, IEnumerable<string> protectedPaths, IDiskResolver? resolver = null)
     {
         var root = NormalizeRoot(driveRoot);
         if (root is null) return "Das ist kein Laufwerk.";
+        resolver ??= DefaultResolver();
+        var targetDisk = resolver.DiskOf(root);
+        var why = $"Laufwerk {root} wird nicht ausgeworfen: darauf (oder auf demselben Gerät) laufen Windows oder Trendo selbst.";
         foreach (var p in protectedPaths.Where(p => !string.IsNullOrWhiteSpace(p)))
-            if (string.Equals(NormalizeRoot(Path.GetPathRoot(Path.GetFullPath(p)) ?? ""), root, StringComparison.OrdinalIgnoreCase))
-                return $"Laufwerk {root} wird nicht ausgeworfen: darauf laufen Windows oder Trendo selbst.";
+            foreach (var path in new[] { Path.GetFullPath(p), resolver.FinalPath(p) }.Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                var pr = NormalizeRoot(Path.GetPathRoot(path) ?? "");
+                if (pr is null) continue;
+                if (string.Equals(pr, root, StringComparison.OrdinalIgnoreCase)) return why;
+                if (targetDisk is { } td && resolver.DiskOf(pr) is { } pd && pd == td) return why; // zwei Partitionen auf demselben Gerät
+            }
         if (type != DriveType.Removable) return $"Laufwerk {root} ist kein Wechseldatenträger – Trendo wirft nur USB-Sticks und Speicherkarten aus.";
         return null;
     }
@@ -43,9 +70,11 @@ public static class DeviceEject
     }
 
     /// <summary>Prüfen und auswerfen. Ohne Freigabe für dieses Laufwerk (siehe <see cref="Refuse"/>) wird das Betriebssystem gar nicht erst gefragt.</summary>
-    public static EjectResult Eject(string driveRoot, DriveType type, IEnumerable<string> protectedPaths, IDriveEjector ejector, AuditLog? audit = null, string actor = "app")
+    public static IDiskResolver DefaultResolver() => OperatingSystem.IsWindows() ? new WindowsDiskResolver() : new PlainDiskResolver();
+
+    public static EjectResult Eject(string driveRoot, DriveType type, IEnumerable<string> protectedPaths, IDriveEjector ejector, AuditLog? audit = null, string actor = "app", IDiskResolver? resolver = null)
     {
-        if (Refuse(driveRoot, type, protectedPaths) is { } why)
+        if (Refuse(driveRoot, type, protectedPaths, resolver) is { } why)
         {
             audit?.Append(actor, "device.eject.refused", $"{driveRoot}: {why}");
             return new(false, why);
@@ -203,4 +232,44 @@ public sealed class WindowsDriveEjector : IDriveEjector
     static extern int CM_Get_Parent(out uint parent, uint devInst, int flags);
     [DllImport("cfgmgr32.dll", CharSet = CharSet.Unicode)]
     static extern int CM_Request_Device_EjectW(uint devInst, out int vetoType, StringBuilder vetoName, int nameLength, int flags);
+}
+
+/// <summary>T-0764 (Gegenprüfung M4): echte Auflösung unter Windows – <c>GetFinalPathNameByHandle</c> (Junction, Verknüpfung, subst) und
+/// <c>IOCTL_STORAGE_GET_DEVICE_NUMBER</c> (physischer Datenträger). Nur lesen.</summary>
+[SupportedOSPlatform("windows")]
+public sealed class WindowsDiskResolver : IDiskResolver
+{
+    public string FinalPath(string path)
+    {
+        var full = Path.GetFullPath(path);
+        // existiert der Pfad nicht, den nächsten vorhandenen Oberordner auflösen (der Rest hängt dran)
+        var probe = full; var rest = "";
+        while (!Directory.Exists(probe) && !File.Exists(probe) && Path.GetDirectoryName(probe) is { } up) { rest = rest.Length == 0 ? Path.GetFileName(probe) : Path.Combine(Path.GetFileName(probe), rest); probe = up; }
+        using var h = CreateFileW(probe, 0, 7, IntPtr.Zero, 3, 0x02000000 /* FILE_FLAG_BACKUP_SEMANTICS (Ordner) */, IntPtr.Zero);
+        if (h.IsInvalid) return full;
+        var sb = new StringBuilder(1024);
+        var n = GetFinalPathNameByHandleW(h, sb, sb.Capacity, 0);
+        if (n == 0 || n >= sb.Capacity) return full;
+        var fin = sb.ToString();
+        if (fin.StartsWith(@"\\?\UNC\", StringComparison.OrdinalIgnoreCase)) fin = @"\\" + fin[8..];
+        else if (fin.StartsWith(@"\\?\", StringComparison.Ordinal)) fin = fin[4..];
+        return rest.Length == 0 ? fin : Path.Combine(fin, rest);
+    }
+
+    public (int Type, int Number)? DiskOf(string driveRoot)
+    {
+        var root = DeviceEject.NormalizeRoot(driveRoot);
+        if (root is null) return null;
+        using var h = CreateFileW(@"\\.\" + root[..2], 0, 3, IntPtr.Zero, 3, 0, IntPtr.Zero);
+        if (h.IsInvalid) return null;
+        return DeviceIoControl(h, 0x2D1080, IntPtr.Zero, 0, out var n, Marshal.SizeOf<StorageNumber>(), out _, IntPtr.Zero) ? (n.DeviceType, n.DeviceNumber) : null;
+    }
+
+    [StructLayout(LayoutKind.Sequential)] struct StorageNumber { public int DeviceType; public int DeviceNumber; public int PartitionNumber; }
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    static extern Microsoft.Win32.SafeHandles.SafeFileHandle CreateFileW(string name, uint access, uint share, IntPtr sec, uint disposition, uint flags, IntPtr template);
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    static extern uint GetFinalPathNameByHandleW(Microsoft.Win32.SafeHandles.SafeFileHandle h, StringBuilder path, int len, uint flags);
+    [DllImport("kernel32.dll", SetLastError = true)]
+    static extern bool DeviceIoControl(Microsoft.Win32.SafeHandles.SafeFileHandle h, uint code, IntPtr inBuf, int inSize, out StorageNumber outBuf, int outSize, out int returned, IntPtr overlapped);
 }
