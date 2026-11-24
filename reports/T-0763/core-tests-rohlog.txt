@@ -1,21 +1,28 @@
-Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0763\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0763-fix1\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
 Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
 [xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
-[xUnit.net 00:00:05.26]   Discovering: Trendo.Core.Tests
-[xUnit.net 00:00:05.92]   Discovered:  Trendo.Core.Tests
-[xUnit.net 00:00:05.95]   Starting:    Trendo.Core.Tests
-  Bestanden X-02 (T-0763, echt): installiertes Trendo dieses PCs gegen sein Paket prüfen; auf einer Kopie Datei löschen, verändern und ersetzen [11 s]
-  Bestanden X-02 (T-0763): ohne Installation ehrlich „nur installierte Version“, ohne Paket „Setup erneut ausführen“; Pfade aus dem Paket bleiben im Programmordner [146 ms]
+[xUnit.net 00:00:02.08]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:02.54]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:02.57]   Starting:    Trendo.Core.Tests
+  Bestanden T-0763 N1: reiner Prüflauf schreibt keine „letzte Prüfung“-Datei, nur den Protokolleintrag [161 ms]
+  Bestanden T-0763 M3: grüner Befund nennt die Grenze (nicht code-signiert); Datei, die nicht aus dem Paket stammt, ist ein gelber Hinweis [36 ms]
+  Bestanden T-0763 N4: Zurückholen legt nichts über eine Junction im Datenordner nach außen (echte Junction) [65 ms]
+  Bestanden T-0763 N5: Beenden nur bei gleicher Startzeit und gleichem Pfad; Junction aus dem Werkzeugordner auf ein fremdes Programm ist nicht „eigen“ [45 ms]
+  Bestanden T-0763 M1: nur das Paket „{Kennung}-{Version}-full.nupkg“ mit passender .nuspec – fremdes Paket gleicher Version wird nie zur Reparatur benutzt [20 ms]
+  Bestanden T-0763 M2: Reparatur schreibt nie über eine Junction im Programmordner nach außen (echte Junction) [52 ms]
+  Bestanden T-0763 N3: zweimal Zurückholen in derselben Sekunde überschreibt keine Sicherung (.bak eindeutig) [78 ms]
+  Bestanden X-02 (T-0763, echt): installiertes Trendo dieses PCs gegen sein Paket prüfen; auf einer Kopie Datei löschen, verändern und ersetzen [14 s]
+  Bestanden X-02 (T-0763): ohne Installation ehrlich „nur installierte Version“, ohne Paket „Setup erneut ausführen“; Pfade aus dem Paket bleiben im Programmordner [20 ms]
   Bestanden X-09 (T-0763, echt): Lastprobe – Prozessorlast eines ausgelasteten Prozesses weicht höchstens 5 Prozentpunkte von den Windows-Leistungsindikatoren ab [6 s]
-[xUnit.net 00:00:24.34]   Finished:    Trendo.Core.Tests
-  Bestanden X-02 (T-0763): beiseitegelegte Datei zurückholen – an den alten Ort, bisherige Datei bleibt als .bak, wird nicht erneut beiseitegelegt; alte Quarantäne ohne Herkunft ehrlich [114 ms]
-  Bestanden SYS-13 (T-0763): Telemetrie-Prüfung der installierten Version über die Paketlisten – findet Analyse-Bibliotheken, Trendo selbst ist frei [15 ms]
-  Bestanden X-02 (T-0763): gelöschte und veränderte Programmdatei werden gegen das Installationspaket erkannt und daraus ersetzt [28 ms]
-  Bestanden SYS-13 (T-0763): Ampel je Bereich mit nächstem Schritt; Gesamtsatz; rot vor gelb vor grün [6 ms]
-  Bestanden SYS-13 (T-0763): veränderte Protokollzeile wird mit Stelle gemeldet – Ampel rot im Bereich Protokoll [36 ms]
-  Bestanden X-09 (T-0763): Grafiklast je Programm aus „GPU Engine“-Instanzen – je Prozess die höchste Grafik-Einheit, wie im Windows-Task-Manager [10 ms]
+[xUnit.net 00:00:23.40]   Finished:    Trendo.Core.Tests
+  Bestanden X-02 (T-0763): beiseitegelegte Datei zurückholen – an den alten Ort, bisherige Datei bleibt als .bak, wird nicht erneut beiseitegelegt; alte Quarantäne ohne Herkunft ehrlich [86 ms]
+  Bestanden SYS-13 (T-0763): Telemetrie-Prüfung der installierten Version über die Paketlisten – findet Analyse-Bibliotheken, Trendo selbst ist frei [26 ms]
+  Bestanden X-02 (T-0763): gelöschte und veränderte Programmdatei werden gegen das Installationspaket erkannt und daraus ersetzt [22 ms]
+  Bestanden SYS-13 (T-0763): Ampel je Bereich mit nächstem Schritt; Gesamtsatz; rot vor gelb vor grün [5 ms]
+  Bestanden SYS-13 (T-0763): veränderte Protokollzeile wird mit Stelle gemeldet – Ampel rot im Bereich Protokoll [33 ms]
+  Bestanden X-09 (T-0763): Grafiklast je Programm aus „GPU Engine“-Instanzen – je Prozess die höchste Grafik-Einheit, wie im Windows-Task-Manager [9 ms]
 
 Der Testlauf war erfolgreich.
-Gesamtzahl Tests: 9
-     Bestanden: 9
- Gesamtzeit: 25,6709 Sekunden
+Gesamtzahl Tests: 16
+     Bestanden: 16
+ Gesamtzeit: 24,1508 Sekunden

@@ -862,7 +862,7 @@ public static class StudioKnowledgeBase
             ["SYS-12"],
             true),
         ["SYS-01"] = new("SYS-01",
-            "Erkennt das Gerät und startet Trendo passend.",
+            "Zeigt, was Trendo auf diesem Gerät kann – im Angebot ist die Desktop Edition für Windows 11.", // T-0763 Fix M4
             [
                 T("modus", "Modus ansehen", "Modus ansehen", "Welcher Startmodus ist aktiv", ["modus", "start", "gerät"]),
             ],

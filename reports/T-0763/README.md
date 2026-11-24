@@ -12,3 +12,12 @@ Alle Pfade ohne Benutzernamen (`C:\Users\<user>`). Prüfsummen: `SHA256SUMS.txt`
 | `bilder/sys13.png` | „Alles prüfen“ mit Ergebnis (Render, eigener Datenordner) |
 | `bilder/heal.png` | „Einrichten & Reparieren“ mit den neuen Karten |
 | `bilder/modus.png` | Betriebsmodus mit Angebotsaussage |
+
+## Nachtrag Fix 1
+| Datei | Inhalt |
+|---|---|
+| `core-tests-rohlog.txt` | neu erzeugt: 16 Core-Tests (9 bisherige + 7 Fix-1-Tests `T0763Fix1Tests`, davon M2/N4/N5 mit echten Junctions per `mklink /J`) |
+| `installation-echt.txt`, `lastprobe.txt` | neu erzeugt; die echte Installation wird weiter nur gelesen, jetzt mit genauer Paketzuordnung (Kennung + Version + .nuspec) und ohne Dateien „nicht aus dem Paket“ |
+| `app-tests-fix1-rohlog.txt` | 64 App-Testklassen nach Fix 1: 325 Tests, 0 Fehler, 2 übersprungen |
+| `app-tests-fix1b-rohlog.txt` | T0763SystemAlltagUi, W7_Ui, X02_Ui nach letzter Textänderung: 15 Tests, 0 Fehler |
+| `bilder/*.png` | neu gerendert (Betriebsmodus ohne goldenen Stick-Knopf, Heilung mit Grenze und Prüfung beim Öffnen, Alles prüfen) |

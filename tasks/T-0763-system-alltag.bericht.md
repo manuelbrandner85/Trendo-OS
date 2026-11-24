@@ -57,3 +57,19 @@
 - Hängendes Werkzeug wird nicht automatisch als „reagiert nicht“ erkannt (Windows-Abfrage kann je Fenster bis 5 s blockieren); Beenden ist jederzeit möglich.
 - `CapabilityCatalog.cs:99` („Es wird nichts repariert“) beschreibt nur den KI-Weg – nicht angefasst.
 - Studio-Untertitel von SYS-01 („Erkennt das Gerät und startet Trendo passend“) kommt aus `StudioCatalog.cs` – nicht angefasst.
+
+## Nachtrag Fix 1 (unabhängige Gegenprüfung, Befunde M1–M4, N1–N6)
+| Befund | Änderung | Test |
+|---|---|---|
+| M1 fremdes Paket gleicher Version | Kennung + Version aus `sq.version`, nur genau `{Kennung}-{Version}-full.nupkg`, dessen `.nuspec` beides bestätigt; sonst „Kein passendes Installationspaket (…)“ | `T0763Fix1Tests.M1_exact_package` (fremder Name, falsche Kennung in .nuspec, falsche Version) |
+| M2 Schreiben über Junction | neu `PathGuard.LinkOnWay`: jeder Ordner zwischen Programmordner und Ziel sowie die Datei selbst auf Reparse-Point/LinkTarget geprüft; Reparatur lehnt ab | `M2_no_write_through_junction` (echte Junction per `mklink /J`, draußen bleibt leer) |
+| M3 ehrliche Grenze, Fremddateien | Grenze „Erkennt Beschädigung, schützt nicht vor gezielter Manipulation – Trendo ist nicht code-signiert“ in Karte und grünem Befund; Dateien im Programmordner, die nicht im Paket stehen → gelber Hinweis (Ausnahme `sq.version`, Reparatur-Zwischendatei) | `M3_limit_and_extra_files`; echte Installation (nur lesend): `Extra` leer, Ampel grün (`Real_installation_copy`); UI `Repair_installation` |
+| M4 SYS-01 Widerspruch | Text „kein unterstütztes Setup; Stick-Schreiber ist eine Vorschau“, Knopf „Stick oder SSD schreiben (Vorschau) …“ nicht golden, Pi-Zeile „Nicht verfügbar – nur auf dem Raspberry Pi, der derzeit nicht im Angebot ist“, Untertitel in `StudioCatalog` und KI-Wissen (`StudioKnowledge`) ohne „startet Trendo passend“ | UI `Mode_offer` |
+| N1 „verändert nichts“ | Prüflauf ohne Reparatur schreibt `selbstheilung-letzte.json` nicht mehr; Text „ändert nichts an deinen Dateien und schreibt nur einen Protokolleintrag“ | `N1_check_only_writes_no_files` |
+| N2 Dauergelb | zurückgeholte Datei = Hinweis (grün) mit Schritt „mit einem Texteditor öffnen oder löschen“ | `Quarantine_restore` (angepasst an das gewünschte Verhalten) |
+| N3 .bak überschrieben | eindeutiger Name (`-2`, `-3` …), `File.Move` ohne Überschreiben | `N3_unique_backup_names` (gleiches `now`) |
+| N4 Restore über Junction | `PathGuard` auch auf dem Weg im Datenordner | `N4_restore_not_through_junction` (echte Junction) |
+| N5 PID-Wiederverwendung / Junction | Startzeit in Zeile und Messung, `TaskManager.SameProcess` vor dem Beenden; `IsOwn` falsch, wenn eine Verknüpfung auf dem Weg liegt | `N5_same_process_and_junction` (echte Junction auf System32, nur die Verknüpfung wird wieder entfernt); UI `Kill_hanging_own_tool` |
+| N6 Leerzustand, Bezeichnung, „ein Klick“ | Karte „Programmdateien“ prüft beim Öffnen selbst (Leerzustand „wird geprüft …“); „mit einem Klick“ nur noch, wo Trendo selbst einrichten darf. **Nicht umgesetzt:** „Alles prüfen“ als Leistenname – die Leiste zeigt für Studio-Startseiten den Studio-Namen (Nutzerentscheidung T-0736 „Studio-Name überall“, 17.11.2026); der Reiter heißt „Alles prüfen“ | UI `Repair_installation` (Ergebnis ohne Klick), `T0736Seitennamen_Ui` |
+
+Hinweis zum ersten Lauf dieses Nachtrags: Ein Fehler beim Einsetzen in `MainWindow.TaskManager.cs` verhinderte das Übersetzen der App; die erste Filterausgabe zeigte das nicht deutlich. Entdeckt, weil die UI-Tests am alten Stand scheiterten; behoben und neu gebaut, danach grün.

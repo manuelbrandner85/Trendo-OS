@@ -22,7 +22,7 @@ public class T0763SystemAlltagTests
         Directory.CreateDirectory(Path.Combine(root, "packages"));
         using (var z = ZipFile.Open(Path.Combine(root, "packages", $"TrendoOS-{ver}-full.nupkg"), ZipArchiveMode.Create))
         {
-            z.CreateEntry("TrendoOS.nuspec");
+            using (var n = z.CreateEntry("TrendoOS.nuspec").Open()) n.Write(Encoding.UTF8.GetBytes($"<?xml version=\"1.0\"?><package><metadata><id>TrendoOS</id><version>{ver}</version></metadata></package>"));
             foreach (var (k, v) in files) { using var s = z.CreateEntry("lib/app/" + k).Open(); s.Write(Encoding.UTF8.GetBytes(v)); }
         }
         return app;
@@ -86,7 +86,10 @@ public class T0763SystemAlltagTests
         Assert.Contains(audit.ReadAll(), e => e.Action == "heal.restore");
         // nächste Prüfung: bleibt liegen, aber ehrlich als „braucht dich“
         var again = h.Run(true, now.AddMinutes(6)).Single(r => r.Id == "json");
-        Assert.Equal(HealState.NeedsYou, again.State); Assert.Contains("Zurückgeholt", again.Detail); Assert.True(File.Exists(broken));
+        // Fix N2: Hinweis statt dauerhaft Gelb, mit passendem nächsten Schritt
+        Assert.Equal(HealState.Ok, again.State); Assert.Contains(SelfHealer.KeptPrefix, again.Detail); Assert.True(File.Exists(broken));
+        var data = Checkup.Data(h.Run(false, now.AddMinutes(6)));
+        Assert.Equal(Checkup.Light.Gruen, data.Light); Assert.Contains("kaputt", data.Finding.Replace("modell.json", "kaputt")); Assert.Contains("Texteditor", data.Next);
         // verändert sich die Datei (immer noch kaputt), wird sie wieder beiseitegelegt
         File.WriteAllText(broken, "{ noch kaputter");
         Assert.Equal(HealState.Repaired, h.Run(true, now.AddMinutes(7)).Single(r => r.Id == "json").State);
@@ -208,9 +211,11 @@ public class T0763SystemAlltagTests
     {
         var real = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TrendoOS");
         var app = Path.Combine(real, "current");
-        if (InstallIntegrity.InstalledVersion(app) is not { } ver || InstallIntegrity.FindPackage(app, ver) is not { } pkg) return; // kein installiertes Trendo: nichts zu prüfen
+        if (InstallIntegrity.Installed(app) is not var (id, ver) || InstallIntegrity.FindPackage(app, id, ver) is not { } pkg) return; // kein installiertes Trendo: nichts zu prüfen
         var sw = Stopwatch.StartNew();
         var r = InstallIntegrity.Check(app); // nur lesen – an der echten Installation ändert der Test nichts
+        Assert.Empty(r.Extra); // Fix M3: die echte Installation darf nicht fälschlich „nicht aus dem Paket“ melden
+        Assert.Equal(Checkup.Light.Gruen, Checkup.Installation(r).Light);
         var checkSecs = sw.Elapsed.TotalSeconds;
         var root = Tmp();
         try

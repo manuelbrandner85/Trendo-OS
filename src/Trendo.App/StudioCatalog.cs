@@ -93,7 +93,7 @@ public static class StudioCatalog
         ["X-10"] = new("Programme nachbauen", "Programme rechtlich sauber neu entwickeln.", "Entwickeln"),
 
         ["CORE-01"] = new("Desktop einrichten", "Fenster, Startmenü und Arbeitsfläche von Trendo.", "System & Sicherheit"),
-        ["SYS-01"] = new("Startmodus wählen", "Erkennt das Gerät und startet Trendo passend (PC).", "System & Sicherheit"),
+        ["SYS-01"] = new("Startmodus wählen", "Zeigt, was Trendo auf diesem Gerät kann – im Angebot ist die Desktop Edition für Windows 11.", "System & Sicherheit"), // T-0763 Fix M4
         ["CORE-11"] = new("Daten schützen", "Prüft deinen Schutz, sichert deine Daten und findet offen liegende Passwörter.", "System & Sicherheit"), // T-0754: keine Passwortverwaltung – nichts versprechen, was es nicht gibt
         ["SPEC-12"] = new("System auf Gefahren prüfen", "Prüft das System auf Gefahren und sichert Hinweise.", "System & Sicherheit"),
         ["SYS-03"] = new("Downloads & Links", "Dateien laden, Prüfsumme prüfen, Links sammeln – Webseiten öffnen sich in deinem Standard-Browser.", "System & Sicherheit"), // T-0755: ehrlicher Name, kein eigener Browser

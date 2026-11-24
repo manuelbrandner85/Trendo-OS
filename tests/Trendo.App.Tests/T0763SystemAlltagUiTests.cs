@@ -27,9 +27,10 @@ public class T0763SystemAlltagUi
         var app = Path.Combine(root, "current"); Directory.CreateDirectory(app);
         var files = new Dictionary<string, string> { ["TrendoOS.exe"] = "PROGRAMM", ["Trendo.Core.dll"] = "KERN" };
         foreach (var (k, v) in files) File.WriteAllText(Path.Combine(app, k), v);
-        File.WriteAllText(Path.Combine(app, "sq.version"), "<?xml version=\"1.0\"?><package><metadata><version>9.9.9</version></metadata></package>");
+        File.WriteAllText(Path.Combine(app, "sq.version"), "<?xml version=\"1.0\"?><package><metadata><id>TrendoOS</id><version>9.9.9</version></metadata></package>");
         Directory.CreateDirectory(Path.Combine(root, "packages"));
         using var z = ZipFile.Open(Path.Combine(root, "packages", "TrendoOS-9.9.9-full.nupkg"), ZipArchiveMode.Create);
+        using (var n = z.CreateEntry("TrendoOS.nuspec").Open()) n.Write("<?xml version=\"1.0\"?><package><metadata><id>TrendoOS</id><version>9.9.9</version></metadata></package>"u8);
         foreach (var (k, v) in files) { using var s = z.CreateEntry("lib/app/" + k).Open(); s.Write(Encoding.UTF8.GetBytes(v)); }
         return app;
     }
@@ -96,8 +97,14 @@ public class T0763SystemAlltagUi
         var (w, _, root) = Ui.Open();
         var app = FakeInstall(Path.Combine(root, "inst")); w.InstallDirOverride = app;
         w.Show("heilung");
-        w.Find<Button>("heal-install-check").Press(); await w.HealInstallTask!; await Until(() => w.TryFind<TextBlock>("heal-install-result") is not null);
+        // Fix N6: beim Öffnen läuft die Prüfung schon (Ergebnis ohne Klick)
+        Assert.NotNull(w.HealInstallTask); await w.HealInstallTask!; await Until(() => w.TryFind<TextBlock>("heal-install-result") is not null);
         Assert.StartsWith("✓", w.Find<TextBlock>("heal-install-result").Text);
+        Assert.Contains(w.GetLogicalTexts(), t => t.Contains("nicht code-signiert")); // Fix M3
+        File.WriteAllText(Path.Combine(app, "Fremd.dll"), "x");
+        w.Find<Button>("heal-install-check").Press(); await w.HealInstallTask!; await Until(() => w.TryFind<TextBlock>("heal-install-extra") is not null);
+        Assert.Contains("Fremd.dll", w.Find<TextBlock>("heal-install-extra").Text);
+        File.Delete(Path.Combine(app, "Fremd.dll"));
         File.Delete(Path.Combine(app, "Trendo.Core.dll"));
         w.Find<Button>("heal-install-check").Press(); await w.HealInstallTask!; await Until(() => w.TryFind<Button>("heal-install-repair") is not null);
         Assert.Contains("Trendo.Core.dll – fehlt", w.GetLogicalTexts().First(t => t.Contains("Trendo.Core.dll")));
@@ -220,7 +227,13 @@ public class T0763SystemAlltagUi
         Assert.Contains("Linux und Raspberry Pi sind derzeit nicht im Angebot", w.Find<TextBlock>("mode-offer-text").Text);
         Assert.DoesNotContain(w.GetLogicalTexts(), x => x.Contains("von einem Linux-USB-Stick oder auf dem Raspberry Pi"));
         Assert.Contains("Nicht Teil der Desktop Edition", w.Find<TextBlock>("mode-stick-note").Text);
-        Assert.NotNull(w.TryFind<Button>("mode-write-stick"));
+        // Fix M4: kein Widerspruch – Vorschau ist keine goldene Hauptaktion, Pi-Zeile ehrlich, Untertitel ohne Modus-Versprechen
+        Assert.Contains("kein unterstütztes Setup", w.Find<TextBlock>("mode-offer-text").Text);
+        Assert.False(MainWindow.IsGold(w.Find<Button>("mode-write-stick")));
+        Assert.Contains("Vorschau", (string)w.Find<Button>("mode-write-stick").Content!);
+        Assert.DoesNotContain(w.GetLogicalTexts(), x => x.Contains("BLOCKIERT – nur auf dem Raspberry Pi"));
+        Assert.Contains(w.GetLogicalTexts(), x => x.Contains("Raspberry Pi, der derzeit nicht im Angebot ist"));
+        Assert.DoesNotContain("startet Trendo passend", StudioCatalog.ById["SYS-01"].Sentence);
         w.Close();
     }
 }

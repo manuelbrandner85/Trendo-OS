@@ -115,7 +115,7 @@ public partial class MainWindow
         var busy = CheckBusy;
         var run = Act("check-run", busy ? "Prüft …" : "Alles prüfen", () => { _ = RunCheckupAsync(); Show("qual-check"); }, true); run.IsEnabled = !busy;
         sp.Children.Add(ToolCard("check-card", Mdi.ShieldCheck, "#FDE68A", "#B45309", "Ist alles in Ordnung?",
-            "Ein Klick prüft Programmdateien, Zusatzprogramme, deine Daten, das Protokoll, die Sicherung, den Speicherplatz und Abstürze. Es wird nichts verändert und nichts gesendet.", Line(run)));
+            "Ein Klick prüft Programmdateien, Zusatzprogramme, deine Daten, das Protokoll, die Sicherung, den Speicherplatz und Abstürze. Es ändert nichts an deinen Dateien und schreibt nur einen Protokolleintrag; gesendet wird nichts.", Line(run)));
         if (_checkAreas.Count == 0)
         {
             sp.Children.Add(new TextBlock { Name = "check-empty", Text = busy ? "Trendo prüft gerade …" : "Noch nicht geprüft. Klicke auf „Alles prüfen“ – das dauert meist nur ein paar Sekunden.", Foreground = Muted, FontSize = 12.5, TextWrapping = TextWrapping.Wrap });

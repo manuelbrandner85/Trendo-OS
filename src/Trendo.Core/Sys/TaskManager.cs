@@ -8,8 +8,13 @@ namespace Trendo.Core.Sys;
 /// (Werkzeugordner, Datenordner) – fremde Programme beendet Trendo nie.</summary>
 public static class TaskManager
 {
-    public sealed record Proc(int Pid, string Name, double CpuPercent, long Bytes, string? Path, bool Own);
-    public readonly record struct Sample(int Pid, string Name, TimeSpan Cpu, long Bytes, string? Path);
+    public sealed record Proc(int Pid, string Name, double CpuPercent, long Bytes, string? Path, bool Own, DateTime? Start = null);
+    public readonly record struct Sample(int Pid, string Name, TimeSpan Cpu, long Bytes, string? Path, DateTime? Start = null);
+
+    /// <summary>T-0763 Fix N5: Läuft unter dieser Kennung noch genau das Programm aus der Zeile? Gleicher Pfad, eigen, gleiche Startzeit (Kennungen werden
+    /// von Windows wiederverwendet). Ohne bekannte Startzeit in der Zeile zählt nur der Pfad.</summary>
+    public static bool SameProcess(Proc row, string? path, DateTime? start, IReadOnlyList<string> ownRoots) =>
+        row.Own && IsOwn(path, ownRoots) && string.Equals(path, row.Path, StringComparison.OrdinalIgnoreCase) && (row.Start is null || row.Start == start);
 
     /// <summary>Prozessorlast je Prozess aus zwei Messungen: verbrauchte Prozessorzeit / (vergangene Zeit × Kerne). Neue Prozesse zählen mit 0 %.</summary>
     public static IReadOnlyList<Proc> Rows(IReadOnlyList<Sample> before, IReadOnlyList<Sample> now, double seconds, int cores, IReadOnlyList<string> ownRoots)
@@ -19,7 +24,7 @@ public static class TaskManager
         return now.Select(s =>
         {
             var cpu = prev.TryGetValue(s.Pid, out var p) && p.Name == s.Name ? Math.Clamp((s.Cpu - p.Cpu).TotalSeconds / span * 100, 0, 100) : 0;
-            return new Proc(s.Pid, s.Name, Math.Round(cpu, 1), s.Bytes, s.Path, IsOwn(s.Path, ownRoots));
+            return new Proc(s.Pid, s.Name, Math.Round(cpu, 1), s.Bytes, s.Path, IsOwn(s.Path, ownRoots), s.Start);
         }).ToList();
     }
 
@@ -29,8 +34,9 @@ public static class TaskManager
         if (string.IsNullOrEmpty(path)) return false;
         string Full(string p) { try { return System.IO.Path.GetFullPath(p); } catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { return ""; } }
         var f = Full(path);
+        // T-0763 Fix N5: Liegt auf dem Weg eine Verknüpfung (z. B. Junction aus dem Werkzeugordner auf ein fremdes Programm), ist es nicht „eigen“
         return f.Length > 0 && ownRoots.Where(r => r.Length > 0).Select(r => Full(r).TrimEnd(System.IO.Path.DirectorySeparatorChar) + System.IO.Path.DirectorySeparatorChar)
-            .Any(r => r.Length > 1 && f.StartsWith(r, StringComparison.OrdinalIgnoreCase));
+            .Any(r => r.Length > 1 && f.StartsWith(r, StringComparison.OrdinalIgnoreCase) && PathGuard.LinkOnWay(r, f) is null);
     }
 
     /// <summary>Sortieren nach „name“, „cpu“, „ram“ oder „pid“; Suche in Name und Kennung.</summary>
@@ -58,7 +64,8 @@ public static class TaskManager
                 try
                 {
                     string? path = null; try { path = p.MainModule?.FileName; } catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException or NotSupportedException) { }
-                    list.Add(new Sample(p.Id, p.ProcessName, p.TotalProcessorTime, p.WorkingSet64, path));
+                    DateTime? start = null; try { start = p.StartTime; } catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException or NotSupportedException) { }
+                    list.Add(new Sample(p.Id, p.ProcessName, p.TotalProcessorTime, p.WorkingSet64, path, start));
                 }
                 catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException or NotSupportedException) { }
             }

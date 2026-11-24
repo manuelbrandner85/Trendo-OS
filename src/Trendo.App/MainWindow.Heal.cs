@@ -115,7 +115,9 @@ public partial class MainWindow
     {
         var body = new StackPanel { Name = "heal-install", Spacing = 5, Children = {
             new TextBlock { Text = "Programmdateien", Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold },
-            P("Vergleicht jede Programmdatei mit dem Installationspaket, das bei der Installation neben Trendo abgelegt wurde (Größe und Prüfsumme). Fehlende oder veränderte Dateien lassen sich daraus ersetzen.", null, 11) } };
+            P("Vergleicht jede Programmdatei mit dem Installationspaket, das bei der Installation neben Trendo abgelegt wurde (Größe und Prüfsumme). Fehlende oder veränderte Dateien lassen sich daraus ersetzen. " + InstallIntegrity.Limit, null, 11) } };
+        if (_healInstall is null && HealInstallTask is null) _ = HealCheckInstall(); // T-0763 Fix N6: beim Öffnen gleich ein Ergebnis
+        if (_healInstall is null) body.Children.Add(new TextBlock { Name = "heal-install-busy", Text = "Programmdateien werden geprüft …", Foreground = Muted, FontSize = 12 });
         var check = new Button { Name = "heal-install-check", Content = _healInstallBusy ? "Prüft …" : "Programmdateien prüfen", IsEnabled = !_healInstallBusy, FontSize = 12 };
         check.Click += (_, _) => { _ = HealCheckInstall(); Show("heilung"); };
         var row = new WrapPanel { Children = { check } };
@@ -123,6 +125,8 @@ public partial class MainWindow
         {
             var color = r.Ok ? "#4ADE80" : !r.Installed ? "#93A4C3" : "#FACC15";
             body.Children.Add(new TextBlock { Name = "heal-install-result", Text = (r.Ok ? "✓ " : "") + r.Note, Foreground = Brush.Parse(color), FontSize = 12, TextWrapping = TextWrapping.Wrap });
+            if (r.Extra.Count > 0) body.Children.Add(new TextBlock { Name = "heal-install-extra", Foreground = Brush.Parse("#FACC15"), FontSize = 12, TextWrapping = TextWrapping.Wrap,
+                Text = $"Hinweis: {r.Extra.Count} Datei(en) im Programmordner sind nicht aus dem Paket: {string.Join(", ", r.Extra.Take(8))}{(r.Extra.Count > 8 ? " …" : "")}. Hast du sie nicht selbst abgelegt, führe das Setup erneut aus." });
             if (!r.Installed) body.Children.Add(P("Nur für Entwickler: Ohne Installation gibt es kein Paket zum Vergleichen.", Muted, 11));
             else if (r.Package is null) body.Children.Add(new TextBlock { Name = "heal-install-next", Text = "Nächster Schritt: Trendo-Setup erneut ausführen – es legt alle Programmdateien und das Paket neu an. Deine Daten bleiben erhalten.", Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap });
             else if (r.Findings.Count > 0)
@@ -142,7 +146,7 @@ public partial class MainWindow
     {
         var body = new StackPanel { Name = "heal-programs", Spacing = 5, Children = {
             new TextBlock { Text = "Zusatzprogramme", Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold },
-            P("Prüft die Programme, die deine gewählten Studios brauchen. Fehlt eines, holst du es hier mit einem Klick nach – Trendo zeigt vorher Lizenz, Größe und Herkunft und fragt dich.", null, 11) } };
+            P("Prüft die Programme, die deine gewählten Studios brauchen. Fehlt eines, das Trendo selbst einrichten darf, holst du es hier nach – Trendo zeigt vorher Lizenz, Größe und Herkunft und fragt dich. Bei den anderen steht, dass du sie selbst installierst.", null, 11) } };
         if (_healProgs is null && HealProgramsTask is null) _ = HealCheckPrograms(); // beim ersten Öffnen gleich nachsehen, was fehlt
         var check = new Button { Name = "heal-programs-check", Content = _healProgsBusy ? "Prüft …" : "Zusatzprogramme prüfen", IsEnabled = !_healProgsBusy, FontSize = 12 };
         check.Click += (_, _) => { _ = HealCheckPrograms(); Show("heilung"); };

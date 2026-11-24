@@ -71,7 +71,9 @@ public partial class MainWindow
             else using (var p = Process.GetProcessById(pid))
             {
                 string? path = null; try { path = p.MainModule?.FileName; } catch (System.ComponentModel.Win32Exception) { }
-                if (!TaskManager.IsOwn(path, OwnRoots) || !string.Equals(path, row.Path, StringComparison.OrdinalIgnoreCase)) { _tmMsg = $"Unter der Kennung {pid} läuft inzwischen ein anderes Programm – Trendo beendet es nicht."; return false; }
+                DateTime? start = null; try { start = p.StartTime; } catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException) { }
+                // T-0763 Fix N5: Pfad, Verknüpfungen und Startzeit
+                if (!TaskManager.SameProcess(row, path, start, OwnRoots)) { _tmMsg =$"Unter der Kennung {pid} läuft inzwischen ein anderes Programm – Trendo beendet es nicht."; return false; }
                 p.Kill(entireProcessTree: false);
                 p.WaitForExit(3000);
             }

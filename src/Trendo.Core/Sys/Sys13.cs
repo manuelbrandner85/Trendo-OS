@@ -147,7 +147,9 @@ public static class Checkup
     public static Area Installation(InstallIntegrity.Report r) =>
         !r.Installed ? new("installation", "Programmdateien", Light.Gruen, "Nur für Entwickler: Trendo läuft aus dem Quelltext, es gibt kein Installationspaket zum Vergleichen.", "Nichts zu tun.", null)
         : r.Package is null ? new("installation", "Programmdateien", Light.Gelb, r.Note, "Setup erneut ausführen (Trendo-Setup von GitHub).", "heilung")
-        : r.Findings.Count == 0 ? new("installation", "Programmdateien", Light.Gruen, r.Note, "Nichts zu tun.", null)
+        : r.Findings.Count == 0 && r.Extra.Count > 0 ? new("installation", "Programmdateien", Light.Gelb, $"{r.Note} Hinweis: {r.Extra.Count} Datei(en) im Programmordner stammen nicht aus dem Paket: {string.Join(", ", r.Extra.Take(3))}{(r.Extra.Count > 3 ? " …" : "")}. {InstallIntegrity.Limit}",
+            "Unter „Einrichten & Reparieren“ ansehen; hast du sie nicht selbst abgelegt, Setup erneut ausführen.", "heilung")
+        : r.Findings.Count == 0 ? new("installation", "Programmdateien", Light.Gruen, $"{r.Note} {InstallIntegrity.Limit}", "Nichts zu tun.", null)
         : new("installation", "Programmdateien", Light.Rot, $"{r.Findings.Count} Programmdatei(en) fehlen oder sind verändert: {string.Join(", ", r.Findings.Take(3).Select(f => $"{f.File} ({f.Problem})"))}{(r.Findings.Count > 3 ? " …" : "")}",
             "Unter „Einrichten & Reparieren“ aus dem Installationspaket ersetzen.", "heilung");
 
@@ -155,13 +157,15 @@ public static class Checkup
     public static Area Programs(int all, IReadOnlyList<string> missing, IReadOnlyList<string> broken) =>
         missing.Count + broken.Count == 0 ? new("programme", "Zusatzprogramme", Light.Gruen, all == 0 ? "Für deine Auswahl braucht Trendo keine Zusatzprogramme." : $"Alle {all} bereit.", "Nichts zu tun.", null)
         : new("programme", "Zusatzprogramme", Light.Gelb, string.Join(" · ", new[] { missing.Count > 0 ? "Fehlt: " + string.Join(", ", missing) : null, broken.Count > 0 ? "Startet nicht: " + string.Join(", ", broken) : null }.Where(x => x is not null)),
-            "Unter „Einrichten & Reparieren“ mit einem Klick nachholen (Trendo fragt vorher).", "heilung");
+            "Unter „Einrichten & Reparieren“ nachholen – dort steht je Programm, ob Trendo es nach deiner Zustimmung einrichtet oder du es selbst installierst.", "heilung");
 
     /// <summary>Datenordner (Ergebnis der Selbstprüfung ohne Reparatur, ohne Protokoll und Speicherplatz – die haben eigene Bereiche).</summary>
     public static Area Data(IReadOnlyList<HealResult> heal)
     {
         var h = heal.Where(x => x.Id is not ("audit" or "disk")).ToList();
         var bad = h.Where(x => x.State is HealState.NeedsYou or HealState.Failed).ToList();
+        var kept = h.FirstOrDefault(x => x.Id == "json" && x.State == HealState.Ok && x.Detail.Contains(SelfHealer.KeptPrefix)); // Fix N2: Hinweis, kein Gelb
+        if (bad.Count == 0 && kept is not null) return new("daten", "Deine Daten und Einstellungen", Light.Gruen, kept.Detail, "Nichts nötig. Willst du die zurückgeholte Datei reparieren, öffne sie mit einem Texteditor oder lösche sie.", null);
         return bad.Count == 0 ? new("daten", "Deine Daten und Einstellungen", Light.Gruen, "Ordner vorhanden, alle Einstellungsdateien lesbar.", "Nichts zu tun.", null)
             : new("daten", "Deine Daten und Einstellungen", bad.Any(x => x.State == HealState.Failed) ? Light.Rot : Light.Gelb, string.Join(" · ", bad.Select(x => $"{x.Title}: {x.Detail}")),
                 "„Jetzt prüfen und reparieren“ unter „Einrichten & Reparieren“.", "heilung");
