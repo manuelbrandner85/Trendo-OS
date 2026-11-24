@@ -9,6 +9,7 @@ namespace Trendo.Core.Tests;
 
 /// <summary>T-0766 (X-04): Funktions-Erweiterungen in der WebAssembly-Sandbox – alles mit der echten Wasmtime-Laufzeit, nichts ersetzt.
 /// Feindliche Module (Datei außerhalb lesen, Netz, Endlosschleife, Speicher sprengen) werden abgewiesen bzw. abgebrochen; Trendo läuft danach weiter.</summary>
+[Collection("T0766-Sandbox")] // N12: gemeinsames Übersetzungs-Kontingent – nicht parallel zu anderen Sandbox-Tests
 public class T0766_ExtensionSandbox
 {
     static string Tmp() { var d = Path.Combine(Path.GetTempPath(), "trendo-sbx-t-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(d); return d; }
@@ -142,6 +143,7 @@ public class T0766_ExtensionSandbox
 }
 
 /// <summary>T-0766 (X-04): Funktions-Erweiterungen im Erweiterungsspeicher – Rechte-Manifest, eigene Freigabe, Befehl ins Projekt, Rückgängig, Werkstatt, Aktualisieren.</summary>
+[Collection("T0766-Sandbox")] // N12: gemeinsames Übersetzungs-Kontingent – nicht parallel zu anderen Sandbox-Tests
 public class T0766_ExtensionModules
 {
     static string Tmp() { var d = Path.Combine(Path.GetTempPath(), "trendo-mod-t-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(d); return d; }

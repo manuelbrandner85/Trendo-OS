@@ -183,6 +183,15 @@ public sealed class Backup(string dataRoot, string backupDir, AuditLog audit)
 
     public sealed record RestorePlan(int Replaced, int Added, IReadOnlyList<string> Examples);
 
+    /// <summary>T-0766 (Befund N14): relativer Zielpfad, normalisiert („x/../a“ → „a“, „./a“ → „a“, „\“ → „/“).</summary>
+    string RelOf(string dest) => Path.GetRelativePath(Path.GetFullPath(dataRoot), dest).Replace('\\', '/');
+    /// <summary>Audit und Skip-Bereiche werden nie wiederhergestellt – geprüft am normalisierten Zielpfad, ohne Groß-/Kleinschreibung.</summary>
+    bool Untouchable(string dest)
+    {
+        var rel = RelOf(dest);
+        return rel.StartsWith("audit/", StringComparison.OrdinalIgnoreCase) || Skip.Any(s => rel.StartsWith(s, StringComparison.OrdinalIgnoreCase));
+    }
+
     /// <summary>Was ein Wiederherstellen ändern würde: ersetzte und neue Dateien (ohne Audit, ohne Zip-Slip), nichts wird geschrieben.</summary>
     public RestorePlan Preview(string zip)
     {
@@ -191,9 +200,9 @@ public sealed class Backup(string dataRoot, string backupDir, AuditLog audit)
         int replaced = 0, added = 0; var examples = new List<string>();
         foreach (var e in z.Entries)
         {
-            if (e.FullName.EndsWith('/') || e.FullName.StartsWith("audit/")) continue;
+            if (e.FullName.EndsWith('/')) continue;
             var dest = Path.GetFullPath(Path.Combine(dataRoot, e.FullName));
-            if (!dest.StartsWith(Path.GetFullPath(dataRoot) + Path.DirectorySeparatorChar)) continue;
+            if (!dest.StartsWith(Path.GetFullPath(dataRoot) + Path.DirectorySeparatorChar) || Untouchable(dest)) continue;
             if (File.Exists(dest)) { replaced++; if (examples.Count < 5) examples.Add(e.FullName); }
             else added++;
         }
@@ -217,8 +226,7 @@ public sealed class Backup(string dataRoot, string backupDir, AuditLog audit)
         {
             var dest = Path.GetFullPath(Path.Combine(dataRoot, e.FullName));
             if (!dest.StartsWith(Path.GetFullPath(dataRoot) + Path.DirectorySeparatorChar)) continue; // kein Zip-Slip
-            if (e.FullName.StartsWith("audit/")) continue; // Audit-Kette wird nie überschrieben
-            if (Skip.Any(s => e.FullName.StartsWith(s, StringComparison.OrdinalIgnoreCase))) continue; // T-0766 (H1): z. B. fremder Erweiterungs-Zwischenspeicher
+            if (Untouchable(dest)) continue; // Audit-Kette wird nie überschrieben; T-0766 (H1, N14): Skip-Bereiche nach dem echten Zielpfad
             if (e.FullName.EndsWith('/')) { Directory.CreateDirectory(dest); continue; }
             Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
             if (File.Exists(dest)) { File.SetAttributes(dest, FileAttributes.Normal); File.Delete(dest); } // z. B. schreibgeschützte .git-Objekte
@@ -288,10 +296,10 @@ public sealed class Backup(string dataRoot, string backupDir, AuditLog audit)
     /// <summary>Eine einzelne Datei zurückholen. Die heutige Fassung wird vorher unter backups/einzeln/&lt;Zeit&gt;/ aufgehoben. Gibt den Ablageort der alten Fassung zurück (oder null).</summary>
     public string? RestoreOne(string zip, string path, DateTime now)
     {
-        if (path.StartsWith("audit/")) throw new InvalidOperationException("Das Protokoll wird nie überschrieben.");
-        if (Skip.Any(s => path.StartsWith(s, StringComparison.OrdinalIgnoreCase))) throw new InvalidOperationException("Dieser Bereich wird nicht wiederhergestellt.");
         var dest = Path.GetFullPath(Path.Combine(dataRoot, path));
         if (!dest.StartsWith(Path.GetFullPath(dataRoot) + Path.DirectorySeparatorChar)) throw new InvalidOperationException("Ungültiger Pfad.");
+        if (RelOf(dest).StartsWith("audit/", StringComparison.OrdinalIgnoreCase)) throw new InvalidOperationException("Das Protokoll wird nie überschrieben.");
+        if (Untouchable(dest)) throw new InvalidOperationException("Dieser Bereich wird nicht wiederhergestellt.");
         using var z = ZipFile.OpenRead(zip);
         var e = z.GetEntry(path) ?? throw new FileNotFoundException("Nicht in der Sicherung: " + path);
         string? kept = null;

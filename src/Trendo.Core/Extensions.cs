@@ -25,6 +25,8 @@ public static partial class Extensions
     public const string ModuleKind = "modul";
     /// <summary>Endungen, die ein Befehl als Ergebnis anlegen darf – nur Text, nie ausführbare Dateien.</summary>
     public static readonly string[] OutputExt = [".md", ".txt", ".csv", ".tsv", ".json"];
+    /// <summary>T-0766 (Befund N12): höchstens so viele Befehle je Funktions-Erweiterung.</summary>
+    public const int MaxCommands = 10;
     public static readonly string[] Permissions = ["dateien-lesen", "internet-links"];
     static readonly string[] AllowedExt = [".json", ".md", ".txt", ".png", ".jpg", ".jpeg", ".svg", ".webp", ".css"];
 
@@ -79,6 +81,7 @@ public static partial class Extensions
         if (m.ModuleSha256 is null || m.ModuleSha256.Length != 64) yield return "Prüfsumme des Moduls (ModuleSha256) fehlt.";
         else if (!string.Equals(ExtensionCatalog.FileSha256(wasm), m.ModuleSha256, StringComparison.OrdinalIgnoreCase)) yield return "Prüfsumme des Moduls stimmt nicht – die Datei wurde verändert. Nicht installiert.";
         if (m.Commands is not { Length: > 0 }) { yield return "Eine Funktions-Erweiterung braucht mindestens einen Befehl."; yield break; }
+        if (m.Commands.Length > MaxCommands) yield return $"Höchstens {MaxCommands} Befehle je Erweiterung (hier {m.Commands.Length})."; // T-0766 N12
         var perms = m.Permissions ?? [];
         if (!perms.Contains(ExtensionRights.Command)) yield return "Für Befehle fehlt das Recht „befehl“.";
         var ids = new HashSet<string>();

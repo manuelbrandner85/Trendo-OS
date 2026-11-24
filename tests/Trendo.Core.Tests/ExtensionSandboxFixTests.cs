@@ -7,6 +7,7 @@ using Xunit;
 namespace Trendo.Core.Tests;
 
 /// <summary>T-0766 Gegenprüfung (fix1): Befunde M1, M2, N1–N8 – alles mit der echten Wasmtime-Laufzeit.</summary>
+[Collection("T0766-Sandbox")] // N12: gemeinsames Übersetzungs-Kontingent – nicht parallel zu anderen Sandbox-Tests
 public class T0766_Gegenpruefung
 {
     static string Tmp() { var d = Path.Combine(Path.GetTempPath(), "trendo-gp-t-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(d); return d; }

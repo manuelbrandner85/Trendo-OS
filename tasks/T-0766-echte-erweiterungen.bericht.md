@@ -17,7 +17,7 @@ Bestehende Daten-Arten `seite`, `vorhaben`, `links`, `text` bleiben gültig und 
 
 ## Tests (gezielt, kein Volltest)
 - `dotnet build Trendo.sln -c Release`: 0 Fehler.
-- Core: `--filter T0766|W5_X04|SystemPages|Sys13|NoFixedUser` → **42 bestanden, 0 Fehler** nach fix2: **65 bestanden, 1 übersprungen (restic nicht vorhanden), 0 Fehler** mit `Backup`-Klassen (`reports/T-0766/core-tests.log`, neu erzeugt).
+- Core: `--filter T0766|W5_X04|SystemPages|Sys13|NoFixedUser` → **42 bestanden, 0 Fehler** nach fix3: **68 bestanden, 1 übersprungen (restic nicht vorhanden), 0 Fehler** mit `Backup`-Klassen (`reports/T-0766/core-tests.log`, neu erzeugt).
 - App: `T0766ErweiterungenUi` 3/3 (nach fix1), `W5_X04_Ui` 2/2, `W5_X04_CatalogUi` 1/1, `StyleAndBrand_Ui` 2/2, `Projektmappe_Ui` 1/1, `T0726Offen_Ui` 4/4 → alle grün (`reports/T-0766/app-tests.log`).
 - Rot-Grün: auf `main` kompilieren die neuen Tests nicht (Typen `ExtensionSandbox`, `ExtensionModuleSample`, `ExtensionWorkshop`, `ExtensionResultUndo` fehlen), Katalog-Test erwartet 4 statt 3 Einträge.
 - Bildprüfung: `reports/T-0766/erweiterungen-modul-werkstatt.png`, `projekte-knopf.png` (Render mit neuer Hilfe `TRENDO_EXT_DEMO=offen|werkstatt|projekt`).
@@ -59,6 +59,14 @@ Offen aus der Gegenprüfung: Ein Kindprozess mit Job-Objekt (harte Speicher-/Zei
 | N11 Namen | Name ≤ 255 Zeichen, ≤ 8 Ebenen, vollständiger Pfad < 260; Windows-Gerätenamen (CON, PRN, AUX, NUL, CONIN$, CONOUT$, CLOCK$, COM/LPT 0–9 und ¹²³, auch mit Endung/Leerzeichen) abgelehnt; Punkt/Leerzeichen am Ende, verbotene Zeichen abgelehnt; Ordner zählen in die 1000er-Grenze (auch neu anzulegende); Ordner oder Verknüpfung/Junction als Ziel oder auf dem Weg sofort abgelehnt | `N11_names` (Liste gut/schlecht, echte Läufe, `mklink /J`, 999 Ordner) | Junction-Fälle zusammen < 2 s (gesamter Test 0,8 s) |
 
 Weiter offen: Kindprozess mit Job-Objekt (harte Grenze auch für das Übersetzen selbst) – nicht klein machbar. Das Übersetzen eines abgebrochenen Laufs läuft im Hintergrund zu Ende (höchstens rund 3 s im schlimmsten gemessenen Fall) und verbraucht so lange CPU.
+
+## Gegenprüfung fix3 (dritte Prüfrunde von 2df7b4320)
+
+| Befund | Änderung | Test |
+|---|---|---|
+| N12 parallele verworfene Übersetzungen | Gemeinsames Kontingent: höchstens 2 Übersetzungen gleichzeitig; auch eine nach Not-Stopp verworfene hält ihren Platz bis zum Ende. Ein Lauf wartet höchstens 1 s auf einen Platz, sonst Meldung „Trendo übersetzt noch eine andere Erweiterung …“; Installieren/Bauen warten. Höchstens 10 Befehle je Erweiterung (Manifest-Prüfung). | `T0766_Gegenpruefung3.N12_compile_slots`: 10 Not-Stopps in 1,3 s → gleichzeitig höchstens 2 Übersetzungen, „übersetzt noch“ für einen weiteren Lauf; 11 Befehle abgewiesen, 10 erlaubt. Sandbox-Testklassen laufen in einer gemeinsamen xUnit-Sammlung nacheinander. |
+| N13 Meldungen | Eigene Meldung „höchstens 1 000 Dateien und Ordner“; MB-Meldung nur bei der Größengrenze; „… entfernt“ nur mit tatsächlicher Anzahl entfernter Dateien | `N13_messages` |
+| N14 Wiederherstellen | `Restore`, `RestoreOne` und `Preview` prüfen Audit und alle Skip-Bereiche am normalisierten relativen Zielpfad (`GetRelativePath`, `\`→`/`, ohne Groß/Klein) | `N14_restore_normalized` (`x/../erweiterungen-cache/…`, `./web-mixamo/…`, `x\..\web-mixamo\…`, `Erweiterungen-Cache/…`, `a/../AUDIT/…`), Backup-Testklassen grün |
 
 ## Nicht geprüft
 - Linux-/Pi-Edition (Wasmtime liefert `linux-x64`/`linux-arm64`, nicht gestartet); Setup-Größe (+~21 MB `wasmtime.dll` für win-x64) nicht im echten Setup gemessen.

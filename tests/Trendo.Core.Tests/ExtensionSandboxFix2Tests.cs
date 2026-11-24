@@ -9,6 +9,7 @@ namespace Trendo.Core.Tests;
 
 /// <summary>T-0766 zweite Prüfrunde (fix2): H1 (kein Zwischenspeicher), M3 (Locals/Körpergröße), N10 (parallele Läufe), N11 (Namen im Datenordner).
 /// Alles mit der echten Wasmtime-Laufzeit.</summary>
+[Collection("T0766-Sandbox")] // N12: gemeinsames Übersetzungs-Kontingent – nicht parallel zu anderen Sandbox-Tests
 public class T0766_Gegenpruefung2(ITestOutputHelper log)
 {
     static string Tmp() { var d = Path.Combine(Path.GetTempPath(), "trendo-gp2-t-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(d); return d; }

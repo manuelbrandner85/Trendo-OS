@@ -3,92 +3,54 @@ xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
   Discovered:  Trendo.App.Tests
   Starting:    Trendo.App.Tests
     T-0766 (UI): Werkstatt → bauen → ZIP → installieren (leerer Datenordner) → Rechte im eigenen Schritt → Knopf im Studio „Projekte“ → Tabelle im Projekt → Rückgängig → Rechte entziehen [STARTING]
-    T-0766 (UI): Werkstatt → bauen → ZIP → installieren (leerer Datenordner) → Rechte im eigenen Schritt → Knopf im Studio „Projekte“ → Tabelle im Projekt → Rückgängig → Rechte entziehen [FINISHED] Time: 9,0426314s
+    T-0766 (UI): Werkstatt → bauen → ZIP → installieren (leerer Datenordner) → Rechte im eigenen Schritt → Knopf im Studio „Projekte“ → Tabelle im Projekt → Rückgängig → Rechte entziehen [FINISHED] Time: 10,8126049s
     T-0766 Gegenprüfung (UI): Netz-Katalog erst laden, dann Rechte zeigen, dann fragen; Update nennt ersetzte Fassung und fragt nach dem Datenordner; Freigabe nur für die angezeigte Prüfsumme [STARTING]
-    T-0766 Gegenprüfung (UI): Netz-Katalog erst laden, dann Rechte zeigen, dann fragen; Update nennt ersetzte Fassung und fragt nach dem Datenordner; Freigabe nur für die angezeigte Prüfsumme [FINISHED] Time: 1,1464762s
+    T-0766 Gegenprüfung (UI): Netz-Katalog erst laden, dann Rechte zeigen, dann fragen; Update nennt ersetzte Fassung und fragt nach dem Datenordner; Freigabe nur für die angezeigte Prüfsumme [FINISHED] Time: 1,1605926s
     T-0766 (UI): Katalog-Modul – Rechte werden vor der Installation angezeigt; Not-Stopp sperrt die Rechte-Freigabe [STARTING]
-    T-0766 (UI): Katalog-Modul – Rechte werden vor der Installation angezeigt; Not-Stopp sperrt die Rechte-Freigabe [FINISHED] Time: 1,1477471s
-  Finished:    Trendo.App.Tests (ID = 'ae2b87669b258f54682d08f6589f57e0e092638fa6d8dd5d0859b612b3e19535')
+    T-0766 (UI): Katalog-Modul – Rechte werden vor der Installation angezeigt; Not-Stopp sperrt die Rechte-Freigabe [FINISHED] Time: 1,150687s
+  Finished:    Trendo.App.Tests (ID = '30cd07a66428185bd900dcb1879fe048e8bfa518b7b9b06021fff9dee6d730e5')
 === TEST EXECUTION SUMMARY ===
-   Trendo.App.Tests  Total: 3, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 13,172s
+   Trendo.App.Tests  Total: 3, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 14,740s
 exit 0
 xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
   Discovering: Trendo.App.Tests
   Discovered:  Trendo.App.Tests
   Starting:    Trendo.App.Tests
-    T-0241 (UI): Not-Stopp verhindert das Installieren; Entfernen fragt vorher; Abbrechen ändert nichts [STARTING]
-    T-0241 (UI): Not-Stopp verhindert das Installieren; Entfernen fragt vorher; Abbrechen ändert nichts [FINISHED] Time: 2,5132732s
     X-04 (UI): Beispiel installieren, im Baukasten öffnen, ausschalten sperrt Benutzen [STARTING]
-    X-04 (UI): Beispiel installieren, im Baukasten öffnen, ausschalten sperrt Benutzen [FINISHED] Time: 0,8352093s
-  Finished:    Trendo.App.Tests (ID = 'ae2b87669b258f54682d08f6589f57e0e092638fa6d8dd5d0859b612b3e19535')
+    X-04 (UI): Beispiel installieren, im Baukasten öffnen, ausschalten sperrt Benutzen [FINISHED] Time: 2,0799843s
+    T-0241 (UI): Not-Stopp verhindert das Installieren; Entfernen fragt vorher; Abbrechen ändert nichts [STARTING]
+    T-0241 (UI): Not-Stopp verhindert das Installieren; Entfernen fragt vorher; Abbrechen ändert nichts [FINISHED] Time: 0,8233679s
+  Finished:    Trendo.App.Tests (ID = '30cd07a66428185bd900dcb1879fe048e8bfa518b7b9b06021fff9dee6d730e5')
 === TEST EXECUTION SUMMARY ===
-   Trendo.App.Tests  Total: 2, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 3,696s
+   Trendo.App.Tests  Total: 2, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 3,150s
 exit 0
 xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
   Discovering: Trendo.App.Tests
   Discovered:  Trendo.App.Tests
   Starting:    Trendo.App.Tests
     X-04 Katalog (UI): mitgelieferten Katalog zeigen und geprüft installieren [STARTING]
-    X-04 Katalog (UI): mitgelieferten Katalog zeigen und geprüft installieren [FINISHED] Time: 1,9534823s
-  Finished:    Trendo.App.Tests (ID = 'ae2b87669b258f54682d08f6589f57e0e092638fa6d8dd5d0859b612b3e19535')
+    X-04 Katalog (UI): mitgelieferten Katalog zeigen und geprüft installieren [FINISHED] Time: 2,1243258s
+  Finished:    Trendo.App.Tests (ID = '30cd07a66428185bd900dcb1879fe048e8bfa518b7b9b06021fff9dee6d730e5')
 === TEST EXECUTION SUMMARY ===
-   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 2,205s
-exit 0
-xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
-  Discovering: Trendo.App.Tests
-  Discovered:  Trendo.App.Tests
-  Starting:    Trendo.App.Tests
-    Bedienstil: in den Einstellungen wählbar; Mac setzt runde Ampel-Knöpfe links (Schließen zuerst), Linux runde Knöpfe rechts – Knöpfe funktionieren weiter [STARTING]
-    Bedienstil: in den Einstellungen wählbar; Mac setzt runde Ampel-Knöpfe links (Schließen zuerst), Linux runde Knöpfe rechts – Knöpfe funktionieren weiter [FINISHED] Time: 4,4826769s
-    Trendo erweitern: Erweiterungen dürfen alles außer Name und Logo – Produktname, Marke oder Logo-Datei werden abgelehnt [STARTING]
-    Trendo erweitern: Erweiterungen dürfen alles außer Name und Logo – Produktname, Marke oder Logo-Datei werden abgelehnt [FINISHED] Time: 0,0445785s
-  Finished:    Trendo.App.Tests (ID = 'ae2b87669b258f54682d08f6589f57e0e092638fa6d8dd5d0859b612b3e19535')
-=== TEST EXECUTION SUMMARY ===
-   Trendo.App.Tests  Total: 2, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 4,817s
-exit 0
-xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
-  Discovering: Trendo.App.Tests
-  Discovered:  Trendo.App.Tests
-  Starting:    Trendo.App.Tests
-    Projektmappe UI: Projekt mit lesbarem Namen anlegen, Dateien hinzufügen (Auswahl ersetzt), Ordner anlegen, Notiz bleibt, Umbenennen, zweites Projekt wählen [STARTING]
-    Projektmappe UI: Projekt mit lesbarem Namen anlegen, Dateien hinzufügen (Auswahl ersetzt), Ordner anlegen, Notiz bleibt, Umbenennen, zweites Projekt wählen [FINISHED] Time: 2,3541058s
-  Finished:    Trendo.App.Tests (ID = 'ae2b87669b258f54682d08f6589f57e0e092638fa6d8dd5d0859b612b3e19535')
-=== TEST EXECUTION SUMMARY ===
-   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 2,604s
-exit 0
-xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
-  Discovering: Trendo.App.Tests
-  Discovered:  Trendo.App.Tests
-  Starting:    Trendo.App.Tests
-    T-0726 A9: Live streamen – Text in der Zelle mit Fokus ist nach der Tipp-Pause gespeichert (Fenster zu ohne Verlassen → da) und ein Rückgängig-Schritt; Unfertiges wartet [STARTING]
-    T-0726 A9: Live streamen – Text in der Zelle mit Fokus ist nach der Tipp-Pause gespeichert (Fenster zu ohne Verlassen → da) und ein Rückgängig-Schritt; Unfertiges wartet [FINISHED] Time: 5,1420457s
-    T-0726 A6: Kartenkacheln aus dem Internet nur nach Zustimmung über das Freigabe-Tor – Nein lädt nichts, Ja gilt als Einstellung (im Protokoll), ausschaltbar; offline kein Angebot [STARTING]
-    T-0726 A6: Kartenkacheln aus dem Internet nur nach Zustimmung über das Freigabe-Tor – Nein lädt nichts, Ja gilt als Einstellung (im Protokoll), ausschaltbar; offline kein Angebot [FINISHED] Time: 1,1945717s
-    T-0726 A7: Lernkarte löschen lässt sich rückgängig machen (Knopf und Strg+Z) – mit Lernstand und an alter Stelle; Bearbeiten nach der Tipp-Pause gespeichert [STARTING]
-    T-0726 A7: Lernkarte löschen lässt sich rückgängig machen (Knopf und Strg+Z) – mit Lernstand und an alter Stelle; Bearbeiten nach der Tipp-Pause gespeichert [FINISHED] Time: 1,5446341s
-    T-0726 A7: Projekt-Notiz – Getipptes ist nach der Tipp-Pause gespeichert, ohne das Feld zu verlassen (Fenster zu → Notiz da) [STARTING]
-    T-0726 A7: Projekt-Notiz – Getipptes ist nach der Tipp-Pause gespeichert, ohne das Feld zu verlassen (Fenster zu → Notiz da) [FINISHED] Time: 1,3968544s
-  Finished:    Trendo.App.Tests (ID = 'ae2b87669b258f54682d08f6589f57e0e092638fa6d8dd5d0859b612b3e19535')
-=== TEST EXECUTION SUMMARY ===
-   Trendo.App.Tests  Total: 4, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 9,538s
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 2,366s
 exit 0
 xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
   Discovering: Trendo.App.Tests
   Discovered:  Trendo.App.Tests
   Starting:    Trendo.App.Tests
     T-0299: Zeitleiste zeigt Sicherungen, Vergleich mit heute, Vorschau, Einzeldatei nach Ja zurück (Nein ändert nichts) [STARTING]
-    T-0299: Zeitleiste zeigt Sicherungen, Vergleich mit heute, Vorschau, Einzeldatei nach Ja zurück (Nein ändert nichts) [FINISHED] Time: 2,8102019s
-  Finished:    Trendo.App.Tests (ID = 'ae2b87669b258f54682d08f6589f57e0e092638fa6d8dd5d0859b612b3e19535')
+    T-0299: Zeitleiste zeigt Sicherungen, Vergleich mit heute, Vorschau, Einzeldatei nach Ja zurück (Nein ändert nichts) [FINISHED] Time: 2,7535377s
+  Finished:    Trendo.App.Tests (ID = '30cd07a66428185bd900dcb1879fe048e8bfa518b7b9b06021fff9dee6d730e5')
 === TEST EXECUTION SUMMARY ===
-   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 3,075s
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 3,002s
 exit 0
 xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
   Discovering: Trendo.App.Tests
   Discovered:  Trendo.App.Tests
   Starting:    Trendo.App.Tests
     T-0214: Jetzt sichern → Meldung; Wiederherstellen fragt nach und meldet Ergebnis [STARTING]
-    T-0214: Jetzt sichern → Meldung; Wiederherstellen fragt nach und meldet Ergebnis [FINISHED] Time: 2,3884868s
-  Finished:    Trendo.App.Tests (ID = 'ae2b87669b258f54682d08f6589f57e0e092638fa6d8dd5d0859b612b3e19535')
+    T-0214: Jetzt sichern → Meldung; Wiederherstellen fragt nach und meldet Ergebnis [FINISHED] Time: 2,0687634s
+  Finished:    Trendo.App.Tests (ID = '30cd07a66428185bd900dcb1879fe048e8bfa518b7b9b06021fff9dee6d730e5')
 === TEST EXECUTION SUMMARY ===
-   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 2,691s
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 2,304s
 exit 0
