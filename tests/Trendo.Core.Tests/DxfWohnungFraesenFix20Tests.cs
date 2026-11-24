@@ -61,20 +61,18 @@ public class T0747_Fix20ZwanzigstePruefung(ITestOutputHelper log)
                 sb.Append(Lw(Sq(x, y, x + 300, y + 300))).Append(kind == "oben" ? Line(x, y + 300, x + 300, y + 300) : Line(x + 300, y, x + 300, y + 300)).Append(Circle(x + 150, y + 150, 10));
             }
             var dxf = Dxf(sb.ToString());
-            var t = Min2(() => CamOrNothing(dxf));
+            var t = Lastmessung.Best(2, () => CamOrNothing(dxf), parallel: true); // T-0760: Grenze unverändert, unter Fremdlast × Lastfaktor
             var (r, text) = CamOrNothing(dxf);
-            log.WriteLine($"{kind}: {t} ms");
-            Assert.True(t < limit, $"{kind}: {t} ms");
+            Lastmessung.Below(log, kind, t, limit);
             Assert.NotNull(r); Assert.Equal(count, r!.Paths.Count(p => p.Kind == "innen")); Assert.Equal(count, r.Paths.Count(p => p.Kind == "aussen"));
             Assert.DoesNotContain("stößt mit", text);
         }
         var edge = new List<(double X, double Y)> { (0, 0), (20000, 0) };
         for (var k = 200000; k >= 0; k--) edge.Add((20000.0 * k / 200000, 1000));
         var fine = Dxf(Lw(edge) + Line(0, 1000, 20000, 1000) + Circle(5000, 500, 20) + Lw(Sq(24000, 0, 24010, 10)));
-        var tf = Min2(() => CamOrNothing(fine));
+        var tf = Lastmessung.Best(2, () => CamOrNothing(fine), parallel: true);
         var (f, ft) = CamOrNothing(fine);
-        log.WriteLine($"feine Kante: {tf} ms");
-        Assert.True(tf < 6000, $"feine Kante: {tf} ms");
+        Lastmessung.Below(log, "feine Kante", tf, 6000);
         Assert.DoesNotContain("stößt mit", ft);
         Assert.True(f is not null && Around(f, "innen", 5000, 500, 20));
     }

@@ -103,10 +103,13 @@ public class T0747_Fix11ElftePruefung(ITestOutputHelper log)
         for (var q = 0; q < 60_000; q++) { sb.Append(Circle(5, 5, 1)); loops.Add(EdgeLoop(EArc(5.02, 5, 1, 0, 360, 1))); }
         var circles = Dxf(sb + Hatch("0", loops));
         var bul = Dxf(Hatch("0", Enumerable.Range(0, 1000).Select(q => BulgeLoop([(q * 10, 0, 1), (q * 10 + 2e7, 0, 0.5), (q * 10 + 2e7, 1e5, 0)])))); // Halbkreis r 1e7: je Schleife über 300 000 Punkte
-        var t1 = Timed(() => CadDxf.Parse(circles)); var c1 = CancelTime(circles);
-        var a0 = GC.GetTotalAllocatedBytes(true); var t2 = Timed(() => CadDxf.Parse(bul)); var mb = (GC.GetTotalAllocatedBytes(true) - a0) / 1048576;
-        log.WriteLine($"60 000 Kreise: {t1} ms, Abbrechen {c1} ms; 1000 Ausbuchtungen r 1e7: {t2} ms, alloziert {mb} MB");
-        Assert.True(t1 < 10_000 && t2 < 10_000, $"{t1} / {t2}"); Assert.True(c1 < 3000, $"{c1}");
+        // T-0760: Zeiten mit Lastfaktor (Grenzen unverändert); Speicher nur des eigenen Fadens – CadDxf.Parse rechnet einfädig, so zählen parallel
+        // laufende andere Tests nicht mit (GC.GetTotalAllocatedBytes zählte den ganzen Prozess: im Volltest 1175 MB)
+        var t1 = Lastmessung.Best(2, () => CadDxf.Parse(circles), parallel: false); var c1 = Lastmessung.Measure(() => CancelTime(circles), parallel: false);
+        long mb = 0;
+        var t2 = Lastmessung.Best(2, () => { var a0 = GC.GetAllocatedBytesForCurrentThread(); CadDxf.Parse(bul); mb = (GC.GetAllocatedBytesForCurrentThread() - a0) / 1048576; }, parallel: false);
+        log.WriteLine($"1000 Ausbuchtungen r 1e7: alloziert {mb} MB (eigener Faden)");
+        Lastmessung.Below(log, "60 000 Kreise", t1, 10_000); Lastmessung.Below(log, "1000 Ausbuchtungen r 1e7", t2, 10_000); Lastmessung.Below(log, "Abbrechen", c1, 3000);
         Assert.True(mb < 1000, $"{mb} MB"); // Vorstand: 100 Ausbuchtungen 2,1 GB, 1000 Speicherüberlauf
         Assert.Equal(1000, CadDxf.Parse(bul).Unread.Count); // Rahmen bleibt, nur keine Form
     }

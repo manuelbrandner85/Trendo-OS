@@ -1,0 +1,55 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0760\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0760\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.56]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:01.88]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:02.05]   Starting:    Trendo.Core.Tests
+  Bestanden T-0729: Löschen wartet, bis eine gesperrte Datei frei wird (wie bei Chrome/LibreOffice) [714 ms]
+  Bestanden T-0747-fix2 5: Zickzack mit 5000 Punkten – schneller als vorher, Abbrechen wirkt auch mitten im Versatz [11 s]
+  Standardausgabemeldungen:
+ Abbrechen nach 100 ms: 234 ms (Lastfaktor 3,11, Vergleich 271 / 267 ms), Grenze 1500 ms × 3,11 = 4661 ms
+ Zickzack 5000 Punkte: 2233 ms (Lastfaktor 2,57, Vergleich 221 / 385 ms), Grenze 8000 ms × 2,57 = 20550 ms
+
+
+  Bestanden T-0747-fix11 MITTEL D/E: 60 000 gleiche Kreise + 60 000 Schraffur-Kreise daneben in Sekunden, abbrechbar; 1000 Ausbuchtungen r 1e7 ohne Speicherflut [15 s]
+  Standardausgabemeldungen:
+ 1000 Ausbuchtungen r 1e7: alloziert 218 MB (eigener Faden)
+ 60 000 Kreise: 3777 ms (Lastfaktor 1,90, Vergleich 134 / 105 ms), Grenze 10000 ms × 1,90 = 19011 ms
+ 1000 Ausbuchtungen r 1e7: 521 ms (Lastfaktor 2,11, Vergleich 116 / 190 ms), Grenze 10000 ms × 2,11 = 21057 ms
+ Abbrechen: 526 ms (Lastfaktor 2,04, Vergleich 112 / 136 ms), Grenze 3000 ms × 2,04 = 6128 ms
+
+
+  Bestanden T-0747-fix5 N1: 50 000 Kreise – Doppel-Prüfung, Tiefe mit Vorfilter, Bahnen parallel, unter 30 s; Abbrechen wirkt [1 m 4 s]
+  Standardausgabemeldungen:
+ 50 001 Kreise: 50000 Bahnen, 1 Hinweise
+ 50 001 Kreise: 58844 ms (Lastfaktor 4,58, Vergleich 402 / 394 ms), Grenze 120000 ms × 4,58 = 549233 ms
+ Abbrechen nach 0,2 s: 1280 ms (Lastfaktor 3,06, Vergleich 263 / 264 ms), Grenze 10000 ms × 3,06 = 30574 ms
+
+
+  Bestanden T-0747-fix20: 3000 Platten mit Linie auf der Oberkante (unter 12 s; 70d4c6c74 ≈ 9 s, 137191e37 ≈ 17 s), 1000 mit Linie auf der Rechtskante und fein geteilte Kante (200 000 Punkte, große Ausdehnung) – Platten gefräst [1 m 11 s]
+  Standardausgabemeldungen:
+ oben: 14905 ms (Lastfaktor 2,82, Vergleich 243 / 439 ms), Grenze 12000 ms × 2,82 = 33856 ms
+ rechts: 4951 ms (Lastfaktor 4,45, Vergleich 459 / 382 ms), Grenze 6000 ms × 4,45 = 26676 ms
+ feine Kante: 1621 ms (Lastfaktor 5,63, Vergleich 484 / 562 ms), Grenze 6000 ms × 5,63 = 33799 ms
+
+
+[xUnit.net 00:03:25.85]   Finished:    Trendo.Core.Tests
+  Bestanden T-0747-fix16 MITTEL 1/2: Stern 50 000, Bürste 50 000, Rechteck 8000-fach deckungsgleich, 2000 X-Stöße über 20 000 Quadraten – je unter 10 s; Stoßkette 20 000 + Schraffur unter 4 s [1 m 7 s]
+  Standardausgabemeldungen:
+ Stern 50 000: 2 Bahnen
+ Stern 50 000: 2124 ms (Lastfaktor 4,99, Vergleich 506 / 430 ms), Grenze 10000 ms × 4,99 = 49949 ms
+ Bürste 50 000: 2 Bahnen
+ Bürste 50 000: 1477 ms (Lastfaktor 6,50, Vergleich 585 / 559 ms), Grenze 10000 ms × 6,50 = 65032 ms
+ Rechteck 8000-fach: 0 Bahnen
+ Rechteck 8000-fach: 556 ms (Lastfaktor 3,91, Vergleich 533 / 336 ms), Grenze 10000 ms × 3,91 = 39098 ms
+ 2000 X-Stöße: 2 Bahnen
+ 2000 X-Stöße: 7479 ms (Lastfaktor 4,35, Vergleich 374 / 409 ms), Grenze 10000 ms × 4,35 = 43492 ms
+ Stoßkette 20 000 + Schraffur: 2079 ms (Lastfaktor 2,07, Vergleich 115 / 114 ms), Grenze 4000 ms × 2,07 = 8294 ms
+
+
+
+Der Testlauf war erfolgreich.
+Gesamtzahl Tests: 6
+     Bestanden: 6
+ Gesamtzeit: 3,4595 Minuten

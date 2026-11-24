@@ -31,6 +31,14 @@ public class T0747_Fix6SechstePruefung(ITestOutputHelper log)
     const string MinusZ = "210\n0.0\n220\n0.0\n230\n-1.0\n";
     static CamResult Cam(string dxf, double tool = 1) { var rd = CadDxf.Parse(dxf); return CncCam.Generate(CncCam.Contours(rd.Drawing), new CamSettings { ToolD = tool, Unread = rd.Unread }); }
     static CadDxf.Box One(string dxf) => Assert.Single(CadDxf.Parse(dxf).Unread).B;
+    /// <summary>T-0760: Blöcke werden aufgelöst – Ausdehnung der gelesenen Elemente (fein abgetastet), nichts bleibt ungelesen.</summary>
+    static CadDxf.Box Ext(string dxf)
+    {
+        var rd = CadDxf.Parse(dxf); Assert.Empty(rd.Unread);
+        var b = CadDxf.Box.Empty;
+        foreach (var e in rd.Drawing.Entities) foreach (var q in e.Outline(4096)) b = b.With(q);
+        return b;
+    }
 
     /// <summary>Wahre Ausdehnung eines Zugs mit Ausbuchtungen (fein abgetastet).</summary>
     static (double MinX, double MinY, double MaxX, double MaxY) TrueBox((double X, double Y, double B)[] v, bool closed)
@@ -53,24 +61,25 @@ public class T0747_Fix6SechstePruefung(ITestOutputHelper log)
         // i9: Vollkreis aus zwei Halbkreisen (Ausbuchtung 1) als alte POLYLINE → y −50…50
         var poly = G((0, "POLYLINE"), (8, "0"), (66, 1), (10, 0), (20, 0), (30, 0), (70, 1))
             + G((0, "VERTEX"), (8, "0"), (10, 0), (20, 0), (30, 0), (42, 1.0), (70, 0)) + G((0, "VERTEX"), (8, "0"), (10, 100), (20, 0), (30, 0), (42, 1.0), (70, 0)) + G((0, "SEQEND"), (8, "0"));
-        var b9 = One(Dxf(Insert("PB"), Block("PB", poly)));
+        var b9 = Ext(Dxf(Insert("PB"), Block("PB", poly)));
         Covers(b9, TrueBox([(0, 0, 1), (100, 0, 1)], true));
         // i10: alte POLYLINE mit Normale −Z im Block → x −120…−20
         var polyN = G((0, "POLYLINE"), (8, "0"), (66, 1), (10, 0), (20, 0), (30, 0), (70, 1)) + MinusZ
             + string.Concat(Rect(20, 0, 120, 60).Select(p => G((0, "VERTEX"), (8, "0"), (10, p.X), (20, p.Y), (30, 0), (70, 0)))) + G((0, "SEQEND"), (8, "0"));
-        var b10 = One(Dxf(Insert("PN"), Block("PN", polyN)));
+        var b10 = Ext(Dxf(Insert("PN"), Block("PN", polyN)));
         Assert.Equal(-120, b10.MinX, 6); Assert.Equal(-20, b10.MaxX, 6);
         // i7/i8: Ausbuchtung 3 (286°) und 1,5 – Bogen weit über die Sehne hinaus
         foreach (var bulge in new[] { 0.3, 1.0, 1.5, 3.0, -3.0, 12.0 })
         {
             (double X, double Y, double B)[] v = [(0, 0, bulge), (100, 0, 0)];
-            var b = One(Dxf(Insert("B"), Block("B", Lw(v))));
+            var b = Ext(Dxf(Insert("B"), Block("B", Lw(v))));
             log.WriteLine($"Ausbuchtung {bulge}: {b} wahr {TrueBox(v, true)}");
             Covers(b, TrueBox(v, true));
         }
-        // CAM: Loch innerhalb des wahren Kreises von i9 (bei y 40, außerhalb des Punkt-Rahmens) wird ausgelassen statt außen gefräst
-        var r = Assert.Throws<InvalidOperationException>(() => Cam(Dxf(Insert("PB") + Circle(50, 40, 0.4), Block("PB", poly))));
-        Assert.Contains("liegt in nicht gelesenem Element Blockverweis „PB“", r.Message, StringComparison.Ordinal);
+        // CAM (T-0760: Block aufgelöst): Loch innerhalb des wahren Kreises von i9 (bei y 40, außerhalb des Punkt-Rahmens) wird als Loch gefräst, der Kreis außen
+        var r = Cam(Dxf(Insert("PB") + Circle(50, 40, 0.4), Block("PB", poly)), 0.5);
+        log.WriteLine(string.Join(" | ", r.Warnings));
+        Assert.Single(r.Paths, p => p.Kind == "innen"); Assert.Single(r.Paths, p => p.Kind == "aussen");
     }
 
     [Fact(DisplayName = "T-0747-fix6 M-1/N-1: SPLINE nur mit Fit-Punkten (i16) und Xref-Block (i15) → unbekannt, überall; Blöcke nach ENTITIES (i14) werden gefunden")]
@@ -81,13 +90,19 @@ public class T0747_Fix6SechstePruefung(ITestOutputHelper log)
         Assert.True(One(Dxf(fit)).IsAll);
         var ctrl = G((0, "SPLINE"), (8, "0"), (70, 8), (71, 3), (72, 8), (73, 4)) + string.Concat(new[] { 0, 0, 0, 0, 1, 1, 1, 1 }.Select(k => G((40, k))))
             + G((10, 0), (20, 0), (30, 0), (10, 30), (20, 80), (30, 0), (10, 70), (20, -20), (30, 0), (10, 100), (20, 0), (30, 0));
-        var c = One(Dxf(ctrl)); Assert.Equal((0.0, -20.0, 100.0, 80.0), (c.MinX, c.MinY, c.MaxX, c.MaxY)); // konvexe Hülle der Kontrollpunkte
+        // T-0760: SPLINE mit Kontrollpunkten wird gelesen – Punkte liegen auf der Bézierkurve (geklemmt, Grad 3) und in der konvexen Hülle
+        var sp = Assert.Single(CadDxf.Parse(Dxf(ctrl)).Drawing.Entities); Assert.Equal("SPLINE", sp.Source); Assert.False(sp.Closed);
+        Assert.Equal((0.0, 0.0), (sp.Points[0][0], sp.Points[0][1])); Assert.Equal(100, sp.Points[^1][0], 9); Assert.Equal(0, sp.Points[^1][1], 9);
+        (double X, double Y) Bez(double t) { var u = 1 - t; return (3 * u * u * t * 30 + 3 * u * t * t * 70 + t * t * t * 100, 3 * u * u * t * 80 + 3 * u * t * t * -20); }
+        var dense = Enumerable.Range(0, 20001).Select(k => Bez(k / 20000.0)).ToList();
+        Assert.All(sp.Points, p => Assert.True(dense.Min(q => Math.Max(Math.Abs(q.X - p[0]), Math.Abs(q.Y - p[1]))) < 0.01, $"{p[0]}/{p[1]}"));
+        Assert.All(sp.Points, p => Assert.True(p[0] is >= 0 and <= 100 && p[1] is >= -20 and <= 80));
         var ex = Assert.Throws<InvalidOperationException>(() => Cam(Dxf(fit + Circle(50, -10, 0.4) + Circle(50, 50, 0.4))));
         Assert.Contains("keine bestimmbare Ausdehnung", ex.Message, StringComparison.Ordinal);
         // Xref: Inhalt in anderer Datei
         Assert.True(One(Dxf(Insert("XR"), Block("XR", "", 4))).IsAll);
         // Blöcke nach den ENTITIES
-        var late = One(Dxf(Insert("P"), Block("P", Lw(Rect(0, 0, 100, 60))), blocksAfter: true));
+        var late = Ext(Dxf(Insert("P"), Block("P", Lw(Rect(0, 0, 100, 60))), blocksAfter: true));
         Assert.Equal((0.0, 0.0, 100.0, 60.0), (late.MinX, late.MinY, late.MaxX, late.MaxY));
     }
 

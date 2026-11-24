@@ -1,0 +1,38 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0760\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0760\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.26]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:00.74]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:00.76]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:05:21.35]     T-0747-fix5 N1: 50 000 Kreise – Doppel-Prüfung, Tiefe mit Vorfilter, Bahnen parallel, unter 30 s; Abbrechen wirkt [FAIL]
+[xUnit.net 00:05:21.35]       Abbrechen nach 0,2 s: 100393 ms (Lastfaktor 1,00, Vergleich 73 / 77 ms) – Grenze 10000 ms × 1,00
+[xUnit.net 00:05:21.35]       Stack Trace:
+[xUnit.net 00:05:21.35]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0760\tests\Trendo.Core.Tests\Lastmessung.cs(63,0): at Trendo.Core.Tests.Lastmessung.Below(ITestOutputHelper log, String name, Messung m, Int64 limit)
+[xUnit.net 00:05:21.35]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0760\tests\Trendo.Core.Tests\DxfWohnungFraesenFix5Tests.cs(156,0): at Trendo.Core.Tests.T0747_Fix5FuenftePruefung.Many_circles_fast()
+[xUnit.net 00:05:21.35]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:05:21.35]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:05:21.35]       Output:
+[xUnit.net 00:05:21.35]         50 001 Kreise: 50000 Bahnen, 1 Hinweise
+[xUnit.net 00:05:21.35]         50 001 Kreise: 119192 ms (Lastfaktor 1,00, Vergleich 75 / 74 ms), Grenze 120000 ms × 1,00 = 120000 ms
+[xUnit.net 00:05:21.35]         Abbrechen nach 0,2 s: 100393 ms (Lastfaktor 1,00, Vergleich 73 / 77 ms), Grenze 10000 ms × 1,00 = 10000 ms
+[xUnit.net 00:05:21.36]   Finished:    Trendo.Core.Tests
+  Fehler T-0747-fix5 N1: 50 000 Kreise – Doppel-Prüfung, Tiefe mit Vorfilter, Bahnen parallel, unter 30 s; Abbrechen wirkt [5 m 20 s]
+  Fehlermeldung:
+   Abbrechen nach 0,2 s: 100393 ms (Lastfaktor 1,00, Vergleich 73 / 77 ms) – Grenze 10000 ms × 1,00
+  Stapelverfolgung:
+     at Trendo.Core.Tests.Lastmessung.Below(ITestOutputHelper log, String name, Messung m, Int64 limit) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0760\tests\Trendo.Core.Tests\Lastmessung.cs:line 63
+   at Trendo.Core.Tests.T0747_Fix5FuenftePruefung.Many_circles_fast() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0760\tests\Trendo.Core.Tests\DxfWohnungFraesenFix5Tests.cs:line 156
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standardausgabemeldungen:
+ 50 001 Kreise: 50000 Bahnen, 1 Hinweise
+ 50 001 Kreise: 119192 ms (Lastfaktor 1,00, Vergleich 75 / 74 ms), Grenze 120000 ms × 1,00 = 120000 ms
+ Abbrechen nach 0,2 s: 100393 ms (Lastfaktor 1,00, Vergleich 73 / 77 ms), Grenze 10000 ms × 1,00 = 10000 ms
+
+
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 1
+     Nicht bestanden: 1
+ Gesamtzeit: 5,3652 Minuten

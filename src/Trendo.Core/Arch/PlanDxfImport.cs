@@ -72,6 +72,9 @@ public static class PlanDxfImport
         var skippedKinds = new Dictionary<string, int>(dxf.Skipped);
         var nEll = ents.Count(e => e.Source == "ELLIPSE");
         if (nEll > 0) { ents = ents.Where(e => e.Source != "ELLIPSE").ToList(); skippedKinds["Ellipse (nicht als Wand übernommen)"] = nEll; /* T-0747-fix13: deutsche Bezeichnung */ }
+        // T-0760: SPLINE liest der DXF-Leser jetzt als fein abgetasteten Zug – als Wand zerfiele er in Hunderte Stücke, deshalb wie die Ellipse gemeldet
+        var nSpl = ents.Count(e => e.Source == "SPLINE");
+        if (nSpl > 0) { ents = ents.Where(e => e.Source != "SPLINE").ToList(); skippedKinds["Freiformkurve (SPLINE, nicht als Wand übernommen)"] = nSpl; }
         if (ents.Count > MaxEntities) throw new CadError($"Die DXF-Datei hat {ents.Count.ToString("N0", De)} Elemente – zu viele für einen Grundriss (höchstens {MaxEntities.ToString("N0", De)}). Bitte nur die Ebenen mit Wänden, Türen und Räumen exportieren.");
         var layers = ents.Select(e => e.Layer).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         // Ebenen zuordnen

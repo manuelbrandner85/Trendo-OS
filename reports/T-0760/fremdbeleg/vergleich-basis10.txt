@@ -1,0 +1,33 @@
+FreeCAD {'freecad': ['1', '1', '4'], 'importer': 'Import.readDXF (C++)', 'objekte': 16, 'kanten': 68}
+Trendo: nicht gelesen {} []
+  FreeCAD BLOCK_DOPPEL      12 Kanten: größter Abstand zu Trendo 1000000000.000000 mm → Blockdefinition (nicht gezeichnet)
+  FreeCAD BLOCK_PLATTE       6 Kanten: größter Abstand zu Trendo 1000000000.000000 mm → Blockdefinition (nicht gezeichnet)
+  FreeCAD Link_DOPPEL       12 Kanten: größter Abstand zu Trendo 1000000000.000000 mm → ABWEICHUNG
+  FreeCAD Link_PLATTE        6 Kanten: größter Abstand zu Trendo 1000000000.000000 mm → ABWEICHUNG
+  FreeCAD Link_PLATTE001     6 Kanten: größter Abstand zu Trendo 1000000000.000000 mm → ABWEICHUNG
+  FreeCAD Link_PLATTE002     6 Kanten: größter Abstand zu Trendo 1000000000.000000 mm → ABWEICHUNG
+  FreeCAD Link_PLATTE003     6 Kanten: größter Abstand zu Trendo 1000000000.000000 mm → ABWEICHUNG
+  FreeCAD Link_PLATTE004     6 Kanten: größter Abstand zu Trendo 1000000000.000000 mm → ABWEICHUNG
+  FreeCAD Shape              4 Kanten: größter Abstand zu Trendo 1000000000.000000 mm → Blockdefinition (nicht gezeichnet)
+  FreeCAD Shape001           1 Kanten: größter Abstand zu Trendo 1000000000.000000 mm → Blockdefinition (nicht gezeichnet)
+  FreeCAD Shape002           1 Kanten: größter Abstand zu Trendo 1000000000.000000 mm → Blockdefinition (nicht gezeichnet)
+  FreeCAD Shape003           1 Kanten: größter Abstand zu Trendo 0.000838 mm → deckt sich
+  FreeCAD Shape004           1 Kanten: größter Abstand zu Trendo 0.000990 mm → deckt sich
+  Trendo  0 polylinie SPLINE    512 Punkte: größter Abstand zu FreeCAD 0.000008 mm
+  Trendo  1 polylinie SPLINE    552 Punkte: größter Abstand zu FreeCAD 0.000029 mm
+  Trendo  2 polylinie             4 Punkte: größter Abstand zu FreeCAD 1000000000.000000 mm
+  Trendo  3 kreis              4096 Punkte: größter Abstand zu FreeCAD 1000000000.000000 mm
+  Trendo  4 bogen              2049 Punkte: größter Abstand zu FreeCAD 1000000000.000000 mm
+  Trendo  5 polylinie             4 Punkte: größter Abstand zu FreeCAD 1000000000.000000 mm
+  Trendo  6 kreis              4096 Punkte: größter Abstand zu FreeCAD 1000000000.000000 mm
+  Trendo  7 bogen              2049 Punkte: größter Abstand zu FreeCAD 1000000000.000000 mm
+  Trendo  8 polylinie             4 Punkte: größter Abstand zu FreeCAD 1000000000.000000 mm
+  Trendo  9 kreis              4096 Punkte: größter Abstand zu FreeCAD 1000000000.000000 mm
+  Trendo 10 bogen              2049 Punkte: größter Abstand zu FreeCAD 1000000000.000000 mm
+  Trendo 11 polylinie             4 Punkte: größter Abstand zu FreeCAD 1000000000.000000 mm
+  Trendo 12 kreis              4096 Punkte: größter Abstand zu FreeCAD 1000000000.000000 mm
+  Trendo 13 bogen              2049 Punkte: größter Abstand zu FreeCAD 1000000000.000000 mm
+  Trendo 14 polylinie             4 Punkte: größter Abstand zu FreeCAD 1000000000.000000 mm
+  Trendo 15 kreis              4096 Punkte: größter Abstand zu FreeCAD 1000000000.000000 mm
+  Trendo 16 bogen              2049 Punkte: größter Abstand zu FreeCAD 1000000000.000000 mm
+ERGEBNIS: größter Abstand Trendo → FreeCAD 1000000000.000000 mm
