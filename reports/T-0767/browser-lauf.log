@@ -1,8 +1,8 @@
 [  0,034 s] Browser: chrome.exe (headless, eigenes Profil) · Adresse: Heimnetz-Adresse dieses PCs (<lan-ip>)
-[  0,202 s] Handy-Zugang läuft (Kestrel), Einmal-Code erzeugt
-[  0,215 s] Browser gestartet (eigener Prozess, wird am Ende per PID beendet)
-[  1,131 s] Kopplung: Seite „Verbunden mit …“ erschienen, Gerät angelegt, Einmal-Code verbraucht
-[  1,279 s] Handy → PC: 1500000 B, SHA-256 Quelle dcefc75b8a228ffd5f8b2b92823bec0f0aa2f01408d31be3059186905b4f49fb = angekommen dcefc75b8a228ffd5f8b2b92823bec0f0aa2f01408d31be3059186905b4f49fb · Seite meldet: ✓ 1 Datei(en) am PC angekommen · Prüfsumme gleich: 1.
-[  1,629 s] PC → Handy: 900000 B, SHA-256 bereitgestellt 05df3ef8d0259d95826483aa3e5f1095a63df8758676494cf0a96e800c041477 = im Browser gespeichert 05df3ef8d0259d95826483aa3e5f1095a63df8758676494cf0a96e800c041477
-[  1,863 s] Entfernen: Liste und erneuter Upload abgewiesen (401), keine zweite Datei angekommen
-[  1,981 s] Browser-Prozess beendet (eigene PID); eigenes Profil wird danach gelöscht
+[  0,209 s] Handy-Zugang läuft (Kestrel), Einmal-Code erzeugt
+[  0,222 s] Browser gestartet (eigener Prozess, wird am Ende per PID beendet)
+[  1,156 s] Kopplung: Seite „Verbunden mit …“ erschienen, Gerät angelegt, Einmal-Code verbraucht
+[  1,361 s] Handy → PC: 1500000 B, SHA-256 Quelle 1b65aafd7eca07ea868412a48849c38862ece7101a0c22ad23a1e27cff6df70c = angekommen 1b65aafd7eca07ea868412a48849c38862ece7101a0c22ad23a1e27cff6df70c · Seite meldet: ✓ 1 Datei(en) am PC angekommen · Prüfsumme gleich: 1.
+[  1,823 s] PC → Handy: 900000 B, SHA-256 bereitgestellt dcaabf53249709e095397cdcc498c739ac1f82f5d1a96d9ca3ed7251bb67ce40 = im Browser gespeichert dcaabf53249709e095397cdcc498c739ac1f82f5d1a96d9ca3ed7251bb67ce40
+[  2,056 s] Entfernen: Liste und erneuter Upload abgewiesen (401), keine zweite Datei angekommen
+[  2,167 s] Browser-Prozess beendet (eigene PID); eigenes Profil wird danach gelöscht
