@@ -206,6 +206,33 @@ Die Prüfung von `4cdd1c7e6` hat alle zehn ersten Befunde als behoben bestätigt
 - Eine PIN auf der Kommandozeile ist in der Prozessliste sichtbar.
 - Ein Erwachsenen-Profil ohne PIN neben einem Kinderprofil hebt die Trennung über „Wechseln“ weiter auf (bekannter Hinweis aus T-0713).
 
+## Dritte Prüfrunde (Commit „T-0764 fix3“)
+
+Die Prüfung von `43a4b058c` hat N-A bis N-F bestätigt. Neue Wege gab es über `TrustedProgramPath`.
+
+**Rot auf 43a4b058c:** `reports/T-0764/rot-fix3-core.log` – 13 von 13 rot (P3-1 bis P3-5). Die Testdatei war nur für den Beleg da und ist nicht eingecheckt; sie startet nichts echt (FakeLauncher).
+
+| Befund | Was geändert | Test (grün) |
+|---|---|---|
+| P3-1 Vertrauen nach Herkunft | Neu `Sys/ProgramTrust`. Beim Einrichten (Portable, Vollpaket, Zusatzprogramm-ZIP über `InstallPortable`, GitHub-Programme) schreibt Trendo eine Kennungsdatei mit der SHA-256 jeder .exe. Vertrauenswürdig ist eine .exe nur, wenn sie dort eingetragen ist und ihr Inhalt unverändert ist. Das Ergebnis wird je Pfad, Größe und Änderungszeit zwischengespeichert. Erwachsene prüfen gar nicht (kein Rechnen). Hineinkopierte, ausgetauschte und Altbestand-Programme ohne Prüfsummen gelten im Kinderprofil nicht. `TrustedProgramPath` der App nutzt nur das, dazu die eigene Programmdatei von Trendo. | Core `RechteKernFix3.Herkunft` (eingerichtet: ja; kopiert, eigener Ordner, Altbestand, ausgetauscht: nein; GitHub-Kennung; Erwachsene wie bisher) |
+| P3-2 Interpreter und freie Parameter | `ProgramTrust.Interpreters` (python, pythonw, uv, pip, git, bash, node, npm, 7z, code/codium/vscodium, adb, powershell, pwsh, cmd, wscript, cscript, mshta, rundll32, regsvr32, reg, msiexec, winget, java, curl, ollama …) sind im Kinderprofil nie vertrauenswürdig, wenn Person oder Datei sie wählen. `LaunchArgs` und die eigene Verknüpfung erlauben für Kinder als Parameter nur vorhandene Dateien oder Ordner; feste Aufrufe kennzeichnet Trendos Code selbst (`internalCall`). „Verknüpfung anlegen“ mit eigenen Parametern oder mit fremdem Programm geht nur für Erwachsene. | Core `RechteKernFix3.Interpreter_und_Parameter`; App `RechteKernFix3Ui.Verknuepfung` |
+| P3-3 Adressen | Für Kinder gelten nur http, https, mailto, die drei genutzten ms-settings-Seiten und der Papierkorb. `file:` wird wie ein Pfad geprüft. Alles andere (ms-appinstaller:, search-ms:, ms-msdt:, steam:// …) braucht das Recht. | Core `RechteKernFix3.Schemata` (12 Fälle) |
+| P3-4 vom Code gewählte Programme | Im Kinderprofil startet ein Programm ohne Wahl der Person nur, wenn es von Trendo geprüft ist oder an einem festen Ort liegt („Programme“, `%LOCALAPPDATA%\Programs`, winget-Ablage). Gespeicherte Pfade aus tools.json gelten im Kinderprofil nur unter dieser Bedingung (`IntegratedChecked`). Die gemeinsame Prüfung `ToolStartAllowed` greift beim direkten Blender-Start der Kreatur-Werkstatt. **Ehrlich:** `%LOCALAPPDATA%\Programs` ist für die Person beschreibbar. | Core `RechteKernFix3.Feste_Orte`; App `RechteKernFix3Ui.Werkzeugpfad_tools_json` (umgebogener Blender-Pfad: Kind nein, Erwachsene ja) |
+| P3-5 Dateiarten | Zusätzlich gelten .chm, .sct, .wsc, .xll, .docm, .xlsm, .pptm sowie .dotm, .xltm, .potm, .ppsm. | Core `RechteKernFix3.Weitere_Dateiarten` |
+
+Ein bestehender Test ist an die strengere Regel angepasst: In `RechteKernFix2Ui.Starten_zentral` bekommt das „Trendo-eigene Programm“ jetzt eine Kennungsdatei. Vorher reichte der Ordnername; genau das war der Befund.
+
+**Tests der dritten Runde:**
+- Build: 0 Fehler.
+- Core gezielt: 242 von 242 grün (`gruen-fix3-core.log`).
+- App gezielt: 260 Testklassen (alle mit Bezug zu Starten, Dateimanager, Downloads, Suche, Sys11, Kreatur/3D/Blender, Studio-Start, Video-Export, Spiele, Web, KI-Quellen, Python-KI, Updates, npm, Claude, KI-Brücke, Freigaben, RechteKern; EveryButton_Alltag) – 1146 Tests, **0 Fehler**, 5 übersprungen (`gruen-fix3-app.log`). Der Läufer endete trotzdem mit Exit 1, weil nach dem letzten Test noch ein Vordergrund-Thread lief („Foreground threads were left running“). Welcher Test ihn hinterlässt, ist nicht ermittelt; ein Testfehler ist es nicht.
+
+**Weiter ungeprüft (ehrlich):**
+- Direkte `Process.Start`-Aufrufe ohne `Integrations` (rund 100) – ffmpeg, mpv, Ollama, KI-Server (`KiSourceStart`), Blender/Unreal in anderen Werkstätten (außer Kreatur), Musik-Werkzeuge, Programme aus dem Werkzeugordner. Ihre Pfade kommen aus Trendos Erkennung. Nur bei der Kreatur-Werkstatt greift die gemeinsame Prüfung; bei den übrigen nur, soweit der Pfad über `ToolPath` (tools.json-Prüfung) gelesen wird.
+- KI-Laufzeiten aus der KI-Bibliothek bekommen keine Kennungsdatei. Im Kinderprofil gelten sie beim Öffnen über den Dateimanager deshalb nicht als vertrauenswürdig; die KI-Bibliothek selbst startet sie direkt.
+- Quellcode-Programme starten über `cmd.exe /c`. Weil System32 kein „fester Ort“ in diesem Sinn ist, startet sie ein Kinderprofil nicht (strenger als nötig, bewusst so).
+- Das Ziel einer `.lnk` wird nicht aufgelöst; für Kinder ist sie gesperrt.
+
 ## Abnahmekriterien
 
 | # | Kriterium | Urteil |

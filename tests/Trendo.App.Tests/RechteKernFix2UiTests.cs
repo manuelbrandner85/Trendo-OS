@@ -79,7 +79,7 @@ public class RechteKernFix2Ui
             Assert.Contains("Erwachsenen-Profil", c.LastLaunchRefused);
             // Dokument: erlaubt; Trendo-eigenes Programm im Werkzeugordner: erlaubt
             var doc = F("brief.pdf"); await c.OpenHit(new SearchHit("datei", "brief", doc, 1));
-            var own = Path.Combine(root, "werkzeuge", "notiz", "notiz.exe"); Directory.CreateDirectory(Path.GetDirectoryName(own)!); File.WriteAllText(own, "MZ");
+            var own = Path.Combine(root, "werkzeuge", "notiz", "notiz.exe"); Directory.CreateDirectory(Path.GetDirectoryName(own)!); File.WriteAllText(own, "MZ"); Trendo.Core.Sys.ProgramTrust.WriteMarker(Path.GetDirectoryName(own)!, "notiz", "test"); // T-0764 (P3-1): Vertrauen nur mit Kennung und Prüfsumme
             await c.OpenHit(new SearchHit("datei", "notiz", own, 1));
             Assert.Equal([doc, own], l.Opened);
             // Dateimanager: dieselbe Regel vor dem Testersatz

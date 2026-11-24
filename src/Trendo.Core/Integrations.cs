@@ -102,13 +102,25 @@ public sealed class Integrations(ApprovalGate gate, ProjectStore projects, IProc
     /// <summary>T-0764: Wer darf direkt starten, und braucht das Ziel das Recht „Programme verwalten“? Erwachsene (Besitzer) dürfen alles; das
     /// Kinderprofil darf Dokumente, Ordner, Adressen und Trendos eigene Programme öffnen, aber keine Installer, Skripte, Verknüpfungen und
     /// keine fremde .exe. Andere Rollen (Agenten, API) dürfen gar nicht direkt starten.</summary>
-    void DemandLaunch(Principal by, AuditLog audit, IEnumerable<string?> userTargets, string? exe = null)
+    /// <param name="exeUserChosen">Das Programm hat die Person gewählt (eigene Verknüpfung) – dann gelten die Regeln für Dateien.</param>
+    /// <param name="internalCall">T-0764 (P3-2): fester Aufruf von Trendo selbst (Programm und Parameter legt der Code fest, nicht die Person).
+    /// Sonst dürfen die Parameter im Kinderprofil nur vorhandene Dateien oder Ordner sein.</param>
+    void DemandLaunch(Principal by, AuditLog audit, IEnumerable<string?> userTargets, string? exe = null, bool exeUserChosen = false, bool internalCall = true, IEnumerable<string>? rawArgs = null)
     {
         if (by != Principal.ChildProfile) Rbac.Demand(by, Permission.ApproveAction, audit);
+        if (Rbac.Has(by, Permission.ManageSoftware)) return; // Erwachsene: wie bisher, ohne Prüfsummen-Rechnen
+        void No(string what) => Rbac.DemandSoftware(by, "start " + what, audit, Rbac.NurErwachseneStart);
         foreach (var t in userTargets)
-            if (t is not null && Sys.Software.NeedsSoftwareRight(t, TrustedProgramPath))
-                Rbac.DemandSoftware(by, "start " + Path.GetFileName(t.Trim('"')), audit, Rbac.NurErwachseneStart);
-        if (exe is not null && Sys.Software.IsInstallerLike(exe)) Rbac.DemandSoftware(by, "start " + Path.GetFileName(exe), audit, Rbac.NurErwachseneStart);
+            if (t is not null && Sys.Software.NeedsSoftwareRight(t, TrustedProgramPath)) No(Path.GetFileName(t.Trim('"')));
+        if (exe is not null)
+        {
+            if (exeUserChosen) { if (Sys.Software.NeedsSoftwareRight(exe, TrustedProgramPath)) No(Path.GetFileName(exe)); }
+            else if (Sys.Software.IsInstallerLike(exe) || !internalCall && Sys.ProgramTrust.IsInterpreter(exe)
+                     || !(TrustedProgramPath?.Invoke(Path.GetFullPath(exe)) == true || Sys.ProgramTrust.InFixedLocation(exe))) No(Path.GetFileName(exe)); // P3-4: Herkunft oder fester Ort
+        }
+        if (!internalCall && rawArgs is not null)
+            foreach (var a in rawArgs.Where(a => a.Trim().Length > 0))
+                if (!File.Exists(a.Trim('"')) && !Directory.Exists(a.Trim('"'))) No("Parameter " + (a.Length > 40 ? a[..40] : a)); // P3-2: keine freien Parameter
     }
 
     /// <summary>Direkter Start per Klick (Dock/Schnellstart, Dateien öffnen). Kein Agent darf das; wird auditiert.
@@ -124,15 +136,16 @@ public sealed class Integrations(ApprovalGate gate, ProjectStore projects, IProc
     /// <param name="userExe">T-0764: Das Programm hat die Person selbst gewählt (eigene Verknüpfung) – dann gilt für die .exe dieselbe Prüfung wie für Dateien.</param>
     public void LaunchDirect(Principal by, string exe, AuditLog audit, string arg, bool userExe = false)
     {
-        DemandLaunch(by, audit, userExe ? [exe, File.Exists(arg) ? arg : null] : [File.Exists(arg) ? arg : null], exe);
+        DemandLaunch(by, audit, [File.Exists(arg) ? arg : null], exe, exeUserChosen: userExe, internalCall: !userExe, rawArgs: userExe ? [arg] : null);
         audit.Append(by.Name, "user.direct_launch", $"{Path.GetFileName(exe)} {arg}");
         launcher.OpenWith(exe, arg);
     }
 
     /// <summary>T-0203: externes Programm mit der aktuellen Datei (geplant von <see cref="ExternalApps.Plan"/>).</summary>
-    public void LaunchArgs(Principal by, string exe, AuditLog audit, IReadOnlyList<string> args)
+    /// <param name="internalCall">T-0764 (P3-2): fester Aufruf von Trendo (der Aufrufer kennzeichnet ihn); sonst sind im Kinderprofil nur Dateien als Parameter erlaubt.</param>
+    public void LaunchArgs(Principal by, string exe, AuditLog audit, IReadOnlyList<string> args, bool internalCall = false)
     {
-        DemandLaunch(by, audit, args.Where(File.Exists), exe);
+        DemandLaunch(by, audit, args.Where(File.Exists), exe, internalCall: internalCall, rawArgs: args);
         audit.Append(by.Name, "user.direct_launch", $"{Path.GetFileName(exe)} {string.Join(" ", args)}");
         launcher.OpenWithArgs(exe, args);
     }

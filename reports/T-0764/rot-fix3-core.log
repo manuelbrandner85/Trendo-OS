@@ -1,0 +1,128 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix3\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:04.91]     ROT P3-5: .chm .sct .wsc .xll .docm .xlsm .pptm brauchen das Recht(n: "a.pptm") [FAIL]
+[xUnit.net 00:00:04.92]     ROT P3-5: .chm .sct .wsc .xll .docm .xlsm .pptm brauchen das Recht(n: "a.sct") [FAIL]
+[xUnit.net 00:00:04.92]     ROT P3-5: .chm .sct .wsc .xll .docm .xlsm .pptm brauchen das Recht(n: "a.xll") [FAIL]
+[xUnit.net 00:00:04.92]     ROT P3-5: .chm .sct .wsc .xll .docm .xlsm .pptm brauchen das Recht(n: "a.docm") [FAIL]
+[xUnit.net 00:00:04.92]     ROT P3-5: .chm .sct .wsc .xll .docm .xlsm .pptm brauchen das Recht(n: "a.chm") [FAIL]
+[xUnit.net 00:00:04.92]     ROT P3-5: .chm .sct .wsc .xll .docm .xlsm .pptm brauchen das Recht(n: "a.xlsm") [FAIL]
+[xUnit.net 00:00:04.92]     ROT P3-5: .chm .sct .wsc .xll .docm .xlsm .pptm brauchen das Recht(n: "a.wsc") [FAIL]
+[xUnit.net 00:00:04.99]     ROT P3-1: Kind kopiert fremde exe in den Werkzeugordner und startet sie nicht [FAIL]
+[xUnit.net 00:00:05.00]     ROT P3-2: Kind startet Trendos python mit eigenen Parametern nicht [FAIL]
+  Fehler ROT P3-5: .chm .sct .wsc .xll .docm .xlsm .pptm brauchen das Recht(n: "a.pptm") [91 ms]
+  Fehlermeldung:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotFix3.P5(String n) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix3\tests\Trendo.Core.Tests\RotFix3Tests.cs:line 54
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Fehler ROT P3-5: .chm .sct .wsc .xll .docm .xlsm .pptm brauchen das Recht(n: "a.sct") [< 1 ms]
+  Fehlermeldung:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotFix3.P5(String n) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix3\tests\Trendo.Core.Tests\RotFix3Tests.cs:line 54
+   at InvokeStub_RotFix3.P5(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler ROT P3-5: .chm .sct .wsc .xll .docm .xlsm .pptm brauchen das Recht(n: "a.xll") [< 1 ms]
+  Fehlermeldung:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotFix3.P5(String n) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix3\tests\Trendo.Core.Tests\RotFix3Tests.cs:line 54
+   at InvokeStub_RotFix3.P5(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler ROT P3-5: .chm .sct .wsc .xll .docm .xlsm .pptm brauchen das Recht(n: "a.docm") [< 1 ms]
+  Fehlermeldung:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotFix3.P5(String n) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix3\tests\Trendo.Core.Tests\RotFix3Tests.cs:line 54
+   at InvokeStub_RotFix3.P5(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler ROT P3-5: .chm .sct .wsc .xll .docm .xlsm .pptm brauchen das Recht(n: "a.chm") [< 1 ms]
+  Fehlermeldung:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotFix3.P5(String n) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix3\tests\Trendo.Core.Tests\RotFix3Tests.cs:line 54
+   at InvokeStub_RotFix3.P5(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler ROT P3-5: .chm .sct .wsc .xll .docm .xlsm .pptm brauchen das Recht(n: "a.xlsm") [< 1 ms]
+  Fehlermeldung:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotFix3.P5(String n) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix3\tests\Trendo.Core.Tests\RotFix3Tests.cs:line 54
+   at InvokeStub_RotFix3.P5(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler ROT P3-5: .chm .sct .wsc .xll .docm .xlsm .pptm brauchen das Recht(n: "a.wsc") [< 1 ms]
+  Fehlermeldung:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotFix3.P5(String n) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix3\tests\Trendo.Core.Tests\RotFix3Tests.cs:line 54
+   at InvokeStub_RotFix3.P5(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler ROT P3-1: Kind kopiert fremde exe in den Werkzeugordner und startet sie nicht [87 ms]
+  Fehlermeldung:
+   Assert.ThrowsAny() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotFix3.P1() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix3\tests\Trendo.Core.Tests\RotFix3Tests.cs:line 23
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler ROT P3-2: Kind startet Trendos python mit eigenen Parametern nicht [10 ms]
+  Fehlermeldung:
+   Assert.ThrowsAny() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotFix3.P2() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix3\tests\Trendo.Core.Tests\RotFix3Tests.cs:line 31
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:05.01]     ROT P3-3: Kind öffnet unbekannte Schemata nicht(target: "search-ms:query=x") [FAIL]
+[xUnit.net 00:00:05.02]     ROT P3-3: Kind öffnet unbekannte Schemata nicht(target: "ms-msdt:/id x") [FAIL]
+[xUnit.net 00:00:05.03]     ROT P3-3: Kind öffnet unbekannte Schemata nicht(target: "ms-appinstaller:?source=https://example.org/x.appi"···) [FAIL]
+[xUnit.net 00:00:05.04]     ROT P3-4: Kind – vom Code gewähltes Programm außerhalb fester Orte wird nicht gestartet [FAIL]
+  Fehler ROT P3-3: Kind öffnet unbekannte Schemata nicht(target: "search-ms:query=x") [8 ms]
+  Fehlermeldung:
+   Assert.ThrowsAny() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotFix3.P3(String target) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix3\tests\Trendo.Core.Tests\RotFix3Tests.cs:line 41
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Fehler ROT P3-3: Kind öffnet unbekannte Schemata nicht(target: "ms-msdt:/id x") [7 ms]
+  Fehlermeldung:
+   Assert.ThrowsAny() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotFix3.P3(String target) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix3\tests\Trendo.Core.Tests\RotFix3Tests.cs:line 41
+   at InvokeStub_RotFix3.P3(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler ROT P3-3: Kind öffnet unbekannte Schemata nicht(target: "ms-appinstaller:?source=https://example.org/x.appi"···) [8 ms]
+  Fehlermeldung:
+   Assert.ThrowsAny() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotFix3.P3(String target) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix3\tests\Trendo.Core.Tests\RotFix3Tests.cs:line 41
+   at InvokeStub_RotFix3.P3(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler ROT P3-4: Kind – vom Code gewähltes Programm außerhalb fester Orte wird nicht gestartet [8 ms]
+  Fehlermeldung:
+   Assert.ThrowsAny() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotFix3.P4() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix3\tests\Trendo.Core.Tests\RotFix3Tests.cs:line 49
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Fehler!      : Fehler:    13, erfolgreich:     0, übersprungen:     0, gesamt:    13, Dauer: 223 ms - Trendo.Core.Tests.dll (net10.0)

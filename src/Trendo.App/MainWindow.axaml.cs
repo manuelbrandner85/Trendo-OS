@@ -90,7 +90,9 @@ public sealed partial class MainWindow : Window
         if (opt.Isolated) _deps.ToolsRoot = Path.Combine(core.DataRoot, "werkzeuge"); // Tests richten nie etwas im echten Werkzeugordner ein
         else _deps.LocateVollpaket = VollpaketStart.Find;
         // T-0764 (2. Prüfrunde N-C/N-D): .exe in Trendos eigenen Ordnern (Werkzeuge, Programm, Portable) gelten als vertrauenswürdig – andere startet nur ein Erwachsenen-Profil
-        core.Integrations.TrustedProgramPath = p => Under(p, _deps.ToolsRoot) || Under(p, AppContext.BaseDirectory) || Under(p, Path.Combine(core.DataRoot, "werkzeuge"));
+        // T-0764 (P3-1): Vertrauen nach Herkunft – Kennungsdatei mit SHA-256 im Programmordner (Werkzeug- und Portable-Ordner) und Trendo selbst; kein reiner Pfadvergleich
+        core.Integrations.TrustedProgramPath = p => string.Equals(p, Environment.ProcessPath, StringComparison.OrdinalIgnoreCase)
+            || Trendo.Core.Sys.ProgramTrust.Verified(p, [_deps.ToolsRoot, Path.Combine(core.DataRoot, "werkzeuge")]);
         InitVollpaketOnline(); // ohne Vollpaket: dieselben Pakete vom GitHub-Release
         StartupTrace.Mark("ctor.deps");
         _settings = UserSettings.Load(core.DataRoot);

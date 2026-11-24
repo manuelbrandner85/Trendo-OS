@@ -160,6 +160,7 @@ public static partial class GitHubApps
             var exe = MainExe(tmp, repo) ?? throw new InvalidOperationException("Im Paket ist kein Windows-Programm (.exe).");
             if (Directory.Exists(dir)) Directory.Delete(dir, true);
             SafeFile.MoveDirectory(tmp, dir);
+            Sys.ProgramTrust.WriteMarker(dir, repo, sha); // T-0764 (P3-1): Herkunft und Prüfsummen der Programmdateien
             var entry = new Installed(id, repo, release.Tag, Path.GetRelativePath(tmp, exe).Replace('\\', '/'), license, asset.Name, sha, description, DateTimeOffset.Now);
             Save(toolsRoot, List(toolsRoot).Where(i => i.Id != id).Append(entry));
             audit?.Append(by.Name, "github.install", $"{repo} {release.Tag} {asset.Name} sha256={sha}");

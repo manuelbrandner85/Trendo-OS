@@ -23,7 +23,7 @@ public static class Software
         var safe = SafeName(name);
         var dest = Path.Combine(toolsRoot, safe); if (Directory.Exists(dest)) Directory.Delete(dest, true);
         Archives.Unpack(zip, dest);
-        File.WriteAllText(Path.Combine(dest, PortableMarker), $"{{\"name\":\"{safe}\",\"sha256\":\"{sha}\",\"am\":\"{DateTime.Now:O}\"}}"); // T-0764: Kennung „von Trendo eingerichtet“
+        ProgramTrust.WriteMarker(dest, safe, sha); // T-0764: Kennung „von Trendo eingerichtet“ mit SHA-256 jeder Programmdatei (P3-1)
         audit?.Append(by.Name, "portable.install", $"{safe} sha256={sha}"); return dest;
     }
 
@@ -46,7 +46,8 @@ public static class Software
     {
         var ext = Path.GetExtension(path).ToLowerInvariant();
         if (ext is ".msi" or ".msp" or ".msix" or ".msixbundle" or ".appx" or ".appxbundle" or ".appinstaller" or ".bat" or ".cmd" or ".ps1" or ".psm1" or ".vbs" or ".vbe" or ".wsf" or ".wsh" or ".js" or ".jse" or ".reg" or ".scr" or ".com" or ".pif"
-            or ".lnk" or ".url" or ".cpl" or ".hta" or ".application" or ".appref-ms" or ".msu" or ".jar" or ".diagcab" or ".settingcontent-ms" or ".gadget" or ".msc") return true; // T-0764 N-D
+            or ".lnk" or ".url" or ".cpl" or ".hta" or ".application" or ".appref-ms" or ".msu" or ".jar" or ".diagcab" or ".settingcontent-ms" or ".gadget" or ".msc"
+            or ".chm" or ".sct" or ".wsc" or ".xll" or ".docm" or ".xlsm" or ".pptm" or ".dotm" or ".xltm" or ".potm" or ".ppsm") return true; // T-0764 N-D, P3-5 (Hilfe mit Skript, Skript-Komponenten, Excel-Add-ins, Dokumente mit Makros)
         if (ext is not ".exe") return false;
         var n = Path.GetFileNameWithoutExtension(path).ToLowerInvariant();
         return n.Contains("setup") || n.Contains("install") || n.Contains("unins") || n.Contains("update") || n.Contains("deinstall");
@@ -55,15 +56,23 @@ public static class Software
     /// <summary>T-0764 (2. Prüfrunde N-C/N-D): Braucht das Öffnen dieses Ziels das Recht „Programme verwalten“? Ja bei Installern, Paketen, Skripten,
     /// Verknüpfungen (.lnk/.url – ihr Ziel ist nicht geprüft) und bei jeder .exe außerhalb von Trendos eigenen Programmordnern
     /// (<paramref name="trusted"/>). Adressen (https:, ms-settings:, shell: …), Ordner und Dokumente: nein.</summary>
+    /// <remarks>T-0764 (3. Prüfrunde): Adressen nur aus der Liste für Kinder (<see cref="ProgramTrust.ChildSchemeAllowed"/>), <c>file:</c> wie ein Pfad;
+    /// Interpreter (python, git, cmd, powershell …) immer; eine .exe nur, wenn <paramref name="trusted"/> sie über ihre Herkunft kennt.</remarks>
     public static bool NeedsSoftwareRight(string target, Func<string, bool>? trusted = null)
     {
         if (string.IsNullOrWhiteSpace(target)) return false;
         var t = target.Trim().Trim('"');
-        if (Regex.IsMatch(t, @"^[A-Za-z][A-Za-z0-9+.\-]+:(?![\\/])") || t.Contains("://", StringComparison.Ordinal)) return false; // Adresse, kein Dateipfad (C:\ ist eine Datei)
+        if (t.StartsWith("file:", StringComparison.OrdinalIgnoreCase))
+        {
+            if (!Uri.TryCreate(t, UriKind.Absolute, out var fu) || !fu.IsFile) return true;
+            t = fu.LocalPath;
+        }
+        else if (Regex.IsMatch(t, @"^[A-Za-z][A-Za-z0-9+.\-]+:") || t.Contains("://", StringComparison.Ordinal)) return !ProgramTrust.ChildSchemeAllowed(t); // Adresse (mind. 2 Zeichen vor „:“), kein Dateipfad – C:\ ist eine Datei
         string full;
         try { full = Path.GetFullPath(t); } catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { return true; }
         if (Directory.Exists(full)) return false;
         if (IsInstallerLike(full)) return true;
+        if (ProgramTrust.IsInterpreter(full) && Path.GetExtension(full).Length > 0) return true; // P3-2: python.exe, git.exe, cmd.exe … nie frei gewählt
         return Path.GetExtension(full).Equals(".exe", StringComparison.OrdinalIgnoreCase) && !(trusted?.Invoke(full) ?? false);
     }
 

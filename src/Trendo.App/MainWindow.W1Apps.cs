@@ -31,7 +31,8 @@ public partial class MainWindow
     /// <summary>T-0764 (2. Prüfrunde N-C): Starten als angemeldete Person – der Kern prüft Rolle und Ziel. Abgelehnt: Hinweis, kein Absturz, false.</summary>
     internal bool LaunchAs(string target) => LaunchTry(() => _core.Integrations.LaunchDirect(CurrentPrincipal, target, _core.Audit));
     internal bool LaunchAs(string exe, string arg, bool userExe = false) => LaunchTry(() => _core.Integrations.LaunchDirect(CurrentPrincipal, exe, _core.Audit, arg, userExe));
-    internal bool LaunchArgsAs(string exe, IReadOnlyList<string> args) => LaunchTry(() => _core.Integrations.LaunchArgs(CurrentPrincipal, exe, _core.Audit, args));
+    /// <param name="internalCall">T-0764 (P3-2): fester Aufruf aus Trendos Code (Programm und Parameter legt der Code fest).</param>
+    internal bool LaunchArgsAs(string exe, IReadOnlyList<string> args, bool internalCall = true) => LaunchTry(() => _core.Integrations.LaunchArgs(CurrentPrincipal, exe, _core.Audit, args, internalCall));
     /// <summary>Letzte abgelehnte Startmeldung (Tests, Anzeige).</summary>
     public string LastLaunchRefused { get; private set; } = "";
     static bool Under(string path, string dir)
@@ -62,7 +63,16 @@ public partial class MainWindow
             Pos(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center, Children = { open, folder } }, 1) } } };
     }
 
-    private string? ToolPath(string id) => DependencyCatalog.All.FirstOrDefault(c => c.Id == id) is { } c ? _deps.Integrated(id) ?? _deps.ResolvePath(c) : null;
+    private string? ToolPath(string id) => DependencyCatalog.All.FirstOrDefault(c => c.Id == id) is { } c ? IntegratedChecked(id) ?? _deps.ResolvePath(c) : null;
+
+    /// <summary>T-0764 (P3-4): gespeicherter Programmpfad (tools.json) – im Kinderprofil nur, wenn er an einem festen Installationsort liegt oder
+    /// ein von Trendo eingerichtetes, unverändertes Programm ist (die Datei lässt sich sonst auf ein beliebiges Programm umbiegen).</summary>
+    string? IntegratedChecked(string id) => _deps.Integrated(id) is { } p && (CanManageSoftware || ToolStartAllowed(p)) ? p : null;
+
+    /// <summary>T-0764 (P3-4): gemeinsame Prüfung für Programme, die Trendo direkt startet (Process.Start) – Erwachsene immer; Kinderprofil nur
+    /// feste Installationsorte oder geprüfte Trendo-Programme, nie Installer.</summary>
+    internal bool ToolStartAllowed(string exe) => CanManageSoftware
+        || !Trendo.Core.Sys.Software.IsInstallerLike(exe) && (Trendo.Core.Sys.ProgramTrust.InFixedLocation(exe) || _core.Integrations.TrustedProgramPath?.Invoke(Path.GetFullPath(exe)) == true);
 
     // ---------- SYS-11: Programme – was da ist, startet mit einem Klick; was fehlt, ist einen Klick entfernt ----------
     private Control AppsView()

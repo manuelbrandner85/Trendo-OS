@@ -89,7 +89,7 @@ public partial class MainWindow
                 Act($"sc-run-{i}", "Starten", () => Try(V, () => { Say(LaunchAs(s.Exe, string.Join(' ', s.Args.Select(a => a.Contains(' ') ? $"\"{a}\"" : a)), userExe: true) ? s.Name + " gestartet." : LastLaunchRefused, V); })),
                 Act($"sc-del-{i}", "Entfernen", () => { Software.RemoveShortcut(_core.DataRoot, s.Name); Say("Entfernt.", V); })));
         sp.Children.Add(Card(Section("Eigene Verknüpfungen", "Ein Programm mit festen Einstellungen starten – z. B. einen Ordner direkt öffnen.",
-            Line(sn, se, sa, Act("sc-add", "Anlegen", () => Try(V, () => { Software.AddShortcut(_core.DataRoot, Clean(sn), Clean(se), sa.Text ?? ""); Say("Verknüpfung angelegt.", V); }), true)), list)));
+            Line(sn, se, sa, Act("sc-add", "Anlegen", () => Try(V, () => { if (!CanManageSoftware && ((sa.Text ?? "").Trim().Length > 0 || Software.NeedsSoftwareRight(Clean(se), _core.Integrations.TrustedProgramPath))) { Rbac.DemandSoftware(CurrentPrincipal, "verknuepfung " + Path.GetFileName(Clean(se)), _core.Audit, Rbac.NurErwachseneStart); } Software.AddShortcut(_core.DataRoot, Clean(sn), Clean(se), sa.Text ?? ""); Say("Verknüpfung angelegt.", V); }), true) /* T-0764 (P3-2): eigene Parameter und fremde Programme nur Erwachsene */), list)));
 
         var al = new StackPanel { Spacing = 4 };
         foreach (var (a, i) in Software.StartupFolder(StartupDir, StartupOff).Select((a, i) => (a, i)))

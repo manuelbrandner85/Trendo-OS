@@ -37,6 +37,7 @@ public partial class MainWindow
         var bl = BlenderPath;
         if (bl is null && KreaturRunOverride is null) { await AskBlender(); return null; }
         if (_kreaturBusy) return null;
+        if (bl is not null && !ToolStartAllowed(bl)) { _kreaturMsg = Rbac.NurErwachseneStart; Show("3d"); return null; } // T-0764 (P3-4): Blender-Pfad im Kinderprofil nur von festem Ort
         _kreaturBusy = true;
         try
         {
