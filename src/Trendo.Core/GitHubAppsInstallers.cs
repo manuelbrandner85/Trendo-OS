@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -60,8 +61,11 @@ public static partial class GitHubApps
     public static InstallerCheck CheckProgram(string exe, Func<string, Sys.SignatureInfo>? check = null, FileStream? locked = null) =>
         CheckFile(exe, $"„{Path.GetFileName(exe)}“ ist ein fremdes Programm aus der Veröffentlichung auf GitHub. Beim Start läuft es mit deinen Rechten (ohne Admin).", "Programm", check, locked);
 
-    /// <summary>N2: Dateiendungen, die ein Programm beim Start ausführen oder laden kann (Programme, Bibliotheken, Electron-Pakete, Skripte).</summary>
-    public static readonly string[] ExecutableExt = [".exe", ".dll", ".sys", ".ocx", ".cpl", ".com", ".scr", ".msi", ".asar", ".node", ".ps1", ".psm1", ".bat", ".cmd", ".vbs", ".vbe", ".js", ".jse", ".wsf", ".hta", ".py", ".pyd", ".jar", ".lnk"];
+    /// <summary>N2/Z1: Dateiendungen, die ein Programm beim Start ausführen oder laden kann (Programme, Bibliotheken, Electron-Pakete, Skripte, Konfiguration, die Code nachlädt).</summary>
+    public static readonly string[] ExecutableExt = [".exe", ".dll", ".sys", ".ocx", ".cpl", ".com", ".scr", ".msi", ".asar", ".node", ".ps1", ".psm1", ".bat", ".cmd", ".vbs", ".vbe", ".js", ".jse", ".wsf", ".hta", ".py", ".pyd", ".jar", ".lnk",
+        ".ahk", ".config", ".manifest", ".local", ".mjs", ".cjs", ".pyc", ".pyw", ".pyz", "._pth", ".pth", ".zip", ".lua", ".class", ".wasm", ".tcl", ".rb", ".pl"];
+    /// <summary>Z1: Endungen, die eine Authenticode-Signatur tragen können (Windows-Programme und -Bibliotheken, PowerShell, Installer). Alles andere aus <see cref="ExecutableExt"/> kann keine Signatur abdecken.</summary>
+    public static readonly string[] SignableExt = [".exe", ".dll", ".sys", ".ocx", ".cpl", ".com", ".scr", ".msi", ".node", ".pyd", ".ps1", ".psm1"];
     /// <summary>Mehr ausführbare Dateien prüft Trendo nicht einzeln (dann höchstens Gelb).</summary>
     public const int MaxExecutables = 1500;
 
@@ -72,7 +76,22 @@ public static partial class GitHubApps
                 .Where(f => ExecutableExt.Contains(Path.GetExtension(f).ToLowerInvariant())).OrderBy(f => Path.GetRelativePath(dir, f), StringComparer.OrdinalIgnoreCase).Take(MaxExecutables + 1).ToList()
             : [];
 
-    /// <summary>N2: Prüfsumme über alle ausführbaren Inhalte des Programmordners (relativer Pfad + SHA-256 je Datei). Ändert sich eine davon, ändert sich die Summe.</summary>
+    /// <summary>Z2: Verknüpfungen (Junction, Symlink) im Programmordner – relativer Pfad und Ziel. Sie werden nie betreten.</summary>
+    public static List<(string Rel, string Target)> ReparsePoints(string dir)
+    {
+        var res = new List<(string, string)>();
+        if (!Directory.Exists(dir)) return res;
+        var todo = new Stack<DirectoryInfo>(); todo.Push(new DirectoryInfo(dir));
+        while (todo.Count > 0)
+            foreach (var e in todo.Pop().EnumerateFileSystemInfos("*", new EnumerationOptions { IgnoreInaccessible = true, AttributesToSkip = 0 }))
+            {
+                if (e.Attributes.HasFlag(FileAttributes.ReparsePoint)) res.Add((Path.GetRelativePath(dir, e.FullName).Replace('\\', '/'), e.LinkTarget ?? "?"));
+                else if (e is DirectoryInfo d) todo.Push(d);
+            }
+        return res.OrderBy(r => r.Item1, StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
+    /// <summary>N2: Prüfsumme über die genannten Dateien (relativer Pfad + SHA-256 je Datei).</summary>
     public static string FolderHash(string dir, IReadOnlyList<string> files)
     {
         var sb = new StringBuilder();
@@ -84,26 +103,81 @@ public static partial class GitHubApps
         return Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(sb.ToString())));
     }
 
-    /// <summary>N2: Programm mit seinem ganzen Ordner prüfen. Grün nur, wenn die Startdatei UND alle ausführbaren Inhalte (DLL, .asar, Skripte …) gültig signiert sind;
-    /// ist die Startdatei signiert, anderes aber nicht, ist es Gelb. <see cref="InstallerCheck.Sha256"/> ist hier die Ordner-Prüfsumme.</summary>
+    /// <summary>Z1a/Z2: Prüfsumme über ALLE Dateien des Programmordners (relativer Pfad + Inhalt) und alle Verknüpfungen (Pfad + Ziel).
+    /// Jede Änderung, jede neue oder gelöschte Datei ändert sie – daran ist die Start-Erlaubnis gebunden.</summary>
+    public static string FolderHashAll(string dir)
+    {
+        var files = Directory.Exists(dir)
+            ? Directory.EnumerateFiles(dir, "*", new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true, AttributesToSkip = FileAttributes.ReparsePoint })
+                .OrderBy(f => Path.GetRelativePath(dir, f), StringComparer.OrdinalIgnoreCase).ToList()
+            : [];
+        var sb = new StringBuilder(FolderHash(dir, files)).Append('\n');
+        foreach (var (rel, target) in ReparsePoints(dir)) sb.Append("link\t").Append(rel.ToLowerInvariant()).Append('\t').Append(target).Append('\n');
+        return Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(sb.ToString())));
+    }
+
+    /// <summary>Z3c: Dateien zum Starten sperren (andere dürfen lesen, nicht schreiben/löschen/umbenennen). Freigabe mit Dispose.</summary>
+    public sealed class FileLocks : IDisposable
+    {
+        readonly List<FileStream> _s = [];
+        public FileLocks(IEnumerable<string> files) { try { foreach (var f in files) _s.Add(OpenLocked(f)); } catch { Dispose(); throw; } }
+        public int Count => _s.Count;
+        public void Dispose() { foreach (var s in _s) s.Dispose(); _s.Clear(); }
+    }
+
+    /// <summary>N2/Z1: Programm mit seinem ganzen Ordner prüfen. Grün nur, wenn die Startdatei und alle signierbaren Programme/Bibliotheken gültig signiert sind,
+    /// es keine nicht signierbaren ausführbaren Inhalte (Skripte, Konfiguration, Pakete) und keine Verknüpfungen gibt. Sonst Gelb mit Namen; Startdatei unsigniert = Rot.
+    /// <see cref="InstallerCheck.Sha256"/> ist die Prüfsumme über alle Dateien des Ordners (<see cref="FolderHashAll"/>).</summary>
     public static InstallerCheck CheckProgramFolder(string exe, string dir, Func<string, Sys.SignatureInfo>? check = null, FileStream? locked = null)
     {
         var main = CheckProgram(exe, check, locked);
+        var hash = FolderHashAll(dir);
         var files = ExecutableFiles(dir);
-        if (!files.Any(f => string.Equals(Path.GetFullPath(f), Path.GetFullPath(exe), StringComparison.OrdinalIgnoreCase)) && File.Exists(exe)) { files.Add(exe); }
-        var hash = FolderHash(dir, files.Where(f => f.StartsWith(Path.GetFullPath(dir), StringComparison.OrdinalIgnoreCase)).ToList());
-        var others = files.Where(f => !string.Equals(Path.GetFullPath(f), Path.GetFullPath(exe), StringComparison.OrdinalIgnoreCase)).ToList();
-        var scope = $" Geprüft wird der ganze Programmordner: {files.Count} ausführbare Datei(en) (Programme, Bibliotheken, Skripte, Electron-Pakete).";
+        bool IsExe(string f) => string.Equals(Path.GetFullPath(f), Path.GetFullPath(exe), StringComparison.OrdinalIgnoreCase);
+        var others = files.Where(f => !IsExe(f)).ToList();
+        var links = ReparsePoints(dir);
+        string Rel(string f) => Path.GetRelativePath(dir, f).Replace('\\', '/');
+        static string Names(IEnumerable<string> n) { var l = n.ToList(); return string.Join(", ", l.Take(5)) + (l.Count > 5 ? $" und {l.Count - 5} weitere" : ""); }
+        var scope = $" Geprüft wird der ganze Programmordner ({files.Count} ausführbare Datei(en)); die Start-Erlaubnis gilt nur, solange sich keine Datei im Ordner ändert.";
         if (main.Ampel != Ampel.Gruen) return main with { Sha256 = hash, Text = main.Text + scope };
         if (files.Count > MaxExecutables)
             return main with { Ampel = Ampel.Gelb, Title = "Startdatei signiert, Ordner zu groß zum Prüfen", Text = main.Text + scope + $" Es sind mehr als {MaxExecutables} – Trendo prüft nicht alle und kann den Ordner deshalb nicht bestätigen.", Sha256 = hash, NeedsRiskConsent = true };
         var check2 = check ?? Sys.Authenticode.Check;
-        var unsigned = others.Where(f => check2(f).State != Sys.SigState.Gueltig).ToList();
-        if (unsigned.Count == 0) return main with { Sha256 = hash, Text = main.Text + scope + " Alle sind gültig signiert." };
-        var names = string.Join(", ", unsigned.Take(5).Select(f => Path.GetRelativePath(dir, f).Replace('\\', '/'))) + (unsigned.Count > 5 ? $" und {unsigned.Count - 5} weitere" : "");
-        return main with { Ampel = Ampel.Gelb, Title = $"Startdatei signiert, {unsigned.Count} weitere Datei(en) nicht", Sha256 = hash, NeedsRiskConsent = true,
-            Text = main.Text + scope + $" Nicht gültig signiert: {names}. Das Programm kann diese beim Start laden oder ausführen – die Signatur der Startdatei deckt sie nicht ab." };
+        var unsigned = others.Where(f => SignableExt.Contains(Path.GetExtension(f).ToLowerInvariant()) && check2(f).State != Sys.SigState.Gueltig).ToList();
+        var unsignable = others.Where(f => !SignableExt.Contains(Path.GetExtension(f).ToLowerInvariant())).ToList();
+        var problems = new List<string>();
+        if (unsigned.Count > 0) problems.Add($"Nicht gültig signiert: {Names(unsigned.Select(Rel))}.");
+        if (unsignable.Count > 0) problems.Add($"{unsignable.Count} Datei(en) nicht signierbar/prüfbar (Skripte, Konfiguration, Pakete, die das Programm ausführen oder laden kann): {Names(unsignable.Select(Rel))}.");
+        if (links.Count > 0) problems.Add($"Verknüpfung(en) im Ordner, die woandershin zeigen: {Names(links.Select(l => $"{l.Rel} → {l.Target}"))}.");
+        var signer = main.Publisher ?? "einem unbekannten Herausgeber";
+        if (problems.Count == 0)
+            return main with { Sha256 = hash, Text = $"„{Path.GetFileName(exe)}“ ist ein fremdes Programm von GitHub und läuft mit deinen Rechten (ohne Admin). Geprüft: Programme und Bibliotheken sind signiert von {signer} ({files.Count} Datei(en)). Daten- und Skriptdateien kann eine Signatur nicht abdecken. Sperrlisten fragt Trendo nicht ab." + scope };
+        var n = unsigned.Count + unsignable.Count + links.Count;
+        return main with { Ampel = Ampel.Gelb, Title = $"Startdatei signiert, {n} weitere Datei(en) nicht bestätigt", Sha256 = hash, NeedsRiskConsent = true,
+            Text = $"„{Path.GetFileName(exe)}“ ist signiert von {signer}. " + string.Join(" ", problems) + " Das Programm kann diese beim Start laden oder ausführen – die Signatur der Startdatei deckt sie nicht ab." + scope };
     }
+
+    /// <summary>Z3a: Start-Erlaubnis für Programme, die nicht in der GitHub-Liste stehen (z. B. KI-Programme vom Hersteller), gebunden an die Ordner-Prüfsumme.</summary>
+    public const string ExternalApprovalsFile = "start-freigaben.json";
+    public static string? ExternalApproval(string toolsRoot, string key)
+    {
+        var f = Path.Combine(toolsRoot, ExternalApprovalsFile);
+        try { return File.Exists(f) && JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(f)) is { } d && d.TryGetValue(key, out var h) ? h : null; }
+        catch (Exception e) when (e is JsonException or IOException or UnauthorizedAccessException) { return null; }
+    }
+    public static void ApproveExternal(string toolsRoot, string key, string hash)
+    {
+        Directory.CreateDirectory(toolsRoot);
+        var f = Path.Combine(toolsRoot, ExternalApprovalsFile);
+        Dictionary<string, string> d;
+        try { d = File.Exists(f) ? JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(f)) ?? [] : []; } catch (JsonException) { d = []; }
+        d[key] = hash;
+        AtomicFile.WriteAllText(f, JsonSerializer.Serialize(d, new JsonSerializerOptions { WriteIndented = true }));
+    }
+
+    /// <summary>Z3b: Installer eines Herstellers (KI-Programme) vor dem Start prüfen – gleiche Ampel.</summary>
+    public static InstallerCheck CheckVendorInstaller(string file, string name, Func<string, Sys.SignatureInfo>? check = null, FileStream? locked = null) =>
+        CheckFile(file, $"„{Path.GetFileName(file)}“ ist der Installer des Herstellers für {name}. Er läuft mit deinen Rechten und zeigt danach seine eigenen Fenster.", "Installer", check, locked);
 
     /// <summary>Datei zum Prüfen und Starten sperren: andere dürfen lesen, aber nicht schreiben, löschen oder umbenennen.</summary>
     public static FileStream OpenLocked(string file) => new(file, FileMode.Open, FileAccess.Read, FileShare.Read);

@@ -347,27 +347,63 @@ public class T0762GitHubNachbauTests
         Directory.Delete(d, true); Directory.Delete(m, true); Directory.Delete(u, true);
     }
 
-    [Fact(DisplayName = "T-0762 N2: Grün nur, wenn Startdatei UND alle ausführbaren Inhalte des Ordners signiert sind; sonst Gelb mit Namen; Ordner-Prüfsumme ändert sich mit jeder DLL/Skript/.asar")]
+    [Fact(DisplayName = "T-0762 N2/Z1/Z2: Grün nur, wenn Startdatei und alle Programme/Bibliotheken signiert sind und es keine nicht signierbaren ausführbaren Inhalte oder Verknüpfungen gibt; Prüfsumme über ALLE Dateien")]
     public void N2_folder_check()
     {
         var d = Tmp(); Directory.CreateDirectory(Path.Combine(d, "resources"));
         var exe = Path.Combine(d, "app.exe"); File.WriteAllText(exe, "MZ");
-        File.WriteAllText(Path.Combine(d, "helfer.dll"), "MZ"); File.WriteAllText(Path.Combine(d, "resources", "app.asar"), "asar"); File.WriteAllText(Path.Combine(d, "liesmich.txt"), "x");
-        var allSigned = GitHubApps.CheckProgramFolder(exe, d, _ => new SignatureInfo(SigState.Gueltig, "Beispiel GmbH", "ok"));
-        Assert.Equal(GitHubApps.Ampel.Gruen, allSigned.Ampel); Assert.Contains("3 ausführbare", allSigned.Text);
+        File.WriteAllText(Path.Combine(d, "helfer.dll"), "MZ"); File.WriteAllText(Path.Combine(d, "liesmich.txt"), "x");
+        SignatureInfo Ok(string _) => new(SigState.Gueltig, "Beispiel GmbH", "ok");
+        var allSigned = GitHubApps.CheckProgramFolder(exe, d, Ok);
+        Assert.Equal(GitHubApps.Ampel.Gruen, allSigned.Ampel);
+        Assert.Contains("Geprüft: Programme und Bibliotheken sind signiert von Beispiel GmbH", allSigned.Text);
+        Assert.Contains("Daten- und Skriptdateien kann eine Signatur nicht abdecken", allSigned.Text);
         var onlyExe = GitHubApps.CheckProgramFolder(exe, d, f => f.EndsWith(".exe") ? new SignatureInfo(SigState.Gueltig, "Beispiel GmbH", "ok") : new SignatureInfo(SigState.Unsigniert, null, "nein"));
-        Assert.Equal(GitHubApps.Ampel.Gelb, onlyExe.Ampel); Assert.True(onlyExe.NeedsRiskConsent);
-        Assert.Contains("helfer.dll", onlyExe.Text); Assert.Contains("resources/app.asar", onlyExe.Text); Assert.Contains("2 weitere", onlyExe.Title);
-        var unsignedExe = GitHubApps.CheckProgramFolder(exe, d, _ => new SignatureInfo(SigState.Unsigniert, null, "nein"));
-        Assert.Equal(GitHubApps.Ampel.Rot, unsignedExe.Ampel);
-        var h1 = GitHubApps.FolderHash(d, GitHubApps.ExecutableFiles(d));
+        Assert.Equal(GitHubApps.Ampel.Gelb, onlyExe.Ampel); Assert.True(onlyExe.NeedsRiskConsent); Assert.Contains("helfer.dll", onlyExe.Text);
+        Assert.Equal(GitHubApps.Ampel.Rot, GitHubApps.CheckProgramFolder(exe, d, _ => new SignatureInfo(SigState.Unsigniert, null, "nein")).Ampel);
+        // Z1c: nicht signierbare ausführbare Inhalte → Gelb mit Nennung, auch wenn alles Signierbare signiert ist
+        foreach (var n in new[] { "resources/app.asar", "start.ahk", "app.exe.config", "python313._pth", "lib.zip", "modul.mjs" })
+        {
+            var f = Path.Combine(d, n); File.WriteAllText(f, "x");
+            var c = GitHubApps.CheckProgramFolder(exe, d, Ok);
+            Assert.Equal(GitHubApps.Ampel.Gelb, c.Ampel); Assert.Contains("nicht signierbar/prüfbar", c.Text); Assert.Contains(n, c.Text);
+            File.Delete(f);
+        }
+        Assert.Equal(GitHubApps.Ampel.Gruen, GitHubApps.CheckProgramFolder(exe, d, Ok).Ampel);
+        // Z1a: Prüfsumme über ALLE Dateien – auch eine Text-/Datendatei ändert sie
+        var h1 = GitHubApps.FolderHashAll(d);
         Assert.Equal(h1, allSigned.Sha256);
-        File.WriteAllText(Path.Combine(d, "liesmich.txt"), "geändert"); // kein ausführbarer Inhalt
-        Assert.Equal(h1, GitHubApps.FolderHash(d, GitHubApps.ExecutableFiles(d)));
-        File.AppendAllText(Path.Combine(d, "resources", "app.asar"), "!");
-        var h2 = GitHubApps.FolderHash(d, GitHubApps.ExecutableFiles(d)); Assert.NotEqual(h1, h2);
-        File.WriteAllText(Path.Combine(d, "neu.ps1"), "Write-Host x");
-        Assert.NotEqual(h2, GitHubApps.FolderHash(d, GitHubApps.ExecutableFiles(d)));
+        File.WriteAllText(Path.Combine(d, "liesmich.txt"), "geändert");
+        var h2 = GitHubApps.FolderHashAll(d); Assert.NotEqual(h1, h2);
+        File.WriteAllText(Path.Combine(d, "neu.dat"), "x");
+        Assert.NotEqual(h2, GitHubApps.FolderHashAll(d));
         Directory.Delete(d, true);
+    }
+
+    [WindowsFact(DisplayName = "T-0762 Z2: Verknüpfung im Programmordner → Gelb mit Nennung; Pfad und Ziel fließen in die Prüfsumme")]
+    public void Z2_reparse_point()
+    {
+        var d = Tmp(); var t1 = Tmp(); var t2 = Tmp();
+        var exe = Path.Combine(d, "app.exe"); File.WriteAllText(exe, "MZ");
+        var link = Path.Combine(d, "plugins");
+        Assert.True(Cli.Run("cmd", ["/d", "/c", "mklink", "/J", link, t1]).Ok);
+        SignatureInfo Ok(string _) => new(SigState.Gueltig, "Beispiel GmbH", "ok");
+        var c = GitHubApps.CheckProgramFolder(exe, d, Ok);
+        Assert.Equal(GitHubApps.Ampel.Gelb, c.Ampel); Assert.Contains("Verknüpfung", c.Text); Assert.Contains("plugins", c.Text);
+        var h1 = GitHubApps.FolderHashAll(d);
+        Directory.Delete(link);
+        Assert.True(Cli.Run("cmd", ["/d", "/c", "mklink", "/J", link, t2]).Ok); // gleicher Name, anderes Ziel
+        Assert.NotEqual(h1, GitHubApps.FolderHashAll(d));
+        Directory.Delete(link); Directory.Delete(d, true); Directory.Delete(t1, true); Directory.Delete(t2, true);
+    }
+
+    [Fact(DisplayName = "T-0762 Z3a: Start-Erlaubnis für Herstellerprogramme (KI) wird getrennt gespeichert")]
+    public void Z3_external_approval()
+    {
+        var tools = Tmp();
+        Assert.Null(GitHubApps.ExternalApproval(tools, "ki:lmstudio"));
+        GitHubApps.ApproveExternal(tools, "ki:lmstudio", "abc"); GitHubApps.ApproveExternal(tools, "ki:jan", "def");
+        Assert.Equal("abc", GitHubApps.ExternalApproval(tools, "ki:lmstudio")); Assert.Equal("def", GitHubApps.ExternalApproval(tools, "ki:jan"));
+        Directory.Delete(tools, true);
     }
 }

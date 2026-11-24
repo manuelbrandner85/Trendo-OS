@@ -1,21 +1,21 @@
-[14:35:18] T-0762 PC-Lauf X-06 · 2026-11-24 14:35 +01:00 · Windows 10.0.26340.0 · ohne GitHub-Anmeldung (MainWindow.GitHubToken = keiner)
-[14:35:18] Trendo-Datenordner (isoliert): %TEMP%\trendo-ui-af188beb29554bd5ad7aa179ac45cf0f; Werkzeugordner: %TEMP%\trendo-ui-af188beb29554bd5ad7aa179ac45cf0f\werkzeuge
-[14:35:19] Suche „ripgrep“: 20 Treffer, gewählt BurntSushi/ripgrep · Lizenz Unlicense (Frei) · 70235 Sterne
-[14:35:21] Eingerichtet: BurntSushi/ripgrep 16.0.0 · Datei ripgrep-16.0.0-x86_64-pc-windows-msvc.zip (1782487 Bytes) · SHA-256 geprüft f418ae83e63046a94a7b5f3a44bf3a169f66e689164856ecee02547131c73931 · GitHub-Angabe f418ae83e63046a94a7b5f3a44bf3a169f66e689164856ecee02547131c73931 · gleich: True
-[14:35:21] Programm: %TEMP%\trendo-ui-af188beb29554bd5ad7aa179ac45cf0f\werkzeuge\gh-burntsushi-ripgrep\ripgrep-16.0.0-x86_64-pc-windows-msvc\rg.exe (4074496 Bytes) · Signatur: Unsigniert
-[14:35:22] „Starten“ unter Programme: nicht gestartet, Karte „Erster Start“ – Ampel Rot (Nicht signiert), Ordner-Prüfsumme ed67cb926819b982015a4c85ede281fafbad37aeb173eb0da2ecb5f5de5f7885
-[14:35:22] Häkchen gesetzt, „Trotzdem starten“ geklickt: Trendo übergibt %TEMP%\trendo-ui-af188beb29554bd5ad7aa179ac45cf0f\werkzeuge\gh-burntsushi-ripgrep\ripgrep-16.0.0-x86_64-pc-windows-msvc\rg.exe an den Starter; Erlaubnis zur Ordner-Prüfsumme gespeichert
-[14:35:23] Start 1 (--version): PID 55748, Exit 0, Ausgabe „ripgrep 16.0.0 (rev 669cb4c755)“
-[14:35:25] Start 2 (wartet auf Eingabe): PID 57704, läuft: True
-[14:35:25] PID 57704 beendet: True (Exit -1)
-[14:35:26] Falsche Prüfsumme (0000…): abgewiesen – Werkzeugordner unverändert (gh-burntsushi-ripgrep), Eintrag unverändert
-[14:35:26] Entfernt über „Entfernen“ → „Wirklich entfernen?“: Ordner gh-burntsushi-ripgrep weg: True, Liste leer, kein gh-* übrig. Werkzeugordner enthält: [github-programme.json]
-[14:35:27] Suche „itsdangerous“: gewählt pallets/itsdangerous · Lizenz BSD-3-Clause (Frei)
-[14:35:28] Quellcode geholt (git clone --depth 1): pallets_itsdangerous · Stand 672971d66a2ef9f85151e53283113f33d642dabd 2025-06-14 · Herkunftsdatei: True
-[14:35:29] Im Code-Editor geöffnet. Erkannte Bauanleitung: python -I -m compileall -q . [Werkzeug da]
-[14:35:29] Bauanleitung gewählt – Trendo fragt zuerst: „Bauen führt Code aus diesem fremden Projekt mit deinen Rechten aus.“ → „Ja, im Projekt ausführen“
-[14:35:29] Terminal des Code-Editors:
+[14:54:43] T-0762 PC-Lauf X-06 · 2026-11-24 14:54 +01:00 · Windows 10.0.26340.0 · ohne GitHub-Anmeldung (MainWindow.GitHubToken = keiner)
+[14:54:43] Trendo-Datenordner (isoliert): %TEMP%\trendo-ui-1f020764c33a4279b98dc4f39f4c9457; Werkzeugordner: %TEMP%\trendo-ui-1f020764c33a4279b98dc4f39f4c9457\werkzeuge
+[14:54:44] Suche „ripgrep“: 20 Treffer, gewählt BurntSushi/ripgrep · Lizenz Unlicense (Frei) · 70235 Sterne
+[14:54:46] Eingerichtet: BurntSushi/ripgrep 16.0.0 · Datei ripgrep-16.0.0-x86_64-pc-windows-msvc.zip (1782487 Bytes) · SHA-256 geprüft f418ae83e63046a94a7b5f3a44bf3a169f66e689164856ecee02547131c73931 · GitHub-Angabe f418ae83e63046a94a7b5f3a44bf3a169f66e689164856ecee02547131c73931 · gleich: True
+[14:54:46] Programm: %TEMP%\trendo-ui-1f020764c33a4279b98dc4f39f4c9457\werkzeuge\gh-burntsushi-ripgrep\ripgrep-16.0.0-x86_64-pc-windows-msvc\rg.exe (4074496 Bytes) · Signatur: Unsigniert
+[14:54:48] „Starten“ unter Programme: nicht gestartet, Karte „Erster Start“ – Ampel Rot (Nicht signiert), Ordner-Prüfsumme 7eb10c4ac94376570aee707b56db140cd0fb320b91073fd0e9c96715c876fb7a
+[14:54:48] Häkchen gesetzt, „Trotzdem starten“ geklickt: Trendo übergibt %TEMP%\trendo-ui-1f020764c33a4279b98dc4f39f4c9457\werkzeuge\gh-burntsushi-ripgrep\ripgrep-16.0.0-x86_64-pc-windows-msvc\rg.exe an den Starter; Erlaubnis zur Ordner-Prüfsumme gespeichert
+[14:54:49] Start 1 (--version): PID 56088, Exit 0, Ausgabe „ripgrep 16.0.0 (rev 669cb4c755)“
+[14:54:51] Start 2 (wartet auf Eingabe): PID 45208, läuft: True
+[14:54:51] PID 45208 beendet: True (Exit -1)
+[14:54:52] Falsche Prüfsumme (0000…): abgewiesen – Werkzeugordner unverändert (gh-burntsushi-ripgrep), Eintrag unverändert
+[14:54:53] Entfernt über „Entfernen“ → „Wirklich entfernen?“: Ordner gh-burntsushi-ripgrep weg: True, Liste leer, kein gh-* übrig. Werkzeugordner enthält: [github-programme.json]
+[14:54:55] Suche „itsdangerous“: gewählt pallets/itsdangerous · Lizenz BSD-3-Clause (Frei)
+[14:54:57] Quellcode geholt (git clone --depth 1): pallets_itsdangerous · Stand 672971d66a2ef9f85151e53283113f33d642dabd 2025-06-14 · Herkunftsdatei: True
+[14:54:57] Im Code-Editor geöffnet. Erkannte Bauanleitung: python -I -m compileall -q . [Werkzeug da]
+[14:54:57] Bauanleitung gewählt – Trendo fragt zuerst: „Bauen führt Code aus diesem fremden Projekt mit deinen Rechten aus.“ → „Ja, im Projekt ausführen“
+[14:54:58] Terminal des Code-Editors:
 pallets_itsdangerous> python -I -m compileall -q .
 (Exit 0)
-[14:35:29] Geholtes Projekt entfernt: Ordner „Open Source“ ist leer (0 Einträge, auch keine Herkunftsdatei).
-[14:35:29] Ergebnis: BESTANDEN
+[14:54:59] Geholtes Projekt entfernt: Ordner „Open Source“ ist leer (0 Einträge, auch keine Herkunftsdatei).
+[14:54:59] Ergebnis: BESTANDEN

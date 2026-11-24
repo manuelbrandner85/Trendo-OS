@@ -61,6 +61,7 @@ public partial class MainWindow
                 await Task.Run(() => GitHubApps.Install(_deps.ToolsRoot, s.Repo!, rel!, asset!, dl, info.License, info.Hint, _core.Audit));
             else
             {
+                using var hold = await KiInstallerGate(dl, info.Name) ?? throw new InvalidOperationException($"Installer für {info.Name} nicht ausgeführt."); // T-0762 Z3b: Ampel + eigene Rückfrage, Datei bis zum Start gesperrt
                 if (KiInstallerRunOverride is { } run) await run(dl);
                 else
                 {
@@ -93,7 +94,7 @@ public partial class MainWindow
     {
         var s = KiSourceSetups.For(id) ?? throw new ArgumentException("Unbekannte KI-Quelle.");
         var exe = KiSourceExe(id) ?? throw new InvalidOperationException("Zuerst herunterladen und einrichten.");
-        if (!s.Portable) { Launch(exe); return true; } // LM Studio, Jan: Programm öffnen, dort den lokalen Server einschalten
+        if (!s.Portable) { if (KiExternalStartGate(id, exe, () => KiSourceStart(id)) is { } gated) return gated; Launch(exe); return true; } // LM Studio, Jan: Programm öffnen, dort den lokalen Server einschalten (T-0762 Z3a: erst Tor/Karte „Erster Start“)
         var args = KiSourceSetups.Args(s, s.NeedsModel ? KiSourceSetups.BestModel(KiStore.Root) : null);
         if (!_kiGhGateOpen && GitHubEntryFor(exe) is { } ghe) return GitHubGate(ghe, exe, () => { _kiGhGateOpen = true; try { KiSourceStart(id); } finally { _kiGhGateOpen = false; } }); // T-0762 N3b: Ampel vor dem Start
         if (KiServerStartOverride is { } o) { o(exe, args); }

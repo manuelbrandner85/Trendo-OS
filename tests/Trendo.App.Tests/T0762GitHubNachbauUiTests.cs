@@ -66,6 +66,12 @@ public class T0762_GitHubNachbau_Ui
         Assert.Null(await w.GitHubInstall(Repo("beispiel/tool"))); Pump();
         var exe = await w.GitHubConfirmInstaller(); Pump();
         Assert.Equal(1, runs); Assert.EndsWith("tool.exe", exe);
+        // Z1b: auch nach dem Installer (und auch bei Grün) ist der erste Start ein eigener Schritt – Karte ohne Häkchen, eigener Klick
+        Assert.Empty(l.Opened);
+        Assert.Equal(GitHubApps.Ampel.Gruen, w.GitHubPendingStart!.Check.Ampel); Assert.False(w.GitHubPendingStart!.Check.NeedsRiskConsent);
+        w.Show("oss"); Pump();
+        Assert.Null(w.TryFind<CheckBox>("oss-firststart-risk"));
+        w.Find<Button>("oss-firststart-run").Press(); Pump();
         Assert.Contains(l.Opened, o => o.EndsWith("tool.exe"));
         var acts = w.Core.Audit.ReadAll().Select(a => a.Action).ToList();
         Assert.Contains("github.installer.held", acts); Assert.Contains("github.installer.consent", acts); Assert.Contains("github.installer.declined", acts);
@@ -214,9 +220,15 @@ public class T0762_GitHubNachbau_Ui
         Assert.False(w.GitHubLaunch(entry));
         Assert.Equal(GitHubApps.Ampel.Gelb, w.GitHubPendingStart!.Check.Ampel); Assert.Contains("helfer.dll", w.GitHubPendingStart!.Check.Text);
         w.GitHubCancelStart();
-        // gültig signiert (Signatur ersetzt): startet direkt
+        // alles gültig signiert (Signatur ersetzt): Z1b – trotzdem eigener Schritt, Grün ohne Häkchen; Text nennt ehrlich, was eine Signatur nicht abdeckt
         w.GitHubSignatureOverride = _ => new SignatureInfo(SigState.Gueltig, "Beispiel GmbH", "Gültig signiert (in der Datei).");
-        Assert.True(w.GitHubLaunch(entry)); Assert.Equal(4, l.Opened.Count);
+        Assert.False(w.GitHubLaunch(entry)); Assert.Equal(3, l.Opened.Count);
+        Assert.Equal(GitHubApps.Ampel.Gruen, w.GitHubPendingStart!.Check.Ampel);
+        Assert.Contains("Daten- und Skriptdateien kann eine Signatur nicht abdecken", w.GitHubPendingStart!.Check.Text);
+        Assert.True(w.GitHubConfirmStart()); Assert.Equal(4, l.Opened.Count);
+        // Z1a: Erlaubnis gilt für ALLE Dateien des Ordners – auch eine geänderte Textdatei fragt erneut
+        File.WriteAllText(Path.Combine(Path.GetDirectoryName(exe)!, "liesmich.txt"), "neu");
+        Assert.False(w.GitHubLaunch(entry)); Assert.Equal(4, l.Opened.Count); w.GitHubCancelStart();
         w.Close();
     }
 
@@ -317,6 +329,36 @@ public class T0762_GitHubNachbau_Ui
         w.Find<Button>("clean-req-add").Press(); Pump();
         Assert.Single(Directory.GetFiles(Path.Combine(a, "1-Beschreibung"), "anforderungen.defekt-*.json"));
         Assert.Contains("gesichert", w.Find<TextBlock>("clean-req-problem").Text);
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "T-0762 Z3a/Z3b (UI, Installer-Lauf ersetzt): KI-Installer vom Hersteller erst nach Ampel (echte Prüfung: Rot) und eigener Rückfrage, Nein führt nichts aus; erster Start des Herstellerprogramms über die Karte")]
+    public async Task Z3_vendor_installer_and_start()
+    {
+        var (w, l, root) = Ui.Open();
+        w.LocalAppDataDir = Path.Combine(root, "local");
+        var setup = Path.Combine(root, "LM-Studio-Setup.exe"); File.WriteAllText(setup, "MZ");
+        w.KiDownloadOverride = (_, _) => Task.FromResult<(string, string?)>((setup, null));
+        var runs = 0;
+        w.KiInstallerRunOverride = _ => { runs++; Assert.Throws<IOException>(() => File.AppendAllText(setup, "x")); var d = Path.Combine(w.LocalAppDataDir, "Programs", "LM Studio"); Directory.CreateDirectory(d); File.WriteAllText(Path.Combine(d, "LM Studio.exe"), "x"); return Task.CompletedTask; };
+        MainWindow.Wirkung? asked = null;
+        w.FreigabeConfirm = q => { asked = q; return Task.FromResult(false); };
+        Assert.False(await w.KiSourceInstall("lmstudio")); Pump();
+        Assert.Equal(0, runs); // Nein: Installer läuft nicht
+        Assert.NotNull(asked); Assert.Contains("● Rot", asked!.Text); Assert.Contains("SHA-256", asked.Text); Assert.Equal("Trotzdem ausführen", asked.YesLabel);
+        if (w.SetupFinishShown) { w.Find<Button>("setup-overlay-done").Press(); Pump(); }
+        File.WriteAllText(setup, "MZ"); // der abgelehnte Installer wurde gelöscht – neu „laden“
+        w.FreigabeConfirm = q => { asked = q; return Task.FromResult(true); };
+        Assert.True(await w.KiSourceInstall("lmstudio")); Pump();
+        Assert.Equal(1, runs); // die Datei war während des Laufs gesperrt (Prüfung im Ersatz-Lauf)
+        if (w.SetupFinishShown) { w.Find<Button>("setup-overlay-done").Press(); Pump(); }
+        // Z3a: Start des Herstellerprogramms – erst Karte, dann eigener Klick; danach ohne Rückfrage
+        Assert.False(w.KiSourceStart("lmstudio")); Pump();
+        Assert.Empty(l.Opened); Assert.NotNull(w.GitHubPendingStart); Assert.Equal("oss", w.CurrentView);
+        w.GitHubAcceptStartRisk(true); Assert.True(w.GitHubConfirmStart()); Pump();
+        Assert.Single(l.Opened, o => o.EndsWith("LM Studio.exe"));
+        Assert.True(w.KiSourceStart("lmstudio")); Assert.Equal(2, l.Opened.Count);
+        Assert.NotNull(GitHubApps.ExternalApproval(w.ToolsRootForTests, "ki:lmstudio"));
         w.Close();
     }
 

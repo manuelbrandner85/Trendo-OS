@@ -40,7 +40,9 @@ public class GitHubUsableUiTests
         var exe = await w.GitHubConfirmInstaller(); Pump();
         Assert.EndsWith("YouTube Music.exe", exe);
         Assert.Contains("/S", args!);
-        Assert.Contains(l.Opened, o => o.EndsWith("YouTube Music.exe")); // sofort gestartet
+        Assert.Empty(l.Opened); // T-0762 Z1b: erster Start ist ein eigener Schritt (Karte „Erster Start“)
+        w.GitHubAcceptStartRisk(true); Assert.True(w.GitHubConfirmStart()); Pump();
+        Assert.Contains(l.Opened, o => o.EndsWith("YouTube Music.exe"));
         var entry = Assert.Single(GitHubApps.List(w.ToolsRootForTests));
         Assert.Equal(exe, GitHubApps.ExePath(w.ToolsRootForTests, entry));
         Assert.True(w.SetupFinishShown); w.Find<Button>("setup-overlay-done").Press(); Pump();
