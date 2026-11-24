@@ -3,7 +3,9 @@ using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Platform.Storage;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
@@ -89,7 +91,7 @@ public partial class MainWindow
                     _phoneTexts.Insert(0, (dev, text)); if (_phoneTexts.Count > 10) _phoneTexts.RemoveAt(10);
                     Toast($"Vom Handy ({dev}): {(text.Length > 80 ? text[..80] + " …" : text)}", ("Kopieren", new Action(() => { if (Clipboard is { } cb) _ = cb.SetTextAsync(text); })));
                     if (CurrentView == "handy") Show("handy");
-                }), _phoneRemote);
+                }), _phoneRemote, PhoneRun, PhoneMaxFileBytes);
             _phoneServerError = "";
             if (!_phoneCloseHooked) { _phoneCloseHooked = true; Closed += async (_, _) => { _phoneTimer?.Stop(); if (_phoneServer is { } s) await s.DisposeAsync(); }; }
             return true;
@@ -125,6 +127,7 @@ public partial class MainWindow
         PhoneAccess.NewOffer();
         _phoneQrAt = DateTime.UtcNow.AddSeconds(-1); _phoneNewDevice = null; _phoneRemoteAsked = false; _phoneMsg = "";
         _core.Audit.Append(Principal.LocalOwner.Name, "phonelink.offer", "QR-Code angezeigt");
+        PhoneRun.Record(PhoneRunLog.Steps.Offer, null, null, note: "Einmal-Code, gilt 10 Minuten");
         if (_phoneSsid is null && !_opt.Isolated) _ = Task.Run(() => { _phoneSsid = WlanName() ?? ""; _ui.Post(() => { if (CurrentView == "handy") Show("handy"); }); });
         Show("handy");
     }
@@ -322,6 +325,7 @@ public partial class MainWindow
         sp.Children.Add(WCard(body));
 
         PhoneDevices(sp);
+        sp.Children.Add(PhoneRunCard());
         if (_phoneTexts.Count > 0)
         {
             sp.Children.Add(H("Zuletzt vom Handy", 14));
@@ -420,14 +424,30 @@ public partial class MainWindow
         {
             var id = d.Id; var nm = d.Name;
             var rm = new Button { Name = "phone-easy-remove-" + d.Id, Content = "Entfernen", Padding = new Thickness(10, 4) };
-            rm.Click += (_, _) => { PhoneAccess.Remove(id); _core.Audit.Append(Principal.LocalOwner.Name, "phonelink.removed", nm); Toast($"{nm} ist nicht mehr verbunden."); Show("handy"); };
+            rm.Click += (_, _) => PhoneRemoveDevice(id, nm);
+            var send = new Button { Name = "phone-send-" + d.Id, Content = "Datei senden …", Padding = new Thickness(10, 4) };
+            send.Click += async (_, _) => await PhoneSendPickAsync(id, nm);
             var on = d.Remote;
             var remote = new Button { Name = "phone-easy-remote-" + d.Id, Content = on ? "Bedienen sperren" : "Trendo bedienen erlauben", Padding = new Thickness(10, 4), Background = on ? Brushes.Transparent : Accent };
             remote.Click += (_, _) => { PhoneSetRemote(id, nm, !on); Show("handy"); };
-            sp.Children.Add(WCard(new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto"), Children = {
+            var card = WCard(new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto,Auto"), Children = {
                 new StackPanel { Children = { new TextBlock { Text = "" + d.Name, Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold },
-                    P($"Verbunden seit {d.Paired.ToLocalTime():dd.MM.yyyy} · zuletzt gesehen {d.LastSeen.ToLocalTime():dd.MM. HH:mm}{(on ? " · darf Trendo bedienen" : "")}", null, 12) } },
-                Pos(Sp(remote), 1), Pos(Sp(rm), 2) } }));
+                    P($"Verbunden seit {d.Paired.ToLocalTime():dd.MM.yyyy} · zuletzt gesehen {d.LastSeen.ToLocalTime():dd.MM. HH:mm}{(on ? " · darf Trendo bedienen" : "")}", null, 12),
+                    P("Datei hierher ziehen oder „Datei senden …“: liegt dann 24 Stunden nur für dieses Handy bereit (Handy-Seite → „Vom PC für dich“).", Muted, 11.5) } },
+                Pos(Sp(send), 1), Pos(Sp(remote), 2), Pos(Sp(rm), 3) } });
+            card.Name = "phone-device-" + d.Id;
+            DragDrop.SetAllowDrop(card, true);
+            card.AddHandler(DragDrop.DragOverEvent, (_, e) => { e.DragEffects = e.DataTransfer.Contains(DataFormat.File) ? DragDropEffects.Copy : DragDropEffects.None; e.Handled = true; });
+            card.AddHandler(DragDrop.DropEvent, async (_, e) =>
+            {
+                if (e.DataTransfer.TryGetFiles() is not { } items) return;
+                foreach (var p in items.Select(x => x.TryGetLocalPath()).OfType<string>().Where(File.Exists)) await PhoneSendFileAsync(id, p);
+                Show("handy");
+            });
+            card.ContextMenu = new ContextMenu { ItemsSource = new[] {
+                MenuAction("Datei senden …", () => _ = PhoneSendPickAsync(id, nm)),
+                MenuAction("Entfernen", () => PhoneRemoveDevice(id, nm)) } };
+            sp.Children.Add(card);
         }
         var inbox = new Button { Name = "phone-easy-inbox", Content = "Ordner „Vom Handy“" }; inbox.Click += (_, _) => Launch(PhoneInbox);
         var outbox = new Button { Name = "phone-easy-outbox", Content = "Ordner „Zum Handy“ (hier hineinlegen)" }; outbox.Click += (_, _) => Launch(PhoneOutbox);

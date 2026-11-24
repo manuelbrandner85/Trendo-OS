@@ -50,8 +50,10 @@ public sealed class PhoneLinkServer : IAsyncDisposable
 
     /// <summary>Startet auf den angegebenen Adressen (nur Heimnetz/Tailscale/Loopback). <paramref name="onFile"/> und <paramref name="onText"/>
     /// melden Empfangenes an Trendo (Benachrichtigung, Protokoll).</summary>
+    /// <param name="run">T-0767: Protokoll für „Lauf aufzeichnen“ (anonymisiert); schreibt nur, solange es läuft.</param>
+    /// <param name="maxFileBytes">Größenlimit je Datei vom Handy (Standard 2 GB).</param>
     public static async Task<PhoneLinkServer> StartAsync(PhoneAccess link, IReadOnlyList<IPAddress> addresses, int port, string inbox, string outbox, AuditLog audit,
-        Action<string, string> onFile, Action<string, string> onText, IPhoneRemote? remote = null)
+        Action<string, string> onFile, Action<string, string> onText, IPhoneRemote? remote = null, PhoneRunLog? run = null, long maxFileBytes = PhoneTransfer.DefaultMaxBytes)
     {
         var bind = addresses.Where(PhoneAccess.AllowedAddress).Distinct().ToList();
         if (bind.Count == 0) throw new InvalidOperationException("Kein Heimnetz gefunden. Ist der PC mit dem WLAN oder LAN verbunden?");
@@ -74,7 +76,16 @@ public sealed class PhoneLinkServer : IAsyncDisposable
             await next();
         });
 
-        PhoneAccess.Device? Who(HttpContext c) => link.Verify(c.Request.Cookies[Cookie]);
+        PhoneAccess.Device? Who(HttpContext c)
+        {
+            var token = c.Request.Cookies[Cookie];
+            var d = link.Verify(token);
+            // T-0767: ein Handy mit altem Schlüssel (z. B. nach „Entfernen“) wird abgewiesen – im Lauf-Protokoll als Beleg der Sperre
+            if (d is null && !string.IsNullOrEmpty(token) && run is { Active: true })
+                run.Record(PhoneRunLog.Steps.Rejected, null, c.Connection.RemoteIpAddress, note: $"{c.Request.Method} {Area(c.Request.Path)}");
+            return d;
+        }
+        static string Area(PathString p) => p.Value is { } v && v.StartsWith("/api/", StringComparison.Ordinal) ? v : p.Value is { Length: > 1 } w ? "/" + w.Split('/', StringSplitOptions.RemoveEmptyEntries)[0] + "/…" : "/";
         // Dauerhaft verbunden: bei jedem Öffnen gilt der Schlüssel im Handy wieder ein volles Jahr
         bool Keep(HttpContext c)
         {
@@ -97,6 +108,7 @@ public sealed class PhoneLinkServer : IAsyncDisposable
                 return Results.Content(PhoneLinkPages.Message("Verbinden hat nicht geklappt", "Der Code ist abgelaufen oder schon benutzt. Scanne den neuen Code in Trendo."), "text/html; charset=utf-8", Encoding.UTF8, 410);
             c.Response.Cookies.Append(Cookie, r.Token, new CookieOptions { HttpOnly = true, SameSite = SameSiteMode.Strict, Path = "/", MaxAge = TimeSpan.FromDays(365), IsEssential = true });
             audit.Append("handy", "phonelink.paired", $"{r.Device.Name} ({c.Connection.RemoteIpAddress})");
+            run?.Record(PhoneRunLog.Steps.Paired, r.Device.Id, c.Connection.RemoteIpAddress, note: "Einmal-Code eingelöst, eigener Schlüssel (nur als SHA-256 gespeichert)");
             onText(r.Device.Name, "\u0001verbunden");
             return Results.Redirect("/");
         });
@@ -109,18 +121,48 @@ public sealed class PhoneLinkServer : IAsyncDisposable
         app.MapPost("/api/upload", async (HttpContext c) =>
         {
             if (Who(c) is not { } d) return Results.Unauthorized();
-            var form = await c.Request.ReadFormAsync();
-            Directory.CreateDirectory(inbox);
-            var saved = new List<string>();
-            foreach (var f in form.Files)
+            // T-0767: Dateien direkt aus dem Datenstrom annehmen (kein Zwischenpuffer), Größenlimit je Datei, Name gesäubert, SHA-256.
+            // Das Handy schickt vor jeder Datei optional ein Feld „sha“ (am Handy gebildet) – stimmt es, ist die Übertragung Ende zu Ende belegt.
+            if (!Microsoft.Net.Http.Headers.MediaTypeHeaderValue.TryParse(c.Request.ContentType, out var type)
+                || Microsoft.Net.Http.Headers.HeaderUtilities.RemoveQuotes(type.Boundary).Value is not { Length: > 0 and <= 200 } boundary)
+                return Results.BadRequest();
+            var reader = new Microsoft.AspNetCore.WebUtilities.MultipartReader(boundary, c.Request.Body);
+            var saved = new List<string>(); var sums = new List<string>(); var phoneSums = new Queue<string>();
+            try
             {
-                var target = SafeTarget(inbox, f.FileName);
-                await using (var s = File.Create(target)) await f.CopyToAsync(s);
-                saved.Add(Path.GetFileName(target));
-                audit.Append("handy", "phonelink.file", $"{d.Name}: {Path.GetFileName(target)} ({f.Length} B)");
-                onFile(d.Name, target);
+                while (await reader.ReadNextSectionAsync(c.RequestAborted) is { } section)
+                {
+                    if (!Microsoft.Net.Http.Headers.ContentDispositionHeaderValue.TryParse(section.ContentDisposition, out var cd)) continue;
+                    if (!(cd.FileName.HasValue || cd.FileNameStar.HasValue))
+                    {
+                        if (cd.Name.Value == "sha")
+                        {
+                            var v = (await new StreamReader(section.Body).ReadToEndAsync(c.RequestAborted)).Trim().ToLowerInvariant();
+                            phoneSums.Enqueue(v.Length == 64 && v.All(char.IsAsciiHexDigit) ? v : "");
+                        }
+                        continue;
+                    }
+                    var raw = cd.FileNameStar.HasValue ? cd.FileNameStar.Value : cd.FileName.Value;
+                    var got = await PhoneTransfer.ReceiveAsync(section.Body, inbox, raw, maxFileBytes, c.RequestAborted);
+                    var phone = phoneSums.Count > 0 ? phoneSums.Dequeue() : "";
+                    var match = phone.Length == 0 ? "Prüfsumme am Handy nicht gebildet" : phone == got.Sha256 ? "Prüfsumme gleich (am Handy und am PC gebildet)" : "Prüfsumme ABWEICHEND";
+                    saved.Add(Path.GetFileName(got.Path)); sums.Add(got.Sha256);
+                    audit.Append("handy", "phonelink.file", $"{d.Name}: {Path.GetFileName(got.Path)} ({got.Bytes} B, sha256 {got.Sha256[..16]})");
+                    run?.Record(PhoneRunLog.Steps.PhoneToPc, d.Id, c.Connection.RemoteIpAddress, bytes: got.Bytes, sha: got.Sha256, ok: phone.Length == 0 || phone == got.Sha256, note: match);
+                    onFile(d.Name, got.Path);
+                }
             }
-            return Results.Ok(new { saved });
+            catch (PhoneTransfer.TooLargeException e)
+            {
+                run?.Record(PhoneRunLog.Steps.PhoneToPc, d.Id, c.Connection.RemoteIpAddress, ok: false, note: "zu groß, nicht angenommen");
+                return Results.Content(e.Message, "text/plain; charset=utf-8", Encoding.UTF8, 413);
+            }
+            catch (Exception e) when (e is IOException or InvalidDataException or OperationCanceledException or BadHttpRequestException)
+            {
+                run?.Record(PhoneRunLog.Steps.PhoneToPc, d.Id, c.Connection.RemoteIpAddress, ok: false, note: "Übertragung abgebrochen, nichts gespeichert");
+                return Results.BadRequest();
+            }
+            return Results.Ok(new { saved, sha256 = sums });
         });
 
         app.MapPost("/api/text", async (HttpContext c) =>
@@ -136,19 +178,41 @@ public sealed class PhoneLinkServer : IAsyncDisposable
 
         app.MapGet("/api/files", (HttpContext c) =>
         {
-            if (Who(c) is null) return Results.Unauthorized();
+            if (Who(c) is not { } d) return Results.Unauthorized();
             Directory.CreateDirectory(outbox);
-            return Results.Ok(new DirectoryInfo(outbox).EnumerateFiles().Where(f => !f.Attributes.HasFlag(FileAttributes.Hidden))
-                .OrderByDescending(f => f.LastWriteTimeUtc).Take(200).Select(f => new { name = f.Name, size = f.Length }));
+            // T-0767: zuerst, was am PC nur für dieses Handy bereitgestellt wurde (24 Stunden), dann der gemeinsame Ordner „Zum Handy“
+            return Results.Ok(PhoneTransfer.Visible(outbox, d.Id, DateTime.UtcNow).Select(x => new { name = x.File.Name, size = x.File.Length, personal = x.Personal }));
         });
 
-        app.MapGet("/f/{name}", (HttpContext c, string name) =>
+        app.MapGet("/f/{name}", async (HttpContext c, string name) =>
         {
-            if (Who(c) is not { } d) return Results.Unauthorized();
-            var path = Path.Combine(outbox, Path.GetFileName(name));
-            if (Path.GetFileName(name) != name || !File.Exists(path)) return Results.NotFound();
+            if (Who(c) is not { } d) { c.Response.StatusCode = 401; return; }
+            if (PhoneTransfer.Resolve(outbox, d.Id, name, DateTime.UtcNow) is not { } path) { c.Response.StatusCode = 404; return; }
             audit.Append("handy", "phonelink.download", $"{d.Name}: {name}");
-            return Results.File(path, "application/octet-stream", name);
+            // Selbst ausliefern statt Results.File: so ist belegt, dass alle Bytes gesendet wurden, und die Prüfsumme gilt für genau diese Bytes
+            await using var src = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, useAsync: true);
+            var length = src.Length;
+            c.Response.ContentType = "application/octet-stream";
+            c.Response.ContentLength = length;
+            var disp = new Microsoft.Net.Http.Headers.ContentDispositionHeaderValue("attachment");
+            disp.SetHttpFileName(name);
+            c.Response.Headers.ContentDisposition = disp.ToString();
+            using var hash = System.Security.Cryptography.IncrementalHash.CreateHash(System.Security.Cryptography.HashAlgorithmName.SHA256);
+            long sent = 0; var buf = new byte[81920]; int n;
+            try
+            {
+                while ((n = await src.ReadAsync(buf, c.RequestAborted)) > 0)
+                {
+                    hash.AppendData(buf, 0, n);
+                    await c.Response.Body.WriteAsync(buf.AsMemory(0, n), c.RequestAborted);
+                    sent += n;
+                }
+                await c.Response.Body.FlushAsync(c.RequestAborted);
+            }
+            catch (Exception e) when (e is IOException or OperationCanceledException) { }
+            var ok = sent == length;
+            run?.Record(PhoneRunLog.Steps.PcToPhone, d.Id, c.Connection.RemoteIpAddress, bytes: sent, sha: ok ? Convert.ToHexStringLower(hash.GetHashAndReset()) : null, ok: ok,
+                note: ok ? "alle Bytes gesendet" : $"abgebrochen nach {sent} von {length} B");
         });
 
         // Unterwegs-Zugang: das verbundene Handy bekommt einen Link auf die Tailscale-Adresse (eigener Schlüssel dort)
@@ -276,15 +340,8 @@ public sealed class PhoneLinkServer : IAsyncDisposable
     }
 
     /// <summary>Dateiname vom Handy: nur der Name, ohne Pfad; gleiche Namen bekommen eine Nummer.</summary>
-    internal static string SafeTarget(string dir, string fileName)
-    {
-        var name = Path.GetFileName(fileName ?? "");
-        name = new string(name.Where(ch => !Path.GetInvalidFileNameChars().Contains(ch)).ToArray()).Trim(' ', '.');
-        if (name.Length == 0) name = $"vom-handy-{DateTime.Now:yyyyMMdd-HHmmss}";
-        var target = Path.Combine(dir, name);
-        for (var i = 2; File.Exists(target); i++) target = Path.Combine(dir, $"{Path.GetFileNameWithoutExtension(name)} ({i}){Path.GetExtension(name)}");
-        return target;
-    }
+    internal static string SafeTarget(string dir, string fileName) =>
+        PhoneTransfer.UniqueTarget(dir, PhoneTransfer.CleanName(fileName, $"vom-handy-{DateTime.Now:yyyyMMdd-HHmmss}"));
 
     public async ValueTask DisposeAsync() { await _app.StopAsync(); await _app.DisposeAsync(); }
 }
@@ -295,9 +352,9 @@ static class PhoneLinkPages
     const string Head = "<!doctype html><html lang=\"de\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><meta name=\"theme-color\" content=\"#0A1428\"><title>Trendo</title><style>" +
         "body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#050B18;color:#E6EDF7}main{max-width:520px;margin:0 auto;padding:22px 16px 40px}" +
         "h1{font-size:24px;margin:8px 0 4px}p{color:#9FB1CF;line-height:1.45}.card{background:#0E1B3A;border:1px solid #29436F;border-radius:16px;padding:16px;margin:14px 0}" +
-        "button,.btn,input[type=submit]{display:block;width:100%;box-sizing:border-box;border:0;border-radius:12px;padding:16px;font-size:17px;font-weight:600;background:#2F86F6;color:#fff;margin-top:10px;text-align:center;text-decoration:none}" +
-        ".sec{background:#1A2B4D}input[type=text],textarea{width:100%;box-sizing:border-box;border-radius:10px;border:1px solid #29436F;background:#081226;color:#E6EDF7;padding:12px;font-size:16px}" +
-        "li{list-style:none;border-bottom:1px solid #1A2B4D;padding:10px 0}li a{color:#7CB8FF;text-decoration:none;font-weight:600}ul{padding:0;margin:0}.ok{color:#4ADE80}.logo{font-size:30px}" +
+        "button,.btn,input[type=submit]{display:block;width:100%;box-sizing:border-box;border:0;border-radius:12px;padding:16px;font-size:17px;font-weight:600;background:#D4A537;color:#1B1407;margin-top:10px;text-align:center;text-decoration:none}" +
+        ".sec{background:#2A2418;color:#F5E6C0;border:1px solid #6B5521}input[type=text],textarea{width:100%;box-sizing:border-box;border-radius:10px;border:1px solid #29436F;background:#081226;color:#E6EDF7;padding:12px;font-size:16px}" +
+        "li{list-style:none;border-bottom:1px solid #1A2B4D;padding:10px 0}li a{color:#F5C451;text-decoration:none;font-weight:600}ul{padding:0;margin:0}.ok{color:#4ADE80}.logo{font-size:30px}" +
         "</style></head><body><main><div class=\"logo\">◆ Trendo</div>";
     const string Foot = "</main></body></html>";
     static string E(string s) => WebUtility.HtmlEncode(s);
@@ -455,20 +512,47 @@ hello();tick();setInterval(tick,10000);fetch('/api/apps').then(function(r){retur
             "<script>function tv(c){var d=new FormData();d.append('cmd',c);fetch('/api/tv',{method:'POST',body:d}).then(function(r){return r.json();}).then(function(j){document.getElementById('tvs').textContent=j.ok;}).catch(function(){document.getElementById('tvs').textContent='Keine Verbindung zum PC.';});}</script></div>" : "") +
         (canAway ? "<div class=\"card\"><b>Auch unterwegs</b><p>Einmal hier antippen, solange du zuhause bist. Danach erreichst du den PC überall, wenn am Handy Tailscale an ist. Speichere die neue Seite als Lesezeichen oder auf dem Startbildschirm.</p>" +
                    "<button class=\"sec\" id=\"away\" onclick=\"fetch('/api/away',{method:'POST'}).then(function(r){return r.json();}).then(function(j){location.href=j.url;}).catch(function(){document.getElementById('away').textContent='Hat nicht geklappt – ist Tailscale am Handy an?';});\">Unterwegs-Zugang einrichten</button></div>" : "") +
-        "<div class=\"card\"><b>Fotos &amp; Dateien an den PC</b><p>Landen am PC im Ordner „Vom Handy“.</p><input type=\"file\" id=\"f\" multiple style=\"display:none\">" +
-        "<button onclick=\"document.getElementById('f').click()\">Fotos oder Dateien auswählen</button><p id=\"st\"></p></div>" +
+        "<div class=\"card\"><b>Fotos &amp; Dateien an den PC</b><p>Landen am PC im Ordner „Vom Handy“. Nur hier im Heimnetz, nichts geht ins Internet.</p><input type=\"file\" id=\"f\" multiple style=\"display:none\">" +
+        "<button id=\"pick\" onclick=\"document.getElementById('f').click()\">Fotos oder Dateien auswählen</button><p id=\"st\"></p></div>" +
         "<div class=\"card\"><b>Text oder Link an den PC</b><textarea id=\"t\" rows=\"3\" placeholder=\"z. B. eine Adresse oder Notiz\"></textarea><button class=\"sec\" onclick=\"sendText()\">An den PC schicken</button><p id=\"tst\"></p></div>" +
-        "<div class=\"card\"><b>Vom PC für dich</b><p>Dateien aus dem Ordner „Zum Handy“ auf dem PC.</p><ul id=\"l\"><li>Wird geladen …</li></ul></div>" +
+        "<div class=\"card\"><b>Vom PC für dich</b><p>Was der PC dir mit „Datei senden“ schickt (24 Stunden nur für dieses Handy) und der Ordner „Zum Handy“. Antippen lädt die Datei herunter.</p><ul id=\"l\"><li>Wird geladen …</li></ul>" +
+        "<button class=\"sec\" id=\"reload\" onclick=\"load()\">Aktualisieren</button></div>" +
         "<p>Tipp: Im Browser-Menü „Zum Startbildschirm hinzufügen“ – dann ist Trendo wie eine App auf dem Handy.</p>" +
-        "<script>" +
-        "var f=document.getElementById('f'),st=document.getElementById('st');" +
-        "f.onchange=function(){if(!f.files.length)return;var d=new FormData();for(var i=0;i<f.files.length;i++)d.append('f',f.files[i]);var x=new XMLHttpRequest();x.open('POST','/api/upload');" +
+        "<script>" + ShaJs +
+        "var f=document.getElementById('f'),st=document.getElementById('st'),gone=false;" +
+        "function off(){gone=true;document.getElementById('l').innerHTML='<li>Dieses Handy ist nicht mehr mit dem PC verbunden. Zum neuen Verbinden in Trendo „Handy verbinden“ öffnen.</li>';}" +
+        // Prüfsumme am Handy (bis 64 MB je Datei): so belegt der PC, dass genau diese Bytes angekommen sind
+        "function hashAll(list,i,out){if(i>=list.length)return Promise.resolve(out);var x=list[i];if(x.size>67108864||!x.arrayBuffer){out.push('');return hashAll(list,i+1,out);}" +
+        "st.textContent='Prüfsumme wird gebildet … ('+(i+1)+'/'+list.length+')';return x.arrayBuffer().then(function(b){out.push(sha256(new Uint8Array(b)));return hashAll(list,i+1,out);});}" +
+        "f.onchange=function(){if(!f.files.length)return;var list=Array.prototype.slice.call(f.files);hashAll(list,0,[]).then(function(sums){var d=new FormData();" +
+        "for(var i=0;i<list.length;i++){d.append('sha',sums[i]);d.append('f',list[i]);}var x=new XMLHttpRequest();x.open('POST','/api/upload');" +
         "x.upload.onprogress=function(e){if(e.lengthComputable)st.textContent='Wird gesendet … '+Math.round(e.loaded*100/e.total)+' %';};" +
-        "x.onload=function(){st.textContent=x.status==200?'✓ '+f.files.length+' Datei(en) am PC angekommen.':'Senden hat nicht geklappt ('+x.status+').';f.value='';};x.onerror=function(){st.textContent='Keine Verbindung zum PC.';};x.send(d);};" +
+        "x.onload=function(){if(x.status==401){st.textContent='Nicht mehr verbunden – der PC hat dieses Handy entfernt.';off();}else if(x.status==413){st.textContent=x.responseText||'Datei zu groß.';}" +
+        "else if(x.status==200){var j=JSON.parse(x.responseText),same=0;for(var k=0;k<j.sha256.length;k++)if(j.sha256[k]===sums[k])same++;" +
+        "st.textContent='✓ '+j.saved.length+' Datei(en) am PC angekommen'+(same?' · Prüfsumme gleich: '+same:'')+'.';}else st.textContent='Senden hat nicht geklappt ('+x.status+').';f.value='';};" +
+        "x.onerror=function(){st.textContent='Keine Verbindung zum PC.';};x.send(d);});};" +
         "function sendText(){var t=document.getElementById('t'),s=document.getElementById('tst');if(!t.value)return;var d=new FormData();d.append('text',t.value);" +
         "fetch('/api/text',{method:'POST',body:d}).then(function(r){s.textContent=r.ok?'✓ Am PC angekommen.':'Hat nicht geklappt.';if(r.ok)t.value='';}).catch(function(){s.textContent='Keine Verbindung zum PC.';});}" +
-        "fetch('/api/files').then(function(r){return r.json();}).then(function(a){var l=document.getElementById('l');l.innerHTML='';if(!a.length){l.innerHTML='<li>Noch nichts da.</li>';return;}" +
-        "a.forEach(function(x){var li=document.createElement('li'),k=document.createElement('a');k.href='/f/'+encodeURIComponent(x.name);k.textContent=x.name;li.appendChild(k);" +
-        "li.appendChild(document.createTextNode(' · '+(x.size>1048576?(x.size/1048576).toFixed(1)+' MB':Math.max(1,Math.round(x.size/1024))+' KB')));l.appendChild(li);});}).catch(function(){});" +
+        "function load(){fetch('/api/files').then(function(r){if(r.status==401){off();return null;}return r.json();}).then(function(a){if(!a)return;var l=document.getElementById('l');l.innerHTML='';if(!a.length){l.innerHTML='<li>Noch nichts da.</li>';return;}" +
+        "a.forEach(function(x){var li=document.createElement('li'),k=document.createElement('a');k.href='/f/'+encodeURIComponent(x.name);k.textContent=x.name;k.setAttribute('download',x.name);li.appendChild(k);" +
+        "li.appendChild(document.createTextNode(' · '+(x.size>1048576?(x.size/1048576).toFixed(1)+' MB':Math.max(1,Math.round(x.size/1024))+' KB')+(x.personal?' · nur für dieses Handy':'')));l.appendChild(li);});}).catch(function(){});}" +
+        "load();setInterval(function(){if(!document.hidden&&!gone)load();},15000);" +
         "</script>" + Foot;
+
+    /// <summary>SHA-256 in reinem JavaScript: im Heimnetz läuft die Seite über http, dort gibt es crypto.subtle nicht (nur auf sicheren Seiten).</summary>
+    const string ShaJs = """
+function sha256(m){var K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+var H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19],l=m.length,n=((l+9+63)>>>6)<<6,b=new Uint8Array(n);b.set(m);b[l]=0x80;
+var v=new DataView(b.buffer);v.setUint32(n-4,(l*8)>>>0);v.setUint32(n-8,Math.floor(l/536870912));var w=new Int32Array(64),i,o;
+for(o=0;o<n;o+=64){for(i=0;i<16;i++)w[i]=v.getInt32(o+i*4);
+for(i=16;i<64;i++){var x=w[i-15],y=w[i-2];w[i]=((((x>>>7)|(x<<25))^((x>>>18)|(x<<14))^(x>>>3))+(((y>>>17)|(y<<15))^((y>>>19)|(y<<13))^(y>>>10))+w[i-7]+w[i-16])|0;}
+var a=H[0],c=H[1],d=H[2],e=H[3],f=H[4],g=H[5],h=H[6],k=H[7];
+for(i=0;i<64;i++){var t1=(k+(((f>>>6)|(f<<26))^((f>>>11)|(f<<21))^((f>>>25)|(f<<7)))+((f&g)^(~f&h))+K[i]+w[i])|0;
+var t2=((((a>>>2)|(a<<30))^((a>>>13)|(a<<19))^((a>>>22)|(a<<10)))+((a&c)^(a&d)^(c&d)))|0;k=h;h=g;g=f;f=(e+t1)|0;e=d;d=c;c=a;a=(t1+t2)|0;}
+H[0]=(H[0]+a)|0;H[1]=(H[1]+c)|0;H[2]=(H[2]+d)|0;H[3]=(H[3]+e)|0;H[4]=(H[4]+f)|0;H[5]=(H[5]+g)|0;H[6]=(H[6]+h)|0;H[7]=(H[7]+k)|0;}
+return H.map(function(z){return ('00000000'+(z>>>0).toString(16)).slice(-8);}).join('');}
+""";
 }

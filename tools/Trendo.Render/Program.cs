@@ -70,6 +70,7 @@ if (shot is "brief" or "fenster" or "seite")
     prepared.Save(root);
     if (Environment.GetEnvironmentVariable("TRENDO_PIN_HINT") is { Length: > 0 }) new PersonStore(root).Add("Kind", "emoji:🐻", child: true); // T-0713: Kinderprofil neben Profil ohne PIN
 }
+if (Environment.GetEnvironmentVariable("TRENDO_PHONE_DEMO") is { Length: > 0 }) { var pa = new Trendo.Core.PhoneAccess(root); pa.Redeem(pa.NewOffer().Secret, "Beispiel-Handy"); } // T-0767: ein gekoppeltes Handy zeigen
 var core = new TrendoCore(root, new InMemorySecretStore(), new NoopL());
 if (args.Length > 4) new UserSettings { Theme = args[4], SetupDone = true, Wallpaper = args.Length > 5 ? args[5] : "abendrot" }.Save(root);
 if (Environment.GetEnvironmentVariable("TRENDO_STYLE") is { Length: > 0 } stilWahl) { var us0 = UserSettings.Load(root); us0.SetupDone = true; us0.Style = stilWahl; us0.Save(root); } // Bedienstil (trendo, windows, mac, linux) zeigen
@@ -491,6 +492,7 @@ else if (shot == "seite")
         Trendo.Core.Sys.PdfFormular.AddFields(blank, form, [new("Name", "text", 0, 60, 100, 220, 20), new("Zustimmung", "haken", 0, 60, 140, 12, 12)]);
         win.OpenPdf(form);
     }
+    if (Environment.GetEnvironmentVariable("TRENDO_PHONE_DEMO") == "lauf") win.PhoneRun.Start(); // T-0767: Aufzeichnung läuft
     win.Show(page);
     if (win.Windows.Active is { Maximized: false } pageWin) win.Windows.ToggleMaximize(pageWin.Id);
     win.Show(page);
