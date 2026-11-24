@@ -71,3 +71,11 @@ Der Nutzer hat die 30 Tage Cookie-Gültigkeit bestätigt.
 | Hinweis Stand | Belege werden nach dem Code-Commit mit dem committeten Stand neu erzeugt (eigener Commit), `SHA256SUMS.txt` aktualisiert | – |
 
 Tests fix2: Core `PhoneTransferTests|PhoneAccessTests|W7PhoneLinkTests|W7Tests|NoFixedUserTests` → 55 bestanden, 5 übersprungen, 0 Fehler. App `PhoneSendT0767Tests`, `PhoneEasyTests`, `W7_Ui` → Total 17, Failed 0, Skipped 1 (nur Linux).
+
+## Restkorrektur fix3 (dritte Prüfrunde von da68d1ccd)
+| Punkt | Änderung | Test |
+|---|---|---|
+| R3-N1 | Klappt die Herkunftsmarkierung nicht, gilt eine Erlaubt-Liste (Bilder, Video, Ton, PDF, reiner Text, Kontakte/Termine, Office ohne Makros): alles andere bekommt „.txt“ angehängt. Archive (.zip/.7z/.rar) sind bewusst nicht erlaubt, weil ihr Inhalt ohne Markierung beim Entpacken ebenfalls keine bekäme. Eine gemeinsame Risiko-Liste in `Browsers.Risky` (alte Liste vollständig enthalten, ergänzt um .pif .application .appref-ms .msp .mst .xll .settingcontent-ms .wsc .sct .inf .msc .ps1xml .psd1 .chm .iso .img .vhd .vhdx .diagcab .gadget .docm .xlsm .pptm, dazu desktop.ini); `PhoneTransfer.IsRisky` nutzt sie. Downloads und Mail warnen damit bei mehr Dateien, und „Alle speichern“ in der Mail lässt mehr riskante Anhänge aus – strenger, nicht schwächer | Core `Mark_of_the_web` (.xyz/.zip/.docm → .txt, .mp4/.pdf/.xlsx/.txt bleiben; alle Endungen riskant in beiden Listen); `SYS03_Browser`, `Sys03_*`, `MailFull_Ui`, `MailProgram_Ui`, `Sys03_Netz_Ui` grün |
+| R3-N2 | Upload-Handler: Merker `done` und `finally { if (!done) Undo(); }`; `ReceiveAsync` löscht bei einer Ausnahme nach dem Umbenennen auch die schon umbenannte Datei | App `Unexpected_error_rolls_back` (Testhaken `MarkOverride` wirft bei der 3. Datei UnauthorizedAccessException → 500, Eingang leer) |
+
+Tests fix3: Core `PhoneTransferTests|PhoneAccessTests|W7PhoneLinkTests|W7Tests|NoFixedUserTests|SYS03_Browser|Sys03*` → 79 bestanden, 5 übersprungen, 0 Fehler. App `PhoneSendT0767Tests, PhoneEasyTests, W7_Ui, MailFull_Ui, MailProgram_Ui, Sys03_Netz_Ui` → 25 Tests, 0 Fehler, 1 übersprungen (zweimal hintereinander). Ein erster Lauf hatte einmal `MailProgram_Ui` (T-0689, `Assert.Null`) rot; danach dreimal grün (allein und zweimal im Verbund) – vermutlich Last-abhängig, nicht durch diese Änderung erklärbar, aber nicht weiter untersucht.

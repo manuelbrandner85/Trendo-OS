@@ -145,6 +145,10 @@ public sealed class PhoneLinkServer : IAsyncDisposable
             var got = new List<(PhoneTransfer.Received File, string Phone)>();
             // Alles oder nichts: scheitert die Sendung, wird auch das schon Angekommene dieser Sendung wieder gelöscht
             void Undo() { foreach (var g in got) try { File.Delete(g.File.Path); } catch (IOException) { } catch (UnauthorizedAccessException) { } }
+            // Befund R3-N2: auch unerwartete Ausnahmen rollen die Sendung zurück
+            var done = false;
+            try
+            {
             try
             {
                 while (await reader.ReadNextSectionAsync(c.RequestAborted) is { } section)
@@ -186,6 +190,9 @@ public sealed class PhoneLinkServer : IAsyncDisposable
                 run?.Record(PhoneRunLog.Steps.PhoneToPc, d.Id, c.Connection.RemoteIpAddress, ok: false, note: "Übertragung abgebrochen, nichts gespeichert");
                 return Results.BadRequest();
             }
+            done = true;
+            }
+            finally { if (!done) Undo(); }
             // Erst nach der ganzen Sendung: ein Protokolleintrag je Datei, EIN Audit-Eintrag und EINE Meldung für die Sendung
             foreach (var (f, phone) in got)
             {

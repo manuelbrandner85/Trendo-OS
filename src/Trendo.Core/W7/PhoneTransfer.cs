@@ -32,13 +32,22 @@ public static class PhoneTransfer
     /// <param name="Risky">Programm- oder Verknüpfungsdatei (.exe, .lnk, .bat …) – Trendo warnt davor, sie zu öffnen.</param>
     public sealed record Received(string Path, long Bytes, string Sha256, bool Risky = false);
 
-    static readonly HashSet<string> RiskyExt = new(StringComparer.OrdinalIgnoreCase)
+    /// <summary>Befund R3-N1: Kann die Herkunft nicht markiert werden, bleibt nur unverändert, was hier steht – alles andere bekommt „.txt“.
+    /// Bilder, Video, Ton, PDF, reiner Text, Kontakte/Termine und Office ohne Makros. Archive (.zip, .7z, .rar) bewusst NICHT: ihr Inhalt
+    /// hätte ohne Herkunftsmarkierung beim Entpacken ebenfalls keine, und darin können Programme stecken.</summary>
+    static readonly HashSet<string> SafeExt = new(StringComparer.OrdinalIgnoreCase)
     {
-        ".exe", ".com", ".scr", ".msi", ".msix", ".appx", ".lnk", ".url", ".scf", ".bat", ".cmd", ".ps1", ".psm1", ".vbs", ".vbe", ".js", ".jse", ".wsf", ".wsh", ".hta", ".cpl", ".jar", ".reg", ".dll",
+        ".jpg", ".jpeg", ".png", ".gif", ".webp", ".heic", ".heif", ".avif", ".bmp", ".tif", ".tiff", ".dng",
+        ".mp4", ".mov", ".m4v", ".3gp", ".mkv", ".webm", ".avi",
+        ".mp3", ".m4a", ".aac", ".wav", ".flac", ".ogg", ".opus", ".amr",
+        ".pdf", ".txt", ".csv", ".md", ".vcf", ".ics",
+        ".docx", ".xlsx", ".pptx", ".odt", ".ods", ".odp", ".rtf",
     };
 
+    public static bool IsAllowedPlain(string name) => SafeExt.Contains(Path.GetExtension(name));
+
     /// <summary>Befund N2: Dateien, die beim Öffnen etwas ausführen oder umleiten können.</summary>
-    public static bool IsRisky(string name) => RiskyExt.Contains(Path.GetExtension(name)) || Path.GetFileName(name).Equals("desktop.ini", StringComparison.OrdinalIgnoreCase);
+    public static bool IsRisky(string name) => Browsers.Risky(name); // eine gemeinsame Liste (R3-N1)
 
     /// <summary>Befund N2: „Aus dem Internet/fremd“-Kennzeichen (Mark-of-the-Web, Zone 3) – Windows fragt dann vor dem Ausführen nach.</summary>
     /// <returns>false, wenn das Kennzeichen nicht geschrieben werden konnte (z. B. FAT32/exFAT ohne Datenströme, oder kein Windows).</returns>
@@ -113,6 +122,7 @@ public static class PhoneTransfer
         var part = Path.Combine(dir, "." + Guid.NewGuid().ToString("N")[..12] + ".teil");
         long total = 0;
         string sha;
+        string? moved = null;
         try
         {
             using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
@@ -138,16 +148,18 @@ public static class PhoneTransfer
             for (var attempt = 0; ; attempt++)
             {
                 target = UniqueTarget(dir, name);
-                try { File.Move(part, target); break; }
+                try { File.Move(part, target); moved = target; break; }
                 catch (IOException) when (attempt < 1000 && File.Exists(part) && (File.Exists(target) || Directory.Exists(target))) { }
             }
             var risky = IsRisky(name);
-            if (markOutside && !MarkFromOutside(target) && risky) target = Defuse(dir, target);
+            // Befund R3-N1: ohne Herkunftsmarkierung wird alles außerhalb der Erlaubt-Liste entschärft, nicht nur die bekannten Risiken
+            if (markOutside && !MarkFromOutside(target) && !IsAllowedPlain(name)) target = Defuse(dir, target);
             return new(target, total, sha, risky);
         }
         catch
         {
             try { if (File.Exists(part)) { File.SetAttributes(part, FileAttributes.Normal); File.Delete(part); } } catch (IOException) { } catch (UnauthorizedAccessException) { }
+            try { if (moved is not null && File.Exists(moved)) File.Delete(moved); } catch (IOException) { } catch (UnauthorizedAccessException) { } // R3-N2
             throw;
         }
     }

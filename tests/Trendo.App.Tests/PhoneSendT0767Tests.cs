@@ -147,6 +147,31 @@ public class PhoneSendT0767Tests
         Directory.Delete(d, true);
     }
 
+    [Fact(DisplayName = "T-0767 R3-N2: unerwartete Ausnahme mitten in der Sendung rollt alles zurück (auch schon Angekommenes)")]
+    public async Task Unexpected_error_rolls_back()
+    {
+        var d = Temp(); var ct = TestContext.Current.CancellationToken;
+        var access = new PhoneAccess(d); var inbox = Path.Combine(d, "vom");
+        await using var srv = await PhoneLinkServer.StartAsync(access, [IPAddress.Loopback], FreePort(), inbox, Path.Combine(d, "zum"), new AuditLog(Path.Combine(d, "audit.jsonl")),
+            (_, _) => { }, (_, _) => { });
+        using var phone = new HttpClient(new HttpClientHandler { CookieContainer = new CookieContainer() }) { BaseAddress = new Uri($"http://127.0.0.1:{srv.Port}") };
+        var o = access.NewOffer();
+        await phone.PostAsync($"/p/{o.Secret}", new FormUrlEncodedContent(new Dictionary<string, string> { ["name"] = "A" }), ct);
+        var calls = 0;
+        PhoneTransfer.MarkOverride = _ => ++calls < 3 ? true : throw new UnauthorizedAccessException("Testhaken");
+        try
+        {
+            using var f = new MultipartFormDataContent();
+            for (var i = 0; i < 3; i++) f.Add(new ByteArrayContent([1, 2, 3]), "f", $"bild{i}.jpg");
+            var r = await phone.PostAsync("/api/upload", f, ct);
+            Assert.Equal(HttpStatusCode.InternalServerError, r.StatusCode);
+        }
+        finally { PhoneTransfer.MarkOverride = null; }
+        Assert.Equal(3, calls);
+        Assert.Empty(Directory.Exists(inbox) ? Directory.GetFiles(inbox) : []); // bild0, bild1 und bild2 wieder weg, keine Teil-Datei
+        Directory.Delete(d, true);
+    }
+
     [Fact(DisplayName = "T-0767 R2-M1/R2-N1: eine Meldung je Sendung, mit Warnung bei Programmdateien")]
     public void Files_toast()
     {

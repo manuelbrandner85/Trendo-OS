@@ -92,6 +92,14 @@ public class PhoneTransferTests
     {
         Assert.True(PhoneTransfer.IsRisky("x.EXE")); Assert.True(PhoneTransfer.IsRisky("desktop.ini")); Assert.True(PhoneTransfer.IsRisky("a.lnk"));
         Assert.False(PhoneTransfer.IsRisky("urlaub.jpg"));
+        // R3-N1: eine gemeinsame Liste mit Browsers.Risky; die alte Browser-Liste bleibt vollständig drin
+        foreach (var ext in new[] { ".exe", ".msi", ".bat", ".cmd", ".ps1", ".vbs", ".js", ".scr", ".com", ".pif", ".application", ".appref-ms", ".msp", ".mst", ".xll",
+                     ".settingcontent-ms", ".wsc", ".sct", ".inf", ".msc", ".ps1xml", ".psd1", ".chm", ".iso", ".img", ".vhd", ".vhdx", ".diagcab", ".gadget", ".docm", ".xlsm", ".pptm" })
+        {
+            Assert.True(Browsers.Risky("x" + ext.ToUpperInvariant()), ext);
+            Assert.True(PhoneTransfer.IsRisky("x" + ext), ext);
+        }
+        Assert.False(Browsers.Risky("foto.jpg")); Assert.False(Browsers.Risky("brief.docx"));
         var d = Temp();
         var got = await PhoneTransfer.ReceiveAsync(new MemoryStream([1, 2, 3]), d, "setup.exe", 100, markOutside: true);
         Assert.True(got.Risky);
@@ -104,6 +112,10 @@ public class PhoneTransferTests
             Assert.Equal("tool.exe.txt", Path.GetFileName(exe.Path)); Assert.True(exe.Risky);
             var jpg = await PhoneTransfer.ReceiveAsync(new MemoryStream([1]), d, "bild.jpg", 100, markOutside: true);
             Assert.Equal("bild.jpg", Path.GetFileName(jpg.Path));
+            // Befund R3-N1: Erlaubt-Liste statt Risiko-Liste – Unbekanntes, Archive und Office mit Makros werden entschärft
+            foreach (var (name, expected) in new[] { ("daten.xyz", "daten.xyz.txt"), ("archiv.zip", "archiv.zip.txt"), ("brief.docm", "brief.docm.txt"),
+                         ("film.mp4", "film.mp4"), ("brief.pdf", "brief.pdf"), ("tabelle.xlsx", "tabelle.xlsx"), ("notiz.txt", "notiz.txt") })
+                Assert.Equal(expected, Path.GetFileName((await PhoneTransfer.ReceiveAsync(new MemoryStream([1]), d, name, 100, markOutside: true)).Path));
         }
         finally { PhoneTransfer.MarkOverride = null; }
         Directory.Delete(d, true);
