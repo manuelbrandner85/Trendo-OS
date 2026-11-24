@@ -1,0 +1,33 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0763-fix3\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:03.01]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:03.60]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:03.63]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:00:03.83]     T-0763 H1: tools.json und selbstheilung-letzte.json als Hardlink auf eine fremde Datei – Selbstheilung ersetzt, die fremde Datei bleibt unverändert [FAIL]
+[xUnit.net 00:00:03.84]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:00:03.84]                   ↓ (pos 1)
+[xUnit.net 00:00:03.84]       Expected: "{"blender":"/gibt/es/nicht/blender.exe"}"
+[xUnit.net 00:00:03.84]       Actual:   "{}"
+[xUnit.net 00:00:03.84]                   ↑ (pos 1)
+[xUnit.net 00:00:03.84]       Stack Trace:
+[xUnit.net 00:00:03.84]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0763-fix3\tests\Trendo.Core.Tests\T0763Fix3Tests.cs(28,0): at Trendo.Core.Tests.T0763Fix3Tests.H1_hardlinked_files_are_replaced_not_overwritten()
+[xUnit.net 00:00:03.84]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:03.84]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:03.85]   Finished:    Trendo.Core.Tests
+  Fehler T-0763 H1: tools.json und selbstheilung-letzte.json als Hardlink auf eine fremde Datei – Selbstheilung ersetzt, die fremde Datei bleibt unverändert [169 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+            ↓ (pos 1)
+Expected: "{"blender":"/gibt/es/nicht/blender.exe"}"
+Actual:   "{}"
+            ↑ (pos 1)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0763Fix3Tests.H1_hardlinked_files_are_replaced_not_overwritten() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0763-fix3\tests\Trendo.Core.Tests\T0763Fix3Tests.cs:line 28
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 1
+     Nicht bestanden: 1
+ Gesamtzeit: 6,7420 Sekunden

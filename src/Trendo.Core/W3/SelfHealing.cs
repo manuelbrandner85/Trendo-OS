@@ -65,7 +65,7 @@ public sealed class SelfHealer(string dataRoot, AuditLog audit)
                 var map = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(tools)) ?? [];
                 var gone = map.Where(kv => !File.Exists(kv.Value) && !Directory.Exists(kv.Value)).Select(kv => kv.Key).ToList();
                 if (gone.Count == 0) r.Add(new("tools", "Verknüpfte Programme", HealState.Ok, $"{map.Count} verknüpft, alle gefunden."));
-                else if (repair && PathGuard.LinkOnWay(dataRoot, tools) is null) { foreach (var g in gone) map.Remove(g); File.WriteAllText(tools, JsonSerializer.Serialize(map)); r.Add(new("tools", "Verknüpfte Programme", HealState.Repaired, $"Nicht mehr vorhanden, Verknüpfung gelöst: {string.Join(", ", gone)}. Beim nächsten Öffnen sucht Trendo neu.")); }
+                else if (repair && PathGuard.LinkOnWay(dataRoot, tools) is null) { foreach (var g in gone) map.Remove(g); AtomicFile.WriteAllText(tools, JsonSerializer.Serialize(map)); /* T-0763 H1: ersetzen statt überschreiben (Hardlink) */ r.Add(new("tools", "Verknüpfte Programme", HealState.Repaired, $"Nicht mehr vorhanden, Verknüpfung gelöst: {string.Join(", ", gone)}. Beim nächsten Öffnen sucht Trendo neu.")); }
                 else r.Add(new("tools", "Verknüpfte Programme", HealState.NeedsYou, $"Nicht mehr gefunden: {string.Join(", ", gone)}"));
             }
             catch (JsonException) { }
@@ -92,7 +92,7 @@ public sealed class SelfHealer(string dataRoot, AuditLog audit)
         if (repair && PathGuard.LinkOnWay(dataRoot, Path.Combine(dataRoot, "logs", "selbstheilung-letzte.json")) is null) // N1 + F2: kein Schreiben über eine Verknüpfung „logs“
         {
             var log = Path.Combine(dataRoot, "logs"); Directory.CreateDirectory(log);
-            File.WriteAllText(Path.Combine(log, "selbstheilung-letzte.json"), JsonSerializer.Serialize(new { at = now, repair, results = r }));
+            AtomicFile.WriteAllText(Path.Combine(log, "selbstheilung-letzte.json"), JsonSerializer.Serialize(new { at = now, repair, results = r })); // T-0763 H1
         }
         return r;
     }

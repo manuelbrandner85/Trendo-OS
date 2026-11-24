@@ -84,3 +84,9 @@ Rot-Grün: die neuen Tests `T0763Fix2Tests` (6) liefen zuerst gegen 1f0fcab8d �
 | F4 Verknüpfungen im Programmordner | `Report.Links`; gelber Hinweis in „Alles prüfen“ und eigene Zeile `heal-install-links` in der Karte; echte Installation: keine | `F4_links_in_app_folder`, UI `Links_in_app_folder`, `Real_installation_copy` (`Links` leer) |
 | Test-Kleinigkeit | `Quarantine_restore`: `Assert.Contains("modell.json", data.Finding)` | – |
 | TOCTOU (niedrig) | **offen**: Zwischen Prüfung (`LinkOnWay`) und Schreiben könnte ein anderer Prozess desselben Benutzers eine Verknüpfung anlegen. Ein Schutz per offen gehaltenen Ordner-Handles / `FILE_FLAG_OPEN_REPARSE_POINT` braucht eigenes P/Invoke (`CreateFileW`, `GetFinalPathNameByHandleW`) für jeden Schritt und ist nicht klein; die Zwischendatei ist durch `CreateNew` + zufälligen Namen bereits gegen das vorab gelegte Ziel geschützt | – |
+
+## Nachtrag Fix 3 (H1)
+| Befund | Änderung | Test |
+|---|---|---|
+| H1 `tools.json`/`selbstheilung-letzte.json` per `File.WriteAllText` durch Hardlink in fremde Datei | beide Stellen über `AtomicFile.WriteAllText` (neue Datei, dann ersetzen); in `SelfHealing.cs` gibt es kein `File.WriteAllText` mehr | `T0763Fix3Tests.H1_hardlinked_files_are_replaced_not_overwritten` (echte Hardlinks per `CreateHardLinkW`): rot gegen 5ea97928f (`reports/T-0763/fix3-rot-vorher-rohlog.txt`), danach grün |
+| Lastprobe unter Last unzuverlässig (gefunden in dieser Runde) | PDH liefert gleichnamige Instanzen („powershell“ mehrfach) ohne Nummer; zwei getrennte Abfragen ließen sich nicht sicher zuordnen. `PdhArray` kann jetzt einen zweiten Zähler in derselben Abfrage lesen (`ReadPair`), die Probe ordnet über die Prozesskennung aus derselben Messung zu | `Load_probe_against_performance_counters` (2× hintereinander grün, Abweichung 0,08 / 0,13 Prozentpunkte) |

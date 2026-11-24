@@ -1,17 +1,17 @@
-Lastprobe T-0763 (2026-11-24 15:07:18)
+Lastprobe T-0763 (2026-11-24 15:22:09)
 Kerne: 16
-Lastprozess: powershell (Kennung 5740), Endlosschleife auf einem Kern
-Messfenster Trendo: 4,11 s
-Trendo (TaskManager.Rows, Prozessorzeit/Zeit/Kerne): 6,10 %
-Windows-Leistungsindikator \Process(powershell)\% Processor Time / Kerne: 6,05 %
+Lastprozess: powershell (Kennung 57808), Endlosschleife auf einem Kern
+Messfenster Trendo: 4,10 s
+Trendo (TaskManager.Rows, Prozessorzeit/Zeit/Kerne): 6,00 %
+Windows-Leistungsindikator \Process(powershell)\% Processor Time / Kerne: 6,08 %
 Erwartet (ein Kern voll): 6,25 %
-Abweichung: 0,05 Prozentpunkte
+Abweichung: 0,08 Prozentpunkte
 
-Zweite Last: Testprozess (Kennung 56400) mit 8 Rechenfäden
-Trendo: 49,10 %
-Windows-Leistungsindikator \Process(testhost)\% Processor Time / Kerne: 49,04 %
+Zweite Last: Testprozess (Kennung 45840) mit 8 Rechenfäden
+Trendo: 48,40 %
+Windows-Leistungsindikator \Process(testhost)\% Processor Time / Kerne: 48,53 %
 Erwartet (etwa): 50,00 %
-Abweichung: 0,06 Prozentpunkte
+Abweichung: 0,13 Prozentpunkte
 
 Grenze: 5 Prozentpunkte
 Ergebnis: BESTANDEN

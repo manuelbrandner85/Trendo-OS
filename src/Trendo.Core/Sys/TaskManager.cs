@@ -90,15 +90,17 @@ public sealed class History(int size = 60)
 public sealed class PdhArray : IDisposable
 {
     readonly object _lock = new();
-    IntPtr _q, _c; bool _primed;
+    IntPtr _q, _c, _c2; bool _primed;
     public bool Available { get; }
-    public PdhArray(string englishPath)
+    /// <param name="secondPath">Optional ein zweiter Zähler derselben Instanzen (z. B. „\Process(*)\ID Process“) – beide aus derselben Abfrage, siehe <see cref="ReadPair"/>.</param>
+    public PdhArray(string englishPath, string? secondPath = null)
     {
         if (!OperatingSystem.IsWindows()) return;
         try
         {
             if (PdhOpenQueryW(null, IntPtr.Zero, out _q) != 0) { _q = IntPtr.Zero; return; }
             if (PdhAddEnglishCounterW(_q, englishPath, IntPtr.Zero, out _c) != 0) { PdhCloseQuery(_q); _q = IntPtr.Zero; return; }
+            if (secondPath is not null && PdhAddEnglishCounterW(_q, secondPath, IntPtr.Zero, out _c2) != 0) { PdhCloseQuery(_q); _q = IntPtr.Zero; return; }
             Available = true;
         }
         catch (Exception e) when (e is DllNotFoundException or EntryPointNotFoundException) { _q = IntPtr.Zero; }
@@ -129,6 +131,40 @@ public sealed class PdhArray : IDisposable
             }
             finally { Marshal.FreeHGlobal(buf); }
         }
+    }
+
+    /// <summary>T-0763: beide Zähler aus <b>einer</b> Messung, je Instanz in derselben Reihenfolge – so lassen sich gleichnamige Instanzen
+    /// (mehrere „powershell“, die PDH ohne Nummer liefert) sicher über den zweiten Zähler (z. B. die Prozesskennung) zuordnen.</summary>
+    public IReadOnlyList<(string Instance, double Value, double Second)>? ReadPair()
+    {
+        lock (_lock)
+        {
+            if (!Available || _q == IntPtr.Zero || _c2 == IntPtr.Zero) return null;
+            if (PdhCollectQueryData(_q) != 0) return null;
+            if (!_primed) { _primed = true; return null; }
+            var a = Raw(_c); var b = Raw(_c2);
+            if (a is null || b is null || a.Count != b.Count) return null;
+            var res = new List<(string, double, double)>(a.Count);
+            for (var i = 0; i < a.Count; i++)
+                if (a[i].Name == b[i].Name && a[i].Status == 0 && b[i].Status == 0 && double.IsFinite(a[i].Value) && double.IsFinite(b[i].Value)) res.Add((a[i].Name, a[i].Value, b[i].Value));
+            return res;
+        }
+    }
+
+    List<(string Name, uint Status, double Value)>? Raw(IntPtr c)
+    {
+        uint size = 0;
+        var st = PdhGetFormattedCounterArrayW(c, Fmt, ref size, out _, IntPtr.Zero);
+        if (st != MoreData || size == 0) return st == 0 ? [] : null;
+        var buf = Marshal.AllocHGlobal((int)size);
+        try
+        {
+            if (PdhGetFormattedCounterArrayW(c, Fmt, ref size, out var count, buf) != 0) return null;
+            var item = Marshal.SizeOf<Item>(); var res = new List<(string, uint, double)>((int)count);
+            for (var i = 0; i < count; i++) { var it = Marshal.PtrToStructure<Item>(buf + i * item); res.Add((Marshal.PtrToStringUni(it.Name) ?? "", it.Status, it.Value)); }
+            return res;
+        }
+        finally { Marshal.FreeHGlobal(buf); }
     }
 
     public void Dispose() { lock (_lock) { if (_q != IntPtr.Zero) { PdhCloseQuery(_q); _q = IntPtr.Zero; } } }

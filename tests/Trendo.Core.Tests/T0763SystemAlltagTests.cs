@@ -171,28 +171,29 @@ public class T0763SystemAlltagTests
         using var load = Process.Start(psi)!;
         try
         {
-            using var cpu = new PdhArray(@"\Process(*)\% Processor Time");
-            using var ids = new PdhArray(@"\Process(*)\ID Process");
+            using var cpu = new PdhArray(@"\Process(*)\% Processor Time", @"\Process(*)\ID Process"); // beide Zähler aus einer Messung
             Assert.True(cpu.Available, "Leistungsindikator \\Process(*)\\% Processor Time fehlt");
             // zweite, schwerere Last: halb so viele Rechenfäden wie Kerne in diesem Testprozess
             var stop = false; var me = Environment.ProcessId; var threads = Math.Max(1, cores / 2);
             var busy = Enumerable.Range(0, threads).Select(_ => new Thread(() => { var x = 0L; while (!Volatile.Read(ref stop)) x++; }) { IsBackground = true }).ToList();
             busy.ForEach(t => t.Start());
             Thread.Sleep(1500);
-            cpu.Read(); ids.Read(); // Bezug
+            cpu.ReadPair(); // Bezug
             var s0 = TaskManager.Measure(); var t0 = Stopwatch.GetTimestamp();
             Thread.Sleep(4000);
-            var c = cpu.Read(); var i = ids.Read();
+            var pair = cpu.ReadPair();
             var s1 = TaskManager.Measure(); var secs = Stopwatch.GetElapsedTime(t0).TotalSeconds;
             Volatile.Write(ref stop, true); busy.ForEach(t => t.Join());
             var rows = TaskManager.Rows(s0, s1, secs, cores, []);
             var own = rows.Single(r => r.Pid == load.Id).CpuPercent;
-            var inst = i!.Single(x => (int)x.Value == load.Id).Instance;
-            var counter = c!.Single(x => x.Instance == inst).Value / cores;
+            // PDH liefert gleichnamige Instanzen (mehrere „powershell“) ohne Nummer – Zuordnung über die Kennung aus derselben Messung
+            (string Instance, double Value) Pick(int pid) { var m = Assert.Single(pair!, x => (int)x.Second == pid); return (m.Instance, m.Value); }
+            var (inst, cval) = Pick(load.Id);
+            var counter = cval / cores;
             var diff = Math.Abs(own - counter);
             var own2 = rows.Single(r => r.Pid == me).CpuPercent;
-            var inst2 = i!.Single(x => (int)x.Value == me).Instance;
-            var counter2 = c!.Single(x => x.Instance == inst2).Value / cores;
+            var (inst2, cval2) = Pick(me);
+            var counter2 = cval2 / cores;
             var diff2 = Math.Abs(own2 - counter2);
             var log = $"Lastprobe T-0763 ({DateTime.Now:yyyy-MM-dd HH:mm:ss})\nKerne: {cores}\nLastprozess: powershell (Kennung {load.Id}), Endlosschleife auf einem Kern\nMessfenster Trendo: {secs:0.00} s\n" +
                 $"Trendo (TaskManager.Rows, Prozessorzeit/Zeit/Kerne): {own:0.00} %\nWindows-Leistungsindikator \\Process({inst})\\% Processor Time / Kerne: {counter:0.00} %\nErwartet (ein Kern voll): {100.0 / cores:0.00} %\nAbweichung: {diff:0.00} Prozentpunkte\n" +

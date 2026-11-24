@@ -1,34 +1,35 @@
-Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0763-fix2\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0763-fix3\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
 Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
 [xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
-[xUnit.net 00:00:00.41]   Discovering: Trendo.Core.Tests
-[xUnit.net 00:00:01.11]   Discovered:  Trendo.Core.Tests
-[xUnit.net 00:00:01.16]   Starting:    Trendo.Core.Tests
-  Bestanden T-0763 F4: Verknüpfung (Junction) im Programmordner ist ein eigener gelber Hinweis [78 ms]
-  Bestanden T-0763 N1: reiner Prüflauf schreibt keine „letzte Prüfung“-Datei, nur den Protokolleintrag [92 ms]
-  Bestanden T-0763 M3: grüner Befund nennt die Grenze (nicht code-signiert); Datei, die nicht aus dem Paket stammt, ist ein gelber Hinweis [16 ms]
-  Bestanden T-0763 F2: Zurückholen schreibt die Listen nicht über eine Junction „logs“ nach außen [69 ms]
-  Bestanden T-0763 F1: liegengebliebene *.trendo-reparatur wird als Hinweis gemeldet, nicht ausgeblendet [6 ms]
-  Bestanden T-0763 N4: Zurückholen legt nichts über eine Junction im Datenordner nach außen (echte Junction) [56 ms]
-  Bestanden T-0763 N5: Beenden nur bei gleicher Startzeit und gleichem Pfad; Junction aus dem Werkzeugordner auf ein fremdes Programm ist nicht „eigen“ [49 ms]
-  Bestanden T-0763 M1: nur das Paket „{Kennung}-{Version}-full.nupkg“ mit passender .nuspec – fremdes Paket gleicher Version wird nie zur Reparatur benutzt [22 ms]
-  Bestanden T-0763 M2: Reparatur schreibt nie über eine Junction im Programmordner nach außen (echte Junction) [53 ms]
-  Bestanden T-0763 F2: Ordner „quarantaene“ und „logs“ als Junction nach außen – Selbstheilung und Zurückholen schreiben dort nichts hin [161 ms]
-  Bestanden T-0763 F1: vorab gelegte Zwischendatei als Hardlink nach außen – Reparatur schreibt nicht hinein, Ziel mit zweitem Hardlink wird ersetzt statt überschrieben [22 ms]
-  Bestanden T-0763 N3: zweimal Zurückholen in derselben Sekunde überschreibt keine Sicherung (.bak eindeutig) [67 ms]
+[xUnit.net 00:00:00.27]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:00.84]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:00.86]   Starting:    Trendo.Core.Tests
+  Bestanden T-0763 N1: reiner Prüflauf schreibt keine „letzte Prüfung“-Datei, nur den Protokolleintrag [71 ms]
+  Bestanden T-0763 H1: tools.json und selbstheilung-letzte.json als Hardlink auf eine fremde Datei – Selbstheilung ersetzt, die fremde Datei bleibt unverändert [77 ms]
+  Bestanden T-0763 F4: Verknüpfung (Junction) im Programmordner ist ein eigener gelber Hinweis [85 ms]
+  Bestanden T-0763 M3: grüner Befund nennt die Grenze (nicht code-signiert); Datei, die nicht aus dem Paket stammt, ist ein gelber Hinweis [25 ms]
+  Bestanden T-0763 F2: Zurückholen schreibt die Listen nicht über eine Junction „logs“ nach außen [71 ms]
+  Bestanden T-0763 F1: liegengebliebene *.trendo-reparatur wird als Hinweis gemeldet, nicht ausgeblendet [7 ms]
+  Bestanden T-0763 N4: Zurückholen legt nichts über eine Junction im Datenordner nach außen (echte Junction) [68 ms]
+  Bestanden T-0763 N5: Beenden nur bei gleicher Startzeit und gleichem Pfad; Junction aus dem Werkzeugordner auf ein fremdes Programm ist nicht „eigen“ [65 ms]
+  Bestanden T-0763 M1: nur das Paket „{Kennung}-{Version}-full.nupkg“ mit passender .nuspec – fremdes Paket gleicher Version wird nie zur Reparatur benutzt [25 ms]
+  Bestanden T-0763 M2: Reparatur schreibt nie über eine Junction im Programmordner nach außen (echte Junction) [60 ms]
+  Bestanden T-0763 F2: Ordner „quarantaene“ und „logs“ als Junction nach außen – Selbstheilung und Zurückholen schreiben dort nichts hin [199 ms]
+  Bestanden T-0763 N3: zweimal Zurückholen in derselben Sekunde überschreibt keine Sicherung (.bak eindeutig) [52 ms]
+  Bestanden T-0763 F1: vorab gelegte Zwischendatei als Hardlink nach außen – Reparatur schreibt nicht hinein, Ziel mit zweitem Hardlink wird ersetzt statt überschrieben [19 ms]
   Bestanden T-0763 F3: sq.version und .nuspec mit DOCTYPE werden abgelehnt (keine DTD, keine externen Verweise) [22 ms]
-  Bestanden X-02 (T-0763, echt): installiertes Trendo dieses PCs gegen sein Paket prüfen; auf einer Kopie Datei löschen, verändern und ersetzen [9 s]
-  Bestanden X-02 (T-0763): ohne Installation ehrlich „nur installierte Version“, ohne Paket „Setup erneut ausführen“; Pfade aus dem Paket bleiben im Programmordner [23 ms]
+  Bestanden X-02 (T-0763, echt): installiertes Trendo dieses PCs gegen sein Paket prüfen; auf einer Kopie Datei löschen, verändern und ersetzen [10 s]
+  Bestanden X-02 (T-0763): ohne Installation ehrlich „nur installierte Version“, ohne Paket „Setup erneut ausführen“; Pfade aus dem Paket bleiben im Programmordner [24 ms]
   Bestanden X-09 (T-0763, echt): Lastprobe – Prozessorlast eines ausgelasteten Prozesses weicht höchstens 5 Prozentpunkte von den Windows-Leistungsindikatoren ab [6 s]
-[xUnit.net 00:00:16.80]   Finished:    Trendo.Core.Tests
-  Bestanden X-02 (T-0763): beiseitegelegte Datei zurückholen – an den alten Ort, bisherige Datei bleibt als .bak, wird nicht erneut beiseitegelegt; alte Quarantäne ohne Herkunft ehrlich [98 ms]
-  Bestanden SYS-13 (T-0763): Telemetrie-Prüfung der installierten Version über die Paketlisten – findet Analyse-Bibliotheken, Trendo selbst ist frei [16 ms]
-  Bestanden X-02 (T-0763): gelöschte und veränderte Programmdatei werden gegen das Installationspaket erkannt und daraus ersetzt [27 ms]
-  Bestanden SYS-13 (T-0763): Ampel je Bereich mit nächstem Schritt; Gesamtsatz; rot vor gelb vor grün [10 ms]
-  Bestanden SYS-13 (T-0763): veränderte Protokollzeile wird mit Stelle gemeldet – Ampel rot im Bereich Protokoll [49 ms]
-  Bestanden X-09 (T-0763): Grafiklast je Programm aus „GPU Engine“-Instanzen – je Prozess die höchste Grafik-Einheit, wie im Windows-Task-Manager [12 ms]
+[xUnit.net 00:00:18.26]   Finished:    Trendo.Core.Tests
+  Bestanden X-02 (T-0763): beiseitegelegte Datei zurückholen – an den alten Ort, bisherige Datei bleibt als .bak, wird nicht erneut beiseitegelegt; alte Quarantäne ohne Herkunft ehrlich [61 ms]
+  Bestanden SYS-13 (T-0763): Telemetrie-Prüfung der installierten Version über die Paketlisten – findet Analyse-Bibliotheken, Trendo selbst ist frei [8 ms]
+  Bestanden X-02 (T-0763): gelöschte und veränderte Programmdatei werden gegen das Installationspaket erkannt und daraus ersetzt [24 ms]
+  Bestanden SYS-13 (T-0763): Ampel je Bereich mit nächstem Schritt; Gesamtsatz; rot vor gelb vor grün [4 ms]
+  Bestanden SYS-13 (T-0763): veränderte Protokollzeile wird mit Stelle gemeldet – Ampel rot im Bereich Protokoll [32 ms]
+  Bestanden X-09 (T-0763): Grafiklast je Programm aus „GPU Engine“-Instanzen – je Prozess die höchste Grafik-Einheit, wie im Windows-Task-Manager [9 ms]
 
 Der Testlauf war erfolgreich.
-Gesamtzahl Tests: 22
-     Bestanden: 22
- Gesamtzeit: 17,7753 Sekunden
+Gesamtzahl Tests: 23
+     Bestanden: 23
+ Gesamtzeit: 18,9562 Sekunden

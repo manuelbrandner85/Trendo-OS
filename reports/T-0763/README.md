@@ -29,3 +29,9 @@ Alle Pfade ohne Benutzernamen (`C:\Users\<user>`). Prüfsummen: `SHA256SUMS.txt`
 | `core-tests-rohlog.txt` | Grün: 22 Core-Tests `T0763*` mit `TRENDO_BELEG_DIR` (Hardlinks per `CreateHardLinkW`, Junctions per `mklink /J`) |
 | `app-tests-fix2-rohlog.txt` | 9 App-Testklassen (T0763, X02, Sys13, W7, TaskManager, SetupFeedback, T0736, Hardware, DesignPaket1): 59 Tests, 0 Fehler |
 | `installation-echt.txt`, `lastprobe.txt` | neu erzeugt; echte Installation nur lesend: 0 Abweichungen, keine Fremddateien, keine Verknüpfungen |
+
+## Nachtrag Fix 3
+| Datei | Inhalt |
+|---|---|
+| `fix3-rot-vorher-rohlog.txt` | Rot: `T0763Fix3Tests.H1` gegen 5ea97928f – die fremde Datei hinter dem Hardlink `tools.json` wurde zu `{}` überschrieben |
+| `core-tests-rohlog.txt`, `lastprobe.txt`, `installation-echt.txt` | Grün: 23 Core-Tests `T0763*`; Lastprobe ordnet die Leistungsindikator-Instanz jetzt über die Kennung aus derselben Messung zu |
