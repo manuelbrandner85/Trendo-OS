@@ -1,0 +1,326 @@
+== a1_platte_auf_ACHSE 
+   alt  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 94ms
+   671  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Kontur 1 (Ebene ACHSE) nicht gefräst: geschlossene Linie auf der Ebene ACHSE (Bemaßung, Mittel-
+   fix  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 29ms
+         Kontur 1 (Ebene ACHSE) liegt auf der Ebene ACHSE (Bemaßung/Mittellinien), enthält aber andere Konturen – sie w
+== a1_platte_auf_Achse_1 
+   alt  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 488ms
+   671  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Kontur 1 (Ebene Achse 1) nicht gefräst: geschlossene Linie auf der Ebene Achse 1 (Bemaßung, Mit
+   fix  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 204ms
+== a1_platte_auf_BEM 
+   alt  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 94ms
+   671  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Kontur 1 (Ebene BEM) nicht gefräst: geschlossene Linie auf der Ebene BEM (Bemaßung, Mittel- ode
+   fix  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 26ms
+         Kontur 1 (Ebene BEM) liegt auf der Ebene BEM (Bemaßung/Mittellinien), enthält aber andere Konturen – sie wird 
+== a1_platte_auf_CENTER 
+   alt  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 101ms
+   671  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Kontur 1 (Ebene CENTER) nicht gefräst: geschlossene Linie auf der Ebene CENTER (Bemaßung, Mitte
+   fix  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 66ms
+         Kontur 1 (Ebene CENTER) liegt auf der Ebene CENTER (Bemaßung/Mittellinien), enthält aber andere Konturen – sie
+== a1_platte_auf_Mitte 
+   alt  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 113ms
+   671  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Kontur 1 (Ebene Mitte) nicht gefräst: geschlossene Linie auf der Ebene Mitte (Bemaßung, Mittel-
+   fix  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 62ms
+         Kontur 1 (Ebene Mitte) liegt auf der Ebene Mitte (Bemaßung/Mittellinien), enthält aber andere Konturen – sie w
+== a2_wortteil_Achsenteil 
+   alt  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 68ms
+   671  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 133ms
+   fix  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 14ms
+== a2_wortteil_DIMMER 
+   alt  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 67ms
+   671  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 71ms
+   fix  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 34ms
+== a2_wortteil_Dimension_3mm 
+   alt  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 80ms
+   671  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Kontur 1 (Ebene Dimension 3mm) nicht gefräst: geschlossene Linie auf der Ebene Dimension 3mm (B
+   fix  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 20ms
+== a2_wortteil_Mittelteil 
+   alt  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 86ms
+   671  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 60ms
+   fix  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 11ms
+== a2_wortteil_Teil_Mitte 
+   alt  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 61ms
+   671  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 40ms
+   fix  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 14ms
+== a2_wortteil_Zentrum 
+   alt  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 62ms
+   671  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 120ms
+   fix  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 12ms
+== a3_platte_linien_achse 
+   alt  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 123ms
+   671  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Kontur 3 (Ebene ACHSE) nicht gefräst: geschlossene Linie auf der Ebene ACHSE (Bemaßung, Mittel-
+   fix  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 28ms
+         Kontur 3 (Ebene ACHSE) liegt auf der Ebene ACHSE (Bemaßung/Mittellinien), enthält aber andere Konturen – sie w
+== a4_offener_umriss_achse 
+   alt  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Kontur 1 ausgelassen: liegt in oder an der offenen Kontur 2 – ob sie Loch oder Teil ist, lässt 
+   671  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Kontur 1 ausgelassen: liegt in oder an der offenen Kontur 2 – ob sie Loch oder Teil ist, lässt 
+   fix  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Kontur 1 ausgelassen: liegt in oder an der offenen Kontur 2 – ob sie Loch oder Teil ist, lässt 
+== a5_bem_baum_kreis_halb 
+   alt  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: 1 Linienverbund/-verbünde (zusammen 4 Linien, z. B. ab Kontur 3) nicht zu Umrissen verkettet: a
+   671  {'aussen': 1} AUSSEN-LOCH=[[100, 50, 10]] innen=0/1 PLATTE-FEHLT=[] 123ms
+         1 Linienverbund/-verbünde (zusammen 4 Linien, z. B. ab Kontur 3) nicht zu Umrissen verkettet: an einem Punkt s
+         Kontur 2 (Ebene BEM) ausgelassen: offene Kontur (Enden 99,7 mm auseinander) – auf der Linie gefräst würde ein 
+   fix  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: 1 Linienverbund/-verbünde (zusammen 4 Linien, z. B. ab Kontur 3) nicht zu Umrissen verkettet: a
+== a6_bem_klammern_kreis_drin 
+   alt  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: 1 Linienverbund/-verbünde (zusammen 4 Linien, z. B. ab Kontur 3) nicht zu Umrissen verkettet: a
+   671  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: 1 Linienverbund/-verbünde (zusammen 4 Linien, z. B. ab Kontur 3) nicht zu Umrissen verkettet: a
+   fix  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: 1 Linienverbund/-verbünde (zusammen 4 Linien, z. B. ab Kontur 3) nicht zu Umrissen verkettet: a
+== a7_mittelkreuz_ueber_rand 
+   alt  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Kontur 3 (Ebene MITTE) ausgelassen: offene Kontur (Enden 70 mm auseinander) – auf der Linie gef
+   671  {'innen': 1, 'aussen': 1} AUSSEN-LOCH=[] innen=1/1 PLATTE-FEHLT=[] 66ms
+         Kontur 3 (Ebene MITTE) ausgelassen: offene Kontur (Enden 70 mm auseinander) – auf der Linie gefräst würde ein 
+         Kontur 4 (Ebene MITTE) ausgelassen: offene Kontur (Enden 30 mm auseinander) – auf der Linie gefräst würde ein 
+   fix  {'innen': 1, 'aussen': 1} AUSSEN-LOCH=[] innen=1/1 PLATTE-FEHLT=[] 19ms
+         Kontur 3 (Ebene MITTE) ausgelassen: offene Kontur (Enden 70 mm auseinander) – auf der Linie gefräst würde ein 
+         Kontur 4 (Ebene MITTE) ausgelassen: offene Kontur (Enden 30 mm auseinander) – auf der Linie gefräst würde ein 
+== f1_platte_ebene_rahmen_eckausschnitt Platte auf Ebene Rahmen, Ecke als Linien markiert
+   alt  {'innen': 2} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[[0, 0, 300, 200]] 67ms
+         Kontur 1 (Ebene Rahmen) ausgelassen: liegt in oder an der offenen Kontur 4 – ob sie Loch oder Teil ist, lässt 
+         Kontur 4 (Ebene Rahmen) ausgelassen: offene Kontur (Enden 111,803 mm auseinander) – auf der Linie gefräst würd
+   671  {'aussen': 2} AUSSEN-LOCH=[[60, 100, 8], [150, 100, 10]] innen=0/2 PLATTE-FEHLT=[[0, 0, 300, 200]] 59ms
+         Zeichnungsrahmen mit Schriftfeld erkannt (300 × 200 mm, 2 Linienzug/-züge, Ebene Rahmen) – er wird nicht gefrä
+   fix  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Rahmen oder Platte nicht eindeutig (300 × 200 mm mit abgeteiltem Eckfeld, Ebene Rahmen; kein Te
+== f1b_platte_ebene_rahmen_teil 
+   alt  {'innen': 2} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[[0, 0, 300, 200]] 61ms
+         Kontur 1 (Ebene Rahmen-Teil 1) ausgelassen: liegt in oder an der offenen Kontur 4 – ob sie Loch oder Teil ist,
+         Kontur 4 (Ebene Rahmen-Teil 1) ausgelassen: offene Kontur (Enden 111,803 mm auseinander) – auf der Linie gefrä
+   671  {'aussen': 2} AUSSEN-LOCH=[[60, 100, 8], [150, 100, 10]] innen=0/2 PLATTE-FEHLT=[[0, 0, 300, 200]] 72ms
+         Zeichnungsrahmen mit Schriftfeld erkannt (300 × 200 mm, 2 Linienzug/-züge, Ebene Rahmen-Teil 1) – er wird nich
+   fix  {'innen': 2} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[[0, 0, 300, 200]] 11ms
+         Kontur 1 (Ebene Rahmen-Teil 1) ausgelassen: liegt in oder an der offenen Kontur 4 – ob sie Loch oder Teil ist,
+         Kontur 4 (Ebene Rahmen-Teil 1) ausgelassen: offene Kontur (Enden 111,803 mm auseinander) – auf der Linie gefrä
+== f1c_platte_ebene_frame_linien 
+   alt  {'innen': 2} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[[0, 0, 300, 200]] 207ms
+         Kontur 3 (Ebene FRAME) ausgelassen: liegt in oder an der offenen Kontur 4 – ob sie Loch oder Teil ist, lässt s
+         Kontur 4 (Ebene FRAME) ausgelassen: offene Kontur (Enden 111,803 mm auseinander) – auf der Linie gefräst würde
+   671  {'aussen': 2} AUSSEN-LOCH=[[60, 100, 8], [150, 100, 10]] innen=0/2 PLATTE-FEHLT=[[0, 0, 300, 200]] 82ms
+         Zeichnungsrahmen mit Schriftfeld erkannt (300 × 200 mm, 2 Linienzug/-züge, Ebene FRAME) – er wird nicht gefräs
+   fix  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Rahmen oder Platte nicht eindeutig (300 × 200 mm mit abgeteiltem Eckfeld, Ebene FRAME; kein Tex
+== f2_a4_platte_ebene0_eck180 A4-große Platte Ebene 0 mit 180 mm Eckfeld (z. B. Tasche/Beschriftungsfeld)
+   alt  {'innen': 2} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[[0, 0, 297, 210]] 68ms
+         Kontur 1 ausgelassen: liegt in oder an der offenen Kontur 4 – ob sie Loch oder Teil ist, lässt sich nicht sich
+         Kontur 4 ausgelassen: offene Kontur (Enden 184,391 mm auseinander) – auf der Linie gefräst würde ein Teil um d
+   671  {'aussen': 2} AUSSEN-LOCH=[[60, 100, 8], [150, 100, 10]] innen=0/2 PLATTE-FEHLT=[[0, 0, 297, 210]] 108ms
+         Zeichnungsrahmen mit Schriftfeld erkannt (297 × 210 mm, 2 Linienzug/-züge, Blattgröße) – er wird nicht gefräst
+   fix  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Rahmen oder Platte nicht eindeutig (297 × 210 mm mit abgeteiltem Eckfeld, Blattgröße; kein Text
+== f2b_a3_platte_heftrand 
+   alt  {'innen': 2} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[[0, 0, 400, 277]] 55ms
+         Kontur 1 ausgelassen: liegt in oder an der offenen Kontur 4 – ob sie Loch oder Teil ist, lässt sich nicht sich
+         Kontur 4 ausgelassen: offene Kontur (Enden 189,737 mm auseinander) – auf der Linie gefräst würde ein Teil um d
+   671  {'aussen': 2} AUSSEN-LOCH=[[60, 100, 8], [150, 100, 10]] innen=0/2 PLATTE-FEHLT=[[0, 0, 400, 277]] 43ms
+         Zeichnungsrahmen mit Schriftfeld erkannt (400 × 277 mm, 2 Linienzug/-züge, Blattgröße) – er wird nicht gefräst
+   fix  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Rahmen oder Platte nicht eindeutig (400 × 277 mm mit abgeteiltem Eckfeld, Blattgröße; kein Text
+== f3_platte_ebene0_klein_eck Kontrolle ohne Name/Normgröße
+   alt  {'innen': 2} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[[0, 0, 300, 200]] 75ms
+         Kontur 1 ausgelassen: liegt in oder an der offenen Kontur 4 – ob sie Loch oder Teil ist, lässt sich nicht sich
+         Kontur 4 ausgelassen: offene Kontur (Enden 111,803 mm auseinander) – auf der Linie gefräst würde ein Teil um d
+   671  {'innen': 2} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[[0, 0, 300, 200]] 27ms
+         Kontur 1 ausgelassen: liegt in oder an der offenen Kontur 4 – ob sie Loch oder Teil ist, lässt sich nicht sich
+         Kontur 4 ausgelassen: offene Kontur (Enden 111,803 mm auseinander) – auf der Linie gefräst würde ein Teil um d
+   fix  {'innen': 2} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[[0, 0, 300, 200]] 12ms
+         Kontur 1 ausgelassen: liegt in oder an der offenen Kontur 4 – ob sie Loch oder Teil ist, lässt sich nicht sich
+         Kontur 4 ausgelassen: offene Kontur (Enden 111,803 mm auseinander) – auf der Linie gefräst würde ein Teil um d
+== f4_rahmen_mit_innenplatte_loch 
+   alt  {'innen': 1, 'aussen': 1} AUSSEN-LOCH=[[80, 120, 10]] innen=0/1 PLATTE-FEHLT=[] 56ms
+         Kontur 1 (Ebene Rahmen) ausgelassen: liegt in oder an der offenen Kontur 4 – ob sie Loch oder Teil ist, lässt 
+         Kontur 4 (Ebene Rahmen) ausgelassen: offene Kontur (Enden 111,803 mm auseinander) – auf der Linie gefräst würd
+   671  {'innen': 1, 'aussen': 1} AUSSEN-LOCH=[] innen=1/1 PLATTE-FEHLT=[] 24ms
+         Zeichnungsrahmen mit Schriftfeld erkannt (300 × 200 mm, 2 Linienzug/-züge, Ebene Rahmen) – er wird nicht gefrä
+   fix  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Rahmen oder Platte nicht eindeutig (300 × 200 mm mit abgeteiltem Eckfeld, Ebene Rahmen; kein Te
+== o1_hash_schliesst_c_tasche 
+   alt  {'aussen': 1} AUSSEN-LOCH=[[40, 50, 8]] innen=0/1 PLATTE-FEHLT=[] 53ms
+         Kontur 3 ausgelassen: offene Kontur (Enden 20 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+         Kontur 4 ausgelassen: offene Kontur (Enden 20 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+         Kontur 5 ausgelassen: offene Kontur (Enden 60 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+         Kontur 6 ausgelassen: offene Kontur (Enden 60 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+   671  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Kontur 1 ausgelassen: die offenen Linien ab Kontur 3 schließen zusammen mit Kontur 1 einen Bere
+   fix  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Kontur 1 ausgelassen: die offenen Linien ab Kontur 3 schließen zusammen mit Kontur 1 einen Bere
+== o2_hash_spalt005 
+   alt  {'aussen': 1} AUSSEN-LOCH=[[40, 50, 8]] innen=0/1 PLATTE-FEHLT=[] 69ms
+         Kontur 3 ausgelassen: offene Kontur (Enden 19,95 mm auseinander) – auf der Linie gefräst würde ein Teil um den
+         Kontur 4 ausgelassen: offene Kontur (Enden 19,95 mm auseinander) – auf der Linie gefräst würde ein Teil um den
+         Kontur 5 ausgelassen: offene Kontur (Enden 60 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+         Kontur 6 ausgelassen: offene Kontur (Enden 60 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+   671  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Kontur 1 ausgelassen: die offenen Linien ab Kontur 3 schließen zusammen mit Kontur 1 einen Bere
+   fix  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Kontur 1 ausgelassen: die offenen Linien ab Kontur 3 schließen zusammen mit Kontur 1 einen Bere
+== o3_hash_mit_bulgeplatte 
+   alt  {'aussen': 2} AUSSEN-LOCH=[[-10, 50, 4]] innen=0/1 PLATTE-FEHLT=[] 87ms
+         Kontur 3 ausgelassen: offene Kontur (Enden 60 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+         Kontur 4 ausgelassen: offene Kontur (Enden 60 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+         Kontur 5 ausgelassen: offene Kontur (Enden 35 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+         Kontur 6 ausgelassen: offene Kontur (Enden 35 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+   671  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Kontur 2 ausgelassen: liegt in einem Bereich, den die offenen Linien ab Kontur 3 einschließen (
+   fix  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Kontur 2 ausgelassen: liegt in einem Bereich, den die offenen Linien ab Kontur 3 einschließen (
+== o4_hash_langloch 
+   alt  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Kontur 3 ausgelassen: offene Kontur (Enden 60 mm auseinander) – auf der Linie gefräst würde ein
+   671  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Kontur 2 ausgelassen: liegt in einem Bereich, den die offenen Linien ab Kontur 3 einschließen (
+   fix  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Kontur 2 ausgelassen: liegt in einem Bereich, den die offenen Linien ab Kontur 3 einschließen (
+== t1_u_beine_durch_loch U-Beine durchqueren Loch, Kreis im Loch zwischen Beinen
+   alt  {'aussen': 1} AUSSEN-LOCH=[] innen=0/1 PLATTE-FEHLT=[] 24ms
+         Kontur 2 ausgelassen: liegt in oder an der offenen Kontur 4 – ob sie Loch oder Teil ist, lässt sich nicht sich
+         Kontur 3 ausgelassen: liegt in oder an der offenen Kontur 4 – ob sie Loch oder Teil ist, lässt sich nicht sich
+         Kontur 4 ausgelassen: offene Kontur (Enden 30 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+   671  {'aussen': 1} AUSSEN-LOCH=[] innen=0/1 PLATTE-FEHLT=[] 60ms
+         Kontur 2 ausgelassen: liegt in oder an der offenen Kontur 4 – ob sie Loch oder Teil ist, lässt sich nicht sich
+         Kontur 3 ausgelassen: liegt in oder an der offenen Kontur 4 – ob sie Loch oder Teil ist, lässt sich nicht sich
+         Kontur 4 ausgelassen: offene Kontur (Enden 30 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+   fix  {'aussen': 1} AUSSEN-LOCH=[] innen=0/1 PLATTE-FEHLT=[] 7ms
+         Kontur 2 ausgelassen: liegt in oder an der offenen Kontur 4 – ob sie Loch oder Teil ist, lässt sich nicht sich
+         Kontur 3 ausgelassen: liegt in oder an der offenen Kontur 4 – ob sie Loch oder Teil ist, lässt sich nicht sich
+         Kontur 4 ausgelassen: offene Kontur (Enden 30 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+== t2_zwei_linien_durch_loch_bruecke 
+   alt  {'aussen': 2} AUSSEN-LOCH=[[100, 100, 6]] innen=0/1 PLATTE-FEHLT=[] 75ms
+         Kontur 4 ausgelassen: offene Kontur (Enden 80 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+         Kontur 5 ausgelassen: offene Kontur (Enden 80 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+         Kontur 2 ausgelassen: zu nah an Kontur 5 – die Fräsbahn käme ihr auf 0 mm nahe, der Fräser braucht 3 mm (Radiu
+   671  {'aussen': 2} AUSSEN-LOCH=[[100, 100, 6]] innen=0/1 PLATTE-FEHLT=[] 54ms
+         Kontur 4 ausgelassen: offene Kontur (Enden 80 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+         Kontur 5 ausgelassen: offene Kontur (Enden 80 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+         Kontur 2 ausgelassen: zu nah an Kontur 5 – die Fräsbahn käme ihr auf 0 mm nahe, der Fräser braucht 3 mm (Radiu
+   fix  {'aussen': 1} AUSSEN-LOCH=[] innen=0/1 PLATTE-FEHLT=[] 7ms
+         Kontur 2 ausgelassen: die offenen Linien ab Kontur 4 schließen zusammen mit Kontur 2 einen Bereich ein (auch ü
+         Kontur 3 ausgelassen: die offenen Linien ab Kontur 4 schließen zusammen mit Kontur 2 einen Bereich ein (auch ü
+         Kontur 4 ausgelassen: offene Kontur (Enden 80 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+         Kontur 5 ausgelassen: offene Kontur (Enden 80 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+== t3_linie_durch_loch_plus_zweite_aussen Linie quer durch Loch + U außerhalb des Lochs auf der Linie
+   alt  {'aussen': 1} AUSSEN-LOCH=[] innen=0/1 PLATTE-FEHLT=[] 63ms
+         Kontur 2 ausgelassen: liegt in oder an der offenen Kontur 5 – ob sie Loch oder Teil ist, lässt sich nicht sich
+         Kontur 3 ausgelassen: liegt in oder an der offenen Kontur 5 – ob sie Loch oder Teil ist, lässt sich nicht sich
+         Kontur 4 ausgelassen: offene Kontur (Enden 130 mm auseinander) – auf der Linie gefräst würde ein Teil um den F
+         Kontur 5 ausgelassen: offene Kontur (Enden 90 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+   671  {'aussen': 1} AUSSEN-LOCH=[] innen=0/1 PLATTE-FEHLT=[] 56ms
+         Kontur 2 ausgelassen: liegt in oder an der offenen Kontur 5 – ob sie Loch oder Teil ist, lässt sich nicht sich
+         Kontur 3 ausgelassen: liegt in oder an der offenen Kontur 5 – ob sie Loch oder Teil ist, lässt sich nicht sich
+         Kontur 4 ausgelassen: offene Kontur (Enden 130 mm auseinander) – auf der Linie gefräst würde ein Teil um den F
+         Kontur 5 ausgelassen: offene Kontur (Enden 90 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+   fix  {'aussen': 1} AUSSEN-LOCH=[] innen=0/1 PLATTE-FEHLT=[] 10ms
+         Kontur 2 ausgelassen: liegt in oder an der offenen Kontur 5 – ob sie Loch oder Teil ist, lässt sich nicht sich
+         Kontur 3 ausgelassen: liegt in oder an der offenen Kontur 5 – ob sie Loch oder Teil ist, lässt sich nicht sich
+         Kontur 4 ausgelassen: offene Kontur (Enden 130 mm auseinander) – auf der Linie gefräst würde ein Teil um den F
+         Kontur 5 ausgelassen: offene Kontur (Enden 90 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+== t4_linie_durch_zwei_loecher_kreis_dazwischen 
+   alt  {'innen': 1, 'aussen': 1} AUSSEN-LOCH=[] innen=1/1 PLATTE-FEHLT=[] 122ms
+         Kontur 5 ausgelassen: offene Kontur (Enden 210 mm auseinander) – auf der Linie gefräst würde ein Teil um den F
+         Kontur 6 ausgelassen: offene Kontur (Enden 210 mm auseinander) – auf der Linie gefräst würde ein Teil um den F
+         Kontur 2 ausgelassen: zu nah an Kontur 6 – die Fräsbahn käme ihr auf 0 mm nahe, der Fräser braucht 3 mm (Radiu
+         Kontur 3 ausgelassen: zu nah an Kontur 6 – die Fräsbahn käme ihr auf 0 mm nahe, der Fräser braucht 3 mm (Radiu
+   671  {'innen': 1, 'aussen': 1} AUSSEN-LOCH=[] innen=1/1 PLATTE-FEHLT=[] 71ms
+         Kontur 5 ausgelassen: offene Kontur (Enden 210 mm auseinander) – auf der Linie gefräst würde ein Teil um den F
+         Kontur 6 ausgelassen: offene Kontur (Enden 210 mm auseinander) – auf der Linie gefräst würde ein Teil um den F
+         Kontur 2 ausgelassen: zu nah an Kontur 6 – die Fräsbahn käme ihr auf 0 mm nahe, der Fräser braucht 3 mm (Radiu
+         Kontur 3 ausgelassen: zu nah an Kontur 6 – die Fräsbahn käme ihr auf 0 mm nahe, der Fräser braucht 3 mm (Radiu
+   fix  {'innen': 1, 'aussen': 1} AUSSEN-LOCH=[] innen=1/1 PLATTE-FEHLT=[] 17ms
+         Kontur 5 ausgelassen: offene Kontur (Enden 210 mm auseinander) – auf der Linie gefräst würde ein Teil um den F
+         Kontur 6 ausgelassen: offene Kontur (Enden 210 mm auseinander) – auf der Linie gefräst würde ein Teil um den F
+         Kontur 2 ausgelassen: zu nah an Kontur 6 – die Fräsbahn käme ihr auf 0 mm nahe, der Fräser braucht 3 mm (Radiu
+         Kontur 3 ausgelassen: zu nah an Kontur 6 – die Fräsbahn käme ihr auf 0 mm nahe, der Fräser braucht 3 mm (Radiu
+== t5_langloch_bulge_durch 
+   alt  {'aussen': 1} AUSSEN-LOCH=[] innen=0/1 PLATTE-FEHLT=[] 22ms
+         Kontur 2 ausgelassen: liegt in oder an der offenen Kontur 4 – ob sie Loch oder Teil ist, lässt sich nicht sich
+         Kontur 3 ausgelassen: liegt in oder an der offenen Kontur 4 – ob sie Loch oder Teil ist, lässt sich nicht sich
+         Kontur 4 ausgelassen: offene Kontur (Enden 20 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+   671  {'aussen': 1} AUSSEN-LOCH=[] innen=0/1 PLATTE-FEHLT=[] 23ms
+         Kontur 2 ausgelassen: liegt in oder an der offenen Kontur 4 – ob sie Loch oder Teil ist, lässt sich nicht sich
+         Kontur 3 ausgelassen: liegt in oder an der offenen Kontur 4 – ob sie Loch oder Teil ist, lässt sich nicht sich
+         Kontur 4 ausgelassen: offene Kontur (Enden 20 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+   fix  {'aussen': 1} AUSSEN-LOCH=[] innen=0/1 PLATTE-FEHLT=[] 7ms
+         Kontur 2 ausgelassen: liegt in oder an der offenen Kontur 4 – ob sie Loch oder Teil ist, lässt sich nicht sich
+         Kontur 3 ausgelassen: liegt in oder an der offenen Kontur 4 – ob sie Loch oder Teil ist, lässt sich nicht sich
+         Kontur 4 ausgelassen: offene Kontur (Enden 20 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+== t6_freies_teil_mit_loch_linie 
+   alt  {'aussen': 1} AUSSEN-LOCH=[[50, 50, 6]] innen=0/1 PLATTE-FEHLT=[] 75ms
+         Kontur 4 ausgelassen: offene Kontur (Enden 140 mm auseinander) – auf der Linie gefräst würde ein Teil um den F
+         Kontur 5 ausgelassen: offene Kontur (Enden 140 mm auseinander) – auf der Linie gefräst würde ein Teil um den F
+         Kontur 1 ausgelassen: zu nah an Kontur 4 – die Fräsbahn käme ihr auf 0 mm nahe, der Fräser braucht 3 mm (Radiu
+         Kontur 2 ausgelassen: zu nah an Kontur 5 – die Fräsbahn käme ihr auf 0 mm nahe, der Fräser braucht 3 mm (Radiu
+   671  {'aussen': 1} AUSSEN-LOCH=[[50, 50, 6]] innen=0/1 PLATTE-FEHLT=[] 130ms
+         Kontur 4 ausgelassen: offene Kontur (Enden 140 mm auseinander) – auf der Linie gefräst würde ein Teil um den F
+         Kontur 5 ausgelassen: offene Kontur (Enden 140 mm auseinander) – auf der Linie gefräst würde ein Teil um den F
+         Kontur 1 ausgelassen: zu nah an Kontur 4 – die Fräsbahn käme ihr auf 0 mm nahe, der Fräser braucht 3 mm (Radiu
+         Kontur 2 ausgelassen: zu nah an Kontur 5 – die Fräsbahn käme ihr auf 0 mm nahe, der Fräser braucht 3 mm (Radiu
+   fix  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Kontur 2 ausgelassen: die offenen Linien ab Kontur 4 schließen zusammen mit Kontur 2 einen Bere
+== t7_quadratloch_durch 
+   alt  {'aussen': 1} AUSSEN-LOCH=[] innen=0/1 PLATTE-FEHLT=[] 10ms
+         Kontur 2 ausgelassen: liegt in oder an der offenen Kontur 4 – ob sie Loch oder Teil ist, lässt sich nicht sich
+         Kontur 3 ausgelassen: liegt in oder an der offenen Kontur 4 – ob sie Loch oder Teil ist, lässt sich nicht sich
+         Kontur 4 ausgelassen: offene Kontur (Enden 40 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+   671  {'aussen': 1} AUSSEN-LOCH=[] innen=0/1 PLATTE-FEHLT=[] 27ms
+         Kontur 2 ausgelassen: liegt in oder an der offenen Kontur 4 – ob sie Loch oder Teil ist, lässt sich nicht sich
+         Kontur 3 ausgelassen: liegt in oder an der offenen Kontur 4 – ob sie Loch oder Teil ist, lässt sich nicht sich
+         Kontur 4 ausgelassen: offene Kontur (Enden 40 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+   fix  {'aussen': 1} AUSSEN-LOCH=[] innen=0/1 PLATTE-FEHLT=[] 5ms
+         Kontur 2 ausgelassen: liegt in oder an der offenen Kontur 4 – ob sie Loch oder Teil ist, lässt sich nicht sich
+         Kontur 3 ausgelassen: liegt in oder an der offenen Kontur 4 – ob sie Loch oder Teil ist, lässt sich nicht sich
+         Kontur 4 ausgelassen: offene Kontur (Enden 40 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+== u1_platte_gravur_schraffur 
+   alt  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 94ms
+         Kontur 4 ausgelassen: offene Kontur (Enden 30,067 mm auseinander) – auf der Linie gefräst würde ein Teil um de
+         Kontur 5 ausgelassen: offene Kontur (Enden 30,067 mm auseinander) – auf der Linie gefräst würde ein Teil um de
+         Kontur 6 ausgelassen: offene Kontur (Enden 30,067 mm auseinander) – auf der Linie gefräst würde ein Teil um de
+         Kontur 7 ausgelassen: offene Kontur (Enden 30,067 mm auseinander) – auf der Linie gefräst würde ein Teil um de
+   671  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 93ms
+         Kontur 4 ausgelassen: offene Kontur (Enden 30,067 mm auseinander) – auf der Linie gefräst würde ein Teil um de
+         Kontur 5 ausgelassen: offene Kontur (Enden 30,067 mm auseinander) – auf der Linie gefräst würde ein Teil um de
+         Kontur 6 ausgelassen: offene Kontur (Enden 30,067 mm auseinander) – auf der Linie gefräst würde ein Teil um de
+         Kontur 7 ausgelassen: offene Kontur (Enden 30,067 mm auseinander) – auf der Linie gefräst würde ein Teil um de
+   fix  {'innen': 2, 'aussen': 1} AUSSEN-LOCH=[] innen=2/2 PLATTE-FEHLT=[] 23ms
+         Kontur 4 ausgelassen: offene Kontur (Enden 30,067 mm auseinander) – auf der Linie gefräst würde ein Teil um de
+         Kontur 5 ausgelassen: offene Kontur (Enden 30,067 mm auseinander) – auf der Linie gefräst würde ein Teil um de
+         Kontur 6 ausgelassen: offene Kontur (Enden 30,067 mm auseinander) – auf der Linie gefräst würde ein Teil um de
+         Kontur 7 ausgelassen: offene Kontur (Enden 30,067 mm auseinander) – auf der Linie gefräst würde ein Teil um de
+== u2_mittellinien_ebene0_ueber_bohrungen 
+   alt  {'aussen': 1} AUSSEN-LOCH=[] innen=0/2 PLATTE-FEHLT=[] 54ms
+         Kontur 4 ausgelassen: offene Kontur (Enden 220 mm auseinander) – auf der Linie gefräst würde ein Teil um den F
+         Kontur 5 ausgelassen: offene Kontur (Enden 40 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+         Kontur 6 ausgelassen: offene Kontur (Enden 40 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+         Kontur 2 ausgelassen: zu nah an Kontur 4 – die Fräsbahn käme ihr auf 0 mm nahe, der Fräser braucht 3 mm (Radiu
+   671  {'aussen': 1} AUSSEN-LOCH=[] innen=0/2 PLATTE-FEHLT=[] 113ms
+         Kontur 4 ausgelassen: offene Kontur (Enden 220 mm auseinander) – auf der Linie gefräst würde ein Teil um den F
+         Kontur 5 ausgelassen: offene Kontur (Enden 40 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+         Kontur 6 ausgelassen: offene Kontur (Enden 40 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+         Kontur 2 ausgelassen: zu nah an Kontur 4 – die Fräsbahn käme ihr auf 0 mm nahe, der Fräser braucht 3 mm (Radiu
+   fix  {'aussen': 1} AUSSEN-LOCH=[] innen=0/2 PLATTE-FEHLT=[] 10ms
+         Kontur 4 ausgelassen: offene Kontur (Enden 220 mm auseinander) – auf der Linie gefräst würde ein Teil um den F
+         Kontur 5 ausgelassen: offene Kontur (Enden 40 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+         Kontur 6 ausgelassen: offene Kontur (Enden 40 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+         Kontur 2 ausgelassen: zu nah an Kontur 4 – die Fräsbahn käme ihr auf 0 mm nahe, der Fräser braucht 3 mm (Radiu
+== u3_mittellinien_ebene0_ueber_rand 
+   alt  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Kontur 4 ausgelassen: offene Kontur (Enden 320 mm auseinander) – auf der Linie gefräst würde ei
+   671  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Kontur 4 ausgelassen: offene Kontur (Enden 320 mm auseinander) – auf der Linie gefräst würde ei
+   fix  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Kontur 4 ausgelassen: offene Kontur (Enden 320 mm auseinander) – auf der Linie gefräst würde ei
+== u4_schraffur_kreuz_ebene0 
+   alt  {'aussen': 1} AUSSEN-LOCH=[] innen=0/1 PLATTE-FEHLT=[] 110ms
+         Kontur 4 ausgelassen: offene Kontur (Enden 180 mm auseinander) – auf der Linie gefräst würde ein Teil um den F
+         Kontur 5 ausgelassen: offene Kontur (Enden 180 mm auseinander) – auf der Linie gefräst würde ein Teil um den F
+         Kontur 6 ausgelassen: offene Kontur (Enden 180 mm auseinander) – auf der Linie gefräst würde ein Teil um den F
+         Kontur 7 ausgelassen: offene Kontur (Enden 180 mm auseinander) – auf der Linie gefräst würde ein Teil um den F
+   671  {'aussen': 1} AUSSEN-LOCH=[] innen=0/1 PLATTE-FEHLT=[] 177ms
+         Kontur 3 ausgelassen: liegt in einem Bereich, den die offenen Linien ab Kontur 4 einschließen (sie kreuzen ode
+         Kontur 2 ausgelassen: liegt in einem Bereich, den die offenen Linien ab Kontur 4 einschließen (sie kreuzen ode
+         Kontur 4 ausgelassen: offene Kontur (Enden 180 mm auseinander) – auf der Linie gefräst würde ein Teil um den F
+         Kontur 5 ausgelassen: offene Kontur (Enden 180 mm auseinander) – auf der Linie gefräst würde ein Teil um den F
+   fix  {'aussen': 1} AUSSEN-LOCH=[] innen=0/1 PLATTE-FEHLT=[] 65ms
+         Kontur 3 ausgelassen: liegt in einem Bereich, den die offenen Linien ab Kontur 4 einschließen (sie kreuzen ode
+         Kontur 2 ausgelassen: liegt in einem Bereich, den die offenen Linien ab Kontur 4 einschließen (sie kreuzen ode
+         Kontur 4 ausgelassen: offene Kontur (Enden 180 mm auseinander) – auf der Linie gefräst würde ein Teil um den F
+         Kontur 5 ausgelassen: offene Kontur (Enden 180 mm auseinander) – auf der Linie gefräst würde ein Teil um den F
+== u5_zwei_platten_mittellinie_durch_beide 
+   alt  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Kontur 5 ausgelassen: offene Kontur (Enden 270 mm auseinander) – auf der Linie gefräst würde ei
+   671  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Kontur 1 ausgelassen: die offenen Linien ab Kontur 5 schließen zusammen mit Kontur 1, 2 einen B
+   fix  KEIN G-CODE: InvalidOperationException: Es blieb keine fräsbare Kontur übrig: Kontur 1 ausgelassen: die offenen Linien ab Kontur 5 schließen zusammen mit Kontur 1, 2 einen B
+== u6_bemassung_ebene0_zwischen_platten 
+   alt  {'innen': 1} AUSSEN-LOCH=[] innen=1/1 PLATTE-FEHLT=[[0, 0, 100, 100], [150, 0, 250, 100]] 47ms
+         Kontur 4 ausgelassen: offene Kontur (Enden 50 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+         Kontur 5 ausgelassen: offene Kontur (Enden 15 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+         Kontur 6 ausgelassen: offene Kontur (Enden 15 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+         Kontur 1 ausgelassen: zu nah an Kontur 5 – die Fräsbahn käme ihr auf 0 mm nahe, der Fräser braucht 3 mm (Radiu
+   671  {'innen': 1} AUSSEN-LOCH=[] innen=1/1 PLATTE-FEHLT=[[0, 0, 100, 100], [150, 0, 250, 100]] 111ms
+         Kontur 4 ausgelassen: offene Kontur (Enden 50 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+         Kontur 5 ausgelassen: offene Kontur (Enden 15 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+         Kontur 6 ausgelassen: offene Kontur (Enden 15 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+         Kontur 1 ausgelassen: zu nah an Kontur 5 – die Fräsbahn käme ihr auf 0 mm nahe, der Fräser braucht 3 mm (Radiu
+   fix  {'innen': 1} AUSSEN-LOCH=[] innen=1/1 PLATTE-FEHLT=[[0, 0, 100, 100], [150, 0, 250, 100]] 13ms
+         Kontur 4 ausgelassen: offene Kontur (Enden 50 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+         Kontur 5 ausgelassen: offene Kontur (Enden 15 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+         Kontur 6 ausgelassen: offene Kontur (Enden 15 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fr
+         Kontur 1 ausgelassen: zu nah an Kontur 5 – die Fräsbahn käme ihr auf 0 mm nahe, der Fräser braucht 3 mm (Radiu

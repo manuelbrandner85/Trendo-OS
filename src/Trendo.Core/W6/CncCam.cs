@@ -27,6 +27,8 @@ public sealed record CamSettings
     public double Chord { get; init; } = 0.01;
     /// <summary>T-0747-fix5: Ausdehnung nicht gelesener Elemente (Zeichnungskoordinaten, wie die Konturen) – was darin liegt, wird ausgelassen und gemeldet.</summary>
     public IReadOnlyList<(string What, CadDxf.Box B)> Unread { get; init; } = [];
+    /// <summary>T-0759-fix1: Lage der Texte (TEXT/MTEXT, Zeichnungskoordinaten) – Beleg für ein Schriftfeld eines Zeichnungsrahmens.</summary>
+    public IReadOnlyList<(double X, double Y)> Texts { get; init; } = [];
 }
 
 /// <summary>Eine Fräsbahn (Fräsermitte) mit Art und Herkunft.</summary>
@@ -48,7 +50,7 @@ public sealed record CamResult(string Gcode, List<CamPath> Paths, List<string> W
 /// mindestens Radius − <see cref="Clearance"/>); Verstöße werden weggelassen und gemeldet. Selbst schneidende Konturen werden abgelehnt. Stellen, an die der
 /// Fräser nicht herankommt (Engstellen), werden mit Lage gemeldet. Konturen werden vorher leicht geglättet (Douglas-Peucker, <see cref="SimplifyTol"/>; die
 /// Abweichung wird dem Versatz zugeschlagen). Zustellung in Stufen bis zur Tiefe, Haltestege auf Außenkonturen, Löcher vor dem Umriss.</summary>
-public static class CncCam
+public static partial class CncCam
 {
     static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
     static readonly CultureInfo De = CultureInfo.GetCultureInfo("de-DE");
@@ -92,29 +94,51 @@ public static class CncCam
         if (s.ToolD <= 0 || s.Depth <= 0 || s.StepDown <= 0 || s.Feed <= 0 || s.Plunge <= 0) throw new ArgumentException("Fräser-Ø, Tiefe, Zustellung und Vorschübe müssen größer als 0 sein.");
         if (s.Tabs > 0 && (s.TabH <= 0 || s.TabH >= s.Depth)) throw new ArgumentException("Haltestege: Höhe muss größer als 0 und kleiner als die Tiefe sein.");
         var r = s.ToolD / 2; var warn = new List<string>();
+        var frameUnsure = new HashSet<int>();
+        source = DropFrame(source, s, warn, frameUnsure, ct); // T-0759-fix2: Verdacht auf Zeichnungsrahmen – nichts entfernt, Umriss und Inhalt ausgelassen
         // verschieben: linke untere Ecke aufs Nullpunkt
         double sx = 0, sy = 0;
         if (s.ToOrigin) { sx = -source.Min(c => c.Pts.Min(p => p.X)); sy = -source.Min(c => c.Pts.Min(p => p.Y)); }
-        var cs = source.Select(c => c with { Pts = c.Pts.Select(p => (p.X + sx, p.Y + sy)).ToList() }).ToList();
+        var cs = source.Select((c, i) => { if ((i & 255) == 0) ct.ThrowIfCancellationRequested(); return c with { Pts = c.Pts.Select(p => (p.X + sx, p.Y + sy)).ToList() }; }).ToList(); // T-0758: abbrechbar
         string Name(int i) => $"Kontur {i + 1}" + (cs[i].Layer is { Length: > 0 } and not "0" ? $" (Ebene {cs[i].Layer})" : "");
         // T-0747-fix4: doppelt gezeichnete (deckungsgleiche) geschlossene Konturen – egal welche Richtung oder Startecke – nur einmal verwenden. Sonst zählt
         // ein Loch in einer doppelten Platte zwei Umrisse und wird als „außen“ gefräst (um den Fräser-Ø zu groß).
         var dup = new bool[cs.Count];
         // T-0747-fix5: Vorfilter – nur Paare mit fast gleichem Rahmen (Raster über die linke untere Ecke) und fast gleicher Fläche werden genau geprüft
-        var boxes = cs.Select(c => c.Closed ? c.Box : (0.0, 0.0, -1.0, -1.0)).ToArray();
+        var boxes = cs.Select((c, i) => { if ((i & 255) == 0) ct.ThrowIfCancellationRequested(); return c.Closed ? c.Box : (0.0, 0.0, -1.0, -1.0); }).ToArray();
         var areas = cs.Select(c => c.Closed ? Math.Abs(c.SignedArea) : 0).ToArray();
-        var perims = cs.Select(c => c.Closed ? Length(c.Pts, true) : 0).ToArray();
+        var perims = cs.Select((c, i) => { if ((i & 255) == 0) ct.ThrowIfCancellationRequested(); return c.Closed ? Length(c.Pts, true) : 0; }).ToArray();
         const double dupCell = 0.01;
-        var corner = new Dictionary<(long, long), List<int>>();
+        // T-0758: Raster über alle vier Rahmenwerte statt nur die linke untere Ecke – ein Paar, das die Rahmenprüfung (je Wert ≤ DupTol ≤ dupCell) besteht,
+        // liegt in benachbarten Zellen; die Kandidaten sind also dieselben, nur ohne die vielen Konturen mit gleicher Ecke und anderem Rahmen
+        // (20 000 Kreise im „Eimer“: vorher 10 s). Rahmen mit nicht endlichen Werten (dort besteht jeder Vergleich) laufen wie bisher über die Ecke.
+        static bool Fin((double, double, double, double) b) => double.IsFinite(b.Item1) && double.IsFinite(b.Item2) && double.IsFinite(b.Item3) && double.IsFinite(b.Item4);
+        static long K(double v) => (long)Math.Floor(v / dupCell);
+        var corner = new Dictionary<(long, long), List<int>>(); var odd = new Dictionary<(long, long), List<int>>();
+        var frame4 = new Dictionary<(long, long, long, long), List<int>>();
         for (var i = 0; i < cs.Count; i++)
-            if (cs[i].Closed) { var key = ((long)Math.Floor(boxes[i].Item1 / dupCell), (long)Math.Floor(boxes[i].Item2 / dupCell)); if (!corner.TryGetValue(key, out var l)) corner[key] = l = []; l.Add(i); }
+            if (cs[i].Closed)
+            {
+                var key = (K(boxes[i].Item1), K(boxes[i].Item2)); if (!corner.TryGetValue(key, out var l)) corner[key] = l = []; l.Add(i);
+                if (!Fin(boxes[i])) { if (!odd.TryGetValue(key, out var o)) odd[key] = o = []; o.Add(i); continue; }
+                var k4 = (key.Item1, key.Item2, K(boxes[i].Item3), K(boxes[i].Item4)); if (!frame4.TryGetValue(k4, out var f)) frame4[k4] = f = []; f.Add(i);
+            }
         for (var i = 0; i < cs.Count; i++)
         {
             if (!cs[i].Closed || dup[i]) continue;
             if ((i & 255) == 0) ct.ThrowIfCancellationRequested();
-            var (kx, ky) = ((long)Math.Floor(boxes[i].Item1 / dupCell), (long)Math.Floor(boxes[i].Item2 / dupCell));
+            var (kx, ky) = (K(boxes[i].Item1), K(boxes[i].Item2));
             var near = new List<int>();
-            for (var dx = -1L; dx <= 1; dx++) for (var dy = -1L; dy <= 1; dy++) if (corner.TryGetValue((kx + dx, ky + dy), out var l)) near.AddRange(l.Where(j => j > i));
+            if (!Fin(boxes[i])) { for (var dx = -1L; dx <= 1; dx++) for (var dy = -1L; dy <= 1; dy++) if (corner.TryGetValue((kx + dx, ky + dy), out var l)) near.AddRange(l.Where(j => j > i)); }
+            else
+            {
+                var (kx1, ky1) = (K(boxes[i].Item3), K(boxes[i].Item4));
+                for (var dx = -1L; dx <= 1; dx++) for (var dy = -1L; dy <= 1; dy++)
+                {
+                    if (odd.TryGetValue((kx + dx, ky + dy), out var o)) near.AddRange(o.Where(j => j > i));
+                    for (var ex = -1L; ex <= 1; ex++) for (var ey = -1L; ey <= 1; ey++) if (frame4.TryGetValue((kx + dx, ky + dy, kx1 + ex, ky1 + ey), out var l)) near.AddRange(l.Where(j => j > i));
+                }
+            }
             near.Sort();
             foreach (var j in near)
             {
@@ -123,23 +147,65 @@ public static class CncCam
                 var (a, b) = (boxes[i], boxes[j]);
                 if (Math.Abs(a.Item1 - b.Item1) > DupTol || Math.Abs(a.Item2 - b.Item2) > DupTol || Math.Abs(a.Item3 - b.Item3) > DupTol || Math.Abs(a.Item4 - b.Item4) > DupTol) continue;
                 if (Math.Abs(areas[i] - areas[j]) > DupTol * (perims[i] + perims[j])) continue;
-                if (!Coincident(cs[i].Pts, cs[j].Pts, DupTol)) continue;
+                if (!Coincident(cs[i].Pts, cs[j].Pts, DupTol, ct)) continue;
                 dup[j] = true;
                 warn.Add($"{Name(j)}: doppelt gezeichnet (deckungsgleich mit Kontur {i + 1}) – einmal verwendet.");
             }
         }
         // T-0747-fix: selbst schneidende Konturen (Acht) ablehnen – innen und außen sind dort nicht eindeutig
-        var crossing = new bool[cs.Count];
+        var crossing = new bool[cs.Count]; var annClosed = new bool[cs.Count];
+        long annScan = 0;
+        bool ContainsClosed(int i) // T-0759-fix1: liegt eine andere geschlossene Kontur (Rahmen und erster Punkt) in Kontur i? Budget erschöpft: ja (wie main)
+        {
+            var bi = boxes[i];
+            for (var j = 0; j < cs.Count; j++)
+            {
+                if (j == i || !cs[j].Closed || dup[j]) continue;
+                if (++annScan > 20_000_000) return true;
+                if ((annScan & 4095) == 0) ct.ThrowIfCancellationRequested();
+                var bj = boxes[j];
+                if (bj.Item1 < bi.Item1 || bj.Item2 < bi.Item2 || bj.Item3 > bi.Item3 || bj.Item4 > bi.Item4) continue;
+                if (bj.Item1 == bi.Item1 && bj.Item2 == bi.Item2 && bj.Item3 == bi.Item3 && bj.Item4 == bi.Item4) continue;
+                if (cs[i].Contains(cs[j].Pts[0].X, cs[j].Pts[0].Y)) return true;
+            }
+            return false;
+        }
+        bool InsideClosed(int i) // liegt Kontur i (erster Punkt) in einer anderen geschlossenen Kontur? Budget erschöpft: nein (dann wie main)
+        {
+            var bi = boxes[i]; var q = cs[i].Pts[0];
+            for (var j = 0; j < cs.Count; j++)
+            {
+                if (j == i || !cs[j].Closed || dup[j]) continue;
+                if (++annScan > 20_000_000) return false;
+                var bj = boxes[j];
+                if (bi.Item1 < bj.Item1 || bi.Item2 < bj.Item2 || bi.Item3 > bj.Item3 || bi.Item4 > bj.Item4) continue;
+                if (bj.Item1 == bi.Item1 && bj.Item2 == bi.Item2 && bj.Item3 == bi.Item3 && bj.Item4 == bi.Item4) continue;
+                if (cs[j].Contains(q.X, q.Y)) return true;
+            }
+            return false;
+        }
         for (var i = 0; i < cs.Count; i++)
-            if (cs[i].Closed && !dup[i] && s.Mode != "auf" && SelfIntersects(cs[i].Pts))
+            if (cs[i].Closed && !dup[i] && s.Mode != "auf" && SelfIntersects(cs[i].Pts, ct))
             {
                 crossing[i] = true;
                 warn.Add($"{Name(i)} ausgelassen: die Kontur kreuzt sich selbst (z. B. eine Acht) – dann ist nicht klar, was innen und außen ist. Bitte in der Zeichnung in einzelne geschlossene Umrisse auflösen.");
             }
+            else if (cs[i].Closed && !dup[i] && s.Mode != "auf" && IsAnnotationLayer(cs[i].Layer) && ContainsClosed(i) && !InsideClosed(i))
+                // T-0759-fix1: äußerste Linie, die selbst geschlossene Konturen enthält – eher eine Platte auf falscher Ebene: wie bisher (main) als Kante behandeln.
+                // Liegt sie in einer anderen Kontur (Lochkreis um eine Bohrung in einer Platte), bleibt sie Hilfslinie (nicht gefräst, Inhalt ausgelassen).
+                warn.Add($"{Name(i)} liegt auf der Ebene {cs[i].Layer} (Bemaßung/Mittellinien), enthält aber andere Konturen – sie wird wie eine Kante (Umriss) gefräst. Bitte prüfen, ob das stimmt.");
+            else if (cs[i].Closed && !dup[i] && s.Mode != "auf" && IsAnnotationLayer(cs[i].Layer))
+            {
+                // T-0759: geschlossene Linie auf einer Bemaßungs-/Mittellinien-Ebene (z. B. Lochkreis) – nicht fräsen. Was darin oder daran liegt, hängt davon
+                // ab, ob sie doch eine Kante ist (Loch oder Teil) – es wird wie bei einer sich kreuzenden Kontur ausgelassen.
+                crossing[i] = true; annClosed[i] = true;
+                warn.Add($"{Name(i)} nicht gefräst: geschlossene Linie auf der Ebene {cs[i].Layer} (Bemaßung, Mittel- oder Hilfslinien, z. B. Lochkreis).");
+            }
         // T-0747-fix2: Konturen in oder an einer abgelehnten, sich selbst kreuzenden Kontur – innen/außen ist dort nicht sicher zu deuten (ein Loch würde
         // sonst als Umriss gefräst und größer). Auslassen und melden.
         var unsure = new bool[cs.Count];
-        var allBox = cs.Select(c => c.Box).ToArray(); // T-0747-fix18: Rahmen einmal (vorher je Paar neu berechnet)
+        foreach (var i in frameUnsure) if (!dup[i] && !crossing[i] && !unsure[i]) { unsure[i] = true; warn.Add($"{Name(i)} ausgelassen: Umriss oder Kontur darin, der Platte mit Beschriftungsfeld oder Zeichnungsrahmen sein kann (siehe oben) – als Teil wäre sie außen, als Loch innen zu fräsen."); }
+        var allBox = cs.Select((c, i) => { if ((i & 255) == 0) ct.ThrowIfCancellationRequested(); return c.Box; }).ToArray(); // T-0747-fix18: Rahmen einmal (vorher je Paar neu berechnet)
         for (var j = 0; j < cs.Count; j++)
         {
             // T-0747-fix4: auch ein ausgelassener offener Umriss (über seine geschlossene Annäherung: Enden verbunden) macht die Deutung darin unsicher
@@ -152,10 +218,12 @@ public static class CncCam
                 ct.ThrowIfCancellationRequested();
                 var bi = allBox[i]; if (bi.MaxX < bj.MinX || bi.MinX > bj.MaxX || bi.MaxY < bj.MinY || bi.MinY > bj.MaxY) continue;
                 var pr = cs[i].Pts[0]; // T-0747-fix3: auch doppelt umlaufene Bereiche (Windungszahl ≠ 0, z. B. Limaçon) zählen als „in der Kontur“
-                if (!cs[j].Contains(pr.X, pr.Y) && Winding(cs[j].Pts, pr) == 0 && !Touches(cs[i].Pts, cs[i].Closed, cs[j].Pts)) continue;
+                if (!cs[j].Contains(pr.X, pr.Y) && Winding(cs[j].Pts, pr) == 0 && !Touches(cs[i].Pts, cs[i].Closed, cs[j].Pts, ct)) continue;
                 if (!cs[i].Closed) continue; // offene Konturen werden ohnehin nur als Gravur gefräst
                 unsure[i] = true;
-                warn.Add(crossing[j]
+                warn.Add(annClosed[j]
+                    ? $"{Name(i)} ausgelassen: liegt in oder an Kontur {j + 1} auf der Ebene {cs[j].Layer} (Bemaßung/Mittellinie) – wäre sie doch eine Kante, wäre diese Kontur Loch statt Teil oder umgekehrt; das lässt sich nicht sicher sagen. Bitte die Linie auf eine andere Ebene legen oder löschen."
+                    : crossing[j]
                     ? $"{Name(i)} ausgelassen: liegt in oder an Kontur {j + 1}, die sich selbst kreuzt – ob sie Loch oder Teil ist, lässt sich nicht sicher sagen. Bitte die Zeichnung bereinigen."
                     : $"{Name(i)} ausgelassen: liegt in oder an der offenen Kontur {j + 1} – ob sie Loch oder Teil ist, lässt sich nicht sicher sagen. Bitte den Umriss in der Zeichnung schließen.");
             }
@@ -276,19 +344,143 @@ public static class CncCam
         void SkipAs(int i, string why) { if (!Open(i)) return; unsure[i] = true; warn.Add($"{Name(i)} ausgelassen: {why}"); }
         const string Budget = "Prüfaufwand zu groß – die Kontur liegt am oder im Rahmen eines unklaren Linienverbunds und wird vorsichtshalber ausgelassen.";
 
+        // T-0759: Verbünde offener Linien (auch über Kreuzungen, Berührungen mitten auf einer Linie und über Ebenen hinweg) und die Bereiche, die sie mit
+        // geschlossenen Konturen einschließen. Ein Verbund ohne Kreis (Baum, z. B. Mittelkreuz, Bemaßung mit Pfeilen) kann für sich keinen Umriss
+        // bilden; was er mit geschlossenen Konturen einschließt, findet Enclosures. Reicht das Arbeitsbudget nicht, bleibt alles wie bisher.
+        var tolE = ChainTol + 1e-9;
+        SegGrid? cgShared = null;
+        SegGrid ClosedGrid() => cgShared ??= BuildGrid(Enumerable.Range(0, cs.Count).Where(i => cs[i].Closed && !dup[i] && !crossing[i]).Select(i => ((IReadOnlyList<(double X, double Y)>)cs[i].Pts, true, i)), Math.Max(r, tolE), ct);
+        var rowIdxE = new Dictionary<int, RowIndex>();
+        bool InCE(int i, (double X, double Y) q) { if (!rowIdxE.TryGetValue(i, out var ri)) rowIdxE[i] = ri = new RowIndex(cs[i].Pts); return ri.Contains(q.X, q.Y); }
+        OpenNet? net = null; List<(List<int> Contours, List<int> Structs)>? encl = null;
+        if (s.Mode != "auf" && cs.Any(c => !c.Closed && c.Pts.Count >= 2))
+        {
+            net = AnalyzeOpen(cs, j => !cs[j].Closed && cs[j].Pts.Count >= 2, tolE, 30_000_000, ct);
+            if (!net.Exhausted) encl = Enclosures(cs, net, ClosedGrid(), i => cs[i].Closed && !dup[i] && !crossing[i], InCE, i => allBox[i], tolE, 60_000_000, ct);
+            if (net.Exhausted || encl is null) warn.Add("Sehr viele Linien berühren oder kreuzen sich – der Prüfaufwand für Linienverbünde ist zu groß; sie werden wie bisher vorsichtig behandelt (Konturen in Linienverbünden mit Stoß werden ausgelassen).");
+        }
+        bool Analysed() => net is { Exhausted: false } && encl is not null;
+        // T-0759: Ein Linienverbund ohne Kreis (Baum) schließt für sich keinen Bereich ein – mit einer gedachten Schließsehne über eine Lücke aber schon
+        // (wie bei der Regel für offene Umrisse; z. B. „[“ und „]“ mit 0,2 mm Spalt). Ausgenommen werden deshalb nur Bäume, deren Linien alle auf einer
+        // sicher erkannten Bemaßungs-/Mittellinien-Ebene liegen (keine Kanten) und in deren konvexer Hülle keine geschlossene Kontur ganz liegt.
+        long annWork = 0; Dictionary<(long, long), List<(int J, (double X, double Y) P)>>? openEnds = null;
+        bool AnnotationTreeFree(List<int> members, List<(double X, double Y)> pts)
+        {
+            if (!members.All(j => IsAnnotationLayer(cs[j].Layer))) return false;
+            // T-0759-fix1: liegen zwei freie Enden des Baums dicht beieinander (≤ max(2 mm, Fräser-Ø)), ist er eher ein Umriss mit kleinen Spalten
+            // (Prüferfall a5: Quadrat mit 0,3-mm-Spalten auf BEM) als Bemaßung/Mittelkreuz – dann vorsichtig schützen wie bisher.
+            // Kurze Linien (≤ 3 × diese Grenze, z. B. Pfeilspitzen) zählen dabei nicht – ihre Enden liegen naturgemäß dicht beieinander.
+            var gapMax = Math.Max(2.0, s.ToolD); var ends = new List<(double X, double Y)>();
+            bool Short(int j) => Length(cs[j].Pts, false) <= 3 * gapMax;
+            foreach (var j in members)
+                foreach (var e in Short(j) ? [] : new[] { cs[j].Pts[0], cs[j].Pts[^1] })
+                {
+                    var touches = false;
+                    foreach (var o in members)
+                    {
+                        if (o == j) continue;
+                        var op = cs[o].Pts;
+                        for (var k = 0; k + 1 < op.Count && !touches; k++) { if (++annWork > 50_000_000) return false; if (SegDist(e, op[k], op[k + 1]) <= tolE) touches = true; }
+                        if (touches) break;
+                    }
+                    if (!touches) ends.Add(e);
+                }
+            for (var a = 0; a < ends.Count; a++)
+                for (var b = a + 1; b < ends.Count; b++)
+                {
+                    if (++annWork > 50_000_000) return false;
+                    if (D2(ends[a], ends[b]) > 1e-18 && D2(ends[a], ends[b]) <= gapMax * gapMax) return false;
+                }
+            // … auch zu Enden anderer offener Linien (ein Umriss mit Spalt kann aus mehreren Verbünden bestehen)
+            if (openEnds is null)
+            {
+                openEnds = [];
+                for (var j = 0; j < cs.Count; j++)
+                    if (!cs[j].Closed && cs[j].Pts.Count >= 2)
+                        foreach (var e in new[] { cs[j].Pts[0], cs[j].Pts[^1] })
+                        {
+                            var key = ((long)Math.Floor(e.X / gapMax), (long)Math.Floor(e.Y / gapMax));
+                            if (!openEnds.TryGetValue(key, out var l)) openEnds[key] = l = []; l.Add((j, e));
+                        }
+            }
+            var mem = members.ToHashSet();
+            foreach (var e in ends)
+            {
+                long kx = (long)Math.Floor(e.X / gapMax), ky = (long)Math.Floor(e.Y / gapMax);
+                for (var dx = -1L; dx <= 1; dx++)
+                    for (var dy = -1L; dy <= 1; dy++)
+                        if (openEnds.TryGetValue((kx + dx, ky + dy), out var l))
+                            foreach (var (j, q) in l)
+                            {
+                                if (++annWork > 50_000_000) return false;
+                                if (!mem.Contains(j) && !Short(j) && D2(e, q) <= gapMax * gapMax) return false;
+                            }
+            }
+            var h = Hull(pts); if (h.Count < 3) return true;
+            double hx0 = h.Min(p => p.X), hy0 = h.Min(p => p.Y), hx1 = h.Max(p => p.X), hy1 = h.Max(p => p.Y);
+            for (var i = 0; i < cs.Count; i++)
+            {
+                if (!cs[i].Closed || dup[i]) continue;
+                if (++annWork > 50_000_000) return false; // Prüfaufwand zu groß: vorsichtig schützen
+                if ((annWork & 4095) == 0) ct.ThrowIfCancellationRequested();
+                var b = boxes[i];
+                if (b.Item1 < hx0 || b.Item2 < hy0 || b.Item3 > hx1 || b.Item4 > hy1) continue;
+                var all = true;
+                foreach (var v in cs[i].Pts) { if (++annWork > 50_000_000) return false; if (!InConvex(h, v, 1e-6)) { all = false; break; } }
+                if (all) return false;
+            }
+            return true;
+        }
         // a) Linienverbund mit Stoß (Gruppe samt über Spalte angeschlossener Ketten)
         var jgroups = cs.Select((c, j) => (c, j)).Where(t => t.c.JunctionGroup >= 0).GroupBy(t => t.c.JunctionGroup).ToList();
         if (jgroups.Count > 0)
         {
-            warn.Add($"{jgroups.Count} Linienverbund/-verbünde (zusammen {jgroups.Sum(g => g.Count())} Linien, z. B. ab Kontur {jgroups[0].First().j + 1}) nicht zu Umrissen verkettet: an einem Punkt stoßen mehr als zwei Linien zusammen oder die Enden liegen nicht eindeutig. Diese Linien werden nicht gefräst (außer als Gravur), Konturen darin werden ausgelassen.");
+            warn.Add($"{jgroups.Count} Linienverbund/-verbünde (zusammen {jgroups.Sum(g => g.Count())} Linien, z. B. ab Kontur {jgroups[0].First().j + 1}) nicht zu Umrissen verkettet: an einem Punkt stoßen mehr als zwei Linien zusammen oder die Enden liegen nicht eindeutig. Diese Linien werden nicht gefräst (außer als Gravur), Konturen darin werden ausgelassen{(Analysed() ? ", wenn der Verbund einen Bereich einschließen kann" : "")}.");
+            var doneComp = new HashSet<int>();
             foreach (var grp in jgroups)
             {
                 ct.ThrowIfCancellationRequested();
-                var pts = new List<(double X, double Y)>(); foreach (var (c, _) in grp) pts.AddRange(c.Pts);
                 var first = grp.First().j;
+                var pts = new List<(double X, double Y)>();
+                if (Analysed())
+                {
+                    var comp = net!.Comp[first];
+                    if (!doneComp.Add(comp)) continue; // Verbund schon geschützt
+                    foreach (var j in net.Members[comp]) pts.AddRange(cs[j].Pts);
+                    if (!net.Cyclic[comp] && AnnotationTreeFree(net.Members[comp], pts)) continue; // T-0759: Bemaßung/Mittellinie als Baum – keine Kante
+                }
+                else foreach (var (c, _) in grp) pts.AddRange(c.Pts);
                 Protect(pts, i => SkipAs(i, $"liegt im Linienverbund ab Kontur {first + 1} (oder teilweise darin), an dem mehr als zwei Linien zusammenstoßen – welcher Umriss gemeint ist und ob sie Loch oder Teil ist, lässt sich nicht sicher sagen. Bitte die Umrisse in der Zeichnung trennen oder als Polylinie zeichnen."), i => SkipAs(i, Budget));
             }
         }
+        // T-0759: Verbund ohne Stoß, der für sich einen Bereich einschließt (sich kreuzende oder mitten auf einer Linie endende Linien, z. B. „#“)
+        if (Analysed())
+            for (var comp = 0; comp < net!.Members.Count; comp++)
+            {
+                if (!net.Cyclic[comp] || net.Members[comp].Any(j => cs[j].JunctionGroup >= 0)) continue;
+                ct.ThrowIfCancellationRequested();
+                var pts = new List<(double X, double Y)>(); foreach (var j in net.Members[comp]) pts.AddRange(cs[j].Pts);
+                var first = net.Members[comp].Min();
+                // Was die Linien des Verbunds allein einschließen, liegt in ihrer konvexen Hülle. Eine geschlossene Kontur, die die Hülle (samt
+                // Kettentoleranz) weder berührt noch schneidet, liegt in keinem solchen Bereich – ihre Lesart (Loch oder Teil) hängt nicht von diesem
+                // Verbund ab (sonst würde schon der Rahmen der Hülle ausreichen, um z. B. Löcher neben dichten Gravurlinien auszulassen). Bereiche aus
+                // Verbund und geschlossenen Konturen prüft c) getrennt. Reicht das Budget nicht, wird nicht verschont (vorsichtig).
+                var hullV = Hull(pts); long spareWork = 0;
+                bool OutsideHull(int i)
+                {
+                    if (hullV.Count < 3 || !cs[i].Closed) return false;
+                    var pp = cs[i].Pts; var hn = hullV.Count;
+                    foreach (var v in pp) { Tick(); if ((spareWork += 8) > 20_000_000 || InConvexLog(hullV, v, -tolE)) return false; }
+                    for (var k = 0; k < pp.Count; k++)
+                    {
+                        var a0 = pp[k]; var b0 = pp[(k + 1) % pp.Count];
+                        if ((spareWork += hn) > 20_000_000) return false;
+                        for (var t = 0; t < hn; t++) { Tick(); if (SegSeg(a0, b0, hullV[t], hullV[(t + 1) % hn]) <= tolE) return false; }
+                    }
+                    return true;
+                }
+                Protect(pts, i => SkipAs(i, $"liegt in einem Bereich, den die offenen Linien ab Kontur {first + 1} einschließen (sie kreuzen oder berühren sich) – welcher Umriss gemeint ist und ob sie Loch oder Teil ist, lässt sich nicht sicher sagen. Bitte den Umriss in der Zeichnung als geschlossene Polylinie zeichnen."), i => SkipAs(i, Budget), OutsideHull);
+            }
 
         // b) T-0747-fix17/18: offener Linienzug (oder Stoß-Verbund), der mit mindestens zwei Enden (≤ 0,1 mm, gleiche Ebene) an dieselbe geschlossene Kontur C
         // stößt und teilweise außerhalb von C liegt, schließt zusammen mit dem Rand von C einen Bereich ein (U vor einer Kerbe, auch eine einzelne gerade
@@ -304,7 +496,7 @@ public static class CncCam
             {
                 var closedOk = Enumerable.Range(0, cs.Count).Where(i => cs[i].Closed && !dup[i] && !crossing[i]).ToArray();
                 var tolT = ChainTol + 1e-9;
-                var cg = BuildGrid(closedOk.Select(i => ((IReadOnlyList<(double X, double Y)>)cs[i].Pts, true, i)), Math.Max(r, tolT), ct);
+                var cg = ClosedGrid(); // T-0759: dasselbe Raster wie für die Linienverbünde (gleiche Konturen, gleiche Zellgröße)
                 var rowIdx = new Dictionary<int, RowIndex>();
                 RowIndex Ri(int i) { if (!rowIdx.TryGetValue(i, out var ri)) rowIdx[i] = ri = new RowIndex(cs[i].Pts); return ri; }
                 bool NearC(int cTag, (double X, double Y) v, double d) =>
@@ -487,19 +679,130 @@ public static class CncCam
                 }
             }
         }
+        // c) T-0759: Bereiche, die Linienverbünde mit geschlossenen Konturen einschließen, auch wenn kein einzelner Linienzug zwei Enden an derselben
+        // Kontur hat – zwei Linien zwischen zwei Platten (Brücke), U aus sich kreuzenden Überständen, Sehne auf einer anderen Ebene. Ausgelassen werden
+        // die beteiligten Konturen und alles in der Hülle aus Konturen ∪ Linien, das nicht ganz in einer der beteiligten Konturen liegt (dort bleibt die
+        // Tiefe in jeder Lesart gleich).
+        if (encl is { Count: > 0 })
+        {
+            EnsureIndex();
+            var gridC = new Dictionary<int, SegGrid>();
+            bool InsideOf(int i, int c)
+            {
+                var bc = boxes[c]; var bi = boxes[i];
+                if (bi.Item1 < bc.Item1 || bi.Item2 < bc.Item2 || bi.Item3 > bc.Item3 || bi.Item4 > bc.Item4) return false;
+                var pp = cs[i].Pts; var step = Math.Max(1, pp.Count / 64);
+                for (var k = 0; k < pp.Count; k += step) { Tick(); if (!InCE(c, pp[k])) return false; }
+                if (!gridC.TryGetValue(c, out var gc)) gridC[c] = gc = BuildGrid([((IReadOnlyList<(double X, double Y)>)cs[c].Pts, true, 0)], AvgLen(cs[c].Pts, true) * 2, ct);
+                for (var k = 0; k < pp.Count; k++)
+                {
+                    Tick(); var a0 = pp[k]; var b0 = pp[(k + 1) % pp.Count];
+                    if (gc.Any(Math.Min(a0.X, b0.X) - 1e-6, Math.Min(a0.Y, b0.Y) - 1e-6, Math.Max(a0.X, b0.X) + 1e-6, Math.Max(a0.Y, b0.Y) + 1e-6, t => SegSeg(a0, b0, gc.Segs[t].A, gc.Segs[t].B) <= 1e-6)) return false;
+                }
+                return true;
+            }
+            // reicht Linie j in ein Loch c hinein? Jede Strecke wird an den Schnittstellen mit dem Rand von c geteilt; liegt die Mitte eines Stücks, das länger
+            // als 2 × Kettentoleranz ist, in c, reicht sie hinein. Eine Linie, die nur am Rand endet oder ihn berührt, reicht nicht hinein.
+            var holeOf = new Dictionary<int, bool>();
+            bool IsHole(int c) // liegt c in einer ungeraden Zahl anderer geschlossener Konturen (Loch)? Budget erschöpft: ja (vorsichtig)
+            {
+                if (holeOf.TryGetValue(c, out var h)) return h;
+                var q0 = cs[c].Pts[0]; var n = 0; long w = 0;
+                for (var i = 0; i < cs.Count; i++)
+                {
+                    if (i == c || !cs[i].Closed || dup[i]) continue;
+                    if (++w > 5_000_000) return holeOf[c] = true;
+                    var bi = boxes[i]; if (q0.X < bi.Item1 || q0.X > bi.Item3 || q0.Y < bi.Item2 || q0.Y > bi.Item4) continue;
+                    if (InCE(i, q0)) n++;
+                }
+                return holeOf[c] = n % 2 == 1;
+            }
+            bool LineEnters(int j, int c)
+            {
+                if (!IsHole(c)) return false; // in eine Platte hineinreichende Linien sind Gravur (T-0747) – die Tiefe darin bleibt
+                var bc = boxes[c]; var pp = cs[j].Pts;
+                if (!gridC.TryGetValue(c, out var gc)) gridC[c] = gc = BuildGrid([((IReadOnlyList<(double X, double Y)>)cs[c].Pts, true, 0)], AvgLen(cs[c].Pts, true) * 2, ct);
+                var ts = new List<double>();
+                for (var k = 0; k + 1 < pp.Count; k++)
+                {
+                    Tick(); var a0 = pp[k]; var b0 = pp[k + 1];
+                    if (Math.Max(a0.X, b0.X) < bc.Item1 || Math.Min(a0.X, b0.X) > bc.Item3 || Math.Max(a0.Y, b0.Y) < bc.Item2 || Math.Min(a0.Y, b0.Y) > bc.Item4) continue;
+                    double dx = b0.X - a0.X, dy = b0.Y - a0.Y, len = Math.Sqrt(dx * dx + dy * dy); if (len < 1e-12) continue;
+                    ts.Clear(); ts.Add(0); ts.Add(1);
+                    gc.Any(Math.Min(a0.X, b0.X) - 1e-6, Math.Min(a0.Y, b0.Y) - 1e-6, Math.Max(a0.X, b0.X) + 1e-6, Math.Max(a0.Y, b0.Y) + 1e-6, t =>
+                    {
+                        var (c0, c1) = (gc.Segs[t].A, gc.Segs[t].B); double sx = c1.X - c0.X, sy = c1.Y - c0.Y, den = dx * sy - dy * sx;
+                        if (Math.Abs(den) < 1e-18) return false;
+                        double qx = c0.X - a0.X, qy = c0.Y - a0.Y, tt = (qx * sy - qy * sx) / den, uu = (qx * dy - qy * dx) / den;
+                        if (tt >= -1e-9 && tt <= 1 + 1e-9 && uu >= -1e-9 && uu <= 1 + 1e-9) ts.Add(Math.Clamp(tt, 0, 1));
+                        return false;
+                    });
+                    ts.Sort();
+                    for (var q = 0; q + 1 < ts.Count; q++)
+                    {
+                        if ((ts[q + 1] - ts[q]) * len <= 2 * tolE) continue;
+                        var tm = (ts[q] + ts[q + 1]) / 2; var m = (a0.X + dx * tm, a0.Y + dy * tm);
+                        if (InCE(c, m)) return true;
+                    }
+                }
+                return false;
+            }
+            foreach (var (gcs, gss) in encl)
+            {
+                ct.ThrowIfCancellationRequested();
+                var first = gss.SelectMany(st => net!.Members[st]).Min();
+                var why = $"die offenen Linien ab Kontur {first + 1} schließen zusammen mit Kontur {string.Join(", ", gcs.Take(6).Select(c => c + 1))}{(gcs.Count > 6 ? " …" : "")} einen Bereich ein (auch über Kreuzungen oder andere Ebenen) – welcher Umriss gemeint ist und ob die Kontur Loch oder Teil ist, lässt sich nicht sicher sagen. Bitte den Umriss in der Zeichnung schließen oder die Linien löschen.";
+                foreach (var c in gcs) SkipAs(c, why);
+                var pts = new List<(double X, double Y)>();
+                foreach (var c in gcs) pts.AddRange(cs[c].Pts);
+                foreach (var st in gss) foreach (var j in net!.Members[st]) pts.AddRange(cs[j].Pts);
+                var hull = Hull(pts); const double e = 1e-6;
+                // T-0759-fix1: „ganz in einer beteiligten Kontur c“ lässt die Tiefe nur gleich, wenn keine Linie des Verbunds in c hineinreicht (sonst kann
+                // der Bereich in c liegen – z. B. zwei Linien quer über ein Loch mit Insel: Steg, die Insel wäre ein Loch darin)
+                var spareIn = gcs.Where(c => !gss.Any(st => net!.Members[st].Any(j => LineEnters(j, c)))).ToList();
+                double gx0 = pts.Min(p => p.X), gy0 = pts.Min(p => p.Y), gx1 = pts.Max(p => p.X), gy1 = pts.Max(p => p.Y);
+                for (var q = NextA(Lower(minXs!, gx0 - maxW - e)); q < byMinX!.Length && minXs![q] <= gx1 + e; q = NextA(q + 1))
+                {
+                    Tick(); var i = byMinX[q]; var bi = boxes[i];
+                    if (bi.Item3 < gx0 - e || bi.Item2 > gy1 + e || bi.Item4 < gy0 - e) continue;
+                    if (spareIn.Any(c => InsideOf(i, c))) continue; // ganz in einer beteiligten Kontur, in die keine Linie hineinreicht: Tiefe bleibt
+                    if (bi.Item1 >= gx0 - e && bi.Item2 >= gy0 - e && bi.Item3 <= gx1 + e && bi.Item4 <= gy1 + e) { SkipAs(i, why); continue; } // 1.
+                    var pp = cs[i].Pts; var hitIn = hull.Count >= 3 && InConvexLog(hull, pp[0], -e); // 2.
+                    for (var k = 1; k < pp.Count && !hitIn; k++)
+                    {
+                        Tick(); var v = pp[k];
+                        if (v.X <= gx0 + e || v.X >= gx1 - e || v.Y <= gy0 + e || v.Y >= gy1 - e) continue;
+                        if (hull.Count >= 3 && InConvexLog(hull, v, e)) hitIn = true; // 3.
+                    }
+                    if (hitIn) SkipAs(i, why);
+                }
+            }
+        }
         // Art je Kontur (T-0747-fix5: Kandidaten für „liegt in“ aus einem Raster der Rahmen statt aus allen Konturen)
         var closedBoxes = boxes.Where((_, j) => cs[j].Closed).ToList();
         var spanAll = closedBoxes.Count == 0 ? 1 : Math.Max(closedBoxes.Max(b => b.Item3) - closedBoxes.Min(b => b.Item1), closedBoxes.Max(b => b.Item4) - closedBoxes.Min(b => b.Item2));
-        var frames = new SegGrid(Math.Max(Math.Max(1e-3, spanAll / 1024), closedBoxes.Count == 0 ? 1 : closedBoxes.Average(b => Math.Max(b.Item3 - b.Item1, b.Item4 - b.Item2))));
-        for (var j = 0; j < cs.Count; j++) if (cs[j].Closed && !crossing[j] && !dup[j]) frames.Add((boxes[j].Item1, boxes[j].Item2), (boxes[j].Item3, boxes[j].Item4), j);
+        // T-0758: Gezählt werden nur Rahmen, die den Prüfpunkt enthalten – die findet jedes Raster; das feinere (RefGrid) liefert nur weniger
+        // Unbeteiligte (30 000 winzige Teile in wenigen groben Zellen: vorher je Teil alle 30 000 Rahmen)
+        var frames = new RefGrid(Enumerable.Range(0, cs.Count).Where(j => cs[j].Closed && !crossing[j] && !dup[j])
+            .Select(j => ((IReadOnlyList<(double X, double Y)>)new[] { (boxes[j].Item1, boxes[j].Item2), (boxes[j].Item3, boxes[j].Item4) }, false, j)),
+            Math.Max(Math.Max(1e-3, spanAll / 1024), closedBoxes.Count == 0 ? 1 : closedBoxes.Average(b => Math.Max(b.Item3 - b.Item1, b.Item4 - b.Item2))), ct, 1e-12);
         var kinds = new string[cs.Count]; var depth = new int[cs.Count];
+        // T-0758: große Konturen, in denen viele Rahmen liegen (riesige Platte neben 30 000 kleinen Teilen): Punkt-in-Kontur über waagrechte Streifen –
+        // gleiche Rechnung je Strecke wie CadContour.Contains, nur ohne die Strecken, die die Höhe des Punkts nicht überdecken
+        var strips = new Dictionary<int, StripIndex>();
+        bool InContour(int j, double x, double y)
+        {
+            if (cs[j].Pts.Count < 64) return cs[j].Contains(x, y);
+            if (!strips.TryGetValue(j, out var si)) strips[j] = si = new StripIndex(cs[j].Pts);
+            return si.Contains(x, y);
+        }
         for (var i = 0; i < cs.Count; i++)
         {
             if (!cs[i].Closed) { kinds[i] = "auf"; continue; }
             var probe = cs[i].Pts[0];
-            if ((i & 1023) == 0) ct.ThrowIfCancellationRequested();
-            depth[i] = frames.Near(probe.X, probe.Y, probe.X, probe.Y).Select(e => frames.Segs[e].Tag).Distinct()
-                .Count(j => j != i && boxes[j].Item1 <= probe.X && probe.X <= boxes[j].Item3 && boxes[j].Item2 <= probe.Y && probe.Y <= boxes[j].Item4 && areas[j] > areas[i] && cs[j].Contains(probe.X, probe.Y));
+            ct.ThrowIfCancellationRequested(); // T-0758: je Kontur (Punkt-in-Kontur kann bei großen Konturen dauern)
+            depth[i] = frames.Near(probe.X, probe.Y, probe.X, probe.Y, 0, _ => true).Select(e => frames.Segs[e].Tag).Distinct()
+                .Count(j => j != i && boxes[j].Item1 <= probe.X && probe.X <= boxes[j].Item3 && boxes[j].Item2 <= probe.Y && probe.Y <= boxes[j].Item4 && areas[j] > areas[i] && InContour(j, probe.X, probe.Y));
             kinds[i] = s.Mode switch { "aussen" => "aussen", "innen" => "innen", "auf" => "auf", _ => depth[i] % 2 == 0 ? "aussen" : "innen" };
         }
         // Bahnen je Kontur (noch ungeprüft)
@@ -518,7 +821,7 @@ public static class CncCam
             }
             if (kinds[i] == "auf") { cand[i] = [new CamPath("auf", [.. c.Pts], c.Closed, i, c.Layer)]; return; }
             var outside = kinds[i] == "aussen";
-            var (simp, dev) = Simplify(c.Pts, Math.Min(SimplifyTol, r / 20));
+            var (simp, dev) = Simplify(c.Pts, Math.Min(SimplifyTol, r / 20), ct);
             var loops = OffsetLoops(simp, (outside ? 1 : -1) * (r + dev), s.Chord, ct);
             List<CamPath> list = [];
             if (outside)
@@ -543,7 +846,8 @@ public static class CncCam
         foreach (var w in cw) if (w is not null) warn.AddRange(w);
         // T-0747-fix: jede Bahn gegen ALLE geschlossenen Konturen prüfen (Strecke zu Strecke)
         // T-0747-fix3: ALLE Konturen sind Hindernis – auch offene und ausgelassene (ein offener Umriss ist trotzdem ein Teil)
-        var obstacles = BuildGrid(cs.Select((c, i) => ((IReadOnlyList<(double X, double Y)>)c.Pts, c.Closed, i)).Where(t => !dup[t.i]), r, ct); // Doppel nur einmal
+        // T-0759: offene Linien auf Bemaßungs-/Mittellinien-Ebenen sind kein Hindernis (keine Kante); was sie einschließen, ist oben schon ausgelassen
+        var obstacles = new RefGrid(cs.Select((c, i) => ((IReadOnlyList<(double X, double Y)>)c.Pts, c.Closed, i)).Where(t => !dup[t.i] && (t.Closed || !IsAnnotationLayer(cs[t.i].Layer))), r, ct, r); // Doppel nur einmal; T-0758: feineres Raster, gleiche Treffer (Abfragen reichen den Radius über die Bahn hinaus)
         var paths = new List<CamPath>();
         using var curs = new ThreadLocal<SegGrid.Cursor>(() => new SegGrid.Cursor()); // ein Merker je Thread (nicht je Kontur – er ist so groß wie das Raster)
         var hits = new (int Tag, double D)[cs.Count]; // T-0747-fix5: parallel prüfen (Raster nur lesen, Merker je Thread), danach in Reihenfolge übernehmen
@@ -571,6 +875,7 @@ public static class CncCam
             if (left.Count > 200) { order.AddRange(OrderMany(left, ref at, ct)); continue; } // T-0747-fix5: viele Bahnen – Nachbarsuche im Raster
             while (left.Count > 0)
             {
+                ct.ThrowIfCancellationRequested(); // T-0758
                 var next = left.OrderBy(p => p.Closed ? p.Pts.Min(q => D2(q, at)) : Math.Min(D2(p.Pts[0], at), D2(p.Pts[^1], at))).First(); left.Remove(next);
                 var pts = next.Pts;
                 if (next.Closed) { var k = Enumerable.Range(0, pts.Count).MinBy(j => D2(pts[j], at)); pts = [.. pts.Skip(k), .. pts.Take(k)]; }
@@ -586,9 +891,10 @@ public static class CncCam
         if (s.Rpm > 0) g.Append($"M3 S{I(Math.Round(s.Rpm))}\n");
         var passes = (int)Math.Ceiling(s.Depth / s.StepDown - 1e-9);
         var zTab = -s.Depth + s.TabH; var n = 0;
-        foreach (var p in order)
+        // T-0758: der Text je Bahn hängt nur von der Bahn ab – in Blöcken auf allen Kernen schreiben, dann in Reihenfolge anhängen (Text, Hinweise und
+        // der erste Fehler wie vorher der Reihe nach; vorher 18 s für 310 MB G-Code)
+        void Path(CamPath p, StringBuilder g, List<string> warn)
         {
-            n++;
             var label = p.Kind switch { "aussen" => "außen", "innen" => "innen", _ => "auf der Linie" };
             g.Append($"(Kontur {p.Source + 1}: {label}{(p.Layer is { Length: > 0 } and not "0" ? ", Ebene " + p.Layer : "")})\n");
             g.Append($"G0 X{I(p.Pts[0].X)} Y{I(p.Pts[0].Y)}\n");
@@ -600,14 +906,31 @@ public static class CncCam
                 var pts = p.Closed || forward ? p.Pts : Enumerable.Reverse(p.Pts).ToList();
                 g.Append($"G1 Z{I(z)} F{I(s.Plunge)}\n");
                 var useTabs = tabs.Count > 0 && z < zTab - 1e-9;
-                var lifts = Loop(g, pts, p.Closed, z, useTabs ? tabs : [], zTab, s);
+                var lifts = Loop(g, pts, p.Closed, z, useTabs ? tabs : [], zTab, s, ct);
                 if (useTabs && lifts != tabs.Count) throw new InvalidOperationException($"Haltestege an Kontur {p.Source + 1} ließen sich nicht sicher setzen ({lifts} statt {tabs.Count} Anhebungen) – bitte Anzahl oder Breite der Stege ändern."); // T-0747-fix3
                 if (!p.Closed) forward = !forward;
             }
             g.Append($"G0 Z{I(s.Safe)}\n");
         }
+        for (var b0 = 0; b0 < order.Count; b0 += 512)
+        {
+            var nb = Math.Min(512, order.Count - b0);
+            var txt = new string?[nb]; var tw = new List<string>?[nb]; var err = new Exception?[nb];
+            Par(nb, ct, k =>
+            {
+                var sb = new StringBuilder(); var w = new List<string>();
+                try { Path(order[b0 + k], sb, w); txt[k] = sb.ToString(); } catch (Exception e) when (e is not OperationCanceledException) { err[k] = e; }
+                tw[k] = w;
+            });
+            for (var k = 0; k < nb; k++)
+            {
+                n++; warn.AddRange(tw[k]!);
+                if (err[k] is { } e) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(e).Throw();
+                g.Append(txt[k]); txt[k] = null;
+            }
+        }
         g.Append("M5\nM30\n");
-        if (n == 0) throw new InvalidOperationException("Es blieb keine fräsbare Kontur übrig: " + string.Join(" ", warn));
+        if (n == 0) throw new InvalidOperationException("Es blieb keine fräsbare Kontur übrig: " + string.Join(" ", SummarizeWarnings(warn))); // T-0759: zusammengefasst
         return new CamResult(g.ToString(), order, warn, sx, sy, cs);
     }
 
@@ -620,11 +943,17 @@ public static class CncCam
         var grid = new Dictionary<(long, long), List<int>>();
         (long, long) C((double X, double Y) q) => ((long)Math.Floor(q.X / cell), (long)Math.Floor(q.Y / cell));
         for (var i = 0; i < paths.Count; i++) { var k = C(paths[i].Pts[0]); if (!grid.TryGetValue(k, out var l)) grid[k] = l = []; l.Add(i); }
+        var sub = new Dictionary<(long, long), SubIndex>(); // T-0758: Zellen mit sehr vielen Startpunkten (30 000 winzige Teile in einer Zelle) fein unterteilt
         for (var n = 0; n < paths.Count; n++)
         {
             if ((n & 1023) == 0) ct.ThrowIfCancellationRequested();
             var here0 = at; var (cx, cy) = C(here0); var best = -1; var bd = double.MaxValue;
-            void Cell(long gx, long gy) { if (grid.TryGetValue((gx, gy), out var l)) foreach (var i in l) { if (used[i]) continue; var d = D2(paths[i].Pts[0], here0); if (d < bd) { bd = d; best = i; } } }
+            void Cell(long gx, long gy)
+            {
+                if (!grid.TryGetValue((gx, gy), out var l)) return;
+                if (l.Count > 64) { (sub.TryGetValue((gx, gy), out var si) ? si : sub[(gx, gy)] = new SubIndex(l, paths)).Nearest(here0, used, ref bd, ref best); return; } // T-0758
+                foreach (var i in l) { if (used[i]) continue; var d = D2(paths[i].Pts[0], here0); if (d < bd) { bd = d; best = i; } }
+            }
             for (var ring = 0L; ring <= 64; ring++)
             {
                 if (best >= 0 && (ring - 1) * cell > Math.Sqrt(bd)) break; // weiter außen kann nichts Näheres liegen
@@ -642,9 +971,58 @@ public static class CncCam
         return res;
     }
 
+    /// <summary>T-0758: feine Unterteilung einer Rasterzelle von <see cref="OrderMany"/>. <see cref="Nearest"/> wirkt wie die Schleife über die Zelle
+    /// („unbenutzt und D2 &lt; bisher → merken“, in Nummernfolge): gesucht wird das kleinste (D2, Nummer); Teilzellen, deren Rahmen schon weiter weg ist als
+    /// das bisher Beste, werden übersprungen (der Abstand zum Rahmen ist in Gleitkomma nie größer als der zu einem Punkt darin).</summary>
+    sealed class SubIndex
+    {
+        readonly List<(double X0, double Y0, double X1, double Y1, List<int> L)> _cells = [];
+        readonly List<CamPath> _paths;
+        public SubIndex(List<int> l, List<CamPath> paths)
+        {
+            _paths = paths;
+            double x0 = double.MaxValue, y0 = double.MaxValue, x1 = double.MinValue, y1 = double.MinValue;
+            foreach (var i in l) { var q = paths[i].Pts[0]; x0 = Math.Min(x0, q.X); y0 = Math.Min(y0, q.Y); x1 = Math.Max(x1, q.X); y1 = Math.Max(y1, q.Y); }
+            var m = Math.Max(1, (int)Math.Ceiling(Math.Sqrt(l.Count / 8.0))); double sx = (x1 - x0) / m, sy = (y1 - y0) / m;
+            var lists = new Dictionary<(int, int), List<int>>();
+            foreach (var i in l) // in Nummernfolge: jede Teilliste bleibt aufsteigend
+            {
+                var q = paths[i].Pts[0];
+                var cx = sx > 0 && double.IsFinite(sx) ? Math.Clamp((int)Math.Floor((q.X - x0) / sx), 0, m - 1) : 0; var cy = sy > 0 && double.IsFinite(sy) ? Math.Clamp((int)Math.Floor((q.Y - y0) / sy), 0, m - 1) : 0;
+                if (!double.IsFinite(q.X) || !double.IsFinite(q.Y)) (cx, cy) = (-1, -1); // nicht endliche Punkte: eigene Liste, immer durchsucht
+                if (!lists.TryGetValue((cx, cy), out var li)) lists[(cx, cy)] = li = []; li.Add(i);
+            }
+            foreach (var li in lists.Values)
+            {
+                double a0 = double.MaxValue, b0 = double.MaxValue, a1 = double.MinValue, b1 = double.MinValue; var odd = false;
+                foreach (var i in li) { var q = paths[i].Pts[0]; if (!double.IsFinite(q.X) || !double.IsFinite(q.Y)) odd = true; a0 = Math.Min(a0, q.X); b0 = Math.Min(b0, q.Y); a1 = Math.Max(a1, q.X); b1 = Math.Max(b1, q.Y); }
+                _cells.Add(odd ? (double.NegativeInfinity, double.NegativeInfinity, double.PositiveInfinity, double.PositiveInfinity, li) : (a0, b0, a1, b1, li));
+            }
+        }
+        public void Nearest((double X, double Y) q, bool[] used, ref double bd, ref int best)
+        {
+            double cd = double.MaxValue; var ci = -1; // Bestes dieser Zelle
+            for (var c = 0; c < _cells.Count; c++)
+            {
+                var (x0, y0, x1, y1, l) = _cells[c];
+                double dx = q.X < x0 ? x0 - q.X : q.X > x1 ? q.X - x1 : 0, dy = q.Y < y0 ? y0 - q.Y : q.Y > y1 ? q.Y - y1 : 0;
+                var lb = dx * dx + dy * dy; if (lb > cd || lb >= bd) continue; // bei Gleichstand mit dem Zellbesten weiter prüfen (kleinere Nummer); nicht näher als bd: nichts zu holen
+                var k = 0;
+                for (var t = 0; t < l.Count; t++)
+                {
+                    var i = l[t]; if (used[i]) continue; l[k++] = i; // benutzte Einträge entfernen, Folge bleibt
+                    var d = D2(_paths[i].Pts[0], q);
+                    if (d < cd || d == cd && i < ci) { cd = d; ci = i; }
+                }
+                l.RemoveRange(k, l.Count - k);
+            }
+            if (ci >= 0 && cd < bd) { bd = cd; best = ci; }
+        }
+    }
+
     /// <summary>Eine Runde fahren; in den Stegbereichen auf Steghöhe anheben. Rückgabe: Anzahl der Anhebungen.
     /// T-0747-fix3: Steggrenzen genau auf einem Bahnpunkt werden erkannt (jede Strecke deckt [Anfang, Ende) ab), vorher fielen sie still weg.</summary>
-    static int Loop(StringBuilder g, List<(double X, double Y)> pts, bool closed, double z, List<(double S, double E)> tabs, double zTab, CamSettings s)
+    static int Loop(StringBuilder g, List<(double X, double Y)> pts, bool closed, double z, List<(double S, double E)> tabs, double zTab, CamSettings s, CancellationToken ct = default)
     {
         const double e = 1e-7;
         var seq = closed ? [.. pts, pts[0]] : pts;
@@ -652,6 +1030,7 @@ public static class CncCam
         string F() { if (!first) return ""; first = false; return $" F{I(s.Feed)}"; }
         for (var i = 1; i < seq.Count; i++)
         {
+            if ((i & 4095) == 0) ct.ThrowIfCancellationRequested(); // T-0758
             var a = seq[i - 1]; var b = seq[i]; var len = Math.Sqrt(D2(a, b)); if (len < 1e-9) continue;
             // Grenzen der Stege auf diesem Stück (einschließlich einer Grenze genau am Anfangspunkt)
             var cuts = tabs.SelectMany(t => new[] { t.S, t.E }).Where(t => t >= pos - e && t < pos + len - e).OrderBy(t => t).ToList();
@@ -709,10 +1088,25 @@ public static class CncCam
         var pts = Clean(poly);
         if (pts.Count < 3 || Math.Abs(dist) < 1e-9) return [];
         if (SignedArea(pts) < 0) pts.Reverse();
+        // T-0758: Nach innen kann ein gültiger Bahnpunkt nur innerhalb der Kontur und mindestens |dist| − 1e-7 von allen Strecken entfernt liegen – sein
+        // Abstand zum Rand ist aber höchstens die halbe kleinere Rahmenseite. Ist die kleiner, bleibt beim Beschneiden kein Stück übrig (Ergebnis leer wie
+        // bisher), nur ohne die rohe Linie, deren Strecken sich bei zu kleinen Löchern alle gegenseitig schneiden (quadratisch viele Schnittpunkte).
+        if (dist < 0)
+        {
+            double x0 = double.MaxValue, y0 = double.MaxValue, x1 = double.MinValue, y1 = double.MinValue;
+            foreach (var (x, y) in pts) { x0 = Math.Min(x0, x); y0 = Math.Min(y0, y); x1 = Math.Max(x1, x); y1 = Math.Max(y1, y); }
+            var scale = Math.Max(Math.Max(Math.Abs(x0), Math.Abs(x1)), Math.Max(Math.Abs(y0), Math.Abs(y1)));
+            if (Math.Min(x1 - x0, y1 - y0) / 2 + 1e-6 + 1e-9 * scale < -dist) return [];
+        }
         var (raw, gen, arcs) = RawOffset(pts, dist, chord);
         if (raw.Count < 3) return [];
         var ad = Math.Abs(dist); var np = pts.Count;
-        var polyGrid = BuildGrid([((IReadOnlyList<(double X, double Y)>)pts, true, 0)], ad);
+        var polyGrid = new RefGrid([((IReadOnlyList<(double X, double Y)>)pts, true, 0)], ad, ct, ad); // T-0758: feineres Raster, gleiche Treffer
+        // Eine Ecke mit Bogen misst über die Sehnenrichtungen (höchstens der echte Abstand, mindestens cos(halber Schritt) davon): sie kann bis
+        // ad / cos − ad außerhalb des Abfragerechtecks liegen und trotzdem „zu nah“ zählen.
+        var cosHalf = 1.0;
+        foreach (var w in arcs) if (w is not null) for (var k = 0; k + 1 < w.Length; k++) cosHalf = Math.Min(cosHalf, Math.Sqrt(Math.Max(0, (1 + w[k].X * w[k + 1].X + w[k].Y * w[k + 1].Y) / 2)));
+        var validExpand = cosHalf > 0.5 ? ad / cosHalf - ad + 1e-6 : 2 * ad;
         // Abstand so gemessen, wie die rohe Linie gebaut ist: Strecken nur senkrecht (Fußpunkt auf der Strecke), Ecken mit Bogen als Sehnenpolygon
         // (die Sehnen liegen außerhalb des Kreises), übrige Ecken als Kreis. So passt jeder Schnittpunkt genau zu einem gültigen Stück hinein und einem hinaus.
         double EdgeD(int e, (double X, double Y) q)
@@ -734,26 +1128,38 @@ public static class CncCam
             var f = double.MinValue; foreach (var u in w) f = Math.Max(f, dx * u.X + dy * u.Y);
             return f;
         }
+        StripIndex? ptsIndex = null; RowIndex? rowIndex = null;
+        var ptsScale = 0.0; foreach (var (x, y) in pts) ptsScale = Math.Max(ptsScale, Math.Max(Math.Abs(x), Math.Abs(y)));
         bool Valid((double X, double Y) q, int k)
         {
             var gi = gen[k];
             var dg = gi >= 0 ? EdgeD(gi, q) : VertexD(-gi - 1, q);
             if (double.IsInfinity(dg) || Math.Abs(dg - ad) > 1e-6) return false; // nicht im Abstand zur eigenen Strecke/Ecke: Stück liegt im Innern
             // Strecke e verbindet Punkt e und e + 1; käme das Stück einer anderen Stelle zu nah?
-            if (polyGrid.Any(q.X - ad, q.Y - ad, q.X + ad, q.Y + ad, e => EdgeD(e, q) < ad - 1e-7 || VertexD(e, q) < ad - 1e-7 || VertexD((e + 1) % np, q) < ad - 1e-7)) return false;
-            return dist > 0 != Inside(pts, q); // falsche Seite der Kontur (zuletzt geprüft – teuer, T-0747-fix2)
+            if (polyGrid.Any(q.X - ad, q.Y - ad, q.X + ad, q.Y + ad, validExpand, e => EdgeD(e, q) < ad - 1e-7 || VertexD(e, q) < ad - 1e-7 || VertexD((e + 1) % np, q) < ad - 1e-7)) return false;
+            if (np < 64) return dist > 0 != Inside(pts, q); // falsche Seite der Kontur (zuletzt geprüft – teuer, T-0747-fix2)
+            // T-0758: Hier liegt q mindestens ad − 1e-7 von jeder Strecke entfernt. Für so einen Punkt ist das Ergebnis der Strahlprüfung in Gleitkomma
+            // genau (der Abstand zum Schnittpunkt auf dem Strahl ist mindestens der Abstand zur Strecke, der Rundungsfehler liegt bei 1e-15 der Koordinaten)
+            // und hängt nicht von der Strahlrichtung ab (gerade/ungerade = Windungszahl modulo 2). Darum darf der Streifenindex den günstigeren Strahl
+            // nehmen (beim Kamm senkrecht statt waagrecht über 200 000 Strecken).
+            if (ad - 1e-7 > 1e-6 + 1e-10 * ptsScale) { rowIndex ??= new RowIndex(pts); return dist > 0 != rowIndex.Contains(q.X, q.Y); }
+            ptsIndex ??= new StripIndex(pts); // gleiche Rechnung wie Inside, nur die Strecken in Höhe des Punkts
+            return dist > 0 != ptsIndex.Contains(q.X, q.Y);
         }
         // Selbstschnitte der rohen Linie
         var m = raw.Count;
-        var rawGrid = BuildGrid([((IReadOnlyList<(double X, double Y)>)raw, true, 0)], AvgLen(raw, true) * 2);
+        // T-0758: feineres Raster, gleiche Schnittpunkte in gleicher Reihenfolge (ein Schnitt liegt in beiden Rahmen, bis auf 1e-12 der Streckenlänge)
+        var rawGrid = new RefGrid([((IReadOnlyList<(double X, double Y)>)raw, true, 0)], AvgLen(raw, true) * 2, ct);
+        var maxLen = 0.0; for (var k = 0; k < m; k++) maxLen = Math.Max(maxLen, D2(raw[k], raw[(k + 1) % m]));
+        var hitExpand = 1e-6 + 1e-9 * Math.Sqrt(maxLen);
         var splits = new List<(double T, (double X, double Y) P)>?[m];
         for (var k = 0; k < m; k++)
         {
-            if ((k & 1023) == 0) ct.ThrowIfCancellationRequested();
-            var a = raw[k]; var b = raw[(k + 1) % m];
-            foreach (var j in rawGrid.Near(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y), Math.Max(a.X, b.X), Math.Max(a.Y, b.Y)))
+            if ((k & 255) == 0) ct.ThrowIfCancellationRequested();
+            var a = raw[k]; var b = raw[(k + 1) % m]; var kk = k;
+            foreach (var j in rawGrid.Near(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y), Math.Max(a.X, b.X), Math.Max(a.Y, b.Y), hitExpand,
+                j => !(j <= kk || j == kk + 1 || kk == 0 && j == m - 1) && Hit(a, b, raw[j], raw[(j + 1) % m]) is not null))
             {
-                if (j <= k || j == k + 1 || k == 0 && j == m - 1) continue;
                 var c = raw[j]; var d = raw[(j + 1) % m];
                 if (Hit(a, b, c, d) is not { } h) continue;
                 (splits[k] ??= []).Add((h.T, h.P)); (splits[j] ??= []).Add((h.U, h.P));
@@ -786,14 +1192,45 @@ public static class CncCam
         var starts = new Dictionary<(double, double), List<int>>();
         for (var i = 0; i < valid.Count; i++) { var key = valid[i][0]; if (!starts.TryGetValue(key, out var l)) starts[key] = l = []; l.Add(i); }
         var used = new bool[valid.Count]; var loops = new List<List<(double X, double Y)>>();
+        // T-0758: gleiche Wahl wie „erstes unbenutztes Stück“ – je Startpunkt ein Zeiger hinter die schon benutzten (benutzt bleibt benutzt), und für
+        // „erstes unbenutztes Stück mit Start näher als 1e-7“ ein Raster der Startpunkte (Zelle 2e-7) statt alle Stücke durchzugehen (vorher quadratisch)
+        var head = new Dictionary<(double, double), int>();
+        int FirstUnused((double X, double Y) key, List<int> l)
+        {
+            var h = head.GetValueOrDefault(key); while (h < l.Count && used[l[h]]) h++; head[key] = h;
+            return h < l.Count ? l[h] : -1;
+        }
+        Dictionary<(long, long), List<int>>? near = null; const double nc = 2e-7;
+        static (long, long) NK((double X, double Y) q) => ((long)Math.Floor(q.X / nc), (long)Math.Floor(q.Y / nc));
+        int NearStart((double X, double Y) e)
+        {
+            if (near is null)
+            {
+                near = [];
+                for (var c = 0; c < valid.Count; c++)
+                {
+                    var q = valid[c][0];
+                    if (!double.IsFinite(q.X) || !double.IsFinite(q.Y)) continue; // nie „gleich“ (Abstand NaN oder unendlich)
+                    var k = NK(q); if (!near.TryGetValue(k, out var l)) near[k] = l = []; l.Add(c);
+                }
+            }
+            if (!double.IsFinite(e.X) || !double.IsFinite(e.Y)) return -1;
+            var (kx, ky) = NK(e); var best = -1;
+            for (var dx = -1L; dx <= 1; dx++)
+                for (var dy = -1L; dy <= 1; dy++)
+                    if (near.TryGetValue((kx + dx, ky + dy), out var l))
+                        foreach (var c in l) { if (best >= 0 && c >= best) break; if (!used[c] && Same(valid[c][0], e)) { best = c; break; } }
+            return best;
+        }
         for (var i = 0; i < valid.Count; i++)
         {
+            if ((i & 255) == 0) ct.ThrowIfCancellationRequested(); // T-0758
             if (used[i]) continue; used[i] = true;
             var chain = new List<(double X, double Y)>(valid[i]); var first = valid[i][0]; var end = valid[i][^1]; var ok = true;
             for (var guard = 0; !Same(end, first) && guard <= valid.Count; guard++)
             {
-                var nx = starts.TryGetValue(end, out var cands) ? cands.FirstOrDefault(c => !used[c], -1) : -1;
-                if (nx < 0) nx = Enumerable.Range(0, valid.Count).FirstOrDefault(c => !used[c] && Same(valid[c][0], end), -1);
+                var nx = starts.TryGetValue(end, out var cands) ? FirstUnused(end, cands) : -1;
+                if (nx < 0) nx = NearStart(end);
                 if (nx < 0) { ok = false; break; }
                 used[nx] = true; chain.AddRange(valid[nx].Skip(1)); end = valid[nx][^1];
             }
@@ -865,31 +1302,33 @@ public static class CncCam
 
     /// <summary>T-0747-fix4: Sind zwei geschlossene Züge deckungsgleich (jeder Punkt des einen höchstens <paramref name="tol"/> vom anderen Zug,
     /// in beide Richtungen, auch Stückmitten)? Richtung und Startecke spielen keine Rolle.</summary>
-    public static bool Coincident(List<(double X, double Y)> a, List<(double X, double Y)> b, double tol)
+    public static bool Coincident(List<(double X, double Y)> a, List<(double X, double Y)> b, double tol, CancellationToken ct = default)
     {
         var (ax0, ay0, ax1, ay1) = (a.Min(p => p.X), a.Min(p => p.Y), a.Max(p => p.X), a.Max(p => p.Y));
         var (bx0, by0, bx1, by1) = (b.Min(p => p.X), b.Min(p => p.Y), b.Max(p => p.X), b.Max(p => p.Y));
         if (Math.Abs(ax0 - bx0) > tol || Math.Abs(ay0 - by0) > tol || Math.Abs(ax1 - bx1) > tol || Math.Abs(ay1 - by1) > tol) return false;
         if (Math.Abs(Math.Abs(SignedArea(a)) - Math.Abs(SignedArea(b))) > tol * (Length(a, true) + Length(b, true))) return false;
-        static bool Covered(List<(double X, double Y)> p, List<(double X, double Y)> q, double tol)
+        static bool Covered(List<(double X, double Y)> p, List<(double X, double Y)> q, double tol, CancellationToken ct)
         {
             var g = BuildGrid([((IReadOnlyList<(double X, double Y)>)q, true, 0)], Math.Max(tol * 4, AvgLen(q, true)));
             for (var i = 0; i < p.Count; i++)
             {
+                if ((i & 4095) == 0) ct.ThrowIfCancellationRequested(); // T-0758
                 var u = p[i]; var v = p[(i + 1) % p.Count]; (double X, double Y) m = ((u.X + v.X) / 2, (u.Y + v.Y) / 2);
                 if (!g.AnyWithin(u, tol + 1e-9) || !g.AnyWithin(m, tol + 1e-9)) return false;
             }
             return true;
         }
-        return Covered(a, b, tol) && Covered(b, a, tol);
+        return Covered(a, b, tol, ct) && Covered(b, a, tol, ct);
     }
 
     /// <summary>T-0747-fix2: berührt oder schneidet der Zug <paramref name="a"/> den geschlossenen Zug <paramref name="b"/>?</summary>
-    static bool Touches(List<(double X, double Y)> a, bool aClosed, List<(double X, double Y)> b)
+    static bool Touches(List<(double X, double Y)> a, bool aClosed, List<(double X, double Y)> b, CancellationToken ct = default)
     {
         var grid = BuildGrid([((IReadOnlyList<(double X, double Y)>)b, true, 0)], AvgLen(b, true) * 2);
         for (var k = 0; k < a.Count - (aClosed ? 0 : 1); k++)
         {
+            if ((k & 1023) == 0) ct.ThrowIfCancellationRequested(); // T-0758
             var p = a[k]; var q = a[(k + 1) % a.Count];
             foreach (var j in grid.Near(Math.Min(p.X, q.X), Math.Min(p.Y, q.Y), Math.Max(p.X, q.X), Math.Max(p.Y, q.Y)))
                 if (SegSeg(p, q, grid.Segs[j].A, grid.Segs[j].B) < 1e-7) return true;
@@ -898,18 +1337,17 @@ public static class CncCam
     }
 
     /// <summary>T-0747-fix: kreuzt oder berührt sich der geschlossene Zug selbst (nicht benachbarte Strecken)?</summary>
-    public static bool SelfIntersects(IReadOnlyList<(double X, double Y)> poly)
+    public static bool SelfIntersects(IReadOnlyList<(double X, double Y)> poly, CancellationToken ct = default)
     {
         var p = Clean(poly); var n = p.Count; if (n < 4) return false;
-        var grid = BuildGrid([((IReadOnlyList<(double X, double Y)>)p, true, 0)], AvgLen(p, true) * 2);
+        var grid = new RefGrid([((IReadOnlyList<(double X, double Y)>)p, true, 0)], AvgLen(p, true) * 2, ct); // T-0758: feineres Raster, gleiche Treffer
         for (var k = 0; k < n; k++)
         {
-            var a = p[k]; var b = p[(k + 1) % n];
-            foreach (var j in grid.Near(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y), Math.Max(a.X, b.X), Math.Max(a.Y, b.Y)))
-            {
-                if (j <= k || j == k + 1 || k == 0 && j == n - 1) continue;
-                if (SegSeg(a, b, p[j], p[(j + 1) % n]) < 1e-7) return true;
-            }
+            if ((k & 1023) == 0) ct.ThrowIfCancellationRequested();
+            var a = p[k]; var b = p[(k + 1) % n]; var kk = k;
+            // eine Strecke näher als 1e-7 liegt höchstens 1e-7 außerhalb des Rahmens
+            if (grid.Any(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y), Math.Max(a.X, b.X), Math.Max(a.Y, b.Y), 2e-7,
+                j => !(j <= kk || j == kk + 1 || kk == 0 && j == n - 1) && SegSeg(a, b, p[j], p[(j + 1) % n]) < 1e-7)) return true;
         }
         return false;
     }
@@ -919,7 +1357,7 @@ public static class CncCam
     static List<(double X, double Y)> Unreached(IReadOnlyList<(double X, double Y)> contour, List<List<(double X, double Y)>> loops, double r, CancellationToken ct = default)
     {
         var reach = r + Math.Max(0.5 * r, 0.2);
-        var grid = BuildGrid(loops.Select(l => ((IReadOnlyList<(double X, double Y)>)l, true, 0)), r);
+        var grid = new RefGrid(loops.Select(l => ((IReadOnlyList<(double X, double Y)>)l, true, 0)), r, ct, reach); // T-0758: feineres Raster, gleiche Treffer
         var total = Length(contour, true); var step = Math.Clamp(r / 8, 0.02, 0.25); if (total / step > 50_000) step = total / 50_000; // T-0747-fix2: feiner, damit auch kurze Engstellen auffallen
         var samples = new List<((double X, double Y) P, bool Ok)>();
         for (var i = 0; i < contour.Count; i++)
@@ -943,17 +1381,17 @@ public static class CncCam
     }
 
     /// <summary>Nächste Kontur, der die Bahn näher als <paramref name="limit"/> kommt (Tag −1 = keine). <paramref name="skip"/>: eigene Kontur bei Bahnen auf der Linie.</summary>
-    static (int Tag, double D) Nearest(List<(double X, double Y)> path, bool closed, SegGrid obstacles, double limit, int skip, CancellationToken ct = default, SegGrid.Cursor? cur = null)
+    static (int Tag, double D) Nearest(List<(double X, double Y)> path, bool closed, RefGrid obstacles, double limit, int skip, CancellationToken ct = default, SegGrid.Cursor? cur = null)
     {
-        cur ??= obstacles.Own; // ohne eigenen Merker: der des Rasters (nur einfädig)
+        cur ??= obstacles.Fine.Own; // ohne eigenen Merker: der des Rasters (nur einfädig)
         // T-0747-fix5: erst schnell prüfen, ob überhaupt etwas zu nah ist (ohne Listen, Abbruch beim ersten Treffer) – meist nicht
         var any = false; var mm = closed ? path.Count : path.Count - 1;
         for (var i = 0; i < mm && !any; i++)
         {
             if ((i & 1023) == 0) ct.ThrowIfCancellationRequested();
             var a0 = path[i]; var b0 = path[(i + 1) % path.Count];
-            any = obstacles.Any(cur, Math.Min(a0.X, b0.X) - limit, Math.Min(a0.Y, b0.Y) - limit, Math.Max(a0.X, b0.X) + limit, Math.Max(a0.Y, b0.Y) + limit,
-                j => obstacles.Segs[j].Tag != skip && SegSeg(a0, b0, obstacles.Segs[j].A, obstacles.Segs[j].B) < limit);
+            any = obstacles.Any(Math.Min(a0.X, b0.X) - limit, Math.Min(a0.Y, b0.Y) - limit, Math.Max(a0.X, b0.X) + limit, Math.Max(a0.Y, b0.Y) + limit, 1e-6,
+                j => obstacles.Segs[j].Tag != skip && SegSeg(a0, b0, obstacles.Segs[j].A, obstacles.Segs[j].B) < limit, cur);
         }
         if (!any) return (-1, double.MaxValue);
         var best = (Tag: -1, D: double.MaxValue); var m = closed ? path.Count : path.Count - 1;
@@ -961,12 +1399,11 @@ public static class CncCam
         {
             if ((i & 1023) == 0) ct.ThrowIfCancellationRequested();
             var a = path[i]; var b = path[(i + 1) % path.Count];
-            foreach (var j in obstacles.Near(cur, Math.Min(a.X, b.X) - limit, Math.Min(a.Y, b.Y) - limit, Math.Max(a.X, b.X) + limit, Math.Max(a.Y, b.Y) + limit))
-            {
-                var (c, d, tag) = obstacles.Segs[j]; if (tag == skip) continue;
-                var dd = SegSeg(a, b, c, d);
-                if (dd < limit && dd < best.D) best = (tag, dd);
-            }
+            // T-0758: kleinster Abstand dieser Strecke; bei Gleichstand gewinnt, was das bisherige Raster zuerst geliefert hätte – wie die Schleife
+            // „dd < bisher“ über die Trefferliste, nur ohne Liste und Sortierung
+            var (bj, bd) = obstacles.Min(Math.Min(a.X, b.X) - limit, Math.Min(a.Y, b.Y) - limit, Math.Max(a.X, b.X) + limit, Math.Max(a.Y, b.Y) + limit, 1e-6,
+                j => { var (c, d, tag) = obstacles.Segs[j]; if (tag == skip) return double.NaN; var dd = SegSeg(a, b, c, d); return dd < limit ? dd : double.NaN; }, cur);
+            if (bj >= 0 && bd < best.D) best = (obstacles.Segs[bj].Tag, bd);
         }
         return best;
     }
@@ -987,22 +1424,90 @@ public static class CncCam
 
     /// <summary>T-0747-fix: Douglas-Peucker für geschlossene Züge mit Toleranz <paramref name="eps"/>. Liefert auch die tatsächliche größte Abweichung,
     /// die der Versatz zusätzlich bekommt – so bleibt der Abstand zur Originalkontur mindestens der Radius.</summary>
-    public static (List<(double X, double Y)> Pts, double Dev) Simplify(IReadOnlyList<(double X, double Y)> poly, double eps)
+    public static (List<(double X, double Y)> Pts, double Dev) Simplify(IReadOnlyList<(double X, double Y)> poly, double eps, CancellationToken ct = default)
     {
         var p = Clean(poly); var n = p.Count; if (n < 8 || eps <= 0) return (p, 0);
         var far = Enumerable.Range(1, n - 1).MaxBy(k => D2(p[0], p[k]));
         var keep = new bool[n]; keep[0] = keep[far] = true; var dev = 0.0;
         var stack = new Stack<(int A, int B)>(); stack.Push((0, far)); stack.Push((far, n));
+        var steps = 0L; BoxTree? tree = null;
         while (stack.Count > 0)
         {
             var (a, b) = stack.Pop(); if (b - a < 2) continue;
             var pa = p[a]; var pb = p[b % n]; double max = -1; var at = -1;
-            for (var k = a + 1; k < b; k++) { var dk = SegDist(p[k], pa, pb); if (dk > max) { max = dk; at = k; } }
+            if ((steps += b - a) > 1 << 20) { steps = 0; ct.ThrowIfCancellationRequested(); } // T-0758
+            if (b - a > 65536) (max, at) = FarthestPar(p, a + 1, b - 1, pa, pb, ct); // T-0758: sehr lange Bereiche auf allen Kernen, gleiches Ergebnis
+            else if (b - a > 512) (max, at) = (tree ??= new BoxTree(p)).Farthest(a + 1, b - 1, pa, pb); // T-0758: gleiches Ergebnis, Blöcke ohne Chance übersprungen
+            else for (var k = a + 1; k < b; k++) { var dk = SegDist(p[k], pa, pb); if (dk > max) { max = dk; at = k; } }
             if (max > eps) { keep[at] = true; stack.Push((a, at)); stack.Push((at, b)); }
             else dev = Math.Max(dev, max);
         }
         var res = p.Where((_, k) => keep[k]).ToList();
         return res.Count >= 3 && Math.Abs(SignedArea(res)) > 1e-9 ? (res, dev) : (p, 0);
+    }
+
+    /// <summary>T-0758: wie die Schleife „für k von lo bis hi: wenn SegDist &gt; bisher, merken“, in gleich großen Stücken parallel; die Stücke werden der
+    /// Reihe nach mit „größer als“ zusammengeführt – bei Gleichstand gewinnt also wie vorher der erste Punkt.</summary>
+    static (double Max, int At) FarthestPar(List<(double X, double Y)> p, int lo, int hi, (double X, double Y) pa, (double X, double Y) pb, CancellationToken ct)
+    {
+        var parts = Math.Max(2, Environment.ProcessorCount * 2); var len = hi - lo + 1; var res = new (double Max, int At)[parts];
+        Parallel.For(0, parts, new ParallelOptions { CancellationToken = ct }, c =>
+        {
+            int k0 = lo + (int)((long)len * c / parts), k1 = lo + (int)((long)len * (c + 1) / parts) - 1; double max = -1; var at = -1;
+            for (var k = k0; k <= k1; k++) { var dk = SegDist(p[k], pa, pb); if (dk > max) { max = dk; at = k; } }
+            res[c] = (max, at);
+        });
+        double m = -1; var best = -1;
+        foreach (var (mx, at) in res) if (mx > m) { m = mx; best = at; }
+        return (m, best);
+    }
+
+    /// <summary>T-0758: Rahmenbaum über die Punkte eines Zugs für Douglas-Peucker. <see cref="Farthest"/> liefert genau, was die Schleife
+    /// „für k von lo bis hi: wenn SegDist &gt; bisher, merken“ liefert (größter Abstand, bei Gleichstand der erste), überspringt aber Teilbäume, deren
+    /// Punkte sicher kleiner sind: der Abstand zur Strecke ist konvex, sein Größtwert über einem Rahmen liegt an einer Ecke; mit Spielraum für Rundung.
+    /// Beim Kamm mit 50 000 Zähnen (200 000 Punkte) fiel die Glättung so von rund 120 s auf Sekundenbruchteile.</summary>
+    sealed class BoxTree
+    {
+        const int Leaf = 32;
+        readonly List<(double X, double Y)> _p; readonly List<(int Lo, int Hi, double X0, double Y0, double X1, double Y1, int L, int R)> _n = []; readonly double _scale;
+        public BoxTree(List<(double X, double Y)> p)
+        {
+            _p = p; var sc = 0.0; foreach (var (x, y) in p) sc = Math.Max(sc, Math.Max(Math.Abs(x), Math.Abs(y))); _scale = sc;
+            Build(0, p.Count - 1);
+        }
+        int Build(int lo, int hi)
+        {
+            var id = _n.Count; _n.Add(default);
+            int l = -1, r = -1; double x0, y0, x1, y1;
+            if (hi - lo + 1 <= Leaf)
+            {
+                x0 = y0 = double.PositiveInfinity; x1 = y1 = double.NegativeInfinity;
+                for (var k = lo; k <= hi; k++) { var q = _p[k]; x0 = Math.Min(x0, q.X); y0 = Math.Min(y0, q.Y); x1 = Math.Max(x1, q.X); y1 = Math.Max(y1, q.Y); }
+            }
+            else
+            {
+                var mid = (lo + hi) / 2; l = Build(lo, mid); r = Build(mid + 1, hi);
+                var (a, b) = (_n[l], _n[r]); x0 = Math.Min(a.X0, b.X0); y0 = Math.Min(a.Y0, b.Y0); x1 = Math.Max(a.X1, b.X1); y1 = Math.Max(a.Y1, b.Y1);
+            }
+            _n[id] = (lo, hi, x0, y0, x1, y1, l, r);
+            return id;
+        }
+        public (double Max, int At) Farthest(int lo, int hi, (double X, double Y) pa, (double X, double Y) pb)
+        {
+            double max = -1; var at = -1; var stack = new Stack<int>(); stack.Push(0);
+            var margin = 1e-9 * (1 + _scale);
+            while (stack.Count > 0)
+            {
+                var (nlo, nhi, x0, y0, x1, y1, l, r) = _n[stack.Pop()];
+                if (nhi < lo || nlo > hi) continue;
+                // alle Punkte des Rahmens sicher kleiner als das bisher Größte (bei NaN wird nicht übersprungen)
+                var ub = Math.Max(Math.Max(SegDist((x0, y0), pa, pb), SegDist((x1, y0), pa, pb)), Math.Max(SegDist((x0, y1), pa, pb), SegDist((x1, y1), pa, pb)));
+                if (ub + margin < max) continue;
+                if (l < 0) { for (var k = Math.Max(lo, nlo); k <= Math.Min(hi, nhi); k++) { var dk = SegDist(_p[k], pa, pb); if (dk > max) { max = dk; at = k; } } continue; }
+                stack.Push(r); stack.Push(l); // links zuerst: Reihenfolge der Punkte bleibt
+            }
+            return (max, at);
+        }
     }
 
     // ---------------------------------------------------------------- Hilfen
@@ -1066,7 +1571,7 @@ public static class CncCam
                 for (var r = r0; r <= r1; r++) _rows[r].Add(i);
             }
         }
-        static (int Rows, long Cost) Plan(IReadOnlyList<(double X, double Y)> p, bool swap)
+        internal static (int Rows, long Cost) Plan(IReadOnlyList<(double X, double Y)> p, bool swap)
         {
             var n = p.Count; double Y(int i) => swap ? p[i].X : p[i].Y;
             var y0 = double.MaxValue; var y1 = double.MinValue; for (var i = 0; i < n; i++) { y0 = Math.Min(y0, Y(i)); y1 = Math.Max(y1, Y(i)); }
@@ -1088,6 +1593,39 @@ public static class CncCam
             foreach (var i in _rows[r])
             {
                 var (xi, yi) = _p[(i + 1) % _p.Length]; var (xj, yj) = _p[i];
+                if ((yi > y) != (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) inside = !inside;
+            }
+            return inside;
+        }
+    }
+
+    /// <summary>T-0758: Punkt in geschlossenem Zug wie <see cref="CadContour.Contains"/> (gleiche Formel je Strecke, gleiche Reihenfolge der Ecken), nur über
+    /// waagrechte Streifen: eine Strecke kann das Ergebnis nur ändern, wenn sie die Höhe des Punkts überdeckt (min ≤ y &lt; max) – und dann steht sie im
+    /// Streifen des Punkts (Streifennummer wächst mit y; außerhalb wird auf den ersten/letzten Streifen begrenzt, nicht abgewiesen).</summary>
+    sealed class StripIndex
+    {
+        readonly List<(double X, double Y)> _p; readonly double _y0, _h; readonly int[][] _rows;
+        public StripIndex(List<(double X, double Y)> p)
+        {
+            _p = p; var n = p.Count; var (rows, _) = RowIndex.Plan(p, false);
+            _y0 = p.Min(q => q.Y); var y1 = p.Max(q => q.Y); _h = Math.Max((y1 - _y0) / rows, 1e-12);
+            var lists = new List<int>[rows]; for (var r = 0; r < rows; r++) lists[r] = [];
+            for (var i = 0; i < n; i++)
+            {
+                var a = p[i]; var b = p[i == 0 ? n - 1 : i - 1]; // Strecke (i, i−1) wie in Contains
+                int r0 = Row(Math.Min(a.Y, b.Y), rows), r1 = Row(Math.Max(a.Y, b.Y), rows);
+                for (var r = r0; r <= r1; r++) lists[r].Add(i);
+            }
+            _rows = lists.Select(l => l.ToArray()).ToArray();
+        }
+        int Row(double y, int rows) { var f = Math.Floor((y - _y0) / _h); return f < 0 ? 0 : f >= rows - 1 ? rows - 1 : (int)f; }
+        public bool Contains(double x, double y)
+        {
+            if (double.IsNaN(y)) return false;
+            var inside = false; var n = _p.Count;
+            foreach (var i in _rows[Row(y, _rows.Length)])
+            {
+                var (xi, yi) = _p[i]; var (xj, yj) = _p[i == 0 ? n - 1 : i - 1];
                 if ((yi > y) != (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) inside = !inside;
             }
             return inside;
@@ -1209,6 +1747,117 @@ public static class CncCam
     static (double X, double Y) Unit(double x, double y) { var l = Math.Sqrt(x * x + y * y); return l < 1e-15 ? (1, 0) : (x / l, y / l); }
     static double D2((double X, double Y) a, (double X, double Y) b) => (a.X - b.X) * (a.X - b.X) + (a.Y - b.Y) * (a.Y - b.Y);
 
+    /// <summary>T-0758: Raster für Prüfungen, deren Ergebnis nur von den Strecken abhängt, die eine Bedingung erfüllen (Abstand, Schnitt). Gesucht wird in
+    /// einem feineren Raster; gezählt wird eine Strecke aber nur, wenn sie auch im bisherigen Raster (Bezugszelle wie <see cref="BuildGrid"/>) gefunden
+    /// worden wäre – das Ergebnis ist also dasselbe, nur ohne die vielen Strecken, die in groben Zellen bloß mitgelaufen sind (Kamm mit 50 000 Zähnen:
+    /// 2000 Strecken je Zelle). <c>expand</c>: so weit kann eine Strecke, die die Bedingung erfüllt, höchstens außerhalb des Abfragerechtecks liegen.
+    /// <see cref="Near"/> liefert die Treffer in der bisherigen Reihenfolge.</summary>
+    sealed class RefGrid
+    {
+        readonly double _ref; public readonly SegGrid Fine;
+        readonly bool _same; // nicht verfeinert: das Raster ist das bisherige – Abfragen genau wie vorher (ohne Erweiterung und Bezugsprüfung)
+        public List<((double X, double Y) A, (double X, double Y) B, int Tag)> Segs => Fine.Segs;
+        public RefGrid(IEnumerable<(IReadOnlyList<(double X, double Y)> Pts, bool Closed, int Tag)> polys, double cell, CancellationToken ct = default, double pointQuery = 0)
+        {
+            var list = polys.ToList();
+            double minX = double.MaxValue, minY = double.MaxValue, maxX = double.MinValue, maxY = double.MinValue;
+            foreach (var (pts, _, _) in list) foreach (var (x, y) in pts) { minX = Math.Min(minX, x); minY = Math.Min(minY, y); maxX = Math.Max(maxX, x); maxY = Math.Max(maxY, y); }
+            var diag = minX > maxX ? 1 : Math.Sqrt((maxX - minX) * (maxX - minX) + (maxY - minY) * (maxY - minY));
+            _ref = Math.Max(Math.Max(cell, diag / 2048), 1e-9); // genau die Zelle von BuildGrid/SegGrid
+            // feinere Zelle: halbieren (höchstens 1/1024 der Bezugszelle), solange der Aufwand höchstens 16 Zellen je Strecke beträgt. Abfragen über die
+            // eigenen Strecken (Schnitte, Bahn gegen Konturen): Aufwand = überdeckte Zellen. Abfragen um Punkte (pointQuery = halbe Breite des
+            // Abfragerechtecks): Aufwand = Einträge (lange Strecken liegen im groben Raster), Zelle nicht kleiner als die halbe Abfragebreite.
+            long n = 0; foreach (var (pts, closed, _) in list) n += Math.Max(0, pts.Count - (closed ? 0 : 1));
+            var fine = _ref;
+            // nur verfeinern, wenn das bisherige Raster überladen ist (im Mittel mehr als 8 Strecken je belegter Zelle) – sonst ist es schon gut
+            long entries = 0; var occupied = new HashSet<(long, long)>();
+            foreach (var (pts, closed, _) in list)
+                for (var i = 0; i < pts.Count - (closed ? 0 : 1); i++)
+                {
+                    var a = pts[i]; var b = pts[(i + 1) % pts.Count];
+                    long x0 = R(Math.Min(a.X, b.X)), x1 = R(Math.Max(a.X, b.X)), y0 = R(Math.Min(a.Y, b.Y)), y1 = R(Math.Max(a.Y, b.Y));
+                    if (((double)x1 - x0 + 1) * ((double)y1 - y0 + 1) > SegGrid.SmallCells) continue;
+                    for (var x = x0; x <= x1; x++) for (var y = y0; y <= y1; y++) { entries++; occupied.Add((x, y)); }
+                }
+            var occ = (double)entries / Math.Max(1, occupied.Count);
+            // Aufwand je Zelle c: Abfragen um Punkte zählen Einträge (lange Strecken liegen grob, 4 Einträge); Abfragen über die eigenen Strecken zählen
+            // die überdeckten Zellen, höchstens so viele, wie das lineare Durchgehen kostet (2 × Strecken, siehe SegGrid)
+            double Cost(double c)
+            {
+                double e = 0;
+                foreach (var (pts, closed, _) in list)
+                    for (var i = 0; i < pts.Count - (closed ? 0 : 1); i++)
+                    {
+                        var a = pts[i]; var b = pts[(i + 1) % pts.Count];
+                        var cells = (Math.Floor(Math.Max(a.X, b.X) / c) - Math.Floor(Math.Min(a.X, b.X) / c) + 1) * (Math.Floor(Math.Max(a.Y, b.Y) / c) - Math.Floor(Math.Min(a.Y, b.Y) / c) + 1);
+                        e += pointQuery > 0 ? (cells > SegGrid.SmallCells ? 4 : cells) : Math.Min(cells, 2.0 * n + 64);
+                    }
+                return e;
+            }
+            if (occ > 8 && n > 0)
+            {
+                var limit = Math.Max(16.0 * n, 4 * Cost(_ref));
+                for (var k = 1; k <= 10; k++)
+                {
+                    var c = _ref / (1 << k);
+                    if (pointQuery > 0 && c < pointQuery) break; // kleinere Zellen als die halbe Abfragebreite bringen kaum weniger Kandidaten, aber viel mehr Zellen
+                    if (Cost(c) > limit) break;
+                    fine = c;
+                    if (occ * (c / _ref) <= 4) break; // vorsichtige Schätzung der Belegung (wie bei Linien: halbe Zelle, halbe Belegung)
+                }
+            }
+            Fine = new SegGrid(fine); _same = fine == _ref;
+            var m = 0;
+            foreach (var (pts, closed, tag) in list) for (var i = 0; i < pts.Count - (closed ? 0 : 1); i++) { if ((++m & 4095) == 0) ct.ThrowIfCancellationRequested(); Fine.Add(pts[i], pts[(i + 1) % pts.Count], tag); }
+        }
+        long R(double v) => (long)Math.Floor(v / _ref);
+        bool InRef(int j, long qx0, long qy0, long qx1, long qy1)
+        {
+            var (a, b, _) = Fine.Segs[j];
+            return R(Math.Max(a.X, b.X)) >= qx0 && R(Math.Min(a.X, b.X)) <= qx1 && R(Math.Max(a.Y, b.Y)) >= qy0 && R(Math.Min(a.Y, b.Y)) <= qy1;
+        }
+        public bool Any(double minX, double minY, double maxX, double maxY, double expand, Func<int, bool> pred, SegGrid.Cursor? cur = null)
+        {
+            if (_same) return Fine.Any(cur ?? Fine.Own, minX, minY, maxX, maxY, pred);
+            long qx0 = R(minX), qy0 = R(minY), qx1 = R(maxX), qy1 = R(maxY);
+            return Fine.Any(cur ?? Fine.Own, minX - expand, minY - expand, maxX + expand, maxY + expand, j => InRef(j, qx0, qy0, qx1, qy1) && pred(j));
+        }
+        public bool AnyWithin((double X, double Y) q, double d) => d > 0 && Any(q.X - d, q.Y - d, q.X + d, q.Y + d, 0, i => SegDist(q, Segs[i].A, Segs[i].B) < d);
+        /// <summary>Strecke mit dem kleinsten Wert (NaN = nicht zählen); bei Gleichstand die, die das bisherige Raster zuerst geliefert hätte.</summary>
+        public (int J, double D) Min(double minX, double minY, double maxX, double maxY, double expand, Func<int, double> score, SegGrid.Cursor? cur = null)
+        {
+            long qx0 = R(minX), qy0 = R(minY), qx1 = R(maxX), qy1 = R(maxY);
+            var bj = -1; var bd = double.MaxValue; (long X, long Y) bk = default;
+            (long X, long Y) Key(int j) { var (a, b, _) = Fine.Segs[j]; return (Math.Max(R(Math.Min(a.X, b.X)), qx0), Math.Max(R(Math.Min(a.Y, b.Y)), qy0)); }
+            if (_same) expand = 0;
+            Fine.Any(cur ?? Fine.Own, minX - expand, minY - expand, maxX + expand, maxY + expand, j =>
+            {
+                if (!_same && !InRef(j, qx0, qy0, qx1, qy1)) return false;
+                var d = score(j); if (double.IsNaN(d) || d > bd) return false;
+                if (d < bd || bj < 0) { bj = j; bd = d; bk = Key(j); return false; }
+                var k = Key(j); // Gleichstand: frühere Stelle im bisherigen Raster gewinnt
+                if (k.X < bk.X || k.X == bk.X && (k.Y < bk.Y || k.Y == bk.Y && j < bj)) { bj = j; bk = k; }
+                return false;
+            });
+            return (bj, bd);
+        }
+        /// <summary>Strecken mit <paramref name="keep"/>, in der Reihenfolge, in der das bisherige Raster sie geliefert hätte.</summary>
+        public List<int> Near(double minX, double minY, double maxX, double maxY, double expand, Func<int, bool> keep, SegGrid.Cursor? cur = null)
+        {
+            long qx0 = R(minX), qy0 = R(minY), qx1 = R(maxX), qy1 = R(maxY);
+            var res = new List<(long X, long Y, int I)>();
+            if (_same) return Fine.Near(cur ?? Fine.Own, minX, minY, maxX, maxY).Where(keep).ToList();
+            foreach (var j in Fine.Near(cur ?? Fine.Own, minX - expand, minY - expand, maxX + expand, maxY + expand))
+            {
+                if (!InRef(j, qx0, qy0, qx1, qy1) || !keep(j)) continue;
+                var (a, b, _) = Fine.Segs[j];
+                res.Add((Math.Max(R(Math.Min(a.X, b.X)), qx0), Math.Max(R(Math.Min(a.Y, b.Y)), qy0), j));
+            }
+            res.Sort((p, q) => p.X != q.X ? p.X.CompareTo(q.X) : p.Y != q.Y ? p.Y.CompareTo(q.Y) : p.I.CompareTo(q.I));
+            return res.Select(t => t.I).ToList();
+        }
+    }
+
     static SegGrid BuildGrid(IEnumerable<(IReadOnlyList<(double X, double Y)> Pts, bool Closed, int Tag)> polys, double cell, CancellationToken ct = default)
     {
         var list = polys.ToList();
@@ -1223,29 +1872,62 @@ public static class CncCam
 }
 
 /// <summary>T-0747-fix: Rasterindex für Strecken – „welche Strecken liegen in diesem Rechteck“ und „gibt es eine Strecke näher als d“, ohne alle
-/// Strecken durchzugehen (Fräsbahn-Prüfung, Versatz, Kettenbildung, Wandpaare).</summary>
+/// Strecken durchzugehen (Fräsbahn-Prüfung, Versatz, Kettenbildung, Wandpaare).
+/// T-0758: Eine Strecke gilt weiter als „in jeder Zelle ihres Rahmens“ (gleiche Treffer in gleicher Reihenfolge wie bisher), wird aber nicht mehr in
+/// jede dieser Zellen eingetragen: Strecken, deren Rahmen mehr als <see cref="SmallCells"/> Zellen überdeckt (lange schräge Linien, Plattenkanten),
+/// kommen in ein gröberes Raster (je Richtung eine Stufe: Zellen 2^Lx bzw. 2^Ly-mal so breit und hoch, höchstens 2 × 2 Zellen je Strecke). Vorher belegte eine schräge 2000-mm-Linie bei
+/// 3 mm Zellen rund 445 000 Zellen; 100 solche Linien brauchten 28 s und 240 MB nur für den Aufbau.</summary>
 public sealed class SegGrid(double cell)
 {
     readonly double _cell = Math.Max(cell, 1e-9);
     /// <summary>T-0747-fix12: Zellgröße (für die Wahl Raster-Abfrage oder lineares Durchgehen bei sehr großen Abfragerechtecken).</summary>
     public double CellSize => _cell;
     readonly Dictionary<long, List<int>> _map = [];
+    /// <summary>T-0758: höchstens so viele Zellen trägt eine Strecke ins feine Raster ein; größere Rahmen kommen ins grobe Raster.</summary>
+    public const int SmallCells = 64;
+    readonly Dictionary<(int Lx, int Ly, long X, long Y), List<int>> _big = [];
+    readonly List<int> _bigList = [];
+    readonly List<(int Lx, int Ly)> _levels = []; // benutzte Stufen des groben Rasters (je Richtung eigene, damit lange senkrechte Strecken schmal bleiben)
     /// <summary>T-0747-fix5: Merker für „schon gesehen“ – je Thread ein eigener, dann darf das Raster parallel abgefragt werden (nur lesen).</summary>
     public sealed class Cursor { internal int[] Stamp = new int[16]; internal int Query; }
     readonly Cursor _own = new();
     internal Cursor Own => _own;
     public List<((double X, double Y) A, (double X, double Y) B, int Tag)> Segs { get; } = [];
+    /// <summary>T-0758: Zahl der Strecken im groben Raster (für Tests).</summary>
+    public int BigCount => _bigList.Count;
+    /// <summary>T-0758: Zahl der Einträge im feinen Raster (für Tests).</summary>
+    public long FineEntries { get; private set; }
 
     static long Key(long x, long y) => (x << 32) ^ (y & 0xFFFFFFFFL);
     long C(double v) => (long)Math.Floor(v / _cell);
 
+    (long X0, long Y0, long X1, long Y1) Box(int i)
+    {
+        var (a, b, _) = Segs[i];
+        return (C(Math.Min(a.X, b.X)), C(Math.Min(a.Y, b.Y)), C(Math.Max(a.X, b.X)), C(Math.Max(a.Y, b.Y)));
+    }
+
     public int Add((double X, double Y) a, (double X, double Y) b, int tag)
     {
         var i = Segs.Count; Segs.Add((a, b, tag));
-        for (var x = C(Math.Min(a.X, b.X)); x <= C(Math.Max(a.X, b.X)); x++)
-            for (var y = C(Math.Min(a.Y, b.Y)); y <= C(Math.Max(a.Y, b.Y)); y++)
+        var (x0, y0, x1, y1) = Box(i);
+        if (((double)x1 - x0 + 1) * ((double)y1 - y0 + 1) <= SmallCells)
+        {
+            for (var x = x0; x <= x1; x++)
+                for (var y = y0; y <= y1; y++)
+                {
+                    var k = Key(x, y); if (!_map.TryGetValue(k, out var l)) _map[k] = l = []; l.Add(i); FineEntries++;
+                }
+            return i;
+        }
+        var Lx = 0; while (Lx < 63 && (x1 >> Lx) - (x0 >> Lx) > 1) Lx++;
+        var Ly = 0; while (Ly < 63 && (y1 >> Ly) - (y0 >> Ly) > 1) Ly++;
+        if (!_levels.Contains((Lx, Ly))) _levels.Add((Lx, Ly));
+        _bigList.Add(i);
+        for (var x = x0 >> Lx; x <= x1 >> Lx; x++)
+            for (var y = y0 >> Ly; y <= y1 >> Ly; y++)
             {
-                var k = Key(x, y); if (!_map.TryGetValue(k, out var l)) _map[k] = l = []; l.Add(i);
+                if (!_big.TryGetValue((Lx, Ly, x, y), out var l)) _big[(Lx, Ly, x, y)] = l = []; l.Add(i);
             }
         return i;
     }
@@ -1261,25 +1943,77 @@ public sealed class SegGrid(double cell)
 
     public List<int> Near(Cursor cur, double minX, double minY, double maxX, double maxY)
     {
-        Next(cur, Segs.Count); var _stamp = cur.Stamp; var _query = cur.Query;
         var res = new List<int>();
-        for (var x = C(minX); x <= C(maxX); x++)
-            for (var y = C(minY); y <= C(maxY); y++)
-                if (_map.TryGetValue(Key(x, y), out var l))
-                    foreach (var i in l) if (_stamp[i] != _query) { _stamp[i] = _query; res.Add(i); }
+        Walk(cur, minX, minY, maxX, maxY, res, null);
         return res;
     }
 
     /// <summary>T-0747-fix2: wie <see cref="Near"/>, aber ohne Liste – bricht ab, sobald <paramref name="hit"/> wahr ist.</summary>
     public bool Any(double minX, double minY, double maxX, double maxY, Func<int, bool> hit) => Any(_own, minX, minY, maxX, maxY, hit);
 
-    public bool Any(Cursor cur, double minX, double minY, double maxX, double maxY, Func<int, bool> hit)
+    public bool Any(Cursor cur, double minX, double minY, double maxX, double maxY, Func<int, bool> hit) => Walk(cur, minX, minY, maxX, maxY, null, hit);
+
+    /// <summary>T-0758: alle Strecken, deren Zellrahmen die Zellen des Rechtecks berührt, in der bisherigen Reihenfolge: Zellen spaltenweise (x, dann y),
+    /// je Zelle nach Nummer; eine Strecke zählt bei der ersten Zelle, in der sie vorkommt. Strecken des groben Rasters werden mit ihrer ersten Zelle
+    /// (größtes x0/y0 von Strecke und Rechteck) einsortiert.</summary>
+    bool Walk(Cursor cur, double minX, double minY, double maxX, double maxY, List<int>? res, Func<int, bool>? hit)
     {
-        Next(cur, Segs.Count); var _stamp = cur.Stamp; var _query = cur.Query;
-        for (var x = C(minX); x <= C(maxX); x++)
-            for (var y = C(minY); y <= C(maxY); y++)
-                if (_map.TryGetValue(Key(x, y), out var l))
-                    foreach (var i in l) if (_stamp[i] != _query) { _stamp[i] = _query; if (hit(i)) return true; }
+        bool visit(int i) { if (res is not null) { res.Add(i); return false; } return hit!(i); }
+        Next(cur, Segs.Count); var stamp = cur.Stamp; var query = cur.Query;
+        long qx0 = C(minX), qx1 = C(maxX), qy0 = C(minY), qy1 = C(maxY);
+        List<(long X, long Y, int I)>? big = null;
+        // T-0758: Rechteck mit mehr Zellen als Strecken (lange schräge Bahnstrecke über die ganze Platte): statt jede Zelle nachzusehen alle Strecken über
+        // ihren Zellrahmen prüfen – eine Strecke steht in jeder Zelle ihres Rahmens, Treffer und Reihenfolge bleiben also gleich.
+        if (qx0 <= qx1 && qy0 <= qy1 && ((double)qx1 - qx0 + 1) * ((double)qy1 - qy0 + 1) > 2.0 * Segs.Count + 64)
+        {
+            var all = new List<(long X, long Y, int I)>();
+            for (var i = 0; i < Segs.Count; i++)
+            {
+                var (x0, y0, x1, y1) = Box(i);
+                if (x1 < qx0 || x0 > qx1 || y1 < qy0 || y0 > qy1) continue;
+                all.Add((Math.Max(x0, qx0), Math.Max(y0, qy0), i));
+            }
+            all.Sort((p, q) => p.X != q.X ? p.X.CompareTo(q.X) : p.Y != q.Y ? p.Y.CompareTo(q.Y) : p.I.CompareTo(q.I));
+            foreach (var t in all) { stamp[t.I] = query; if (visit(t.I)) return true; }
+            return false;
+        }
+        if (_levels.Count != 0 && qx0 <= qx1 && qy0 <= qy1)
+        {
+            void Take(int i)
+            {
+                if (stamp[i] == query) return;
+                var (x0, y0, x1, y1) = Box(i);
+                if (x1 < qx0 || x0 > qx1 || y1 < qy0 || y0 > qy1) return;
+                stamp[i] = query; (big ??= []).Add((Math.Max(x0, qx0), Math.Max(y0, qy0), i));
+            }
+            // wenige grobe Strecken oder sehr großes Rechteck: Liste durchgehen, sonst die groben Zellen jeder benutzten Stufe
+            double coarse = 0; foreach (var (Lx, Ly) in _levels) coarse += ((double)(qx1 >> Lx) - (qx0 >> Lx) + 1) * ((double)(qy1 >> Ly) - (qy0 >> Ly) + 1);
+            if (coarse >= _bigList.Count) foreach (var i in _bigList) Take(i);
+            else
+                foreach (var (Lx, Ly) in _levels)
+                    for (var x = qx0 >> Lx; x <= qx1 >> Lx; x++)
+                        for (var y = qy0 >> Ly; y <= qy1 >> Ly; y++)
+                            if (_big.TryGetValue((Lx, Ly, x, y), out var l)) foreach (var i in l) Take(i);
+            big?.Sort((p, q) => p.X != q.X ? p.X.CompareTo(q.X) : p.Y != q.Y ? p.Y.CompareTo(q.Y) : p.I.CompareTo(q.I));
+        }
+        var nb = big?.Count ?? 0; var bp = 0;
+        for (var x = qx0; x <= qx1; x++)
+            for (var y = qy0; y <= qy1; y++)
+            {
+                var hasL = _map.TryGetValue(Key(x, y), out var l);
+                if (bp < nb && big![bp].X == x && big[bp].Y == y)
+                {
+                    // grobe Strecken mit dieser ersten Zelle nach Nummer zwischen die Einträge der Zelle einreihen
+                    var k = 0; var lc = hasL ? l!.Count : 0;
+                    while (k < lc || bp < nb && big[bp].X == x && big[bp].Y == y)
+                    {
+                        if (bp < nb && big[bp].X == x && big[bp].Y == y && (k >= lc || big[bp].I < l![k])) { if (visit(big[bp++].I)) return true; continue; }
+                        var i = l![k++]; if (stamp[i] != query) { stamp[i] = query; if (visit(i)) return true; }
+                    }
+                    continue;
+                }
+                if (hasL) foreach (var i in l!) if (stamp[i] != query) { stamp[i] = query; if (visit(i)) return true; }
+            }
         return false;
     }
 

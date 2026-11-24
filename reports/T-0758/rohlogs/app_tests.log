@@ -1,0 +1,12 @@
+== SPEC14_Ui
+   Trendo.App.Tests  Total: 2, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 21,328s
+== T0747_DxfUi
+   Trendo.App.Tests  Total: 2, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 71,025s
+== T0747_Fix3RaceUi
+   Trendo.App.Tests  Total: 4, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 95,055s
+== T0747_Fix4RaceUi
+   Trendo.App.Tests  Total: 3, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 116,119s
+== T0747_FixUi
+   Trendo.App.Tests  Total: 3, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 84,549s
+== Studio3DMeshEditUiTests
+   Trendo.App.Tests  Total: 5, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 14,094s

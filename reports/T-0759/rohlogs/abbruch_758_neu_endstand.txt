@@ -1,0 +1,42 @@
+== 758 p1_diag_gravur_5000_10000.dxf
+Abbruch nach 300 ms: OperationCanceledException 36 ms nach dem Abbrechen
+Abbruch nach 1000 ms: OperationCanceledException 38 ms nach dem Abbrechen
+Abbruch nach 2000 ms: OperationCanceledException 16 ms nach dem Abbrechen
+Abbruch nach 4000 ms: OperationCanceledException 5 ms nach dem Abbrechen
+Abbruch nach 8000 ms: war schon fertig nach 8011 ms
+ohne Abbruch: 6175 ms
+== neu p1_diag_gravur_5000_10000.dxf
+Abbruch nach 300 ms: OperationCanceledException 14 ms nach dem Abbrechen
+Abbruch nach 1000 ms: OperationCanceledException 12 ms nach dem Abbrechen
+Abbruch nach 2000 ms: OperationCanceledException 24 ms nach dem Abbrechen
+Abbruch nach 4000 ms: OperationCanceledException 2 ms nach dem Abbrechen
+Abbruch nach 8000 ms: war schon fertig nach 8020 ms
+ohne Abbruch: 5997 ms
+== 758 p1_diag_gravur_1000_10000.dxf
+Abbruch nach 300 ms: OperationCanceledException 8 ms nach dem Abbrechen
+Abbruch nach 1000 ms: OperationCanceledException 64 ms nach dem Abbrechen
+Abbruch nach 2000 ms: OperationCanceledException 4 ms nach dem Abbrechen
+Abbruch nach 4000 ms: war schon fertig nach 4044 ms
+Abbruch nach 8000 ms: war schon fertig nach 8017 ms
+ohne Abbruch: 2041 ms
+== neu p1_diag_gravur_1000_10000.dxf
+Abbruch nach 300 ms: OperationCanceledException 36 ms nach dem Abbrechen
+Abbruch nach 1000 ms: OperationCanceledException 11 ms nach dem Abbrechen
+Abbruch nach 2000 ms: OperationCanceledException 19 ms nach dem Abbrechen
+Abbruch nach 4000 ms: OperationCanceledException 31 ms nach dem Abbrechen
+Abbruch nach 8000 ms: war schon fertig nach 8016 ms
+ohne Abbruch: 5316 ms
+== 758 r2_diag_3000_loch25x4000.dxf
+Abbruch nach 300 ms: OperationCanceledException 34 ms nach dem Abbrechen
+Abbruch nach 1000 ms: OperationCanceledException 20 ms nach dem Abbrechen
+Abbruch nach 2000 ms: OperationCanceledException 807 ms nach dem Abbrechen
+Abbruch nach 4000 ms: OperationCanceledException 107 ms nach dem Abbrechen
+Abbruch nach 8000 ms: war schon fertig nach 8015 ms
+ohne Abbruch: 4444 ms
+== neu r2_diag_3000_loch25x4000.dxf
+Abbruch nach 300 ms: OperationCanceledException 8 ms nach dem Abbrechen
+Abbruch nach 1000 ms: OperationCanceledException 31 ms nach dem Abbrechen
+Abbruch nach 2000 ms: OperationCanceledException 1 ms nach dem Abbrechen
+Abbruch nach 4000 ms: OperationCanceledException 35 ms nach dem Abbrechen
+Abbruch nach 8000 ms: OperationCanceledException 17 ms nach dem Abbrechen
+ohne Abbruch: 7239 ms

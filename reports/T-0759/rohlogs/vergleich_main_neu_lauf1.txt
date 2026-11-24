@@ -1,0 +1,62 @@
+152 Fälle, 0 G-Code-Unterschiede main vs neu
+5 Fälle, 0 G-Code-Unterschiede main vs neu
+55 Fälle, 0 G-Code-Unterschiede main vs neu
+2 Fälle, 0 G-Code-Unterschiede main vs neu
+6 Fälle, 0 G-Code-Unterschiede main vs neu
+3 Fälle, 0 G-Code-Unterschiede main vs neu
+63 Fälle, 0 G-Code-Unterschiede main vs neu
+9 Fälle, 0 G-Code-Unterschiede main vs neu
+8 Fälle, 0 G-Code-Unterschiede main vs neu
+1 Fälle, 0 G-Code-Unterschiede main vs neu
+11 Fälle, 0 G-Code-Unterschiede main vs neu
+28 Fälle, 0 G-Code-Unterschiede main vs neu
+4 Fälle, 0 G-Code-Unterschiede main vs neu
+25 Fälle, 0 G-Code-Unterschiede main vs neu
+12 Fälle, 0 G-Code-Unterschiede main vs neu
+6 Fälle, 0 G-Code-Unterschiede main vs neu
+15 Fälle, 0 G-Code-Unterschiede main vs neu
+7 Fälle, 0 G-Code-Unterschiede main vs neu
+80 Fälle, 0 G-Code-Unterschiede main vs neu
+15 Fälle, 0 G-Code-Unterschiede main vs neu
+3 Fälle, 3 G-Code-Unterschiede main vs neu
+  pruef15-T-0747-hatch_casesr15 r_rahmen_0_spalt0p0 main:  -- 0.1s  neu: a2i2 -- 0.2s
+  pruef15-T-0747-hatch_casesr15 r_rahmen_RAHMEN_spalt0p0 main:  -- 0.0s  neu: a2i2 -- 0.0s
+  pruef15-T-0747-hatch_casesr15 r_rahmen_RAHMEN_spalt0p05 main:  -- 0.0s  neu: a2i2 -- 0.0s
+11 Fälle, 6 G-Code-Unterschiede main vs neu
+  pruef16-T-0747-hatchgram_cases16 d1_bem_lochabstand_gap0p0 main: a1 -- 0.2s  neu: a1i2 -- 0.3s
+  pruef16-T-0747-hatchgram_cases16 d1_bem_lochabstand_gap0p625 main: a1 -- 0.0s  neu: a1i2 -- 0.1s
+  pruef16-T-0747-hatchgram_cases16 d2_bem_breite_aussen_gap0p625 main: i1 -- 0.0s  neu: a1i1 -- 0.1s
+  pruef16-T-0747-hatchgram_cases16 d3_lineplatte_bem_gap0p625 main: i1 -- 0.0s  neu: a1i1 -- 0.0s
+  pruef16-T-0747-hatchgram_cases16 m1_mittelkreuz_4linien main: a1 -- 0.0s  neu: a1i1 -- 0.0s
+  pruef16-T-0747-hatchgram_cases16 m2_mittellinie_ueber_rand_stoss main: i1 -- 0.0s  neu: a1i2 -- 0.0s
+2 Fälle, 0 G-Code-Unterschiede main vs neu
+10 Fälle, 0 G-Code-Unterschiede main vs neu
+2 Fälle, 0 G-Code-Unterschiede main vs neu
+264 Fälle, 0 G-Code-Unterschiede main vs neu
+15 Fälle, 2 G-Code-Unterschiede main vs neu
+  pruef18-T-0747-hatchgram_cases18 b1_bruecke_zwei_platten main: a1i2 -- 0.0s  neu: i2 -- 0.0s
+  pruef18-T-0747-hatchgram_cases18 x1_u_ueberstand_kreuzend main: a1i1 -- 0.0s  neu: i1 -- 0.0s
+10 Fälle, 1 G-Code-Unterschiede main vs neu
+  pruef18-T-0747-rueck_sehne s7_sehne_andere_ebene main: a1i1 -- 0.0s  neu: i1 -- 0.0s
+18 Fälle, 0 G-Code-Unterschiede main vs neu
+4 Fälle, 0 G-Code-Unterschiede main vs neu
+11 Fälle, 6 G-Code-Unterschiede main vs neu
+  pruef19-T-0747-leistung_cases19 p1_diag_gravur_1000_10000 main:  -- 122.7s  neu: a1 -- 5.1s
+  pruef19-T-0747-leistung_cases19 p1_diag_gravur_2000_20000 main:  -- 122.4s  neu: a1 -B 3.7s
+  pruef19-T-0747-leistung_cases19 p1_diag_gravur_200_10000 main:  -- 121.9s  neu: a1 -- 1.2s
+  pruef19-T-0747-leistung_cases19 p1_diag_gravur_5000_10000 main:  -- 123.5s  neu: a1 -B 2.7s
+  pruef19-T-0747-leistung_cases19 p1b_diag_lw50_2000_10000 main:  -- 196.6s  neu: a1 -B 2.9s
+  pruef19-T-0747-leistung_cases19 p1b_diag_lw50_500_10000 main:  -- 124.5s  neu: a1 -- 2.7s
+5 Fälle, 3 G-Code-Unterschiede main vs neu
+  pruef19-T-0747-leistung_cases19b q_diag_1000_20000_seg1 main:  -- 120.9s  neu: a1 -- 2.9s
+  pruef19-T-0747-leistung_cases19b q_diag_1000_5000_seg1 main:  -- 146.2s  neu: a1 -- 0.7s
+  pruef19-T-0747-leistung_cases19b q_diag_3000_5000_seg1 main:  -- 158.3s  neu: a1 -- 2.1s
+5 Fälle, 2 G-Code-Unterschiede main vs neu
+  pruef19-T-0747-leistung_cases19c r2_diag_1000_loch25x4000 main:  -- 182.3s  neu: a1i25 -- 1.2s
+  pruef19-T-0747-leistung_cases19c r2_diag_3000_loch25x4000 main:  -- 344.5s  neu: a1 -- 1.7s
+57 Fälle, 0 G-Code-Unterschiede main vs neu
+11 Fälle, 0 G-Code-Unterschiede main vs neu
+24 Fälle, 0 G-Code-Unterschiede main vs neu
+95 Fälle, 0 G-Code-Unterschiede main vs neu
+6 Fälle, 0 G-Code-Unterschiede main vs neu
+3 Fälle, 0 G-Code-Unterschiede main vs neu
