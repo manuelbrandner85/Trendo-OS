@@ -44,3 +44,37 @@ Grundsatz: Fräsbahnen nur, wo die Deutung eindeutig ist; sonst auslassen und me
 ## Offen
 - p1_diag_gravur_1000 (1000 Linien durch einen Punkt, 10 000 Kreise) bleibt etwa 3,7 s langsamer als 758.
 - „Mehrdeutiger Spalt“ entsteht beim Verketten (`CadContours`, T-0760-Bereich); hier nur in der Anzeige zusammengefasst.
+
+## Gegenprüfung behoben (T-0759-fix1)
+
+Gegenprüfung von 671475769: ein HOCH-, drei NIEDRIG/MITTEL-Befunde. Behoben in eigener Kopie des Zweigs, Basis 671475769.
+
+1. **HOCH – Platte als Zeichnungsrahmen gedeutet, Löcher außen gefräst.** Von der Gestalt her sind „Platte mit Löchern“ und „Rahmen mit Teilen“ dasselbe.
+   - Der Ebenenname zählt nur noch als ganzes Wort („Rahmen“, „FRAME“ – nicht „Rahmen-Teil 1“); Name oder Normgröße allein reichen nie.
+   - Als Rahmen gilt er nur mit **Text im Schriftfeld** (TEXT/MTEXT, neu `CamSettings.Texts`, beim Import aus der Zeichnung übernommen und im Dokument gespeichert)
+     **und unterteiltem Schriftfeld** (mindestens eine weitere Linie darin).
+   - Fehlt ein Beleg, wird nichts weggelassen: der Umriss bleibt Platte, alle geschlossenen Konturen darin werden ausgelassen und gemeldet
+     („Rahmen oder Platte nicht eindeutig“). Im Zweifel geht G-Code verloren, nie wird ein Loch außen gefräst.
+   - Ohne jeden Hinweis (kein Rahmen-Name, keine Normgröße) bleibt es wie bisher eine Platte (Löcher innen).
+2. **Platte auf Ebene ACHSE/CENTER/Mitte/BEM/„Achse 1“/„Dimension 3mm“ ohne Fräsbahn.** Kurznamen (BEM, DIM, ACHSE, MITTE, CENTER, auch „Dimension“) zählen
+   nur als ganzer Ebenenname ohne Ziffern oder Zusätze; „dimension“ zählt nicht mehr als Wort in längeren Namen. Eine äußerste geschlossene Kontur auf so
+   einer Ebene, die selbst geschlossene Konturen enthält, wird wie auf main als Kante gefräst und gemeldet. Ein Lochkreis in einer Platte bleibt Hilfslinie.
+3. **Meldungen gekürzt, auch zu Löchern.** Die Art wird jetzt über den Meldungstyp bestimmt; gekürzt werden nur „offene Kontur ausgelassen“ und
+   „Mehrdeutiger Spalt“, mit Grund in der Zusatzzeile. Meldungen zu geschlossenen Konturen (Loch/Platte ausgelassen, zu klein, zu nah …) bleiben vollständig.
+4. **e2_kante_3000:** abwechselnd gemessen kein Unterschied zu 758 (siehe `reports/T-0759/messtabelle.md`).
+
+Zusätzlich aus den Gegenfällen der Prüferin (Rotlauf zeigte Loch außen auch hier):
+- **a5** (Umriss aus Bemaßungslinien mit 0,3-mm-Spalten, Kreis halb in der Hülle): Ein Hilfslinien-Baum gilt nur noch als frei, wenn keine zwei freien Enden
+  (auch zu anderen offenen Linien) näher als max(2 mm, Fräser-Ø) liegen; kurze Linien wie Pfeilspitzen zählen dabei nicht.
+- **t2/t6** (zwei Linien quer über ein Loch mit Insel – möglicher Steg): Die Durchgangs-Ausnahme gilt nur für leere Löcher. Liegt eine Insel im Loch, zählen
+  die Stücke in Luft als Anschluss, und „ganz in einer beteiligten Kontur“ verschont nur noch, wenn keine Linie in dieses Loch hineinreicht (Platten: unverändert,
+  Linien darin sind Gravur). 758 fräste die Insel in beiden Fällen außen.
+
+**Prüfung:**
+- Regression gegen cf3a5ba1b über 1 103 Fälle (39 Sätze + 40 Gegenfälle der Prüferin): `reports/T-0759/vergleich.md`, Abschnitt „Gegenprüfung behoben“.
+  Außerhalb der Gegenfälle dieselben 9 begründeten Unterschiede wie vorher; Prüfprogramme 80 → 74 Befunde, kein neuer.
+- Rotlauf: Prüfskript der Prüferin auf 758, 671475769 und fix1 – 671475769: 8 Fälle Loch außen, 7 Platten verloren; fix1: 0 und 0.
+- Neue Tests (`Plate_is_not_a_frame` mit allen 5 Varianten und den Gegenproben „Text, nicht unterteilt“ / „unterteilt, ohne Text“ / echter Rahmen,
+  `Plate_on_annotation_like_layer`, `Gaps_and_web_over_hole`, erweitert `Warnings_summarized`).
+- Kern-Klassen T0747_*, T0758_*, SPEC14_*, T0266, T0273, T0256, T0257, T0759: 164 von 164 bestanden.
+- App-Klassen SPEC14_Ui, T0747_DxfUi (Import mit Texten, Anzeige der Meldungen): 14 von 14 bestanden. Volltest nicht gelaufen (erst am Schluss vor dem Release).

@@ -43,3 +43,9 @@ Messprogramm `--abbruch`: Import mit Fräsbahn-Erzeugung starten, nach der Warte
 Höchster Nachlauf neu: 36 ms (Ziel unter 2 s, nicht langsamer als 758). Der gemeldete Rückschritt (p1_diag_gravur_5000: 274 s statt 125 s auf main)
 ist im Endstand (Zweig auf Basis cf3a5ba1b) nicht mehr nachzustellen: Der ganze Import ohne Abbruch dauert 6,0 s (758: 6,2 s), der Abbruch wirkt in höchstens 24 ms.
 Zusätzlich grün: `T0758_*.Cancel_quickly` (Kamm 20 000, 20 000 Kreise, 400 Diagonalen mit 1500 Löchern: Nachlauf unter 2 s).
+
+## T-0759-fix1
+
+e2_kante_3000 (pruef20), abwechselnd gemessen (758 / fix1): 13,6 / 14,9 s, 13,6 / 13,5 s, 12,4 / 11,6 s – kein messbarer Unterschied; die
+gemeldeten 9,5 → 10,2 s liegen in der Schwankung des Rechners. Gesamtlauf aller 1 103 Fälle (nacheinander je Satz 758 → fix1, unter fremder Last):
+758 160,0 s, fix1 155,5 s (`rohlogs/fix1_zeiten_758_fix1.txt`). Abbruchpfade sind unverändert (neue Prüfungen haben Budgets und Abbruchpunkte).

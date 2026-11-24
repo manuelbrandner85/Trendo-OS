@@ -53,3 +53,32 @@ Die Klassen `T0758_*` liefen im ersten Stand nicht und zeigten danach zwei Fehle
 in Luft und trennt nichts; Regel c) zählt solche Anschlüsse jetzt nicht mehr (Rand X – Stück in X, das in Luft liegt – Rand X). Ein Überstand, der in X endet, und ein
 Durchgang durch Material (Brücke, deren Linien durch die Platten laufen) zählen weiter. Ergebnis: G-Code wieder byte-gleich wie 0.9.108; Test
 `Lines_through_holes` (rot ohne, grün mit; Gegenfälle Langloch und Brücke durch Platten).
+
+## Gegenprüfung behoben (T-0759-fix1): Lauf gegen 758 über 1 103 Fälle
+
+Zusätzlich zu den 39 Sätzen laufen die 40 Gegenfälle der Prüferin (`pruef1-T-0759/cases`, Prüfskript `chk.py`). Rohwerte: `rohlogs/fix1_*`.
+Gegen 758 (cf3a5ba1b) verschieden: die 9 Fälle aus pruef16/pruef18 wie oben (unverändert begründet) und 11 Gegenfälle der Prüferin:
+
+| Fall (pruef1-T-0759) | 758 | 671475769 | fix1 | Begründung |
+|---|---|---|---|---|
+| a7_mittelkreuz_ueber_rand | kein G-Code | a1i1 | a1i1 | Mittelkreuz auf MITTE über den Rand ist keine Kante |
+| f1_platte_ebene_rahmen_eckausschnitt | i2 | **a2 (Löcher außen)** | kein G-Code | Rahmen vermutet (Ebene „Rahmen“), aber kein Text und nicht unterteilt: Konturen darin ausgelassen, Meldung „Rahmen oder Platte nicht eindeutig“ |
+| f1c_platte_ebene_frame_linien | i2 | **a2 (Löcher außen)** | kein G-Code | wie f1 (Ebene „FRAME“, 4 Einzellinien) |
+| f2_a4_platte_ebene0_eck180 | i2 | **a2 (Löcher außen)** | kein G-Code | wie f1 (Normgröße A4 + 180-mm-Feld reicht allein nicht) |
+| f2b_a3_platte_heftrand | i2 | **a2 (Löcher außen)** | kein G-Code | wie f1 (A3 mit Heftrand) |
+| f4_rahmen_mit_innenplatte_loch | a1i1, **Loch außen** | a1i1 (Rahmen erkannt, Loch innen) | kein G-Code | wie f1 – Rahmen ohne Text/Unterteilung ist nicht zweifelsfrei; 758 fräste das Loch der Innenplatte außen |
+| o1_hash_schliesst_c_tasche | a1, **Loch außen** | kein G-Code | kein G-Code | „#“ schließt mit der C-Tasche einen Bereich ein (Regel c, schon 671475769) |
+| o2_hash_spalt005 | a1, **Loch außen** | kein G-Code | kein G-Code | wie o1 mit 0,05-mm-Spalt |
+| o3_hash_mit_bulgeplatte | a2, **Loch außen** | kein G-Code | kein G-Code | wie o1 |
+| t2_zwei_linien_durch_loch_bruecke | a2, **Insel außen** | a2, **Insel außen** | a1 (Insel ausgelassen) | zwei Linien quer über ein Loch mit Insel können einen Steg bilden – neu erkannt (fix1) |
+| t6_freies_teil_mit_loch_linie | a1, **Insel außen** | a1, **Insel außen** | kein G-Code | wie t2 |
+
+f1b (Ebene „Rahmen-Teil 1“) und f3 (ohne Hinweis) sind in 758 und fix1 gleich (Platte, Löcher innen). Der Name zählt nur noch als ganzes Wort.
+
+**Rotlauf auf 671475769** (Prüfskript der Prüferin, `rohlogs/fix1_rotlauf_pruefin_758_671475769_fix1.txt`): 671475769 hat 8 Fälle mit Loch außen
+(f1, f1b, f1c, f2, f2b, a5, t2, t6) und verliert in 7 Fällen die ganze Platte (a1 ACHSE/CENTER/Mitte/BEM/Achse 1, a2 Dimension 3mm, a3).
+fix1: **kein Fall mit Loch außen**, alle a1/a2/a3-Platten samt Löchern gefräst.
+
+Prüfprogramme über alle Sätze: 758 80 Befunde, fix1 74. Kein neuer Befund. Weggefallen sind 4 in pruef16, 2 in pruef18 und 6 Fälle mit Loch außen bei der Prüferin.
+Die übrigen Befunde sind in beiden gleich (nur andere Laufzeit im Text). r_rahmen (pruef15) bleibt wie in 758 ohne G-Code, jetzt mit der Meldung
+„Rahmen oder Platte nicht eindeutig“ (die Prüferdateien haben keinen Text im Schriftfeld).

@@ -1,0 +1,60 @@
+152 Fälle, 0 G-Code-Unterschiede 758 vs neu
+5 Fälle, 0 G-Code-Unterschiede 758 vs neu
+55 Fälle, 0 G-Code-Unterschiede 758 vs neu
+2 Fälle, 0 G-Code-Unterschiede 758 vs neu
+6 Fälle, 0 G-Code-Unterschiede 758 vs neu
+3 Fälle, 0 G-Code-Unterschiede 758 vs neu
+63 Fälle, 0 G-Code-Unterschiede 758 vs neu
+9 Fälle, 0 G-Code-Unterschiede 758 vs neu
+8 Fälle, 0 G-Code-Unterschiede 758 vs neu
+1 Fälle, 0 G-Code-Unterschiede 758 vs neu
+11 Fälle, 0 G-Code-Unterschiede 758 vs neu
+28 Fälle, 0 G-Code-Unterschiede 758 vs neu
+4 Fälle, 0 G-Code-Unterschiede 758 vs neu
+25 Fälle, 0 G-Code-Unterschiede 758 vs neu
+12 Fälle, 0 G-Code-Unterschiede 758 vs neu
+6 Fälle, 0 G-Code-Unterschiede 758 vs neu
+15 Fälle, 0 G-Code-Unterschiede 758 vs neu
+7 Fälle, 0 G-Code-Unterschiede 758 vs neu
+80 Fälle, 0 G-Code-Unterschiede 758 vs neu
+15 Fälle, 0 G-Code-Unterschiede 758 vs neu
+3 Fälle, 0 G-Code-Unterschiede 758 vs neu
+11 Fälle, 6 G-Code-Unterschiede 758 vs neu
+  pruef16-T-0747-hatchgram_cases16 d1_bem_lochabstand_gap0p0 758: a1 -- 0.3s  neu: a1i2 -- 0.3s
+  pruef16-T-0747-hatchgram_cases16 d1_bem_lochabstand_gap0p625 758: a1 -- 0.1s  neu: a1i2 -- 0.1s
+  pruef16-T-0747-hatchgram_cases16 d2_bem_breite_aussen_gap0p625 758: i1 -- 0.0s  neu: a1i1 -- 0.0s
+  pruef16-T-0747-hatchgram_cases16 d3_lineplatte_bem_gap0p625 758: i1 -- 0.0s  neu: a1i1 -- 0.0s
+  pruef16-T-0747-hatchgram_cases16 m1_mittelkreuz_4linien 758: a1 -- 0.0s  neu: a1i1 -- 0.0s
+  pruef16-T-0747-hatchgram_cases16 m2_mittellinie_ueber_rand_stoss 758: i1 -- 0.0s  neu: a1i2 -- 0.0s
+2 Fälle, 0 G-Code-Unterschiede 758 vs neu
+10 Fälle, 0 G-Code-Unterschiede 758 vs neu
+2 Fälle, 0 G-Code-Unterschiede 758 vs neu
+264 Fälle, 0 G-Code-Unterschiede 758 vs neu
+15 Fälle, 2 G-Code-Unterschiede 758 vs neu
+  pruef18-T-0747-hatchgram_cases18 b1_bruecke_zwei_platten 758: a1i2 -- 0.0s  neu: i2 -- 0.1s
+  pruef18-T-0747-hatchgram_cases18 x1_u_ueberstand_kreuzend 758: a1i1 -- 0.0s  neu: i1 -- 0.0s
+10 Fälle, 1 G-Code-Unterschiede 758 vs neu
+  pruef18-T-0747-rueck_sehne s7_sehne_andere_ebene 758: a1i1 -- 0.0s  neu: i1 -- 0.0s
+18 Fälle, 0 G-Code-Unterschiede 758 vs neu
+4 Fälle, 0 G-Code-Unterschiede 758 vs neu
+11 Fälle, 0 G-Code-Unterschiede 758 vs neu
+5 Fälle, 0 G-Code-Unterschiede 758 vs neu
+5 Fälle, 0 G-Code-Unterschiede 758 vs neu
+57 Fälle, 0 G-Code-Unterschiede 758 vs neu
+11 Fälle, 0 G-Code-Unterschiede 758 vs neu
+24 Fälle, 0 G-Code-Unterschiede 758 vs neu
+95 Fälle, 0 G-Code-Unterschiede 758 vs neu
+6 Fälle, 0 G-Code-Unterschiede 758 vs neu
+3 Fälle, 0 G-Code-Unterschiede 758 vs neu
+40 Fälle, 11 G-Code-Unterschiede 758 vs neu
+  pruef1-T-0759_cases a7_mittelkreuz_ueber_rand 758:  -- 0.0s  neu: a1i1 -- 0.0s
+  pruef1-T-0759_cases f1_platte_ebene_rahmen_eckausschnitt 758: i2 -- 0.0s  neu:  -- 0.0s
+  pruef1-T-0759_cases f1c_platte_ebene_frame_linien 758: i2 -- 0.0s  neu:  -- 0.0s
+  pruef1-T-0759_cases f2_a4_platte_ebene0_eck180 758: i2 -- 0.0s  neu:  -- 0.0s
+  pruef1-T-0759_cases f2b_a3_platte_heftrand 758: i2 -- 0.0s  neu:  -- 0.0s
+  pruef1-T-0759_cases f4_rahmen_mit_innenplatte_loch 758: a1i1 -- 0.0s  neu:  -- 0.0s
+  pruef1-T-0759_cases o1_hash_schliesst_c_tasche 758: a1 -- 0.0s  neu:  -- 0.0s
+  pruef1-T-0759_cases o2_hash_spalt005 758: a1 -- 0.0s  neu:  -- 0.0s
+  pruef1-T-0759_cases o3_hash_mit_bulgeplatte 758: a2 -- 0.0s  neu:  -- 0.0s
+  pruef1-T-0759_cases t2_zwei_linien_durch_loch_bruecke 758: a2 -- 0.0s  neu: a1 -- 0.0s
+  pruef1-T-0759_cases t6_freies_teil_mit_loch_linie 758: a1 -- 0.0s  neu:  -- 0.0s

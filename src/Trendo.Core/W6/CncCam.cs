@@ -27,6 +27,8 @@ public sealed record CamSettings
     public double Chord { get; init; } = 0.01;
     /// <summary>T-0747-fix5: Ausdehnung nicht gelesener Elemente (Zeichnungskoordinaten, wie die Konturen) – was darin liegt, wird ausgelassen und gemeldet.</summary>
     public IReadOnlyList<(string What, CadDxf.Box B)> Unread { get; init; } = [];
+    /// <summary>T-0759-fix1: Lage der Texte (TEXT/MTEXT, Zeichnungskoordinaten) – Beleg für ein Schriftfeld eines Zeichnungsrahmens.</summary>
+    public IReadOnlyList<(double X, double Y)> Texts { get; init; } = [];
 }
 
 /// <summary>Eine Fräsbahn (Fräsermitte) mit Art und Herkunft.</summary>
@@ -92,7 +94,8 @@ public static partial class CncCam
         if (s.ToolD <= 0 || s.Depth <= 0 || s.StepDown <= 0 || s.Feed <= 0 || s.Plunge <= 0) throw new ArgumentException("Fräser-Ø, Tiefe, Zustellung und Vorschübe müssen größer als 0 sein.");
         if (s.Tabs > 0 && (s.TabH <= 0 || s.TabH >= s.Depth)) throw new ArgumentException("Haltestege: Höhe muss größer als 0 und kleiner als die Tiefe sein.");
         var r = s.ToolD / 2; var warn = new List<string>();
-        source = DropFrame(source, s, warn, ct); // T-0759: eindeutiger Zeichnungsrahmen mit Schriftfeld wird nicht gefräst
+        var frameUnsure = new HashSet<int>();
+        source = DropFrame(source, s, warn, frameUnsure, ct); // T-0759: eindeutiger Zeichnungsrahmen mit Schriftfeld wird nicht gefräst
         // verschieben: linke untere Ecke aufs Nullpunkt
         double sx = 0, sy = 0;
         if (s.ToOrigin) { sx = -source.Min(c => c.Pts.Min(p => p.X)); sy = -source.Min(c => c.Pts.Min(p => p.Y)); }
@@ -151,12 +154,46 @@ public static partial class CncCam
         }
         // T-0747-fix: selbst schneidende Konturen (Acht) ablehnen – innen und außen sind dort nicht eindeutig
         var crossing = new bool[cs.Count]; var annClosed = new bool[cs.Count];
+        long annScan = 0;
+        bool ContainsClosed(int i) // T-0759-fix1: liegt eine andere geschlossene Kontur (Rahmen und erster Punkt) in Kontur i? Budget erschöpft: ja (wie main)
+        {
+            var bi = boxes[i];
+            for (var j = 0; j < cs.Count; j++)
+            {
+                if (j == i || !cs[j].Closed || dup[j]) continue;
+                if (++annScan > 20_000_000) return true;
+                if ((annScan & 4095) == 0) ct.ThrowIfCancellationRequested();
+                var bj = boxes[j];
+                if (bj.Item1 < bi.Item1 || bj.Item2 < bi.Item2 || bj.Item3 > bi.Item3 || bj.Item4 > bi.Item4) continue;
+                if (bj.Item1 == bi.Item1 && bj.Item2 == bi.Item2 && bj.Item3 == bi.Item3 && bj.Item4 == bi.Item4) continue;
+                if (cs[i].Contains(cs[j].Pts[0].X, cs[j].Pts[0].Y)) return true;
+            }
+            return false;
+        }
+        bool InsideClosed(int i) // liegt Kontur i (erster Punkt) in einer anderen geschlossenen Kontur? Budget erschöpft: nein (dann wie main)
+        {
+            var bi = boxes[i]; var q = cs[i].Pts[0];
+            for (var j = 0; j < cs.Count; j++)
+            {
+                if (j == i || !cs[j].Closed || dup[j]) continue;
+                if (++annScan > 20_000_000) return false;
+                var bj = boxes[j];
+                if (bi.Item1 < bj.Item1 || bi.Item2 < bj.Item2 || bi.Item3 > bj.Item3 || bi.Item4 > bj.Item4) continue;
+                if (bj.Item1 == bi.Item1 && bj.Item2 == bi.Item2 && bj.Item3 == bi.Item3 && bj.Item4 == bi.Item4) continue;
+                if (cs[j].Contains(q.X, q.Y)) return true;
+            }
+            return false;
+        }
         for (var i = 0; i < cs.Count; i++)
             if (cs[i].Closed && !dup[i] && s.Mode != "auf" && SelfIntersects(cs[i].Pts, ct))
             {
                 crossing[i] = true;
                 warn.Add($"{Name(i)} ausgelassen: die Kontur kreuzt sich selbst (z. B. eine Acht) – dann ist nicht klar, was innen und außen ist. Bitte in der Zeichnung in einzelne geschlossene Umrisse auflösen.");
             }
+            else if (cs[i].Closed && !dup[i] && s.Mode != "auf" && IsAnnotationLayer(cs[i].Layer) && ContainsClosed(i) && !InsideClosed(i))
+                // T-0759-fix1: äußerste Linie, die selbst geschlossene Konturen enthält – eher eine Platte auf falscher Ebene: wie bisher (main) als Kante behandeln.
+                // Liegt sie in einer anderen Kontur (Lochkreis um eine Bohrung in einer Platte), bleibt sie Hilfslinie (nicht gefräst, Inhalt ausgelassen).
+                warn.Add($"{Name(i)} liegt auf der Ebene {cs[i].Layer} (Bemaßung/Mittellinien), enthält aber andere Konturen – sie wird wie eine Kante (Umriss) gefräst. Bitte prüfen, ob das stimmt.");
             else if (cs[i].Closed && !dup[i] && s.Mode != "auf" && IsAnnotationLayer(cs[i].Layer))
             {
                 // T-0759: geschlossene Linie auf einer Bemaßungs-/Mittellinien-Ebene (z. B. Lochkreis) – nicht fräsen. Was darin oder daran liegt, hängt davon
@@ -167,6 +204,7 @@ public static partial class CncCam
         // T-0747-fix2: Konturen in oder an einer abgelehnten, sich selbst kreuzenden Kontur – innen/außen ist dort nicht sicher zu deuten (ein Loch würde
         // sonst als Umriss gefräst und größer). Auslassen und melden.
         var unsure = new bool[cs.Count];
+        foreach (var i in frameUnsure) if (!dup[i] && !crossing[i] && !unsure[i]) { unsure[i] = true; warn.Add($"{Name(i)} ausgelassen: liegt in einem Umriss, der Platte oder Zeichnungsrahmen sein kann (siehe oben) – als Teil wäre sie außen, als Loch innen zu fräsen."); }
         var allBox = cs.Select((c, i) => { if ((i & 255) == 0) ct.ThrowIfCancellationRequested(); return c.Box; }).ToArray(); // T-0747-fix18: Rahmen einmal (vorher je Paar neu berechnet)
         for (var j = 0; j < cs.Count; j++)
         {
@@ -325,10 +363,59 @@ public static partial class CncCam
         // T-0759: Ein Linienverbund ohne Kreis (Baum) schließt für sich keinen Bereich ein – mit einer gedachten Schließsehne über eine Lücke aber schon
         // (wie bei der Regel für offene Umrisse; z. B. „[“ und „]“ mit 0,2 mm Spalt). Ausgenommen werden deshalb nur Bäume, deren Linien alle auf einer
         // sicher erkannten Bemaßungs-/Mittellinien-Ebene liegen (keine Kanten) und in deren konvexer Hülle keine geschlossene Kontur ganz liegt.
-        long annWork = 0;
+        long annWork = 0; Dictionary<(long, long), List<(int J, (double X, double Y) P)>>? openEnds = null;
         bool AnnotationTreeFree(List<int> members, List<(double X, double Y)> pts)
         {
             if (!members.All(j => IsAnnotationLayer(cs[j].Layer))) return false;
+            // T-0759-fix1: liegen zwei freie Enden des Baums dicht beieinander (≤ max(2 mm, Fräser-Ø)), ist er eher ein Umriss mit kleinen Spalten
+            // (Prüferfall a5: Quadrat mit 0,3-mm-Spalten auf BEM) als Bemaßung/Mittelkreuz – dann vorsichtig schützen wie bisher.
+            // Kurze Linien (≤ 3 × diese Grenze, z. B. Pfeilspitzen) zählen dabei nicht – ihre Enden liegen naturgemäß dicht beieinander.
+            var gapMax = Math.Max(2.0, s.ToolD); var ends = new List<(double X, double Y)>();
+            bool Short(int j) => Length(cs[j].Pts, false) <= 3 * gapMax;
+            foreach (var j in members)
+                foreach (var e in Short(j) ? [] : new[] { cs[j].Pts[0], cs[j].Pts[^1] })
+                {
+                    var touches = false;
+                    foreach (var o in members)
+                    {
+                        if (o == j) continue;
+                        var op = cs[o].Pts;
+                        for (var k = 0; k + 1 < op.Count && !touches; k++) { if (++annWork > 50_000_000) return false; if (SegDist(e, op[k], op[k + 1]) <= tolE) touches = true; }
+                        if (touches) break;
+                    }
+                    if (!touches) ends.Add(e);
+                }
+            for (var a = 0; a < ends.Count; a++)
+                for (var b = a + 1; b < ends.Count; b++)
+                {
+                    if (++annWork > 50_000_000) return false;
+                    if (D2(ends[a], ends[b]) > 1e-18 && D2(ends[a], ends[b]) <= gapMax * gapMax) return false;
+                }
+            // … auch zu Enden anderer offener Linien (ein Umriss mit Spalt kann aus mehreren Verbünden bestehen)
+            if (openEnds is null)
+            {
+                openEnds = [];
+                for (var j = 0; j < cs.Count; j++)
+                    if (!cs[j].Closed && cs[j].Pts.Count >= 2)
+                        foreach (var e in new[] { cs[j].Pts[0], cs[j].Pts[^1] })
+                        {
+                            var key = ((long)Math.Floor(e.X / gapMax), (long)Math.Floor(e.Y / gapMax));
+                            if (!openEnds.TryGetValue(key, out var l)) openEnds[key] = l = []; l.Add((j, e));
+                        }
+            }
+            var mem = members.ToHashSet();
+            foreach (var e in ends)
+            {
+                long kx = (long)Math.Floor(e.X / gapMax), ky = (long)Math.Floor(e.Y / gapMax);
+                for (var dx = -1L; dx <= 1; dx++)
+                    for (var dy = -1L; dy <= 1; dy++)
+                        if (openEnds.TryGetValue((kx + dx, ky + dy), out var l))
+                            foreach (var (j, q) in l)
+                            {
+                                if (++annWork > 50_000_000) return false;
+                                if (!mem.Contains(j) && !Short(j) && D2(e, q) <= gapMax * gapMax) return false;
+                            }
+            }
             var h = Hull(pts); if (h.Count < 3) return true;
             double hx0 = h.Min(p => p.X), hy0 = h.Min(p => p.Y), hx1 = h.Max(p => p.X), hy1 = h.Max(p => p.Y);
             for (var i = 0; i < cs.Count; i++)
@@ -614,6 +701,52 @@ public static partial class CncCam
                 }
                 return true;
             }
+            // reicht Linie j in ein Loch c hinein? Jede Strecke wird an den Schnittstellen mit dem Rand von c geteilt; liegt die Mitte eines Stücks, das länger
+            // als 2 × Kettentoleranz ist, in c, reicht sie hinein. Eine Linie, die nur am Rand endet oder ihn berührt, reicht nicht hinein.
+            var holeOf = new Dictionary<int, bool>();
+            bool IsHole(int c) // liegt c in einer ungeraden Zahl anderer geschlossener Konturen (Loch)? Budget erschöpft: ja (vorsichtig)
+            {
+                if (holeOf.TryGetValue(c, out var h)) return h;
+                var q0 = cs[c].Pts[0]; var n = 0; long w = 0;
+                for (var i = 0; i < cs.Count; i++)
+                {
+                    if (i == c || !cs[i].Closed || dup[i]) continue;
+                    if (++w > 5_000_000) return holeOf[c] = true;
+                    var bi = boxes[i]; if (q0.X < bi.Item1 || q0.X > bi.Item3 || q0.Y < bi.Item2 || q0.Y > bi.Item4) continue;
+                    if (InCE(i, q0)) n++;
+                }
+                return holeOf[c] = n % 2 == 1;
+            }
+            bool LineEnters(int j, int c)
+            {
+                if (!IsHole(c)) return false; // in eine Platte hineinreichende Linien sind Gravur (T-0747) – die Tiefe darin bleibt
+                var bc = boxes[c]; var pp = cs[j].Pts;
+                if (!gridC.TryGetValue(c, out var gc)) gridC[c] = gc = BuildGrid([((IReadOnlyList<(double X, double Y)>)cs[c].Pts, true, 0)], AvgLen(cs[c].Pts, true) * 2, ct);
+                var ts = new List<double>();
+                for (var k = 0; k + 1 < pp.Count; k++)
+                {
+                    Tick(); var a0 = pp[k]; var b0 = pp[k + 1];
+                    if (Math.Max(a0.X, b0.X) < bc.Item1 || Math.Min(a0.X, b0.X) > bc.Item3 || Math.Max(a0.Y, b0.Y) < bc.Item2 || Math.Min(a0.Y, b0.Y) > bc.Item4) continue;
+                    double dx = b0.X - a0.X, dy = b0.Y - a0.Y, len = Math.Sqrt(dx * dx + dy * dy); if (len < 1e-12) continue;
+                    ts.Clear(); ts.Add(0); ts.Add(1);
+                    gc.Any(Math.Min(a0.X, b0.X) - 1e-6, Math.Min(a0.Y, b0.Y) - 1e-6, Math.Max(a0.X, b0.X) + 1e-6, Math.Max(a0.Y, b0.Y) + 1e-6, t =>
+                    {
+                        var (c0, c1) = (gc.Segs[t].A, gc.Segs[t].B); double sx = c1.X - c0.X, sy = c1.Y - c0.Y, den = dx * sy - dy * sx;
+                        if (Math.Abs(den) < 1e-18) return false;
+                        double qx = c0.X - a0.X, qy = c0.Y - a0.Y, tt = (qx * sy - qy * sx) / den, uu = (qx * dy - qy * dx) / den;
+                        if (tt >= -1e-9 && tt <= 1 + 1e-9 && uu >= -1e-9 && uu <= 1 + 1e-9) ts.Add(Math.Clamp(tt, 0, 1));
+                        return false;
+                    });
+                    ts.Sort();
+                    for (var q = 0; q + 1 < ts.Count; q++)
+                    {
+                        if ((ts[q + 1] - ts[q]) * len <= 2 * tolE) continue;
+                        var tm = (ts[q] + ts[q + 1]) / 2; var m = (a0.X + dx * tm, a0.Y + dy * tm);
+                        if (InCE(c, m)) return true;
+                    }
+                }
+                return false;
+            }
             foreach (var (gcs, gss) in encl)
             {
                 ct.ThrowIfCancellationRequested();
@@ -624,12 +757,15 @@ public static partial class CncCam
                 foreach (var c in gcs) pts.AddRange(cs[c].Pts);
                 foreach (var st in gss) foreach (var j in net!.Members[st]) pts.AddRange(cs[j].Pts);
                 var hull = Hull(pts); const double e = 1e-6;
+                // T-0759-fix1: „ganz in einer beteiligten Kontur c“ lässt die Tiefe nur gleich, wenn keine Linie des Verbunds in c hineinreicht (sonst kann
+                // der Bereich in c liegen – z. B. zwei Linien quer über ein Loch mit Insel: Steg, die Insel wäre ein Loch darin)
+                var spareIn = gcs.Where(c => !gss.Any(st => net!.Members[st].Any(j => LineEnters(j, c)))).ToList();
                 double gx0 = pts.Min(p => p.X), gy0 = pts.Min(p => p.Y), gx1 = pts.Max(p => p.X), gy1 = pts.Max(p => p.Y);
                 for (var q = NextA(Lower(minXs!, gx0 - maxW - e)); q < byMinX!.Length && minXs![q] <= gx1 + e; q = NextA(q + 1))
                 {
                     Tick(); var i = byMinX[q]; var bi = boxes[i];
                     if (bi.Item3 < gx0 - e || bi.Item2 > gy1 + e || bi.Item4 < gy0 - e) continue;
-                    if (gcs.Any(c => InsideOf(i, c))) continue; // ganz in einer beteiligten Kontur: Tiefe bleibt
+                    if (spareIn.Any(c => InsideOf(i, c))) continue; // ganz in einer beteiligten Kontur, in die keine Linie hineinreicht: Tiefe bleibt
                     if (bi.Item1 >= gx0 - e && bi.Item2 >= gy0 - e && bi.Item3 <= gx1 + e && bi.Item4 <= gy1 + e) { SkipAs(i, why); continue; } // 1.
                     var pp = cs[i].Pts; var hitIn = hull.Count >= 3 && InConvexLog(hull, pp[0], -e); // 2.
                     for (var k = 1; k < pp.Count && !hitIn; k++)

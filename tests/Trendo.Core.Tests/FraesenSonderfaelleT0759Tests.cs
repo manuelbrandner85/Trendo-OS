@@ -28,7 +28,7 @@ public class T0759_FraesenSonderfaelle(ITestOutputHelper log)
     static readonly (double X, double Y)[] Notch = [(0, 0), (100, 0), (100, 20), (70, 20), (70, 80), (100, 80), (100, 100), (0, 100)];
     static (CamResult? R, string Text) Cam(string dxf, double tool = 1)
     {
-        try { var rd = CadDxf.Parse(dxf); var r = CncCam.Generate(CncCam.Contours(rd.Drawing), new CamSettings { ToolD = tool, Unread = rd.Unread }); return (r, string.Join(" | ", r.Warnings)); }
+        try { var rd = CadDxf.Parse(dxf); var r = CncCam.Generate(CncCam.Contours(rd.Drawing), new CamSettings { ToolD = tool, Unread = rd.Unread, Texts = CncCam.TextPoints(rd.Drawing) }); return (r, string.Join(" | ", r.Warnings)); }
         catch (InvalidOperationException e) { return (null, e.Message); }
     }
     static bool Around(CamResult? r, string kind, double x, double y, double rr, double tool = 1) => r is not null &&
@@ -114,7 +114,10 @@ public class T0759_FraesenSonderfaelle(ITestOutputHelper log)
         Assert.True(PlateOut(lk, 0, 0, 200, 100)); Assert.Contains("Lochkreis", lt);
     }
 
-    static string Frame(string layer, double gap = 0)
+    static string Text(double x, double y, string t, string layer = "0") => G((0, "TEXT"), (8, layer), (10, x), (20, y), (30, 0), (40, 3), (1, t));
+    /// <summary>Rahmen wie <see cref="FrameLines"/> mit Text im Schriftfeld (T-0759-fix1: Beleg für den Rahmen).</summary>
+    static string Frame(string layer, double gap = 0) => FrameLines(layer, gap) + Text(240, 20, "Maßstab 1:1", layer) + Text(330, 20, "Blatt 1", layer);
+    static string FrameLines(string layer, double gap = 0)
     {
         // Blatt A3 quer 420 × 297, Schriftfeld 180 × 50 rechts unten mit Teilung
         return Line(-10, -10, 230, -10, layer) + Line(230, -10, 410, -10, layer) + Line(410, -10, 410, 40, layer) + Line(410, 40, 410, 287, layer) + Line(410, 287, -10, 287, layer)
@@ -134,7 +137,7 @@ public class T0759_FraesenSonderfaelle(ITestOutputHelper log)
             Assert.True(r!.ShiftX > -1 && r.ShiftX < 1 && r.ShiftY > -51 && r.ShiftY < -49, "Nullpunkt an den Teilen, nicht am Rahmen");
         }
         // geschlossener Rahmen (Polylinie) mit Schriftfeld-Linien: vorher wurden die Platten als Löcher und die Kreise als Teile (außen) gefräst
-        var (c, ctext) = Run("geschlossen", Dxf(Lw(Sq(-10, -10, 410, 287), "Rahmen") + Line(230, -10, 230, 40, "Rahmen") + Line(230, 40, 410, 40, "Rahmen") + parts));
+        var (c, ctext) = Run("geschlossen", Dxf(Lw(Sq(-10, -10, 410, 287), "Rahmen") + Line(230, -10, 230, 40, "Rahmen") + Line(230, 40, 410, 40, "Rahmen") + Line(320, -10, 320, 40, "Rahmen") + Text(240, 20, "Werkstoff") + parts));
         Assert.False(Around(c, "aussen", 50, 80, 5) || Around(c, "aussen", 200, 80, 5), "Loch außen gefräst");
         Assert.True(Around(c, "innen", 50, 80, 5)); Assert.Contains("Zeichnungsrahmen", ctext);
         // Gegenfall: „Rahmen“ ist eigentlich eine Platte 300 × 200 aus Linien mit Teilung (Stoß) und Löchern – keine Normgröße, Ebene 0: nicht als Rahmen
@@ -213,7 +216,12 @@ public class T0759_FraesenSonderfaelle(ITestOutputHelper log)
         var sb = new StringBuilder();
         for (var k = 0; k < 60; k++) sb.Append(Line(k * 10, 0, k * 10 + 5, 3));
         var (r, text) = Run("nur offen", Dxf(sb.ToString()));
-        Assert.Null(r); Assert.Contains("weitere Meldungen dieser Art", text);
+        Assert.Null(r); Assert.Contains("weitere Meldungen der Art „offene Kontur ausgelassen“", text);
+        // T-0759-fix1: Meldungen zu Löchern/Platten werden nie gekürzt, auch nicht bei vielen gleichartigen
+        var holes = Enumerable.Range(1, 50).Select(i => $"Kontur {i} ausgelassen: liegt in einem Bereich, den die offenen Linien ab Kontur 99 einschließen – Loch oder Teil unklar.").ToList();
+        holes.AddRange(Enumerable.Range(1, 30).Select(i => $"Kontur {i + 100} ausgelassen: offene Kontur (Enden {i} mm auseinander) – nur als Gravur."));
+        var sh = CncCam.SummarizeWarnings(holes);
+        Assert.Equal(50, sh.Count(x => x.Contains("einschließen"))); Assert.Contains(sh, x => x.Contains("10 weitere Meldungen der Art „offene Kontur ausgelassen“ (offene Linien"));
     }
 
     [Fact(DisplayName = "T-0759: Linien, die Löcher ganz durchqueren (Gravur von Rand zu Rand), schließen nichts ein – Löcher bleiben innen; Langloch aus Linien bis an die Kreise und Brücke durch die Platten weiter vorsichtig")]
@@ -234,5 +242,80 @@ public class T0759_FraesenSonderfaelle(ITestOutputHelper log)
         // Gegenfall Brücke, deren Linien die Platten ganz durchqueren (Material, keine Luft) – Kreis in der Brücke nie außen
         var (b, tb) = Run("Brücke durch Platten", Dxf(Lw(Sq(0, 0, 50, 100)) + Lw(Sq(100, 0, 150, 100)) + Line(-10, 30, 160, 30) + Line(-10, 70, 160, 70) + Circle(75, 50, 5)));
         Assert.False(Around(b, "aussen", 75, 50, 5), "Kreis in der Brücke außen gefräst");
+    }
+
+    // ------------------------------------------------------------ T-0759-fix1: Gegenprüfung
+
+    static readonly string Holes = Circle(60, 100, 8) + Circle(150, 100, 10);
+    static void NoHoleOutside(string name, CamResult? r, string text)
+    {
+        Assert.False(Around(r, "aussen", 60, 100, 8) || Around(r, "aussen", 150, 100, 10), $"{name}: Loch außen gefräst – {text[..Math.Min(300, text.Length)]}");
+        Assert.DoesNotContain("Zeichnungsrahmen mit Schriftfeld erkannt", text);
+    }
+    static string Corner(double x1, double y0, double cx, double cy, string l) => Line(cx, y0, cx, cy, l) + Line(cx, cy, x1, cy, l);
+
+    [Fact(DisplayName = "T-0759-fix1 HOCH: Platte mit abgeteiltem Eckfeld wird nie als Zeichnungsrahmen gedeutet – kein Loch außen (Ebene Rahmen, Rahmen-Teil 1, FRAME aus Linien, A4 mit 180-mm-Feld, A3 mit Heftrand)")]
+    public void Plate_is_not_a_frame()
+    {
+        var variants = new (string Name, string Dxf)[]
+        {
+            ("Ebene Rahmen 300×200", Lw(Sq(0, 0, 300, 200), "Rahmen") + Corner(300, 0, 200, 50, "Rahmen")),
+            ("Ebene Rahmen-Teil 1", Lw(Sq(0, 0, 300, 200), "Rahmen-Teil 1") + Corner(300, 0, 200, 50, "Rahmen-Teil 1")),
+            ("FRAME aus 4 Linien", Line(0, 0, 300, 0, "FRAME") + Line(300, 0, 300, 200, "FRAME") + Line(300, 200, 0, 200, "FRAME") + Line(0, 200, 0, 0, "FRAME") + Corner(300, 0, 200, 50, "FRAME")),
+            ("A4 quer, Ebene 0, Eckfeld 180", Lw(Sq(0, 0, 297, 210)) + Corner(297, 0, 117, 40, "0")),
+            ("A3 mit Heftrand, Ebene 0", Lw(Sq(0, 0, 400, 277)) + Corner(400, 0, 220, 60, "0")),
+        };
+        foreach (var (name, plate) in variants)
+        {
+            var (r, text) = Run(name, Dxf(plate + Holes));
+            NoHoleOutside(name, r, text);
+            // Löcher innen (keine Rahmen-Deutung) oder ausgelassen mit Meldung – nie außen
+            Assert.True((Around(r, "innen", 60, 100, 8) && Around(r, "innen", 150, 100, 10)) || text.Contains("Rahmen oder Platte nicht eindeutig"), $"{name}: weder Löcher noch Meldung");
+        }
+        // mit Text im (nicht unterteilten) Eckfeld: nicht eindeutig
+        var (t1, tt1) = Run("Text, nicht unterteilt", Dxf(Lw(Sq(0, 0, 300, 200), "Rahmen") + Corner(300, 0, 200, 50, "Rahmen") + Text(220, 20, "Teil 4711") + Holes));
+        NoHoleOutside("Text, nicht unterteilt", t1, tt1); Assert.Contains("nicht eindeutig", tt1);
+        // unterteilt, aber ohne Text: nicht eindeutig
+        var (t2, tt2) = Run("unterteilt, ohne Text", Dxf(Lw(Sq(0, 0, 300, 200), "Rahmen") + Corner(300, 0, 200, 50, "Rahmen") + Line(250, 0, 250, 50, "Rahmen") + Holes));
+        NoHoleOutside("unterteilt, ohne Text", t2, tt2); Assert.Contains("nicht eindeutig", tt2);
+        // Kontrolle: echter Rahmen (Ebene Rahmen, Text im unterteilten Schriftfeld) – Teil außen, Loch darin innen
+        var (f, ft) = Run("echter Rahmen", Dxf(Lw(Sq(-10, -10, 410, 287), "Rahmen") + Line(230, -10, 230, 40, "Rahmen") + Line(230, 40, 410, 40, "Rahmen") + Line(320, -10, 320, 40, "Rahmen")
+            + Text(240, 20, "Werkstoff") + Lw(Sq(0, 50, 100, 110)) + Circle(50, 80, 5)));
+        Assert.Contains("Zeichnungsrahmen mit Schriftfeld erkannt", ft); Assert.True(Around(f, "innen", 50, 80, 5)); Assert.True(PlateOut(f, 0, 50, 100, 110));
+    }
+
+    [Fact(DisplayName = "T-0759-fix1: Platte auf Ebene ACHSE/CENTER/Mitte/BEM wird gefräst (enthält Konturen); „Achse 1“, „Dimension 3mm“, Wortteile sind keine Hilfslinien-Ebenen")]
+    public void Plate_on_annotation_like_layer()
+    {
+        foreach (var l in new[] { "ACHSE", "CENTER", "Mitte", "BEM", "Achse 1", "Dimension 3mm", "Mittelteil", "DIMMER", "Teil-Mitte", "Achsenteil" })
+        {
+            var (r, text) = Run(l, Dxf(Lw(Sq(0, 0, 200, 120), l) + Circle(60, 60, 10) + Circle(140, 60, 8)));
+            Assert.True(PlateOut(r, 0, 0, 200, 120), $"{l}: Platte fehlt – {text[..Math.Min(300, text.Length)]}");
+            Assert.True(Around(r, "innen", 60, 60, 10) && Around(r, "innen", 140, 60, 8), $"{l}: Löcher fehlen");
+        }
+        Assert.False(CncCam.IsAnnotationLayer("Achse 1")); Assert.False(CncCam.IsAnnotationLayer("Dimension 3mm")); Assert.False(CncCam.IsAnnotationLayer("Teil-Mitte"));
+        Assert.True(CncCam.IsAnnotationLayer("BEM")); Assert.True(CncCam.IsAnnotationLayer("Bemaßung_2")); Assert.True(CncCam.IsAnnotationLayer("A-ANNO-DIMS")); Assert.True(CncCam.IsAnnotationLayer("Dimension"));
+        // Lochkreis auf Mittellinien-Ebene (enthält nichts) wird weiter nicht gefräst
+        var (k, kt) = Run("Lochkreis", Dxf(Lw(Sq(0, 0, 200, 200)) + Circle(100, 100, 50, "MITTE") + Circle(150, 100, 5) + Circle(50, 100, 5)));
+        Assert.Contains("nicht gefräst", kt); Assert.False(Around(k, "aussen", 150, 100, 5) || Around(k, "aussen", 50, 100, 5));
+    }
+
+    [Fact(DisplayName = "T-0759-fix1: Umriss aus Hilfslinien mit 0,3-mm-Spalten (Prüferfall a5) und Linien quer über ein Loch mit Insel (t2, t6) – Kreis nie außen")]
+    public void Gaps_and_web_over_hole()
+    {
+        // a5: Quadrat auf BEM mit Stoß an einer Ecke und zwei 0,3-mm-Spalten, Kreis halb in der Hülle
+        var a5 = Line(0, 0, 100, 0, "BEM") + Line(0, 0, 0, 100, "BEM") + Line(0, 0, -10, -10, "BEM") + Line(0, 100, 99.7, 100, "BEM") + Line(100, 0.3, 100, 100, "BEM") + Circle(100, 50, 10);
+        var (r, t) = Run("a5", Dxf(a5), 6);
+        Assert.False(Around(r, "aussen", 100, 50, 10, 6), "a5: Kreis außen gefräst – " + t);
+        // t2: Platte, Loch r 30, zwei Linien quer über das Loch (Enden im Material), Insel r 6 zwischen ihnen
+        var plate = Lw(Sq(0, 0, 300, 200)) + Circle(100, 100, 30);
+        var (r2, t2) = Run("t2", Dxf(plate + Line(85, 140, 85, 60) + Line(115, 140, 115, 60) + Circle(100, 100, 6)), 6);
+        Assert.False(Around(r2, "aussen", 100, 100, 6, 6), "t2: Insel im Steg außen gefräst – " + t2);
+        // t6: freie Platte mit Loch, zwei Linien durch Platte und Loch hindurch, Insel im Loch
+        var (r6, t6) = Run("t6", Dxf(Lw(Sq(0, 0, 100, 100)) + Circle(50, 50, 30) + Line(35, 120, 35, -20) + Line(65, 120, 65, -20) + Circle(50, 50, 6)), 6);
+        Assert.False(Around(r6, "aussen", 50, 50, 6, 6), "t6: Insel außen gefräst – " + t6);
+        // Kontrolle: leeres Loch mit zwei Linien quer darüber (wie T-0758 diagonal) – keine Bereichsmeldung
+        var (r3, t3) = Run("leeres Loch", Dxf(plate + Line(0, 95, 300, 95) + Line(0, 105, 300, 105)), 6);
+        Assert.DoesNotContain("einen Bereich ein", t3);
     }
 }

@@ -11,29 +11,33 @@ public static partial class CncCam
 {
     // ---------------------------------------------------------------- Meldungen zusammenfassen
 
-    static readonly System.Text.RegularExpressions.Regex NumRx = new(@"\d+(?:[.,]\d+)*", System.Text.RegularExpressions.RegexOptions.Compiled);
+    /// <summary>T-0759-fix1: Meldungsarten, die gekürzt werden dürfen – nur Massenmeldungen zu offenen Linien und Spalten, nie Meldungen zu geschlossenen
+    /// Konturen (Loch oder Platte ausgelassen, zu klein, zu nah …). Art = Meldungstyp (Muster), Grund für die Zusatzzeile.</summary>
+    static readonly (System.Text.RegularExpressions.Regex Rx, string Kind, string Why)[] Summable =
+    [
+        (new(@"^Kontur \d+( \(Ebene [^)]*\))? ausgelassen: offene Kontur \(Enden ", System.Text.RegularExpressions.RegexOptions.Compiled), "offene Kontur ausgelassen",
+            "offene Linien werden nur in der Fräsart „Auf der Linie (Gravur)“ gefräst"),
+        (new(@"^Mehrdeutiger Spalt bei X ", System.Text.RegularExpressions.RegexOptions.Compiled), "Mehrdeutiger Spalt",
+            "mehrere Linienenden liegen etwa gleich nah und wurden nicht verbunden"),
+    ];
 
-    /// <summary>T-0759: Meldungen für die Anzeige zusammenfassen – je Art (gleicher Text bis auf Zahlen) höchstens <paramref name="perKind"/> Einzelmeldungen
-    /// in der ursprünglichen Reihenfolge, danach eine Zeile „… und N weitere Meldungen dieser Art“. <see cref="CamResult.Warnings"/> selbst bleibt vollständig.</summary>
+    /// <summary>T-0759: Meldungen für die Anzeige zusammenfassen – je Art höchstens <paramref name="perKind"/> Einzelmeldungen in der ursprünglichen
+    /// Reihenfolge, danach eine Zeile „… und N weitere Meldungen der Art … (Grund)“. Gekürzt werden nur die Arten in <see cref="Summable"/>;
+    /// alle anderen Meldungen (besonders zu Löchern und Platten) bleiben vollständig. <see cref="CamResult.Warnings"/> selbst bleibt unverändert.</summary>
     public static List<string> SummarizeWarnings(IReadOnlyList<string> warnings, int perKind = 20)
     {
         if (warnings.Count <= perKind) return [.. warnings];
-        static string Kind(string w) { var k = NumRx.Replace(w, "#"); return k.Length > 60 ? k[..60] : k; }
-        var seen = new Dictionary<string, int>(StringComparer.Ordinal); var order = new List<string>();
-        var res = new List<string>(); var at = new Dictionary<string, int>(StringComparer.Ordinal);
+        var count = new int[Summable.Length]; var lastAt = new int[Summable.Length];
+        var res = new List<string>();
         foreach (var w in warnings)
         {
-            var k = Kind(w);
-            if (!seen.TryGetValue(k, out var n)) { order.Add(k); n = 0; }
-            seen[k] = n + 1;
-            if (n < perKind) { res.Add(w); at[k] = res.Count; }
+            var k = Array.FindIndex(Summable, t => t.Rx.IsMatch(w));
+            if (k < 0) { res.Add(w); continue; }
+            if (count[k]++ < perKind) { res.Add(w); lastAt[k] = res.Count; }
         }
         // Zusatzzeilen hinter der letzten gezeigten Meldung der jeweiligen Art einfügen (von hinten, damit die Positionen stimmen)
-        foreach (var k in order.Where(k => seen[k] > perKind).OrderByDescending(k => at[k]))
-        {
-            var rest = seen[k] - perKind; var head = k.Split(':')[0].Replace("#", "…").Trim();
-            res.Insert(at[k], $"… und {rest.ToString("N0", CultureInfo.GetCultureInfo("de-DE"))} weitere Meldungen dieser Art („{head}“).");
-        }
+        foreach (var k in Enumerable.Range(0, Summable.Length).Where(k => count[k] > perKind).OrderByDescending(k => lastAt[k]))
+            res.Insert(lastAt[k], $"… und {(count[k] - perKind).ToString("N0", CultureInfo.GetCultureInfo("de-DE"))} weitere Meldungen der Art „{Summable[k].Kind}“ ({Summable[k].Why}).");
         return res;
     }
 
@@ -43,13 +47,14 @@ public static partial class CncCam
     /// zusammengesetzten Namens (z. B. „A-ANNO-DIMS“, „Bemaßung_2“).</summary>
     static readonly HashSet<string> AnnotationStrong = new(StringComparer.Ordinal)
     {
-        "defpoints", "bemassung", "bemassungen", "masslinie", "masslinien", "masskette", "massketten", "dimension", "dimensions", "dimensioning", "dims",
+        "defpoints", "bemassung", "bemassungen", "masslinie", "masslinien", "masskette", "massketten", "dimensioning", "dims",
         "mittellinie", "mittellinien", "mittelachse", "mittelachsen", "achskreuz", "centerline", "centerlines", "centreline", "centrelines",
         "hilfslinie", "hilfslinien", "konstruktionslinie", "konstruktionslinien",
     };
 
-    /// <summary>Kurze Namen, die nur als ganzer Ebenenname zählen („BEM“, „MITTE“ – nicht „Teil-Mitte“).</summary>
-    static readonly HashSet<string> AnnotationWhole = new(StringComparer.Ordinal) { "bem", "bema", "dim", "mitte", "achse", "achsen", "center", "centre" };
+    /// <summary>Kurze oder mehrdeutige Namen, die nur als ganzer Ebenenname zählen – ohne angehängte Ziffern oder Wörter („BEM“, „MITTE“; nicht
+    /// „Teil-Mitte“, „Achse 1“, „Dimension 3mm“). T-0759-fix1: „dimension“ zählt nur noch so, nicht mehr als Wort in einem längeren Namen.</summary>
+    static readonly HashSet<string> AnnotationWhole = new(StringComparer.Ordinal) { "bem", "bema", "dim", "mitte", "achse", "achsen", "center", "centre", "dimension", "dimensions" };
 
     static readonly HashSet<string> FrameNames = new(StringComparer.Ordinal)
     {
@@ -65,6 +70,9 @@ public static partial class CncCam
         return (string.Concat(tokens), tokens.ToArray());
     }
 
+    /// <summary>Ebenenname klein, Umlaute aufgelöst, ohne Rand-Leerzeichen – für Kurznamen, die nur ganz gelten (Ziffern und Zusätze zählen mit).</summary>
+    static string LayerExact(string layer) => layer.Trim().ToLowerInvariant().Replace("ä", "ae").Replace("ö", "oe").Replace("ü", "ue").Replace("ß", "ss");
+
     /// <summary>T-0759: Ebene, deren Name eindeutig Bemaßung, Mittel- oder Hilfslinien bezeichnet (Defpoints, Bemaßung, BEM, Mittellinie, MITTE, DIMS …).
     /// Offene Linien darauf sind kein Hindernis für Fräsbahnen; sie zählen aber weiter, wenn sie mit anderen Linien oder Konturen einen Bereich
     /// einschließen (falls es doch Kanten sind). Geschlossene Konturen darauf werden nicht gefräst, und was in oder an ihnen liegt, wird ausgelassen.</summary>
@@ -72,17 +80,22 @@ public static partial class CncCam
     {
         if (string.IsNullOrWhiteSpace(layer)) return false;
         var (whole, tokens) = LayerWords(layer);
-        return AnnotationWhole.Contains(whole) || AnnotationStrong.Contains(whole) || tokens.Any(AnnotationStrong.Contains);
+        return AnnotationWhole.Contains(LayerExact(layer)) || AnnotationStrong.Contains(whole) || tokens.Any(AnnotationStrong.Contains);
     }
 
     static bool IsFrameLayer(string layer)
     {
         if (string.IsNullOrWhiteSpace(layer)) return false;
-        var (whole, tokens) = LayerWords(layer);
-        return FrameNames.Contains(whole) || tokens.Any(FrameNames.Contains);
+        // T-0759-fix1: nur der ganze Name als Wort („Rahmen“, „FRAME“, „Zeichnungsrahmen“) – nicht „Rahmen-Teil 1“ oder „Rahmenplatte“
+        return FrameNames.Contains(LayerExact(layer));
     }
 
     // ---------------------------------------------------------------- Zeichnungsrahmen
+
+    /// <summary>T-0759-fix1: Lage aller Texte (TEXT/MTEXT) einer Zeichnung – für <see cref="CamSettings.Texts"/> (Beleg für ein Schriftfeld).</summary>
+    public static List<(double X, double Y)> TextPoints(CadDrawing d) =>
+        d.Entities.Where(e => e.Kind == "text" && e.Points.Count > 0 && e.Points[0].Length >= 2 && double.IsFinite(e.Points[0][0]) && double.IsFinite(e.Points[0][1]))
+            .Select(e => (e.Points[0][0], e.Points[0][1])).ToList();
 
     /// <summary>Blattgrößen A0–A4 (mm) – Rahmen auf der Blattkante oder mit üblichem Heftrand (ISO 5457: 20 mm links, 10 mm sonst; auch 10 mm rundum).</summary>
     static readonly (double W, double H)[] Sheets = [(210, 297), (297, 420), (420, 594), (594, 841), (841, 1189)];
@@ -100,11 +113,13 @@ public static partial class CncCam
     /// 1. ein Verbund (Linien-Stoß-Gruppe oder geschlossenes Rechteck samt daran hängender Linien) umfasst die ganze Zeichnung,
     /// 2. er besteht nur aus waagrechten und senkrechten Strecken, sein Rand ist ein vollständiges Rechteck (Spalte höchstens <see cref="ChainTol"/>),
     /// 3. alle übrigen Strecken bilden ein Schriftfeld in einer Ecke (höchstens ¾ der Breite und ½ der Höhe, die beiden inneren Kanten durchgezogen),
-    /// 4. Ebenenname wie „Rahmen“/„Schriftfeld“ – oder genormte Blatt-/Rahmengröße (A0–A4) mit Schriftfeld 170–190 mm breit (ISO 7200: 180 mm),
+    /// 4. Ebenenname genau „Rahmen“/„Schriftfeld“/„Frame“ … – oder genormte Blatt-/Rahmengröße (A0–A4) mit Schriftfeld 170–190 mm breit (ISO 7200: 180 mm),
+    ///    und in jedem Fall (T-0759-fix1) Text im Schriftfeld und ein unterteiltes Schriftfeld; fehlt das, werden die Konturen darin ausgelassen
+    ///    („Rahmen oder Platte nicht eindeutig“) statt sie als Teile außen zu fräsen,
     /// 5. jede andere Kontur und jedes nicht gelesene Element liegt mit Abstand im Zeichenfeld (nicht am Rahmen, nicht im Schriftfeld), und es gibt
     ///    mindestens eine geschlossene Kontur darin.
     /// Sonst bleibt alles, wie es ist (ein Rahmen aus Linien mit Stößen lässt die Teile darin dann vorsichtshalber aus).</summary>
-    static IReadOnlyList<CadContour> DropFrame(IReadOnlyList<CadContour> src, CamSettings s, List<string> warn, CancellationToken ct)
+    static IReadOnlyList<CadContour> DropFrame(IReadOnlyList<CadContour> src, CamSettings s, List<string> warn, HashSet<int> unsureKids, CancellationToken ct)
     {
         const double tol = ChainTol + 1e-9;
         if (src.Count < 2) return src;
@@ -203,7 +218,15 @@ public static partial class CncCam
             var hIv = inner.Where(e => Math.Abs(e.A.Y - e.B.Y) <= 1e-6 && Math.Abs(e.A.Y - hy) <= tol).Select(e => (Math.Min(e.A.X, e.B.X), Math.Max(e.A.X, e.B.X))).ToList();
             if (!Covers(vIv, ty0, ty1, tol) || !Covers(hIv, tx0, tx1, tol)) continue;
             var named = f.All(i => IsFrameLayer(src[i].Layer));
-            if (!named && !(StandardSize(W, H) && tw >= 170 && tw <= 190)) continue;
+            var sheet = StandardSize(W, H) && tw >= 170 && tw <= 190;
+            if (!named && !sheet) continue; // kein Hinweis auf einen Rahmen: Platte (wie bisher)
+            // T-0759-fix1: Von der Gestalt her sind „Platte mit Löchern“ und „Rahmen mit Teilen“ dasselbe. Name oder Blattgröße allein reichen nie; als Rahmen
+            // gilt er nur, wenn zusätzlich Text im Schriftfeld steht und das Schriftfeld unterteilt ist (mindestens eine weitere Linie darin).
+            bool InTitle((double X, double Y) q) => q.X >= tx0 - tol && q.X <= tx1 + tol && q.Y >= ty0 - tol && q.Y <= ty1 + tol;
+            var texts = s.Texts.Count(InTitle);
+            var divided = inner.Any(e =>
+                !(Math.Abs(e.A.X - e.B.X) <= 1e-6 && Math.Abs(e.A.X - vx) <= tol) && !(Math.Abs(e.A.Y - e.B.Y) <= 1e-6 && Math.Abs(e.A.Y - hy) <= tol) && InTitle(e.A) && InTitle(e.B));
+            var sure = texts > 0 && divided;
             // Inhalt: mit Abstand im Zeichenfeld, nicht im Schriftfeld
             bool Clear(double x0, double y0, double x1, double y1) =>
                 x0 > bx0 + tol && y0 > by0 + tol && x1 < bx1 - tol && y1 < by1 - tol && (x1 < tx0 - tol || x0 > tx1 + tol || y1 < ty0 - tol || y0 > ty1 + tol);
@@ -218,7 +241,17 @@ public static partial class CncCam
             }
             foreach (var u in unread) if (!Clear(u.MinX, u.MinY, u.MaxX, u.MaxY)) ok = false;
             if (!ok || closedInside == 0) continue;
-            warn.Add($"Zeichnungsrahmen mit Schriftfeld erkannt ({F(W, "0.#")} × {F(H, "0.#")} mm, {f.Count} Linienzug/-züge{(named ? $", Ebene {src[f[0]].Layer}" : ", Blattgröße")}) – er wird nicht gefräst, die Teile darin werden normal gefräst.");
+            if (!sure)
+            {
+                // Rahmen vermutet, aber nicht zweifelsfrei: nichts weglassen, die geschlossenen Konturen darin auslassen (als Teil wären sie außen, als Loch
+                // innen zu fräsen – im Zweifel lieber kein G-Code als ein Loch außen).
+                for (var i = 0; i < src.Count; i++) if (!fset.Contains(i) && src[i].Closed) unsureKids.Add(i);
+                warn.Add($"Rahmen oder Platte nicht eindeutig ({F(W, "0.#")} × {F(H, "0.#")} mm mit abgeteiltem Eckfeld{(named ? $", Ebene {src[f[0]].Layer}" : ", Blattgröße")}; "
+                    + $"{(texts == 0 ? "kein Text im Schriftfeld" : "")}{(texts == 0 && !divided ? ", " : "")}{(!divided ? "Schriftfeld nicht unterteilt" : "")}) – der Umriss wird als Platte gefräst, "
+                    + "die Konturen darin werden ausgelassen (als Teile wären sie außen, als Löcher innen zu fräsen). Ist es eine Platte: Ebene umbenennen; ist es ein Zeichnungsrahmen: Rahmen und Schriftfeld vor dem Fräsen löschen.");
+                return src;
+            }
+            warn.Add($"Zeichnungsrahmen mit Schriftfeld erkannt ({F(W, "0.#")} × {F(H, "0.#")} mm, {f.Count} Linienzug/-züge{(named ? $", Ebene {src[f[0]].Layer}" : ", Blattgröße")}, Text im unterteilten Schriftfeld) – er wird nicht gefräst, die Teile darin werden normal gefräst.");
             return src.Where((_, i) => !fset.Contains(i)).ToList();
         }
         return src;
@@ -433,32 +466,56 @@ public static partial class CncCam
         Func<int, (double X, double Y), bool> inC, Func<int, (double, double, double, double)> box, double tol, long maxWork, CancellationToken ct)
     {
         long work = 0; var R = tol; var cell = cg.CellSize;
-        // Rahmenraster aller geschlossenen Konturen (erst bei Bedarf): liegt ein Punkt in Luft (gerade Zahl umschließender Konturen) oder im Material?
-        Dictionary<(long, long), List<int>>? bgrid = null; double bcell = 1;
+        // Rahmenraster aller geschlossenen Konturen (erst bei Bedarf)
+        Dictionary<(long, long), List<int>>? bgrid = null; double bcell = 1; var bgridBad = false;
+        bool BuildB()
+        {
+            if (bgrid is not null) return !bgridBad;
+            bgrid = [];
+            var ids = Enumerable.Range(0, cs.Count).Where(closedOk).ToList();
+            if (ids.Count == 0) return true;
+            double x0 = ids.Min(i => box(i).Item1), y0 = ids.Min(i => box(i).Item2), x1 = ids.Max(i => box(i).Item3), y1 = ids.Max(i => box(i).Item4);
+            bcell = Math.Max(1e-6, Math.Max(x1 - x0, y1 - y0) / Math.Max(1, Math.Sqrt(ids.Count)));
+            foreach (var i in ids)
+            {
+                var b = box(i);
+                for (var cx = (long)Math.Floor(b.Item1 / bcell); cx <= (long)Math.Floor(b.Item3 / bcell); cx++)
+                    for (var cy = (long)Math.Floor(b.Item2 / bcell); cy <= (long)Math.Floor(b.Item4 / bcell); cy++)
+                    {
+                        if (++work > maxWork) { bgridBad = true; return false; }
+                        if (!bgrid.TryGetValue((cx, cy), out var l)) bgrid[(cx, cy)] = l = []; l.Add(i);
+                    }
+            }
+            return true;
+        }
+        // liegt ein Punkt in Luft (gerade Zahl umschließender Konturen)? Budget erschöpft: nein (Material – Anschluss zählt, vorsichtig)
         bool InAir((double X, double Y) q)
         {
-            if (bgrid is null)
-            {
-                bgrid = [];
-                var ids = Enumerable.Range(0, cs.Count).Where(closedOk).ToList();
-                if (ids.Count == 0) return true;
-                double x0 = ids.Min(i => box(i).Item1), y0 = ids.Min(i => box(i).Item2), x1 = ids.Max(i => box(i).Item3), y1 = ids.Max(i => box(i).Item4);
-                bcell = Math.Max(1e-6, Math.Max(x1 - x0, y1 - y0) / Math.Max(1, Math.Sqrt(ids.Count)));
-                foreach (var i in ids)
-                {
-                    var b = box(i);
-                    for (var cx = (long)Math.Floor(b.Item1 / bcell); cx <= (long)Math.Floor(b.Item3 / bcell); cx++)
-                        for (var cy = (long)Math.Floor(b.Item2 / bcell); cy <= (long)Math.Floor(b.Item4 / bcell); cy++)
-                        {
-                            if (++work > maxWork) return false; // Budget: als Material werten (Anschluss zählt – vorsichtig)
-                            if (!bgrid.TryGetValue((cx, cy), out var l)) bgrid[(cx, cy)] = l = []; l.Add(i);
-                        }
-                }
-            }
-            if (!bgrid.TryGetValue(((long)Math.Floor(q.X / bcell), (long)Math.Floor(q.Y / bcell)), out var cand)) return true;
+            if (!BuildB()) return false;
+            if (!bgrid!.TryGetValue(((long)Math.Floor(q.X / bcell), (long)Math.Floor(q.Y / bcell)), out var cand)) return true;
             var n = 0;
             foreach (var i in cand) { if (++work > maxWork) return false; var b = box(i); if (q.X >= b.Item1 && q.X <= b.Item3 && q.Y >= b.Item2 && q.Y <= b.Item4 && inC(i, q)) n++; }
             return n % 2 == 0;
+        }
+        // T-0759-fix1: liegt in Kontur x keine andere geschlossene Kontur (leeres Loch)? Budget erschöpft: nein (vorsichtig)
+        var emptyOf = new Dictionary<int, bool>();
+        bool Empty(int x)
+        {
+            if (emptyOf.TryGetValue(x, out var e)) return e;
+            if (!BuildB()) return emptyOf[x] = false;
+            var bx = box(x); var seen = new HashSet<int>();
+            for (var cx = (long)Math.Floor(bx.Item1 / bcell); cx <= (long)Math.Floor(bx.Item3 / bcell); cx++)
+                for (var cy = (long)Math.Floor(bx.Item2 / bcell); cy <= (long)Math.Floor(bx.Item4 / bcell); cy++)
+                    if (bgrid!.TryGetValue((cx, cy), out var l))
+                        foreach (var j in l)
+                        {
+                            if (++work > maxWork) return emptyOf[x] = false;
+                            if (j == x || !seen.Add(j)) continue;
+                            var bj = box(j);
+                            if (bj.Item1 < bx.Item1 || bj.Item2 < bx.Item2 || bj.Item3 > bx.Item3 || bj.Item4 > bx.Item4) continue;
+                            if (inC(x, cs[j].Pts[0])) return emptyOf[x] = false;
+                        }
+            return emptyOf[x] = true;
         }
         var evOf =new List<(int A, double GA, int B, double GB)>[net.Members.Count]; for (var q = 0; q < evOf.Length; q++) evOf[q] = [];
         for (var q = 0; q < net.Events.Count; q++) { if ((q & 4095) == 0) ct.ThrowIfCancellationRequested(); evOf[net.Comp[net.Events[q].A]].Add(net.Events[q]); }
@@ -563,6 +620,13 @@ public static partial class CncCam
             // Kante (eine Kante in Luft trennt nichts) – sie wird wie Gravur von Rand zu Rand behandelt: beide Anschlüsse an X zählen nicht. Ein Überstand,
             // der in X endet, oder ein Durchgang durch Material (Platte) zählt weiter.
             var through = new HashSet<(int Zone, int Contour)>();
+            var airOf = new Dictionary<(int, double), bool>();
+            bool GapInAir((int Piece, double G0, double G1, bool Zone, HashSet<int> Tags, int[] In) gy)
+            {
+                if (airOf.TryGetValue((gy.Piece, gy.G0), out var v)) return v;
+                var p = cs[gy.Piece].Pts; var gm = (gy.G0 + gy.G1) / 2; var k = Math.Clamp((int)Math.Floor(gm), 0, p.Count - 2); var tt = gm - k;
+                return airOf[(gy.Piece, gy.G0)] = InAir((p[k].X + (p[k + 1].X - p[k].X) * tt, p[k].Y + (p[k + 1].Y - p[k].Y) * tt));
+            }
             foreach (var j in members)
             {
                 var l = runsOf[j];
@@ -573,8 +637,10 @@ public static partial class CncCam
                     foreach (var tag in zx.Tags)
                     {
                         if (!zz.Tags.Contains(tag) || Array.BinarySearch(gy.In, tag) < 0) continue;
-                        var p = cs[gy.Piece].Pts; var gm = (gy.G0 + gy.G1) / 2; var k = Math.Clamp((int)Math.Floor(gm), 0, p.Count - 2); var tt = gm - k;
-                        if (!InAir((p[k].X + (p[k + 1].X - p[k].X) * tt, p[k].Y + (p[k + 1].Y - p[k].Y) * tt))) continue;
+                        if (!GapInAir(gy)) continue;
+                        // T-0759-fix1: nur ein leeres Loch – liegt eine Insel darin, könnten die Linien einen Steg über das Loch bilden (Prüferfälle t2, t6):
+                        // dann zählen die Anschlüsse weiter (die Insel wird ausgelassen statt außen gefräst)
+                        if (!Empty(tag)) continue;
                         through.Add((l[q - 1], tag)); through.Add((l[q + 1], tag));
                     }
                 }
@@ -584,7 +650,9 @@ public static partial class CncCam
                 var g = runs[gap]; if (g.Zone) return;
                 foreach (var tag in runs[zone].Tags)
                 {
-                    if (Array.BinarySearch(g.In, tag) >= 0) continue; // Stück liegt in dieser Kontur: Gravur, kein Anschluss
+                    // Stück liegt in dieser Kontur: Gravur, kein Anschluss – außer es liegt in Luft in einem Loch mit Insel (T-0759-fix1: zwei Linien quer über das
+                    // Loch können einen Steg bilden, die Insel darin wäre dann ein Loch im Steg)
+                    if (Array.BinarySearch(g.In, tag) >= 0 && !(GapInAir(g) && !Empty(tag))) continue;
                     if (through.Contains((zone, tag))) continue; // T-0759: Linie durchquert hier ein Loch
 
                     var root = RF(gap); if (!att.TryGetValue(root, out var hs)) att[root] = hs = [];
