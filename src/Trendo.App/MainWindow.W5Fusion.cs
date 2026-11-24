@@ -29,7 +29,7 @@ public partial class MainWindow
     public void FusionRequest()
     {
         var r = Fusion.Recipes[_fusionRecipe];
-        _fusionApproval = _core.Approvals.Request(Principal.LocalOwner, "fusion.run", $"Ablauf „{r.Label}“ ausführen", r.Id).Id;
+        _fusionApproval = _core.Approvals.Request(CurrentPrincipal, "fusion.run", $"Ablauf „{r.Label}“ ausführen", r.Id).Id;
         Show("produktion");
     }
 
@@ -97,7 +97,7 @@ public partial class MainWindow
             plan.Children.Add(go);
         }
         else plan.Children.Add(Card(Row(P("Soll Trendo diese Schritte jetzt ausführen?", Text), new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = {
-            Act("fusion-approve", "Ja, ausführen", FusionApproveAndRun, true), Act("fusion-deny", "Nein", () => { _core.Approvals.Deny(_fusionApproval!, Principal.LocalOwner); _fusionApproval = null; Show("produktion"); }) } })));
+            Act("fusion-approve", "Ja, ausführen", FusionApproveAndRun, true), Act("fusion-deny", "Nein", () => { Ablehnen(_fusionApproval!); _fusionApproval = null; Show("produktion"); }) } })));
         sp.Children.Add(Card(plan));
         if (_fusionResult.Count > 0)
         {

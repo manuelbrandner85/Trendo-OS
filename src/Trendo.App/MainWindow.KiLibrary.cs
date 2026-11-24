@@ -98,8 +98,9 @@ public partial class MainWindow
                     var tag = m.Tag;
                     buttons.Children.Add(ConfirmRemoveButton("ollama:" + tag, "kilib-remove-" + m.Id, "ki-bibliothek", async () =>
                     {
+                        if (!DarfSoftware("ki.delete " + tag, "ki-bibliothek")) return; // T-0764: Kinderprofil entfernt keine KI
                         var ok = await new OllamaBackend().DeleteAsync(tag);
-                        _core.Audit.Append(Principal.LocalOwner.Name, ok ? "ki.model.remove" : "ki.model.remove.failed", tag);
+                        _core.Audit.Append(CurrentPrincipal.Name, ok ? "ki.model.remove" : "ki.model.remove.failed", tag);
                         _kiLibMsg = ok ? $"{m.Name} wurde entfernt." : $"{m.Name} ließ sich nicht entfernen (läuft Ollama?).";
                         await ScanSourcesAsync();
                     }));
@@ -227,7 +228,7 @@ public partial class MainWindow
                 SetupOverlayProgress(step, steps, $"{rt.Name} wird geladen …");
                 var (zip, _) = await KiDownload(rt.DownloadUrl, rt.Asset, rt.Bytes, step, steps);
                 SetupOverlayProgress(step, steps, $"{rt.Name} wird entpackt …");
-                try { await Task.Run(() => store.InstallRuntime(m.Runtime, zip, _core.Audit, Extract7z)); } finally { TryDelete(zip); }
+                try { await Task.Run(() => store.InstallRuntime(CurrentPrincipal, m.Runtime, zip, _core.Audit, Extract7z)); } finally { TryDelete(zip); }
                 step++;
             }
             else if (rt.FromVollpaket && !store.RuntimeReady(m.Runtime)) throw new InvalidOperationException($"{rt.Name} fehlt noch – bitte unter „Programme“ aus dem Vollpaket einrichten.");
@@ -246,7 +247,7 @@ public partial class MainWindow
                 if (await Task.Run(() => { KiFileCheckThreadForTests = Environment.CurrentManagedThreadId; return store.ModelFileOk(m, f, ct); }, ct)) { step++; continue; }
                 SetupOverlayProgress(step, steps, $"{f.FileName} wird geladen …");
                 var (file, sha) = await KiDownload(f.Url, f.FileName, f.Bytes, step, steps);
-                try { await Task.Run(() => store.InstallModelFile(m, f, file, sha, _core.Audit)); } finally { TryDelete(file); }
+                try { await Task.Run(() => store.InstallModelFile(CurrentPrincipal, m, f, file, sha, _core.Audit)); } finally { TryDelete(file); }
                 step++;
             }
             SetupOverlayProgress(steps, steps, "Fertig ✓");

@@ -196,16 +196,19 @@ public sealed class AppCenter(IPackageBackend pm, ApprovalGate gate, AuditLog au
     public ApprovalRequest Plan(string action, PackageInfo p, Principal? by = null) =>
         gate.Request(by ?? Principal.LocalOwner, "app." + action, $"{p.Name} {(action == "install" ? "installieren" : action == "upgrade" ? "aktualisieren" : "entfernen")}", p.Id);
 
-    public async Task<(bool Ok, string Log)> ExecuteAsync(ApprovalRequest r, Action<string>? line = null, CancellationToken ct = default)
+    /// <param name="by">T-0764: wer ausführt (angemeldete Person). Ein Kinderprofil installiert, aktualisiert und entfernt nichts – auch nicht mit einer
+    /// Freigabe, die jemand anderes erteilt hat.</param>
+    public async Task<(bool Ok, string Log)> ExecuteAsync(ApprovalRequest r, Principal by, Action<string>? line = null, CancellationToken ct = default)
     {
         var action = r.Action["app.".Length..];
+        Rbac.DemandSoftware(by, $"{r.Action} {r.Target}", audit);
         Func<Task<(bool, string)>> job = action switch
         {
             "install" => () => pm.InstallAsync(r.Target, line, ct), "upgrade" => () => pm.UpgradeAsync(r.Target, line, ct), "uninstall" => () => pm.UninstallAsync(r.Target, line, ct),
             _ => throw new ArgumentException(action),
         };
         var res = await gate.Execute(r.Id, r.Action, r.Target, job);
-        audit.Append(Principal.LocalOwner.Name, res.Item1 ? "app.done" : "app.failed", $"{action} {r.Target}");
+        audit.Append(by.Name, res.Item1 ? "app.done" : "app.failed", $"{action} {r.Target}");
         return res;
     }
 
@@ -226,8 +229,9 @@ public sealed class AppCenter(IPackageBackend pm, ApprovalGate gate, AuditLog au
     /// <summary>T-0755: ein freigegebener Lauf mit Protokolldatei – Befehl, jede Ausgabezeile, Rückgabewert, Abbruch und die Nachprüfung,
     /// ob das Programm danach installiert ist. Das Protokoll wird Zeile für Zeile geschrieben und bleibt auch nach einem Absturz lesbar.</summary>
     /// <param name="expectVersion">Beim Aktualisieren: die angekündigte neue Version (winget „Available“).</param>
-    public async Task<RunResult> RunAsync(ApprovalRequest r, string logDir, Action<string>? line = null, CancellationToken ct = default, string? expectVersion = null)
+    public async Task<RunResult> RunAsync(ApprovalRequest r, Principal by, string logDir, Action<string>? line = null, CancellationToken ct = default, string? expectVersion = null)
     {
+        Rbac.DemandSoftware(by, $"{r.Action} {r.Target}", audit); // T-0764: vor dem Protokoll – ein Kinderprofil startet keinen Lauf
         var action = r.Action["app.".Length..]; var id = r.Target;
         var cmd = pm.CommandLine(action, id);
         Directory.CreateDirectory(logDir);
@@ -242,12 +246,12 @@ public sealed class AppCenter(IPackageBackend pm, ApprovalGate gate, AuditLog au
         bool ok = false, cancelled = false; var output = "";
         try
         {
-            (ok, output) = await ExecuteAsync(r, s => { var c = PackageParsers.CleanLine(s); lock (lk) { sb.AppendLine(c); w.WriteLine(c); } line?.Invoke(s); }, ct);
+            (ok, output) = await ExecuteAsync(r, by, s => { var c = PackageParsers.CleanLine(s); lock (lk) { sb.AppendLine(c); w.WriteLine(c); } line?.Invoke(s); }, ct);
         }
         catch (OperationCanceledException)
         {
             cancelled = true;
-            audit.Append(Principal.LocalOwner.Name, "app.abgebrochen", $"{action} {id}");
+            audit.Append(by.Name, "app.abgebrochen", $"{action} {id}");
         }
         var exit = cancelled ? null : (pm as IPackageExitCode)?.LastExitCode;
         W("--- Ende der Ausgabe ---");
@@ -264,7 +268,7 @@ public sealed class AppCenter(IPackageBackend pm, ApprovalGate gate, AuditLog au
         string text; lock (lk) text = sb.ToString();
         var res = new RunResult(action, id, cmd, ok && !cancelled, exit, cancelled, installed, log, text.Length > 0 ? text : output, expectVersion, after);
         W($"Ziel erreicht: {(res.Verified ? "ja" : "nein")}");
-        audit.Append(Principal.LocalOwner.Name, "app.pruefung", $"{action} {id} {(res.Verified ? "bestätigt" : "nicht bestätigt")}");
+        audit.Append(by.Name, "app.pruefung", $"{action} {id} {(res.Verified ? "bestätigt" : "nicht bestätigt")}");
         return res;
     }
 }

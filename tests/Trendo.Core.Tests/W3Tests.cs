@@ -104,9 +104,9 @@ public class SYS04_AppCenter
         var c = new AppCenter(new WingetBackend(run), f.Core.Approvals, f.Core.Audit);
         var vlc = (await c.Backend.SearchAsync("vlc"))[0];
         var r = c.Plan("install", vlc);
-        await Assert.ThrowsAsync<ApprovalException>(() => c.ExecuteAsync(r));
+        await Assert.ThrowsAsync<ApprovalException>(() => c.ExecuteAsync(r, Principal.LocalOwner));
         var r2 = c.Plan("install", vlc); f.Core.Approvals.Approve(r2.Id, Principal.LocalOwner);
-        Assert.True((await c.ExecuteAsync(r2)).Ok);
+        Assert.True((await c.ExecuteAsync(r2, Principal.LocalOwner)).Ok);
         Assert.Contains(run.Calls, x => x.Contains("install --id VideoLAN.VLC -e --scope user"));
         Assert.False((await new WingetBackend(run).InstallAsync("a&b")).Item1);
         Assert.Contains(f.Core.Audit.ReadAll(), e => e.Action == "app.done");

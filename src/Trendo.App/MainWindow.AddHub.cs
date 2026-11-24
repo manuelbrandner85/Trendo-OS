@@ -51,7 +51,7 @@ public partial class MainWindow
                 // B4 (T-0706): Aufruf nur aus „Ja, installieren“ der Rückfrage (hub-yes); installiert wird nur über den Kern mit dieser Freigabe
                 c.Mode is DeliveryMode.AutoUser or DeliveryMode.AutoElevated or DeliveryMode.Included ? async () => { if (FreigabeAusRueckfrage(InstallWirkung(comp, comp.Purpose)) is { } id) await InstallOne(comp, approvalId: id); } : null,
                 () => { Show("components"); return Task.CompletedTask; },
-                inc is null ? null : () => { Vollpaket.Uninstall(_deps.ToolsRoot, inc, _core.Audit); return Task.CompletedTask; },
+                inc is null ? null : () => { Vollpaket.Uninstall(CurrentPrincipal, _deps.ToolsRoot, inc, _core.Audit); return Task.CompletedTask; },
                 async () => { await InstallOneMitFreigabe(comp, comp.Purpose, refresh: false); }, c.License)); // B4: Aktualisieren mit eigener Rückfrage
         }
         // KI: freie Modelle für die KI auf dem PC
@@ -68,7 +68,7 @@ public partial class MainWindow
                     _hubOllamaAt = default;
                 },
                 () => { Show("ki-quellen"); return Task.CompletedTask; },
-                async () => { await new OllamaBackend().DeleteAsync(tag); _hubOllamaAt = default; }, null, m.License));
+                async () => { Rbac.DemandSoftware(CurrentPrincipal, "ki.delete " + tag, _core.Audit); await new OllamaBackend().DeleteAsync(tag); _hubOllamaAt = default; }, null, m.License)); // T-0764
         }
         // KI-Programme (GitHub/Hersteller)
         foreach (var s in KiCatalog.Sources.Where(s => KiSourceSetups.For(s.Id) is not null))
@@ -86,7 +86,7 @@ public partial class MainWindow
             var entry = e;
             items.Add(new("gh:" + e.Id, "github", e.Repo, $"Von GitHub · Version {e.Version}", true, null,
                 () => { if (GitHubApps.ExePath(_deps.ToolsRoot, entry) is { } exe) Launch(exe); return Task.CompletedTask; },
-                () => { if (Path.IsPathRooted(entry.Exe) && File.Exists(entry.Exe)) GitHubRunUninstaller(entry.Exe); GitHubApps.Uninstall(_deps.ToolsRoot, entry.Id, _core.Audit); return Task.CompletedTask; },
+                () => { if (Path.IsPathRooted(entry.Exe) && File.Exists(entry.Exe)) GitHubRunUninstaller(entry.Exe); GitHubApps.Uninstall(CurrentPrincipal, _deps.ToolsRoot, entry.Id, _core.Audit); return Task.CompletedTask; },
                 async () => { await GitHubInstall(new OssRepo(entry.Repo, "", "https://github.com/" + entry.Repo, "https://github.com/" + entry.Repo + ".git", 0, entry.License, "", DateTimeOffset.Now)); }, entry.License));
         }
         // Erweiterungen
@@ -183,6 +183,7 @@ public partial class MainWindow
                 right.Children.Add(ConfirmRemoveButton(key, "hub-remove-" + safe, "hinzufuegen", async () =>
                 {
                     try { await rem(); _hubMsg = $"{it.Name} wurde entfernt."; }
+                    catch (UnauthorizedAccessException) when (!CanManageSoftware) { _hubMsg = Rbac.NurErwachseneSoftware; } // T-0764: Kern lehnt ab (Kinderprofil)
                     catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception) { _hubMsg = $"{it.Name} läuft noch oder ist gesperrt – bitte schließen und erneut versuchen."; }
                 }));
         }
@@ -191,15 +192,15 @@ public partial class MainWindow
             if (_hubAsk == it.Id)
             {
                 var yes = new Button { Name = "hub-yes-" + safe, Content = "Ja, installieren", Background = Accent };
-                yes.Click += async (_, _) => { _hubAsk = ""; _hubMsg = $"{it.Name} wird installiert …"; Show("hinzufuegen"); await install(); _hubMsg = $"{it.Name}: fertig."; Show("hinzufuegen"); };
+                yes.Click += async (_, _) => { _hubAsk = ""; _hubMsg = $"{it.Name} wird installiert …"; Show("hinzufuegen"); await install(); _hubMsg = CanManageSoftware ? $"{it.Name}: fertig." : Rbac.NurErwachseneSoftware; Show("hinzufuegen"); }; // T-0764: nie „fertig“, wenn der Kern abgelehnt hat
                 var no = new Button { Name = "hub-no-" + safe, Content = "Nein" }; no.Click += (_, _) => { _hubAsk = ""; Show("hinzufuegen"); };
                 right.Children.Add(new TextBlock { Text = it.License is { } l ? $"Lizenz: {l}" : "Offizielle Quelle", Foreground = Muted, FontSize = 11, VerticalAlignment = VerticalAlignment.Center });
                 right.Children.Add(yes); right.Children.Add(no);
             }
             else
             {
-                var b = new Button { Name = "hub-install-" + safe, Content = "Installieren", Background = Accent, IsEnabled = !_core.Offline && !_depBusy && !_settings.Child };
-                if (!b.IsEnabled) ToolTip.SetTip(b, _settings.Child ? "Frag einen Erwachsenen – Installieren geht nur in einem Erwachsenen-Profil." : _core.Offline ? "Im Offline-Modus wird nichts geladen." : "Gerade läuft schon eine Installation.");
+                var b = new Button { Name = "hub-install-" + safe, Content = "Installieren", Background = Accent, IsEnabled = !_core.Offline && !_depBusy && CanManageSoftware };
+                if (!b.IsEnabled) ToolTip.SetTip(b, !CanManageSoftware ? "Frag einen Erwachsenen – Installieren geht nur in einem Erwachsenen-Profil." : _core.Offline ? "Im Offline-Modus wird nichts geladen." : "Gerade läuft schon eine Installation.");
                 b.Click += (_, _) => { _hubAsk = it.Id; Show("hinzufuegen"); };
                 right.Children.Add(b);
             }

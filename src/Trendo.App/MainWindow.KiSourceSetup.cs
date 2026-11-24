@@ -58,7 +58,7 @@ public partial class MainWindow
             SetupToken.ThrowIfCancellationRequested();
             SetupOverlayProgress(2, 3, s.Portable ? "Prüfen und einrichten …" : "Installer des Herstellers wird gestartet – bitte dort bestätigen …");
             if (s.Portable)
-                await Task.Run(() => GitHubApps.Install(_deps.ToolsRoot, s.Repo!, rel!, asset!, dl, info.License, info.Hint, _core.Audit));
+                await Task.Run(() => GitHubApps.Install(CurrentPrincipal, _deps.ToolsRoot, s.Repo!, rel!, asset!, dl, info.License, info.Hint, _core.Audit));
             else
             {
                 if (KiInstallerRunOverride is { } run) await run(dl);
@@ -114,7 +114,7 @@ public partial class MainWindow
         if (s.Portable)
         {
             var e = GitHubApps.List(_deps.ToolsRoot).FirstOrDefault(i => string.Equals(i.Repo, s.Repo, StringComparison.OrdinalIgnoreCase));
-            return e is not null && GitHubApps.Uninstall(_deps.ToolsRoot, e.Id, _core.Audit);
+            return e is not null && GitHubApps.Uninstall(CurrentPrincipal, _deps.ToolsRoot, e.Id, _core.Audit);
         }
         if (KiSourceExe(id) is not { } exe) return false;
         GitHubRunUninstaller(exe);

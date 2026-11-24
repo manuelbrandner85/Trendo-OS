@@ -75,7 +75,7 @@ class Program
                 // genau der Weg nach dem Setup (SetupVollpaket): eigene, geprüfte Kopien im Werkzeugordner, schon installierte Programme zählen nicht
                 if (dm.VollpaketDir is null && dm.LocateVollpaket?.Invoke() is { } found) dm.VollpaketDir = found;
                 if (dm.VollpaketDir is null) { Console.WriteLine("FAIL  kein Vollpaket gefunden"); return 1; }
-                try { Console.WriteLine($"PASS  {Vollpaket.InstallMissing(dm.VollpaketDir, dm.ToolsRoot, core.Audit, Console.WriteLine)} Pakete eingerichtet"); }
+                try { Console.WriteLine($"PASS  {Vollpaket.InstallMissing(Principal.LocalOwner, dm.VollpaketDir, dm.ToolsRoot, core.Audit, Console.WriteLine)} Pakete eingerichtet"); }
                 catch (InvalidOperationException e) { Console.WriteLine("FAIL  " + e.Message); rc = 1; }
             }
             else if (Arg("--install-deps") is { } ids)

@@ -26,6 +26,17 @@ public partial class MainWindow
     /// <summary>Darf die angemeldete Person Wirkungen freigeben? (Anzeige; durchgesetzt wird es im Kern.)</summary>
     public bool CanApprove => Rbac.Has(CurrentPrincipal, Permission.ApproveAction);
 
+    /// <summary>T-0764: Darf die angemeldete Person Programme installieren, aktualisieren und entfernen? (Anzeige; durchgesetzt im Kern.)</summary>
+    public bool CanManageSoftware => Rbac.Has(CurrentPrincipal, Permission.ManageSoftware);
+
+    /// <summary>T-0764: Rechteprüfung im Kern vor einem Installations- oder Entfernen-Weg, der erst lädt und dann den Kern ruft.
+    /// Ohne Recht: Protokoll „rbac.denied“, verständliche Meldung auf der Seite, false.</summary>
+    internal bool DarfSoftware(string what, string view)
+    {
+        try { Rbac.DemandSoftware(CurrentPrincipal, what, _core.Audit); return true; }
+        catch (UnauthorizedAccessException e) { Say(e.Message, view); Toast(e.Message); return false; }
+    }
+
     /// <summary>Hinweis, wenn ein Kinderprofil etwas freigeben müsste.</summary>
     public const string NurErwachsene = "Frag einen Erwachsenen – das geht nur in einem Erwachsenen-Profil. Es wurde nichts geändert.";
 

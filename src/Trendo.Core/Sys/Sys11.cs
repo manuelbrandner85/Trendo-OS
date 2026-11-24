@@ -14,13 +14,36 @@ public static class Software
 
     // P07 Portable Tools
     /// <summary>Entpackt eine Portable-ZIP nach „Werkzeuge/&lt;name&gt;“ im Benutzerordner – nur bei passender Prüfsumme.</summary>
-    public static string InstallPortable(string zip, string expectedSha256, string toolsRoot, string name, AuditLog? audit = null)
+    /// <param name="by">T-0764: angemeldete Person – ein Kinderprofil richtet nichts ein (<see cref="Rbac.DemandSoftware"/>).</param>
+    public static string InstallPortable(Principal by, string zip, string expectedSha256, string toolsRoot, string name, AuditLog? audit = null)
     {
+        Rbac.DemandSoftware(by, "portable.install " + Path.GetFileName(zip), audit);
         var sha = J.Sha(zip);
         if (!sha.Equals(Regex.Replace(expectedSha256, @"\s", ""), StringComparison.OrdinalIgnoreCase)) throw new InvalidOperationException("Prüfsumme stimmt nicht – nichts entpackt.");
-        var safe = string.Concat(name.Where(c => char.IsLetterOrDigit(c) || c is '-' or '_' or '.')); if (safe.Length == 0) throw new ArgumentException("Bitte einen Namen.");
+        var safe = SafeName(name);
         var dest = Path.Combine(toolsRoot, safe); if (Directory.Exists(dest)) Directory.Delete(dest, true);
-        Archives.Unpack(zip, dest); audit?.Append("app", "portable.install", $"{safe} sha256={sha}"); return dest;
+        Archives.Unpack(zip, dest); audit?.Append(by.Name, "portable.install", $"{safe} sha256={sha}"); return dest;
+    }
+
+    /// <summary>Ordnername für ein Portable-Programm: Buchstaben, Ziffern, „-“, „_“ und „.“ – aber nie „.“, „..“ oder mit Punkt am Anfang
+    /// (T-0764: „..“ zeigte vorher auf den übergeordneten Ordner, und „Ersetzen“ hätte ihn gelöscht).</summary>
+    public static string SafeName(string name)
+    {
+        var safe = string.Concat((name ?? "").Where(c => char.IsLetterOrDigit(c) || c is '-' or '_' or '.')).TrimEnd('.');
+        if (safe.Length == 0 || safe[0] == '.') throw new ArgumentException("Bitte einen Namen aus Buchstaben oder Ziffern.");
+        return safe;
+    }
+
+    /// <summary>T-0764: Offline-Installer starten – nur Erwachsene, und nur, wenn die Prüfsumme jetzt (beim Start) noch stimmt.
+    /// Zwischen „Prüfen“ und „Ja, starten“ ausgetauschte Dateien werden so nicht gestartet.</summary>
+    public static void StartOfflineInstaller(Principal by, string file, Integrations integrations, AuditLog audit)
+    {
+        Rbac.DemandSoftware(by, "offline.installer " + Path.GetFileName(file), audit);
+        var full = Path.GetFullPath(file);
+        var pkg = OfflinePackages(Path.GetDirectoryName(full)!).FirstOrDefault(p => string.Equals(Path.GetFullPath(p.File), full, StringComparison.OrdinalIgnoreCase));
+        if (pkg is not { Ok: true }) throw new InvalidOperationException("Die Prüfsumme stimmt nicht (mehr) – der Installer wird nicht gestartet.");
+        audit.Append(by.Name, "offline.installer.start", $"{Path.GetFileName(full)} sha256={pkg.ActualSha}");
+        integrations.LaunchDirect(by, full, audit);
     }
 
     // P09 Deinstallation anleiten

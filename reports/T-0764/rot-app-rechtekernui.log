@@ -1,0 +1,37 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0764 UI: Kinderprofil – geprüfter Offline-Installer startet auch nach „Ja, starten“ nicht [FAIL]
+      Assert.Empty() Failure: Collection was not empty
+      Collection: ["C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-tes"···]
+      Stack Trace:
+        tests\Trendo.App.Tests\RechteKernUiTests.cs(89,0): at Trendo.App.Tests.RechteKernUi.Kinderprofil_Offline_Installer_startet_nicht()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    T-0764 UI: Kinderprofil – „Meine Installationen → Entfernen“ entfernt kein mitgeliefertes Programm [FAIL]
+      Assert.ThrowsAny() Failure: No exception was thrown
+      Expected: typeof(System.UnauthorizedAccessException)
+      Stack Trace:
+        tests\Trendo.App.Tests\RechteKernUiTests.cs(120,0): at Trendo.App.Tests.RechteKernUi.Kinderprofil_entfernt_kein_Programm()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    T-0764 UI: Kinderprofil – „Portable Programme: Prüfen und entpacken“ entpackt nichts (Kern lehnt ab), Erwachsene schon [FAIL]
+      Assert.False() Failure
+      Expected: False
+      Actual:   True
+      Stack Trace:
+        tests\Trendo.App.Tests\RechteKernUiTests.cs(53,0): at Trendo.App.Tests.RechteKernUi.Kinderprofil_Portable_entpackt_nichts()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    T-0764 UI: Kinderprofil – App (WhatsApp im Fenster) lässt sich nicht installieren, auch nicht am Knopf vorbei [FAIL]
+      Assert.False() Failure
+      Expected: False
+      Actual:   True
+      Stack Trace:
+        tests\Trendo.App.Tests\RechteKernUiTests.cs(103,0): at Trendo.App.Tests.RechteKernUi.Kinderprofil_WebApp_wird_nicht_installiert()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Finished:    Trendo.App.Tests (ID = '101bf801e904408f2ab953b8223e2abb50c60477e23057cb3318033f0e3a352c')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 5, Errors: 0, Failed: 4, Skipped: 0, Not Run: 0, Time: 3,164s

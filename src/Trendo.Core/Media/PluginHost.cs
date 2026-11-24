@@ -25,8 +25,10 @@ public static class PluginHost
         }
         void Save(List<Approval> l) { Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!); File.WriteAllText(FilePath, JsonSerializer.Serialize(l, Json)); }
         public bool IsApproved(PluginInspect.Result r) => r.Sha256.Length == 64 && All().Any(a => a.Sha256 == r.Sha256);
-        public Approval Approve(PluginInspect.Result r, string note)
+        /// <param name="by">T-0764: Freigabe eines fremden Plugins (fremder Programmcode im Audio-Host) – nur wer freigeben darf, nie ein Kinderprofil.</param>
+        public Approval Approve(PluginInspect.Result r, string note, Principal by)
         {
+            if (!Rbac.Has(by, Permission.ApproveAction)) throw new UnauthorizedAccessException("Ein fremdes Plugin freigeben geht nur in einem Erwachsenen-Profil. Es wurde nichts freigegeben.");
             if (!r.Loadable) throw new InvalidOperationException("Nicht ladbar – Freigabe nicht möglich: " + (r.Problem ?? "unbekannt"));
             if (note.Trim().Length < 5) throw new InvalidOperationException("Bitte kurz angeben, woher das Plugin stammt (z. B. „offizielle Seite des Herstellers“).");
             var a = new Approval(r.Sha256, Path.GetFileNameWithoutExtension(r.Path.TrimEnd('\\', '/')), Path.GetFileName(r.Binary), DateTime.Now.ToString("yyyy-MM-dd HH:mm", Inv), note.Trim());

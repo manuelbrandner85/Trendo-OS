@@ -98,7 +98,7 @@ public class T0755_Programme
 
         var r = c.Plan("install", vlc); f.Core.Approvals.Approve(r.Id, Principal.LocalOwner);
         var lines = new List<string>();
-        var res = await c.RunAsync(r, logs, l => { lock (lines) lines.Add(l); });
+        var res = await c.RunAsync(r, Principal.LocalOwner, logs, l => { lock (lines) lines.Add(l); });
         Assert.True(res.ExitOk); Assert.Equal(0, res.ExitCode); Assert.False(res.Cancelled);
         Assert.True(res.Installed); Assert.True(res.Verified);
         Assert.Contains(lines, l => l.Contains("10.0 MB / 40.0 MB"));
@@ -110,11 +110,11 @@ public class T0755_Programme
         Assert.Contains(f.Core.Audit.ReadAll(), a => a.Action == "app.pruefung" && a.Detail.Contains("install VideoLAN.VLC bestätigt"));
 
         var u = c.Plan("uninstall", vlc); f.Core.Approvals.Approve(u.Id, Principal.LocalOwner);
-        var ur = await c.RunAsync(u, logs);
+        var ur = await c.RunAsync(u, Principal.LocalOwner, logs);
         Assert.True(ur.ExitOk); Assert.False(ur.Installed); Assert.True(ur.Verified);
 
         var bad = c.Plan("install", new PackageInfo("Gibt es nicht", "Gibt.Es.Nicht", "")); f.Core.Approvals.Approve(bad.Id, Principal.LocalOwner);
-        var br = await c.RunAsync(bad, logs);
+        var br = await c.RunAsync(bad, Principal.LocalOwner, logs);
         Assert.False(br.ExitOk); Assert.Equal(unchecked((int)0x8A150014), br.ExitCode); Assert.False(br.Verified);
         Assert.Contains("kein Paket mit dieser Kennung", File.ReadAllText(br.LogFile));
     }
@@ -129,7 +129,7 @@ public class T0755_Programme
         var r = c.Plan("install", new PackageInfo("Langsam", "Langsam.Paket", "1")); f.Core.Approvals.Approve(r.Id, Principal.LocalOwner);
         using var cts = new CancellationTokenSource();
         var sw = System.Diagnostics.Stopwatch.StartNew();
-        var task = c.RunAsync(r, Path.Combine(f.Root, "protokolle"), l => { if (l.Contains("10.0 MB")) cts.Cancel(); }, cts.Token);
+        var task = c.RunAsync(r, Principal.LocalOwner, Path.Combine(f.Root, "protokolle"), l => { if (l.Contains("10.0 MB")) cts.Cancel(); }, cts.Token);
         var res = await task.WaitAsync(TimeSpan.FromSeconds(60));
         Assert.True(sw.Elapsed < TimeSpan.FromSeconds(45), "Der Lauf wurde nicht beendet (Testprogramm wartet 90 s).");
         Assert.True(res.Cancelled); Assert.False(res.ExitOk); Assert.False(res.Installed); Assert.False(res.Verified);

@@ -37,7 +37,7 @@ public partial class MainWindow
             var uv = KiLibrary.RuntimeInfo(KiRuntime.Uv);
             SetupOverlayProgress(step, total, $"{uv.Name} wird geladen …");
             var (zip, _) = await KiDownload(uv.DownloadUrl, uv.Asset, uv.Bytes, step, total);
-            try { await Task.Run(() => store.InstallRuntime(KiRuntime.Uv, zip, _core.Audit, Extract7z)); } finally { TryDelete(zip); }
+            try { await Task.Run(() => store.InstallRuntime(CurrentPrincipal, KiRuntime.Uv, zip, _core.Audit, Extract7z)); } finally { TryDelete(zip); }
         }
         step++;
         if (KiStepOverride is null && !app.PackagesOnly && !File.Exists(p.Git)) throw new InvalidOperationException("Git fehlt – bitte unter „Programme“ aus dem Vollpaket einrichten.");

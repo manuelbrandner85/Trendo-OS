@@ -345,11 +345,11 @@ public partial class MainWindow
         var approve = Btn("out-approve", "Endgültige Fassung freigeben", () =>
         {
             if (_finalFile is null) throw new InvalidOperationException("Bitte zuerst eine Ausgabe (PDF/DOCX) erzeugen.");
-            _approval = LetterGate.Approve(c, _finalFile, Principal.LocalOwner, _core.Audit); SaveCase("freigegeben");
+            _approval = LetterGate.Approve(c, _finalFile, CurrentPrincipal, _core.Audit); SaveCase("freigegeben");
             _caseMsg = $"Freigegeben: {Path.GetFileName(_finalFile)} an {c.Draft.Recipient.Split('\n')[0]} per {c.FilingChannel}. Trendo verschickt nichts – bitte selbst versenden."; Show("ausgabe");
         }, ready);
         approve.IsEnabled = ready;
-        var check = Btn("out-send", "Versenden …", () => { _caseMsg = LetterGate.TrySendExternally(c, _approval, _finalFile ?? "", _core.Audit, Principal.LocalOwner); Show("ausgabe"); });
+        var check = Btn("out-send", "Versenden …", () => { _caseMsg = LetterGate.TrySendExternally(c, _approval, _finalFile ?? "", _core.Audit, CurrentPrincipal); Show("ausgabe"); });
         sp.Children.Add(Row(approve, check));
         var proofBox = Box("out-proof", "Nachweis, z. B. Einschreiben-Nr., Sendebericht, Eingangsstempel", c.DeliveryProof ?? "", w: 360);
         sp.Children.Add(Row(proofBox, Btn("out-sent", "Als versendet markieren", () => { LetterKit.MarkSent(c, proofBox.Text ?? ""); SaveCase("versendet"); Show("ausgabe"); })));

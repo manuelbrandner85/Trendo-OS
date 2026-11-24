@@ -121,7 +121,7 @@ public class GitHubNet_Ui
             // stockt
             stallNext = true; MainWindow.GitHubStallTimeout = TimeSpan.FromSeconds(2);
             w.Find<Avalonia.Controls.Button>("setup-overlay-done").RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Avalonia.Controls.Button.ClickEvent));
-            GitHubApps.Uninstall(Path.Combine(root, "werkzeuge"), "gh-gut-werkzeug", w.Core.Audit);
+            GitHubApps.Uninstall(Principal.LocalOwner, Path.Combine(root, "werkzeuge"), "gh-gut-werkzeug", w.Core.Audit);
             await Run(w, w.GitHubInstall(Repo("gut/werkzeug"), start: false));
             Assert.Contains("Download stockt", w.SetupOverlayStepText);
         }

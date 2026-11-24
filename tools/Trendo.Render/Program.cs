@@ -491,6 +491,18 @@ else if (shot == "seite")
         Trendo.Core.Sys.PdfFormular.AddFields(blank, form, [new("Name", "text", 0, 60, 100, 220, 20), new("Zustimmung", "haken", 0, 60, 140, 12, 12)]);
         win.OpenPdf(form);
     }
+    if (Environment.GetEnvironmentVariable("TRENDO_PROG_DEMO") is { Length: > 0 }) // T-0764: eingerichtete Programme und Programm-Seite zeigen
+    {
+        var nz = Path.Combine(root, "werkzeuge", "notizblock"); Directory.CreateDirectory(nz); File.WriteAllBytes(Path.Combine(nz, "notizblock.exe"), new byte[3_400_000]);
+        var zz = Path.Combine(root, "werkzeuge", "7zip"); Directory.CreateDirectory(zz); File.WriteAllBytes(Path.Combine(zz, "7z.exe"), new byte[1_800_000]);
+        if (page == "prog-programm") win.OpenProgramPage(win.TrendoProgramme().First(e => e.Id == "notizblock"));
+    }
+    if (Environment.GetEnvironmentVariable("TRENDO_DEV_DEMO") is { Length: > 0 }) // T-0764: Geräte mit Problemgerät und eingestecktem Stick zeigen
+    {
+        win.DriveSourceOverride = () => [new("C:\\", DriveType.Fixed, "System", 1_000_000_000_000, 210_000_000_000, "NTFS"), new("E:\\", DriveType.Removable, "STICK", 32_000_000_000, 21_000_000_000, "FAT32")];
+        win.DeviceRunnerOverride = new DemoPnp();
+        win.ScanDevicesAsync().GetAwaiter().GetResult();
+    }
     win.Show(page);
     if (win.Windows.Active is { Maximized: false } pageWin) win.Windows.ToggleMaximize(pageWin.Id);
     win.Show(page);
@@ -1270,4 +1282,10 @@ sealed class PreviewAudio : IAudioOut
     public event Action<double, double>? Progress { add { } remove { } }
     public event Action? Ended { add { } remove { } }
     public void Load(string file) { } public void SetPause(bool pause) { } public void Seek(double seconds) { } public void SetVolume(int percent) { } public void Stop() { } public void Dispose() { }
+}
+/// <summary>T-0764: Beispiel-Geräteliste für das Bild der Seite „Geräte“ (eine Kamera ohne Treiber, eine Netzwerkkarte).</summary>
+sealed class DemoPnp : IProcessRunner
+{
+    public Task<(int Exit, string Output)> RunAsync(string file, string args, Action<string>? line = null, CancellationToken ct = default) =>
+        Task.FromResult((0, "\"Class\",\"FriendlyName\",\"Status\",\"InstanceId\",\"Problem\"\n\"Camera\",\"USB-Kamera\",\"Error\",\"USB\\VID_1\\1\",\"CM_PROB_FAILED_INSTALL\"\n\"Net\",\"Ethernet-Adapter\",\"OK\",\"PCI\\VEN_8086&DEV_1533\\9\",\"CM_PROB_NONE\"\n\"Monitor\",\"Bildschirm\",\"OK\",\"DISPLAY\\X\\1\",\"CM_PROB_NONE\"\n"));
 }

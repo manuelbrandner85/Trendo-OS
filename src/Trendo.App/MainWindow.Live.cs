@@ -300,7 +300,7 @@ public partial class MainWindow
         if (!StreamKeys.Saved(_core.Secrets, _livePlatform)) throw new InvalidOperationException("Bitte den Stream-Schlüssel eintragen und auf „Schlüssel speichern“ tippen.");
         var choice = CurrentChoice();
         var label = SourceLabel(choice);
-        var req = LiveBroadcast.Ask(_core.Approvals, Principal.LocalOwner, _livePlatform, _liveCustom, label);
+        var req = LiveBroadcast.Ask(_core.Approvals, CurrentPrincipal, _livePlatform, _liveCustom, label);
         _liveApprovalId = req.Id;
         _liveAsk = LiveAskState.Pending;
         _frozen = choice;
@@ -331,7 +331,7 @@ public partial class MainWindow
     private void DenyLive()
     {
         if (_liveApprovalId is { } id && _liveAsk == LiveAskState.Pending)
-            _core.Approvals.Deny(id, Principal.LocalOwner);
+            Ablehnen(id); // T-0764: Rolle der angemeldeten Person (Kind zieht die eigene Anfrage zurück)
         _liveApprovalId = null;
         _liveAsk = LiveAskState.None;
         _frozen = null;

@@ -24,7 +24,8 @@ public partial class MainWindow
 
     public void InstallWebApp(string id)
     {
-        WebApps.Install(_core.DataRoot, id, _core.Audit, Principal.LocalOwner.Name);
+        try { WebApps.Install(_core.DataRoot, id, _core.Audit, CurrentPrincipal); } // T-0764: Rolle im Kern
+        catch (UnauthorizedAccessException e) { _hubMsg = e.Message; return; }
         SetOnDesktop("app:" + id, true);
         _hubMsg = $"{WebApps.Get(id)!.Name} ist installiert – in der Leiste, im Startmenü und auf dem Desktop.";
         RefreshDockWebApps(); // holt auch das Original-Symbol
@@ -32,7 +33,8 @@ public partial class MainWindow
 
     public void RemoveWebApp(string id)
     {
-        WebApps.Uninstall(_core.DataRoot, id, _core.Audit, Principal.LocalOwner.Name);
+        try { WebApps.Uninstall(_core.DataRoot, id, _core.Audit, CurrentPrincipal); } // T-0764
+        catch (UnauthorizedAccessException e) { _hubMsg = e.Message; return; }
         SetOnDesktop("app:" + id, false);
         _hubMsg = $"{WebApps.Get(id)?.Name ?? id} wurde entfernt (auch die Anmeldung).";
         RefreshDockWebApps();

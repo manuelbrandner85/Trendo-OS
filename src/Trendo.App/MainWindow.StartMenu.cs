@@ -118,7 +118,7 @@ public partial class MainWindow
         if (IsStudioWorkspace(key) && ModuleOf(key) is { } mid && StudioCatalog.For(mid) is { } info) return info.Name;
         return Pages.Concat(ExtraPages).FirstOrDefault(p => p.Key == key).Title
             ?? _studios.FirstOrDefault(s => PageForStudio(s.Id) == key)?.Name
-            ?? key switch { "notbuilt" => "Noch nicht gebaut", "studio-deps" => "Benötigte Programme", "akte" => "Akte", "ausgabe" => "Ausgabe", _ => char.ToUpper(key[0]) + key[1..] };
+            ?? key switch { "notbuilt" => "Noch nicht gebaut", "studio-deps" => "Benötigte Programme", "akte" => "Akte", "ausgabe" => "Ausgabe", "prog-programm" => "Programm", _ => char.ToUpper(key[0]) + key[1..] };
     }
 
     /// <summary>Alle Katalog-Studios, plus Einträge aus der Modulliste, die der Katalog noch nicht kennt.</summary>

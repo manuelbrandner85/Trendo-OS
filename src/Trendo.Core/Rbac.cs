@@ -3,7 +3,13 @@ namespace Trendo.Core;
 /// <summary>Rollen laut Spezifikation (Benutzer-/Projektisolation, rollenbasierte Erlaubnisse).</summary>
 public enum Role { Guest = 0, User = 1, Owner = 2 }
 
-public enum Permission { ViewStudios, ViewProjects, ManageProjects, RequestAction, ApproveAction, ViewAudit }
+public enum Permission
+{
+    ViewStudios, ViewProjects, ManageProjects, RequestAction, ApproveAction, ViewAudit,
+    /// <summary>T-0764: Programme installieren, aktualisieren und entfernen (alle Wege: Zusatzprogramme, winget, Portable, Offline-Installer,
+    /// Vollpaket, GitHub, Quellcode-Programme, KI-Laufzeiten, Apps). Nur Erwachsene (Rolle Besitzer) – ein Kinderprofil nie.</summary>
+    ManageSoftware,
+}
 
 public sealed record Principal(string Name, Role Role)
 {
@@ -34,5 +40,17 @@ public static class Rbac
         if (Has(p, perm)) return;
         audit?.Append(p.Name, "rbac.denied", $"{p.Role} fehlt {perm}");
         throw new UnauthorizedAccessException($"Rolle {p.Role} hat keine Berechtigung {perm}.");
+    }
+
+    /// <summary>T-0764: Hinweis, wenn ein Kinderprofil Programme installieren oder entfernen möchte.</summary>
+    public const string NurErwachseneSoftware = "Programme installieren und entfernen geht nur in einem Erwachsenen-Profil. Es wurde nichts geändert.";
+
+    /// <summary>T-0764: Prüfung an jedem Installations- und Entfernen-Weg im Kern. Ohne Recht: Protokolleintrag „rbac.denied“ mit dem Vorgang
+    /// und <see cref="UnauthorizedAccessException"/> mit einem verständlichen Satz – es wird nichts geändert.</summary>
+    public static void DemandSoftware(Principal p, string what, AuditLog? audit = null)
+    {
+        if (Has(p, Permission.ManageSoftware)) return;
+        audit?.Append(p.Name, "rbac.denied", $"{p.Role} fehlt {Permission.ManageSoftware}: {what}");
+        throw new UnauthorizedAccessException(NurErwachseneSoftware);
     }
 }

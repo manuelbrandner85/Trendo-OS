@@ -316,7 +316,7 @@ public partial class MainWindow
     private void AskPack()
     {
         if (!Ready()) return;
-        var req = WebsiteStudio.RequestPack(_core.Approvals, Principal.LocalOwner, _webDir!);
+        var req = WebsiteStudio.RequestPack(_core.Approvals, CurrentPrincipal, _webDir!);
         _webApproval = req.Id;
         _webArmed = true;
         Say("Das Paket bleibt auf diesem PC. Es wird nichts hochgeladen. Bitte noch einmal bestätigen.", "dev");

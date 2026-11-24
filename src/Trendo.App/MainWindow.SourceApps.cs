@@ -210,10 +210,12 @@ public partial class MainWindow
     {
         if (_core.Offline) { Say("Trendo ist offline. Das Einrichten braucht Internet.", "oss"); return null; }
         if (_depBusy) return null;
+        // T-0764: Rechteprüfung im Kern, bevor der alte Stand verschoben oder etwas geladen wird
+        try { SourceApps.BeginInstall(CurrentPrincipal, repo.FullName, $"{repo.FullName} {repo.LicenseId}{(pkg is { } pp ? $" {pp.Registry}:{pp.Package}" : "")}", _core.Audit); }
+        catch (UnauthorizedAccessException e) { Say(e.Message, "oss"); return null; }
         _depBusy = true;
         var name = repo.FullName.Split('/')[1];
         var id = SourceApps.IdFor(repo.FullName); var dir = SourceApps.Dir(_deps.ToolsRoot, id); var old = dir + ".alt";
-        _core.Audit.Append(Principal.LocalOwner.Name, "source.install.start", $"{repo.FullName} {repo.LicenseId}{(pkg is { } pp ? $" {pp.Registry}:{pp.Package}" : "")}");
         BeginSetupOverlay($"{name} wird eingerichtet");
         string? zip = null; var log = new List<string>();
         try
@@ -264,7 +266,7 @@ public partial class MainWindow
             }
             if (plan.Start is { } st && !st.Exe.StartsWith('{') && !File.Exists(Path.Combine(dir, SourceApps.Fill(st.Exe, values))) && SourceRunOverride is null)
                 throw new InvalidOperationException($"Eingerichtet, aber die Startdatei „{st.Exe}“ fehlt. Das Projekt braucht wohl eine andere Startweise – „Quellcode holen“ und die Anleitung (README) helfen weiter.");
-            var entry = SourceApps.Register(_deps.ToolsRoot, repo.FullName, sha, plan, repo.LicenseId, repo.Description, _core.Audit);
+            var entry = SourceApps.Register(CurrentPrincipal, _deps.ToolsRoot, repo.FullName, sha, plan, repo.LicenseId, repo.Description, _core.Audit);
             if (Directory.Exists(old)) try { Directory.Delete(old, true); } catch (IOException) { }
             SetupOverlayProgress(4, 4, "Fertig ✓");
             var msg = $"„{name}“ ist aus dem Quellcode eingerichtet{(start ? " und startet gerade" : "")}. Du findest es unter „Programme“ › „Aus Quellcode eingerichtet“.";
@@ -371,7 +373,8 @@ public partial class MainWindow
             Add(RemoveButton("src:" + e.Id, "btn-src-remove-" + e.Id, () =>
             {
                 SourceStop(e.Id);
-                try { SourceApps.Remove(_deps.ToolsRoot, e.Id, _core.Audit); _depLog.Text = $"{e.Repo} wurde entfernt."; }
+                try { SourceApps.Remove(CurrentPrincipal, _deps.ToolsRoot, e.Id, _core.Audit); _depLog.Text = $"{e.Repo} wurde entfernt."; }
+                catch (UnauthorizedAccessException ex) when (!CanManageSoftware) { _depLog.Text = ex.Message; } // T-0764: Kern lehnt ab (Kinderprofil)
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _depLog.Text = $"{e.Repo} läuft noch oder ist gesperrt: bitte schließen und erneut versuchen. ({ex.Message})"; }
             }));
             sp.Children.Add(Card(Row(new StackPanel { Children = {

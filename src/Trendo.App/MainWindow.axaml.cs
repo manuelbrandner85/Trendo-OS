@@ -1291,6 +1291,9 @@ public sealed partial class MainWindow : Window
             var row = new StackPanel { Spacing = 6 };
             row.Children.Add(new TextBlock { Name = "ask-" + comp.Id, Text = comp.Mode == DeliveryMode.Included ? $"{_depStudioTitle} braucht {comp.Name}. {(VollpaketHere || _deps.Offline ? "Es liegt im Trendo-Vollpaket" : "Trendo lädt es aus der offiziellen Quelle")} – jetzt einrichten?" : $"{_depStudioTitle} braucht {comp.Name}. Jetzt installieren?", Foreground = Text, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
             row.Children.Add(P($"Lizenz: {comp.License} · {comp.Reason}{(comp.ApproxMb > 0 ? $" · ca. {comp.ApproxMb} MB" : "")}", null, 11));
+            // T-0764: Das „Ja“ für das KI-Modell richtet auch Ollama ein, wenn es fehlt – dann steht das sichtbar auf derselben Rückfrage
+            if (comp.Id == "model" && DependencyCatalog.Get("ollama") is var olc && !_deps.IsInstalled(olc))
+                row.Children.Add(new TextBlock { Name = "ask-model-ollama", Text = $"Dazu richtet Trendo zuerst {olc.Name} ein (Lizenz {olc.License}{(olc.ApproxMb > 0 ? $", ca. {olc.ApproxMb} MB" : "")}). „Ja“ gilt für beides.", Foreground = Text, FontSize = 11, TextWrapping = TextWrapping.Wrap });
             var btns = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
             if (comp.Mode == DeliveryMode.Guided)
             {
@@ -1452,7 +1455,7 @@ public sealed partial class MainWindow : Window
         try
         {
             var ct = SetupToken;
-            r = await Task.Run(() => Vollpaket.InstallEach(dir, _deps.ToolsRoot, _core.Audit, line => _ui.Post(() => { _depLog.Text = line; SetupOverlayProgress(++step, total, line); }), ct, only));
+            r = await Task.Run(() => Vollpaket.InstallEach(CurrentPrincipal, dir, _deps.ToolsRoot, _core.Audit, line => _ui.Post(() => { _depLog.Text = line; SetupOverlayProgress(++step, total, line); }), ct, only));
             if (r.Canceled) { _depLog.Text = $"Abgebrochen – {r.Installed + r.Present} von {r.Total} Programmen sind eingerichtet."; return r; }
             var ok = r.Installed + r.Present;
             _depLog.Text = r.Failed.Count == 0 ? $"Alle {r.Total} mitgelieferten Programme sind eingerichtet" : $"{ok} von {r.Total} Programmen eingerichtet, {r.Failed.Count} nicht.";

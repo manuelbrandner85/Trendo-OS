@@ -18,6 +18,7 @@ public partial class MainWindow
         RegisterTab(ProgTabs, "prog-start", "Starten", "SYS-11", ProgStartView, "verknüpfung", "parameter", "autostart", "dateizuordnung", "öffnen mit");
         RegisterTab(ProgTabs, "prog-pruefen", "Prüfen", "SYS-11", ProgCheckView, "systemvoraussetzungen", "kompatibel", "integrationstest", "speicherplatz", "softwareliste", "csv", "wiederherstellen", "winget import", "selbsttest");
         RegisterTab(ProgTabs, "prog-extern", "Externe Programme", "SYS-11", ProgExternView, "blender", "unreal", "vs code", "vscode", "libreoffice", "obs", "externe programme", "öffnen in");
+        _showMap[ProgDetail] = ProgDetailView; // T-0764: eine Seite je Programm (Starten, Aktualisieren, Entfernen)
     }
     private Control ProgPage(string title, Control body) => W45Page(title, ProgTabs, "prog", body);
     private string ProgFolder => WorkFolder("Programme");
@@ -41,7 +42,7 @@ public partial class MainWindow
         var pz = Field("portable-zip", "ZIP-Datei des Programms"); var ps = Field("portable-sha", "Prüfsumme (SHA-256) vom Hersteller", 300); var pn = Field("portable-name", "Name, z. B. ffmpeg", 140);
         sp.Children.Add(Card(Section("Portable Programme", "Entpackt ein Programm ohne Installation in deinen Werkzeuge-Ordner – nur wenn die Prüfsumme stimmt.",
             Line(pz, ps, pn, Act("portable-run", "Prüfen und entpacken", () => Try(V, () =>
-            { var d = Software.InstallPortable(Clean(pz), Clean(ps), Path.Combine(_core.DataRoot, "werkzeuge"), Clean(pn), _core.Audit); Say("Entpackt nach " + d, V); }))))));
+            { var d = Software.InstallPortable(CurrentPrincipal, Clean(pz), Clean(ps), Path.Combine(_core.DataRoot, "werkzeuge"), Clean(pn), _core.Audit); Say("Entpackt nach " + d, V); }))))));
 
         var of = Field("offline-folder", "Ordner mit Installationsdateien");
         var ol = new StackPanel { Name = "offline-list", Spacing = 4 };
@@ -59,13 +60,16 @@ public partial class MainWindow
                 if (ol.Children.Count == 0) ol.Children.Add(P("Keine Installer (.exe, .msi, .msix, .zip) gefunden."));
             }))), ol)));
         if (_offAsk.Ask) sp.Children.Add(Card(Line(P($"„{Path.GetFileName(_offAsk.File)}“ jetzt starten? Der Installer fragt dann selbst weiter."),
-            Act("offline-yes", "Ja, starten", () => { var f = _offAsk.File; _offAsk = default; _core.Integrations.LaunchDirect(Principal.LocalOwner, f, _core.Audit); Say("Gestartet.", V); }, true),
+            Act("offline-yes", "Ja, starten", () => { var f = _offAsk.File; _offAsk = default; Try(V, () => { Software.StartOfflineInstaller(CurrentPrincipal, f, _core.Integrations, _core.Audit); Say("Gestartet.", V); }); }, true), // T-0764: Rolle und Prüfsumme im Kern
             Act("offline-no", "Abbrechen", () => { _offAsk = default; Say("Nicht gestartet.", V); }))));
 
+        sp.Children.Add(TrendoProgrammeCard()); // T-0764: Programme, die Trendo selbst eingerichtet hat – Entfernen ohne Windows-Einstellungen
+
         var steps = new StackPanel(); foreach (var (s, i) in Software.UninstallSteps.Select((s, i) => (s, i))) steps.Children.Add(P($"{i + 1}. {s}"));
-        sp.Children.Add(Card(Section("Programm entfernen", "Trendo entfernt nichts heimlich. So geht's in Windows:", steps,
+        sp.Children.Add(Card(Section("Andere Programme entfernen", "Programme, die nicht Trendo eingerichtet hat, entfernt Windows selbst – Trendo entfernt nichts heimlich. Über winget installierte Programme gehen auch unter „Programme verwalten“. So geht's in Windows:", steps,
             Line(Act("uninstall-open", "Windows-Einstellungen öffnen", () => Try(V, () =>
-            { if (!OperatingSystem.IsWindows()) throw new InvalidOperationException("Das geht nur unter Windows."); Launch(Software.UninstallSettings); }))))));
+            { if (!OperatingSystem.IsWindows()) throw new InvalidOperationException("Das geht nur unter Windows."); Launch(Software.UninstallSettings); })),
+                Act("uninstall-appcenter", "Programme verwalten (winget)", () => Show("appcenter"))))));
 
         sp.Children.Add(Card(Section("Trendo-Einstellungen zurücksetzen", "Vorher wird automatisch eine Sicherung angelegt – du kannst sie wiederherstellen.",
             _resetAsk ? Line(P("Wirklich alle Einstellungen zurücksetzen?"), Act("reset-yes", "Ja, zurücksetzen", () => Try(V, () => { _resetAsk = false; var b = Software.ResetSettings(_core.DataRoot, _core.Audit); _settings = new(); Say("Zurückgesetzt. Sicherung: " + Path.GetFileName(b), V); }), true), Act("reset-no", "Abbrechen", () => { _resetAsk = false; Say("Nichts geändert.", V); }))
