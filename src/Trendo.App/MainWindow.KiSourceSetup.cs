@@ -95,6 +95,7 @@ public partial class MainWindow
         var exe = KiSourceExe(id) ?? throw new InvalidOperationException("Zuerst herunterladen und einrichten.");
         if (!s.Portable) { Launch(exe); return true; } // LM Studio, Jan: Programm öffnen, dort den lokalen Server einschalten
         var args = KiSourceSetups.Args(s, s.NeedsModel ? KiSourceSetups.BestModel(KiStore.Root) : null);
+        if (!_kiGhGateOpen && GitHubEntryFor(exe) is { } ghe) return GitHubGate(ghe, exe, () => { _kiGhGateOpen = true; try { KiSourceStart(id); } finally { _kiGhGateOpen = false; } }); // T-0762 N3b: Ampel vor dem Start
         if (KiServerStartOverride is { } o) { o(exe, args); }
         else
         {
@@ -106,6 +107,8 @@ public partial class MainWindow
         _srcMsg = $"{KiCatalog.Sources.First(x => x.Id == id).Name} startet – gleich unter „Suchen“ sichtbar.";
         return true;
     }
+
+    bool _kiGhGateOpen; // T-0762 N3b: Start läuft schon durch das Tor (GitHubGate)
 
     /// <summary>Wunsch 27.10.2026: KI-Programm wieder entfernen – portable aus dem Werkzeugordner, Installer über ihren Deinstaller.</summary>
     public bool KiSourceRemove(string id)

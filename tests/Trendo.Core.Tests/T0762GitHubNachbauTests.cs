@@ -318,4 +318,56 @@ public class T0762GitHubNachbauTests
         Assert.False(GitHubApps.ApproveStart(tools, "gh-x-y", "abc"));
         Directory.Delete(tools, true);
     }
+
+    // ───────────── Zweite Prüfrunde (N1, N2) ─────────────
+
+    [WindowsFact(DisplayName = "T-0762 N1: projektlokale Skripte (gradlew.bat, mvnw.cmd) laufen mit „.\\…“ auch, wenn das Terminal den Projektordner nicht durchsucht; ohne „.\\“ nicht (Befehl nicht gefunden)")]
+    public void N1_local_wrappers_resolve()
+    {
+        var d = Tmp();
+        var marker = Path.Combine(d, "gelaufen.txt");
+        File.WriteAllText(Path.Combine(d, "gradlew.bat"), $"@echo gradle %*> \"{marker}\"\r\n");
+        File.WriteAllText(Path.Combine(d, "build.gradle"), "");
+        var g = OpenSource.BuildHints(d, _ => true).Single(h => h.Tool == "gradlew");
+        Assert.Equal(@".\gradlew.bat build", g.Command);
+        var r = RunLikeTerminal(d, g.Command);
+        Assert.Equal(0, r.Exit); Assert.Contains("gradle build", File.ReadAllText(marker));
+        File.Delete(marker);
+        Assert.NotEqual(0, RunLikeTerminal(d, "gradlew.bat build").Exit); // so stand es vorher da – mit der Schutz-Variable nicht auffindbar („… nicht gefunden“)
+        Assert.False(File.Exists(marker));
+        // Maven-Wrapper
+        var m = Tmp();
+        File.WriteAllText(Path.Combine(m, "pom.xml"), "<project/>"); File.WriteAllText(Path.Combine(m, "mvnw.cmd"), $"@echo maven %*> \"{Path.Combine(m, "m.txt")}\"\r\n");
+        var mh = OpenSource.BuildHints(m, _ => true).Single(h => h.Tool == "mvnw");
+        Assert.Equal(@".\mvnw.cmd package", mh.Command);
+        Assert.Equal(0, RunLikeTerminal(m, mh.Command).Exit); Assert.Contains("maven package", File.ReadAllText(Path.Combine(m, "m.txt")));
+        // nur „gradlew“ (Unix-Skript) unter Windows: nicht ausführbar → gesperrt
+        var u = Tmp(); File.WriteAllText(Path.Combine(u, "gradlew"), "#!/bin/sh");
+        Assert.False(OpenSource.BuildHints(u, _ => true).Single(h => h.Tool == "gradlew").Available);
+        Directory.Delete(d, true); Directory.Delete(m, true); Directory.Delete(u, true);
+    }
+
+    [Fact(DisplayName = "T-0762 N2: Grün nur, wenn Startdatei UND alle ausführbaren Inhalte des Ordners signiert sind; sonst Gelb mit Namen; Ordner-Prüfsumme ändert sich mit jeder DLL/Skript/.asar")]
+    public void N2_folder_check()
+    {
+        var d = Tmp(); Directory.CreateDirectory(Path.Combine(d, "resources"));
+        var exe = Path.Combine(d, "app.exe"); File.WriteAllText(exe, "MZ");
+        File.WriteAllText(Path.Combine(d, "helfer.dll"), "MZ"); File.WriteAllText(Path.Combine(d, "resources", "app.asar"), "asar"); File.WriteAllText(Path.Combine(d, "liesmich.txt"), "x");
+        var allSigned = GitHubApps.CheckProgramFolder(exe, d, _ => new SignatureInfo(SigState.Gueltig, "Beispiel GmbH", "ok"));
+        Assert.Equal(GitHubApps.Ampel.Gruen, allSigned.Ampel); Assert.Contains("3 ausführbare", allSigned.Text);
+        var onlyExe = GitHubApps.CheckProgramFolder(exe, d, f => f.EndsWith(".exe") ? new SignatureInfo(SigState.Gueltig, "Beispiel GmbH", "ok") : new SignatureInfo(SigState.Unsigniert, null, "nein"));
+        Assert.Equal(GitHubApps.Ampel.Gelb, onlyExe.Ampel); Assert.True(onlyExe.NeedsRiskConsent);
+        Assert.Contains("helfer.dll", onlyExe.Text); Assert.Contains("resources/app.asar", onlyExe.Text); Assert.Contains("2 weitere", onlyExe.Title);
+        var unsignedExe = GitHubApps.CheckProgramFolder(exe, d, _ => new SignatureInfo(SigState.Unsigniert, null, "nein"));
+        Assert.Equal(GitHubApps.Ampel.Rot, unsignedExe.Ampel);
+        var h1 = GitHubApps.FolderHash(d, GitHubApps.ExecutableFiles(d));
+        Assert.Equal(h1, allSigned.Sha256);
+        File.WriteAllText(Path.Combine(d, "liesmich.txt"), "geändert"); // kein ausführbarer Inhalt
+        Assert.Equal(h1, GitHubApps.FolderHash(d, GitHubApps.ExecutableFiles(d)));
+        File.AppendAllText(Path.Combine(d, "resources", "app.asar"), "!");
+        var h2 = GitHubApps.FolderHash(d, GitHubApps.ExecutableFiles(d)); Assert.NotEqual(h1, h2);
+        File.WriteAllText(Path.Combine(d, "neu.ps1"), "Write-Host x");
+        Assert.NotEqual(h2, GitHubApps.FolderHash(d, GitHubApps.ExecutableFiles(d)));
+        Directory.Delete(d, true);
+    }
 }

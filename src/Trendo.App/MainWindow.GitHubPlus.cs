@@ -148,7 +148,7 @@ public partial class MainWindow
             SetupOverlayProgress(4, 4, "Fertig ✓");
             // Der Installer-Lauf war die ausdrückliche Entscheidung: das so eingerichtete Programm darf danach starten (gebunden an seine Prüfsumme)
             var entry = GitHubApps.List(_deps.ToolsRoot).FirstOrDefault(x => x.Id == GitHubApps.IdFor(p.Repo.FullName));
-            if (entry is not null && File.Exists(exe)) { using var fs = GitHubApps.OpenLocked(exe); GitHubApps.ApproveStart(_deps.ToolsRoot, entry.Id, GitHubApps.Sha256Of(fs)); }
+            if (entry is not null && File.Exists(exe)) { var pdir = GitHubProgramDir(entry); GitHubApps.ApproveStart(_deps.ToolsRoot, entry.Id, GitHubApps.FolderHash(pdir, GitHubApps.ExecutableFiles(pdir))); } // N2: Ordner-Prüfsumme
             if (p.Start) { Launch(exe); _core.Audit.Append(Principal.LocalOwner.Name, "github.start", p.Repo.FullName); }
             var msg = $"„{p.Repo.FullName.Split('/')[1]}“ ist eingerichtet{(p.Start ? " und startet gerade" : "")}. Du findest es unter „Programme“.";
             FinishSetupOverlay("Bereit", msg, []); Say(msg, "oss");
@@ -217,47 +217,72 @@ public partial class MainWindow
         return new Border { Name = $"{id}-card", Background = Brush.Parse(bg), BorderBrush = Brush.Parse(col), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Padding = new Thickness(12, 10), Child = sp };
     }
 
-    // ───── B2: erster Start eines nicht gültig signierten Programms ─────
+    // ───── B2/N2: erster Start eines nicht vollständig gültig signierten Programms ─────
 
-    /// <summary>Ein Programmstart wartet auf die eigene Bestätigung; die Programmdatei bleibt bis dahin gesperrt (B5).</summary>
-    public sealed record PendingStart(GitHubApps.Installed Entry, string Exe, GitHubApps.InstallerCheck Check, FileStream Lock);
+    /// <summary>Ein Programmstart wartet auf die eigene Bestätigung; die Startdatei bleibt bis dahin gesperrt (B5). <see cref="Run"/> startet danach genau so,
+    /// wie der Aufrufer es wollte (z. B. mit Datei oder als lokaler Server). <see cref="Dir"/>: Programmordner, über den die Prüfsumme läuft (N2).</summary>
+    public sealed record PendingStart(GitHubApps.Installed Entry, string Exe, string Dir, GitHubApps.InstallerCheck Check, FileStream Lock, Action Run);
     PendingStart? _ghStart; bool _ghStartRisk;
     public PendingStart? GitHubPendingStart => _ghStart;
 
-    /// <summary>Programm von GitHub starten: gültig signiert oder schon einmal (mit gleicher Prüfsumme) erlaubt → sofort; sonst Ampel-Karte und eigene Bestätigung.
-    /// Gestartet wird immer aus der gesperrten Datei (kein Austausch zwischen Prüfen und Start). True = gestartet.</summary>
-    public bool GitHubLaunch(GitHubApps.Installed e)
+    /// <summary>Programmordner eines Eintrags: eigener Ordner im Werkzeugordner bzw. (bei Installern) der Ordner der Startdatei.</summary>
+    string GitHubProgramDir(GitHubApps.Installed e) => Path.IsPathRooted(e.Exe) ? Path.GetDirectoryName(e.Exe)! : Path.Combine(_deps.ToolsRoot, e.Id);
+
+    /// <summary>Gehört <paramref name="exe"/> zu einem Programm von GitHub? (für KI-Quellen und Bambu Studio)</summary>
+    GitHubApps.Installed? GitHubEntryFor(string exe)
     {
-        var exe = GitHubApps.ExePath(_deps.ToolsRoot, e);
+        var full = Path.GetFullPath(exe);
+        return GitHubApps.List(_deps.ToolsRoot).FirstOrDefault(e => full.StartsWith(Path.GetFullPath(GitHubProgramDir(e)).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>Programm von GitHub starten (ohne Argumente über die Shell).</summary>
+    public bool GitHubLaunch(GitHubApps.Installed e) { var exe = GitHubApps.ExePath(_deps.ToolsRoot, e); return GitHubGate(e, exe, () => Launch(exe)); }
+
+    /// <summary>Tor vor jedem Start eines GitHub-Programms (N2): Startdatei gesperrt, Prüfsumme über alle ausführbaren Inhalte des Programmordners.
+    /// Schon erlaubt (gleiche Ordner-Prüfsumme) oder alles gültig signiert → <paramref name="run"/> sofort (unter Sperre); sonst Karte „Erster Start“ mit Ampel
+    /// und eigener Bestätigung. True = gestartet.</summary>
+    public bool GitHubGate(GitHubApps.Installed e, string exe, Action run)
+    {
         var lk = TryLock(exe);
         if (lk is null) { Say($"„{Path.GetFileName(exe)}“ fehlt oder ist gesperrt – bitte neu einrichten.", "oss"); return false; }
-        var sha = GitHubApps.Sha256Of(lk);
-        if (e.StartApproved == sha) { using (lk) Launch(exe); _core.Audit.Append(Principal.LocalOwner.Name, "github.start", e.Repo); return true; }
-        var chk = GitHubApps.CheckProgram(exe, GitHubSignatureOverride, lk);
-        if (chk.Ampel == GitHubApps.Ampel.Gruen) { using (lk) Launch(exe); _core.Audit.Append(Principal.LocalOwner.Name, "github.start", $"{e.Repo} signiert von {chk.Publisher}"); return true; }
+        var dir = Path.GetFullPath(exe).StartsWith(Path.GetFullPath(GitHubProgramDir(e)), StringComparison.OrdinalIgnoreCase) ? GitHubProgramDir(e) : Path.GetDirectoryName(exe)!;
+        GitHubApps.InstallerCheck chk;
+        try
+        {
+            var files = GitHubApps.ExecutableFiles(dir);
+            if (e.StartApproved is { } ok && files.Count <= GitHubApps.MaxExecutables && GitHubApps.FolderHash(dir, files) == ok)
+            { using (lk) run(); _core.Audit.Append(Principal.LocalOwner.Name, "github.start", e.Repo); return true; }
+            chk = GitHubApps.CheckProgramFolder(exe, dir, GitHubSignatureOverride, lk);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { lk.Dispose(); Say("Das Programm ließ sich nicht prüfen: " + ex.Message, "oss"); return false; }
+        if (chk.Ampel == GitHubApps.Ampel.Gruen) { using (lk) run(); _core.Audit.Append(Principal.LocalOwner.Name, "github.start", $"{e.Repo} – Ordner gültig signiert ({chk.Publisher})"); return true; }
         _ghStart?.Lock.Dispose();
-        _ghStart = new(e, exe, chk, lk); _ghStartRisk = false;
-        _core.Audit.Append(Principal.LocalOwner.Name, "github.start.held", $"{e.Repo} ampel={chk.Ampel} sha256={chk.Sha256}");
-        Say($"„{e.Repo}“ ist eingerichtet, aber noch nicht gestartet: {chk.Title}. Vor dem ersten Start entscheidest du in der Karte „Erster Start“.", "oss");
+        _ghStart = new(e, exe, dir, chk, lk, run); _ghStartRisk = false;
+        _core.Audit.Append(Principal.LocalOwner.Name, "github.start.held", $"{e.Repo} ampel={chk.Ampel} ordner-sha256={chk.Sha256}");
+        Say($"„{e.Repo}“ ist noch nicht gestartet: {chk.Title}. Vor dem ersten Start entscheidest du in der Karte „Erster Start“ unter „Projekte von GitHub holen“.", "oss"); // N6: springt dorthin
         return false;
     }
 
-    /// <summary>Eigene Bestätigung für den ersten Start (Gelb/Rot erst nach dem Häkchen); nur für genau die angezeigte Karte (B6). Merkt die Erlaubnis zur Prüfsumme.</summary>
+    /// <summary>Eigene Bestätigung für den ersten Start (Gelb/Rot erst nach dem Häkchen); nur für genau die angezeigte Karte (B6).
+    /// Merkt die Erlaubnis zur Prüfsumme des Programmordners – ändert sich danach eine ausführbare Datei, fragt Trendo erneut (N2).</summary>
     public bool GitHubConfirmStart(PendingStart? expected = null)
     {
         if (_ghStart is not { } p) return false;
         if (expected is not null && !ReferenceEquals(expected, p)) return false;
-        if (p.Check.NeedsRiskConsent && !_ghStartRisk) { Say("Dieses Programm ist nicht vertrauenswürdig signiert. Erst das Risiko ausdrücklich bestätigen, dann starten.", "oss"); return false; }
+        if (p.Check.NeedsRiskConsent && !_ghStartRisk) { Say("Dieses Programm ist nicht vollständig vertrauenswürdig signiert. Erst das Risiko ausdrücklich bestätigen, dann starten.", "oss"); return false; }
         _ghStart = null;
         using (p.Lock)
         {
-            if (GitHubApps.Sha256Of(p.Lock) != p.Check.Sha256) { Say("Die Programmdatei hat sich seit der Prüfung verändert – Trendo startet sie nicht.", "oss"); return false; }
-            GitHubApps.ApproveStart(_deps.ToolsRoot, p.Entry.Id, p.Check.Sha256);
+            string now;
+            try { now = GitHubApps.FolderHash(p.Dir, GitHubApps.ExecutableFiles(p.Dir)); }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { now = ""; }
+            if (now != p.Check.Sha256) { Say("Der Programmordner hat sich seit der Prüfung verändert – Trendo startet nicht. Bitte erneut „Starten“.", "oss"); return false; }
+            GitHubApps.ApproveStart(_deps.ToolsRoot, p.Entry.Id, now);
             _core.Audit.Append(Principal.LocalOwner.Name, "github.start.consent", $"{p.Entry.Repo} ampel={p.Check.Ampel} risiko-bestaetigt={_ghStartRisk}");
-            Launch(p.Exe);
+            p.Run();
         }
         _ghStartRisk = false;
-        Say($"„{p.Entry.Repo}“ startet. Künftig startet es ohne Rückfrage, solange die Programmdatei gleich bleibt.", "oss");
+        Say($"„{p.Entry.Repo}“ startet. Künftig startet es ohne Rückfrage, solange sich keine ausführbare Datei im Programmordner ändert.", "oss");
         return true;
     }
 
@@ -275,9 +300,9 @@ public partial class MainWindow
     Control GitHubStartCard()
     {
         if (_ghStart is not { } p) return new Panel();
-        return AmpelCard("oss-firststart", p.Check, $"Erster Start: {p.Entry.Repo} · {p.Check.Title}", $"Programm: {Path.GetFileName(p.Exe)}",
+        return AmpelCard("oss-firststart", p.Check, $"Erster Start: {p.Entry.Repo} · {p.Check.Title}", $"Programm: {Path.GetFileName(p.Exe)} · Prüfsumme über den Programmordner",
             p.Check.Ampel == GitHubApps.Ampel.Gruen ? "Starten" : "Trotzdem starten", "Nicht starten",
-            "Ich habe verstanden: Trendo kann dieses Programm nicht als vertrauenswürdig bestätigen. Es läuft mit meinen Rechten und ich vertraue dem Projekt trotzdem.",
+            "Ich habe verstanden: Trendo kann dieses Programm (samt seinem Ordner) nicht als vertrauenswürdig bestätigen. Es läuft mit meinen Rechten und ich vertraue dem Projekt trotzdem.",
             () => _ghStartRisk, ok => { _ghStartRisk = ok && ReferenceEquals(_ghStart, p); if (_ghStartRisk) _core.Audit.Append(Principal.LocalOwner.Name, "github.start.risk", p.Entry.Repo); },
             () => { GitHubConfirmStart(p); Show("oss"); }, () => { GitHubCancelStart(); Show("oss"); }, () => false);
     }

@@ -189,7 +189,7 @@ public partial class MainWindow
     public void OssOpenInCode(string dir)
     {
         CodeOpenFolder(dir);
-        _ceHints = OpenSource.BuildHints(_ceRoot!); _ceHintsRoot = _ceRoot; _ceHintAsk = null;
+        _ceHints = OpenSource.BuildHints(_ceRoot!); _ceHintsRoot = _ceRoot; _ceHintAsk = null; _ceAskRun = null;
         _ceTab = "terminal";
         var herkunft = OpenSource.OriginFile(dir);
         _ceOut = $"Projekt „{Path.GetFileName(_ceRoot)}“ aus „Open Source“ geöffnet{(File.Exists(herkunft) ? " (Herkunft und Lizenz: " + Path.GetFileName(herkunft) + ")" : "")}. "
@@ -219,39 +219,56 @@ public partial class MainWindow
             wp.Children.Add(b);
         }
         sp.Children.Add(wp);
-        if (_ceHintAsk is { } ask && _ceHintsRoot == root)
-        {
-            sp.Children.Add(new Border { Name = "ce-hint-ask", Background = Brush.Parse("#1AF5A524"), BorderBrush = Brush.Parse("#FACC15"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 8), Child = new StackPanel { Spacing = 6, Children = {
-                P($"Erster Bau-Lauf für „{Path.GetFileName(root)}“: „{ask}“ führt Code aus diesem fremden Projekt mit deinen Rechten aus (Bauskripte, Projektdateien). Nur weiter, wenn du dem Projekt vertraust.", Text, 12),
-                new WrapPanel { Children = {
-                    Act("ce-hint-confirm", "Ja, im Projekt ausführen", () => Try(CEK, () => { CodeHintConfirm(); Show(CEK); })), new Border { Width = 6 },
-                    Act("ce-hint-cancel", "Abbrechen", () => { _ceHintAsk = null; Show(CEK); }) } } } } });
-        }
         return sp;
     }
 
-    string? _ceHintAsk;
-    /// <summary>Bauanleitungs-Befehl, der auf die eigene Bestätigung wartet (nur beim ersten Lauf je Projekt).</summary>
+    string? _ceHintAsk; Action? _ceAskRun; string? _ceAskProject;
+    /// <summary>Befehl bzw. Aktion, die auf die eigene Bestätigung wartet (nur beim ersten Lauf je geholtem Projekt).</summary>
     public string? CodeHintPending => _ceHintAsk;
+
+    /// <summary>T-0762 N3a: Liegt <paramref name="dir"/> in „Open Source“? Dann der Projektordner direkt darin (Ort der Herkunftsdatei), sonst null.</summary>
+    string? OssProjectOf(string dir)
+    {
+        var sep = Path.DirectorySeparatorChar;
+        var oss = Path.GetFullPath(OssFolder).TrimEnd(sep) + sep; var full = Path.GetFullPath(dir).TrimEnd(sep) + sep;
+        if (!full.StartsWith(oss, StringComparison.OrdinalIgnoreCase)) return null;
+        var first = full[oss.Length..].Split(sep)[0];
+        return first.Length == 0 ? null : Path.Combine(oss, first);
+    }
+
+    /// <summary>Erster Lauf (Bauanleitung, Ausführen, Bauen, Testen, Paket) in einem nicht freigegebenen Projekt aus „Open Source“: nur nachfragen, nichts starten.</summary>
+    bool CodeNeedsOssConsent(string label, Action retry)
+    {
+        if (_ceRoot is not { } r || OssProjectOf(r) is not { } proj || OpenSource.BuildApproved(proj)) return false;
+        _ceHintAsk = label; _ceAskRun = retry; _ceAskProject = proj;
+        _core.Audit.Append(Principal.LocalOwner.Name, "oss.build.ask", $"{Path.GetFileName(proj)}: {label}");
+        return true;
+    }
 
     /// <summary>B1: Klick auf einen Vorschlag. Beim ersten Mal je geholtem Projekt nur nachfragen – ausgeführt wird erst nach der eigenen Bestätigung.</summary>
     public void CodeHintRun(string command)
     {
-        var root = _ceRoot ?? throw new InvalidOperationException("Erst einen Projektordner öffnen.");
+        if (_ceRoot is null) throw new InvalidOperationException("Erst einen Projektordner öffnen.");
         if (!CodeBuildHints.Any(h => h.Command == command)) throw new InvalidOperationException("Unbekannter Vorschlag.");
-        if (!OpenSource.BuildApproved(root)) { _ceHintAsk = command; _ceTab = "terminal"; _core.Audit.Append(Principal.LocalOwner.Name, "oss.build.ask", $"{Path.GetFileName(root)}: {command}"); return; }
+        if (CodeNeedsOssConsent(command, () => CodeTerminal(command))) { _ceTab = "terminal"; return; }
         CodeTerminal(command);
     }
 
-    /// <summary>Eigene Bestätigung für den ersten Bau-Lauf: vermerkt sie in der Herkunftsdatei und führt den gewählten Befehl aus.</summary>
+    /// <summary>Eigene Bestätigung für den ersten Lauf: vermerkt sie in der Herkunftsdatei des Projekts und führt die gewählte Aktion aus.</summary>
     public void CodeHintConfirm()
     {
-        if (_ceHintAsk is not { } cmd || _ceRoot is not { } root) return;
-        _ceHintAsk = null;
-        OpenSource.ApproveBuild(root);
-        _core.Audit.Append(Principal.LocalOwner.Name, "oss.build.consent", $"{Path.GetFileName(root)}: {cmd}");
-        CodeTerminal(cmd);
+        if (_ceHintAsk is not { } label || _ceAskRun is not { } run || _ceAskProject is not { } proj) return;
+        _ceHintAsk = null; _ceAskRun = null; _ceAskProject = null;
+        OpenSource.ApproveBuild(proj);
+        _core.Audit.Append(Principal.LocalOwner.Name, "oss.build.consent", $"{Path.GetFileName(proj)}: {label}");
+        run();
     }
+
+    Control CodeAskBox() => new Border { Name = "ce-hint-ask", Background = Brush.Parse("#1AF5A524"), BorderBrush = Brush.Parse("#FACC15"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 8), Child = new StackPanel { Spacing = 6, Children = {
+        P($"Erster Lauf für „{Path.GetFileName(_ceAskProject ?? "")}“ aus „Open Source“: „{_ceHintAsk}“ führt Code aus diesem fremden Projekt mit deinen Rechten aus (Bauskripte, Projektdateien, Programm). Nur weiter, wenn du dem Projekt vertraust.", Text, 12),
+        new WrapPanel { Children = {
+            Act("ce-hint-confirm", "Ja, im Projekt ausführen", () => Try(CEK, () => { CodeHintConfirm(); Show(CEK); })), new Border { Width = 6 },
+            Act("ce-hint-cancel", "Abbrechen", () => { _ceHintAsk = null; _ceAskRun = null; _ceAskProject = null; Show(CEK); }) } } } } };
 
     /// <summary>Geholtes Projekt entfernen – mit Rückfrage im Knopf; löscht nur Ordner direkt im Ordner „Open Source“.</summary>
     private Button OssRemoveButton(string dir, string name)

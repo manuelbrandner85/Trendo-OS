@@ -142,8 +142,15 @@ public static class OpenSource
         }
         if (Has("CMakeLists.txt")) Add("cmake", "cmake -B build && cmake --build build", "C/C++-Projekt mit CMake bauen – CMakeLists.txt kann beliebige Befehle ausführen");
         if (Has("Makefile") && !Has("CMakeLists.txt")) Add("make", "make", "Projekt mit make bauen – das Makefile führt beliebige Befehle aus");
-        if (Has("gradlew.bat") || Has("gradlew")) res.Add(new("gradlew", OperatingSystem.IsWindows() ? "gradlew.bat build" : "./gradlew build", "Java/Kotlin-Projekt mit Gradle bauen – gradlew ist ein Skript aus dem Projekt selbst und lädt Gradle nach", hasTool("java")));
-        else if (Has("pom.xml")) Add("mvn", "mvn package", "Java-Projekt mit Maven bauen – Erweiterungen aus pom.xml laufen mit deinen Rechten");
+        // N1: Skripte aus dem Projekt immer mit ausdrücklichem Pfad (.\…) – das Terminal sucht Programme absichtlich nicht im Projektordner
+        var win = OperatingSystem.IsWindows();
+        if (Has("gradlew.bat") || Has("gradlew"))
+            res.Add(new("gradlew", win ? @".\gradlew.bat build" : "./gradlew build", "Java/Kotlin-Projekt mit Gradle bauen – gradlew ist ein Skript aus dem Projekt selbst und lädt Gradle nach", hasTool("java") && (!win || Has("gradlew.bat"))));
+        else if (Has("pom.xml"))
+        {
+            if (win ? Has("mvnw.cmd") : Has("mvnw")) res.Add(new("mvnw", win ? @".\mvnw.cmd package" : "./mvnw package", "Java-Projekt mit dem Maven-Wrapper bauen – mvnw ist ein Skript aus dem Projekt selbst und lädt Maven nach", hasTool("java")));
+            else Add("mvn", "mvn package", "Java-Projekt mit Maven bauen – Erweiterungen aus pom.xml laufen mit deinen Rechten");
+        }
         return res.OrderByDescending(h => h.Available).ToList();
     }
 }

@@ -198,13 +198,25 @@ public class T0762_GitHubNachbau_Ui
         Assert.NotNull(entry.StartApproved);
         // erlaubt: nächster Start ohne Rückfrage
         Assert.True(w.GitHubLaunch(entry)); Assert.Equal(2, l.Opened.Count); Assert.Null(w.GitHubPendingStart);
-        // Programmdatei geändert: erneut fragen
+        // Programmdatei geändert: erneut fragen – N6: Start von „Programme“ springt zur Karte „Erster Start“
         File.AppendAllText(exe, "neu");
-        Assert.False(w.GitHubLaunch(entry)); Assert.NotNull(w.GitHubPendingStart); Assert.Equal(2, l.Opened.Count);
+        w.Show("components"); Pump();
+        w.Find<Button>("btn-gh-start-" + entry.Id).Press(); Pump();
+        Assert.Equal("oss", w.CurrentView); Assert.NotNull(w.TryFind<Border>("oss-firststart-card"));
+        Assert.NotNull(w.GitHubPendingStart); Assert.Equal(2, l.Opened.Count);
+        w.GitHubCancelStart();
+        // N2: Erlaubnis gilt für den Ordner – eine neue Skript-/DLL-Datei daneben fragt erneut; Startdatei signiert, DLL nicht → Gelb
+        w.GitHubAcceptStartRisk(false);
+        Assert.False(w.GitHubLaunch(entry)); w.GitHubAcceptStartRisk(true); Assert.True(w.GitHubConfirmStart()); Assert.Equal(3, l.Opened.Count);
+        File.WriteAllText(Path.Combine(Path.GetDirectoryName(exe)!, "helfer.dll"), "MZ");
+        Assert.False(w.GitHubLaunch(entry)); Assert.Equal(3, l.Opened.Count); w.GitHubCancelStart();
+        w.GitHubSignatureOverride = f => f.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? new SignatureInfo(SigState.Gueltig, "Beispiel GmbH", "Gültig signiert (in der Datei).") : new SignatureInfo(SigState.Unsigniert, null, "Die Datei ist nicht signiert.");
+        Assert.False(w.GitHubLaunch(entry));
+        Assert.Equal(GitHubApps.Ampel.Gelb, w.GitHubPendingStart!.Check.Ampel); Assert.Contains("helfer.dll", w.GitHubPendingStart!.Check.Text);
         w.GitHubCancelStart();
         // gültig signiert (Signatur ersetzt): startet direkt
         w.GitHubSignatureOverride = _ => new SignatureInfo(SigState.Gueltig, "Beispiel GmbH", "Gültig signiert (in der Datei).");
-        Assert.True(w.GitHubLaunch(entry)); Assert.Equal(3, l.Opened.Count);
+        Assert.True(w.GitHubLaunch(entry)); Assert.Equal(4, l.Opened.Count);
         w.Close();
     }
 
@@ -243,6 +255,57 @@ public class T0762_GitHubNachbau_Ui
         w.Close();
     }
 
+    [AvaloniaFact(DisplayName = "T-0762 N3a (UI): Ausführen/Bauen im Code-Editor fragen bei einem nicht freigegebenen Projekt aus „Open Source“ zuerst nach – auch ohne den Weg über „Im Code-Editor“; echter Python-Bau nach Bestätigung")]
+    public async Task N3a_code_editor_asks_for_oss()
+    {
+        if (DevBuild.Missing("python") is not null) { Assert.Skip("Übersprungen – Python fehlt."); return; }
+        var (w, _, _) = Ui.Open(); w.Width = 1600; w.Height = 1000;
+        var dir = Path.Combine(w.OssFolder, "beispiel_py"); Directory.CreateDirectory(Path.Combine(dir, "pkg"));
+        var marker = Path.Combine(dir, "GELAUFEN.txt");
+        File.WriteAllText(Path.Combine(dir, "main.py"), $"open(r'{marker}', 'w').write('x')\n");
+        File.WriteAllText(Path.Combine(dir, "pkg", "modul.py"), "def f():\n    return 1\n");
+        File.WriteAllText(OpenSource.OriginFile(dir), "Quelle: https://github.com/beispiel/py.git\n");
+        w.CodeRealToolsInTests = true;
+        w.CodeOpenFolder(dir); w.Show("code"); Pump(); // direkt im Code-Editor geöffnet, nicht über „Im Code-Editor“
+        w.CodeRunProject(); w.Show("code"); Pump();
+        Assert.False(w.CodeRunning); Assert.False(File.Exists(marker));
+        Assert.Equal("Ausführen", w.CodeHintPending); Assert.NotNull(w.TryFind<Border>("ce-hint-ask"));
+        w.Find<Button>("ce-hint-cancel").Press(); Pump();
+        w.CodeBuild(); w.Show("code"); Pump();
+        Assert.Equal("Bauen", w.CodeHintPending); Assert.False(w.CodeRunning);
+        w.Find<Button>("ce-hint-confirm").Press(); Pump();
+        Assert.True(OpenSource.BuildApproved(dir));
+        await Until(() => !w.CodeRunning, 120_000);
+        Assert.Contains("Gebaut (Exit 0)", w.CodeOutput); Assert.False(File.Exists(marker)); // Bauen prüft nur, führt main.py nicht aus
+        w.CodeBuild(); Pump(); Assert.Null(w.CodeHintPending); // freigegeben: keine zweite Rückfrage
+        await Until(() => !w.CodeRunning, 120_000);
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "T-0762 N5 (UI): Abgleich A → B → A – Bearbeitungen in A während des Laufs bleiben erhalten, nur der Status kommt hinzu (übersprungen ohne Python)")]
+    public async Task N5_switch_back_keeps_edits()
+    {
+        if (DevBuild.Missing("python") is not null) { Assert.Skip("Übersprungen – Python fehlt."); return; }
+        var (w, _, _) = Ui.Open();
+        var a = CleanRoom.Create(w.CleanFolder, "Erstes", "x"); var b = CleanRoom.Create(w.CleanFolder, "Zweites", "y");
+        File.WriteAllText(Path.Combine(a, "2-Umsetzung", "test_a.py"), "import time, unittest\nclass T(unittest.TestCase):\n    def test_a(self):\n        time.sleep(3)\n");
+        w.CleanOpen(a); w.Show("nachbau"); Pump();
+        var r = w.CleanReqAdd("alt"); w.CleanReq.Update(r.Id, x => x with { Link = "2-Umsetzung/test_a.py#test_a" });
+        w.CleanRealToolsInTests = true;
+        var t = w.CleanReqReconcile(); Pump();
+        w.CleanOpen(b); w.Show("nachbau"); Pump();
+        w.CleanOpen(a); w.Show("nachbau"); Pump();
+        w.CleanReq.Update(r.Id, x => x with { Function = "während des Laufs geändert", Source = "Handbuch S. 3" });
+        var extra = w.CleanReqAdd("neu dazu");
+        await t; Pump();
+        var list = CleanRoom.LoadRequirements(a);
+        Assert.Equal(2, list.Count);
+        Assert.Equal("während des Laufs geändert", list[0].Function); Assert.Equal("Handbuch S. 3", list[0].Source);
+        Assert.Equal(CleanRoom.StatusDone, list[0].Status);
+        Assert.Equal(extra.Id, list[1].Id);
+        w.Close();
+    }
+
     [AvaloniaFact(DisplayName = "T-0762 B4 (UI): beschädigte Anforderungsliste wird angezeigt statt still überschrieben")]
     public void B4_broken_list_shown()
     {
@@ -272,7 +335,7 @@ public class T0762_GitHubNachbau_Ui
         if (Environment.GetEnvironmentVariable("TRENDO_PC_LAUF") != "1") { Assert.Skip("Übersprungen – PC-Lauf nur mit TRENDO_PC_LAUF=1 (braucht Internet, öffentliche GitHub-API ohne Anmeldung, git)."); return; }
         var log = new StringBuilder();
         void L(string s) => log.AppendLine($"[{DateTime.Now:HH:mm:ss}] {Clean(s)}");
-        var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1000;
+        var (w, l, root) = Ui.Open(); w.Width = 1600; w.Height = 1000;
         try
         {
             L($"T-0762 PC-Lauf X-06 · {DateTimeOffset.Now:yyyy-MM-dd HH:mm zzz} · Windows {Environment.OSVersion.Version} · ohne GitHub-Anmeldung (MainWindow.GitHubToken = {(MainWindow.GitHubToken is null ? "keiner" : "gesetzt")})");
@@ -296,8 +359,21 @@ public class T0762_GitHubNachbau_Ui
             Assert.Equal(asset.Sha256, entry.Sha256);
             Assert.StartsWith(Path.GetFullPath(w.ToolsRootForTests), Path.GetFullPath(exe!), StringComparison.OrdinalIgnoreCase);
             L($"Programm: {exe} ({new FileInfo(exe!).Length} Bytes) · Signatur: {Authenticode.Check(exe!).State}");
-            // 3. Starten (eigener Prozess) und per PID beenden
-            var psi = new System.Diagnostics.ProcessStartInfo(exe!) { UseShellExecute = false, RedirectStandardInput = true, RedirectStandardOutput = true, CreateNoWindow = true };
+            // 3. Starten über den echten Weg der App (N4): „Starten“ → Tor GitHubLaunch → Karte „Erster Start“ (Ampel) → Häkchen → eigener Klick.
+            //    Das Testfenster hat einen Test-Starter: er nimmt den Pfad entgegen, den Trendo starten würde; diese Datei startet der Lauf als eigenen Prozess.
+            w.Show("components"); Pump();
+            w.Find<Button>("btn-gh-start-" + entry.Id).Press(); Pump();
+            var held = w.GitHubPendingStart;
+            Assert.NotNull(held); Assert.Empty(l.Opened); Assert.Equal("oss", w.CurrentView);
+            L($"„Starten“ unter Programme: nicht gestartet, Karte „Erster Start“ – Ampel {held!.Check.Ampel} ({held.Check.Title}), Ordner-Prüfsumme {held.Check.Sha256}");
+            w.Find<CheckBox>("oss-firststart-risk").IsChecked = true; Pump();
+            Assert.Empty(l.Opened);
+            w.Find<Button>("oss-firststart-run").Press(); Pump();
+            var launched = Assert.Single(l.Opened);
+            Assert.Equal(Path.GetFullPath(exe!), Path.GetFullPath(launched));
+            Assert.NotNull(Assert.Single(GitHubApps.List(w.ToolsRootForTests)).StartApproved);
+            L($"Häkchen gesetzt, „Trotzdem starten“ geklickt: Trendo übergibt {launched} an den Starter; Erlaubnis zur Ordner-Prüfsumme gespeichert");
+            var psi = new System.Diagnostics.ProcessStartInfo(launched) { UseShellExecute = false, RedirectStandardInput = true, RedirectStandardOutput = true, CreateNoWindow = true };
             psi.ArgumentList.Add("--version");
             using (var v = System.Diagnostics.Process.Start(psi)!) { var ver = (await v.StandardOutput.ReadToEndAsync()).Split('\n')[0].Trim(); await v.WaitForExitAsync(); L($"Start 1 (--version): PID {v.Id}, Exit {v.ExitCode}, Ausgabe „{ver}“"); Assert.Equal(0, v.ExitCode); Assert.StartsWith("ripgrep", ver); }
             psi.ArgumentList.Clear(); psi.ArgumentList.Add("suchwort"); // liest von der Standardeingabe und wartet

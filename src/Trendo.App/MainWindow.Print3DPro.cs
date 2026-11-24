@@ -118,6 +118,8 @@ public partial class MainWindow
         Show("3d-druck");
     }
 
+    bool _bambuGateOpen; // T-0762 N3b: Start läuft schon durch das Tor (GitHubGate)
+
     /// <summary>B3: Modell direkt in Trendo für den Druck vorbereiten (Bambu Studio im Hintergrund) – danach „Hochladen und drucken“.</summary>
     public async Task PrepareForPrint()
     {
@@ -128,6 +130,7 @@ public partial class MainWindow
         if (SliceOverride is { } fake) ok = await fake(f, out3mf);
         else if (BambuStudioExe() is { } exe && !_opt.Isolated)
         {
+            if (!_bambuGateOpen && GitHubEntryFor(exe) is { } ghe) { GitHubGate(ghe, exe, () => { _bambuGateOpen = true; _ = PrepareForPrint().ContinueWith(_ => _bambuGateOpen = false, TaskScheduler.FromCurrentSynchronizationContext()); }); return; } // T-0762 N3b
             var r = await Task.Run(() => Cli.Run(exe, BambuStudioCli.SliceArgs(f, out3mf), Path.GetDirectoryName(f), 600_000));
             ok = r.Ok && File.Exists(out3mf);
             if (!ok) { _prMsg = "Bambu Studio konnte nicht vorbereiten: " + Short(r.Err.Length > 0 ? r.Err : r.Out) + " – „In Bambu Studio öffnen“ geht immer."; Show("3d-druck"); return; }

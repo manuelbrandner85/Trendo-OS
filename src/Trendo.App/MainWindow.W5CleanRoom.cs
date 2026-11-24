@@ -118,7 +118,7 @@ public partial class MainWindow
 
     // ───── T-0762 (X-10): Anforderungsliste, Abgleich mit Tests, Vergleich nebeneinander ─────
 
-    private CleanRoom.RequirementsDoc? _cleanReqDoc;
+    private readonly Dictionary<string, CleanRoom.RequirementsDoc> _cleanReqDocs = new(StringComparer.OrdinalIgnoreCase); // N5: eine Liste je Projektordner
     private string? _cleanTheirs;
     private int _cleanSimSel;
     private string _cleanReqMsg = "";
@@ -131,13 +131,14 @@ public partial class MainWindow
         get
         {
             var open = _cleanOpen ?? throw new InvalidOperationException("Erst ein Projekt anlegen oder öffnen.");
-            if (_cleanReqDoc is null || _cleanReqDoc.Dir != open) _cleanReqDoc = new CleanRoom.RequirementsDoc(open);
-            return _cleanReqDoc;
+            var key = Path.GetFullPath(open);
+            if (!_cleanReqDocs.TryGetValue(key, out var doc)) _cleanReqDocs[key] = doc = new CleanRoom.RequirementsDoc(open);
+            return doc;
         }
     }
     public string CleanReqMessage => _cleanReqMsg;
 
-    public void CleanOpen(string dir) { _cleanOpen = Path.GetFullPath(dir); _cleanSims = null; _cleanReqDoc = null; }
+    public void CleanOpen(string dir) { _cleanOpen = Path.GetFullPath(dir); _cleanSims = null; }
 
     public Requirement CleanReqAdd(string function = "", string source = "eigene Beobachtung")
     {
@@ -177,8 +178,9 @@ public partial class MainWindow
             if (_opt.Isolated && !CleanRealToolsInTests) log = "Testmodus: Trendo startet keine Programme – Abgleich ohne Testlauf.";
             else (run, log) = await CleanRoom.RunTestsAsync(open, cts.Token);
             if (cts.IsCancellationRequested) { _cleanReqMsg = $"Abgleich für „{Path.GetFileName(open)}“ abgebrochen – Status unverändert."; return; }
-            var after = CleanRoom.ReconcileAll(open, doc.Items, run);
-            doc.Change(_ => after);
+            // N5: auf die aktuelle Liste anwenden (Bearbeitungen während des Laufs bleiben) – nur Status und Abgleich-Grund ändern sich
+            doc.Change(cur => CleanRoom.ReconcileAll(open, cur, run));
+            var after = doc.Items;
             var done = after.Count(r => r.Status == CleanRoom.StatusDone);
             _cleanReqMsg = $"Abgleich „{Path.GetFileName(open)}“: {done} erfüllt · {after.Count(r => r.Status == CleanRoom.StatusPartly)} teilweise · {after.Count(r => r.Status == CleanRoom.StatusOpen)} offen. {log.Split('\n').Last()}";
             CleanRoom.Log(open, CleanRoom.Roles[2], $"Abgleich der Anforderungen: {done} von {after.Count} erfüllt");

@@ -60,6 +60,51 @@ public static partial class GitHubApps
     public static InstallerCheck CheckProgram(string exe, Func<string, Sys.SignatureInfo>? check = null, FileStream? locked = null) =>
         CheckFile(exe, $"„{Path.GetFileName(exe)}“ ist ein fremdes Programm aus der Veröffentlichung auf GitHub. Beim Start läuft es mit deinen Rechten (ohne Admin).", "Programm", check, locked);
 
+    /// <summary>N2: Dateiendungen, die ein Programm beim Start ausführen oder laden kann (Programme, Bibliotheken, Electron-Pakete, Skripte).</summary>
+    public static readonly string[] ExecutableExt = [".exe", ".dll", ".sys", ".ocx", ".cpl", ".com", ".scr", ".msi", ".asar", ".node", ".ps1", ".psm1", ".bat", ".cmd", ".vbs", ".vbe", ".js", ".jse", ".wsf", ".hta", ".py", ".pyd", ".jar", ".lnk"];
+    /// <summary>Mehr ausführbare Dateien prüft Trendo nicht einzeln (dann höchstens Gelb).</summary>
+    public const int MaxExecutables = 1500;
+
+    /// <summary>N2: alle ausführbaren Inhalte eines Programmordners (ohne Verknüpfungen zu betreten), sortiert nach relativem Pfad.</summary>
+    public static List<string> ExecutableFiles(string dir) =>
+        Directory.Exists(dir)
+            ? Directory.EnumerateFiles(dir, "*", new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true, AttributesToSkip = FileAttributes.ReparsePoint })
+                .Where(f => ExecutableExt.Contains(Path.GetExtension(f).ToLowerInvariant())).OrderBy(f => Path.GetRelativePath(dir, f), StringComparer.OrdinalIgnoreCase).Take(MaxExecutables + 1).ToList()
+            : [];
+
+    /// <summary>N2: Prüfsumme über alle ausführbaren Inhalte des Programmordners (relativer Pfad + SHA-256 je Datei). Ändert sich eine davon, ändert sich die Summe.</summary>
+    public static string FolderHash(string dir, IReadOnlyList<string> files)
+    {
+        var sb = new StringBuilder();
+        foreach (var f in files)
+        {
+            using var fs = new FileStream(f, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
+            sb.Append(Path.GetRelativePath(dir, f).Replace('\\', '/').ToLowerInvariant()).Append('\t').Append(Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(fs))).Append('\n');
+        }
+        return Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(sb.ToString())));
+    }
+
+    /// <summary>N2: Programm mit seinem ganzen Ordner prüfen. Grün nur, wenn die Startdatei UND alle ausführbaren Inhalte (DLL, .asar, Skripte …) gültig signiert sind;
+    /// ist die Startdatei signiert, anderes aber nicht, ist es Gelb. <see cref="InstallerCheck.Sha256"/> ist hier die Ordner-Prüfsumme.</summary>
+    public static InstallerCheck CheckProgramFolder(string exe, string dir, Func<string, Sys.SignatureInfo>? check = null, FileStream? locked = null)
+    {
+        var main = CheckProgram(exe, check, locked);
+        var files = ExecutableFiles(dir);
+        if (!files.Any(f => string.Equals(Path.GetFullPath(f), Path.GetFullPath(exe), StringComparison.OrdinalIgnoreCase)) && File.Exists(exe)) { files.Add(exe); }
+        var hash = FolderHash(dir, files.Where(f => f.StartsWith(Path.GetFullPath(dir), StringComparison.OrdinalIgnoreCase)).ToList());
+        var others = files.Where(f => !string.Equals(Path.GetFullPath(f), Path.GetFullPath(exe), StringComparison.OrdinalIgnoreCase)).ToList();
+        var scope = $" Geprüft wird der ganze Programmordner: {files.Count} ausführbare Datei(en) (Programme, Bibliotheken, Skripte, Electron-Pakete).";
+        if (main.Ampel != Ampel.Gruen) return main with { Sha256 = hash, Text = main.Text + scope };
+        if (files.Count > MaxExecutables)
+            return main with { Ampel = Ampel.Gelb, Title = "Startdatei signiert, Ordner zu groß zum Prüfen", Text = main.Text + scope + $" Es sind mehr als {MaxExecutables} – Trendo prüft nicht alle und kann den Ordner deshalb nicht bestätigen.", Sha256 = hash, NeedsRiskConsent = true };
+        var check2 = check ?? Sys.Authenticode.Check;
+        var unsigned = others.Where(f => check2(f).State != Sys.SigState.Gueltig).ToList();
+        if (unsigned.Count == 0) return main with { Sha256 = hash, Text = main.Text + scope + " Alle sind gültig signiert." };
+        var names = string.Join(", ", unsigned.Take(5).Select(f => Path.GetRelativePath(dir, f).Replace('\\', '/'))) + (unsigned.Count > 5 ? $" und {unsigned.Count - 5} weitere" : "");
+        return main with { Ampel = Ampel.Gelb, Title = $"Startdatei signiert, {unsigned.Count} weitere Datei(en) nicht", Sha256 = hash, NeedsRiskConsent = true,
+            Text = main.Text + scope + $" Nicht gültig signiert: {names}. Das Programm kann diese beim Start laden oder ausführen – die Signatur der Startdatei deckt sie nicht ab." };
+    }
+
     /// <summary>Datei zum Prüfen und Starten sperren: andere dürfen lesen, aber nicht schreiben, löschen oder umbenennen.</summary>
     public static FileStream OpenLocked(string file) => new(file, FileMode.Open, FileAccess.Read, FileShare.Read);
 
