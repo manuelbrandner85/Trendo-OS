@@ -431,6 +431,37 @@ public class T0762_GitHubNachbau_Ui
         w.Close();
     }
 
+    [AvaloniaFact(DisplayName = "T-0762 P1 (UI): Abbruch nach dem Ende der Hintergrund-Prüfung – weder Karte noch Start (auch bei erlaubtem Programm); Sperren frei")]
+    public async Task P1_cancel_after_background()
+    {
+        var (w, l, root) = Ui.Open();
+        var zip = Path.Combine(root, "dl.zip");
+        using (var z = System.IO.Compression.ZipFile.Open(zip, System.IO.Compression.ZipArchiveMode.Create)) using (var s = new StreamWriter(z.CreateEntry("b/b.exe").Open())) s.Write("MZ");
+        w.GitHubFetchOverride = _ => Task.FromResult<(GitHubApps.Release, string?)>((new GitHubApps.Release("v2.0", "", [new("b-windows-x64.zip", "https://github.com/a/b/releases/download/v2.0/b-windows-x64.zip", new FileInfo(zip).Length, null)]), zip));
+        Assert.NotNull(await w.GitHubInstall(Repo("a/b"), start: false)); Pump();
+        var entry = Assert.Single(GitHubApps.List(w.ToolsRootForTests));
+        var exe = GitHubApps.ExePath(w.ToolsRootForTests, entry);
+        w.GitHubSignatureOverride = _ => new SignatureInfo(SigState.Gueltig, "Beispiel GmbH", "ok");
+        // noch nicht erlaubt: Abbruch nach der Prüfung → keine Karte
+        var hits = 0; w.GitHubCheckAfterBackground = () => { hits++; w.GitHubCancelCheck(); };
+        w.GitHubLaunch(entry); await w.GitHubStartCheckTask; Pump();
+        Assert.Equal(1, hits); Assert.Null(w.GitHubPendingStart); Assert.Empty(l.Opened);
+        File.AppendAllText(exe, ""); // Sperren frei
+        // erlauben (normaler Weg), dann erlaubter Start mit Abbruch → kein Start
+        w.GitHubCheckAfterBackground = null;
+        w.GitHubLaunch(entry); await w.GitHubStartCheckTask; Pump();
+        Assert.True(w.GitHubConfirmStart()); Assert.Single(l.Opened);
+        w.GitHubCheckAfterBackground = () => w.GitHubCancelCheck();
+        w.GitHubLaunch(entry); await w.GitHubStartCheckTask; Pump();
+        Assert.Single(l.Opened); Assert.Null(w.GitHubPendingStart);
+        File.AppendAllText(exe, "");
+        // ohne Abbruch startet der erlaubte Weg wieder
+        w.GitHubCheckAfterBackground = null;
+        File.WriteAllText(exe, "MZ"); w.GitHubLaunch(entry); await w.GitHubStartCheckTask; Pump(); // Inhalt gleich, Zeit neu → Index anders: Karte
+        Assert.NotNull(w.GitHubPendingStart); w.GitHubCancelStart();
+        w.Close();
+    }
+
     // ───────────── PC-Lauf mit echtem GitHub ─────────────
 
     static string Clean(string s)

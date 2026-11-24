@@ -257,6 +257,8 @@ public partial class MainWindow
     public bool GitHubStartChecking => _ghCheckTask is { IsCompleted: false };
     /// <summary>Laufende Prüfung abbrechen (Sperren werden freigegeben, nichts startet).</summary>
     public void GitHubCancelCheck() => _ghCheckCts?.Cancel();
+    /// <summary>Für Tests: läuft auf dem UI-Thread direkt nach dem Ende der Hintergrund-Prüfung, vor der Entscheidung (Start/Karte).</summary>
+    public Action? GitHubCheckAfterBackground { get; set; }
 
     /// <summary>L1: Tor vor dem Start. Kehrt sofort zurück; Sperren, Fingerabdruck (Index aller Dateien + SHA-256 der ausführbaren Inhalte) und – beim ersten Mal –
     /// Signaturprüfung laufen im Hintergrund mit Fortschritt und „Abbrechen“. Schon erlaubt (gleicher Fingerabdruck) → Start unter Sperre; sonst – auch bei Grün –
@@ -296,6 +298,9 @@ public partial class MainWindow
                     catch { lk.Dispose(); throw; }
                 }, cts.Token);
                 locks = res.lk;
+                GitHubCheckAfterBackground?.Invoke();
+                // P1: Abbruch (auch durch Entfernen) zwischen Ende der Prüfung und hier – nie starten, keine Karte
+                if (cts.IsCancellationRequested) { Say($"Prüfung von „{label}“ abgebrochen – nichts gestartet.", "oss"); return; } // Sperren gibt finally frei
                 if (res.Item3 is not { } chk)
                 {
                     using (locks) run();

@@ -122,3 +122,7 @@ Kalt (leerer Dateicache) habe ich NICHT gemessen – den Windows-Dateicache zu l
 
 Tests fix4: Build 0 Fehler. Core `T0762|GitHub|W4Oss|W5_X10|PromptActionTests` 131 bestanden, 1 übersprungen (Messung ohne Variable). App: `T0762_GitHubNachbau_Ui` 12 (11 bestanden, PC-Lauf separat bestanden), `KiSourceSetupUiTests` 2, `GitHubUsableUiTests` 3, `GitHubProgramsUiTests` 2, `GitHubNet_Ui` 3, `GitHubPlus_Ui` 4, `BambuPro_Ui` 1, `CodeEditor_Ui` 1, `W5_X10_Ui` 1 – 0 Fehler. PC-Lauf neu: SHA-256 `ad3079704780f26795dc784de3108c11149d2a11ad843566647331e6660a3a74`. Grüne Karte neu gerendert und angesehen; die Fortschrittskarte „Prüfe …“ ist nur im UI-Test geprüft (kurzlebig, nicht gerendert).
 Bestehende Tests angepasst (nicht geschwächt): wo ein Start erwartet wird, wartet der Test jetzt auf die Hintergrund-Prüfung (`GitHubStartCheckTask`).
+
+## Fünfte Prüfrunde (fix5, auf @173de6db6)
+- P1: Im Start-Tor wird direkt nach dem Ende der Hintergrund-Prüfung der Abbruch geprüft (auch Abbruch durch Entfernen/Neueinrichten): dann weder Start noch Karte, Sperren werden freigegeben. Test `T0762_GitHubNachbau_Ui.P1_cancel_after_background` (Abbruch über die Testschnittstelle `GitHubCheckAfterBackground` genau zwischen Prüfungsende und Entscheidung – bei noch nicht erlaubtem und bei erlaubtem Programm).
+- Tests fix5: Build 0 Fehler; Core `T0762` 24 bestanden, 1 übersprungen (Messung); App `T0762_GitHubNachbau_Ui` 13 (12 bestanden, PC-Lauf übersprungen), `GitHubProgramsUiTests` 2, `GitHubUsableUiTests` 3, `KiSourceSetupUiTests` 2 – 0 Fehler.
