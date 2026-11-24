@@ -204,7 +204,7 @@ Log(fails == 0 ? "ERGEBNIS: BESTANDEN" : $"ERGEBNIS: {fails} FEHLER");
 File.WriteAllText(Path.Combine(outDir, "rohlog.txt"), log.ToString());
 var sums = new StringBuilder();
 foreach (var f in Directory.GetFiles(outDir).Where(f => !f.EndsWith("SHA256SUMS.txt", StringComparison.Ordinal) && !f.EndsWith(".cs", StringComparison.Ordinal)).OrderBy(f => f, StringComparer.Ordinal))
-    sums.AppendLine($"{Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(f))).ToLowerInvariant()}  {Path.GetFileName(f)}");
+    sums.Append($"{Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(f))).ToLowerInvariant()}  {Path.GetFileName(f)}").Append('\n'); // LF: „sha256sum -c“ liest sonst den Namen mit CR
 File.WriteAllText(Path.Combine(outDir, "SHA256SUMS.txt"), sums.ToString());
 Console.Write(sums);
 try { Directory.Delete(work, true); } catch (IOException) { } catch (UnauthorizedAccessException) { }
