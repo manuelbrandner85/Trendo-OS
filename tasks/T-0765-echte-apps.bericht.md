@@ -66,4 +66,16 @@ Hinweis: `oberflaeche-text-direkt.png` und `oberflaeche-formularseite.png` stamm
 
 Nicht erneut geprüft: ob die neuen Browser-Prüfungen auf dem alten Stand rot wären (Befund stammt aus der Gegenprüfung); die neuen Core-Tests kompilieren auf dem alten Stand nicht (neue Schnittstellen). CSP `navigate-to` nicht eingesetzt (von Chrome nicht unterstützt) – Schutz ist das Maskieren.
 
+## Zweite Prüfrunde (Stand nach 212d3eb83), Kopie `%TEMP%\trendo-auftrag-T-0765-fix2`
+| Punkt | Änderung | Test / Beleg |
+|---|---|---|
+| L1 Feldnamen `elements`/`reset` überdecken Formular-Eigenschaften | `SitePage.ReservedFieldIds` gilt überall als vergeben (Kurzschrift, Feld hinzufügen, Datei) → `elements-2` …; Skript holt Felder über `form.querySelectorAll('[name]')` + `getAttribute`, leert über `HTMLFormElement.prototype.reset.call(form)`; CSP-Hash folgt automatisch | Core `T0765_Runde2Tests.L1_…`; echter Chrome (Lauf 3): Datei mit Feldern elements/reset/submit → gespeichert, Anzahl 1, Formular geleert, 0 Skriptfehler |
+| L2 Vertauschung `Preis`/`preis` | `AssignIds`: zuerst schon gültige Kennungen, danach die übrigen (Seiten, Sammlungen, Felder) | Core `L2_keine_vertauschung` (Seiten und Felder, Verweise) |
+| L3 `einkaeufe-2` bei gleicher Sammlung | `Absorb` verwendet eine Sammlung mit gleichem Namen (ohne Groß/klein) und gleichen Feldern wieder | Core `L3_gleiche_sammlung` |
+| L4 Bildpfade verschachteln sich; Hinweis abgeschnitten | schon unter `importiert/…` liegende Bilder behalten ihren Pfad (ohne Überschreiben, sonst neuer Name); Hinweistext der Datenliste bricht um | Core `L4_bildpfade` (zweifache Rundreise, fremder Inhalt am selben Pfad); Bild `oberflaeche-liste-gegenpruefung.png` angesehen |
+
+Angepasst: `T0765_GegenpruefungTests.M1_…` prüfte die Zeile `form.elements.namedItem` – ersetzt durch die neue Abfrage über `getAttribute` (die Prüfung „kein zusammengesetzter Selektor“ bleibt).
+
+Testläufe Runde 2: Build 0 Fehler · Core `T0765|T0716|T0711|T0718|PromptAction|NoFixedUser` → **Bestanden!** 120/120 · App (7 Klassen wie oben) → 29/29 · Browser-Beleg → BESTANDEN, `sha256sum -c` 11/11.
+
 **Status:** umgesetzt, gezielt getestet, gepusht auf `claude/T-0765-echte-apps`; Merge nach main offen (Hauptsitzung).

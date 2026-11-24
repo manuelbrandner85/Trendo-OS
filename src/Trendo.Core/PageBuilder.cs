@@ -74,28 +74,25 @@ public sealed class SitePage : IJsonOnDeserialized
     {
         Title ??= ""; Accent ??= "#2F86F6"; AppId ??= "";
         AppId = Regex.IsMatch(AppId, "^[A-Za-z0-9-]{1,40}$") ? AppId : "";
+        foreach (var s in Pages) { s.Blocks ??= []; s.Blocks.RemoveAll(b => b is null); s.Name ??= ""; }
         var pageMap = new Dictionary<string, string>(StringComparer.Ordinal);
-        var seenPages = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var s in Pages)
-        {
-            s.Blocks ??= []; s.Blocks.RemoveAll(b => b is null); s.Name ??= "";
-            var old = s.Id ?? ""; var id = Unique(Slug(old), x => seenPages.Contains(x)); seenPages.Add(id);
-            pageMap.TryAdd(old, id); s.Id = id;
-        }
+        var pageIds = AssignIds(Pages.Select(s => s.Id).ToList(), _ => false);
+        for (var i = 0; i < Pages.Count; i++) { pageMap.TryAdd(Pages[i].Id ?? "", pageIds[i]); Pages[i].Id = pageIds[i]; }
         var collMap = new Dictionary<string, string>(StringComparer.Ordinal);
         var fieldMaps = new Dictionary<string, Dictionary<string, string>>(StringComparer.Ordinal);
-        var seenColl = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var c in Collections)
+        foreach (var c in Collections) { c.Fields ??= []; c.Fields.RemoveAll(f => f is null); c.Name ??= ""; }
+        var collIds = AssignIds(Collections.Select(c => c.Id).ToList(), _ => false);
+        for (var ci = 0; ci < Collections.Count; ci++)
         {
-            c.Fields ??= []; c.Fields.RemoveAll(f => f is null); c.Name ??= "";
-            var old = c.Id ?? ""; var id = Unique(Slug(old), x => seenColl.Contains(x)); seenColl.Add(id);
-            collMap.TryAdd(old, id); c.Id = id;
-            var fm = new Dictionary<string, string>(StringComparer.Ordinal); var seenF = new HashSet<string>(StringComparer.Ordinal);
+            var c = Collections[ci]; var id = collIds[ci];
+            collMap.TryAdd(c.Id ?? "", id); c.Id = id;
+            var fm = new Dictionary<string, string>(StringComparer.Ordinal);
+            var fids = AssignIds(c.Fields.Select(f => f.Id ?? f.Label).ToList(), ReservedFieldIds.Contains);
             for (var k = 0; k < c.Fields.Count; k++)
             {
-                var f = c.Fields[k]; var fid = Unique(Slug(f.Id ?? f.Label), x => seenF.Contains(x)); seenF.Add(fid);
-                fm.TryAdd(f.Id ?? "", fid);
-                c.Fields[k] = new DataField(fid, f.Label ?? "", f.Type == "zahl" ? "zahl" : "text", f.Required);
+                var f = c.Fields[k];
+                fm.TryAdd(f.Id ?? "", fids[k]);
+                c.Fields[k] = new DataField(fids[k], f.Label ?? "", f.Type == "zahl" ? "zahl" : "text", f.Required);
             }
             fieldMaps[id] = fm;
         }
@@ -141,6 +138,24 @@ public sealed class SitePage : IJsonOnDeserialized
         foreach (var c in t) sb.Append(c is >= 'a' and <= 'z' or >= '0' and <= '9' ? c : '-');
         var r = Regex.Replace(sb.ToString(), "-+", "-").Trim('-');
         return r.Length == 0 ? "x" : r.Length > 40 ? r[..40].Trim('-') : r;
+    }
+
+    /// <summary>T-0765 (zweite Prüfrunde L1): Feld-Kennungen, die als Name eines Eingabefelds Eigenschaften des Formulars im Browser überdecken würden
+    /// (<c>form.elements</c>, <c>form.reset</c> …) – sie gelten als vergeben und werden zu „elements-2“ usw.</summary>
+    public static readonly HashSet<string> ReservedFieldIds = new(StringComparer.Ordinal)
+        { "elements", "reset", "submit", "action", "method", "length", "item", "nameditem", "target", "name", "id", "enctype", "encoding", "autocomplete",
+          "novalidate", "hidden", "style", "title", "lang", "dir", "children", "attributes", "dataset", "classname", "classlist", "_t" };
+
+    /// <summary>T-0765 (zweite Prüfrunde L2): Kennungen in zwei Durchgängen vergeben – zuerst die, die schon gültige Slugs sind (sie behalten ihren Wert),
+    /// danach die übrigen. So wird aus „Preis“ nie „preis“, wenn es „preis“ schon gibt (keine Vertauschung der Verweise).</summary>
+    static List<string> AssignIds(List<string?> raw, Func<string, bool> reserved)
+    {
+        var result = new string?[raw.Count]; var taken = new HashSet<string>(StringComparer.Ordinal);
+        for (var i = 0; i < raw.Count; i++)
+            if (raw[i] is { } r && Slug(r) == r && !reserved(r) && taken.Add(r)) result[i] = r;
+        for (var i = 0; i < raw.Count; i++)
+            if (result[i] is null) { var id = Unique(Slug(raw[i]), x => taken.Contains(x) || reserved(x)); taken.Add(id); result[i] = id; }
+        return [.. result!];
     }
 
     static string Unique(string baseId, Func<string, bool> taken)
@@ -200,7 +215,7 @@ public sealed class SitePage : IJsonOnDeserialized
     public static DataField AddField(DataCollection c, string label, string type = "text", bool required = false)
     {
         label = label.Trim().Length > 0 ? label.Trim() : "Feld";
-        var f = new DataField(Unique(Slug(label), id => c.Fields.Any(x => x.Id == id)), label, type == "zahl" ? "zahl" : "text", required);
+        var f = new DataField(Unique(Slug(label), id => ReservedFieldIds.Contains(id) || c.Fields.Any(x => x.Id == id)), label, type == "zahl" ? "zahl" : "text", required);
         c.Fields.Add(f); return f;
     }
 
@@ -214,7 +229,7 @@ public sealed class SitePage : IJsonOnDeserialized
             var num = Regex.IsMatch(t, @"\((zahl|nummer|betrag)\)", RegexOptions.IgnoreCase);
             t = Regex.Replace(t, @"\s*\((zahl|nummer|betrag|text)\)\s*", " ", RegexOptions.IgnoreCase).Trim();
             if (t.Length == 0) continue;
-            list.Add(new DataField(Slug(t), t, num ? "zahl" : "text", req));
+            list.Add(new DataField(Unique(Slug(t), id => ReservedFieldIds.Contains(id) || list.Any(x => x.Id == id)), t, num ? "zahl" : "text", req));
         }
         return list;
     }
@@ -226,6 +241,9 @@ public sealed class SitePage : IJsonOnDeserialized
         var collMap = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var c in other.Collections)
         {
+            // zweite Prüfrunde L3: gleiche Sammlung (Name ohne Groß/klein, gleiche Felder) wiederverwenden statt „einkaeufe-2“
+            if (Collections.FirstOrDefault(x => string.Equals(x.Name.Trim(), c.Name.Trim(), StringComparison.OrdinalIgnoreCase) && x.Fields.SequenceEqual(c.Fields)) is { } same)
+            { collMap[c.Id] = same.Id; continue; }
             var id = Unique(c.Id, x => Collection(x) is not null);
             collMap[c.Id] = id;
             Collections.Add(new DataCollection { Id = id, Name = c.Name, Fields = [.. c.Fields] });
@@ -367,9 +385,9 @@ public sealed class SitePage : IJsonOnDeserialized
       ev.preventDefault();
       var id = form.getAttribute('data-sammlung'); var c = sammlung(id); var fehler = form.querySelector('.t-fehler');
       if (!c) return;
-      var e = {}; var fehlt = []; var gross = [];
+      var e = {}; var fehlt = []; var gross = []; var felder = Array.prototype.slice.call(form.querySelectorAll('[name]'));
       c.Fields.forEach(function (f) {
-        var inp = form.elements.namedItem(f.Id); var v = inp && 'value' in inp ? String(inp.value).trim() : '';
+        var inp = null; felder.forEach(function (x) { if (x.getAttribute('name') === f.Id) inp = x; }); var v = inp ? String(inp.value).trim() : '';
         if (f.Required && v === '') fehlt.push(f.Label);
         if (f.Type === 'zahl' && v !== '' && (!isFinite(parseFloat(v.replace(',', '.'))) || Math.abs(parseFloat(v.replace(',', '.'))) > GRENZE)) gross.push(f.Label);
         e[f.Id] = f.Type === 'zahl' && v !== '' ? zahl(v) : v;
@@ -379,7 +397,7 @@ public sealed class SitePage : IJsonOnDeserialized
       e._t = Date.now();
       var a = lade(id); a.push(e);
       if (!speichere(id, a)) { fehler.textContent = 'Konnte nicht speichern – der Browser erlaubt hier keinen Speicher.'; fehler.hidden = false; return; }
-      fehler.textContent = 'Gespeichert.'; fehler.hidden = false; form.reset(); zeichne();
+      fehler.textContent = 'Gespeichert.'; fehler.hidden = false; HTMLFormElement.prototype.reset.call(form); zeichne();
     });
   });
   function zeige() {
@@ -537,11 +555,13 @@ public sealed class SitePage : IJsonOnDeserialized
             var moved = new Dictionary<string, string>(StringComparer.Ordinal);
             foreach (var (rel, data) in bytes)
             {
-                var target = pre.Length > 0 ? pre + "/" + rel : rel;
+                // zweite Prüfrunde L4: schon importierte eigene Bilder (importiert/…) nicht noch einmal verschachteln
+                var keep = pre.Length > 0 && rel.StartsWith(pre.Split('/')[0] + "/", StringComparison.Ordinal);
+                var target = pre.Length > 0 && !keep ? pre + "/" + rel : rel;
                 var dst = Path.Combine(assetDir, target);
                 for (var k = 2; File.Exists(dst) && !File.ReadAllBytes(dst).AsSpan().SequenceEqual(data); k++)
                 {
-                    target = (Path.GetDirectoryName(pre.Length > 0 ? pre + "/" + rel : rel) is { Length: > 0 } d ? d.Replace('\\', '/') + "/" : "") + Path.GetFileNameWithoutExtension(rel) + "-" + k + Path.GetExtension(rel);
+                    target = (Path.GetDirectoryName(pre.Length > 0 && !keep ? pre + "/" + rel : rel) is { Length: > 0 } d ? d.Replace('\\', '/') + "/" : "") + Path.GetFileNameWithoutExtension(rel) + "-" + k + Path.GetExtension(rel);
                     dst = Path.Combine(assetDir, target);
                 }
                 if (!File.Exists(dst)) { Directory.CreateDirectory(Path.GetDirectoryName(dst)!); File.WriteAllBytes(dst, data); }

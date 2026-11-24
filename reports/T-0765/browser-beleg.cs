@@ -159,6 +159,20 @@ try
     var tc = termine.AddCollection("Termine", SitePage.ParseFields("Was*, Zeit, Betrag (Zahl)"));
     termine.Blocks.AddRange([new Block("h1", "Termine"), new Block("form", "Speichern", "", tc.Id), new Block("datalist", "Noch keine.", "", tc.Id), new Block("stat", "Summe", "summe:betrag", tc.Id)]);
     var termineIndex = termine.Publish(Path.Combine(work, "termine"));
+    // zweite Prüfrunde L1: Felder, die Formular-Eigenschaften heißen (aus einer Datei mit genau diesen Kennungen – wird beim Lesen umbenannt)
+    var formJson = new JsonObject
+    {
+        ["Version"] = 2, ["Title"] = "Formularnamen", ["Accent"] = "#C8A04A",
+        ["Pages"] = new JsonArray(new JsonObject { ["Id"] = "start", ["Name"] = "Start", ["Blocks"] = new JsonArray(
+            new JsonObject { ["Kind"] = "form", ["Text"] = "Speichern", ["Url"] = "", ["Data"] = "f" },
+            new JsonObject { ["Kind"] = "datalist", ["Text"] = "leer", ["Url"] = "", ["Data"] = "f" },
+            new JsonObject { ["Kind"] = "stat", ["Text"] = "Anzahl", ["Url"] = "anzahl", ["Data"] = "f" }) }),
+        ["Collections"] = new JsonArray(new JsonObject { ["Id"] = "f", ["Name"] = "F", ["Fields"] = new JsonArray(
+            new JsonObject { ["Id"] = "elements", ["Label"] = "Elements", ["Type"] = "text", ["Required"] = true },
+            new JsonObject { ["Id"] = "reset", ["Label"] = "Reset", ["Type"] = "text", ["Required"] = false },
+            new JsonObject { ["Id"] = "submit", ["Label"] = "Submit", ["Type"] = "text", ["Required"] = false }) }),
+    }.ToJsonString();
+    var formIndex = SitePage.FromJson(formJson).Publish(Path.Combine(work, "formularnamen"));
     await Session("Lauf 3 (Gegenprüfung)", async c =>
     {
         await Nav(c, new Uri(evilIndex).AbsoluteUri);
@@ -184,6 +198,16 @@ try
         var foot = (await Eval(c, "document.querySelector('footer.t-hinweis').textContent"))?.GetValue<string>() ?? "";
         Check(foot == SitePage.StorageNote, "N3: Hinweis in der App sichtbar → „" + foot + "“");
         await Shot(c, "lauf3-termine.png");
+
+        await Nav(c, new Uri(formIndex).AbsoluteUri);
+        var errs = 0; c.OnEvent += (m, _) => { if (m == "Runtime.exceptionThrown") errs++; };
+        await Type(c, "form.t-form input[name='elements-2']", "Eins"); await Type(c, "form.t-form input[name='reset-2']", "Zwei"); await Type(c, "form.t-form input[name='submit-2']", "Drei");
+        await Click(c, "form.t-form button[type=submit]");
+        var l1 = (await Eval(c, "Array.prototype.slice.call(document.querySelectorAll('ul.t-liste li span')).map(function(s){return s.textContent}).join(' | ')"))?.GetValue<string>();
+        Check(l1 == "Eins · Reset: Zwei · Submit: Drei", "L1: Felder „Elements/Reset/Submit“ werden gespeichert → " + l1);
+        Check((await Eval(c, "document.querySelector('.t-wert strong').textContent"))?.GetValue<string>() == "1", "L1: Anzahl 1");
+        Check((await Eval(c, "Array.prototype.slice.call(document.querySelectorAll('form.t-form input')).every(function(i){return i.value===''})"))?.GetValue<bool>() == true, "L1: Formular nach dem Speichern geleert (reset trotz Feldnamen)");
+        Check(errs == 0, "L1: kein Skriptfehler (" + errs + ")");
     });
     var foreign = requests.Where(u => !u.StartsWith("file:", StringComparison.Ordinal) && !u.StartsWith("data:", StringComparison.Ordinal) && u != "about:blank").ToList();
     Check(foreign.Count == 0, $"keine Netzanfrage außer file:// ({requests.Count} Anfragen gesamt" + (foreign.Count > 0 ? ": " + string.Join(", ", foreign) : "") + ")");

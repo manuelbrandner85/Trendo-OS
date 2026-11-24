@@ -49,7 +49,7 @@ public class T0765_GegenpruefungTests
         Assert.Single(Regex.Matches(html, "<meta http-equiv", RegexOptions.IgnoreCase)); // nur die eigene CSP
         Assert.DoesNotContain("<x y=", html);
         Assert.Contains("<input name=\"", html);
-        Assert.Contains("form.elements.namedItem(f.Id)", SitePage.AppScript); // kein zusammengesetzter Selektor mehr
+        Assert.Contains("x.getAttribute('name') === f.Id", SitePage.AppScript); // kein zusammengesetzter Selektor mehr (seit Runde 2 über getAttribute statt form.elements, L1)
         Assert.DoesNotContain("querySelector('[name=", SitePage.AppScript);
     }
 

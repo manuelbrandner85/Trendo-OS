@@ -301,7 +301,7 @@ public partial class MainWindow
                 return new Border { BorderBrush = BuilderLine, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(12, 9),
                     Child = new StackPanel { Spacing = 3, Children = {
                         new TextBlock { Text = b.Text.Length > 0 ? b.Text : "Noch keine Einträge.", Foreground = BuilderGrey, TextWrapping = TextWrapping.Wrap },
-                        new TextBlock { Text = $"Liste „{c.Name}“ – Einträge erscheinen hier, gespeichert im Browser", Foreground = BuilderGrey, FontSize = 11 } } } };
+                        new TextBlock { Text = $"Liste „{c.Name}“ – Einträge erscheinen hier, gespeichert im Browser", Foreground = BuilderGrey, FontSize = 11, TextWrapping = TextWrapping.Wrap } } } };
             default:
                 return new Border { Background = BuilderSoft, CornerRadius = new CornerRadius(8), Padding = new Thickness(12, 8),
                     Child = new DockPanel { Children = {
