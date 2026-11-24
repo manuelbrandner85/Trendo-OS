@@ -51,21 +51,46 @@ public static partial class GitHubApps
     public sealed record InstallerCheck(Ampel Ampel, string Title, string Text, string? Publisher, string Sha256, bool NeedsRiskConsent, bool Blocked);
 
     /// <summary>T-0762 (X-06): Installer vor dem Lauf prüfen – Authenticode-Signatur (Windows WinVerifyTrust, ohne Sperrlisten-Abfrage) und SHA-256.
-    /// Der Installer läuft danach mit den Rechten der Person; Trendo führt ihn nie im selben Klick wie „Installieren“ aus.</summary>
-    public static InstallerCheck CheckInstaller(string file, InstallerKind kind, Func<string, Sys.SignatureInfo>? check = null)
+    /// Der Installer läuft danach mit den Rechten der Person; Trendo führt ihn nie im selben Klick wie „Installieren“ aus.
+    /// Mit <paramref name="locked"/> (aus <see cref="OpenLocked"/>) wird die Prüfsumme aus genau der gesperrten Datei gelesen (kein Austausch bis zum Start).</summary>
+    public static InstallerCheck CheckInstaller(string file, InstallerKind kind, Func<string, Sys.SignatureInfo>? check = null, FileStream? locked = null) =>
+        CheckFile(file, $"„{Path.GetFileName(file)}“ ist ein {kind}-Installer. Trendo kann ihn nicht selbst auspacken – er müsste als fremdes Programm mit deinen Rechten laufen und richtet das Programm außerhalb von Trendo ein (nur für dich, ohne Admin).", "Installer", check, locked);
+
+    /// <summary>T-0762 (B2): fertiges Programm (aus ZIP oder einzelne .exe) vor dem ersten Start prüfen – gleiche Ampel wie beim Installer.</summary>
+    public static InstallerCheck CheckProgram(string exe, Func<string, Sys.SignatureInfo>? check = null, FileStream? locked = null) =>
+        CheckFile(exe, $"„{Path.GetFileName(exe)}“ ist ein fremdes Programm aus der Veröffentlichung auf GitHub. Beim Start läuft es mit deinen Rechten (ohne Admin).", "Programm", check, locked);
+
+    /// <summary>Datei zum Prüfen und Starten sperren: andere dürfen lesen, aber nicht schreiben, löschen oder umbenennen.</summary>
+    public static FileStream OpenLocked(string file) => new(file, FileMode.Open, FileAccess.Read, FileShare.Read);
+
+    /// <summary>SHA-256 aus einem offenen (gesperrten) Datenstrom.</summary>
+    public static string Sha256Of(FileStream fs) { fs.Position = 0; var h = Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(fs)); fs.Position = 0; return h; }
+
+    static InstallerCheck CheckFile(string file, string what, string noun, Func<string, Sys.SignatureInfo>? check, FileStream? locked)
     {
+        string sha;
+        if (locked is not null) sha = Sha256Of(locked);
+        else if (File.Exists(file)) { using var fs = OpenLocked(file); sha = Sha256Of(fs); }
+        else sha = "";
         var sig = (check ?? Sys.Authenticode.Check)(file);
-        var sha = File.Exists(file) ? Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(file))) : "";
-        var what = $"„{Path.GetFileName(file)}“ ist ein {kind}-Installer. Trendo kann ihn nicht selbst auspacken – er müsste als fremdes Programm mit deinen Rechten laufen und richtet das Programm außerhalb von Trendo ein (nur für dich, ohne Admin).";
         return sig.State switch
         {
             Sys.SigState.Gueltig => new(Ampel.Gruen, $"Signiert von {sig.Publisher ?? "einem unbekannten Herausgeber"}",
-                $"{what} Die Signatur ist gültig ({sig.Detail}). Das sagt, wer ihn gebaut hat und dass er seitdem nicht verändert wurde – nicht, dass er harmlos ist. Sperrlisten fragt Trendo nicht ab.", sig.Publisher, sha, false, false),
-            Sys.SigState.NichtPruefbar => new(Ampel.Gelb, "Signatur nicht prüfbar", $"{what} {sig.Detail} Führe ihn nur aus, wenn du dem Projekt vertraust.", null, sha, true, false),
-            Sys.SigState.Fehlt => new(Ampel.Rot, "Installer fehlt", "Die heruntergeladene Datei ist nicht mehr da – es gibt nichts auszuführen.", null, sha, true, true),
-            Sys.SigState.Unsigniert => new(Ampel.Rot, "Nicht signiert", $"{what} Er trägt keine Signatur: Niemand bestätigt, wer ihn gebaut hat oder dass er unverändert ist. Nur ausführen, wenn du dem Projekt ausdrücklich vertraust.", null, sha, true, false),
-            _ => new(Ampel.Rot, "Signatur ungültig", $"{what} Die Signatur ist ungültig: {sig.Detail} Trendo rät davon ab, ihn auszuführen.", sig.Publisher, sha, true, false),
+                $"{what} Die Signatur ist gültig ({sig.Detail}). Das sagt, wer die Datei gebaut hat und dass sie seitdem nicht verändert wurde – nicht, dass sie harmlos ist. Sperrlisten fragt Trendo nicht ab.", sig.Publisher, sha, false, false),
+            Sys.SigState.NichtPruefbar => new(Ampel.Gelb, "Signatur nicht prüfbar", $"{what} {sig.Detail} Nur ausführen, wenn du dem Projekt vertraust.", null, sha, true, false),
+            Sys.SigState.Fehlt => new(Ampel.Rot, $"{noun} fehlt", "Die Datei ist nicht mehr da – es gibt nichts auszuführen.", null, sha, true, true),
+            Sys.SigState.Unsigniert => new(Ampel.Rot, "Nicht signiert", $"{what} Die Datei trägt keine Signatur: Niemand bestätigt, wer sie gebaut hat oder dass sie unverändert ist. Nur ausführen, wenn du dem Projekt ausdrücklich vertraust.", null, sha, true, false),
+            _ => new(Ampel.Rot, "Signatur ungültig", $"{what} Die Signatur ist ungültig: {sig.Detail} Trendo rät davon ab, die Datei auszuführen.", sig.Publisher, sha, true, false),
         };
+    }
+
+    /// <summary>T-0762 (B2): Erlaubnis für den ersten Start merken – gebunden an die SHA-256 der Programmdatei (ändert sie sich, fragt Trendo erneut).</summary>
+    public static bool ApproveStart(string toolsRoot, string id, string sha)
+    {
+        var list = List(toolsRoot);
+        if (list.FirstOrDefault(i => i.Id == id) is not { } e) return false;
+        Save(toolsRoot, list.Select(i => i.Id == id ? e with { StartApproved = sha } : i));
+        return true;
     }
 
     /// <summary>Electron-NSIS-Installer enthalten das Programm als „app-64.7z“ (bzw. arm64/32) – das passende Paket im ausgepackten Ordner.</summary>

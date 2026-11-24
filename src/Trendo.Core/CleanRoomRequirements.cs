@@ -28,12 +28,28 @@ public static partial class CleanRoom
 
     public static string RequirementsFile(string dir) => Path.Combine(dir, "1-Beschreibung", "anforderungen.json");
 
-    /// <summary>Liste laden; fehlende oder beschädigte Datei = leere Liste (die beschädigte bleibt liegen, wird erst beim Speichern ersetzt).</summary>
-    public static List<Requirement> LoadRequirements(string dir)
+    /// <summary>Liste laden; fehlende oder beschädigte Datei = leere Liste (die beschädigte bleibt liegen).</summary>
+    public static List<Requirement> LoadRequirements(string dir) => LoadRequirements(dir, out _);
+
+    /// <summary>B4: wie <see cref="LoadRequirements(string)"/>, meldet aber, ob die Datei beschädigt bzw. nicht lesbar war.</summary>
+    public static List<Requirement> LoadRequirements(string dir, out string? error)
     {
+        error = null;
         var f = RequirementsFile(dir);
         try { return File.Exists(f) ? JsonSerializer.Deserialize<List<Requirement>>(File.ReadAllText(f), ReqJson) ?? [] : []; }
-        catch (Exception e) when (e is JsonException or IOException or UnauthorizedAccessException) { return []; }
+        catch (Exception e) when (e is JsonException or IOException or UnauthorizedAccessException or NotSupportedException)
+        { error = $"Die Anforderungsliste „{Path.GetFileName(f)}“ ist beschädigt oder nicht lesbar ({e.GetType().Name}). Vor dem ersten Speichern legt Trendo eine Kopie „anforderungen.defekt-…json“ an."; return []; }
+    }
+
+    /// <summary>B4: beschädigte Datei vor dem Überschreiben sichern; liefert den Pfad der Kopie.</summary>
+    public static string? BackupBroken(string dir)
+    {
+        var f = RequirementsFile(dir);
+        if (!File.Exists(f)) return null;
+        var copy = Path.Combine(Path.GetDirectoryName(f)!, $"anforderungen.defekt-{DateTime.Now:yyyyMMdd-HHmmss}.json");
+        for (var i = 2; File.Exists(copy); i++) copy = Path.Combine(Path.GetDirectoryName(f)!, $"anforderungen.defekt-{DateTime.Now:yyyyMMdd-HHmmss}-{i}.json");
+        File.Copy(f, copy);
+        return copy;
     }
 
     /// <summary>Speichern ohne Datenverlust bei Absturz (<see cref="AtomicFile"/>).</summary>
@@ -101,7 +117,7 @@ public static partial class CleanRoom
         if (file is null) return new(StatusOpen, "Die Verknüpfung zeigt aus dem Projekt heraus.");
         if (!File.Exists(file)) return new(StatusOpen, $"Datei „{r.Link.Split('#')[0]}“ fehlt.");
         if (test is null) return new(StatusPartly, "Datei vorhanden, aber kein Test benannt (Datei#Testname).");
-        var hit = run?.Cases.FirstOrDefault(c => c.Name == test || c.Name.EndsWith("." + test, StringComparison.Ordinal) || c.Name.EndsWith(" " + test, StringComparison.Ordinal));
+        var hit = run?.Cases.FirstOrDefault(c => SameTest(c, file, test));
         if (hit is not null) return hit.Passed ? new(StatusDone, $"Test „{test}“ bestanden.") : hit.Skipped ? new(StatusPartly, $"Test „{test}“ übersprungen.") : new(StatusOpen, $"Test „{test}“ fehlgeschlagen: {hit.Message}");
         string text; try { text = File.ReadAllText(file); } catch (IOException) { text = ""; }
         return text.Contains(test, StringComparison.Ordinal)
@@ -109,12 +125,28 @@ public static partial class CleanRoom
             : new(StatusOpen, $"Test „{test}“ steht nicht in der Datei.");
     }
 
+    /// <summary>B8: Ein Testergebnis gehört nur dann zur Verknüpfung, wenn Testname UND Datei/Modul passen
+    /// (Ergebnisdatei nennt die Datei, oder der volle Testname enthält den Dateinamen als Teil, z. B. „test_notiz.T.test_speichern“).</summary>
+    public static bool SameTest(DevBuild.TestCase c, string file, string test)
+    {
+        var nameOk = c.Name == test || c.Name.EndsWith("." + test, StringComparison.Ordinal) || c.Name.EndsWith(" " + test, StringComparison.Ordinal) || c.Name.EndsWith(" > " + test, StringComparison.Ordinal);
+        if (!nameOk) return false;
+        if (c.File is { Length: > 0 } cf)
+            try { if (string.Equals(Path.GetFullPath(cf), Path.GetFullPath(file), StringComparison.OrdinalIgnoreCase)) return true; } catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { }
+        var stem = Path.GetFileName(file).Split('.')[0];
+        var parts = c.Name.Split(['.', '/', '\\', ' ', ':', '>'], StringSplitOptions.RemoveEmptyEntries);
+        return stem.Length > 0 && parts.Take(Math.Max(0, parts.Length - 1)).Any(x => string.Equals(x, stem, StringComparison.OrdinalIgnoreCase));
+    }
+
     /// <summary>Alle Anforderungen abgleichen: Status und Grund werden übernommen.</summary>
     public static List<Requirement> ReconcileAll(string dir, IEnumerable<Requirement> list, DevBuild.TestRun? run) =>
         list.Select(r => Reconcile(dir, r, run) is var v ? r with { Status = v.Status, Note = v.Reason } : r).ToList();
 
-    /// <summary>Echter Testlauf in „2-Umsetzung“ (dotnet test, python unittest/pytest, node --test). Null mit Grund, wenn es keinen Test oder kein Werkzeug gibt.</summary>
-    public static (DevBuild.TestRun? Run, string Log) RunTests(string dir, int timeoutMs = 600_000)
+    /// <summary>Echter Testlauf in „2-Umsetzung“ (dotnet test, python unittest/pytest, node --test). Null mit Grund, wenn es keinen Test oder kein Werkzeug gibt.
+    /// Führt Code aus „2-Umsetzung“ mit den Rechten der Person aus. B3: <paramref name="ct"/> bricht ab und beendet den Prozessbaum.</summary>
+    public static (DevBuild.TestRun? Run, string Log) RunTests(string dir, int timeoutMs = 600_000) => RunTestsAsync(dir, CancellationToken.None, timeoutMs).GetAwaiter().GetResult();
+
+    public static async Task<(DevBuild.TestRun? Run, string Log)> RunTestsAsync(string dir, CancellationToken ct, int timeoutMs = 600_000, Action<int>? onStart = null)
     {
         var impl = Path.Combine(dir, "2-Umsetzung");
         if (!Directory.Exists(impl)) return (null, "Kein Ordner „2-Umsetzung“.");
@@ -125,7 +157,8 @@ public static partial class CleanRoom
             var plan = DevBuild.Test(p, results);
             if (plan.Cmd is not { } cmd) return (null, plan.Blocked ?? plan.Note ?? "Für dieses Projekt kennt Trendo keinen Test.");
             Directory.CreateDirectory(results);
-            var r = Cli.Run(cmd.Exe, cmd.Args, cmd.Cwd, timeoutMs, cmd.Env, cmd.Utf8 ? new UTF8Encoding(false) : null);
+            var r = await Cli.RunStreamAsync(cmd.Exe, cmd.Args, cmd.Cwd, null, ct, timeoutMs, onStart, cmd.Env, cmd.Utf8 ? new UTF8Encoding(false) : null).ConfigureAwait(false);
+            if (r.Exit == Cli.Cancelled) return (null, "Abgebrochen – der Testlauf wurde beendet.");
             var run = DevBuild.ReadResults(p, results, r.Out + "\n" + r.Err);
             return (run, $"$ {cmd.Display}\n(Exit {r.Exit}) {run.Summary}");
         }
@@ -137,8 +170,12 @@ public static partial class CleanRoom
     {
         readonly Stack<List<Requirement>> _undo = new();
         public string Dir { get; } = dir;
+        string? _broken = ErrorOf(dir);
+        static string? ErrorOf(string d) { LoadRequirements(d, out var e); return e; }
         public List<Requirement> Items { get; private set; } = LoadRequirements(dir);
         public bool CanUndo => _undo.Count > 0;
+        /// <summary>B4: Meldung, wenn die Datei beim Öffnen beschädigt war (bis zum ersten Speichern, danach Hinweis auf die Kopie).</summary>
+        public string? Problem { get; private set; } = ErrorOf(dir);
 
         public void Change(Func<List<Requirement>, List<Requirement>> edit)
         {
@@ -146,13 +183,19 @@ public static partial class CleanRoom
             var after = edit(Items.ToList());
             if (after.SequenceEqual(before)) return;
             _undo.Push(before); if (_undo.Count > 200) { var keep = _undo.Take(200).Reverse().ToList(); _undo.Clear(); foreach (var k in keep) _undo.Push(k); }
-            Items = after; SaveRequirements(Dir, Items);
+            Items = after; Save();
+        }
+
+        void Save()
+        {
+            if (_broken is not null) { var copy = BackupBroken(Dir); _broken = null; Problem = copy is null ? null : $"Die beschädigte Liste wurde als „{Path.GetFileName(copy)}“ gesichert und durch die neue ersetzt."; }
+            SaveRequirements(Dir, Items);
         }
 
         public Requirement Add(string function = "", string source = "eigene Beobachtung") { var r = NewRequirement(Items, function, source); Change(l => [.. l, r]); return r; }
         public void Update(string id, Func<Requirement, Requirement> edit) => Change(l => l.Select(r => r.Id == id ? edit(r) : r).ToList());
         public void Remove(string id) => Change(l => l.Where(r => r.Id != id).ToList());
-        public bool Undo() { if (_undo.Count == 0) return false; Items = _undo.Pop(); SaveRequirements(Dir, Items); return true; }
+        public bool Undo() { if (_undo.Count == 0) return false; Items = _undo.Pop(); Save(); return true; }
     }
 
     // ───────────── Vergleich nebeneinander ─────────────

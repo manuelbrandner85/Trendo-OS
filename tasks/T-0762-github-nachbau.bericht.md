@@ -21,7 +21,7 @@
 - `dotnet build Trendo.sln -c Release` → 0 Fehler.
 - Core gezielt (`T0762|W5_X10|GitHub|W4Oss|PromptActionTests|SystemPagesTests|NoFixedUser|DevBuild|Authenticode`): **Bestanden, 132 von 132**. Darin echt: Authenticode auf `notepad.exe` (Grün) und auf selbst geschriebener Datei (Rot), echter Python-unittest-Lauf für den Abgleich.
 - App gezielt: `T0762_GitHubNachbau_Ui` 4 (3 bestanden, PC-Lauf ohne Variable übersprungen), `W5_X10_Ui` 1, `GitHubUsableUiTests` 3, `GitHubNet_Ui` 3, `GitHubPlus_Ui` 4, `GitHubProgramsUiTests` 2, `T0711_HuelleEtappe1b_Ui` 11, `CodeEditor_Ui` 1, `PromptBarTests` 6 – alle 0 Fehler. Darin echt: `dotnet build` eines Projekts aus „Open Source“ über den Bauanleitungs-Knopf (Exit 0, Hallo.dll entsteht), Python-Testlauf im Nachbau-Abgleich.
-- PC-Lauf `TRENDO_PC_LAUF=1 … -method …Pc_run_real_github` → bestanden (12 s). Rohlog `reports/T-0762/x06-echtlauf.log`, SHA-256 `41063c50721076987c7c7578e36fb804922a2f2008603e349eac781916b3be89`.
+- PC-Lauf `TRENDO_PC_LAUF=1 … -method …Pc_run_real_github` → bestanden (12 s). Rohlog `reports/T-0762/x06-echtlauf.log`, SHA-256 `3e5456a55f131f621ec14c0ad1035a0cbf864f19ac3c8549d4372116619bce05 (Stand fix1)`.
 - Rot-Grün: die neuen Tests bauen auf altem Code nicht (Methoden fehlen); `Installer_is_usable` schlägt auf altem Code fehl (Installer lief sofort).
 - Kein Volltest (macht die Hauptsitzung).
 
@@ -51,3 +51,21 @@ Suche „ripgrep“ → `BurntSushi/ripgrep` (Unlicense) → `GitHubInstall` lä
 - X-10: Testlauf nur für Projekte, die `DevBuild` kennt (.NET, Python, Node).
 
 **Status:** umgesetzt, gezielt getestet, PC-Lauf belegt; Volltest steht aus.
+
+## Nachbesserung nach unabhängiger Gegenprüfung (fix1, auf @2aa2f951d)
+| Befund | Änderung | Beleg/Test |
+|---|---|---|
+| B1 fremder Code beim Bauen | Python-Vorschläge mit `python -I -m …` (auch `DevBuild` „Bauen“: `-I -X utf8`); Terminal des Code-Editors mit `NoDefaultCurrentDirectoryInExePath=1` (keine `python.bat`/`.exe` aus dem Projekt); fester Hinweis „Bauen führt Code aus diesem fremden Projekt mit deinen Rechten aus.“; erster Bau-Lauf je geholtem Projekt nur nach eigener Bestätigung („Ja, im Projekt ausführen“, vermerkt in der Herkunftsdatei, nicht im selben Klick); Tooltips ehrlich (npm-Installationsskripte, MSBuild-Ziele, build.rs, CMake/Makefile, gradlew aus dem Projekt, Maven) | Rot-Grün `B1_project_module_not_run` (präparierte `compileall.py` + `python.bat`: mit `-I` kein Marker, ohne `-I` Marker – echt mit Python/cmd), `B1_honest_hints_and_approval`, UI `Fetched_project_in_code_editor` (Klick fragt nur, Abbrechen, Bestätigen, echter dotnet-Bau), PC-Lauf |
+| B2 unsignierte Programme starteten sofort | `GitHubLaunch`: gültig signiert oder schon erlaubt (an SHA-256 gebunden) → Start; sonst Karte „Erster Start“ mit Ampel, Gelb/Rot erst nach Häkchen, eigener Klick. Alle Start-Knöpfe (Open Source, Programme, Hinzufügen) gehen darüber. Nach bestätigtem Installer-Lauf gilt die Zustimmung für das so eingerichtete Programm (an seine Prüfsumme gebunden). Neues optionales Feld `startFreigabe` in `github-programme.json` (alte Dateien lesbar) | UI `B2_unsigned_program_first_start` (echte Authenticode-Prüfung Rot; Grün-Zweig mit ersetzter Signatur), `B2_approve_start` |
+| B3 Abgleich | Knopf während des Laufs gesperrt, „■ Abbrechen“ (Abbruchsignal, `Cli.RunStreamAsync` beendet den Prozessbaum), Liste vor dem Warten festgehalten, Hinweis „führt Code aus „2-Umsetzung“ mit deinen Rechten aus“ | `B3_cancel_test_run` (Core, echt), UI `B3_reconcile_lock_switch_cancel` (Projektwechsel während des Laufs, Abbrechen, echt mit Python) |
+| B4 kaputte Liste | Meldung in der Seite; vor dem ersten Speichern Kopie `anforderungen.defekt-<Zeit>.json` | `B4_broken_file_backed_up`, UI `B4_broken_list_shown` |
+| B5 TOCTOU | Installer und Programmdatei bleiben vom Prüfen bis zum Start mit `FileShare.Read` offen (Hash aus dem gesperrten Datenstrom, erneuter Vergleich vor dem Start) | `B5_locked_file` (Ändern/Umbenennen scheitert, Start geht – echt mit where.exe), UI `Green_installer_own_click_and_tamper` |
+| B6 Knopf ↔ Karte | `GitHubConfirmInstaller(p)` / `GitHubConfirmStart(p)` prüfen `ReferenceEquals` | UI `Green_installer_own_click_and_tamper` (alte Karte führt nichts aus) |
+| B7 Junction | Entfernen geht selbst durch den Baum, löst Verknüpfungen einzeln, betritt sie nie | `B7_junction_not_followed` (echte Junction per mklink /J, Ziel samt Schreibschutz unverändert) |
+| B8 Datei#Test | Treffer nur, wenn Testname UND Datei (Ergebnisdatei) bzw. Modulname passen | `B8_same_name_other_file` |
+| B9 Kennzeichnung | DisplayName „(UI, Signatur ersetzt, Installer-Lauf ersetzt)“ | – |
+
+**Ausdrücklich:** Ein echter Installer-Lauf (NSIS/Inno/Squirrel) ist NICHT belegt – in allen Tests ist der Installer-Lauf ersetzt (`GitHubInstallerRunOverride`); echt sind nur die Signaturprüfung, die Sperre und die Zustimmungslogik.
+
+Tests nach der Nachbesserung: Build 0 Fehler. Core gezielt (`T0762|W5_X10|GitHub|W4Oss|PromptActionTests|SystemPagesTests|NoFixedUser|DevBuild|Authenticode|CodeEditor|DevStudio`) 143/143, `T0688` 7 + 2 übersprungen. App: `T0762_GitHubNachbau_Ui` 7 (6 bestanden, PC-Lauf separat bestanden), `GitHubUsableUiTests` 3, `W5_X10_Ui` 1, `GitHubNet_Ui` 3, `GitHubPlus_Ui` 4, `GitHubProgramsUiTests` 2 (zuerst rot: wartender Erststart sperrte die Datei beim Entfernen – Entfernen und Neuinstallation geben die Sperre jetzt frei), `T0711_HuelleEtappe1b_Ui` 11, `CodeEditor_Ui` 1, `PromptBarTests` 6 – 0 Fehler. PC-Lauf neu: SHA-256 `3e5456a55f131f621ec14c0ad1035a0cbf864f19ac3c8549d4372116619bce05`.
+Zusätzlich berührt: `src/Trendo.Core/GitHubApps.cs` (Feld `startFreigabe`), `src/Trendo.Core/DevBuild.cs` (`-I -X utf8`), `src/Trendo.App/MainWindow.AddHub.cs` (Start/Entfernen).

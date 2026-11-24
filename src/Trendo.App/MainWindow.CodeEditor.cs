@@ -218,7 +218,7 @@ public partial class MainWindow
             // cmd versteht die Maskierung von Anführungszeichen in Programm-Argumenten nicht – der Befehl kommt deshalb unverändert in eine Skriptdatei
             var script = Path.Combine(_core.DataRoot, "code-editor", "terminal.cmd"); Directory.CreateDirectory(Path.GetDirectoryName(script)!);
             File.WriteAllText(script, $"@echo off\r\nchcp 65001 >nul\r\ncd /d \"{root}\"\r\n{command}\r\n", new System.Text.UTF8Encoding(false));
-            cmd = new DevBuild.Cmd("cmd", ["/d", "/c", script], root, new Dictionary<string, string> { ["PYTHONIOENCODING"] = "utf-8" }, true);
+            cmd = new DevBuild.Cmd("cmd", ["/d", "/c", script], root, new Dictionary<string, string> { ["PYTHONIOENCODING"] = "utf-8", ["NoDefaultCurrentDirectoryInExePath"] = "1" }, true); // T-0762 B1: „python“ nie aus dem Projektordner holen
         }
         else cmd = new DevBuild.Cmd("sh", ["-c", command], root);
         CodeStartCmd("terminal", cmd, 1800000, "");

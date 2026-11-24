@@ -14,7 +14,7 @@ public class T0762GitHubNachbauTests
     {
         var d = Tmp(); var f = Path.Combine(d, "setup.exe"); File.WriteAllBytes(f, [(byte)'M', (byte)'Z', 1, 2, 3]);
         var g = GitHubApps.CheckInstaller(f, GitHubApps.InstallerKind.Inno, _ => new SignatureInfo(SigState.Gueltig, "Beispiel GmbH", "Gültig signiert (in der Datei)."));
-        Assert.Equal(GitHubApps.Ampel.Gruen, g.Ampel); Assert.False(g.NeedsRiskConsent); Assert.Contains("Beispiel GmbH", g.Title); Assert.Contains("nicht, dass er harmlos ist", g.Text);
+        Assert.Equal(GitHubApps.Ampel.Gruen, g.Ampel); Assert.False(g.NeedsRiskConsent); Assert.Contains("Beispiel GmbH", g.Title); Assert.Contains("nicht, dass sie harmlos ist", g.Text);
         Assert.Equal(64, g.Sha256.Length);
         var y = GitHubApps.CheckInstaller(f, GitHubApps.InstallerKind.Inno, _ => new SignatureInfo(SigState.NichtPruefbar, null, "Nicht prüfbar."));
         Assert.Equal(GitHubApps.Ampel.Gelb, y.Ampel); Assert.True(y.NeedsRiskConsent);
@@ -54,7 +54,7 @@ public class T0762GitHubNachbauTests
         var cmds = h.Select(x => x.Command).ToList();
         Assert.Contains("dotnet build \"App.sln\"", cmds);
         Assert.Contains("npm install", cmds); Assert.Contains("npm run build", cmds); Assert.Contains("npm test", cmds);
-        Assert.Contains("cargo build --release", cmds); Assert.Contains("go build ./...", cmds); Assert.Contains("python -m compileall -q .", cmds);
+        Assert.Contains("cargo build --release", cmds); Assert.Contains("go build ./...", cmds); Assert.Contains("python -I -m compileall -q .", cmds);
         Assert.Contains("cmake -B build && cmake --build build", cmds);
         Assert.True(h.TakeWhile(x => x.Available).Count() == h.Count(x => x.Available)); // vorhandene zuerst
         Assert.False(h.First(x => x.Tool == "cargo").Available);
@@ -171,5 +171,151 @@ public class T0762GitHubNachbauTests
         { Assert.Contains("Herkunft: Tagebuch", line); Assert.Contains("Datum:", line); }
         Assert.DoesNotContain(root, text); // nur Ordnernamen, keine vollen Pfade
         Directory.Delete(root, true);
+    }
+
+    // ───────────── Nachbesserung nach Gegenprüfung (B1–B8) ─────────────
+
+    public sealed class WindowsPythonFactAttribute : FactAttribute { public WindowsPythonFactAttribute() { if (!OperatingSystem.IsWindows() || DevBuild.Missing("python") is not null) Skip = "Übersprungen – nur Windows mit Python."; } }
+    public sealed class WindowsFactAttribute : FactAttribute { public WindowsFactAttribute() { if (!OperatingSystem.IsWindows()) Skip = "Übersprungen – nur Windows."; } }
+
+    static Cli.Result RunLikeTerminal(string dir, string command)
+    {
+        var script = Path.Combine(Path.GetTempPath(), "trendo-t0762-term-" + Guid.NewGuid().ToString("N")[..8] + ".cmd");
+        File.WriteAllText(script, $"@echo off\r\ncd /d \"{dir}\"\r\n{command}\r\n");
+        try { return Cli.Run("cmd", ["/d", "/c", script], dir, 120_000, new Dictionary<string, string> { ["NoDefaultCurrentDirectoryInExePath"] = "1" }); }
+        finally { File.Delete(script); }
+    }
+
+    [WindowsPythonFact(DisplayName = "T-0762 B1: Bauanleitung „python -I -m compileall“ führt eine projekteigene compileall.py bzw. python.bat NICHT aus (ohne -I schon – Rot-Grün)")]
+    public void B1_project_module_not_run()
+    {
+        var d = Tmp();
+        File.WriteAllText(Path.Combine(d, "pyproject.toml"), "[project]\nname='x'\n");
+        var marker = Path.Combine(d, "GEKAPERT.txt");
+        File.WriteAllText(Path.Combine(d, "compileall.py"), $"open(r'{marker}', 'w').write('x')\n");
+        File.WriteAllText(Path.Combine(d, "python.bat"), $"@echo x> \"{marker}\"\r\n");
+        var cmd = OpenSource.BuildHints(d).First(h => h.Tool == "python").Command;
+        Assert.Equal("python -I -m compileall -q .", cmd);
+        var r = RunLikeTerminal(d, cmd);
+        Assert.False(File.Exists(marker), "Projekt-Code lief: " + r.Out + r.Err);
+        Assert.Equal(0, r.Exit);
+        // Gegenprobe: der alte Befehl ohne -I lädt die compileall.py aus dem Projekt
+        RunLikeTerminal(d, "python -m compileall -q .");
+        Assert.True(File.Exists(marker));
+        Directory.Delete(d, true);
+    }
+
+    [Fact(DisplayName = "T-0762 B1: Tooltips ehrlich (npm-Installationsskripte, MSBuild-Ziele, Makefile, gradlew aus dem Projekt); erster Bau-Lauf je Projekt wird in der Herkunftsdatei vermerkt")]
+    public void B1_honest_hints_and_approval()
+    {
+        var parent = Tmp(); var d = Path.Combine(parent, "o_r"); Directory.CreateDirectory(d);
+        File.WriteAllText(Path.Combine(d, "App.sln"), ""); File.WriteAllText(Path.Combine(d, "package.json"), "{}"); File.WriteAllText(Path.Combine(d, "Makefile"), "all:"); File.WriteAllText(Path.Combine(d, "gradlew.bat"), "");
+        var h = OpenSource.BuildHints(d, _ => true);
+        Assert.Contains("postinstall", h.Single(x => x.Command == "npm install").Why);
+        Assert.Contains("MSBuild", h.Single(x => x.Tool == "dotnet").Why);
+        Assert.Contains("beliebige Befehle", h.Single(x => x.Tool == "make").Why);
+        Assert.Contains("Skript aus dem Projekt", h.Single(x => x.Tool == "gradlew").Why);
+        Assert.Equal("Bauen führt Code aus diesem fremden Projekt mit deinen Rechten aus.", OpenSource.BuildWarning);
+        File.WriteAllText(OpenSource.OriginFile(d), "Quelle: x\n");
+        Assert.False(OpenSource.BuildApproved(d));
+        OpenSource.ApproveBuild(d);
+        Assert.True(OpenSource.BuildApproved(d));
+        OpenSource.Remove(parent, d);
+        Assert.Empty(Directory.GetFileSystemEntries(parent));
+    }
+
+    [WindowsFact(DisplayName = "T-0762 B7: Entfernen folgt keiner Junction – Ziel außerhalb bleibt samt Schreibschutz erhalten")]
+    public void B7_junction_not_followed()
+    {
+        var parent = Tmp(); var outside = Tmp();
+        var keep = Path.Combine(outside, "wichtig.txt"); File.WriteAllText(keep, "bleibt"); File.SetAttributes(keep, FileAttributes.ReadOnly);
+        var p = Path.Combine(parent, "o_r"); Directory.CreateDirectory(Path.Combine(p, "sub"));
+        var link = Path.Combine(p, "sub", "verweis");
+        var r = Cli.Run("cmd", ["/d", "/c", "mklink", "/J", link, outside]);
+        Assert.True(r.Ok && Directory.Exists(link), r.Out + r.Err);
+        OpenSource.Remove(parent, p);
+        Assert.False(Directory.Exists(p));
+        Assert.True(File.Exists(keep));
+        Assert.True(File.GetAttributes(keep).HasFlag(FileAttributes.ReadOnly)); // Schreibschutz im Ziel nicht angefasst
+        File.SetAttributes(keep, FileAttributes.Normal); Directory.Delete(outside, true); Directory.Delete(parent, true);
+    }
+
+    [Fact(DisplayName = "T-0762 B4: beschädigte anforderungen.json wird gemeldet und vor dem ersten Speichern als anforderungen.defekt-…json gesichert")]
+    public void B4_broken_file_backed_up()
+    {
+        var dir = NewProject(out var root);
+        File.WriteAllText(CleanRoom.RequirementsFile(dir), "{kaputt – von Hand bearbeitet");
+        var doc = new CleanRoom.RequirementsDoc(dir);
+        Assert.NotNull(doc.Problem); Assert.Contains("beschädigt", doc.Problem);
+        Assert.Empty(doc.Items);
+        doc.Add("Neu");
+        var copy = Assert.Single(Directory.GetFiles(Path.GetDirectoryName(CleanRoom.RequirementsFile(dir))!, "anforderungen.defekt-*.json"));
+        Assert.Equal("{kaputt – von Hand bearbeitet", File.ReadAllText(copy));
+        Assert.Contains(Path.GetFileName(copy), doc.Problem);
+        Assert.Single(CleanRoom.LoadRequirements(dir));
+        Directory.Delete(root, true);
+    }
+
+    [Fact(DisplayName = "T-0762 B8: Abgleich prüft Testname UND Datei/Modul – gleicher Testname in anderer Datei zählt nicht")]
+    public void B8_same_name_other_file()
+    {
+        var dir = NewProject(out var root);
+        var impl = Path.Combine(dir, "2-Umsetzung");
+        File.WriteAllText(Path.Combine(impl, "test_a.py"), "def test_x(): pass\n"); File.WriteAllText(Path.Combine(impl, "test_b.py"), "def test_x(): pass\n");
+        var run = new DevBuild.TestRun([new("test_a.T.test_x", true, false, "", null, 0), new("test_b.T.test_x", false, false, "kaputt", null, 0)]);
+        Requirement R(string link) => new("A-1", "f", "", "", "q", "2026-11-24", "Muss", CleanRoom.StatusOpen, link);
+        Assert.Equal(CleanRoom.StatusDone, CleanRoom.Reconcile(dir, R("2-Umsetzung/test_a.py#test_x"), run).Status);
+        Assert.Equal(CleanRoom.StatusOpen, CleanRoom.Reconcile(dir, R("2-Umsetzung/test_b.py#test_x"), run).Status);
+        var onlyA = new DevBuild.TestRun([new("test_a.T.test_x", true, false, "", null, 0)]);
+        Assert.Equal(CleanRoom.StatusPartly, CleanRoom.Reconcile(dir, R("2-Umsetzung/test_b.py#test_x"), onlyA).Status); // nicht gelaufen ≠ erfüllt
+        // Ergebnisdatei nennt die Datei direkt (z. B. dotnet TRX): zählt
+        var byFile = new DevBuild.TestRun([new("Ns.Klasse.test_x", true, false, "", Path.Combine(impl, "test_b.py"), 3)]);
+        Assert.Equal(CleanRoom.StatusDone, CleanRoom.Reconcile(dir, R("2-Umsetzung/test_b.py#test_x"), byFile).Status);
+        Directory.Delete(root, true);
+    }
+
+    [PythonFact(DisplayName = "T-0762 B3: Testlauf des Abgleichs lässt sich abbrechen – Prozess wird beendet, kein Ergebnis")]
+    public async Task B3_cancel_test_run()
+    {
+        var dir = NewProject(out var root);
+        File.WriteAllText(Path.Combine(dir, "2-Umsetzung", "test_lang.py"), "import time, unittest\nclass T(unittest.TestCase):\n    def test_lang(self):\n        time.sleep(120)\n");
+        using var cts = new CancellationTokenSource();
+        var pid = 0; var sw = System.Diagnostics.Stopwatch.StartNew();
+        var t = CleanRoom.RunTestsAsync(dir, cts.Token, onStart: p => pid = p);
+        while (pid == 0 && sw.Elapsed < TimeSpan.FromSeconds(30)) await Task.Delay(50);
+        await Task.Delay(800); cts.Cancel();
+        var (run, log) = await t;
+        Assert.Null(run); Assert.Contains("Abgebrochen", log);
+        Assert.True(sw.Elapsed < TimeSpan.FromSeconds(60));
+        Assert.Throws<ArgumentException>(() => System.Diagnostics.Process.GetProcessById(pid));
+        Directory.Delete(root, true);
+    }
+
+    [WindowsFact(DisplayName = "T-0762 B5: gesperrte Programmdatei lässt sich nicht austauschen, aber starten; Prüfsumme aus dem gesperrten Datenstrom")]
+    public void B5_locked_file()
+    {
+        var d = Tmp(); var exe = Path.Combine(d, "where.exe"); File.Copy(Path.Combine(Environment.SystemDirectory, "where.exe"), exe);
+        using (var lk = GitHubApps.OpenLocked(exe))
+        {
+            var sha = GitHubApps.Sha256Of(lk);
+            Assert.Throws<IOException>(() => File.AppendAllText(exe, "x"));
+            Assert.Throws<IOException>(() => File.Move(exe, exe + ".alt"));
+            using var p = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(exe, "/?") { UseShellExecute = false, RedirectStandardOutput = true, CreateNoWindow = true })!;
+            p.StandardOutput.ReadToEnd(); p.WaitForExit();
+            Assert.Equal(sha, GitHubApps.CheckProgram(exe, locked: lk).Sha256);
+        }
+        Directory.Delete(d, true);
+    }
+
+    [Fact(DisplayName = "T-0762 B2: Start-Erlaubnis wird zur Prüfsumme gemerkt; alte Liste ohne Feld bleibt lesbar")]
+    public void B2_approve_start()
+    {
+        var tools = Tmp();
+        File.WriteAllText(Path.Combine(tools, GitHubApps.ListName), """[{"id":"gh-a-b","repo":"a/b","version":"v1","exe":"b.exe","license":"MIT","asset":"b.zip","sha256":"00","description":"","installed":"2026-11-01T10:00:00+01:00"}]""");
+        var e = Assert.Single(GitHubApps.List(tools)); Assert.Null(e.StartApproved);
+        Assert.True(GitHubApps.ApproveStart(tools, "gh-a-b", "abc"));
+        Assert.Equal("abc", Assert.Single(GitHubApps.List(tools)).StartApproved);
+        Assert.False(GitHubApps.ApproveStart(tools, "gh-x-y", "abc"));
+        Directory.Delete(tools, true);
     }
 }

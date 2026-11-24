@@ -28,7 +28,7 @@ public class T0762_GitHubNachbau_Ui
         tb.RaiseEvent(new Avalonia.Input.KeyEventArgs { RoutedEvent = Avalonia.Input.InputElement.KeyDownEvent, Key = Avalonia.Input.Key.Enter }); Pump();
     }
 
-    [AvaloniaFact(DisplayName = "T-0762 X-06 (UI): signierter Installer = Grün ohne Häkchen, aber eigener Klick; veränderte Datei wird abgewiesen; „Nicht ausführen“ verwirft")]
+    [AvaloniaFact(DisplayName = "T-0762 X-06 (UI, Signatur ersetzt, Installer-Lauf ersetzt): gültig signierter Installer = Grün ohne Häkchen, aber eigener Klick; Datei ist bis zum Start gesperrt; „Nicht ausführen“ verwirft; Knopf gehört zu genau seiner Karte")]
     public async Task Green_installer_own_click_and_tamper()
     {
         var (w, l, root) = Ui.Open();
@@ -45,10 +45,18 @@ public class T0762_GitHubNachbau_Ui
         Assert.Contains("Grün", w.Find<TextBlock>("oss-installer-ampel").Text);
         Assert.Null(w.TryFind<CheckBox>("oss-installer-risk")); // Grün braucht kein Häkchen …
         Assert.True(w.Find<Button>("oss-installer-run").IsEnabled); // … aber einen eigenen Klick
-        // Datei nach der Prüfung verändert → nicht ausführen
-        File.AppendAllText(inst, "verändert");
-        Assert.Null(await w.GitHubConfirmInstaller()); Pump();
-        Assert.Equal(0, runs); Assert.Null(w.GitHubPendingInstaller);
+        // B5: die geprüfte Datei ist bis zum Start gesperrt – austauschen oder ändern geht nicht
+        Assert.Throws<IOException>(() => File.AppendAllText(inst, "verändert"));
+        Assert.Throws<IOException>(() => File.Move(inst, inst + ".alt"));
+        // B6: ein zweiter Installer ersetzt die Karte – der Knopf der alten Karte führt nichts aus
+        var first = w.GitHubPendingInstaller!;
+        Assert.Null(await w.GitHubInstall(Repo("beispiel/tool"))); Pump();
+        Assert.NotSame(first, w.GitHubPendingInstaller);
+        Assert.Null(await w.GitHubConfirmInstaller(first)); Pump();
+        Assert.Equal(0, runs); Assert.NotNull(w.GitHubPendingInstaller);
+        w.GitHubCancelInstaller(); Pump();
+        Assert.Null(w.GitHubPendingInstaller);
+        File.AppendAllText(inst, ""); // Sperre nach „Nicht ausführen“ wieder frei
         // erneut, dann „Nicht ausführen“
         Assert.Null(await w.GitHubInstall(Repo("beispiel/tool"))); Pump();
         w.Show("oss"); Pump();
@@ -79,11 +87,20 @@ public class T0762_GitHubNachbau_Ui
         Assert.Equal(Path.GetFullPath(dir), w.CodeRoot);
         var hint = w.Find<Button>("ce-hint-0");
         Assert.Equal("▶ dotnet build \"Hallo.csproj\"", hint.Content);
+        Assert.Equal("⚠ " + OpenSource.BuildWarning, w.Find<TextBlock>("ce-hints-warn").Text); // B1: fest und ehrlich
         if (DevBuild.HasDotNetSdk())
         {
             Assert.True(hint.IsEnabled);
             w.CodeRealToolsInTests = true;
-            hint.Press();
+            hint.Press(); Pump();
+            // B1: erster Lauf nur nach eigener Bestätigung – der Klick auf den Vorschlag allein startet nichts
+            Assert.False(w.CodeRunning); Assert.DoesNotContain("dotnet build", w.CodeTerminalText);
+            Assert.NotNull(w.TryFind<Border>("ce-hint-ask"));
+            w.Find<Button>("ce-hint-cancel").Press(); Pump();
+            Assert.Null(w.CodeHintPending); Assert.False(OpenSource.BuildApproved(dir));
+            w.Find<Button>("ce-hint-0").Press(); Pump();
+            w.Find<Button>("ce-hint-confirm").Press(); Pump();
+            Assert.True(OpenSource.BuildApproved(dir));
             await Until(() => !w.CodeRunning, 300_000);
             Assert.Contains("(Exit 0)", w.CodeTerminalText);
             Assert.True(Directory.EnumerateFiles(Path.Combine(dir, "bin"), "Hallo.dll", SearchOption.AllDirectories).Any());
@@ -154,6 +171,89 @@ public class T0762_GitHubNachbau_Ui
         var report = File.ReadAllText(Path.Combine(d, "3-Pruefung", "PRUEFBERICHT.md"));
         Assert.Contains("Herkunft: eigener Code „2-Umsetzung/notiz.py“, Vergleichstext „vergleich/fremd.py“", report);
         Assert.Contains("Handbuch Kapitel 2 | " + DateTimeOffset.Now.ToString("yyyy-MM-dd"), report);
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "T-0762 B2 (UI): unsigniertes ZIP-Programm startet nach „Installieren & starten“ NICHT – Ampel Rot, Start erst nach Häkchen und eigenem Klick, danach ohne Rückfrage; geänderte Datei fragt erneut")]
+    public async Task B2_unsigned_program_first_start()
+    {
+        var (w, l, root) = Ui.Open();
+        var zip = Path.Combine(root, "dl.zip");
+        using (var z = System.IO.Compression.ZipFile.Open(zip, System.IO.Compression.ZipArchiveMode.Create)) using (var s = new StreamWriter(z.CreateEntry("b/b.exe").Open())) s.Write("MZ unsigniert");
+        w.GitHubFetchOverride = _ => Task.FromResult<(GitHubApps.Release, string?)>((new GitHubApps.Release("v2.0", "", [new("b-windows-x64.zip", "https://github.com/a/b/releases/download/v2.0/b-windows-x64.zip", new FileInfo(zip).Length, null)]), zip));
+        Assert.NotNull(await w.GitHubInstall(Repo("a/b"))); Pump();
+        Assert.Empty(l.Opened); // „Installieren & starten“ startet Unsigniertes nicht
+        var pend = w.GitHubPendingStart!;
+        Assert.Equal(GitHubApps.Ampel.Rot, pend.Check.Ampel); // echte Authenticode-Prüfung
+        if (w.SetupFinishShown) { w.Find<Button>("setup-overlay-done").Press(); Pump(); }
+        w.Show("oss"); Pump();
+        Assert.Contains("Rot", w.Find<TextBlock>("oss-firststart-ampel").Text);
+        Assert.False(w.Find<Button>("oss-firststart-run").IsEnabled);
+        Assert.False(w.GitHubConfirmStart()); Assert.Empty(l.Opened);
+        w.Find<CheckBox>("oss-firststart-risk").IsChecked = true; Pump();
+        Assert.Empty(l.Opened); // Häkchen allein startet nichts
+        w.Find<Button>("oss-firststart-run").Press(); Pump();
+        var exe = Assert.Single(l.Opened); Assert.EndsWith("b.exe", exe);
+        var entry = Assert.Single(GitHubApps.List(w.ToolsRootForTests));
+        Assert.NotNull(entry.StartApproved);
+        // erlaubt: nächster Start ohne Rückfrage
+        Assert.True(w.GitHubLaunch(entry)); Assert.Equal(2, l.Opened.Count); Assert.Null(w.GitHubPendingStart);
+        // Programmdatei geändert: erneut fragen
+        File.AppendAllText(exe, "neu");
+        Assert.False(w.GitHubLaunch(entry)); Assert.NotNull(w.GitHubPendingStart); Assert.Equal(2, l.Opened.Count);
+        w.GitHubCancelStart();
+        // gültig signiert (Signatur ersetzt): startet direkt
+        w.GitHubSignatureOverride = _ => new SignatureInfo(SigState.Gueltig, "Beispiel GmbH", "Gültig signiert (in der Datei).");
+        Assert.True(w.GitHubLaunch(entry)); Assert.Equal(3, l.Opened.Count);
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "T-0762 B3 (UI): Abgleich sperrt den Knopf, zeigt „Abbrechen“, schreibt nach Projektwechsel in die richtige Liste; Abbrechen beendet den Lauf (übersprungen ohne Python)")]
+    public async Task B3_reconcile_lock_switch_cancel()
+    {
+        if (DevBuild.Missing("python") is not null) { Assert.Skip("Übersprungen – Python fehlt."); return; }
+        var (w, _, _) = Ui.Open(); w.Width = 1600; w.Height = 1000;
+        var a = CleanRoom.Create(w.CleanFolder, "Erstes", "x"); var b = CleanRoom.Create(w.CleanFolder, "Zweites", "y");
+        File.WriteAllText(Path.Combine(a, "2-Umsetzung", "test_a.py"), "import time, unittest\nclass T(unittest.TestCase):\n    def test_a(self):\n        time.sleep(3)\n");
+        w.CleanOpen(a); w.Show("nachbau"); Pump();
+        var r = w.CleanReqAdd("A"); w.CleanReq.Update(r.Id, x => x with { Link = "2-Umsetzung/test_a.py#test_a" });
+        w.CleanRealToolsInTests = true;
+        var t = w.CleanReqReconcile(); Pump();
+        Assert.True(w.CleanReconcileRunning);
+        Assert.False(w.Find<Button>("clean-req-reconcile").IsEnabled);
+        Assert.True(w.Find<Button>("clean-req-cancel").IsVisible);
+        Assert.Contains(w.GetLogicalTexts(), s => s.Contains("führt Code aus „2-Umsetzung“ mit deinen Rechten aus"));
+        w.CleanOpen(b); w.Show("nachbau"); Pump(); // Projekt wechseln, während der Test läuft
+        await t; Pump();
+        Assert.Equal(CleanRoom.StatusDone, Assert.Single(CleanRoom.LoadRequirements(a)).Status);
+        Assert.False(File.Exists(CleanRoom.RequirementsFile(b))); // nichts in die falsche Liste
+        // Abbrechen
+        File.WriteAllText(Path.Combine(a, "2-Umsetzung", "test_a.py"), "import time, unittest\nclass T(unittest.TestCase):\n    def test_a(self):\n        time.sleep(120)\n");
+        w.CleanOpen(a); w.Show("nachbau"); Pump();
+        w.CleanReq.Update(r.Id, x => x with { Status = CleanRoom.StatusOpen, Note = "" });
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        var t2 = w.CleanReqReconcile(); Pump();
+        await Task.Delay(1500); Pump();
+        w.Find<Button>("clean-req-cancel").Press(); Pump();
+        await t2; Pump();
+        Assert.True(sw.Elapsed < TimeSpan.FromSeconds(60));
+        Assert.False(w.CleanReconcileRunning);
+        Assert.Equal(CleanRoom.StatusOpen, Assert.Single(CleanRoom.LoadRequirements(a)).Status); // unverändert
+        Assert.Contains("abgebrochen", w.Find<TextBlock>("clean-req-summary").Text);
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "T-0762 B4 (UI): beschädigte Anforderungsliste wird angezeigt statt still überschrieben")]
+    public void B4_broken_list_shown()
+    {
+        var (w, _, _) = Ui.Open();
+        var a = CleanRoom.Create(w.CleanFolder, "Kaputt", "x");
+        File.WriteAllText(CleanRoom.RequirementsFile(a), "[{kaputt");
+        w.CleanOpen(a); w.Show("nachbau"); Pump();
+        Assert.Contains("beschädigt", w.Find<TextBlock>("clean-req-problem").Text);
+        w.Find<Button>("clean-req-add").Press(); Pump();
+        Assert.Single(Directory.GetFiles(Path.Combine(a, "1-Beschreibung"), "anforderungen.defekt-*.json"));
+        Assert.Contains("gesichert", w.Find<TextBlock>("clean-req-problem").Text);
         w.Close();
     }
 
@@ -248,7 +348,10 @@ public class T0762_GitHubNachbau_Ui
             var idx = w.CodeBuildHints.ToList().FindIndex(h => h.Available);
             Assert.True(idx >= 0, "Kein Bauwerkzeug vorhanden.");
             w.CodeRealToolsInTests = true;
-            w.Find<Button>($"ce-hint-{idx}").Press();
+            w.Find<Button>($"ce-hint-{idx}").Press(); Pump();
+            Assert.False(w.CodeRunning); // B1: erster Lauf je Projekt nur nach eigener Bestätigung
+            L($"Bauanleitung gewählt – Trendo fragt zuerst: „{OpenSource.BuildWarning}“ → „Ja, im Projekt ausführen“");
+            w.Find<Button>("ce-hint-confirm").Press();
             await Until(() => !w.CodeRunning, 600_000);
             L("Terminal des Code-Editors:\n" + w.CodeTerminalText.TrimEnd());
             Assert.Contains("(Exit 0)", w.CodeTerminalText);

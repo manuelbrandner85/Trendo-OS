@@ -71,7 +71,7 @@ public partial class MainWindow
     private Control OssView()
     {
         var sp = new StackPanel { Spacing = 8, Children = { P("Finde freie Programme auf GitHub. Ein Klick auf „Installieren & starten“ lädt das Programm von der offiziellen Projektseite, richtet es ein und startet es – ohne Admin. Alles lässt sich unter „Programme“ wieder entfernen. Installer laufen nie ohne deine eigene Bestätigung nach einer Signaturprüfung.") } };
-        sp.Children.Add(GitHubInstallerCard()); // T-0762: wartender Installer mit Ampel
+        sp.Children.Add(GitHubInstallerCard()); sp.Children.Add(GitHubStartCard()); // T-0762: wartender Installer mit Ampel
         var q = new TextBox { Name = "oss-query", Text = _ossQuery, PlaceholderText = "z. B. markdown editor", Width = 300 };
         q.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) _ = OssSearch(q.Text ?? ""); };
         sp.Children.Add(new WrapPanel { Children = { q, Act("oss-search", "Suchen", () => _ = OssSearch(q.Text ?? ""), true) } });
@@ -87,7 +87,7 @@ public partial class MainWindow
             void Add(Control c) { c.Margin = new Thickness(0, 0, 6, 4); buttons.Children.Add(c); }
             if (have is not null && File.Exists(GitHubApps.ExePath(_deps.ToolsRoot, have)))
             {
-                Add(Act($"oss-start-{i}", "Starten", () => Launch(GitHubApps.ExePath(_deps.ToolsRoot, have)), true));
+                Add(Act($"oss-start-{i}", "Starten", () => GitHubLaunch(have), true));
                 Add(Act($"oss-manage-{i}", "Verwalten / Entfernen", () => Show("components")));
             }
             else
@@ -149,7 +149,7 @@ public partial class MainWindow
         {
             var a0 = app; var exe = GitHubApps.ExePath(_deps.ToolsRoot, a0);
             var run = new Button { Name = $"oss-mine-{ii++}", Content = "▶ " + a0.Repo.Split('/').Last(), HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, FontSize = 12, IsEnabled = File.Exists(exe) };
-            run.Click += (_, _) => Launch(exe);
+            run.Click += (_, _) => GitHubLaunch(a0);
             side.Children.Add(run);
         }
         if (installed.Count > 0) side.Children.Add(Act("oss-manage-all", "Verwalten / Entfernen", () => Show("components")));
@@ -189,7 +189,7 @@ public partial class MainWindow
     public void OssOpenInCode(string dir)
     {
         CodeOpenFolder(dir);
-        _ceHints = OpenSource.BuildHints(_ceRoot!); _ceHintsRoot = _ceRoot;
+        _ceHints = OpenSource.BuildHints(_ceRoot!); _ceHintsRoot = _ceRoot; _ceHintAsk = null;
         _ceTab = "terminal";
         var herkunft = OpenSource.OriginFile(dir);
         _ceOut = $"Projekt „{Path.GetFileName(_ceRoot)}“ aus „Open Source“ geöffnet{(File.Exists(herkunft) ? " (Herkunft und Lizenz: " + Path.GetFileName(herkunft) + ")" : "")}. "
@@ -203,6 +203,10 @@ public partial class MainWindow
     {
         var hints = CodeBuildHints;
         if (hints.Count == 0) return new Panel();
+        var root = _ceRoot!;
+        var sp = new StackPanel { Name = "ce-hints-box", Spacing = 4 };
+        // B1: fest und ehrlich – Bauen ist Ausführen von fremdem Code
+        sp.Children.Add(new TextBlock { Name = "ce-hints-warn", Text = "⚠ " + OpenSource.BuildWarning, Foreground = Brush.Parse("#FACC15"), FontSize = 12, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
         var wp = new WrapPanel { Name = "ce-hints" };
         wp.Children.Add(new TextBlock { Text = "Bauanleitung (erkannt):", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 4) });
         var i = 0;
@@ -211,10 +215,42 @@ public partial class MainWindow
             var hh = h;
             var b = new Button { Name = $"ce-hint-{i++}", Content = "▶ " + h.Command, FontSize = 11.5, FontFamily = new FontFamily("Cascadia Code, Consolas, monospace"), Margin = new Thickness(0, 0, 6, 4), IsEnabled = h.Available && !CodeRunning };
             ToolTip.SetTip(b, h.Available ? h.Why : $"{h.Why} – {h.Tool} ist auf diesem PC nicht eingerichtet.");
-            b.Click += (_, _) => Try(CEK, () => { CodeTerminal(hh.Command); Show(CEK); });
+            b.Click += (_, _) => Try(CEK, () => { CodeHintRun(hh.Command); Show(CEK); });
             wp.Children.Add(b);
         }
-        return wp;
+        sp.Children.Add(wp);
+        if (_ceHintAsk is { } ask && _ceHintsRoot == root)
+        {
+            sp.Children.Add(new Border { Name = "ce-hint-ask", Background = Brush.Parse("#1AF5A524"), BorderBrush = Brush.Parse("#FACC15"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 8), Child = new StackPanel { Spacing = 6, Children = {
+                P($"Erster Bau-Lauf für „{Path.GetFileName(root)}“: „{ask}“ führt Code aus diesem fremden Projekt mit deinen Rechten aus (Bauskripte, Projektdateien). Nur weiter, wenn du dem Projekt vertraust.", Text, 12),
+                new WrapPanel { Children = {
+                    Act("ce-hint-confirm", "Ja, im Projekt ausführen", () => Try(CEK, () => { CodeHintConfirm(); Show(CEK); })), new Border { Width = 6 },
+                    Act("ce-hint-cancel", "Abbrechen", () => { _ceHintAsk = null; Show(CEK); }) } } } } });
+        }
+        return sp;
+    }
+
+    string? _ceHintAsk;
+    /// <summary>Bauanleitungs-Befehl, der auf die eigene Bestätigung wartet (nur beim ersten Lauf je Projekt).</summary>
+    public string? CodeHintPending => _ceHintAsk;
+
+    /// <summary>B1: Klick auf einen Vorschlag. Beim ersten Mal je geholtem Projekt nur nachfragen – ausgeführt wird erst nach der eigenen Bestätigung.</summary>
+    public void CodeHintRun(string command)
+    {
+        var root = _ceRoot ?? throw new InvalidOperationException("Erst einen Projektordner öffnen.");
+        if (!CodeBuildHints.Any(h => h.Command == command)) throw new InvalidOperationException("Unbekannter Vorschlag.");
+        if (!OpenSource.BuildApproved(root)) { _ceHintAsk = command; _ceTab = "terminal"; _core.Audit.Append(Principal.LocalOwner.Name, "oss.build.ask", $"{Path.GetFileName(root)}: {command}"); return; }
+        CodeTerminal(command);
+    }
+
+    /// <summary>Eigene Bestätigung für den ersten Bau-Lauf: vermerkt sie in der Herkunftsdatei und führt den gewählten Befehl aus.</summary>
+    public void CodeHintConfirm()
+    {
+        if (_ceHintAsk is not { } cmd || _ceRoot is not { } root) return;
+        _ceHintAsk = null;
+        OpenSource.ApproveBuild(root);
+        _core.Audit.Append(Principal.LocalOwner.Name, "oss.build.consent", $"{Path.GetFileName(root)}: {cmd}");
+        CodeTerminal(cmd);
     }
 
     /// <summary>Geholtes Projekt entfernen – mit Rückfrage im Knopf; löscht nur Ordner direkt im Ordner „Open Source“.</summary>

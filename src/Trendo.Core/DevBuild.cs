@@ -131,7 +131,7 @@ public static partial class DevBuild
                 return new(new(Cli.Find("dotnet")!, ["build", p.Main, "--nologo", "-v", "m", "-clp:NoSummary"], p.Root, NetEnv, true));
             case Kind.Python:
                 if (Missing("python") is { } mp) return new(null, mp);
-                return new(new(Py, ["-m", "compileall", "-q", "-x", @"(trendo-paket|\.venv|venv|\.git)[\\/]", "."], p.Root, PyEnv, true));
+                return new(new(Py, ["-I", "-X", "utf8", "-m", "compileall", "-q", "-x", @"(trendo-paket|\.venv|venv|\.git)[\\/]", "."], p.Root, PyEnv, true));
             case Kind.Node:
                 if (Missing("node") is { } mn) return new(null, mn);
                 return p.Main is null ? new(null, Note: "Keine Startdatei (index.js) gefunden.") : new(new("node", ["--check", p.Main], p.Root));

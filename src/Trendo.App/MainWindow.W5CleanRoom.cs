@@ -156,22 +156,39 @@ public partial class MainWindow
         return p;
     }
 
-    /// <summary>Abgleich: erst echter Testlauf in „2-Umsetzung“ (wenn Tests und Werkzeug da sind), dann je Anforderung erfüllt/teilweise/offen.</summary>
+    CancellationTokenSource? _cleanRunCts;
+    /// <summary>Läuft gerade ein Abgleich (Testlauf)?</summary>
+    public bool CleanReconcileRunning => _cleanRunCts is not null;
+    /// <summary>B3: laufenden Testlauf abbrechen – beendet den Prozessbaum, Status bleibt unverändert.</summary>
+    public void CleanReqCancel() => _cleanRunCts?.Cancel();
+
+    /// <summary>Abgleich: erst echter Testlauf in „2-Umsetzung“ (wenn Tests und Werkzeug da sind; führt Code aus „2-Umsetzung“ mit deinen Rechten aus),
+    /// dann je Anforderung erfüllt/teilweise/offen. Die Liste wird vor dem Warten festgehalten – ein Projektwechsel schreibt nie in die falsche Liste (B3).</summary>
     public async Task CleanReqReconcile()
     {
+        if (_cleanRunCts is not null) return;
         var open = _cleanOpen ?? throw new InvalidOperationException("Erst ein Projekt öffnen.");
-        _cleanReqMsg = "Abgleich läuft …"; if (CurrentView == "nachbau") Show("nachbau");
-        DevBuild.TestRun? run = null; string log;
-        if (_opt.Isolated && !CleanRealToolsInTests) log = "Testmodus: Trendo startet keine Programme – Abgleich ohne Testlauf.";
-        else (run, log) = await Task.Run(() => CleanRoom.RunTests(open));
-        var before = CleanReq.Items;
-        var after = CleanRoom.ReconcileAll(open, before, run);
-        CleanReq.Change(_ => after);
-        var done = after.Count(r => r.Status == CleanRoom.StatusDone);
-        _cleanReqMsg = $"Abgleich: {done} erfüllt · {after.Count(r => r.Status == CleanRoom.StatusPartly)} teilweise · {after.Count(r => r.Status == CleanRoom.StatusOpen)} offen. {log.Split('\n').Last()}";
-        CleanRoom.Log(open, CleanRoom.Roles[2], $"Abgleich der Anforderungen: {done} von {after.Count} erfüllt");
-        _core.Audit.Append(Principal.LocalOwner.Name, "nachbau.abgleich", $"{Path.GetFileName(open)}: {done}/{after.Count}");
-        if (CurrentView == "nachbau") Show("nachbau");
+        var doc = CleanReq; // fest: dieses Projekt, diese Liste
+        var cts = _cleanRunCts = new CancellationTokenSource();
+        try
+        {
+            _cleanReqMsg = "Abgleich läuft – führt Code aus „2-Umsetzung“ mit deinen Rechten aus. „Abbrechen“ beendet ihn."; if (CurrentView == "nachbau") Show("nachbau");
+            DevBuild.TestRun? run = null; string log;
+            if (_opt.Isolated && !CleanRealToolsInTests) log = "Testmodus: Trendo startet keine Programme – Abgleich ohne Testlauf.";
+            else (run, log) = await CleanRoom.RunTestsAsync(open, cts.Token);
+            if (cts.IsCancellationRequested) { _cleanReqMsg = $"Abgleich für „{Path.GetFileName(open)}“ abgebrochen – Status unverändert."; return; }
+            var after = CleanRoom.ReconcileAll(open, doc.Items, run);
+            doc.Change(_ => after);
+            var done = after.Count(r => r.Status == CleanRoom.StatusDone);
+            _cleanReqMsg = $"Abgleich „{Path.GetFileName(open)}“: {done} erfüllt · {after.Count(r => r.Status == CleanRoom.StatusPartly)} teilweise · {after.Count(r => r.Status == CleanRoom.StatusOpen)} offen. {log.Split('\n').Last()}";
+            CleanRoom.Log(open, CleanRoom.Roles[2], $"Abgleich der Anforderungen: {done} von {after.Count} erfüllt");
+            _core.Audit.Append(Principal.LocalOwner.Name, "nachbau.abgleich", $"{Path.GetFileName(open)}: {done}/{after.Count}");
+        }
+        finally
+        {
+            _cleanRunCts = null; cts.Dispose();
+            if (CurrentView == "nachbau") Show("nachbau");
+        }
     }
 
     /// <summary>Ausgewählter Treffer der Ähnlichkeitsprüfung nebeneinander: Dateien und markierte Zeilen (1-basiert).</summary>
@@ -220,12 +237,16 @@ public partial class MainWindow
         var doc = CleanReq;
         var items = doc.Items;
         var undo = Act("clean-req-undo", "↶ Rückgängig", () => { CleanReqUndo(); Show("nachbau"); }); undo.IsEnabled = doc.CanUndo; ToolTip.SetTip(undo, "Letzte Änderung zurücknehmen (Strg+Z)");
+        var reconcile = Act("clean-req-reconcile", CleanReconcileRunning ? "Abgleich läuft …" : "Abgleichen (Tests laufen lassen)", () => _ = CleanReqReconcile());
+        reconcile.IsEnabled = !CleanReconcileRunning; ToolTip.SetTip(reconcile, "Lässt die Tests in „2-Umsetzung“ echt laufen – das führt Code aus „2-Umsetzung“ mit deinen Rechten aus.");
+        var cancelRun = Act("clean-req-cancel", "■ Abbrechen", () => { CleanReqCancel(); Show("nachbau"); }); cancelRun.IsVisible = CleanReconcileRunning; cancelRun.Margin = new Avalonia.Thickness(6, 0, 0, 0);
         var bar = new WrapPanel { Children = {
             Act("clean-req-add", "＋ Anforderung", () => { CleanReqAdd(); Show("nachbau"); }), new Border { Width = 6 }, undo, new Border { Width = 6 },
-            Act("clean-req-reconcile", "Abgleichen (Tests laufen lassen)", () => _ = CleanReqReconcile()), new Border { Width = 6 },
+            reconcile, cancelRun, new Border { Width = 6 },
             Act("clean-req-export", "Als .md exportieren", () => { CleanReqExport(); Show("nachbau"); }) } };
         var sp = new StackPanel { Name = "clean-req", Spacing = 6, Focusable = true };
-        sp.Children.Add(P("Was soll dein Programm tun? Je Zeile eine Anforderung mit Herkunft (Quelle) und Datum. Verknüpfe einen Test als „Datei#Testname“ (Datei auch hierher ziehen) – „Abgleichen“ lässt die Tests echt laufen und setzt den Status.", Muted, 11.5));
+        sp.Children.Add(P("Was soll dein Programm tun? Je Zeile eine Anforderung mit Herkunft (Quelle) und Datum. Verknüpfe einen Test als „Datei#Testname“ (Datei auch hierher ziehen) – „Abgleichen“ lässt die Tests echt laufen und setzt den Status. Achtung: Das führt Code aus „2-Umsetzung“ mit deinen Rechten aus.", Muted, 11.5));
+        if (doc.Problem is { } problem) sp.Children.Add(new TextBlock { Name = "clean-req-problem", Text = "⚠ " + problem, Foreground = Brush.Parse("#FACC15"), FontSize = 12, TextWrapping = TextWrapping.Wrap });
         sp.Children.Add(bar);
         sp.Children.Add(new TextBlock { Name = "clean-req-summary", Text = items.Count == 0 ? "Noch keine Anforderung – „＋ Anforderung“." : $"{items.Count(r => r.Status == CleanRoom.StatusDone)} erfüllt · {items.Count(r => r.Status == CleanRoom.StatusPartly)} teilweise · {items.Count(r => r.Status == CleanRoom.StatusOpen)} offen" + (_cleanReqMsg.Length > 0 ? "  —  " + _cleanReqMsg : ""), Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap });
         // Je Anforderung zwei Zeilen, damit alle Spalten ohne Querscrollen passen: oben WAS (Funktion, Verhalten, Prüfung, Test), unten WOHER (Quelle, Datum, Stufe, Status, Abgleich)
