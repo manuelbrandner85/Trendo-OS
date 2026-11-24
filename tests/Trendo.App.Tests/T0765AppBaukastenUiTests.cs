@@ -5,6 +5,7 @@ using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.VisualTree;
 using Trendo.App;
 using Trendo.Core;
@@ -141,6 +142,66 @@ public class T0765_AppBaukasten_Ui
     }
 
     static void Tap(MainWindow w, Control c) { var p = Mid(w, c); w.MouseDown(p, MouseButton.Left); w.MouseUp(p, MouseButton.Left); Settle(); }
+
+    static int GoldButtons(MainWindow w, Color gold) =>
+        w.GetVisualDescendants().OfType<Button>().Count(b => b.IsEffectivelyVisible && b.Name is { } n && (n.StartsWith("builder-", StringComparison.Ordinal)) && b.Background is ISolidColorBrush s && s.Color == gold);
+
+    [AvaloniaFact(DisplayName = "T-0765 Gegenprüfung (UI): eine goldene Hauptaktion je Zustand, Speicher-Hinweis, zu große ZIP wird sichtbar abgelehnt, Import überschreibt nichts und schreibt bei neuerer seite.json gar nichts")]
+    public void Gegenpruefung_ui()
+    {
+        var (w, _, _) = Ui.Open(); w.Width = 1600; w.Height = 1200;
+        var dir = Path.Combine(Path.GetTempPath(), "trendo-t0765g-ui-" + Guid.NewGuid().ToString("N")[..8]); Directory.CreateDirectory(dir);
+        try
+        {
+            w.Show("baukasten"); Settle();
+            var gold = ((ISolidColorBrush)Get<Button>(w, "builder-tpl-einkaufsliste").Background!).Color;
+            Assert.Equal(1, GoldButtons(w, gold)); // Leerzustand: nur „Vorlage nehmen“
+            Press(w, "builder-tpl-einkaufsliste");
+            Assert.Equal(1, GoldButtons(w, gold)); // danach: nur „Ausprobieren im Browser“ (Handy/Bildschirm zeigen ✓ statt Gold)
+            Assert.Equal(gold, ((ISolidColorBrush)Get<Button>(w, "builder-preview").Background!).Color);
+            Assert.Contains("✓ Handy", w.GetLogicalTexts());
+            Assert.Equal(1.0, Get<Button>(w, "builder-open").BorderThickness.Top); // als Knopf erkennbar (Rahmen)
+            Assert.Equal(1.0, Get<Button>(w, "builder-veroeffentlichen").BorderThickness.Top);
+            Assert.Contains(SitePage.StorageNote, w.GetLogicalTexts());
+
+            // vorhandenes Bild im Baukasten-Ordner
+            File.WriteAllText(Path.Combine(w.BuilderFolder, "logo.png"), "ALT");
+            var before = w.BuilderPage.ToJson();
+            // zu große ZIP über „Öffnen (ZIP) …“: sichtbare Meldung, App unverändert
+            var big = Path.Combine(dir, "gross.zip");
+            using (var a = ZipFile.Open(big, ZipArchiveMode.Create)) { using var s = a.CreateEntry("index.html").Open(); var buf = new byte[1 << 20]; for (var i = 0; i < 21; i++) s.Write(buf); }
+            w.PickOverride = _ => Task.FromResult<string[]?>([big]);
+            Press(w, "builder-open");
+            Assert.Contains(w.GetLogicalTexts(), t => t.Contains("zu groß", StringComparison.Ordinal));
+            Assert.Equal(before, w.BuilderPage.ToJson());
+
+            // gültige ZIP mit eigenem logo.png: vorhandenes bleibt, Bild landet unter importiert/…
+            var page = SitePage.Template("einkaufsliste")!; page.Title = "Mit Logo"; page.Pages[0].Blocks.Add(new Block("img", "Logo", "logo.png"));
+            var ok = Path.Combine(dir, "ok.zip");
+            using (var a = ZipFile.Open(ok, ZipArchiveMode.Create))
+            {
+                using (var wr = new StreamWriter(a.CreateEntry("index.html").Open())) wr.Write(page.ToHtml());
+                using (var wr = new StreamWriter(a.CreateEntry("logo.png").Open())) wr.Write("NEU");
+            }
+            w.PickOverride = _ => Task.FromResult<string[]?>([ok]);
+            Press(w, "builder-open");
+            Assert.Equal("Mit Logo", w.BuilderPage.Title);
+            Assert.Equal("ALT", File.ReadAllText(Path.Combine(w.BuilderFolder, "logo.png")));
+            var url = w.BuilderPage.Pages[0].Blocks.Single(b => b.Kind == "img").Url;
+            Assert.StartsWith("importiert/", url);
+            Assert.Equal("NEU", File.ReadAllText(Path.Combine(w.BuilderFolder, url)));
+
+            // neuere seite.json (T-0716): Öffnen schreibt gar nichts
+            File.WriteAllText(w.BuilderFile, "{ \"Version\": 99, \"Title\": \"Zukunft\" }");
+            var files = Directory.GetFiles(w.BuilderFolder, "*", SearchOption.AllDirectories).Length;
+            w.Show("baukasten"); Settle();
+            Press(w, "builder-open");
+            Assert.Equal(files, Directory.GetFiles(w.BuilderFolder, "*", SearchOption.AllDirectories).Length);
+            Assert.Equal("{ \"Version\": 99, \"Title\": \"Zukunft\" }", File.ReadAllText(w.BuilderFile));
+            Assert.Contains(w.GetLogicalTexts(), t => t.Contains("neueren Trendo-Fassung", StringComparison.Ordinal));
+        }
+        finally { w.Close(); try { Directory.Delete(dir, true); } catch (IOException) { } }
+    }
 
     [AvaloniaFact(DisplayName = "T-0765 (UI): KI „seite.schreiben“ ändert die App im Projekt – im Baukasten sichtbar und mit einem Klick rückgängig, Seiten und Daten bleiben")]
     public void Ki_ergebnis_rueckgaengig()

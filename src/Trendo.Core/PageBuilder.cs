@@ -64,8 +64,53 @@ public sealed class SitePage : IJsonOnDeserialized
         Pages.RemoveAll(p => p is null); Collections.RemoveAll(c => c is null);
         if (Pages.Count == 0) Pages.Add(new AppScreen());
         if (LegacyBlocks is { } old) { if (Pages[0].Blocks is null || Pages[0].Blocks.Count == 0) Pages[0].Blocks = old; LegacyBlocks = null; }
-        foreach (var s in Pages) { s.Blocks ??= []; s.Blocks.RemoveAll(b => b is null); s.Id = Slug(s.Id); s.Name ??= ""; }
-        foreach (var c in Collections) { c.Fields ??= []; c.Fields.RemoveAll(f => f is null); c.Id = Slug(c.Id); c.Name ??= ""; }
+        Normalize();
+    }
+
+    /// <summary>T-0765 (Gegenprüfung M1, N1, N2): Daten aus einer Datei (seite.json, ZIP) sind fremd. Kennungen werden zu sicheren, eindeutigen Slugs
+    /// (Seiten, Sammlungen, Felder; Verweise darauf folgen), fehlende Texte (<c>null</c>) werden leer – so entsteht nie Markup aus einer Kennung und
+    /// keine NullReferenceException, auch nicht bei Fassung-1-Dateien mit <c>"Url": null</c>.</summary>
+    void Normalize()
+    {
+        Title ??= ""; Accent ??= "#2F86F6"; AppId ??= "";
+        AppId = Regex.IsMatch(AppId, "^[A-Za-z0-9-]{1,40}$") ? AppId : "";
+        var pageMap = new Dictionary<string, string>(StringComparer.Ordinal);
+        var seenPages = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var s in Pages)
+        {
+            s.Blocks ??= []; s.Blocks.RemoveAll(b => b is null); s.Name ??= "";
+            var old = s.Id ?? ""; var id = Unique(Slug(old), x => seenPages.Contains(x)); seenPages.Add(id);
+            pageMap.TryAdd(old, id); s.Id = id;
+        }
+        var collMap = new Dictionary<string, string>(StringComparer.Ordinal);
+        var fieldMaps = new Dictionary<string, Dictionary<string, string>>(StringComparer.Ordinal);
+        var seenColl = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var c in Collections)
+        {
+            c.Fields ??= []; c.Fields.RemoveAll(f => f is null); c.Name ??= "";
+            var old = c.Id ?? ""; var id = Unique(Slug(old), x => seenColl.Contains(x)); seenColl.Add(id);
+            collMap.TryAdd(old, id); c.Id = id;
+            var fm = new Dictionary<string, string>(StringComparer.Ordinal); var seenF = new HashSet<string>(StringComparer.Ordinal);
+            for (var k = 0; k < c.Fields.Count; k++)
+            {
+                var f = c.Fields[k]; var fid = Unique(Slug(f.Id ?? f.Label), x => seenF.Contains(x)); seenF.Add(fid);
+                fm.TryAdd(f.Id ?? "", fid);
+                c.Fields[k] = new DataField(fid, f.Label ?? "", f.Type == "zahl" ? "zahl" : "text", f.Required);
+            }
+            fieldMaps[id] = fm;
+        }
+        foreach (var s in Pages)
+            for (var i = 0; i < s.Blocks.Count; i++)
+            {
+                var b = s.Blocks[i];
+                string kind = b.Kind ?? "", text = b.Text ?? "", url = b.Url ?? "";
+                string? data = b.Data is null ? null : collMap.TryGetValue(b.Data, out var cd) ? cd : Slug(b.Data);
+                if (url.StartsWith("seite:", StringComparison.Ordinal)) url = "seite:" + (pageMap.TryGetValue(url[6..], out var pid) ? pid : Slug(url[6..]));
+                else if (kind == "stat") url = url.StartsWith("summe:", StringComparison.Ordinal)
+                    ? "summe:" + (data is not null && fieldMaps.TryGetValue(data, out var fm) && fm.TryGetValue(url[6..], out var fid) ? fid : Slug(url[6..]))
+                    : "anzahl";
+                s.Blocks[i] = new Block(kind, text, url, data);
+            }
     }
 
     public static readonly (string Kind, string Label)[] Kinds =
@@ -174,6 +219,27 @@ public sealed class SitePage : IJsonOnDeserialized
         return list;
     }
 
+    /// <summary>T-0765 (Gegenprüfung M3): Seiten und Datensammlungen einer anderen App anhängen – Vorhandenes bleibt unverändert, neue Kennungen werden
+    /// eindeutig gemacht und Verweise (Knopf „zu Seite X“, Datensammlung der Bausteine) folgen.</summary>
+    public void Absorb(SitePage other)
+    {
+        var collMap = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var c in other.Collections)
+        {
+            var id = Unique(c.Id, x => Collection(x) is not null);
+            collMap[c.Id] = id;
+            Collections.Add(new DataCollection { Id = id, Name = c.Name, Fields = [.. c.Fields] });
+        }
+        var pageMap = new Dictionary<string, string>(StringComparer.Ordinal);
+        var taken = new HashSet<string>(Pages.Select(p => p.Id), StringComparer.Ordinal);
+        foreach (var s in other.Pages) { var id = Unique(s.Id, x => taken.Contains(x)); taken.Add(id); pageMap[s.Id] = id; }
+        foreach (var s in other.Pages)
+            Pages.Add(new AppScreen { Id = pageMap[s.Id], Name = s.Name, Blocks = [.. s.Blocks.Select(b => b with {
+                Data = b.Data is not null && collMap.TryGetValue(b.Data, out var cd) ? cd : b.Data,
+                Url = b.Url.StartsWith("seite:", StringComparison.Ordinal) && pageMap.TryGetValue(b.Url[6..], out var pid) ? "seite:" + pid : b.Url })] });
+        if (Collections.Count > 0) EnsureAppId();
+    }
+
     public void EnsureAppId() { if (AppId.Length == 0) AppId = Guid.NewGuid().ToString("N")[..12]; }
 
     // ── T-0765: Vorlagen ──
@@ -214,7 +280,7 @@ public sealed class SitePage : IJsonOnDeserialized
 
     /// <summary>T-0765: Linkziel eines Knopfs – „seite:&lt;id&gt;“ wird zum Sprung auf die Seite (nur wenn es sie gibt), sonst <see cref="SafeUrl"/>.</summary>
     public string LinkHref(string u) =>
-        u.StartsWith("seite:", StringComparison.Ordinal) ? (PageIndex(u[6..]) >= 0 ? "#seite-" + u[6..] : "#") : SafeUrl(u);
+        u.StartsWith("seite:", StringComparison.Ordinal) ? (PageIndex(u[6..]) >= 0 ? "#seite-" + Slug(u[6..]) : "#") : SafeUrl(u);
 
     /// <summary>T-0765: Text, den die Auswertung zeigt, wenn keiner eingetragen ist („Anzahl der Einträge“, „Summe Preis“).</summary>
     public string MeasureLabel(Block b)
@@ -226,6 +292,9 @@ public sealed class SitePage : IJsonOnDeserialized
     }
 
     static string E(string s) => WebUtility.HtmlEncode(s);
+
+    /// <summary>T-0765 (Gegenprüfung N3): ehrlicher Satz, wo die Einträge liegen – im Baukasten und als Fußzeile der fertigen App.</summary>
+    public const string StorageNote = "Deine Einträge liegen nur in diesem Browser auf diesem Gerät – kein Abgleich mit anderen Geräten. Wer die Browserdaten löscht, löscht auch die Einträge. Als Datei geöffnet (file://) können andere Seiten auf diesem Gerät sie mitlesen.";
 
     string Accent6 => Regex.IsMatch(Accent, "^#[0-9A-Fa-f]{6}$") ? Accent : "#2F86F6";
 
@@ -239,8 +308,8 @@ public sealed class SitePage : IJsonOnDeserialized
         "contact" => $"<p><a class=\"btn\" href=\"mailto:{E(Uri.EscapeDataString(b.Url.Trim()).Replace("%40", "@"))}\">{E(b.Text.Length > 0 ? b.Text : "Schreib mir")}</a></p>\n",
         "hr" => "<hr>\n",
         "form" => FormHtml(b),
-        "datalist" => Collection(b.Data) is { } c ? $"<ul class=\"t-liste\" data-sammlung=\"{c.Id}\" data-leer=\"{E(EmptyText(b))}\"><li class=\"t-leer\">{E(EmptyText(b))}</li></ul>\n" : "",
-        "stat" => Collection(b.Data) is { } c ? $"<p class=\"t-wert\" data-sammlung=\"{c.Id}\" data-mass=\"{(b.Url.StartsWith("summe:", StringComparison.Ordinal) ? "summe:" + Slug(b.Url[6..]) : "anzahl")}\"><span>{E(b.Text.Length > 0 ? b.Text : MeasureLabel(b))}</span> <strong>0</strong></p>\n" : "",
+        "datalist" => Collection(b.Data) is { } c ? $"<ul class=\"t-liste\" data-sammlung=\"{E(c.Id)}\" data-leer=\"{E(EmptyText(b))}\"><li class=\"t-leer\">{E(EmptyText(b))}</li></ul>\n" : "",
+        "stat" => Collection(b.Data) is { } c ? $"<p class=\"t-wert\" data-sammlung=\"{E(c.Id)}\" data-mass=\"{E(b.Url.StartsWith("summe:", StringComparison.Ordinal) ? "summe:" + Slug(b.Url[6..]) : "anzahl")}\"><span>{E(b.Text.Length > 0 ? b.Text : MeasureLabel(b))}</span> <strong>0</strong></p>\n" : "",
         _ => "",
     };
 
@@ -249,9 +318,9 @@ public sealed class SitePage : IJsonOnDeserialized
     string FormHtml(Block b)
     {
         if (Collection(b.Data) is not { } c) return "";
-        var sb = new StringBuilder($"<form class=\"t-form\" data-sammlung=\"{c.Id}\" novalidate>\n");
+        var sb = new StringBuilder($"<form class=\"t-form\" data-sammlung=\"{E(c.Id)}\" novalidate>\n");
         foreach (var f in c.Fields)
-            sb.Append($"<label>{E(f.Label)}{(f.Required ? " *" : "")}<input name=\"{f.Id}\" {(f.Type == "zahl" ? "type=\"number\" step=\"any\" inputmode=\"decimal\"" : "type=\"text\"")}{(f.Required ? " required" : "")}></label>\n");
+            sb.Append($"<label>{E(f.Label)}{(f.Required ? " *" : "")}<input name=\"{E(f.Id)}\" {(f.Type == "zahl" ? "type=\"number\" step=\"any\" inputmode=\"decimal\"" : "type=\"text\"")}{(f.Required ? " required" : "")}></label>\n");
         sb.Append("<p class=\"t-fehler\" role=\"alert\" hidden></p>\n");
         sb.Append($"<button type=\"submit\" class=\"btn\">{E(b.Text.Length > 0 ? b.Text : "Speichern")}</button>\n</form>\n");
         return sb.ToString();
@@ -271,7 +340,8 @@ public sealed class SitePage : IJsonOnDeserialized
   function lade(id) { try { var t = window.localStorage.getItem(pre + id); var a = t ? JSON.parse(t) : []; return Array.isArray(a) ? a : []; } catch (e) { return []; } }
   function speichere(id, a) { try { window.localStorage.setItem(pre + id, JSON.stringify(a)); return true; } catch (e) { return false; } }
   function zahl(v) { var n = parseFloat(String(v == null ? '' : v).replace(',', '.')); return isFinite(n) ? n : 0; }
-  function fmt(n) { try { return n.toLocaleString('de-DE', { maximumFractionDigits: 2 }); } catch (e) { return String(n); } }
+  var GRENZE = 1e12;
+  function fmt(n) { if (!isFinite(n) || Math.abs(n) >= 1e15) return 'zu groß'; try { return n.toLocaleString('de-DE', { maximumFractionDigits: 2 }); } catch (e) { return String(n); } }
   function zeichne() {
     alle('ul.t-liste').forEach(function (ul) {
       var id = ul.getAttribute('data-sammlung'); var c = sammlung(id); var a = lade(id);
@@ -297,14 +367,16 @@ public sealed class SitePage : IJsonOnDeserialized
       ev.preventDefault();
       var id = form.getAttribute('data-sammlung'); var c = sammlung(id); var fehler = form.querySelector('.t-fehler');
       if (!c) return;
-      var e = {}; var fehlt = [];
+      var e = {}; var fehlt = []; var gross = [];
       c.Fields.forEach(function (f) {
-        var inp = form.querySelector('[name="' + f.Id + '"]'); var v = inp ? String(inp.value).trim() : '';
+        var inp = form.elements.namedItem(f.Id); var v = inp && 'value' in inp ? String(inp.value).trim() : '';
         if (f.Required && v === '') fehlt.push(f.Label);
+        if (f.Type === 'zahl' && v !== '' && (!isFinite(parseFloat(v.replace(',', '.'))) || Math.abs(parseFloat(v.replace(',', '.'))) > GRENZE)) gross.push(f.Label);
         e[f.Id] = f.Type === 'zahl' && v !== '' ? zahl(v) : v;
       });
       if (fehlt.length) { fehler.textContent = 'Bitte ausfüllen: ' + fehlt.join(', ') + '.'; fehler.hidden = false; return; }
-      e.zeit = Date.now();
+      if (gross.length) { fehler.textContent = 'Diese Zahl ist zu groß oder keine Zahl: ' + gross.join(', ') + ' (höchstens 1 Billion).'; fehler.hidden = false; return; }
+      e._t = Date.now();
       var a = lade(id); a.push(e);
       if (!speichere(id, a)) { fehler.textContent = 'Konnte nicht speichern – der Browser erlaubt hier keinen Speicher.'; fehler.hidden = false; return; }
       fehler.textContent = 'Gespeichert.'; fehler.hidden = false; form.reset(); zeichne();
@@ -339,7 +411,7 @@ public sealed class SitePage : IJsonOnDeserialized
         if (app) sb.Append($"<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; img-src 'self' data: https: http: file:; style-src 'unsafe-inline'; script-src '{ScriptHash}'; form-action 'none'; base-uri 'none'\">");
         sb.Append($"<title>{E(Title)}</title>\n");
         sb.Append($"<style>body{{font-family:system-ui,sans-serif;max-width:760px;margin:0 auto;padding:2rem 1rem;line-height:1.55;color:#1b2333}}h1{{color:{acc}}}a.btn{{display:inline-block;background:{acc};color:#fff;padding:.6rem 1.2rem;border-radius:8px;text-decoration:none}}img{{max-width:100%;border-radius:10px}}hr{{border:0;border-top:1px solid #dde}}</style>\n");
-        if (app) sb.Append($"<style>nav.t-nav{{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem}}nav.t-nav a{{padding:.35rem .8rem;border-radius:999px;border:1px solid #d5dae3;color:#1b2333;text-decoration:none}}nav.t-nav a[aria-current]{{background:{acc};border-color:{acc};color:#fff}}section[hidden]{{display:none}}form.t-form{{display:grid;gap:.7rem;max-width:420px}}form.t-form label{{display:grid;gap:.2rem;font-weight:600}}form.t-form input{{font:inherit;padding:.55rem .7rem;border:1px solid #c5ccd8;border-radius:8px}}button.btn{{font:inherit;background:{acc};color:#fff;border:0;padding:.6rem 1.2rem;border-radius:8px;cursor:pointer;justify-self:start}}.t-fehler{{margin:0;color:#8a4b00}}ul.t-liste{{list-style:none;padding:0;display:grid;gap:.4rem}}ul.t-liste li{{display:flex;justify-content:space-between;gap:.6rem;align-items:center;padding:.55rem .8rem;border:1px solid #e3e7ee;border-radius:8px}}ul.t-liste li.t-leer{{color:#6b7385;border-style:dashed}}button.t-weg{{font:inherit;font-size:.85rem;background:none;border:1px solid #c5ccd8;border-radius:6px;padding:.2rem .6rem;cursor:pointer}}p.t-wert{{display:flex;justify-content:space-between;max-width:420px;padding:.5rem .8rem;background:#f5f6f9;border-radius:8px}}p.t-wert strong{{font-size:1.2rem}}</style>\n");
+        if (app) sb.Append($"<style>nav.t-nav{{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem}}nav.t-nav a{{padding:.35rem .8rem;border-radius:999px;border:1px solid #d5dae3;color:#1b2333;text-decoration:none}}nav.t-nav a[aria-current]{{background:{acc};border-color:{acc};color:#fff}}section[hidden]{{display:none}}form.t-form{{display:grid;gap:.7rem;max-width:420px}}form.t-form label{{display:grid;gap:.2rem;font-weight:600}}form.t-form input{{font:inherit;padding:.55rem .7rem;border:1px solid #c5ccd8;border-radius:8px}}button.btn{{font:inherit;background:{acc};color:#fff;border:0;padding:.6rem 1.2rem;border-radius:8px;cursor:pointer;justify-self:start}}.t-fehler{{margin:0;color:#8a4b00}}ul.t-liste{{list-style:none;padding:0;display:grid;gap:.4rem}}ul.t-liste li{{display:flex;justify-content:space-between;gap:.6rem;align-items:center;padding:.55rem .8rem;border:1px solid #e3e7ee;border-radius:8px}}ul.t-liste li.t-leer{{color:#6b7385;border-style:dashed}}button.t-weg{{font:inherit;font-size:.85rem;background:none;border:1px solid #c5ccd8;border-radius:6px;padding:.2rem .6rem;cursor:pointer}}p.t-wert{{display:flex;justify-content:space-between;max-width:420px;padding:.5rem .8rem;background:#f5f6f9;border-radius:8px}}p.t-wert strong{{font-size:1.2rem}}footer.t-hinweis{{margin-top:2.5rem;font-size:.8rem;color:#6b7385;border-top:1px solid #e3e7ee;padding-top:.6rem}}</style>\n");
         sb.Append("</head>\n<body>\n");
         if (!app)
             foreach (var b in Blocks) sb.Append(BlockHtml(b));
@@ -348,16 +420,17 @@ public sealed class SitePage : IJsonOnDeserialized
             if (Pages.Count > 1)
             {
                 sb.Append("<nav class=\"t-nav\" aria-label=\"Seiten\">");
-                foreach (var s in Pages) sb.Append($"<a href=\"#seite-{s.Id}\">{E(s.Name)}</a>");
+                foreach (var s in Pages) sb.Append($"<a href=\"#seite-{E(s.Id)}\">{E(s.Name)}</a>");
                 sb.Append("</nav>\n");
             }
             foreach (var s in Pages)
             {
-                sb.Append($"<section id=\"seite-{s.Id}\" data-seite=\"{s.Id}\" aria-label=\"{E(s.Name)}\">\n");
+                sb.Append($"<section id=\"seite-{E(s.Id)}\" data-seite=\"{E(s.Id)}\" aria-label=\"{E(s.Name)}\">\n");
                 foreach (var b in s.Blocks) sb.Append(BlockHtml(b));
                 sb.Append("</section>\n");
             }
         }
+        if (Collections.Count > 0) sb.Append("<footer class=\"t-hinweis\">").Append(E(StorageNote)).Append("</footer>\n");
         sb.Append("<script type=\"application/json\" id=\"trendo-app\">").Append(EmbeddedJson()).Append("</script>\n");
         if (app) sb.Append("<script>").Append(AppScript).Append("</script>\n");
         sb.Append("</body>\n</html>\n");
@@ -391,44 +464,92 @@ public sealed class SitePage : IJsonOnDeserialized
         return p;
     }
 
-    /// <summary>T-0765 (Rundreise): App aus einer exportierten ZIP, einem fertigen Ordner oder einer index.html wieder öffnen –
-    /// das Projekt steckt eingebettet in der Seite (<c>&lt;script type="application/json" id="trendo-app"&gt;</c>). Bilder neben der Seite werden nach
-    /// <paramref name="assetDir"/> kopiert (nur sichere relative Pfade).</summary>
-    public static SitePage FromExport(string path, string? assetDir = null)
+    /// <summary>T-0765 (Gegenprüfung M4): Grenzen beim Wiederöffnen – gezählt werden die tatsächlich gelesenen Bytes, nicht die Angaben im ZIP-Kopf.</summary>
+    public const long MaxImportHtmlBytes = 20L * 1024 * 1024, MaxImportImageBytes = 25L * 1024 * 1024, MaxImportImagesTotal = 200L * 1024 * 1024;
+    public const int MaxImportEntries = 2000, MaxImportImages = 300;
+    static readonly string[] ImportImageTypes = [".png", ".jpg", ".jpeg", ".gif", ".webp"];
+
+    /// <summary>Höchstens <paramref name="max"/> Bytes lesen; mehr = verständliche Ablehnung (auch wenn der ZIP-Kopf eine kleinere Länge behauptet).</summary>
+    static byte[] ReadBounded(Stream s, long max, string what)
     {
-        string html; Func<string, Stream?> open;
+        using var ms = new MemoryStream();
+        var buf = new byte[81920]; int n;
+        while ((n = s.Read(buf, 0, buf.Length)) > 0)
+        {
+            if (ms.Length + n > max) throw new InvalidDataException($"{what} ist zu groß (mehr als {max / (1024 * 1024)} MB) – nicht geöffnet, nichts wurde geschrieben.");
+            ms.Write(buf, 0, n);
+        }
+        return ms.ToArray();
+    }
+
+    /// <summary>T-0765 (Rundreise): App aus einer exportierten ZIP, einem fertigen Ordner oder einer index.html wieder öffnen –
+    /// das Projekt steckt eingebettet in der Seite (<c>&lt;script type="application/json" id="trendo-app"&gt;</c>).
+    /// Gegenprüfung M4/M5: erst alles lesen und prüfen (Größen, Anzahl, nur Bilder .png/.jpg/.gif/.webp), dann schreiben. Bilder landen unter
+    /// <paramref name="assetDir"/>/<paramref name="assetPrefix"/>; eine vorhandene Datei wird nie überschrieben (gleicher Inhalt = übernehmen, sonst neuer Name);
+    /// die Verweise der Bausteine folgen.</summary>
+    public static SitePage FromExport(string path, string? assetDir = null, string assetPrefix = "")
+    {
+        Func<string, Stream?> open;
+        string html;
         System.IO.Compression.ZipArchive? zip = null;
         try
         {
-            if (Directory.Exists(path))
+            if (Directory.Exists(path) || !path.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
             {
-                var root = path; html = File.ReadAllText(Path.Combine(root, "index.html"));
-                open = rel => File.Exists(Path.Combine(root, rel)) ? File.OpenRead(Path.Combine(root, rel)) : null;
-            }
-            else if (path.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
-            {
-                zip = System.IO.Compression.ZipFile.OpenRead(path);
-                var entry = zip.Entries.Where(e => e.Name.Equals("index.html", StringComparison.OrdinalIgnoreCase)).OrderBy(e => e.FullName.Length).FirstOrDefault()
-                    ?? throw new InvalidDataException("In der ZIP fehlt die Seite index.html – das ist keine Baukasten-App.");
-                var prefix = entry.FullName[..^entry.Name.Length];
-                using (var r = new StreamReader(entry.Open())) html = r.ReadToEnd();
-                var z = zip; open = rel => z.GetEntry(prefix + rel)?.Open();
+                var file = Directory.Exists(path) ? Path.Combine(path, "index.html") : Path.GetFullPath(path);
+                var root = Path.GetDirectoryName(file)!;
+                if (new FileInfo(file).Length > MaxImportHtmlBytes) throw new InvalidDataException($"Die Seite ist zu groß (mehr als {MaxImportHtmlBytes / (1024 * 1024)} MB) – nicht geöffnet, nichts wurde geschrieben.");
+                using (var fs = File.OpenRead(file)) html = Encoding.UTF8.GetString(ReadBounded(fs, MaxImportHtmlBytes, "Die Seite"));
+                open = rel => { var f = Path.GetFullPath(Path.Combine(root, rel)); return f.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) && File.Exists(f) ? File.OpenRead(f) : null; };
             }
             else
             {
-                var root = Path.GetDirectoryName(Path.GetFullPath(path))!; html = File.ReadAllText(path);
-                open = rel => File.Exists(Path.Combine(root, rel)) ? File.OpenRead(Path.Combine(root, rel)) : null;
+                zip = System.IO.Compression.ZipFile.OpenRead(path);
+                if (zip.Entries.Count > MaxImportEntries) throw new InvalidDataException($"Die ZIP hat mehr als {MaxImportEntries} Einträge – das ist keine Baukasten-App. Nichts wurde geschrieben.");
+                var entry = zip.Entries.Where(e => e.Name.Equals("index.html", StringComparison.OrdinalIgnoreCase)).OrderBy(e => e.FullName.Length).FirstOrDefault()
+                    ?? throw new InvalidDataException("In der ZIP fehlt die Seite index.html – das ist keine Baukasten-App.");
+                if (entry.Length > MaxImportHtmlBytes) throw new InvalidDataException($"Die Seite in der ZIP ist zu groß (mehr als {MaxImportHtmlBytes / (1024 * 1024)} MB) – nicht geöffnet, nichts wurde geschrieben.");
+                var prefix = entry.FullName[..^entry.Name.Length];
+                using (var es = entry.Open()) html = Encoding.UTF8.GetString(ReadBounded(es, MaxImportHtmlBytes, "Die Seite in der ZIP"));
+                var z = zip; open = rel => z.GetEntry(prefix + rel) is { } e2 ? (e2.Length > MaxImportImageBytes ? throw new InvalidDataException($"Das Bild „{rel}“ ist zu groß (mehr als {MaxImportImageBytes / (1024 * 1024)} MB) – nicht geöffnet, nichts wurde geschrieben.") : e2.Open()) : null;
             }
             var m = Regex.Match(html, "<script type=\"application/json\" id=\"trendo-app\">(.*?)</script>", RegexOptions.Singleline);
             if (!m.Success) throw new InvalidDataException("Diese Seite stammt nicht aus dem Baukasten (es fehlen die eingebetteten App-Daten).");
             var page = FromJson(m.Groups[1].Value);
-            if (assetDir is not null)
-                foreach (var b in page.Pages.SelectMany(s => s.Blocks).Where(b => b.Kind == "img" && !b.Url.Contains(':') && FreeAssets.SafeRel(b.Url)))
+            if (assetDir is null) return page;
+
+            // 1) lesen und prüfen – noch nichts schreiben
+            var wanted = page.Pages.SelectMany(s => s.Blocks).Where(b => b.Kind == "img" && !b.Url.Contains(':') && FreeAssets.SafeRel(b.Url)
+                && ImportImageTypes.Contains(Path.GetExtension(b.Url).ToLowerInvariant())).Select(b => b.Url).Distinct(StringComparer.Ordinal).ToList();
+            if (wanted.Count > MaxImportImages) throw new InvalidDataException($"Die App verweist auf mehr als {MaxImportImages} Bilder – nicht geöffnet, nichts wurde geschrieben.");
+            var bytes = new Dictionary<string, byte[]>(StringComparer.Ordinal); long total = 0;
+            foreach (var rel in wanted)
+            {
+                using var s = open(rel); if (s is null) continue;
+                var data = ReadBounded(s, MaxImportImageBytes, $"Das Bild „{rel}“");
+                total += data.Length;
+                if (total > MaxImportImagesTotal) throw new InvalidDataException($"Die Bilder sind zusammen zu groß (mehr als {MaxImportImagesTotal / (1024 * 1024)} MB) – nicht geöffnet, nichts wurde geschrieben.");
+                bytes[rel] = data;
+            }
+            // 2) schreiben – nie eine vorhandene Datei überschreiben
+            var pre = assetPrefix.Trim('/', '\\').Replace('\\', '/');
+            if (pre.Length > 0 && !FreeAssets.SafeRel(pre)) throw new ArgumentException("Unsicherer Zielordner für Bilder.", nameof(assetPrefix));
+            var moved = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var (rel, data) in bytes)
+            {
+                var target = pre.Length > 0 ? pre + "/" + rel : rel;
+                var dst = Path.Combine(assetDir, target);
+                for (var k = 2; File.Exists(dst) && !File.ReadAllBytes(dst).AsSpan().SequenceEqual(data); k++)
                 {
-                    using var s = open(b.Url); if (s is null) continue;
-                    var dst = Path.Combine(assetDir, b.Url); Directory.CreateDirectory(Path.GetDirectoryName(dst)!);
-                    using var f = File.Create(dst); s.CopyTo(f);
+                    target = (Path.GetDirectoryName(pre.Length > 0 ? pre + "/" + rel : rel) is { Length: > 0 } d ? d.Replace('\\', '/') + "/" : "") + Path.GetFileNameWithoutExtension(rel) + "-" + k + Path.GetExtension(rel);
+                    dst = Path.Combine(assetDir, target);
                 }
+                if (!File.Exists(dst)) { Directory.CreateDirectory(Path.GetDirectoryName(dst)!); File.WriteAllBytes(dst, data); }
+                moved[rel] = target;
+            }
+            foreach (var s in page.Pages)
+                for (var i = 0; i < s.Blocks.Count; i++)
+                    if (s.Blocks[i].Kind == "img" && moved.TryGetValue(s.Blocks[i].Url, out var to)) s.Blocks[i] = s.Blocks[i] with { Url = to };
             return page;
         }
         catch (JsonException e) { throw new InvalidDataException("Die App-Daten in der Seite sind beschädigt: " + e.Message, e); }

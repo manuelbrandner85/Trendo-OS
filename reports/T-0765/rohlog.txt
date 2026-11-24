@@ -1,51 +1,79 @@
-13:02:52.919 Browser: C:\Program Files\Google\Chrome\Application\chrome.exe 157.0.8103.79
-13:02:53.134 ZIP: <temp>\Einkaufsliste.zip (3429 Bytes), entpackt nach <temp>\entpackt
-13:02:53.159 [Lauf 1] Chrome gestartet, PID 3524, Profil <temp>\profil
-13:02:53.755 [Lauf 1] Netz: file:///<temp>/entpackt/index.html
-13:02:53.947 OK    Start: nur Seite „Liste“ sichtbar → liste
-13:02:53.948 Liste: (leer) Noch nichts auf der Liste – tippe auf „Etwas hinzufügen“.
-13:02:53.950 Auswertung: Noch zu kaufen 0 | Summe in € 0
-13:02:53.953 OK    Anzahl und Summe 0
-13:02:53.981 Klick auf #seite-liste a.btn[href='#seite-neu'] bei (97,368)
-13:02:54.148 OK    Knopf „Etwas hinzufügen“ führt zur zweiten Seite → neu
-13:02:54.160 Klick auf #seite-neu form button[type=submit] bei (79,476)
-13:02:54.324 OK    Pflichtfeld: leeres Formular wird abgelehnt → „Bitte ausfüllen: Artikel.“
-13:02:54.325 OK    nichts gespeichert
-13:02:54.329 Klick auf #seite-neu input[name=artikel] bei (226,253)
-13:02:54.491 Getippt in #seite-neu input[name=artikel]: „Milch“
-13:02:54.496 Klick auf #seite-neu input[name=menge] bei (226,337)
-13:02:54.663 Getippt in #seite-neu input[name=menge]: „2“
-13:02:54.667 Klick auf #seite-neu input[name=preis] bei (226,421)
-13:02:54.824 Getippt in #seite-neu input[name=preis]: „1.29“
-13:02:54.828 Klick auf #seite-neu form button[type=submit] bei (79,512)
-13:02:55.028 Klick auf #seite-neu input[name=artikel] bei (226,253)
-13:02:55.208 Getippt in #seite-neu input[name=artikel]: „Brot“
-13:02:55.226 Klick auf #seite-neu input[name=preis] bei (226,421)
-13:02:55.388 Getippt in #seite-neu input[name=preis]: „2.79“
-13:02:55.391 Klick auf #seite-neu form button[type=submit] bei (79,512)
-13:02:55.555 OK    Formular meldet „Gespeichert.“
-13:02:55.561 Klick auf nav.t-nav a[href='#seite-liste'] bei (46,51)
-13:02:55.727 OK    Navigation zurück zur Liste
-13:02:55.729 Liste: Milch · Menge: 2 · Preis (€): 1,29 | Brot · Preis (€): 2,79
-13:02:55.729 OK    zwei Einträge in der Liste
-13:02:55.730 OK    Anzahl 2, Summe 4,08 → Noch zu kaufen 2 | Summe in € 4,08
-13:02:55.731 localStorage: ["trendo-app/06d694aed0f5/einkaeufe"]
-13:02:55.794 Bild: lauf1-liste.png
-13:02:56.033 [Lauf 1] Chrome beendet (Exit 0)
-13:02:56.042 [Lauf 2 (Neustart, gleiches Profil)] Chrome gestartet, PID 50332, Profil <temp>\profil
-13:02:56.748 [Lauf 2 (Neustart, gleiches Profil)] Netz: file:///<temp>/entpackt/index.html
-13:02:57.067 Liste nach Neustart: Milch · Menge: 2 · Preis (€): 1,29 | Brot · Preis (€): 2,79
-13:02:57.067 OK    Einträge nach Neustart des Browsers noch da
-13:02:57.103 OK    Auswertung nach Neustart
-13:02:57.347 Bild: lauf2-nach-neustart.png
-13:02:57.428 Klick auf #seite-liste ul.t-liste li:first-child button.t-weg bei (503,310)
-13:02:57.633 OK    „Entfernen“ löscht den Eintrag
-13:02:57.634 OK    Auswertung danach
-13:02:57.649 Klick auf #seite-liste a.btn[href='#seite-neu'] bei (97,373)
-13:02:57.903 Bild: lauf2-formular.png
-13:02:58.117 [Lauf 2 (Neustart, gleiches Profil)] Chrome beendet (Exit 0)
-13:02:58.117 OK    zwei getrennte Browser-Prozesse (PID 3524, 50332)
-13:02:58.118 OK    keine Netzanfrage außer file:// (2 Anfragen gesamt)
-13:02:58.144 OK    Rundreise: exportierte ZIP wieder geöffnet = gleiche App (2 Seiten, 1 Sammlung)
-13:02:58.232 OK    keine externen Skripte oder Stylesheets in index.html
-13:02:58.235 ERGEBNIS: BESTANDEN
+14:32:38.212 Browser: C:\Program Files\Google\Chrome\Application\chrome.exe 157.0.8103.79
+14:32:38.387 ZIP: <temp>\Einkaufsliste.zip (3767 Bytes), entpackt nach <temp>\entpackt
+14:32:38.406 [Lauf 1] Chrome gestartet, PID 42188, Profil <temp>\profil
+14:32:38.882 [Lauf 1] Netz: file:///<temp>/entpackt/index.html
+14:32:39.026 OK    Start: nur Seite „Liste“ sichtbar → liste
+14:32:39.027 Liste: (leer) Noch nichts auf der Liste – tippe auf „Etwas hinzufügen“.
+14:32:39.028 Auswertung: Noch zu kaufen 0 | Summe in € 0
+14:32:39.029 OK    Anzahl und Summe 0
+14:32:39.038 Klick auf #seite-liste a.btn[href='#seite-neu'] bei (97,368)
+14:32:39.266 OK    Knopf „Etwas hinzufügen“ führt zur zweiten Seite → neu
+14:32:39.271 Klick auf #seite-neu form button[type=submit] bei (79,476)
+14:32:39.427 OK    Pflichtfeld: leeres Formular wird abgelehnt → „Bitte ausfüllen: Artikel.“
+14:32:39.428 OK    nichts gespeichert
+14:32:39.432 Klick auf #seite-neu input[name=artikel] bei (226,253)
+14:32:39.596 Getippt in #seite-neu input[name=artikel]: „Milch“
+14:32:39.601 Klick auf #seite-neu input[name=menge] bei (226,337)
+14:32:39.761 Getippt in #seite-neu input[name=menge]: „2“
+14:32:39.766 Klick auf #seite-neu input[name=preis] bei (226,421)
+14:32:39.929 Getippt in #seite-neu input[name=preis]: „1.29“
+14:32:40.010 Klick auf #seite-neu form button[type=submit] bei (79,512)
+14:32:40.176 Klick auf #seite-neu input[name=artikel] bei (226,253)
+14:32:40.344 Getippt in #seite-neu input[name=artikel]: „Brot“
+14:32:40.346 Klick auf #seite-neu input[name=preis] bei (226,421)
+14:32:40.512 Getippt in #seite-neu input[name=preis]: „2.79“
+14:32:40.516 Klick auf #seite-neu form button[type=submit] bei (79,512)
+14:32:40.677 OK    Formular meldet „Gespeichert.“
+14:32:40.683 Klick auf nav.t-nav a[href='#seite-liste'] bei (46,51)
+14:32:40.846 OK    Navigation zurück zur Liste
+14:32:40.847 Liste: Milch · Menge: 2 · Preis (€): 1,29 | Brot · Preis (€): 2,79
+14:32:40.847 OK    zwei Einträge in der Liste
+14:32:40.848 OK    Anzahl 2, Summe 4,08 → Noch zu kaufen 2 | Summe in € 4,08
+14:32:40.849 localStorage: ["trendo-app/e1beda19b4f7/einkaeufe"]
+14:32:40.908 Bild: lauf1-liste.png
+14:32:41.552 [Lauf 1] Chrome beendet (Exit 0)
+14:32:41.559 [Lauf 2 (Neustart, gleiches Profil)] Chrome gestartet, PID 8984, Profil <temp>\profil
+14:32:42.307 [Lauf 2 (Neustart, gleiches Profil)] Netz: file:///<temp>/entpackt/index.html
+14:32:42.613 Liste nach Neustart: Milch · Menge: 2 · Preis (€): 1,29 | Brot · Preis (€): 2,79
+14:32:42.613 OK    Einträge nach Neustart des Browsers noch da
+14:32:42.646 OK    Auswertung nach Neustart
+14:32:42.918 Bild: lauf2-nach-neustart.png
+14:32:42.922 Klick auf #seite-liste ul.t-liste li:first-child button.t-weg bei (503,310)
+14:32:43.077 OK    „Entfernen“ löscht den Eintrag
+14:32:43.077 OK    Auswertung danach
+14:32:43.154 Klick auf #seite-liste a.btn[href='#seite-neu'] bei (97,373)
+14:32:43.595 Bild: lauf2-formular.png
+14:32:43.835 [Lauf 2 (Neustart, gleiches Profil)] Chrome beendet (Exit 0)
+14:32:43.836 OK    zwei getrennte Browser-Prozesse (PID 42188, 8984)
+14:32:43.872 [Lauf 3 (Gegenprüfung)] Chrome gestartet, PID 17632, Profil <temp>\profil
+14:32:44.372 [Lauf 3 (Gegenprüfung)] Netz: file:///<temp>/falle/index.html
+14:32:46.526 OK    M1: präparierte Kennungen – keine Weiterleitung, Seite bleibt file:///<temp>/falle/index.html
+14:32:46.527 OK    M1: kein eingeschleustes <meta refresh> und kein fremdes Element im DOM
+14:32:46.532 Klick auf form.t-form input bei (226,82)
+14:32:46.694 Getippt in form.t-form input: „geht“
+14:32:46.700 Klick auf form.t-form button[type=submit] bei (47,138)
+14:32:46.861 OK    M1: Formular mit bereinigter Kennung speichert weiter
+14:32:46.866 [Lauf 3 (Gegenprüfung)] Netz: file:///<temp>/termine/index.html
+14:32:47.014 Klick auf input[name=was] bei (226,175)
+14:32:47.176 Getippt in input[name=was]: „Arzt“
+14:32:47.178 Klick auf input[name=zeit] bei (226,258)
+14:32:47.343 Getippt in input[name=zeit]: „18 Uhr“
+14:32:47.345 Klick auf input[name=betrag] bei (226,342)
+14:32:47.509 Getippt in input[name=betrag]: „12“
+14:32:47.513 Klick auf form.t-form button[type=submit] bei (70,397)
+14:32:47.675 OK    M2: Feld „Zeit“ bleibt erhalten → Arzt · Zeit: 18 Uhr · Betrag: 12
+14:32:47.675 OK    M2: gespeichert mit eigenem Zeitstempel-Schlüssel _t → {"was":"Arzt","zeit":"18 Uhr","betrag":12,"_t":<zeit>}
+14:32:47.678 Klick auf input[name=was] bei (226,175)
+14:32:47.842 Getippt in input[name=was]: „Riesig“
+14:32:47.844 Klick auf input[name=betrag] bei (226,342)
+14:32:48.010 Getippt in input[name=betrag]: „1e20“
+14:32:48.013 Klick auf form.t-form button[type=submit] bei (70,433)
+14:32:48.176 OK    N2: sehr große Zahl abgelehnt → „Diese Zahl ist zu groß oder keine Zahl: Betrag (höchstens 1 Billion).“
+14:32:48.176 OK    N2: nichts gespeichert
+14:32:48.177 OK    N3: Hinweis in der App sichtbar → „Deine Einträge liegen nur in diesem Browser auf diesem Gerät – kein Abgleich mit anderen Geräten. Wer die Browserdaten löscht, löscht auch die Einträge. Als Datei geöffnet (file://) können andere Seiten auf diesem Gerät sie mitlesen.“
+14:32:48.235 Bild: lauf3-termine.png
+14:32:48.351 [Lauf 3 (Gegenprüfung)] Chrome beendet (Exit 0)
+14:32:48.352 OK    keine Netzanfrage außer file:// (4 Anfragen gesamt)
+14:32:48.361 OK    Rundreise: exportierte ZIP wieder geöffnet = gleiche App (2 Seiten, 1 Sammlung)
+14:32:48.393 OK    keine externen Skripte oder Stylesheets in index.html
+14:32:48.397 ERGEBNIS: BESTANDEN

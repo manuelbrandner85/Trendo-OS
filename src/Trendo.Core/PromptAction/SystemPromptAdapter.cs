@@ -420,12 +420,19 @@ static class PageFields
     }
 
     /// <summary>T-0765: Ein einfacher KI-Text (eine Seite, keine Daten) ersetzt in einer vorhandenen App nur deren erste Seite – weitere Seiten und
-    /// Datensammlungen bleiben. Baut die KI selbst eine App (Seiten/Daten), gilt ihr Ergebnis als Ganzes; die Kennung der App bleibt, damit im Browser
-    /// gespeicherte Einträge erhalten bleiben. Rückgängig: im Baukasten (die Hülle macht aus der geänderten seite.json einen Schritt).</summary>
+    /// Datensammlungen bleiben. Baut die KI selbst Seiten/Daten (Gegenprüfung M3), werden sie an die vorhandene App ANGEHÄNGT – vorhandene Seiten und
+    /// Sammlungen bleiben unverändert, neue Kennungen eindeutig; die Kennung der App bleibt, damit im Browser gespeicherte Einträge erhalten bleiben.
+    /// Rückgängig: im Baukasten (die Hülle macht aus der geänderten seite.json einen Schritt).</summary>
     public static SitePage Merge(SitePage? existing, SitePage built)
     {
         if (existing is null || !existing.IsApp) return built;
-        if (built.IsApp) { built.AppId = existing.AppId; return built; }
+        if (built.IsApp)
+        {
+            existing.Title = built.Title; existing.Accent = built.Accent;
+            built.Pages[0].Name = built.Title.Length > 0 ? built.Title : "Neu";
+            existing.Absorb(built);
+            return existing;
+        }
         existing.Title = built.Title; existing.Accent = built.Accent;
         existing.Pages[0].Blocks = built.Blocks;
         return existing;

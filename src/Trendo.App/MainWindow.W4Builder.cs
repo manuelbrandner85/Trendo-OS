@@ -220,7 +220,10 @@ public partial class MainWindow
     /// <summary>T-0765 (Rundreise): exportierte ZIP, fertigen Ordner oder index.html wieder öffnen – als ein Rückgängig-Schritt.</summary>
     public void BuilderOpenExport(string path)
     {
-        var p = SitePage.FromExport(path, BuilderFolder);
+        // Gegenprüfung M5: erst prüfen, dann schreiben – bei einer neueren seite.json (T-0716) wird gar nichts angefasst; Bilder kommen in einen
+        // eigenen Unterordner und überschreiben nie Vorhandenes (FromExport liest und prüft alles, bevor es schreibt).
+        if (_builderProblem is not null) { Say(_builderProblem, "baukasten"); return; }
+        var p = SitePage.FromExport(path, BuilderFolder, "importiert/" + DateTime.Now.ToString("yyyyMMdd-HHmmss", System.Globalization.CultureInfo.InvariantCulture));
         BuilderScreen = 0; BuilderSel = -1; BuilderInline = -1;
         BuilderChange(pg => BuilderAdopt(pg, p));
         _core.Audit.Append(Principal.LocalOwner.Name, "builder.import", Path.GetFileName(path));
@@ -337,7 +340,7 @@ public partial class MainWindow
         }
         palette.Children.Add(Act("builder-page-add", "+ Seite", () => BuilderAddPage("Seite " + (BuilderPage.Pages.Count + 1))));
         palette.Children.Add(Act("builder-vorlage", "Vorlage: Einkaufsliste", () => BuilderUseTemplate("einkaufsliste")));
-        palette.Children.Add(Act("builder-open", "Öffnen (ZIP) …", () => _ = BuilderPickOpen()));
+        palette.Children.Add(Act("builder-open", "Öffnen (ZIP) …", () => { _ = BuilderPickOpen(); })); // Anweisung statt Ausdruck: sonst greift die rahmenlose Task-Überladung von Act
         palette.Children.Add(new Border { Height = 8 });
         palette.Children.Add(H("Bausteine", 13));
         palette.Children.Add(P("In die Vorschau ziehen oder antippen", Muted, 11));
@@ -461,12 +464,12 @@ public partial class MainWindow
         var (undo, redo) = LinkButtons(link, "builder-undo", "builder-redo"); // T-0716: Rückgängig/Wiederholen der Hülle, bis 100 Schritte
         ToolTip.SetTip(undo, "Rückgängig (Strg+Z)"); ToolTip.SetTip(redo, "Wiederholen (Strg+Y oder Strg+Umschalt+Z)");
         var toolbar = new WrapPanel { Children = {
-            Act("builder-view-phone", "Handy", () => { BuilderPhone = true; Show(V); }, BuilderPhone), new Border { Width = 4 },
-            Act("builder-view-desk", "Bildschirm", () => { BuilderPhone = false; Show(V); }, !BuilderPhone), new Border { Width = 12 }, undo, redo, new Border { Width = 6 },
+            Act("builder-view-phone", (BuilderPhone ? "✓ " : "") + "Handy", () => { BuilderPhone = true; Show(V); }), new Border { Width = 4 },
+            Act("builder-view-desk", (BuilderPhone ? "" : "✓ ") + "Bildschirm", () => { BuilderPhone = false; Show(V); }), new Border { Width = 12 }, undo, redo, new Border { Width = 6 },
             Act("builder-preview", "Ausprobieren im Browser", () => { PersistBuilder(); Launch(BuilderPublish()); }, !BuilderFresh), new Border { Width = 4 },
             Act("builder-export", "Exportieren (ZIP)", () => Try(V, () => { var z = BuilderExport(); Say("Exportiert: " + z, V); })), new Border { Width = 4 },
             Act("builder-folder", "Ordner mit fertiger Seite", () => { BuilderPublish(); Launch(Path.Combine(BuilderFolder, "fertig")); }), new Border { Width = 4 },
-            Act("builder-veroeffentlichen", "Veröffentlichen …", () => _ = BuilderPublishToFolder()) } };
+            Act("builder-veroeffentlichen", "Veröffentlichen …", () => { _ = BuilderPublishToFolder(); }) } };
         var center = new StackPanel { Spacing = 10, Children = { toolbar, new ScrollViewer { Content = frame, MaxHeight = 760, HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto } } };
 
         // ── rechts: Eigenschaften ──
@@ -558,6 +561,7 @@ public partial class MainWindow
 
         // T-0765: Daten – Sammlungen und ihre Felder
         props.Children.Add(H("Daten", 13));
+        if (pg.Collections.Count > 0) props.Children.Add(new TextBlock { Name = "builder-speicher-hinweis", Text = SitePage.StorageNote, Foreground = Muted, FontSize = 11, TextWrapping = TextWrapping.Wrap }); // Gegenprüfung N3
         if (pg.Collections.Count == 0) props.Children.Add(P("Noch keine Datensammlung. Sie entsteht mit dem ersten Formular, der Datenliste oder der Auswertung – oder hier:", Muted, 11));
         for (var ci = 0; ci < pg.Collections.Count; ci++)
         {
@@ -586,7 +590,7 @@ public partial class MainWindow
         props.Children.Add(Act("builder-coll-add", "+ Datensammlung", () => BuilderAddCollection("Sammlung " + (BuilderPage.Collections.Count + 1), "Eintrag*")));
 
         Border Col(Control c) => new() { CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(10), VerticalAlignment = VerticalAlignment.Top, Child = c };
-        var grid = new Grid { Name = "builder-designer", ColumnDefinitions = new ColumnDefinitions("200,12,*,12,280"), Children = { Col(palette), Pos(center, 2), Pos(Col(new ScrollViewer { Content = props, MaxHeight = 820 }), 4) } };
+        var grid = new Grid { Name = "builder-designer", ColumnDefinitions = new ColumnDefinitions("200,12,*,12,280"), Children = { Col(palette), Pos(center, 2), Pos(Col(props), 4) } };
         grid.KeyDown += (_, e) =>
         {
             if (e.Source is TextBox) return; // im Feld bleibt Strg+Z das zeichenweise Rückgängig des Felds

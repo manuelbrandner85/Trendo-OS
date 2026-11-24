@@ -13,6 +13,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using Trendo.Core;
 
 var outDir = Path.GetFullPath(args.Length > 0 ? args[0] : "reports/T-0765");
@@ -142,6 +143,48 @@ try
         await Shot(c, "lauf2-formular.png");
     });
     Check(pid1 != pid2, $"zwei getrennte Browser-Prozesse (PID {pid1}, {pid2})");
+
+    // Gegenprüfung (Nacharbeit): M1 präparierte Kennungen, M2 Feld „Zeit“, N2 große Zahl, N3 Hinweis – je im echten Browser
+    const string evil = "x\"><meta http-equiv=\"refresh\" content=\"0;url=https://example.org/\"><x y=\"";
+    var evilJson = new JsonObject
+    {
+        ["Version"] = 2, ["Title"] = "Falle", ["Accent"] = "#C8A04A",
+        ["Pages"] = new JsonArray(new JsonObject { ["Id"] = evil, ["Name"] = "Eins", ["Blocks"] = new JsonArray(
+            new JsonObject { ["Kind"] = "form", ["Text"] = "Los", ["Url"] = "", ["Data"] = evil },
+            new JsonObject { ["Kind"] = "datalist", ["Text"] = "", ["Url"] = "", ["Data"] = evil }) }),
+        ["Collections"] = new JsonArray(new JsonObject { ["Id"] = evil, ["Name"] = "S", ["Fields"] = new JsonArray(new JsonObject { ["Id"] = evil, ["Label"] = "Wert", ["Type"] = "text", ["Required"] = true }) }),
+    }.ToJsonString();
+    var evilIndex = SitePage.FromJson(evilJson).Publish(Path.Combine(work, "falle"));
+    var termine = new SitePage { Title = "Termine", Accent = "#C8A04A" };
+    var tc = termine.AddCollection("Termine", SitePage.ParseFields("Was*, Zeit, Betrag (Zahl)"));
+    termine.Blocks.AddRange([new Block("h1", "Termine"), new Block("form", "Speichern", "", tc.Id), new Block("datalist", "Noch keine.", "", tc.Id), new Block("stat", "Summe", "summe:betrag", tc.Id)]);
+    var termineIndex = termine.Publish(Path.Combine(work, "termine"));
+    await Session("Lauf 3 (Gegenprüfung)", async c =>
+    {
+        await Nav(c, new Uri(evilIndex).AbsoluteUri);
+        await Task.Delay(2000); // eine eingeschleuste Weiterleitung hätte jetzt gegriffen
+        var href = (await Eval(c, "location.href"))?.GetValue<string>() ?? "";
+        Check(href.StartsWith("file:", StringComparison.Ordinal) && href.Contains("/falle/index.html", StringComparison.Ordinal), "M1: präparierte Kennungen – keine Weiterleitung, Seite bleibt " + href);
+        Check((await Eval(c, "document.querySelectorAll('meta[http-equiv=refresh], x').length"))?.GetValue<int>() == 0, "M1: kein eingeschleustes <meta refresh> und kein fremdes Element im DOM");
+        await Type(c, "form.t-form input", "geht"); await Click(c, "form.t-form button[type=submit]");
+        Check((await Eval(c, "document.querySelector('ul.t-liste li span') ? document.querySelector('ul.t-liste li span').textContent : ''"))?.GetValue<string>() == "geht", "M1: Formular mit bereinigter Kennung speichert weiter");
+
+        await Nav(c, new Uri(termineIndex).AbsoluteUri);
+        await Type(c, "input[name=was]", "Arzt"); await Type(c, "input[name=zeit]", "18 Uhr"); await Type(c, "input[name=betrag]", "12");
+        await Click(c, "form.t-form button[type=submit]");
+        var li = (await Eval(c, "document.querySelector('ul.t-liste li span').textContent"))?.GetValue<string>();
+        Check(li == "Arzt · Zeit: 18 Uhr · Betrag: 12", "M2: Feld „Zeit“ bleibt erhalten → " + li);
+        var stored = (await Eval(c, "JSON.stringify(JSON.parse(localStorage.getItem(Object.keys(localStorage).filter(function(k){return k.indexOf('/termine')>0})[0]))[0])"))?.GetValue<string>() ?? "";
+        Check(stored.Contains("\"zeit\":\"18 Uhr\"", StringComparison.Ordinal) && stored.Contains("\"_t\":", StringComparison.Ordinal), "M2: gespeichert mit eigenem Zeitstempel-Schlüssel _t → " + stored.Replace(Regex.Match(stored, "\"_t\":\\d+").Value, "\"_t\":<zeit>"));
+        await Type(c, "input[name=was]", "Riesig"); await Type(c, "input[name=betrag]", "1e20");
+        await Click(c, "form.t-form button[type=submit]");
+        var msg = (await Eval(c, "document.querySelector('.t-fehler').textContent"))?.GetValue<string>() ?? "";
+        Check(msg.StartsWith("Diese Zahl ist zu groß", StringComparison.Ordinal), "N2: sehr große Zahl abgelehnt → „" + msg + "“");
+        Check((await Eval(c, "document.querySelectorAll('ul.t-liste li').length"))?.GetValue<int>() == 1, "N2: nichts gespeichert");
+        var foot = (await Eval(c, "document.querySelector('footer.t-hinweis').textContent"))?.GetValue<string>() ?? "";
+        Check(foot == SitePage.StorageNote, "N3: Hinweis in der App sichtbar → „" + foot + "“");
+        await Shot(c, "lauf3-termine.png");
+    });
     var foreign = requests.Where(u => !u.StartsWith("file:", StringComparison.Ordinal) && !u.StartsWith("data:", StringComparison.Ordinal) && u != "about:blank").ToList();
     Check(foreign.Count == 0, $"keine Netzanfrage außer file:// ({requests.Count} Anfragen gesamt" + (foreign.Count > 0 ? ": " + string.Join(", ", foreign) : "") + ")");
 
