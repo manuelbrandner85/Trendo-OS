@@ -649,6 +649,7 @@ public partial class MainWindow
         var sp = new StackPanel { Spacing = 4 };
         if (_ceRoot is null) { sp.Children.Add(P("Erst einen Projektordner öffnen.", Muted, 12)); return sp; }
         sp.Children.Add(P($"Befehle laufen im Projektordner „{Path.GetFileName(_ceRoot)}“ ({(OperatingSystem.IsWindows() ? "Eingabeaufforderung" : "sh")}). Jeder Start wird im Protokoll vermerkt. „■ Abbrechen“ beendet den Befehl.", Muted, 11));
+        sp.Children.Add(CodeHintsBar()); // T-0762: erkannte Bauanleitung eines geholten Projekts
         var input = new TextBox { Name = "ce-term-input", PlaceholderText = "Befehl eingeben und Enter, z. B. dotnet --info oder python --version", FontSize = 12.5, FontFamily = new FontFamily("Cascadia Code, Consolas, monospace"), IsEnabled = !CodeRunning };
         input.KeyDown += (_, e) => { if (e.Key == Key.Enter) { e.Handled = true; var c = input.Text ?? ""; Try(CEK, () => { CodeTerminal(c); Show(CEK); }); } };
         sp.Children.Add(input);

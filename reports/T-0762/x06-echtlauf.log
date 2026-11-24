@@ -1,0 +1,18 @@
+[12:40:46] T-0762 PC-Lauf X-06 · 2026-11-24 12:40 +01:00 · Windows 10.0.26340.0 · ohne GitHub-Anmeldung (MainWindow.GitHubToken = keiner)
+[12:40:46] Trendo-Datenordner (isoliert): %TEMP%\trendo-ui-ff33b580058948c4ada6089bb87e519b; Werkzeugordner: %TEMP%\trendo-ui-ff33b580058948c4ada6089bb87e519b\werkzeuge
+[12:40:47] Suche „ripgrep“: 20 Treffer, gewählt BurntSushi/ripgrep · Lizenz Unlicense (Frei) · 70231 Sterne
+[12:40:49] Eingerichtet: BurntSushi/ripgrep 16.0.0 · Datei ripgrep-16.0.0-x86_64-pc-windows-msvc.zip (1782487 Bytes) · SHA-256 geprüft f418ae83e63046a94a7b5f3a44bf3a169f66e689164856ecee02547131c73931 · GitHub-Angabe f418ae83e63046a94a7b5f3a44bf3a169f66e689164856ecee02547131c73931 · gleich: True
+[12:40:49] Programm: %TEMP%\trendo-ui-ff33b580058948c4ada6089bb87e519b\werkzeuge\gh-burntsushi-ripgrep\ripgrep-16.0.0-x86_64-pc-windows-msvc\rg.exe (4074496 Bytes) · Signatur: Unsigniert
+[12:40:49] Start 1 (--version): PID 22352, Exit 0, Ausgabe „ripgrep 16.0.0 (rev 669cb4c755)“
+[12:40:51] Start 2 (wartet auf Eingabe): PID 26040, läuft: True
+[12:40:51] PID 26040 beendet: True (Exit -1)
+[12:40:52] Falsche Prüfsumme (0000…): abgewiesen – Werkzeugordner unverändert (gh-burntsushi-ripgrep), Eintrag unverändert
+[12:40:53] Entfernt über „Entfernen“ → „Wirklich entfernen?“: Ordner gh-burntsushi-ripgrep weg: True, Liste leer, kein gh-* übrig. Werkzeugordner enthält: [github-programme.json]
+[12:40:54] Suche „itsdangerous“: gewählt pallets/itsdangerous · Lizenz BSD-3-Clause (Frei)
+[12:40:55] Quellcode geholt (git clone --depth 1): pallets_itsdangerous · Stand 672971d66a2ef9f85151e53283113f33d642dabd 2025-06-14 · Herkunftsdatei: True
+[12:40:55] Im Code-Editor geöffnet. Erkannte Bauanleitung: python -m compileall -q . [Werkzeug da]
+[12:40:56] Terminal des Code-Editors:
+pallets_itsdangerous> python -m compileall -q .
+(Exit 0)
+[12:40:56] Geholtes Projekt entfernt: Ordner „Open Source“ ist leer (0 Einträge, auch keine Herkunftsdatei).
+[12:40:56] Ergebnis: BESTANDEN

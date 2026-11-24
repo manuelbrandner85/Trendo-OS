@@ -183,8 +183,10 @@ public partial class MainWindow
             }
             catch (GitHubApps.InstallerOnlyException io)
             {
-                SetupOverlayProgress(3, 4, $"Installer wird still für dich ausgeführt ({io.Kind}) …");
-                exe = await GitHubRunInstaller(io, repo, rel, asset);
+                // T-0762 (X-06): nie im selben Klick ausführen – erst Signaturprüfung mit Ampel, dann eigene Bestätigung auf der Seite
+                GitHubHoldInstaller(io, repo, rel, asset, start);
+                file = null; // die Datei bleibt bis zur Entscheidung liegen
+                return null;
             }
             SetupOverlayProgress(4, 4, "Fertig ✓");
             if (start && exe is not null) { Launch(exe); _core.Audit.Append(Principal.LocalOwner.Name, "github.start", repo.FullName); }

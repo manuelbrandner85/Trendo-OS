@@ -491,6 +491,33 @@ else if (shot == "seite")
         Trendo.Core.Sys.PdfFormular.AddFields(blank, form, [new("Name", "text", 0, 60, 100, 220, 20), new("Zustimmung", "haken", 0, 60, 140, 12, 12)]);
         win.OpenPdf(form);
     }
+    if (Environment.GetEnvironmentVariable("TRENDO_NACHBAU_DEMO") is { Length: > 0 }) // T-0762: Anforderungsliste mit Abgleich und Treffer nebeneinander
+    {
+        var dir = CleanRoom.Create(win.CleanFolder, "Notizen", "ein bekannter Notizblock");
+        var doc = new CleanRoom.RequirementsDoc(dir);
+        foreach (var (fn, src, link) in new[] { ("Notiz speichern", "Handbuch Kapitel 2", "2-Umsetzung/test_notiz.py#test_speichern"), ("Notiz löschen", "eigene Beobachtung", "2-Umsetzung/test_notiz.py#test_loeschen"), ("Suche über alle Notizen", "Video Bedienung 03:10", "") })
+        { var r = doc.Add(fn, src); doc.Update(r.Id, x => x with { Link = link, Expected = fn + " wirkt sofort und bleibt nach Neustart", Check = "Test " + (link.Length > 0 ? link.Split('#')[1] : "fehlt") }); }
+        var impl = Path.Combine(dir, "2-Umsetzung");
+        File.WriteAllText(Path.Combine(impl, "notiz.py"), "def speichern(t):\n    return t.strip()\n\ndef loeschen(liste, i):\n    return liste\n");
+        File.WriteAllText(Path.Combine(impl, "test_notiz.py"), "def test_speichern(): pass\n");
+        var run = new DevBuild.TestRun([new("test_notiz.T.test_speichern", true, false, "", null, 0)]);
+        doc.Change(l => CleanRoom.ReconcileAll(dir, l, run));
+        var orig = Path.Combine(root, "vergleich"); Directory.CreateDirectory(orig);
+        File.WriteAllText(Path.Combine(orig, "fremd.py"), "# fremd\ndef save(t):\n    return t.strip()\n\ndef remove(items, i):\n    return items\n");
+        win.CleanOpen(dir); win.CleanCheck(orig);
+    }
+    if (Environment.GetEnvironmentVariable("TRENDO_OSS_DEMO") is { Length: > 0 }) // T-0762: geholtes Projekt und wartender, nicht signierter Installer
+    {
+        var proj = Path.Combine(win.OssFolder, "beispiel_hallo"); Directory.CreateDirectory(proj);
+        File.WriteAllText(Path.Combine(proj, "Hallo.csproj"), "<Project Sdk=\"Microsoft.NET.Sdk\"/>");
+        File.WriteAllText(OpenSource.OriginFile(proj), "Quelle: https://github.com/beispiel/hallo.git\n");
+        var inst = Path.Combine(root, "Tool-Setup-1.0.exe"); File.WriteAllBytes(inst, [.. "MZ"u8.ToArray(), .. System.Text.Encoding.ASCII.GetBytes("Inno Setup")]);
+        win.GitHubFetchOverride = _ => Task.FromResult((new GitHubApps.Release("v1.0", "v1.0", [new GitHubApps.Asset("Tool-1.0.exe", "https://github.com/x", 10, null)]), (string?)inst));
+        var t = win.GitHubInstall(new OssRepo("beispiel/tool", "Ein freies Werkzeug", "https://github.com/beispiel/tool", "https://github.com/beispiel/tool.git", 10, "MIT", "C#", DateTimeOffset.UtcNow));
+        while (!t.IsCompleted) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(10); }
+        win.GitHubFetchOverride = null;
+        if (win.SetupFinishShown) win.GetLogicalDescendants().OfType<Button>().First(b => b.Name == "setup-overlay-done").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    }
     win.Show(page);
     if (win.Windows.Active is { Maximized: false } pageWin) win.Windows.ToggleMaximize(pageWin.Id);
     win.Show(page);
