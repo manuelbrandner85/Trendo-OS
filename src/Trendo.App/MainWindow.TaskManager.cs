@@ -22,6 +22,10 @@ public partial class MainWindow
     public Func<IReadOnlyList<TaskManager.Sample>>? TaskMeasureOverride { get; set; }
     public Action<int>? TaskKillOverride { get; set; }
     public IReadOnlyList<TaskManager.Proc> TaskRows => _tmRows;
+    /// <summary>T-0763: Grafiklast je Prozess (Kennung → %). Für Tests ersetzbar; sonst Leistungsindikator „GPU Engine“ (Windows, ohne Administratorrechte).</summary>
+    public Func<IReadOnlyDictionary<int, double>?>? TaskGpuOverride { get; set; }
+    IReadOnlyDictionary<int, double>? _tmGpu; PdhArray? _gpuPdh;
+    public IReadOnlyDictionary<int, double>? TaskGpu => _tmGpu;
 
     IReadOnlyList<string> OwnRoots => [_deps.ToolsRoot, _core.DataRoot];
 
@@ -33,6 +37,14 @@ public partial class MainWindow
         var now = TaskMeasureOverride?.Invoke() ?? TaskManager.Measure(); var t = DateTime.UtcNow;
         _tmRows = TaskManager.Rows(_tmLast, now, _tmAt == DateTime.MinValue ? 1 : (t - _tmAt).TotalSeconds, Environment.ProcessorCount, OwnRoots);
         _tmLast = now; _tmAt = t;
+        if (TaskGpuOverride is { } g) _tmGpu = g();
+        else if (!_opt.Isolated && OperatingSystem.IsWindows())
+        {
+            _gpuPdh ??= new PdhArray(GpuLoad.CounterPath);
+            var items = _gpuPdh.Read();
+            if (items is not null) _tmGpu = GpuLoad.PerProcess(items);
+            else if (!_gpuPdh.Available) _tmGpu = null;
+        }
     }
 
     void TaskTimer()
@@ -47,7 +59,8 @@ public partial class MainWindow
         _tmTimer.Start();
     }
 
-    /// <summary>Programm beenden – nur eigene Trendo-Programme (nie Trendo selbst), zweistufig bestätigt.</summary>
+    /// <summary>Programm beenden – nur eigene Trendo-Programme (nie Trendo selbst), zweistufig bestätigt. T-0763: genau dieser eine Prozess (per Kennung,
+    /// ohne Unterprozesse, die fremde Programme sein könnten); vor dem Beenden prüft Trendo erneut, dass unter dieser Kennung noch dasselbe Trendo-Programm läuft.</summary>
     public bool TaskKill(int pid)
     {
         var row = _tmRows.FirstOrDefault(r => r.Pid == pid);
@@ -55,7 +68,13 @@ public partial class MainWindow
         try
         {
             if (TaskKillOverride is { } o) o(pid);
-            else using (var p = Process.GetProcessById(pid)) p.Kill(entireProcessTree: true);
+            else using (var p = Process.GetProcessById(pid))
+            {
+                string? path = null; try { path = p.MainModule?.FileName; } catch (System.ComponentModel.Win32Exception) { }
+                if (!TaskManager.IsOwn(path, OwnRoots) || !string.Equals(path, row.Path, StringComparison.OrdinalIgnoreCase)) { _tmMsg = $"Unter der Kennung {pid} läuft inzwischen ein anderes Programm – Trendo beendet es nicht."; return false; }
+                p.Kill(entireProcessTree: false);
+                p.WaitForExit(3000);
+            }
             _core.Audit.Append(Principal.LocalOwner.Name, "taskmanager.beendet", $"{row.Name} pid={pid}");
             _tmMsg = $"„{row.Name}“ wurde beendet."; return true;
         }
@@ -97,29 +116,33 @@ public partial class MainWindow
         {
             var search = new TextBox { Name = "tm-search", Text = _tmSearch, PlaceholderText = "Programm oder Kennung suchen", Width = 280 };
             search.KeyUp += (_, _) => { _tmSearch = search.Text ?? ""; _tmRefresh?.Invoke(); };
-            var head = new Grid { ColumnDefinitions = new ColumnDefinitions("*,90,110,80,120") };
+            var head = new Grid { ColumnDefinitions = new ColumnDefinitions("*,90,110,80,80,140") };
             var c = 0;
-            foreach (var (id, label) in new[] { ("name", "Name"), ("cpu", "Prozessor"), ("ram", "Speicher"), ("pid", "Kennung") })
+            foreach (var (id, label) in new[] { ("name", "Name"), ("cpu", "Prozessor"), ("ram", "Speicher"), ("gpu", "Grafik"), ("pid", "Kennung") })
             {
-                var sid = id; var b = Act("tm-sort-" + id, label + (_tmSort == id ? (_tmDesc ? " ▼" : " ▲") : ""), () => { if (_tmSort == sid) _tmDesc = !_tmDesc; else { _tmSort = sid; _tmDesc = sid is "cpu" or "ram"; } Show("ressourcen"); });
+                var sid = id; var b = Act("tm-sort-" + id, label + (_tmSort == id ? (_tmDesc ? " ▼" : " ▲") : ""), () => { if (_tmSort == sid) _tmDesc = !_tmDesc; else { _tmSort = sid; _tmDesc = sid is "cpu" or "ram" or "gpu"; } Show("ressourcen"); });
                 b.FontSize = 11.5; b.Background = Brushes.Transparent; head.Children.Add(Pos(b, c++));
             }
             var rows = new StackPanel { Name = "tm-rows", Spacing = 1 };
             void Fill()
             {
                 rows.Children.Clear(); var i = 0;
-                foreach (var r in TaskManager.Sort(_tmRows, _tmSort, _tmDesc, _tmSearch).Take(150))
+                IEnumerable<TaskManager.Proc> sorted = TaskManager.Sort(_tmRows, _tmSort, _tmDesc, _tmSearch);
+                if (_tmSort == "gpu") { var gm = _tmGpu ?? new Dictionary<int, double>(); sorted = _tmDesc ? sorted.OrderByDescending(r => gm.GetValueOrDefault(r.Pid)).ThenBy(r => r.Pid) : sorted.OrderBy(r => gm.GetValueOrDefault(r.Pid)).ThenBy(r => r.Pid); }
+                foreach (var r in sorted.Take(150))
                 {
                     var pid = r.Pid;
                     Control action = !r.Own || pid == Environment.ProcessId ? new Panel()
                         : _tmConfirm == pid ? Act($"tm-kill-{pid}", "Wirklich beenden?", () => { _tmConfirm = null; if (TaskKill(pid)) TaskTick(); Show("ressourcen"); }, true)
                         : Act($"tm-kill-{pid}", "Beenden", () => { _tmConfirm = pid; Fill(); });
-                    var g = new Grid { Name = $"tm-row-{i++}", ColumnDefinitions = new ColumnDefinitions("*,90,110,80,120"), Background = r.Own ? Brush.Parse("#142F86F6") : Brushes.Transparent, Children = {
+                    var gpu = _tmGpu is null ? "–" : $"{_tmGpu.GetValueOrDefault(r.Pid):0.0} %";
+                    var g = new Grid { Name = $"tm-row-{i++}", ColumnDefinitions = new ColumnDefinitions("*,90,110,80,80,140"), Background = r.Own ? Brush.Parse("#14D4A84B") : Brushes.Transparent, Children = {
                         new TextBlock { Text = r.Name + (r.Own ? "  · Trendo" : ""), Foreground = Text, FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 3) },
                         Pos(new TextBlock { Text = $"{r.CpuPercent:0.0} %", Foreground = r.CpuPercent >= 50 ? Brush.Parse("#F97316") : Text, FontSize = 12, VerticalAlignment = VerticalAlignment.Center }, 1),
                         Pos(new TextBlock { Text = ResourceMonitor.Size(r.Bytes), Foreground = Text, FontSize = 12, VerticalAlignment = VerticalAlignment.Center }, 2),
-                        Pos(new TextBlock { Text = r.Pid.ToString(), Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center }, 3),
-                        Pos(action, 4) } };
+                        Pos(new TextBlock { Name = $"tm-gpu-{r.Pid}", Text = gpu, Foreground = Text, FontSize = 12, VerticalAlignment = VerticalAlignment.Center }, 3),
+                        Pos(new TextBlock { Text = r.Pid.ToString(), Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center }, 4),
+                        Pos(action, 5) } };
                     rows.Children.Add(g);
                 }
                 if (rows.Children.Count == 0) rows.Children.Add(P("Nichts gefunden.", Muted, 12));
@@ -127,7 +150,9 @@ public partial class MainWindow
             Fill();
             _tmRefresh = () => { if (_tmConfirm is null) Fill(); };
             sp.Children.Add(search); sp.Children.Add(head); sp.Children.Add(Card(rows));
-            sp.Children.Add(P("Trendo zeigt alle Programme an, beendet aber nur die, die Trendo selbst eingerichtet hat (blau markiert). Andere Programme schließt du selbst.", Muted, 11));
+            sp.Children.Add(P("Hängt ein Werkzeug, das Trendo eingerichtet hat (golden markiert)? „Beenden“ fragt einmal nach und beendet nur genau dieses Programm. Andere Programme zeigt Trendo nur an und beendet sie nie – die schließt du selbst.", Muted, 11));
+            sp.Children.Add(new TextBlock { Name = "tm-gpu-note", Foreground = Muted, FontSize = 11, TextWrapping = TextWrapping.Wrap,
+                Text = (_tmGpu is null ? "Grafik je Programm: Windows liefert hier keinen Messwert (Leistungsindikator „GPU Engine“ fehlt). " : "Grafik je Programm: höchste Auslastung einer Grafik-Einheit, wie im Windows-Task-Manager. ") + GpuLoad.NetNote });
         }
         else
         {

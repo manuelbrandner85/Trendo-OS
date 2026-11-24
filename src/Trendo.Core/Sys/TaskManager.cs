@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Diagnostics;
 
 namespace Trendo.Core.Sys;
@@ -75,4 +76,86 @@ public sealed class History(int size = 60)
     public double Last => _q.Count == 0 ? 0 : _q.Last();
     public double Average => _q.Count == 0 ? 0 : _q.Average();
     public double Max => _q.Count == 0 ? 0 : _q.Max();
+}
+
+/// <summary>T-0763 (X-09): Leistungsindikatoren mit Platzhalter-Instanz (z. B. „\GPU Engine(*)\Utilization Percentage“) über pdh.dll – Windows-Bordmittel,
+/// ohne Administratorrechte. Erste Abfrage = Bezug; ab der zweiten liefert <see cref="Read"/> je Instanz einen Wert. Außerhalb von Windows: nichts.</summary>
+public sealed class PdhArray : IDisposable
+{
+    readonly object _lock = new();
+    IntPtr _q, _c; bool _primed;
+    public bool Available { get; }
+    public PdhArray(string englishPath)
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        try
+        {
+            if (PdhOpenQueryW(null, IntPtr.Zero, out _q) != 0) { _q = IntPtr.Zero; return; }
+            if (PdhAddEnglishCounterW(_q, englishPath, IntPtr.Zero, out _c) != 0) { PdhCloseQuery(_q); _q = IntPtr.Zero; return; }
+            Available = true;
+        }
+        catch (Exception e) when (e is DllNotFoundException or EntryPointNotFoundException) { _q = IntPtr.Zero; }
+    }
+
+    /// <summary>Neue Messung; null beim ersten Aufruf (Bezug) oder wenn Windows den Zähler nicht liefert.</summary>
+    public IReadOnlyList<(string Instance, double Value)>? Read()
+    {
+        lock (_lock)
+        {
+            if (!Available || _q == IntPtr.Zero) return null;
+            if (PdhCollectQueryData(_q) != 0) return null;
+            if (!_primed) { _primed = true; return null; }
+            uint size = 0;
+            var st = PdhGetFormattedCounterArrayW(_c, Fmt, ref size, out _, IntPtr.Zero);
+            if (st != MoreData || size == 0) return st == 0 ? [] : null;
+            var buf = Marshal.AllocHGlobal((int)size);
+            try
+            {
+                if (PdhGetFormattedCounterArrayW(_c, Fmt, ref size, out var count, buf) != 0) return null;
+                var item = Marshal.SizeOf<Item>(); var res = new List<(string, double)>((int)count);
+                for (var i = 0; i < count; i++)
+                {
+                    var it = Marshal.PtrToStructure<Item>(buf + i * item);
+                    if (it.Status == 0 && double.IsFinite(it.Value)) res.Add((Marshal.PtrToStringUni(it.Name) ?? "", it.Value));
+                }
+                return res;
+            }
+            finally { Marshal.FreeHGlobal(buf); }
+        }
+    }
+
+    public void Dispose() { lock (_lock) { if (_q != IntPtr.Zero) { PdhCloseQuery(_q); _q = IntPtr.Zero; } } }
+
+    const uint Fmt = 0x00000200 /* PDH_FMT_DOUBLE */ | 0x00008000 /* PDH_FMT_NOCAP100 */, MoreData = 0x800007D2;
+    [StructLayout(LayoutKind.Sequential)] struct Item { public IntPtr Name; public uint Status; public uint Pad; public double Value; }
+#pragma warning disable SYSLIB1054 // klassisches DllImport: Trendo.Core erlaubt keinen unsafe-Code
+    [DllImport("pdh.dll", CharSet = CharSet.Unicode)] static extern uint PdhOpenQueryW(string? source, IntPtr user, out IntPtr query);
+    [DllImport("pdh.dll", CharSet = CharSet.Unicode)] static extern uint PdhAddEnglishCounterW(IntPtr query, string path, IntPtr user, out IntPtr counter);
+    [DllImport("pdh.dll")] static extern uint PdhCollectQueryData(IntPtr query);
+    [DllImport("pdh.dll", CharSet = CharSet.Unicode)] static extern uint PdhGetFormattedCounterArrayW(IntPtr counter, uint format, ref uint size, out uint count, IntPtr buffer);
+    [DllImport("pdh.dll")] static extern uint PdhCloseQuery(IntPtr query);
+#pragma warning restore SYSLIB1054
+}
+
+/// <summary>T-0763 (X-09): Grafiklast je Programm wie im Windows-Task-Manager – Leistungsindikator „GPU Engine“ (Instanz „pid_1234_luid_…_engtype_3D“),
+/// je Prozess der höchste Wert über alle Grafik-Einheiten. Netzlast je Programm liefert Windows ohne Administratorrechte nicht (nur je Netzwerkkarte) –
+/// Trendo zeigt sie deshalb bewusst nicht an.</summary>
+public static class GpuLoad
+{
+    public const string CounterPath = @"\GPU Engine(*)\Utilization Percentage";
+    public const string NetNote = "Netzlast je Programm: Windows liefert sie ohne Administratorrechte nicht – Trendo zeigt sie deshalb nicht an.";
+
+    /// <summary>Instanzen zu „Prozess → höchste Auslastung einer Grafik-Einheit“ (mehrere Instanzen derselben Einheit werden addiert).</summary>
+    public static Dictionary<int, double> PerProcess(IEnumerable<(string Instance, double Value)> items)
+    {
+        var perEngine = new Dictionary<(int Pid, string Engine), double>();
+        foreach (var (inst, v) in items)
+        {
+            var m = System.Text.RegularExpressions.Regex.Match(inst, @"^pid_(\d+)_(luid_.+?_eng_\d+)");
+            if (!m.Success || !int.TryParse(m.Groups[1].Value, out var pid)) continue;
+            var key = (pid, m.Groups[2].Value);
+            perEngine[key] = perEngine.GetValueOrDefault(key) + Math.Max(0, v);
+        }
+        return perEngine.GroupBy(kv => kv.Key.Pid).ToDictionary(g => g.Key, g => Math.Round(Math.Clamp(g.Max(kv => kv.Value), 0, 100), 1));
+    }
 }

@@ -1,0 +1,22 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0202: Kein Klick auf irgendeiner Seite stürzt ab (Klick-Audit, Bericht der stummen Knöpfe) [SKIP]
+      Langer Klick-Audit über alle Seiten: TRENDO_ALL_BUTTONS=1 setzen
+    CORE-04 UI: mit echtem Begleiter koppeln (Code vom Gerät), Details holen, Erreichbarkeit, Aufgabe zuordnen, entfernen [SKIP]
+      Übersprungen – nur unter Linux prüfbar.
+    T-0736: Die Suche zeigt den Studio-Namen und findet die Seite auch unter dem früheren Leistennamen [FAIL]
+      Assert.NotEqual() Failure: Strings are equal
+      Expected: Not "Leistung messen"
+      Actual:       "Leistung messen"
+      Stack Trace:
+        tests\Trendo.App.Tests\T0736SeitennamenUiTests.cs(63,0): at Trendo.App.Tests.T0736Seitennamen_Ui.Search_finds_old_and_new_name()
+           at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Finished:    Trendo.App.Tests (ID = '8ef5a3a86022ab35f068b2bee6323ccbf674516500a713e4a13eb77633077cad')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 323, Errors: 0, Failed: 1, Skipped: 2, Not Run: 0, Time: 1095,829s
+Waiting 10 seconds for foreground threads to exit...
+EXIT 1

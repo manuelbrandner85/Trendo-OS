@@ -902,8 +902,8 @@ public sealed partial class MainWindow : Window
         var sp = new StackPanel { Spacing = 4 };
         // V-18 (T-0684, freigegeben 16.11.2026): Entwicklerseite „Bau-Fortschritt“ und die rohen Protokollzeilen nur in „Professionell“
         var pro = ProgramLevel == Trendo.Core.Programs.UserLevel.Profi;
-        var links = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { Nav2("Schutz & Geräte", "schutz"), Nav2("Systemcheck", "systemcheck"), Nav2("Sicherung", "sicherung"), Nav2("Einrichtung erneut", "einrichtung") } };
-        if (pro) links.Children.Insert(3, Nav2("Bau-Fortschritt", "fortschritt"));
+        var links = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { Nav2("Alles prüfen", "qual-check"), Nav2("Schutz & Geräte", "schutz"), Nav2("Systemcheck", "systemcheck"), Nav2("Sicherung", "sicherung"), Nav2("Einrichtung erneut", "einrichtung") } };
+        if (pro) links.Children.Insert(4, Nav2("Bau-Fortschritt", "fortschritt")); // T-0763: „Alles prüfen“ steht vorn
         sp.Children.Add(links);
         var crashes = CrashLog.List(_core.DataRoot);
         sp.Children.Add(P($"Trendo OS {CrashLog.AppVersion()} · Updates kommen nur aus geprüften Versionen (main) · nicht code-signiert", Text));

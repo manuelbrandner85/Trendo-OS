@@ -25,6 +25,9 @@ public partial class MainWindow
         sp.Children.Add(new WrapPanel { Name = "ql-summary", Children = { T($"{all.Count} Programme:"), Dot("rot"), T($"{N("rot")} rot"), Dot("gelb"), T($"{N("gelb")} gelb"), Dot("grün"), T($"{N("grün")} grün"),
             Dot("linux"), T($"{all.Count(x => x.Rating.Linux != "ja")} unter Trendo OS eingeschränkt") } });
         sp.Children.Add(P("Belegt aus dem Code und den Tests (nicht von Hand). Die Liste ist zugleich die Reihenfolge des Umbaus: schwächstes Programm zuerst.", Muted, 11.5));
+        // T-0763 (SYS-13): Trennung Nutzer-/Entwickler-Prüfung – diese Ampel bewertet den Bauzustand der Programme, nicht deinen PC
+        var dev = new TextBlock { Name = "ql-dev-note", Text = "Nur für Entwickler: Diese Ampel zeigt, wie weit die Programme gebaut sind – nicht, ob dein PC in Ordnung ist. Das prüft „Alles prüfen“.", Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap };
+        sp.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), ColumnSpacing = 8, Children = { dev, Pos(Nav2("Alles prüfen", "qual-check"), 1) } });
         var filters = new WrapPanel { Name = "ql-filters" };
         foreach (var (id, label) in new[] { ("alle", "Alle"), ("rot", "Rot"), ("gelb", "Gelb"), ("grün", "Grün"), ("linux", "Trendo OS eingeschränkt") })
         {

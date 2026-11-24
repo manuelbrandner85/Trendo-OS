@@ -1,0 +1,8 @@
+Echte Installation (Velopack) – T-0763 (2026-11-24 12:38:26)
+Version: 0.9.108
+Paket: TrendoOS-0.9.108-full.nupkg (125.997.087 Bytes)
+Prüfung der echten Installation (nur lesen): 418 Dateien, 0 Abweichungen, 1,2 s – Alle 418 Programmdateien stimmen mit dem Installationspaket überein.
+Kopie vorher: 0 Abweichungen
+Kopie nach Löschen von Trendo.Core.dll und Ändern eines Bytes in TrendoOS.deps.json: Trendo.Core.dll (fehlt), TrendoOS.deps.json (verändert)
+Ersetzt: Trendo.Core.dll, TrendoOS.deps.json; nicht ersetzt: 0
+Kopie danach: 0 Abweichungen – Alle 418 Programmdateien stimmen mit dem Installationspaket überein.

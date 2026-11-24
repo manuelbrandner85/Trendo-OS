@@ -26,6 +26,15 @@ public static class Quality
             .Where(f => (f.EndsWith(".cs") || f.EndsWith(".csproj") || f.EndsWith(".json")) && !f.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}") && !f.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}") && !f.EndsWith("Sys13.cs"))
             .SelectMany(f => TelemetryMarks.Where(m => File.ReadAllText(f).Contains(m, StringComparison.OrdinalIgnoreCase)).Select(m => $"{Path.GetFileName(f)}: {m}")).ToList();
 
+    /// <summary>T-0763: dieselbe Suche für die installierte Version (ohne Quelltext) – in den Paketlisten (*.deps.json) und Dateinamen der Programmbibliotheken.</summary>
+    public static List<string> TelemetryHitsInstalled(string appDir) =>
+        Directory.Exists(appDir)
+            ? Directory.EnumerateFiles(appDir, "*.deps.json", SearchOption.TopDirectoryOnly).SelectMany(f => TelemetryMarks.Where(m => File.ReadAllText(f).Contains(m, StringComparison.OrdinalIgnoreCase)).Select(m => $"{Path.GetFileName(f)}: {m}"))
+                .Concat(Directory.EnumerateFiles(appDir, "*.dll", SearchOption.TopDirectoryOnly).SelectMany(f => TelemetryMarks.Where(m => Path.GetFileName(f).Contains(m, StringComparison.OrdinalIgnoreCase)).Select(m => $"{Path.GetFileName(f)}: {m}"))).Distinct().ToList()
+            : [];
+    /// <summary>Wie viele Paketlisten die Suche lesen konnte (0 = nichts zu prüfen – dann zeigt die Karte kein Ergebnis vor).</summary>
+    public static int DepsFiles(string appDir) => Directory.Exists(appDir) ? Directory.EnumerateFiles(appDir, "*.deps.json", SearchOption.TopDirectoryOnly).Count() : 0;
+
     // P22 Lizenzliste
     public sealed record Package(string Id, string Version, string License);
     /// <summary>Alle Pakete (auch indirekte) aus project.assets.json; Lizenz aus der .nuspec im NuGet-Ordner.</summary>
@@ -115,4 +124,75 @@ public static class Quality
         return d;
     }
     public static string DowngradeUrl(string repo, string version) => $"https://github.com/{repo}/releases/tag/v{version.TrimStart('v')}";
+}
+
+/// <summary>T-0763 (SYS-13): „Alles prüfen“ für Endnutzer – je Bereich eine Ampel, ein verständlicher Befund und genau ein nächster Schritt
+/// (mit der Seite, auf der er geht). Die Bewertung ist hier rein und prüfbar; die Messwerte liefert die App.</summary>
+public static class Checkup
+{
+    public enum Light { Gruen, Gelb, Rot }
+    public sealed record Area(string Id, string Title, Light Light, string Finding, string Next, string? Page);
+
+    public static Light Overall(IEnumerable<Area> areas) { var l = areas.ToList(); return l.Any(a => a.Light == Light.Rot) ? Light.Rot : l.Any(a => a.Light == Light.Gelb) ? Light.Gelb : Light.Gruen; }
+
+    public static string Sentence(IReadOnlyList<Area> areas)
+    {
+        int rot = areas.Count(a => a.Light == Light.Rot), gelb = areas.Count(a => a.Light == Light.Gelb);
+        return rot > 0 ? $"{rot} {(rot == 1 ? "Bereich braucht" : "Bereiche brauchen")} jetzt deine Hilfe" + (gelb > 0 ? $", {gelb} weitere{(gelb == 1 ? "r" : "")} einen Blick." : ".")
+            : gelb > 0 ? $"Fast alles in Ordnung – {gelb} {(gelb == 1 ? "Bereich" : "Bereiche")} mit Hinweis."
+            : $"Alles in Ordnung: {areas.Count} von {areas.Count} Bereichen grün.";
+    }
+
+    /// <summary>Programmdateien gegen das Installationspaket.</summary>
+    public static Area Installation(InstallIntegrity.Report r) =>
+        !r.Installed ? new("installation", "Programmdateien", Light.Gruen, "Nur für Entwickler: Trendo läuft aus dem Quelltext, es gibt kein Installationspaket zum Vergleichen.", "Nichts zu tun.", null)
+        : r.Package is null ? new("installation", "Programmdateien", Light.Gelb, r.Note, "Setup erneut ausführen (Trendo-Setup von GitHub).", "heilung")
+        : r.Findings.Count == 0 ? new("installation", "Programmdateien", Light.Gruen, r.Note, "Nichts zu tun.", null)
+        : new("installation", "Programmdateien", Light.Rot, $"{r.Findings.Count} Programmdatei(en) fehlen oder sind verändert: {string.Join(", ", r.Findings.Take(3).Select(f => $"{f.File} ({f.Problem})"))}{(r.Findings.Count > 3 ? " …" : "")}",
+            "Unter „Einrichten & Reparieren“ aus dem Installationspaket ersetzen.", "heilung");
+
+    /// <summary>Zusatzprogramme der gewählten Pakete.</summary>
+    public static Area Programs(int all, IReadOnlyList<string> missing, IReadOnlyList<string> broken) =>
+        missing.Count + broken.Count == 0 ? new("programme", "Zusatzprogramme", Light.Gruen, all == 0 ? "Für deine Auswahl braucht Trendo keine Zusatzprogramme." : $"Alle {all} bereit.", "Nichts zu tun.", null)
+        : new("programme", "Zusatzprogramme", Light.Gelb, string.Join(" · ", new[] { missing.Count > 0 ? "Fehlt: " + string.Join(", ", missing) : null, broken.Count > 0 ? "Startet nicht: " + string.Join(", ", broken) : null }.Where(x => x is not null)),
+            "Unter „Einrichten & Reparieren“ mit einem Klick nachholen (Trendo fragt vorher).", "heilung");
+
+    /// <summary>Datenordner (Ergebnis der Selbstprüfung ohne Reparatur, ohne Protokoll und Speicherplatz – die haben eigene Bereiche).</summary>
+    public static Area Data(IReadOnlyList<HealResult> heal)
+    {
+        var h = heal.Where(x => x.Id is not ("audit" or "disk")).ToList();
+        var bad = h.Where(x => x.State is HealState.NeedsYou or HealState.Failed).ToList();
+        return bad.Count == 0 ? new("daten", "Deine Daten und Einstellungen", Light.Gruen, "Ordner vorhanden, alle Einstellungsdateien lesbar.", "Nichts zu tun.", null)
+            : new("daten", "Deine Daten und Einstellungen", bad.Any(x => x.State == HealState.Failed) ? Light.Rot : Light.Gelb, string.Join(" · ", bad.Select(x => $"{x.Title}: {x.Detail}")),
+                "„Jetzt prüfen und reparieren“ unter „Einrichten & Reparieren“.", "heilung");
+    }
+
+    /// <summary>Protokoll-Kette: eine veränderte oder gelöschte Zeile wird mit ihrer Nummer genannt.</summary>
+    public static Area Audit(long? broken, int entries) =>
+        broken is null ? new("protokoll", "Protokoll", Light.Gruen, $"Alle {entries} Einträge unverändert.", "Nichts zu tun.", null)
+        : new("protokoll", "Protokoll", Light.Rot, $"Eintrag {broken} wurde verändert oder gelöscht – ab dort ist die Kette unterbrochen.",
+            "Nichts löschen: Sicherung des Protokolls anlegen und die Person fragen, die den PC mitbenutzt. Trendo repariert das bewusst nicht.", "qual-leistung");
+
+    public static Area Backup(DateTime? latest, bool complete, DateTime now) =>
+        latest is null ? new("sicherung", "Sicherung", Light.Gelb, "Es gibt noch keine Sicherung.", "Unter „Sicherung“ jetzt eine anlegen.", "sicherung")
+        : (now - latest.Value).TotalDays > 7 ? new("sicherung", "Sicherung", Light.Gelb, $"Letzte Sicherung am {latest:dd.MM.yyyy} – älter als eine Woche.", "Unter „Sicherung“ jetzt eine anlegen.", "sicherung")
+        : !complete ? new("sicherung", "Sicherung", Light.Gelb, $"Letzte Sicherung am {latest:dd.MM.yyyy HH:mm} ist unvollständig.", "Unter „Sicherung“ nachsehen, was fehlt, und neu sichern.", "sicherung")
+        : new("sicherung", "Sicherung", Light.Gruen, $"Zuletzt am {latest:dd.MM.yyyy HH:mm}.", "Nichts zu tun.", null);
+
+    public static Area Disk(long freeBytes) =>
+        freeBytes < 0 ? new("speicher", "Speicherplatz", Light.Gelb, "Konnte nicht gemessen werden.", "Unter „Speicher & Leistung“ nachsehen.", "ressourcen")
+        : freeBytes < 2L << 30 ? new("speicher", "Speicherplatz", Light.Rot, $"Nur noch {freeBytes >> 20:N0} MB frei – Speichern kann fehlschlagen.", "Unter „Speicher & Leistung“ sehen, was viel Platz belegt, und aufräumen.", "ressourcen")
+        : freeBytes < 10L << 30 ? new("speicher", "Speicherplatz", Light.Gelb, $"{freeBytes >> 30} GB frei – wird knapp.", "Unter „Speicher & Leistung“ sehen, was viel Platz belegt.", "ressourcen")
+        : new("speicher", "Speicherplatz", Light.Gruen, $"{freeBytes >> 30} GB frei.", "Nichts zu tun.", null);
+
+    public static Area Crashes(IReadOnlyList<DateTime> times, DateTime now)
+    {
+        var recent = times.Count(t => (now - t).TotalDays <= 7);
+        return recent == 0 ? new("abstuerze", "Stabilität", Light.Gruen, "Keine Abstürze in den letzten 7 Tagen.", "Nichts zu tun.", null)
+            : new("abstuerze", "Stabilität", Light.Gelb, $"{recent} Fehlerbericht(e) in den letzten 7 Tagen (ohne persönliche Angaben gespeichert).", "Trendo aktualisieren; bleibt es, die Fehlerberichte unter „System & Sicherheit“ ansehen.", "updates");
+    }
+
+    /// <summary>Für die Zwischenablage oder einen Bericht: eine Zeile je Bereich.</summary>
+    public static string Text(IReadOnlyList<Area> areas, DateTime at) =>
+        $"Trendo – Alles prüfen ({at:dd.MM.yyyy HH:mm}): {Sentence(areas)}\n" + string.Concat(areas.Select(a => $"[{a.Light switch { Light.Gruen => "grün", Light.Gelb => "gelb", _ => "rot" }}] {a.Title}: {a.Finding} → {a.Next}\n"));
 }

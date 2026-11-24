@@ -125,7 +125,11 @@ public partial class MainWindow
     private Control ModeView()
     {
         var mode = TripleMode.DetectHere();
-        var sp = new StackPanel { Spacing = 8, Children = { P("Trendo läuft als Windows-App, von einem Linux-USB-Stick oder auf dem Raspberry Pi. Hier steht ehrlich, was im aktuellen Modus geht."),
+        // T-0763 (SYS-01): klare Aussage statt Modus-Versprechen – im Angebot ist nur die Desktop Edition für Windows 11
+        var sp = new StackPanel { Spacing = 8, Children = {
+            WCard(new StackPanel { Name = "mode-offer", Spacing = 4, Children = {
+                new TextBlock { Name = "mode-offer-head", Text = "Trendo OS gibt es derzeit als Desktop Edition für Windows 11.", Foreground = Text, FontSize = 15, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
+                new TextBlock { Name = "mode-offer-text", Text = "Linux und Raspberry Pi sind derzeit nicht im Angebot – es gibt dafür weder Setup noch Unterstützung. Die Liste unten zeigt ehrlich, was auf diesem Gerät geht.", Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap } } }),
             new TextBlock { Name = "mode-now", Text = "Aktueller Modus: " + TripleMode.Label(mode), Foreground = Text, FontSize = 15 } } };
         bool Has(string t) => t switch { "soffice" => true /* eigenes Office */, "winget" => ToolPath("winget") is not null || OperatingSystem.IsWindows(), "unreal" => ToolPath("unreal") is not null, "apt" => File.Exists("/usr/bin/apt"), _ => ToolPath(t) is not null };
         var i = 0;
@@ -136,6 +140,7 @@ public partial class MainWindow
         var plan = new StackPanel { Spacing = 6, Children = {
             new TextBlock { Text = "Trendo OS auf USB-Stick oder externe SSD", Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold },
             P($"Eigenes System zum Mitnehmen: Trendo lädt das geprüfte Abbild aus dem neuesten Release, schreibt es auf das gewählte Laufwerk (mind. {MinStickGb:0} GB) und liest alles zur Kontrolle zurück. Windows und Trendo auf diesem PC bleiben unverändert.", null, 12),
+            new TextBlock { Name = "mode-stick-note", Text = "Nicht Teil der Desktop Edition: Das Stick-System ist eine Vorschau ohne Unterstützung. Der Start von einem geschriebenen Stick ist auf echter Hardware noch nicht nachgewiesen.", Foreground = Brush.Parse("#FACC15"), FontSize = 11.5, TextWrapping = TextWrapping.Wrap },
             Act("mode-write-stick", "Stick oder SSD schreiben …", () => { EnterSetupFullscreen(); SetupUse("stick"); }, true) } };
         sp.Children.Add(WCard(plan));
         return SysPage("Betriebsmodus", sp);
