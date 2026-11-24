@@ -41,8 +41,17 @@ public sealed partial class ExtensionStore
     public string RightsFile(string id) => Path.Combine(DataRoot, "erweiterungen-rechte", id + ".json");
     /// <summary>Eigener Datenordner der Erweiterung – liegt außerhalb ihres Installationsordners, damit die Prüfsumme gleich bleibt.</summary>
     public string DataDir(string id) => Path.Combine(DataRoot, "erweiterungen-daten", id);
-    /// <summary>T-0766 (Befund M2): beim Installieren übersetztes Modul, gebunden über Prüfsummen an genau dieses Modul.</summary>
-    public string CacheFile(string id) => Path.Combine(DataRoot, "erweiterungen-cache", id + ".cwasm");
+    /// <summary>T-0766 (Befund H1): früherer Zwischenspeicher übersetzter Module. Wird nie gelesen, sondern beim Start der Verwaltung und beim Entfernen gelöscht.</summary>
+    public string LegacyCacheDir => Path.Combine(DataRoot, LegacyCacheName);
+    public const string LegacyCacheName = "erweiterungen-cache";
+
+    /// <summary>Befund H1: alten Zwischenspeicher löschen (nie laden).</summary>
+    public static void PurgeLegacyCache(string dataRoot)
+    {
+        var d = Path.Combine(dataRoot, LegacyCacheName);
+        try { if (Directory.Exists(d)) Directory.Delete(d, true); }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+    }
 
     /// <summary>Befund N3: Es gibt eine Freigabe, aber für eine andere Prüfsumme (Erweiterung verändert oder Prüfverfahren erneuert) – ehrlich neu fragen.</summary>
     public bool GrantOutdated(InstalledExt e) => Grant(e.Manifest.Id) is { } g && g.Sha256 != e.Sha256;
@@ -133,7 +142,7 @@ public sealed partial class ExtensionStore
         var dirs = new SandboxDirs(granted.Contains(ExtensionRights.DataFolder) ? DataDir(id) : null, granted.Contains(ExtensionRights.ProjectRead) ? projects.ProjectFilesRoot(projectId) : null, false);
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(ct, Gate?.HaltToken ?? CancellationToken.None);
         Audit?.Append("app", "ext.run", $"{id} {commandId} {projectId}:{inputRel}");
-        var r = ExtensionSandbox.Run(wasm, [id, commandId], File.ReadAllBytes(input), dirs, limits, linked.Token, CacheFile(id));
+        var r = ExtensionSandbox.Run(wasm, [id, commandId], File.ReadAllBytes(input), dirs, limits, linked.Token);
         if (!r.Ok) { Audit?.Append("app", "ext.run.fail", $"{id} {r.Error}"); return new(false, r.Error); }
         var rel = UniqueRel(projects, projectId, Path.ChangeExtension(inputRel.Replace('\\', '/'), cmd.Output));
         projects.WriteBytes(projectId, rel, r.Output);

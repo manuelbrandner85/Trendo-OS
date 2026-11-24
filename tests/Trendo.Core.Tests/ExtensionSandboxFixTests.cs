@@ -94,8 +94,8 @@ public class T0766_Gegenpruefung
         return [0, (byte)'a', (byte)'s', (byte)'m', 1, 0, 0, 0, .. Section(1, [1, 0x60, 0, 0]), .. Section(3, [.. funcs]), .. Section(10, [.. code])];
     }
 
-    [Fact(DisplayName = "T-0766 M2: Modulform vor dem Übersetzen – zu viele Funktionen, zu groß, zwei Speicher werden sofort abgewiesen; Übersetzung wird beim Installieren zwischengespeichert")]
-    public void M2_shape_and_cache()
+    [Fact(DisplayName = "T-0766 M2: Modulform vor dem Übersetzen – zu viele Funktionen, zu groß, zwei Speicher werden sofort abgewiesen")]
+    public void M2_shape()
     {
         var sw = Stopwatch.StartNew();
         var many = ManyFunctions(25_000);
@@ -108,19 +108,6 @@ public class T0766_Gegenpruefung
         var two = Wasmtime.Module.ConvertText("""(module (memory 1) (memory 1) (func (export "_start")))""");
         Assert.Contains(ExtensionSandbox.Inspect(two), e => e.Contains("Mehr als ein Speicher"));
 
-        // Zwischenspeicher: beim Installieren angelegt, an das Modul gebunden; verändert → neu übersetzt, Ergebnis gleich
-        var root = Tmp(); var s = new ExtensionStore(root);
-        var (e, err) = s.Install(ExtensionModuleSample.Write(Tmp())); Assert.Empty(err);
-        var cache = s.CacheFile(e!.Manifest.Id);
-        Assert.True(ExtensionSandbox.CacheValid(ExtensionModuleSample.Wasm, cache));
-        var a = ExtensionSandbox.Run(ExtensionModuleSample.Wasm, [], "x,y\n"u8.ToArray(), new(), Fast, default, cache);
-        Assert.True(a.Ok, a.Error);
-        var bytes = File.ReadAllBytes(cache); bytes[bytes.Length / 2] ^= 0xFF; File.WriteAllBytes(cache, bytes);
-        Assert.False(ExtensionSandbox.CacheValid(ExtensionModuleSample.Wasm, cache));
-        var b = ExtensionSandbox.Run(ExtensionModuleSample.Wasm, [], "x,y\n"u8.ToArray(), new(), Fast, default, cache);
-        Assert.True(b.Ok, b.Error); Assert.Equal(a.Output, b.Output);
-        Assert.True(ExtensionSandbox.CacheValid(ExtensionModuleSample.Wasm, cache));
-        s.Remove(e.Manifest.Id); Assert.False(File.Exists(cache));
     }
 
     [Fact(DisplayName = "T-0766 N1: Text der Erweiterung gekürzt, ohne Steuerzeichen, deutlich abgesetzt")]

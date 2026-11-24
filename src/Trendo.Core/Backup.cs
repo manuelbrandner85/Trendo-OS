@@ -13,7 +13,8 @@ public sealed class Backup(string dataRoot, string backupDir, AuditLog audit)
     public const string UnencryptedNotice = "Diese Sicherungen sind nicht verschlüsselt. Es sind gewöhnliche ZIP-Dateien: Jeder, der Zugriff auf den Sicherungsordner hat, kann sie öffnen und alles darin lesen – Projekte, Einstellungen und das Protokoll.";
     /// <summary>Empfehlung zum Hinweis (nur Text).</summary>
     public const string EncryptAdvice = "Empfehlung: Lege den Sicherungsordner auf ein verschlüsseltes Laufwerk, zum Beispiel ein Laufwerk mit BitLocker (Windows) oder einen verschlüsselten USB-Stick. Trendo ändert dafür nichts an deinem System. Verschlüsselt mit Passwort sichern kannst du unter „Schutz“ mit restic.";
-    private static readonly string[] Skip = ["backups", "settings.json.tmp", "web-mixamo"]; // T-0660: Anmeldesitzung bei Mixamo nicht mitsichern
+    // T-0660: Anmeldesitzung bei Mixamo nicht mitsichern; T-0766 (H1): Zwischenspeicher übersetzter Erweiterungen weder sichern noch wiederherstellen
+    private static readonly string[] Skip = ["backups", "settings.json.tmp", "web-mixamo", ExtensionStore.LegacyCacheName];
 
     public IReadOnlyList<FileInfo> List() => Directory.Exists(backupDir)
         ? new DirectoryInfo(backupDir).GetFiles("trendo-sicherung-*.zip").OrderByDescending(f => f.Name).ToList() : [];
@@ -217,6 +218,7 @@ public sealed class Backup(string dataRoot, string backupDir, AuditLog audit)
             var dest = Path.GetFullPath(Path.Combine(dataRoot, e.FullName));
             if (!dest.StartsWith(Path.GetFullPath(dataRoot) + Path.DirectorySeparatorChar)) continue; // kein Zip-Slip
             if (e.FullName.StartsWith("audit/")) continue; // Audit-Kette wird nie überschrieben
+            if (Skip.Any(s => e.FullName.StartsWith(s, StringComparison.OrdinalIgnoreCase))) continue; // T-0766 (H1): z. B. fremder Erweiterungs-Zwischenspeicher
             if (e.FullName.EndsWith('/')) { Directory.CreateDirectory(dest); continue; }
             Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
             if (File.Exists(dest)) { File.SetAttributes(dest, FileAttributes.Normal); File.Delete(dest); } // z. B. schreibgeschützte .git-Objekte
@@ -287,6 +289,7 @@ public sealed class Backup(string dataRoot, string backupDir, AuditLog audit)
     public string? RestoreOne(string zip, string path, DateTime now)
     {
         if (path.StartsWith("audit/")) throw new InvalidOperationException("Das Protokoll wird nie überschrieben.");
+        if (Skip.Any(s => path.StartsWith(s, StringComparison.OrdinalIgnoreCase))) throw new InvalidOperationException("Dieser Bereich wird nicht wiederhergestellt.");
         var dest = Path.GetFullPath(Path.Combine(dataRoot, path));
         if (!dest.StartsWith(Path.GetFullPath(dataRoot) + Path.DirectorySeparatorChar)) throw new InvalidOperationException("Ungültiger Pfad.");
         using var z = ZipFile.OpenRead(zip);

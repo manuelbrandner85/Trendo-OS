@@ -17,7 +17,7 @@ Bestehende Daten-Arten `seite`, `vorhaben`, `links`, `text` bleiben gültig und 
 
 ## Tests (gezielt, kein Volltest)
 - `dotnet build Trendo.sln -c Release`: 0 Fehler.
-- Core: `--filter T0766|W5_X04|SystemPages|Sys13|NoFixedUser` → **42 bestanden, 0 Fehler** nach fix1 (`reports/T-0766/core-tests.log`, neu erzeugt).
+- Core: `--filter T0766|W5_X04|SystemPages|Sys13|NoFixedUser` → **42 bestanden, 0 Fehler** nach fix2: **65 bestanden, 1 übersprungen (restic nicht vorhanden), 0 Fehler** mit `Backup`-Klassen (`reports/T-0766/core-tests.log`, neu erzeugt).
 - App: `T0766ErweiterungenUi` 3/3 (nach fix1), `W5_X04_Ui` 2/2, `W5_X04_CatalogUi` 1/1, `StyleAndBrand_Ui` 2/2, `Projektmappe_Ui` 1/1, `T0726Offen_Ui` 4/4 → alle grün (`reports/T-0766/app-tests.log`).
 - Rot-Grün: auf `main` kompilieren die neuen Tests nicht (Typen `ExtensionSandbox`, `ExtensionModuleSample`, `ExtensionWorkshop`, `ExtensionResultUndo` fehlen), Katalog-Test erwartet 4 statt 3 Einträge.
 - Bildprüfung: `reports/T-0766/erweiterungen-modul-werkstatt.png`, `projekte-knopf.png` (Render mit neuer Hilfe `TRENDO_EXT_DEMO=offen|werkstatt|projekt`).
@@ -36,7 +36,7 @@ Bestehende Daten-Arten `seite`, `vorhaben`, `links`, `text` bleiben gültig und 
 | Befund | Änderung | Test (echte Wasmtime-Laufzeit) |
 |---|---|---|
 | M1 Datenordner ohne Grenze | Datenordner ist über WASI nur noch **lesbar** (kein Anlegen, kein `fd_filestat_set_size`/`fd_allocate`/Schreiben). Schreiben nur über die Trendo-Funktionen `trendo.daten_schreiben`/`trendo.daten_loeschen`; Grenze 100 MB und 1000 Dateien wird **vor** jedem Schreiben geprüft, Überschreitung → Fehlernummer + Abbruch des Laufs; Rückstopp räumt im Lauf geänderte Dateien, bis der Ordner unter der Grenze ist. Grenze steht im Rechte-Text. (Ein Umhüllen der WASI-Funktionen ist nicht möglich: von außen aufgerufene WASI-Funktionen finden den Speicher des Moduls nicht – im Versuch belegt.) | `T0766_Gegenpruefung.M1_data_quota` (Schreibschleife endet bei ≤ 4 MB Testgrenze, alte Daten bleiben, Gegenprobe, Ausbruch per „../“, ohne Recht EACCES) |
-| M2 Übersetzen ohne Grenze | Formprüfung **vor** dem Übersetzen: ≤ 4 MB, ≤ 20 000 Funktionen, ≤ 200 Importe, ≤ 1 Speicher. Übersetzt wird einmal beim Installieren, Ergebnis in `erweiterungen-cache/<id>.cwasm` mit Prüfsummen-Datei (übersetzt + Modul); der Lauf lädt nur bei passenden Prüfsummen, sonst neu (Wasmtime-Fassung). Installieren, Katalog-Installieren und Werkstatt-Bauen laufen per `Task.Run`. Feste Ausstattung ohne GC/Ausnahmen/Mehrspeicher/64-Bit-Speicher/Komponenten. | `M2_shape_and_cache` (25 000 Funktionen und > 4 MB in < 3 s abgewiesen, zwei Speicher abgewiesen, Cache-Manipulation erkannt), UI-Tests warten jetzt auf das Ende |
+| M2 Übersetzen ohne Grenze | Formprüfung **vor** dem Übersetzen: ≤ 4 MB, ≤ 20 000 Funktionen, ≤ 200 Importe, ≤ 1 Speicher. (Der in fix1 eingeführte Zwischenspeicher ist in fix2 wegen H1 wieder gestrichen.) Installieren, Katalog-Installieren und Werkstatt-Bauen laufen per `Task.Run`. Feste Ausstattung ohne GC/Ausnahmen/Mehrspeicher/64-Bit-Speicher/Komponenten. | `M2_shape_and_cache` (25 000 Funktionen und > 4 MB in < 3 s abgewiesen, zwei Speicher abgewiesen, Cache-Manipulation erkannt), UI-Tests warten jetzt auf das Ende |
 | N1 stderr | Text gekürzt auf 200 Zeichen, Steuer-/Formatzeichen entfernt, „Text der Erweiterung: „…““ | `N1_stderr` |
 | N2 RunCommand | IO-/Zugriffsfehler → verständliches Ergebnis; `UniqueRel` umgeht auch Ordner; Knopf in `finally` wieder bedienbar | `N2_N4_N5` (Datei gesperrt, Ordner `kunden.md`) |
 | N3 Ordner-Hash | Verfahren v2 mit Längen vor Name und Inhalt; alte Freigabe wird erkannt („gilt nicht mehr … neu freigeben“), nichts gilt stillschweigend weiter | `N3_hash` |
@@ -48,6 +48,17 @@ Bestehende Daten-Arten `seite`, `vorhaben`, `links`, `text` bleiben gültig und 
 | N9 Beleg/Bild | Logs neu, Anonymisierung `C:\Users\<user>`; Werkstatt-Texte brechen um, Aufklapper im Dunkel-Gold-Look; Bild angesehen | `reports/T-0766/*.png`, `SHA256SUMS.txt` |
 
 Offen aus der Gegenprüfung: Ein Kindprozess mit Job-Objekt (harte Speicher-/Zeitgrenze auch für das Übersetzen selbst) ist **nicht** umgesetzt – nicht klein machbar; das Übersetzen bleibt durch die Formgrenzen beschränkt, ist aber selbst nicht per Not-Stopp unterbrechbar. Die Anzahl leerer Ordner über `path_create_directory` entfällt (Datenordner nur lesbar).
+
+## Gegenprüfung fix2 (zweite Prüfrunde von e7c00b0b4)
+
+| Befund | Änderung | Test | Gemessen |
+|---|---|---|---|
+| H1 Zwischenspeicher = nativer Code | Zwischenspeicher **ganz gestrichen** (ersetzt den fix1-Weg). Jeder Lauf übersetzt aus dem installierten, prüfsummengeprüften `.wasm`; `Module.Deserialize`/`DeserializeFile`/`Serialize` kommen im Produkt nicht vor. Alter Ordner `erweiterungen-cache` wird beim ersten Zugriff der Verwaltung und beim Entfernen gelöscht; `Backup` sichert ihn nicht und überspringt ihn beim Wiederherstellen (auch Einzeldatei). | `T0766_Gegenpruefung2.H1_no_cache`: fremdes Kompilat mit gleicher Ausstattung + stimmiger `.sha256` → Ergebnis ist die echte Tabelle; Ordner gelöscht; fremde Sicherungs-ZIP stellt ihn nicht her; Grep über `src/` | – |
+| M3 Locals/Körpergröße | Formprüfung zählt vor dem Übersetzen Locals je Funktion (≤ 2 000), im Modul (≤ 200 000) und Körpergröße je Funktion (≤ 512 KB). Übersetzen läuft in einer eigenen Aufgabe und zählt zur Zeitgrenze; Not-Stopp oder abgelaufene Zeit beenden den Lauf sofort, die Übersetzung wird im Hintergrund verworfen (nie ausgeführt). | `M3_locals` (Angriffsmodul 19 999 × 49 000 Locals, i64 und v128, je 156 KB), `M3_compile_in_time_budget` | Abweisung beider Angriffsmodule zusammen < 3 s. Schlimmster gemessener Fall unter den Grenzen: 20 000 Funktionen × 10 v128-Locals (117 KB) **2,9–3,3 s** Übersetzen; 100 × 2 000 v128 0,05 s; 1 Funktion 512 KB 0,02 s. Not-Stopp während dieses Übersetzens: Lauf endet nach **57 ms** |
+| N10 parallele Läufe | Läufe mit demselben Datenordner laufen nacheinander (Sperre je Ordner, Warten im Zeit-/Not-Stopp-Rahmen); Aufräumen löscht nur in diesem Lauf geschriebene Dateien | `N10_parallel` (5 parallele Läufe, 3 Runden) | – |
+| N11 Namen | Name ≤ 255 Zeichen, ≤ 8 Ebenen, vollständiger Pfad < 260; Windows-Gerätenamen (CON, PRN, AUX, NUL, CONIN$, CONOUT$, CLOCK$, COM/LPT 0–9 und ¹²³, auch mit Endung/Leerzeichen) abgelehnt; Punkt/Leerzeichen am Ende, verbotene Zeichen abgelehnt; Ordner zählen in die 1000er-Grenze (auch neu anzulegende); Ordner oder Verknüpfung/Junction als Ziel oder auf dem Weg sofort abgelehnt | `N11_names` (Liste gut/schlecht, echte Läufe, `mklink /J`, 999 Ordner) | Junction-Fälle zusammen < 2 s (gesamter Test 0,8 s) |
+
+Weiter offen: Kindprozess mit Job-Objekt (harte Grenze auch für das Übersetzen selbst) – nicht klein machbar. Das Übersetzen eines abgebrochenen Laufs läuft im Hintergrund zu Ende (höchstens rund 3 s im schlimmsten gemessenen Fall) und verbraucht so lange CPU.
 
 ## Nicht geprüft
 - Linux-/Pi-Edition (Wasmtime liefert `linux-x64`/`linux-arm64`, nicht gestartet); Setup-Größe (+~21 MB `wasmtime.dll` für win-x64) nicht im echten Setup gemessen.

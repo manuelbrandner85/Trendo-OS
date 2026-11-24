@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using Wasmtime;
@@ -20,8 +22,12 @@ public sealed record SandboxResult(bool Ok, byte[] Output, string Error, string 
 
 /// <summary>T-0766 (X-04): Funktions-Erweiterungen laufen als WebAssembly-Modul (WASI preview 1) in Wasmtime – nie als .NET-Code im Trendo-Prozess.
 /// Sicherheit vor Umfang:
-/// · vor dem Übersetzen: Modul höchstens <see cref="MaxModuleBytes"/>, höchstens <see cref="MaxFunctions"/> Funktionen, ein Speicher (Befund M2);
-/// · übersetzt wird einmal beim Installieren; der Lauf lädt das zwischengespeicherte Ergebnis nur, wenn dessen Prüfsumme stimmt;
+/// · vor dem Übersetzen: Modul höchstens <see cref="MaxModuleBytes"/>, höchstens <see cref="MaxFunctions"/> Funktionen, ein Speicher, Locals je Funktion
+///   und gesamt sowie Körpergröße je Funktion begrenzt (Befunde M2, M3);
+/// · Befund H1: kein Zwischenspeicher übersetzten Maschinencodes – jeder Lauf übersetzt aus dem installierten, prüfsummengeprüften .wasm
+///   (übersetzter Maschinencode wird nie gespeichert oder geladen). Das Übersetzen zählt zur Zeitgrenze; Not-Stopp beendet den Lauf sofort (das Übersetzen selbst läuft im
+///   Hintergrund zu Ende und wird verworfen);
+/// · Befund N10: Läufe derselben Erweiterung (gleicher Datenordner) laufen nacheinander;
 /// · keine Netz-Funktionen (Importe nur aus einer festen WASI-Liste ohne sock_* und ohne poll_oneoff), keine Umgebungsvariablen, keine geerbten Ein-/Ausgaben;
 /// · Dateien nur in ausdrücklich übergebenen Ordnern, über WASI nur lesend. Befund M1: Schreiben in den eigenen Datenordner geht ausschließlich über
 ///   <c>trendo.daten_schreiben</c>/<c>trendo.daten_loeschen</c>; Trendo prüft die Größengrenze <b>vor</b> jedem Schreiben (nichts wird zu groß angelegt);
@@ -42,6 +48,11 @@ public static class ExtensionSandbox
     public const int MaxDataFiles = 1000;
     /// <summary>Trendo-eigene Funktionen für Erweiterungen (Befund M1: Schreiben in den Datenordner nur hierüber, mit Größengrenze).</summary>
     public static readonly string[] TrendoImports = ["daten_schreiben", "daten_loeschen"];
+    /// <summary>Befund M3: Locals je Funktion, Locals im ganzen Modul, Körpergröße je Funktion – geprüft vor dem Übersetzen.</summary>
+    public const int MaxLocalsPerFunction = 2_000, MaxLocalsTotal = 200_000, MaxBodyBytes = 512 << 10;
+    /// <summary>Befund N11: Namen im Datenordner – höchstens 255 Zeichen, höchstens 8 Ebenen.</summary>
+    public const int MaxNameChars = 255, MaxNameDepth = 8;
+    static readonly ConcurrentDictionary<string, SemaphoreSlim> DataLocks = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>Erlaubte WASI-Funktionen. Bewusst nicht dabei: sock_* (Netz), poll_oneoff (Warten ohne Zeitgrenze), path_symlink/path_link/path_readlink.</summary>
     public static readonly string[] AllowedImports =
@@ -75,8 +86,34 @@ public static class ExtensionSandbox
                 if (id == 2 && count > MaxImports) return $"Modul hat zu viele Importe ({count}).";
                 if (id is 3 or 10 && count > MaxFunctions) return $"Modul hat zu viele Funktionen ({count}, erlaubt höchstens {MaxFunctions}).";
                 if (id == 5 && count > 1) return "Mehr als ein Speicher ist für Erweiterungen nicht erlaubt.";
+                if (id == 10 && CodeError(wasm, p, end, count) is { } code) return code;
             }
             pos = end;
+        }
+        return null;
+    }
+
+    /// <summary>Befund M3: Funktionskörper durchgehen – Körpergröße, Locals je Funktion und gesamt (Übersetzungsaufwand wächst damit).</summary>
+    static string? CodeError(byte[] b, int pos, int end, uint count)
+    {
+        long total = 0;
+        for (var f = 0; f < count; f++)
+        {
+            if (!Leb(b, ref pos, out var size) || pos + (long)size > end) return "Modul ist beschädigt.";
+            if (size > MaxBodyBytes) return $"Eine Funktion ist zu groß ({size >> 10} KB, erlaubt höchstens {MaxBodyBytes >> 10} KB).";
+            var p = pos; var bodyEnd = pos + (int)size;
+            if (!Leb(b, ref p, out var groups)) return "Modul ist beschädigt.";
+            long locals = 0;
+            for (var g = 0; g < groups; g++)
+            {
+                if (!Leb(b, ref p, out var n) || p >= bodyEnd) return "Modul ist beschädigt.";
+                locals += n;
+                var type = b[p++];
+                if (type is 0x63 or 0x64 && !Leb(b, ref p, out _)) return "Modul ist beschädigt."; // (ref null? heaptyp)
+                if (locals > MaxLocalsPerFunction) return $"Eine Funktion hat zu viele lokale Variablen (mehr als {MaxLocalsPerFunction}).";
+            }
+            if ((total += locals) > MaxLocalsTotal) return $"Modul hat zu viele lokale Variablen (mehr als {MaxLocalsTotal}).";
+            pos = bodyEnd;
         }
         return null;
     }
@@ -123,49 +160,6 @@ public static class ExtensionSandbox
         catch (WasmtimeException e) { return ["Modul ist ungültig: " + Reason(e.Message)]; }
     }
 
-    /// <summary>Befund M2: einmal übersetzen und zwischenspeichern (beim Installieren). Daneben liegt eine Prüfsummen-Datei, die das übersetzte Ergebnis
-    /// an genau dieses Modul bindet; nur dann wird es später geladen.</summary>
-    public static List<string> Precompile(byte[] wasm, string cacheFile)
-    {
-        if (ShapeError(wasm) is { } shape) return [shape];
-        try
-        {
-            using var engine = new Engine(NewConfig());
-            using var module = Module.FromBytes(engine, "erweiterung", wasm);
-            var err = Check(module);
-            if (err.Count == 0) WriteCache(cacheFile, module.Serialize(), wasm);
-            return err;
-        }
-        catch (WasmtimeException e) { return ["Modul ist ungültig: " + Reason(e.Message)]; }
-    }
-
-    static void WriteCache(string cacheFile, byte[] compiled, byte[] wasm)
-    {
-        Directory.CreateDirectory(Path.GetDirectoryName(cacheFile)!);
-        AtomicFile.WriteAllBytes(cacheFile, compiled);
-        AtomicFile.WriteAllText(cacheFile + ".sha256", Sha256(compiled) + " " + Sha256(wasm) + "\n");
-    }
-
-    /// <summary>Ist die zwischengespeicherte Übersetzung gültig (beide Prüfsummen passen)?</summary>
-    public static bool CacheValid(byte[] wasm, string cacheFile)
-    {
-        if (!File.Exists(cacheFile) || !File.Exists(cacheFile + ".sha256")) return false;
-        var parts = File.ReadAllText(cacheFile + ".sha256").Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        return parts.Length == 2 && parts[0] == Sha256(File.ReadAllBytes(cacheFile)) && parts[1] == Sha256(wasm);
-    }
-
-    /// <summary>Modul laden: aus dem Zwischenspeicher, wenn beide Prüfsummen stimmen; sonst (nach Formprüfung) neu übersetzen und Zwischenspeicher erneuern.</summary>
-    static Module Load(Engine engine, byte[] wasm, string? cacheFile)
-    {
-        if (cacheFile is not null && CacheValid(wasm, cacheFile))
-            try { return Module.Deserialize(engine, "erweiterung", File.ReadAllBytes(cacheFile)); }
-            catch (WasmtimeException) { /* andere Wasmtime-Fassung → neu übersetzen */ }
-        if (ShapeError(wasm) is { } shape) throw new WasmtimeException(shape);
-        var m = Module.FromBytes(engine, "erweiterung", wasm);
-        if (cacheFile is not null) try { WriteCache(cacheFile, m.Serialize(), wasm); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
-        return m;
-    }
-
     /// <summary>Baut ein Modul aus WebAssembly-Text (WAT) – mit dem Übersetzer aus der Wasmtime-Bibliothek, ohne weiteres Werkzeug. Danach <see cref="Inspect"/>.</summary>
     public static (byte[]? Wasm, List<string> Errors) BuildFromText(string wat)
     {
@@ -184,9 +178,11 @@ public static class ExtensionSandbox
     public static long DirSize(string dir) => Directory.Exists(dir) ? new DirectoryInfo(dir).EnumerateFiles("*", SearchOption.AllDirectories).Sum(f => f.Length) : 0;
 
     /// <summary>Führt ein Modul aus. Wirft nie wegen des Moduls – jedes Fehlverhalten wird zu <see cref="SandboxResult.Ok"/> = false mit Grund.
-    /// <paramref name="cacheFile"/>: zwischengespeicherte Übersetzung (vom Installieren).</summary>
-    public static SandboxResult Run(byte[] wasm, IReadOnlyList<string> args, byte[] input, SandboxDirs dirs, SandboxLimits limits, CancellationToken ct = default, string? cacheFile = null)
+    /// Übersetzt wird bei jedem Lauf aus <paramref name="wasm"/> (Befund H1); die Zeit dafür zählt zur Zeitgrenze.</summary>
+    public static SandboxResult Run(byte[] wasm, IReadOnlyList<string> args, byte[] input, SandboxDirs dirs, SandboxLimits limits, CancellationToken ct = default)
     {
+        var clock = Stopwatch.StartNew();
+        TimeSpan Left() { var l = limits.Time - clock.Elapsed; return l > TimeSpan.FromMilliseconds(1) ? l : TimeSpan.FromMilliseconds(1); }
         if (input.Length > limits.MaxInput) return new(false, [], $"Eingabe ist größer als {limits.MaxInput >> 20} MB.", "");
         if (ct.IsCancellationRequested) return new(false, [], "Abgebrochen (Not-Stopp).", "");
         if (ShapeError(wasm) is { } shape) return new(false, [], shape, "");
@@ -197,16 +193,27 @@ public static class ExtensionSandbox
         File.WriteAllBytes(stdinFile, input);
         var output = new MemoryStream(); var log = new MemoryStream();
         var outOver = false; var timedOut = false; var quotaHit = false; var started = false;
-        var runStart = DateTime.UtcNow;
+        var written = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        SemaphoreSlim? dataLock = null;
         var quotaMsg = $"Datenordner-Grenze ({limits.DataQuota >> 20} MB) erreicht – abgebrochen, zu große Dateien entfernt.";
         try
         {
-            using var engine = new Engine(NewConfig());
+            // H1/M3: immer aus dem .wasm übersetzen; das Übersetzen zählt zur Zeitgrenze, Not-Stopp wartet nicht darauf
+            var engine = new Engine(NewConfig());
+            var compile = Task.Run(() => Module.FromBytes(engine, "erweiterung", wasm));
+            bool compiled;
+            try { compiled = compile.Wait(Left(), ct); }
+            catch (OperationCanceledException) { compiled = false; }
+            catch (AggregateException a) when (a.InnerException is WasmtimeException w) { engine.Dispose(); return new(false, [], "Modul ist ungültig: " + Reason(w.Message), ""); }
+            if (!compiled)
+            {
+                // läuft im Hintergrund zu Ende und wird verworfen – das Ergebnis wird nie ausgeführt
+                compile.ContinueWith(t => { if (t.IsCompletedSuccessfully) t.Result.Dispose(); engine.Dispose(); }, TaskScheduler.Default);
+                return new(false, [], ct.IsCancellationRequested ? "Abgebrochen (Not-Stopp) – noch beim Übersetzen." : $"Zeitgrenze erreicht ({limits.Time.TotalSeconds:0} s) schon beim Übersetzen – abgebrochen.", "");
+            }
+            using var _e = engine;
             void Interrupt() { try { engine.IncrementEpoch(); } catch (ObjectDisposedException) { } } // N7: nie gegen eine freigegebene Engine
-            Module module;
-            try { module = Load(engine, wasm, cacheFile); }
-            catch (WasmtimeException e) { return new(false, [], "Modul ist ungültig: " + Reason(e.Message), ""); }
-            using var _m = module;
+            using var module = compile.Result;
             if (Check(module) is { Count: > 0 } bad) return new(false, [], string.Join(" ", bad), "");
             using var linker = new Linker(engine);
             linker.DefineWasi();
@@ -221,9 +228,17 @@ public static class ExtensionSandbox
             if (dirs.DataDir is { } dd) { Directory.CreateDirectory(dd); wasi = wasi.WithPreopenedDirectory(dd, "/daten", false); }
             if (dirs.ProjectDir is { } pd && Directory.Exists(pd)) wasi = wasi.WithPreopenedDirectory(pd, "/projekt", dirs.ProjectWritable);
             store.SetWasiConfiguration(wasi);
-            DefineDataApi(linker, dirs.DataDir, limits.DataQuota, () => { quotaHit = true; Interrupt(); });
+            // N10: Läufe mit demselben Datenordner nacheinander – Grenze und Aufräumen sehen nur den eigenen Lauf
+            if (dirs.DataDir is { } lockDir)
+            {
+                dataLock = DataLocks.GetOrAdd(Path.GetFullPath(lockDir), _ => new SemaphoreSlim(1, 1));
+                bool got;
+                try { got = dataLock.Wait(Left(), ct); } catch (OperationCanceledException) { got = false; }
+                if (!got) { dataLock = null; return new(false, [], ct.IsCancellationRequested ? "Abgebrochen (Not-Stopp)." : "Diese Erweiterung läuft gerade noch – bitte gleich noch einmal versuchen.", ""); }
+            }
+            DefineDataApi(linker, dirs.DataDir, limits.DataQuota, written, () => { quotaHit = true; Interrupt(); });
 
-            var timer = new Timer(_ => { timedOut = true; Interrupt(); }, null, limits.Time, Timeout.InfiniteTimeSpan);
+            var timer = new Timer(_ => { timedOut = true; Interrupt(); }, null, Left(), Timeout.InfiniteTimeSpan);
             string? fail = null;
             try
             {
@@ -262,20 +277,20 @@ public static class ExtensionSandbox
                 using var done = new ManualResetEvent(false);
                 if (timer.Dispose(done)) done.WaitOne(TimeSpan.FromSeconds(5));
             }
-            if (dirs.DataDir is { } q && (quotaHit || DirSize(q) > limits.DataQuota)) { TrimDataDir(q, limits.DataQuota, runStart); fail = quotaMsg; }
+            if (dirs.DataDir is { } q && (quotaHit || DirSize(q) > limits.DataQuota)) { TrimDataDir(q, limits.DataQuota, written); fail = quotaMsg; }
             var logText = Encoding.UTF8.GetString(log.ToArray());
             if (fail is null && outOver) fail = $"Ausgabe größer als {limits.MaxOutput >> 20} MB – abgebrochen.";
             if (fail is not null && ExtensionText(logText) is { Length: > 0 } said) fail += " Text der Erweiterung: „" + said + "“";
             return fail is null ? new(true, output.ToArray(), "", logText) : new(false, [], fail, logText);
         }
         catch (WasmtimeException e) { return new(false, [], Explain(e.Message, started, limits), ""); }
-        finally { TempDir.Delete(work); }
+        finally { dataLock?.Release(); TempDir.Delete(work); }
     }
 
     /// <summary>Befund M1: Schreiben in den eigenen Datenordner. Name: relativer Pfad ohne „..“, ohne Laufwerk, ohne Verknüpfungen auf dem Weg.
     /// Die Grenze wird <b>vor</b> dem Schreiben geprüft (Ordnergröße ohne die alte Fassung der Datei + neue Länge); bei Überschreitung bekommt das Modul
     /// EDQUOT und der Lauf wird abgebrochen. Geschrieben wird atomar (erst daneben, dann ersetzen). Ohne Recht „daten-ordner“: EACCES.</summary>
-    static void DefineDataApi(Linker linker, string? dir, long quota, Action exceeded)
+    static void DefineDataApi(Linker linker, string? dir, long quota, HashSet<string> written, Action exceeded)
     {
         static bool Fault(Exception e) => e is ArgumentOutOfRangeException or IndexOutOfRangeException or InvalidOperationException or ArgumentException;
         string? Resolve(Caller c, int np, int nl)
@@ -283,13 +298,15 @@ public static class ExtensionSandbox
             if (dir is null || nl is <= 0 or > 255) return null;
             var mem = c.GetMemory("memory") ?? throw new InvalidOperationException();
             var name = mem.ReadString(np, nl, Encoding.UTF8).Replace('\\', '/');
-            if (!FreeAssets.SafeRel(name) || name.Contains(':') || name.Split('/').Any(x => x is "" or "." or "..")) return null;
+            if (!NameAllowed(name)) return null;
             var root = Path.GetFullPath(dir) + Path.DirectorySeparatorChar;
             var full = Path.GetFullPath(Path.Combine(root, name));
-            if (!full.StartsWith(root, StringComparison.OrdinalIgnoreCase)) return null;
+            if (!full.StartsWith(root, StringComparison.OrdinalIgnoreCase) || full.Length >= 260) return null;
+            // N11: Ordner als Ziel, Verknüpfungen/Junctions auf dem Weg oder als Ziel → sofort ablehnen
+            if (Directory.Exists(full)) return null;
             for (var d = new DirectoryInfo(Path.GetDirectoryName(full)!); d is not null && d.FullName.Length + 1 >= root.Length; d = d.Parent)
-                if (d.Exists && d.LinkTarget is not null) return null;
-            if (File.Exists(full) && new FileInfo(full).LinkTarget is not null) return null;
+                if (d.Exists && (d.LinkTarget is not null || d.Attributes.HasFlag(FileAttributes.ReparsePoint))) return null;
+            if (File.Exists(full) && (new FileInfo(full).LinkTarget is not null || File.GetAttributes(full).HasFlag(FileAttributes.ReparsePoint))) return null;
             return full;
         }
         linker.DefineFunction(TrendoModule, "daten_schreiben", (Caller c, int np, int nl, int dp, int dl) =>
@@ -301,10 +318,18 @@ public static class ExtensionSandbox
                 if (Resolve(c, np, nl) is not { } full) return EINVAL;
                 var old = File.Exists(full) ? new FileInfo(full).Length : 0;
                 if (DirSize(dir) - old + dl > quota) { exceeded(); return EDQUOT; }
-                if (old == 0 && !File.Exists(full) && Directory.Exists(dir) && Directory.EnumerateFiles(dir, "*", SearchOption.AllDirectories).Count() >= MaxDataFiles) { exceeded(); return EDQUOT; }
+                // N11: Ordner zählen mit – neue Datei und alle neu anzulegenden Ordner zusammen höchstens MaxDataFiles Einträge
+                if (!File.Exists(full))
+                {
+                    var newDirs = 0;
+                    for (var d = new DirectoryInfo(Path.GetDirectoryName(full)!); d is not null && !d.Exists; d = d.Parent) newDirs++;
+                    var entries = Directory.Exists(dir) ? Directory.EnumerateFileSystemEntries(dir, "*", SearchOption.AllDirectories).Count() : 0;
+                    if (entries + newDirs + 1 > MaxDataFiles) { exceeded(); return EDQUOT; }
+                }
                 var bytes = c.GetMemory("memory")!.GetSpan(dp, dl).ToArray();
                 Directory.CreateDirectory(Path.GetDirectoryName(full)!);
                 AtomicFile.WriteAllBytes(full, bytes);
+                written.Add(full);
                 return 0;
             }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return EIO; }
@@ -324,12 +349,31 @@ public static class ExtensionSandbox
         });
     }
 
-    /// <summary>Nach einer Überschreitung: in diesem Lauf geänderte Dateien, größte zuerst, löschen, bis der Ordner wieder unter der Grenze ist.</summary>
-    static void TrimDataDir(string dir, long quota, DateTime since)
+    /// <summary>Befund N11: erlaubter Name im Datenordner – relativ, höchstens 255 Zeichen und 8 Ebenen, ohne Windows-Gerätenamen (auch mit Endung,
+    /// auch COM¹–³/LPT¹–³), ohne Punkt oder Leerzeichen am Ende eines Teils, ohne verbotene Zeichen.</summary>
+    public static bool NameAllowed(string name)
+    {
+        if (string.IsNullOrEmpty(name) || name.Length > MaxNameChars || !FreeAssets.SafeRel(name)) return false;
+        var parts = name.Split('/');
+        if (parts.Length > MaxNameDepth) return false;
+        foreach (var part in parts)
+        {
+            if (part is "" or "." or ".." || part.EndsWith('.') || part.EndsWith(' ') || part.StartsWith(' ')) return false;
+            if (part.Any(ch => ch < 32 || "<>:\"|?*\\".Contains(ch))) return false;
+            var stem = part.Split('.')[0].TrimEnd(' ').ToUpperInvariant();
+            if (stem is "CON" or "PRN" or "AUX" or "NUL" or "CONIN$" or "CONOUT$" or "CLOCK$") return false;
+            if (stem.Length == 4 && (stem.StartsWith("COM") || stem.StartsWith("LPT")) && "0123456789¹²³".Contains(stem[3])) return false;
+        }
+        return true;
+    }
+
+    /// <summary>Nach einer Überschreitung: nur in <b>diesem</b> Lauf geschriebene Dateien, größte zuerst, löschen, bis der Ordner wieder unter der Grenze ist
+    /// (Befund N10 – nie Dateien anderer Läufe).</summary>
+    static void TrimDataDir(string dir, long quota, HashSet<string> written)
     {
         try
         {
-            var files = new DirectoryInfo(dir).EnumerateFiles("*", SearchOption.AllDirectories).Where(f => f.LastWriteTimeUtc >= since.AddSeconds(-2)).OrderByDescending(f => f.Length).ToList();
+            var files = written.Where(File.Exists).Select(f => new FileInfo(f)).OrderByDescending(f => f.Length).ToList();
             foreach (var f in files) { if (DirSize(dir) <= quota) break; f.Delete(); }
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }

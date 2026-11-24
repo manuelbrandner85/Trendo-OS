@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -149,6 +150,10 @@ public sealed partial class ExtensionStore(string dataRoot, AuditLog? audit = nu
 {
     public string Root { get; } = Path.Combine(dataRoot, "erweiterungen");
     public string DataRoot => dataRoot;
+    /// <summary>T-0766 (Befund H1): ein alter Zwischenspeicher übersetzter Module wird beim ersten Zugriff gelöscht, nie geladen.</summary>
+    readonly bool _purged = PurgeOnce(dataRoot);
+    static readonly ConcurrentDictionary<string, bool> Purged = new(StringComparer.OrdinalIgnoreCase);
+    static bool PurgeOnce(string root) { if (Purged.TryAdd(Path.GetFullPath(root), true)) PurgeLegacyCache(root); return true; }
     AuditLog? Audit => audit;
     ApprovalGate? Gate => gate;
     public const string InstallAction = "ext.install";
@@ -207,8 +212,8 @@ public sealed partial class ExtensionStore(string dataRoot, AuditLog? audit = nu
             if (Get(m.Id) is { } cur && Extensions.CompareVersion(m.Version, cur.Manifest.Version) < 0)
                 return (null, [$"Installiert ist schon die neuere Version {cur.Manifest.Version} – {m.Version} wird nicht darübergelegt."]);
             // T-0766: Modul in der Sandbox-Prüfung (gültiges WebAssembly, nur erlaubte Importe, kein Netz) – ohne es auszuführen
-            // T-0766 (Befund M2): Form vor dem Übersetzen prüfen, dann genau einmal übersetzen und zwischenspeichern – der Lauf lädt nur noch
-            if (m.Kind == Extensions.ModuleKind && ExtensionSandbox.Precompile(File.ReadAllBytes(Path.Combine(source, m.Entry)), CacheFile(m.Id)) is { Count: > 0 } bad) return (null, bad);
+            // T-0766 (Befunde M2, M3, H1): Form vor dem Übersetzen prüfen, dann übersetzen und prüfen – nichts wird zwischengespeichert
+            if (m.Kind == Extensions.ModuleKind && ExtensionSandbox.Inspect(File.ReadAllBytes(Path.Combine(source, m.Entry))) is { Count: > 0 } bad) return (null, bad);
             var update = Get(m.Id) is not null;
             Directory.CreateDirectory(Root);
             var stage = Path.Combine(Root, ".neu-" + Guid.NewGuid().ToString("N")[..8]);
@@ -263,7 +268,7 @@ public sealed partial class ExtensionStore(string dataRoot, AuditLog? audit = nu
         {
             if (File.Exists(RightsFile(id))) File.Delete(RightsFile(id));
             var data = DataDir(id); if (Directory.Exists(data)) Directory.Delete(data, true);
-            foreach (var c in new[] { CacheFile(id), CacheFile(id) + ".sha256" }) if (File.Exists(c)) File.Delete(c);
+            PurgeLegacyCache(DataRoot);
         }
         audit?.Append("app", "ext.remove", id);
     }
