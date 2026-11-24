@@ -22,7 +22,7 @@ public static class ExtensionRights
         InputFile => "Die Datei lesen, die du beim Knopf auswählst – nur diese eine",
         ProjectWrite => "Das Ergebnis als neue Datei in dein offenes Projekt legen (nichts wird überschrieben, rückgängig machbar)",
         ProjectRead => "Alle Dateien im offenen Projekt lesen (nur lesen)",
-        DataFolder => "Einen eigenen Ordner nur für diese Erweiterung lesen und beschreiben",
+        DataFolder => $"Einen eigenen Ordner nur für diese Erweiterung lesen und beschreiben (höchstens {SandboxLimits.DefaultDataQuota >> 20} MB und {ExtensionSandbox.MaxDataFiles} Dateien)",
         _ => right,
     };
 
@@ -41,6 +41,11 @@ public sealed partial class ExtensionStore
     public string RightsFile(string id) => Path.Combine(DataRoot, "erweiterungen-rechte", id + ".json");
     /// <summary>Eigener Datenordner der Erweiterung – liegt außerhalb ihres Installationsordners, damit die Prüfsumme gleich bleibt.</summary>
     public string DataDir(string id) => Path.Combine(DataRoot, "erweiterungen-daten", id);
+    /// <summary>T-0766 (Befund M2): beim Installieren übersetztes Modul, gebunden über Prüfsummen an genau dieses Modul.</summary>
+    public string CacheFile(string id) => Path.Combine(DataRoot, "erweiterungen-cache", id + ".cwasm");
+
+    /// <summary>Befund N3: Es gibt eine Freigabe, aber für eine andere Prüfsumme (Erweiterung verändert oder Prüfverfahren erneuert) – ehrlich neu fragen.</summary>
+    public bool GrantOutdated(InstalledExt e) => Grant(e.Manifest.Id) is { } g && g.Sha256 != e.Sha256;
 
     public ExtGrant? Grant(string id)
     {
@@ -55,9 +60,11 @@ public sealed partial class ExtensionStore
         Grant(e.Manifest.Id) is { } g && g.Sha256 == e.Sha256 ? [.. g.Rights.Where(r => (e.Manifest.Permissions ?? []).Contains(r))] : [];
 
     /// <summary>Rechte freigeben – alle im Manifest erklärten. Mit ApprovalGate nur mit eigener Freigabe (Ziel: Kennung@Prüfsumme).</summary>
-    public string? GrantRights(string id, string? approvalId = null)
+    /// <param name="expectedSha">Befund N4: die Prüfsumme, die der Person angezeigt wurde. Weicht die installierte ab, wird nichts freigegeben.</param>
+    public string? GrantRights(string id, string? approvalId = null, string? expectedSha = null)
     {
         if (Get(id) is not { } e) return "Erweiterung nicht gefunden.";
+        if (expectedSha is not null && expectedSha != e.Sha256) return "Die Erweiterung hat sich seit der Anzeige geändert – nichts freigegeben. Bitte die Rechte erneut prüfen.";
         if (e.Manifest.Kind != Extensions.ModuleKind) return "Nur Funktions-Erweiterungen brauchen Rechte.";
         void Write()
         {
@@ -103,6 +110,15 @@ public sealed partial class ExtensionStore
         if (!e.Enabled) return new(false, $"„{e.Manifest.Name}“ ist ausgeschaltet.");
         if (e.Manifest.Kind != Extensions.ModuleKind || e.Manifest.Commands?.FirstOrDefault(c => c.Id == commandId) is not { } cmd) return new(false, "Diesen Befehl gibt es nicht.");
         if (Gate?.Halted == true) return new(false, "Not-Stopp ist aktiv – es läuft keine Erweiterung.");
+        try { return RunCore(e, cmd, projects, projectId, inputRel, ct, limits); }
+        // Befund N2: Datei belegt, Rechte fehlen, Platte voll – verständlich melden statt abstürzen
+        catch (Exception x) when (x is IOException or UnauthorizedAccessException)
+        { Audit?.Append("app", "ext.run.fail", $"{id} {x.GetType().Name}"); return new(false, "Datei konnte nicht gelesen oder geschrieben werden: " + FriendlyError.Say(x)); }
+    }
+
+    ExtRunResult RunCore(InstalledExt e, ExtCommand cmd, ProjectStore projects, string projectId, string inputRel, CancellationToken ct, SandboxLimits limits)
+    {
+        var id = e.Manifest.Id; var commandId = cmd.Id;
         var granted = GrantedRights(e);
         var missing = NeededRights.Where(r => !granted.Contains(r)).ToList();
         if (missing.Count > 0) return new(false, $"Rechte fehlen ({string.Join(", ", missing)}). Erst auf der Seite „Erweiterungen“ freigeben.");
@@ -117,7 +133,7 @@ public sealed partial class ExtensionStore
         var dirs = new SandboxDirs(granted.Contains(ExtensionRights.DataFolder) ? DataDir(id) : null, granted.Contains(ExtensionRights.ProjectRead) ? projects.ProjectFilesRoot(projectId) : null, false);
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(ct, Gate?.HaltToken ?? CancellationToken.None);
         Audit?.Append("app", "ext.run", $"{id} {commandId} {projectId}:{inputRel}");
-        var r = ExtensionSandbox.Run(wasm, [id, commandId], File.ReadAllBytes(input), dirs, limits, linked.Token);
+        var r = ExtensionSandbox.Run(wasm, [id, commandId], File.ReadAllBytes(input), dirs, limits, linked.Token, CacheFile(id));
         if (!r.Ok) { Audit?.Append("app", "ext.run.fail", $"{id} {r.Error}"); return new(false, r.Error); }
         var rel = UniqueRel(projects, projectId, Path.ChangeExtension(inputRel.Replace('\\', '/'), cmd.Output));
         projects.WriteBytes(projectId, rel, r.Output);
@@ -128,7 +144,7 @@ public sealed partial class ExtensionStore
     {
         var dir = Path.GetDirectoryName(rel)?.Replace('\\', '/') ?? ""; var stem = Path.GetFileNameWithoutExtension(rel); var ext = Path.GetExtension(rel);
         var cand = rel;
-        for (var n = 2; File.Exists(projects.ResolveInProject(projectId, cand)); n++) cand = (dir.Length > 0 ? dir + "/" : "") + $"{stem} ({n}){ext}";
+        for (var n = 2; projects.ResolveInProject(projectId, cand) is var full && (File.Exists(full) || Directory.Exists(full)); n++) cand = (dir.Length > 0 ? dir + "/" : "") + $"{stem} ({n}){ext}";
         return cand;
     }
 }

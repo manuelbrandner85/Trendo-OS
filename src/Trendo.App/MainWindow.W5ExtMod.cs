@@ -15,6 +15,29 @@ public partial class MainWindow
     readonly ExtensionResultUndo _extUndo = new();
     string? _extWsDir, _extWsZip; string _extWsMsg = ""; bool _extWsOpen;
 
+    /// <summary>Aufklapper im Dunkel-Gold-Look (vorher schwarze Kopfzeile aus dem Standardthema, Befund N9).</summary>
+    Expander ExtExpander(string name, string title, Control content, bool open, Action<bool>? changed)
+    {
+        var x = new Expander { Name = name, Header = new TextBlock { Text = title, Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold }, Content = content, IsExpanded = open,
+            HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch, CornerRadius = new CornerRadius(10) };
+        var head = Brush.Parse("#1F2633"); var hover = Brush.Parse("#2A3242"); var edge = Brush.Parse("#33D4A84B");
+        foreach (var (k, v) in new (string, IBrush)[] { ("ExpanderHeaderBackground", head), ("ExpanderHeaderBackgroundPointerOver", hover), ("ExpanderHeaderBackgroundPressed", hover),
+            ("ExpanderHeaderBackgroundDisabled", head), ("ExpanderHeaderBorderBrush", edge), ("ExpanderHeaderBorderBrushPointerOver", edge), ("ExpanderHeaderBorderBrushPressed", edge),
+            ("ExpanderContentBackground", Brushes.Transparent), ("ExpanderContentBorderBrush", edge), ("ExpanderHeaderForeground", Text), ("ExpanderHeaderForegroundPointerOver", Text), ("ExpanderChevronForeground", GoldText()) })
+            x.Resources[k] = v;
+        if (changed is not null) x.PropertyChanged += (_, e) => { if (e.Property == Expander.IsExpandedProperty) changed(x.IsExpanded); };
+        return x;
+    }
+
+    /// <summary>Befund N5: Haken in der Update-Rückfrage – Vorgabe: Datenordner der bisherigen Fassung wird geleert.</summary>
+    Control ExtKeepDataBox()
+    {
+        if (_extKeepData is null) return new Panel();
+        var c = new CheckBox { Name = "ext-ask-keepdata", IsChecked = _extKeepData == true, Content = new TextBlock { Text = "Datenordner der bisherigen Fassung behalten (sonst wird er beim Aktualisieren geleert)", FontSize = 12, Foreground = Text, TextWrapping = TextWrapping.Wrap } };
+        c.IsCheckedChanged += (_, _) => _extKeepData = c.IsChecked == true;
+        return c;
+    }
+
     static Control ExtButtons(Button use, Button remove, Button? extra)
     {
         var w = new WrapPanel { Margin = new Thickness(0, 6, 0, 0), Children = { use, new Border { Width = 6 }, remove } };
@@ -26,21 +49,23 @@ public partial class MainWindow
     public void ExtAskGrant(InstalledExt e)
     {
         _extShow = e.Manifest.Id;
+        var shown = e.Sha256; // Befund N4: freigegeben wird genau die angezeigte Fassung
         _extAsk = ($"Rechte für „{e.Manifest.Name}“ freigeben?",
-            "Die Erweiterung darf danach:\n" + string.Join("\n", (e.Manifest.Permissions ?? []).Select(r => "· " + ExtensionRights.Explain(r)))
-            + "\nNicht erlaubt, egal was sie versucht: Internet, andere Dateien auf dem PC, länger als 15 Sekunden oder mehr als 64 MB Speicher. Entziehen geht jederzeit.",
+            $"„{e.Manifest.Name}“ {e.Manifest.Version}, Prüfsumme {shown[..16]}… darf danach:\n" + string.Join("\n", (e.Manifest.Permissions ?? []).Select(r => "· " + ExtensionRights.Explain(r)))
+            + $"\nNicht erlaubt, egal was sie versucht: Internet, andere Dateien auf dem PC, länger als {SandboxLimits.Default.Time.TotalSeconds:0} Sekunden, mehr als {SandboxLimits.Default.MemoryBytes >> 20} MB Arbeitsspeicher, mehr als {SandboxLimits.DefaultDataQuota >> 20} MB im eigenen Ordner. Entziehen geht jederzeit.",
             "Ja, diese Rechte erlauben",
-            () => Task.FromResult(ExtGrantApproved(e.Manifest.Id)));
+            () => Task.FromResult(ExtGrantApproved(e.Manifest.Id, shown)));
         Show("erweiterungen");
     }
 
     /// <summary>Rechte mit Freigabe (Ziel: Kennung@Prüfsumme) – nur aus dem „Ja“ der Rückfrage.</summary>
-    public string ExtGrantApproved(string id)
+    public string ExtGrantApproved(string id, string shownSha)
     {
         if (Exts.Get(id) is not { } e) return "Erweiterung nicht gefunden.";
+        if (e.Sha256 != shownSha) return "Nicht freigegeben: Die Erweiterung hat sich seit der Anzeige geändert. Bitte die Rechte erneut prüfen.";
         try
         {
-            var err = Exts.GrantRights(id, ExtApprove(ExtensionStore.GrantAction, $"Rechte für Erweiterung {e.Manifest.Name} freigeben", ExtensionStore.GrantTarget(e)));
+            var err = Exts.GrantRights(id, ExtApprove(ExtensionStore.GrantAction, $"Rechte für Erweiterung {e.Manifest.Name} freigeben", ExtensionStore.GrantTarget(e)), shownSha);
             return err is null ? $"Rechte freigegeben. Der Knopf „{e.Manifest.Commands?.FirstOrDefault()?.Label}“ steht jetzt im Studio „Projekte“." : "Nicht freigegeben: " + err;
         }
         catch (ApprovalException x) { return "Nicht freigegeben: " + Trendo.Core.FriendlyError.Say(x); }
@@ -49,6 +74,9 @@ public partial class MainWindow
     void ExtModuleDetail(StackPanel detail, InstalledExt x, IReadOnlyList<string> granted)
     {
         detail.Children.Add(H("Rechte", 14));
+        // Befund N3: alte Freigabe für eine andere Prüfsumme – ehrlich sagen und neu fragen lassen
+        if (Exts.GrantOutdated(x))
+            detail.Children.Add(new TextBlock { Name = "ext-grant-outdated", Text = "Die frühere Freigabe gilt nicht mehr: Die Erweiterung wurde verändert oder Trendo prüft inzwischen genauer. Bitte die Rechte neu prüfen und freigeben.", Foreground = Brush.Parse("#F97316"), FontSize = 12, TextWrapping = TextWrapping.Wrap });
         var rights = new StackPanel { Name = "ext-rights", Spacing = 3 };
         foreach (var r in x.Manifest.Permissions ?? [])
         {
@@ -99,7 +127,14 @@ public partial class MainWindow
             var pick = new ComboBox { Name = $"ext-cmd-file-{k}", ItemsSource = match, SelectedIndex = 0, FontSize = 12, HorizontalAlignment = HorizontalAlignment.Stretch };
             var run = new Button { Name = $"ext-cmd-run-{k}", Content = c.Label, FontSize = 12, HorizontalAlignment = HorizontalAlignment.Stretch };
             ToolTip.SetTip(run, $"{e.Manifest.Name} {e.Manifest.Version} – läuft in der Sandbox, legt eine neue {c.Output}-Datei an");
-            run.Click += async (_, _) => { run.IsEnabled = false; await ExtRunInProject(e.Manifest.Id, c.Id, pick.SelectedItem as string ?? match[0]); Show("projects"); };
+            // Befund N2: Knopf ist danach immer wieder bedienbar, auch wenn etwas schiefgeht
+            run.Click += async (_, _) =>
+            {
+                run.IsEnabled = false;
+                try { await ExtRunInProject(e.Manifest.Id, c.Id, pick.SelectedItem as string ?? match[0]); }
+                catch (Exception x) when (x is InvalidOperationException or IOException or UnauthorizedAccessException or ProjectIsolationException) { _projMsg = "Nicht ausgeführt: " + Trendo.Core.FriendlyError.Say(x); }
+                finally { run.IsEnabled = true; Show("projects"); }
+            };
             right.Children.Add(pick); right.Children.Add(run);
         }
         if (_extUndo.CanUndo)
@@ -153,7 +188,8 @@ public partial class MainWindow
         var list = ExtensionWorkshop.List(_core.DataRoot);
         if (_extWsDir is null || !Directory.Exists(_extWsDir)) _extWsDir = list.FirstOrDefault();
         var newName = new TextBox { Name = "ext-ws-name", PlaceholderText = "Name der neuen Erweiterung", FontSize = 12 };
-        sp.Children.Add(new DockPanel { Children = { Dk(Act("ext-ws-new", "Aus Vorlage anlegen", () => Try(V, () => { ExtWorkshopNew(newName.Text ?? ""); Show(V); })), Avalonia.Controls.Dock.Right), newName } });
+        sp.Children.Add(newName);
+        sp.Children.Add(Act("ext-ws-new", "Aus Vorlage anlegen", () => Try(V, () => { ExtWorkshopNew(newName.Text ?? ""); Show(V); })));
         if (list.Count > 1)
         {
             var pick = new ComboBox { Name = "ext-ws-pick", ItemsSource = list.Select(Path.GetFileName).ToList(), SelectedItem = Path.GetFileName(_extWsDir), FontSize = 12 };
@@ -169,24 +205,25 @@ public partial class MainWindow
         try { m = ExtensionWorkshop.Load(_extWsDir); }
         catch (Exception x) when (x is IOException or System.Text.Json.JsonException or InvalidDataException) { sp.Children.Add(P("Beschreibung nicht lesbar: " + x.Message, Brush.Parse("#F97316"), 11.5)); return Card(sp); }
         var cmd = m.Commands?.FirstOrDefault() ?? new ExtCommand("umwandeln", "Umwandeln", [".csv"], ".md");
-        TextBox Field(string name, string label, string? text) { var t = new TextBox { Name = name, Text = text, FontSize = 12 }; sp.Children.Add(new TextBlock { Text = label, Foreground = Muted, FontSize = 11 }); sp.Children.Add(t); return t; }
+        TextBlock Label(string t) => new() { Text = t, Foreground = Muted, FontSize = 11, TextWrapping = TextWrapping.Wrap };
+        TextBox Field(string name, string label, string? text) { var t = new TextBox { Name = name, Text = text, FontSize = 12 }; sp.Children.Add(Label(label)); sp.Children.Add(t); return t; }
         var fName = Field("ext-ws-f-name", "Name", m.Name);
-        sp.Children.Add(new TextBlock { Text = $"Kennung {m.Id} · Autor {m.Author} · Lizenz {m.License}", Foreground = Muted, FontSize = 11 });
+        sp.Children.Add(Label($"Kennung {m.Id} · Autor {m.Author} · Lizenz {m.License}"));
         var fVer = Field("ext-ws-f-version", "Version (zum Aktualisieren erhöhen, z. B. 1.1.0)", m.Version);
         var fDesc = Field("ext-ws-f-desc", "Beschreibung", m.Description);
         var fCmd = Field("ext-ws-f-cmd", "Name des Knopfs im Studio „Projekte“", cmd.Label);
         var fIn = Field("ext-ws-f-in", "Nimmt Dateien mit Endung (mit Komma getrennt)", string.Join(", ", cmd.Input));
-        sp.Children.Add(new TextBlock { Text = "Ergebnis-Endung", Foreground = Muted, FontSize = 11 });
+        sp.Children.Add(Label("Ergebnis-Endung"));
         var fOut = new ComboBox { Name = "ext-ws-f-out", ItemsSource = Extensions.OutputExt, SelectedItem = Extensions.OutputExt.Contains(cmd.Output) ? cmd.Output : ".md", FontSize = 12 };
         sp.Children.Add(fOut);
-        sp.Children.Add(new TextBlock { Text = "Rechte, die die Erweiterung erbittet", Foreground = Muted, FontSize = 11 });
+        sp.Children.Add(Label("Rechte, die die Erweiterung erbittet"));
         var checks = new List<(string R, CheckBox C)>();
         foreach (var r in ExtensionRights.All)
         {
             var c = new CheckBox { Name = "ext-ws-right-" + r, IsChecked = (m.Permissions ?? []).Contains(r), Content = new TextBlock { Text = ExtensionRights.Explain(r), FontSize = 11.5, TextWrapping = TextWrapping.Wrap, Foreground = Text } };
             checks.Add((r, c)); sp.Children.Add(c);
         }
-        sp.Children.Add(new TextBlock { Text = "Quelltext (WebAssembly-Text, WAT) – liest stdin, schreibt das Ergebnis nach stdout", Foreground = Muted, FontSize = 11 });
+        sp.Children.Add(Label("Quelltext (WebAssembly-Text, WAT) – liest stdin, schreibt das Ergebnis nach stdout"));
         var src = new TextBox { Name = "ext-ws-source", Text = ExtensionWorkshop.LoadSource(_extWsDir), AcceptsReturn = true, FontFamily = Mono, FontSize = 11, Height = 240, TextWrapping = TextWrapping.NoWrap };
         sp.Children.Add(src);
         var dir = _extWsDir;
@@ -200,8 +237,16 @@ public partial class MainWindow
         // Kriterium 3: Getipptes nach der Tipp-Pause sichern – ein Absturz verliert höchstens die letzten Sekunden
         SaveOnPause(src, SaveNow); foreach (var t in new[] { fName, fVer, fDesc, fCmd, fIn }) SaveOnPause(t, SaveNow);
         var bar = new WrapPanel();
-        bar.Children.Add(Act("ext-ws-build", "Bauen und prüfen", () => Try(V, () => { SaveNow(); ExtWorkshopBuild(); Show(V); })));
-        bar.Children.Add(Act("ext-ws-export", "Als ZIP ausgeben", () => Try(V, () => { SaveNow(); if (ExtWorkshopBuild().Count == 0) ExtWorkshopExport(); Show(V); })));
+        // Befund M2: Bauen und Prüfen nicht auf dem Oberflächen-Thread
+        async Task Work(bool export)
+        {
+            SaveNow(); _extWsMsg = "Wird gebaut und geprüft …"; Show(V);
+            try { await Task.Run(() => { if (ExtWorkshopBuild().Count == 0 && export) ExtWorkshopExport(); }); }
+            catch (Exception x) when (x is IOException or UnauthorizedAccessException or InvalidDataException or System.Text.Json.JsonException) { _extWsMsg = "Nicht gebaut: " + Trendo.Core.FriendlyError.Say(x); }
+            Show(V);
+        }
+        bar.Children.Add(Act("ext-ws-build", "Bauen und prüfen", () => _ = Work(false)));
+        bar.Children.Add(Act("ext-ws-export", "Als ZIP ausgeben", () => _ = Work(true)));
         if (_extWsZip is { } zip && File.Exists(zip)) bar.Children.Add(Act("ext-ws-install", "Diese ZIP installieren …", () => ExtInstall(zip)));
         sp.Children.Add(bar);
         if (_extWsMsg.Length > 0) { var msg = P(_extWsMsg, Text, 11.5); msg.Name = "ext-ws-msg"; sp.Children.Add(msg); }

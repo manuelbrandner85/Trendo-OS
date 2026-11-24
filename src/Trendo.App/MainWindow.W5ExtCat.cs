@@ -59,42 +59,48 @@ public partial class MainWindow
         Show("erweiterungen");
     }
 
-    /// <summary>Erst fragen (Name, Version, Herkunft, Prüfsumme aus dem Katalog), dann laden, prüfen und mit Freigabe installieren.</summary>
-    public Task ExtCatalogInstall(CatalogEntry e)
+    /// <summary>Netz-Katalog (T-0766, Befund N6): erst laden und Prüfsumme prüfen, dann Rechte zeigen (aus der geladenen Datei), dann fragen und mit Freigabe installieren.
+    /// Lokaler Katalog: Datei liegt schon vor – gleich fragen.</summary>
+    public async Task ExtCatalogInstall(CatalogEntry e)
     {
         var third = ExtensionCatalog.IsRemote(e.Url);
-        _extAsk = ("Erweiterung aus dem Katalog installieren?",
-            $"„{e.Name}“ {e.Version} · Art: {e.Kind} · {e.Description}\nQuelle: {(third ? e.Url + " – Katalog von Dritten, ungeprüft" : "mitgelieferter Katalog")}\nPrüfsumme {e.Sha256[..12]}… wird vor dem Installieren geprüft."
-            // T-0766: bei Funktions-Erweiterungen die erbetenen Rechte schon vor der Installation zeigen (lokal aus der ZIP; aus dem Netz erst nach dem Laden)
-            + (e.Kind != Extensions.ModuleKind ? "" : ExtensionCatalog.LocalFile(_extCatSrcDir, e) is { } f && File.Exists(f) ? "\n" + ExtPeek(f)
-                : "\nFunktions-Erweiterung: läuft nur in der Sandbox. Ihre Rechte siehst du nach dem Laden und gibst sie in einem eigenen Schritt frei."),
-            "Ja, installieren", () => ExtCatalogInstallNow(e));
-        Show("erweiterungen");
-        return Task.CompletedTask;
-    }
-
-    async Task<string> ExtCatalogInstallNow(CatalogEntry e)
-    {
-        var file = ExtensionCatalog.LocalFile(_extCatSrcDir, e);
-        string? tmp = null;
-        if (file is null)
+        string? file = ExtensionCatalog.LocalFile(_extCatSrcDir, e);
+        if (third)
         {
-            tmp = Path.Combine(Path.GetTempPath(), "trendo-dl-" + Guid.NewGuid().ToString("N") + ".zip");
+            var tmp = Path.Combine(Path.GetTempPath(), "trendo-dl-" + Guid.NewGuid().ToString("N") + ".zip");
             try
             {
                 var bytes = await ExtFetch(e.Url, ExtensionStore.MaxBytes);
-                await File.WriteAllBytesAsync(tmp, bytes); file = tmp;
+                await File.WriteAllBytesAsync(tmp, bytes);
             }
-            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or InvalidOperationException) { return "Herunterladen fehlgeschlagen: " + Trendo.Core.FriendlyError.Say(ex); }
+            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or InvalidOperationException or IOException) { Say("Herunterladen fehlgeschlagen: " + Trendo.Core.FriendlyError.Say(ex), "erweiterungen"); return; }
+            if (!string.Equals(ExtensionCatalog.FileSha256(tmp), e.Sha256, StringComparison.OrdinalIgnoreCase)) { File.Delete(tmp); Say("Nicht installiert: Prüfsumme der geladenen Datei stimmt nicht mit dem Katalog überein.", "erweiterungen"); return; }
+            if (_extPendingFile is { } old && File.Exists(old)) File.Delete(old);
+            _extPendingFile = file = tmp;
         }
+        ExtOfferKeepData(file ?? "");
+        _extAsk = ("Erweiterung aus dem Katalog installieren?",
+            $"„{e.Name}“ {e.Version} · Art: {e.Kind} · {e.Description}\nQuelle: {(third ? e.Url + " – Katalog von Dritten, ungeprüft" : "mitgelieferter Katalog")}\nPrüfsumme {e.Sha256[..12]}… wird vor dem Installieren geprüft."
+            // T-0766: bei Funktions-Erweiterungen die erbetenen Rechte schon vor der Installation zeigen (lokal aus der ZIP; aus dem Netz erst nach dem Laden)
+            + (file is not null && File.Exists(file) ? "\n" + ExtPeek(file) : ""),
+            "Ja, installieren", () => ExtCatalogInstallNow(e, file));
+        Show("erweiterungen");
+    }
+
+    async Task<string> ExtCatalogInstallNow(CatalogEntry e, string? file)
+    {
         try
         {
-            if (!File.Exists(file)) return "Nicht installiert: Datei nicht gefunden.";
+            if (file is null || !File.Exists(file)) return "Nicht installiert: Datei nicht gefunden.";
             // Ziel der Freigabe ist die Prüfsumme der geladenen Datei – stimmt sie nicht mit dem Katalog, scheitert die Prüfung ohnehin
-            var (x, err) = ExtensionCatalog.InstallVerified(Exts, e, file, ExtApprove(ExtensionStore.InstallAction, $"Erweiterung {e.Name} {e.Version} installieren", ExtensionStore.SourceHash(file)));
-            return x is not null ? $"„{x.Manifest.Name}“ {x.Manifest.Version} installiert (Prüfsumme bestätigt)." : "Nicht installiert: " + string.Join(" ", err);
+            var approval = ExtApprove(ExtensionStore.InstallAction, $"Erweiterung {e.Name} {e.Version} installieren", ExtensionStore.SourceHash(file));
+            var keep = _extKeepData == true; _extKeepData = null;
+            var store = Exts;
+            // T-0766 (Befund M2): Prüfen und Übersetzen nicht auf dem Oberflächen-Thread
+            var (x, err) = await Task.Run(() => ExtensionCatalog.InstallVerified(store, e, file, approval, keep));
+            return ExtInstalledText(x, err, true);
         }
-        finally { if (tmp is not null && File.Exists(tmp)) File.Delete(tmp); }
+        finally { if (_extPendingFile is { } pf && pf == file) { if (File.Exists(pf)) File.Delete(pf); _extPendingFile = null; } }
     }
 
     private Control ExtCatalogCard()

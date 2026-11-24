@@ -44,7 +44,7 @@ public static class ExtensionCatalog
     /// <summary>T-0241: Weiterleitung beim Herunterladen nur zu GitHub über https (nie auf http oder fremde Server).</summary>
     public static bool RedirectAllowed(Uri target) => target.Scheme == Uri.UriSchemeHttps && target.Port == 443 && GitHubHosts.Contains(target.Host);
 
-    public static (InstalledExt? Ext, List<string> Errors) InstallVerified(ExtensionStore store, CatalogEntry e, string zip, string? approvalId = null)
+    public static (InstalledExt? Ext, List<string> Errors) InstallVerified(ExtensionStore store, CatalogEntry e, string zip, string? approvalId = null, bool keepData = false)
     {
         if (!File.Exists(zip)) return (null, ["Datei nicht gefunden."]);
         var h = FileSha256(zip);
@@ -60,7 +60,7 @@ public static class ExtensionCatalog
                 var m = JsonSerializer.Deserialize<ExtManifest>(new StreamReader(mf.Open()).ReadToEnd(), Opt);
                 if (m?.Id != e.Id || m.Version != e.Version) return (null, ["Inhalt passt nicht zum Katalogeintrag (Kennung/Version)."]);
             }
-            return store.Install(zip, approvalId);
+            return store.Install(zip, approvalId, keepData);
         }
         catch (JsonException) { return (null, ["Beschreibung in der ZIP ist ungültig."]); }
         finally { TempDir.Delete(tmp); }

@@ -6,6 +6,14 @@ namespace Trendo.App.Tests;
 
 public class W5_X04_Ui
 {
+    /// <summary>T-0766 (Befund M2): Installieren läuft außerhalb des Oberflächen-Threads – kurz warten, bis es fertig ist.</summary>
+    static void Until(Func<bool> ok, int ms = 20000)
+    {
+        var end = Environment.TickCount64 + ms;
+        while (!ok() && Environment.TickCount64 < end) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); }
+        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+    }
+
     [AvaloniaFact(DisplayName = "X-04 (UI): Beispiel installieren, im Baukasten öffnen, ausschalten sperrt Benutzen")]
     public void Use()
     {
@@ -13,7 +21,7 @@ public class W5_X04_Ui
         w.Show("erweiterungen");
         w.Find<Button>("ext-sample").Press();
         Assert.Empty(w.Exts.All()); // T-0241: erst nach der Rückfrage
-        w.Find<Button>("ext-ask-yes").Press(); Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+        w.Find<Button>("ext-ask-yes").Press(); Until(() => w.Exts.All().Count == 1 && w.TryFind<Button>("ext-use-0") is not null && w.TryFind<Button>("ext-ask-yes") is null);
         Assert.Single(w.Exts.All());
         w.Find<Button>("ext-use-0").Press();
         Assert.Equal("baukasten", w.CurrentView);
@@ -36,7 +44,7 @@ public class W5_X04_Ui
         Assert.Contains(w.GetLogicalTexts(), t => t.Contains("Not-Stopp"));
         w.Core.Approvals.Resume(Trendo.Core.Principal.LocalOwner);
         w.Find<Button>("ext-sample").Press();
-        w.Find<Button>("ext-ask-yes").Press(); Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+        w.Find<Button>("ext-ask-yes").Press(); Until(() => w.Exts.All().Count == 1 && w.TryFind<Button>("ext-use-0") is not null && w.TryFind<Button>("ext-ask-yes") is null);
         Assert.Single(w.Exts.All());
         w.Find<Button>("ext-remove-0").Press();
         Assert.Single(w.Exts.All());

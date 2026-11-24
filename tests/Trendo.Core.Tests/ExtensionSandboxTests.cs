@@ -15,7 +15,7 @@ public class T0766_ExtensionSandbox
     static byte[] Wat(string wat) => ExtensionSandbox.BuildFromText(wat).Wasm ?? Wasmtime.Module.ConvertText(wat);
     static readonly SandboxLimits Fast = SandboxLimits.Default with { Time = TimeSpan.FromSeconds(10) };
 
-    /// <summary>Versucht, <paramref name="path"/> über die vorgeöffnete Mappe fd 3 zu öffnen und auszugeben; sonst „VERWEIGERT“.</summary>
+    /// <summary>Versucht, <paramref name="path"/> über die vorgeöffnete Mappe fd 3 zum Lesen (Recht FD_READ) zu öffnen und auszugeben; sonst „VERWEIGERT“.</summary>
     static string Reader(string path) => $$"""
         (module
           (import "wasi_snapshot_preview1" "path_open" (func $open (param i32 i32 i32 i32 i32 i64 i64 i32 i32) (result i32)))
@@ -25,7 +25,7 @@ public class T0766_ExtensionSandbox
           (data (i32.const 100) "{{path.Replace("\\", "\\\\")}}")
           (data (i32.const 600) "VERWEIGERT")
           (func (export "_start")
-            (if (i32.eqz (call $open (i32.const 3) (i32.const 1) (i32.const 100) (i32.const {{Encoding.UTF8.GetByteCount(path)}}) (i32.const 0) (i64.const 0x1FFFFFFF) (i64.const 0x1FFFFFFF) (i32.const 0) (i32.const 0)))
+            (if (i32.eqz (call $open (i32.const 3) (i32.const 1) (i32.const 100) (i32.const {{Encoding.UTF8.GetByteCount(path)}}) (i32.const 0) (i64.const 2) (i64.const 2) (i32.const 0) (i32.const 0)))
               (then
                 (i32.store (i32.const 16) (i32.const 1000)) (i32.store (i32.const 20) (i32.const 4000))
                 (drop (call $read (i32.load (i32.const 0)) (i32.const 16) (i32.const 1) (i32.const 24)))

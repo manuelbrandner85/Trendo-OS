@@ -14,30 +14,45 @@ public partial class MainWindow
     private string? _extShow;
     /// <summary>T-0241: offene Rückfrage (Titel, Angaben, Knopftext, Aktion nach „Ja“).</summary>
     private (string Title, string Details, string Yes, Func<Task<string>> Run)? _extAsk;
+    /// <summary>T-0766 (Befund N5): beim Update einer Funktions-Erweiterung mit Daten – Haken „Datenordner behalten“ (null = nicht gezeigt, Vorgabe aus).</summary>
+    private bool? _extKeepData;
+    /// <summary>T-0766 (Befund N6): geladene Datei aus einem Netz-Katalog, bis die Rückfrage beantwortet ist.</summary>
+    private string? _extPendingFile;
 
     /// <summary>Freigabe für eine Erweiterungsaktion anlegen und erteilen (der Klick auf „Ja“ ist die Zustimmung). Not-Stopp → Ausnahme.</summary>
     /// B4 (T-0706): Aufruf nur aus dem „Ja“ der Rückfrage-Karte (_extAsk); freigeben darf nur die angemeldete erwachsene Person (Kern prüft die Rolle).
     string ExtApprove(string action, string description, string target) =>
         FreigabeAusRueckfrage(new Wirkung(action, target, description, description, "Ja")) ?? throw new ApprovalException(CanApprove ? "Nicht freigegeben." : NurErwachsene);
 
-    /// <summary>Angaben aus der Beschreibung einer Erweiterung (Ordner oder ZIP) – für die Rückfrage, ohne etwas zu installieren.</summary>
-    static string ExtPeek(string path)
+    /// <summary>Beschreibung einer Erweiterung (Ordner oder ZIP) lesen, ohne etwas zu installieren; null, wenn nicht lesbar.</summary>
+    static ExtManifest? ExtPeekManifest(string path)
     {
         try
         {
-            ExtManifest? m = null;
-            if (Directory.Exists(path)) m = Extensions.Validate(path).M;
-            else if (File.Exists(path) && path.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
-            {
-                using var z = System.IO.Compression.ZipFile.OpenRead(path);
-                var mf = z.Entries.FirstOrDefault(x => x.FullName == Extensions.ManifestFile || x.FullName.EndsWith("/" + Extensions.ManifestFile));
-                if (mf is not null) m = System.Text.Json.JsonSerializer.Deserialize<ExtManifest>(new StreamReader(mf.Open()).ReadToEnd(), new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-            }
+            if (Directory.Exists(path)) return Extensions.Validate(path).M;
+            if (!File.Exists(path) || !path.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)) return null;
+            using var z = System.IO.Compression.ZipFile.OpenRead(path);
+            var mf = z.Entries.FirstOrDefault(x => x.FullName == Extensions.ManifestFile || x.FullName.EndsWith("/" + Extensions.ManifestFile));
+            return mf is null || mf.Length > 1 << 20 ? null : System.Text.Json.JsonSerializer.Deserialize<ExtManifest>(new StreamReader(mf.Open()).ReadToEnd(), new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+        catch (Exception e) when (e is IOException or InvalidDataException or System.Text.Json.JsonException or UnauthorizedAccessException) { return null; }
+    }
+
+    /// <summary>Angaben aus der Beschreibung einer Erweiterung (Ordner oder ZIP) – für die Rückfrage, ohne etwas zu installieren.</summary>
+    string ExtPeek(string path)
+    {
+        try
+        {
+            var m = ExtPeekManifest(path);
             if (m is null) return $"„{Path.GetFileName(path)}“ – Beschreibung nicht lesbar; Trendo prüft beim Installieren.";
             var head = $"„{m.Name}“ {m.Version} von {m.Author} · Art: {m.Kind} · Lizenz {m.License}";
+            // T-0766 (Befund N5): ein Update sagt, welche Fassung es ersetzt
+            if (m.Id is not null && FreeAssets.SafeRel(m.Id) && Exts.Get(m.Id) is { } cur)
+                head += Extensions.CompareVersion(m.Version, cur.Manifest.Version) < 0 ? $"\nÄlter als die installierte Fassung {cur.Manifest.Version} – wird nicht installiert."
+                    : $"\nErsetzt die installierte Fassung {cur.Manifest.Version}." + (cur.Manifest.Kind == Extensions.ModuleKind ? " Ihre Rechte müssen danach neu freigegeben werden." : "");
             // T-0766: Rechte vor der Installation verständlich zeigen – freigegeben werden sie erst danach in einem eigenen Schritt
             return m.Kind != Extensions.ModuleKind ? head + "\nEnthält nur Daten (Vorlagen, Listen, Links), keine Programme."
-                : head + "\nFunktions-Erweiterung: läuft nur in der Sandbox – ohne Internet, ohne Zugriff auf andere Dateien, mit Zeit- und Speichergrenze.\nMöchte diese Rechte (freigeben erst nach dem Installieren, in einem eigenen Schritt):\n"
+                : head + "\nFunktions-Erweiterung: läuft nur in der Sandbox – ohne Internet, ohne Zugriff auf andere Dateien, mit Zeit-, Speicher- und Ordnergrenze (15 s, 64 MB, eigener Ordner höchstens 100 MB).\nMöchte diese Rechte (freigeben erst nach dem Installieren, in einem eigenen Schritt):\n"
                     + string.Join("\n", (m.Permissions ?? []).Select(r => "· " + ExtensionRights.Explain(r)));
         }
         catch (Exception e) when (e is IOException or InvalidDataException or System.Text.Json.JsonException or UnauthorizedAccessException) { return $"„{Path.GetFileName(path)}“ – {e.Message}"; }
@@ -48,7 +63,12 @@ public partial class MainWindow
     {
         if (_extAsk is not { } a) return;
         _extAsk = null;
-        if (!yes) { Say("Abgebrochen – nichts verändert.", "erweiterungen"); return; }
+        if (!yes)
+        {
+            if (_extPendingFile is { } pf && File.Exists(pf)) File.Delete(pf);
+            _extPendingFile = null; _extKeepData = null;
+            Say("Abgebrochen – nichts verändert.", "erweiterungen"); return;
+        }
         string msg;
         try { msg = await a.Run(); }
         catch (ApprovalException e) { msg = "Nicht ausgeführt: " + Trendo.Core.FriendlyError.Say(e); }
@@ -69,16 +89,34 @@ public partial class MainWindow
     {
         if (!File.Exists(path) && !Directory.Exists(path)) { Say("Nicht installiert: Ordner oder ZIP nicht gefunden.", "erweiterungen"); return; }
         var hash = ExtensionStore.SourceHash(path);
+        ExtOfferKeepData(path);
         _extAsk = ("Erweiterung installieren?", $"{ExtPeek(path)}\nQuelle: {path}\nPrüfsumme {hash[..Math.Min(12, hash.Length)]}…", "Ja, installieren",
-            () =>
+            async () =>
             {
-                var (e, err) = Exts.Install(path, ExtApprove(ExtensionStore.InstallAction, "Erweiterung installieren: " + Path.GetFileName(path), hash));
-                if (e is not null) _extShow = e.Manifest.Id;
-                return Task.FromResult(e is null ? "Nicht installiert: " + string.Join(" ", err)
-                    : e.Manifest.Kind == Extensions.ModuleKind ? $"„{e.Manifest.Name}“ {e.Manifest.Version} installiert. Noch ohne Rechte – „Rechte prüfen und freigeben“ ist der nächste Schritt."
-                    : $"„{e.Manifest.Name}“ {e.Manifest.Version} installiert.");
+                var approval = ExtApprove(ExtensionStore.InstallAction, "Erweiterung installieren: " + Path.GetFileName(path), hash);
+                var keep = _extKeepData == true; _extKeepData = null;
+                var store = Exts;
+                // T-0766 (Befund M2): Prüfen und Übersetzen nicht auf dem Oberflächen-Thread
+                var (e, err) = await Task.Run(() => store.Install(path, approval, keep));
+                return ExtInstalledText(e, err, false);
             });
         Show("erweiterungen");
+    }
+
+    /// <summary>Befund N5: Haken „Datenordner behalten“ nur anbieten, wenn ein Update Daten der bisherigen Fassung vorfindet.</summary>
+    void ExtOfferKeepData(string path)
+    {
+        _extKeepData = ExtPeekManifest(path) is { Id: { } id } m && FreeAssets.SafeRel(id) && Exts.Get(id) is not null
+            && Directory.Exists(Exts.DataDir(id)) && Directory.EnumerateFileSystemEntries(Exts.DataDir(id)).Any() ? false : null;
+    }
+
+    /// <summary>Befund N6: Erfolgsmeldung nennt bei Funktions-Erweiterungen den nächsten Schritt (Rechte freigeben).</summary>
+    string ExtInstalledText(InstalledExt? e, List<string> err, bool checksum)
+    {
+        if (e is null) return "Nicht installiert: " + string.Join(" ", err);
+        _extShow = e.Manifest.Id;
+        var done = $"„{e.Manifest.Name}“ {e.Manifest.Version} installiert{(checksum ? " (Prüfsumme bestätigt)" : "")}.";
+        return e.Manifest.Kind == Extensions.ModuleKind ? done + " Noch ohne Rechte – „Rechte prüfen und freigeben“ ist der nächste Schritt." : done;
     }
 
     public void ExtUse(InstalledExt e)
@@ -110,12 +148,13 @@ public partial class MainWindow
             left.Children.Add(Card(new StackPanel { Name = "ext-ask", Spacing = 6, Children = {
                 new TextBlock { Text = ask.Title, Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
                 new TextBlock { Text = ask.Details, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap },
+                ExtKeepDataBox(),
                 new WrapPanel { Children = { Act("ext-ask-yes", ask.Yes, () => _ = ExtAnswer(true), true), Act("ext-ask-no", "Abbrechen", () => _ = ExtAnswer(false)) } } } }));
         var path = new TextBox { Name = "ext-path", PlaceholderText = "Ordner oder ZIP der Erweiterung" };
         left.Children.Add(new StackPanel { Spacing = 6, Children = { path, new WrapPanel { Children = { Act("ext-install", "Installieren", () => ExtInstall(path.Text?.Trim('"', ' ') ?? ""), true),
             new Border { Width = 6 }, Act("ext-sample", "Beispiel ausprobieren", () => ExtInstall(ExtensionSamples.WriteSample(Path.Combine(_core.DataRoot, "beispiele")))) } } } });
-        left.Children.Add(new Expander { Name = "ext-werkstatt", Header = new TextBlock { Text = "Eigene Erweiterung bauen", Foreground = Text, FontSize = 12.5 }, Content = ExtWorkshopCard(), IsExpanded = _extWsOpen, HorizontalAlignment = HorizontalAlignment.Stretch });
-        left.Children.Add(new Expander { Name = "ext-catalog", Header = new TextBlock { Text = "Katalog (geprüfte Erweiterungen)", Foreground = Text, FontSize = 12.5 }, Content = ExtCatalogCard(), HorizontalAlignment = HorizontalAlignment.Stretch });
+        left.Children.Add(ExtExpander("ext-werkstatt", "Eigene Erweiterung bauen", ExtWorkshopCard(), _extWsOpen, v => _extWsOpen = v));
+        left.Children.Add(ExtExpander("ext-catalog", "Katalog (geprüfte Erweiterungen)", ExtCatalogCard(), false, null));
         left.Children.Add(H($"Installiert ({all.Count})", 13));
         if (all.Count == 0) left.Children.Add(P("Noch keine Erweiterungen installiert. „Beispiel ausprobieren“ zeigt, wie es geht.", Muted, 12));
         var sel = all.FirstOrDefault(e => e.Manifest.Id == _extShow) ?? all.FirstOrDefault();

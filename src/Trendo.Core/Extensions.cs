@@ -125,14 +125,18 @@ public static partial class Extensions
         };
     }
 
+    /// <summary>Prüfsumme eines Erweiterungsordners. T-0766 (Befund N3): eindeutig – vor Name und Inhalt jeder Datei steht ihre Länge, davor eine Kennung
+    /// des Verfahrens („a“+„bc“ und „ab“+„c“ ergeben nicht mehr dasselbe). Ältere Freigaben, die an die frühere Prüfsumme gebunden waren, gelten dadurch
+    /// nicht mehr – die Oberfläche sagt das und fragt neu (<see cref="ExtensionStore.GrantOutdated"/>).</summary>
     public static string Hash(string dir)
     {
         using var sha = SHA256.Create();
+        var tag = "trendo-ext-hash-v2\n"u8.ToArray(); sha.TransformBlock(tag, 0, tag.Length, null, 0);
         foreach (var f in Directory.EnumerateFiles(dir, "*", SearchOption.AllDirectories).Where(f => Path.GetFileName(f) != ".aus").OrderBy(f => Path.GetRelativePath(dir, f), StringComparer.Ordinal))
         {
             var name = System.Text.Encoding.UTF8.GetBytes(Path.GetRelativePath(dir, f).Replace('\\', '/'));
-            sha.TransformBlock(name, 0, name.Length, null, 0);
-            var b = File.ReadAllBytes(f); sha.TransformBlock(b, 0, b.Length, null, 0);
+            var b = File.ReadAllBytes(f);
+            foreach (var part in new[] { BitConverter.GetBytes((long)name.Length), name, BitConverter.GetBytes((long)b.Length), b }) sha.TransformBlock(part, 0, part.Length, null, 0);
         }
         sha.TransformFinalBlock([], 0, 0);
         return Convert.ToHexString(sha.Hash!).ToLowerInvariant();
@@ -159,17 +163,18 @@ public sealed partial class ExtensionStore(string dataRoot, AuditLog? audit = nu
         File.Exists(source) ? ExtensionCatalog.FileSha256(source) : Directory.Exists(source) ? Extensions.Hash(source) : "";
 
     /// <summary>Installiert aus Ordner oder .zip – mit Freigabe, wenn ein ApprovalGate gesetzt ist.</summary>
-    public (InstalledExt? Ext, List<string> Errors) Install(string source, string? approvalId = null)
+    /// <param name="keepData">T-0766 (Befund N5): bei einem Update den Datenordner der bisherigen Fassung behalten – nur nach eigener Bestätigung, sonst wird er geleert.</param>
+    public (InstalledExt? Ext, List<string> Errors) Install(string source, string? approvalId = null, bool keepData = false)
     {
-        if (gate is null) return InstallCore(source);
+        if (gate is null) return InstallCore(source, keepData);
         if (approvalId is null) return (null, ["Installieren braucht deine Freigabe."]);
-        try { return gate.Execute(approvalId, InstallAction, SourceHash(source), () => InstallCore(source)); }
+        try { return gate.Execute(approvalId, InstallAction, SourceHash(source), () => InstallCore(source, keepData)); }
         catch (ApprovalException e) { return (null, [e.Message]); }
     }
 
     /// <summary>Installiert aus Ordner oder .zip. ZIP-Einträge, die aus dem Ordner ausbrechen, werden abgewiesen.
     /// Der Austausch ist atomar: neue Fassung erst vollständig daneben, dann umbenennen; die alte bleibt bis zum Erfolg erhalten.</summary>
-    (InstalledExt? Ext, List<string> Errors) InstallCore(string source)
+    (InstalledExt? Ext, List<string> Errors) InstallCore(string source, bool keepData = false)
     {
         var tmp = Path.Combine(Path.GetTempPath(), "trendo-ext-" + Guid.NewGuid().ToString("N"));
         try
@@ -202,7 +207,9 @@ public sealed partial class ExtensionStore(string dataRoot, AuditLog? audit = nu
             if (Get(m.Id) is { } cur && Extensions.CompareVersion(m.Version, cur.Manifest.Version) < 0)
                 return (null, [$"Installiert ist schon die neuere Version {cur.Manifest.Version} – {m.Version} wird nicht darübergelegt."]);
             // T-0766: Modul in der Sandbox-Prüfung (gültiges WebAssembly, nur erlaubte Importe, kein Netz) – ohne es auszuführen
-            if (m.Kind == Extensions.ModuleKind && ExtensionSandbox.Inspect(File.ReadAllBytes(Path.Combine(source, m.Entry))) is { Count: > 0 } bad) return (null, bad);
+            // T-0766 (Befund M2): Form vor dem Übersetzen prüfen, dann genau einmal übersetzen und zwischenspeichern – der Lauf lädt nur noch
+            if (m.Kind == Extensions.ModuleKind && ExtensionSandbox.Precompile(File.ReadAllBytes(Path.Combine(source, m.Entry)), CacheFile(m.Id)) is { Count: > 0 } bad) return (null, bad);
+            var update = Get(m.Id) is not null;
             Directory.CreateDirectory(Root);
             var stage = Path.Combine(Root, ".neu-" + Guid.NewGuid().ToString("N")[..8]);
             var backup = Path.Combine(Root, ".alt-" + Guid.NewGuid().ToString("N")[..8]);
@@ -215,6 +222,8 @@ public sealed partial class ExtensionStore(string dataRoot, AuditLog? audit = nu
                 if (Directory.Exists(backup)) Directory.Delete(backup, true);
             }
             finally { if (Directory.Exists(stage)) Directory.Delete(stage, true); }
+            // T-0766 (Befund N5): beim Update bleibt der Datenordner nur nach eigener Bestätigung
+            if (update && !keepData && Directory.Exists(DataDir(m.Id))) { Directory.Delete(DataDir(m.Id), true); audit?.Append("app", "ext.data.clear", m.Id); }
             audit?.Append("app", "ext.install", $"{m.Id} {m.Version}");
             return (Get(m.Id), []);
         }
@@ -250,7 +259,12 @@ public sealed partial class ExtensionStore(string dataRoot, AuditLog? audit = nu
     {
         var d = Path.Combine(Root, id); if (Directory.Exists(d)) Directory.Delete(d, true);
         // T-0766: mit der Erweiterung gehen auch ihre Rechte und ihr eigener Datenordner
-        if (FreeAssets.SafeRel(id)) { if (File.Exists(RightsFile(id))) File.Delete(RightsFile(id)); var data = DataDir(id); if (Directory.Exists(data)) Directory.Delete(data, true); }
+        if (FreeAssets.SafeRel(id))
+        {
+            if (File.Exists(RightsFile(id))) File.Delete(RightsFile(id));
+            var data = DataDir(id); if (Directory.Exists(data)) Directory.Delete(data, true);
+            foreach (var c in new[] { CacheFile(id), CacheFile(id) + ".sha256" }) if (File.Exists(c)) File.Delete(c);
+        }
         audit?.Append("app", "ext.remove", id);
     }
     public string EntryText(InstalledExt e) => File.ReadAllText(Path.Combine(e.Dir, e.Manifest.Entry));

@@ -17,8 +17,8 @@ Bestehende Daten-Arten `seite`, `vorhaben`, `links`, `text` bleiben gültig und 
 
 ## Tests (gezielt, kein Volltest)
 - `dotnet build Trendo.sln -c Release`: 0 Fehler.
-- Core: `--filter T0766|W5_X04|SystemPages|Sys13|NoFixedUser` → **36 bestanden, 0 Fehler** (`reports/T-0766/core-tests.log`).
-- App: `T0766ErweiterungenUi` 2/2, `W5_X04_Ui` 2/2, `W5_X04_CatalogUi` 1/1, `StyleAndBrand_Ui` 2/2, `Projektmappe_Ui` 1/1, `T0726Offen_Ui` 4/4 → alle grün (`reports/T-0766/app-tests.log`).
+- Core: `--filter T0766|W5_X04|SystemPages|Sys13|NoFixedUser` → **42 bestanden, 0 Fehler** nach fix1 (`reports/T-0766/core-tests.log`, neu erzeugt).
+- App: `T0766ErweiterungenUi` 3/3 (nach fix1), `W5_X04_Ui` 2/2, `W5_X04_CatalogUi` 1/1, `StyleAndBrand_Ui` 2/2, `Projektmappe_Ui` 1/1, `T0726Offen_Ui` 4/4 → alle grün (`reports/T-0766/app-tests.log`).
 - Rot-Grün: auf `main` kompilieren die neuen Tests nicht (Typen `ExtensionSandbox`, `ExtensionModuleSample`, `ExtensionWorkshop`, `ExtensionResultUndo` fehlen), Katalog-Test erwartet 4 statt 3 Einträge.
 - Bildprüfung: `reports/T-0766/erweiterungen-modul-werkstatt.png`, `projekte-knopf.png` (Render mit neuer Hilfe `TRENDO_EXT_DEMO=offen|werkstatt|projekt`).
 - Belege mit SHA-256: `reports/T-0766/SHA256SUMS.txt`. Export-ZIP mit Windows `tar.exe` (bsdtar) gelesen und entpackt, Modul-Prüfsumme = Manifest.
@@ -30,6 +30,24 @@ Bestehende Daten-Arten `seite`, `vorhaben`, `links`, `text` bleiben gültig und 
 4. KI-Fachaufgabe im Dokument, rückgängig: **FEHLT (bewusst)** – Vorgabe: KI entwirft nur, Installation bleibt beim Nutzer.
 5. Test vom Klick bis zur echten Datei: **VOLLWERTIG** (`T0766ErweiterungenUi`, echte Sandbox).
 6. Einfach/Profi, Tastenkürzel, Rechtsklick, Ziehen: **NICHT GETESTET / FEHLT** – keine neuen Kürzel oder Rechtsklick-Menüs.
+
+## Gegenprüfung fix1 (unabhängige Prüfung von 94847f78d)
+
+| Befund | Änderung | Test (echte Wasmtime-Laufzeit) |
+|---|---|---|
+| M1 Datenordner ohne Grenze | Datenordner ist über WASI nur noch **lesbar** (kein Anlegen, kein `fd_filestat_set_size`/`fd_allocate`/Schreiben). Schreiben nur über die Trendo-Funktionen `trendo.daten_schreiben`/`trendo.daten_loeschen`; Grenze 100 MB und 1000 Dateien wird **vor** jedem Schreiben geprüft, Überschreitung → Fehlernummer + Abbruch des Laufs; Rückstopp räumt im Lauf geänderte Dateien, bis der Ordner unter der Grenze ist. Grenze steht im Rechte-Text. (Ein Umhüllen der WASI-Funktionen ist nicht möglich: von außen aufgerufene WASI-Funktionen finden den Speicher des Moduls nicht – im Versuch belegt.) | `T0766_Gegenpruefung.M1_data_quota` (Schreibschleife endet bei ≤ 4 MB Testgrenze, alte Daten bleiben, Gegenprobe, Ausbruch per „../“, ohne Recht EACCES) |
+| M2 Übersetzen ohne Grenze | Formprüfung **vor** dem Übersetzen: ≤ 4 MB, ≤ 20 000 Funktionen, ≤ 200 Importe, ≤ 1 Speicher. Übersetzt wird einmal beim Installieren, Ergebnis in `erweiterungen-cache/<id>.cwasm` mit Prüfsummen-Datei (übersetzt + Modul); der Lauf lädt nur bei passenden Prüfsummen, sonst neu (Wasmtime-Fassung). Installieren, Katalog-Installieren und Werkstatt-Bauen laufen per `Task.Run`. Feste Ausstattung ohne GC/Ausnahmen/Mehrspeicher/64-Bit-Speicher/Komponenten. | `M2_shape_and_cache` (25 000 Funktionen und > 4 MB in < 3 s abgewiesen, zwei Speicher abgewiesen, Cache-Manipulation erkannt), UI-Tests warten jetzt auf das Ende |
+| N1 stderr | Text gekürzt auf 200 Zeichen, Steuer-/Formatzeichen entfernt, „Text der Erweiterung: „…““ | `N1_stderr` |
+| N2 RunCommand | IO-/Zugriffsfehler → verständliches Ergebnis; `UniqueRel` umgeht auch Ordner; Knopf in `finally` wieder bedienbar | `N2_N4_N5` (Datei gesperrt, Ordner `kunden.md`) |
+| N3 Ordner-Hash | Verfahren v2 mit Längen vor Name und Inhalt; alte Freigabe wird erkannt („gilt nicht mehr … neu freigeben“), nichts gilt stillschweigend weiter | `N3_hash` |
+| N4 Freigabe an Prüfsumme | Rückfrage zeigt Fassung + Prüfsumme; Klick vergleicht (App und Kern) | `N2_N4_N5`, UI `Netzkatalog_Update_Pruefsumme` |
+| N5 Update | Rückfrage nennt „Ersetzt die installierte Fassung X“ (und ältere wird abgewiesen); Datenordner nur mit eigenem Haken „behalten“, Vorgabe leeren | `N2_N4_N5`, UI-Test |
+| N6 Netz-Katalog | erst laden + Prüfsumme prüfen, dann Rechte (ExtPeek) zeigen, dann Rückfrage; Erfolgsmeldung nennt „Noch ohne Rechte …“ | UI `Netzkatalog_Update_Pruefsumme` (Laden mit `ExtFetchOverride` ersetzt) |
+| N7 Zeitgeber | `IncrementEpoch` gegen freigegebene Engine abgesichert, Zeitgeber wird mit Warte-Handle beendet, Abmeldung des Not-Stopps vor Freigabe | `N7_timer_race` (24 parallele Kurzläufe) |
+| N8 Meldungen | zwei Speicher, Speichergrenze, Laufzeitspeicher, „abgebrochen“ vs. „ließ sich nicht starten“ getrennt | `M2_shape_and_cache`, bestehende Feindtests |
+| N9 Beleg/Bild | Logs neu, Anonymisierung `C:\Users\<user>`; Werkstatt-Texte brechen um, Aufklapper im Dunkel-Gold-Look; Bild angesehen | `reports/T-0766/*.png`, `SHA256SUMS.txt` |
+
+Offen aus der Gegenprüfung: Ein Kindprozess mit Job-Objekt (harte Speicher-/Zeitgrenze auch für das Übersetzen selbst) ist **nicht** umgesetzt – nicht klein machbar; das Übersetzen bleibt durch die Formgrenzen beschränkt, ist aber selbst nicht per Not-Stopp unterbrechbar. Die Anzahl leerer Ordner über `path_create_directory` entfällt (Datenordner nur lesbar).
 
 ## Nicht geprüft
 - Linux-/Pi-Edition (Wasmtime liefert `linux-x64`/`linux-arm64`, nicht gestartet); Setup-Größe (+~21 MB `wasmtime.dll` für win-x64) nicht im echten Setup gemessen.
