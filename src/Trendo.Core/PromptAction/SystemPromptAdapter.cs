@@ -344,15 +344,16 @@ static class PageFields
 
     public static AdapterOutcome Write(AdapterCall call)
     {
-        var page = Build(call.Parameters);
+        var jsonRel = "baukasten/seite.json";
+        var page = Merge(ExistingPage(call, jsonRel), Build(call.Parameters));
         var html = page.ToHtml();
         var htmlRel = FieldKit.Slot("baukasten", call.Version, "seite.html");
-        var jsonRel = "baukasten/seite.json";
-        var json = JsonSerializer.Serialize(page, new JsonSerializerOptions { WriteIndented = true });
+        var json = page.ToJson(); // T-0765: dieselbe Form wie der Baukasten selbst (einfache Seite Fassung 1, App Fassung 2)
         call.Projects.WriteFile(call.ProjectId, htmlRel, html);
         call.Projects.WriteFile(call.ProjectId, jsonRel, json);
         var htmlRead = call.Projects.ReadFile(call.ProjectId, htmlRel);
-        var again = JsonSerializer.Deserialize<SitePage>(call.Projects.ReadFile(call.ProjectId, jsonRel));
+        SitePage? again;
+        try { again = SitePage.FromJson(call.Projects.ReadFile(call.ProjectId, jsonRel)); } catch (Exception e) when (e is JsonException or InvalidDataException) { again = null; }
         var htmlOk = htmlRead == html && html.StartsWith("<!doctype html>\n", StringComparison.Ordinal) && html.EndsWith("</html>\n", StringComparison.Ordinal);
         var jsonOk = again is not null && again.Title == page.Title && again.Accent == page.Accent && again.Blocks.Count == page.Blocks.Count;
         var warnings = new List<string> { "Es wurde nichts veröffentlicht." };
@@ -382,8 +383,52 @@ static class PageFields
         if (button.Length > 0) page.Blocks.Add(new Block("button", button, FieldKit.Text(parameters, "link")));
         var art = FieldKit.Text(parameters, "art");
         if (art.Length > 0) page.Blocks.Add(new Block("p", "Art: " + art));
+        // T-0765: Datensammlungen („Daten: Einkäufe: Artikel*, Menge (Zahl), Preis (Zahl)“) → Anzahl, Summe und Liste auf der ersten Seite,
+        // je Sammlung eine Seite mit Eingabe-Formular, Knöpfe hin und zurück.
+        foreach (var spec in FieldKit.Text(parameters, "daten", "sammlung").Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            var cut = spec.IndexOf(':');
+            var c = page.AddCollection(cut > 0 ? spec[..cut].Trim() : spec, SitePage.ParseFields(cut > 0 ? spec[(cut + 1)..] : ""));
+            page.Blocks.Add(new Block("stat", "Anzahl " + c.Name, "anzahl", c.Id));
+            if (c.Fields.FirstOrDefault(f => f.Type == "zahl" && f.Id != "menge") is { } sum) page.Blocks.Add(new Block("stat", "Summe " + sum.Label, "summe:" + sum.Id, c.Id));
+            page.Blocks.Add(new Block("datalist", "Noch keine " + c.Name + ".", "", c.Id));
+            var form = page.AddPage(c.Name + " eintragen");
+            form.Blocks.Add(new Block("form", "Speichern", "", c.Id));
+            form.Blocks.Add(new Block("button", "Zurück", "seite:" + page.Pages[0].Id));
+            page.Blocks.Add(new Block("button", c.Name + " eintragen", "seite:" + form.Id));
+        }
+        // T-0765: weitere Seiten („Seite: Über uns“, mehrfach möglich) mit Knopf zurück zur ersten Seite
+        foreach (var extra in FieldKit.Text(parameters, "seite", "seiten").Split(['\n', ','], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            var s = page.AddPage(extra);
+            s.Blocks.Add(new Block("button", "Zurück", "seite:" + page.Pages[0].Id));
+            page.Blocks.Add(new Block("button", extra, "seite:" + s.Id));
+        }
         page.Blocks.Add(new Block("p", "Es wurde nichts veröffentlicht."));
         return page;
+    }
+
+    /// <summary>T-0765: vorhandene App des Projekts (oder null, wenn keine, unlesbar oder aus einer neueren Fassung).</summary>
+    static SitePage? ExistingPage(AdapterCall call, string rel)
+    {
+        try
+        {
+            var full = call.Projects.ResolveInProject(call.ProjectId, rel);
+            return File.Exists(full) ? SitePage.FromJson(call.Projects.ReadFile(call.ProjectId, rel)) : null;
+        }
+        catch (Exception e) when (e is ProjectIsolationException or IOException or JsonException or InvalidDataException) { return null; }
+    }
+
+    /// <summary>T-0765: Ein einfacher KI-Text (eine Seite, keine Daten) ersetzt in einer vorhandenen App nur deren erste Seite – weitere Seiten und
+    /// Datensammlungen bleiben. Baut die KI selbst eine App (Seiten/Daten), gilt ihr Ergebnis als Ganzes; die Kennung der App bleibt, damit im Browser
+    /// gespeicherte Einträge erhalten bleiben. Rückgängig: im Baukasten (die Hülle macht aus der geänderten seite.json einen Schritt).</summary>
+    public static SitePage Merge(SitePage? existing, SitePage built)
+    {
+        if (existing is null || !existing.IsApp) return built;
+        if (built.IsApp) { built.AppId = existing.AppId; return built; }
+        existing.Title = built.Title; existing.Accent = built.Accent;
+        existing.Pages[0].Blocks = built.Blocks;
+        return existing;
     }
 
     static bool Hex(string color) =>

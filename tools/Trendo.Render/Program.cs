@@ -494,6 +494,13 @@ else if (shot == "seite")
     win.Show(page);
     if (win.Windows.Active is { Maximized: false } pageWin) win.Windows.ToggleMaximize(pageWin.Id);
     win.Show(page);
+    if (Environment.GetEnvironmentVariable("TRENDO_BUILDER_DEMO") is { Length: > 0 } builderDemo && page == "baukasten") // T-0765: App-Baukasten mit Vorlage „Einkaufsliste“ (liste | formular | text)
+    {
+        win.BuilderUseTemplate("einkaufsliste");
+        if (builderDemo == "formular") { win.BuilderGoTo(1); win.BuilderSel = 2; win.Show(page); }
+        else if (builderDemo == "text") win.BuilderEditInline(0);
+        else { win.BuilderSel = 2; win.Show(page); }
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_3D_DEMO") is "bearbeiten") // T-0691: Bearbeitungsmodus zeigen (Würfel, Flächen gewählt und extrudiert)
     {
         win.Studio3DAddShape("cube"); win.Studio3DEditMode(true); win.Studio3DSelectMode("flaeche");

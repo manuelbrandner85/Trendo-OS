@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="de">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https: http: file:; style-src 'unsafe-inline'; script-src 'sha256-p58hBOLnzeZNV5dODpI0McomCcTrpUlq+KmRT7POT/s='; form-action 'none'; base-uri 'none'"><title>Einkaufsliste</title>
+<style>body{font-family:system-ui,sans-serif;max-width:760px;margin:0 auto;padding:2rem 1rem;line-height:1.55;color:#1b2333}h1{color:#C8A04A}a.btn{display:inline-block;background:#C8A04A;color:#fff;padding:.6rem 1.2rem;border-radius:8px;text-decoration:none}img{max-width:100%;border-radius:10px}hr{border:0;border-top:1px solid #dde}</style>
+<style>nav.t-nav{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem}nav.t-nav a{padding:.35rem .8rem;border-radius:999px;border:1px solid #d5dae3;color:#1b2333;text-decoration:none}nav.t-nav a[aria-current]{background:#C8A04A;border-color:#C8A04A;color:#fff}section[hidden]{display:none}form.t-form{display:grid;gap:.7rem;max-width:420px}form.t-form label{display:grid;gap:.2rem;font-weight:600}form.t-form input{font:inherit;padding:.55rem .7rem;border:1px solid #c5ccd8;border-radius:8px}button.btn{font:inherit;background:#C8A04A;color:#fff;border:0;padding:.6rem 1.2rem;border-radius:8px;cursor:pointer;justify-self:start}.t-fehler{margin:0;color:#8a4b00}ul.t-liste{list-style:none;padding:0;display:grid;gap:.4rem}ul.t-liste li{display:flex;justify-content:space-between;gap:.6rem;align-items:center;padding:.55rem .8rem;border:1px solid #e3e7ee;border-radius:8px}ul.t-liste li.t-leer{color:#6b7385;border-style:dashed}button.t-weg{font:inherit;font-size:.85rem;background:none;border:1px solid #c5ccd8;border-radius:6px;padding:.2rem .6rem;cursor:pointer}p.t-wert{display:flex;justify-content:space-between;max-width:420px;padding:.5rem .8rem;background:#f5f6f9;border-radius:8px}p.t-wert strong{font-size:1.2rem}</style>
+</head>
+<body>
+<nav class="t-nav" aria-label="Seiten"><a href="#seite-liste">Liste</a><a href="#seite-neu">Hinzuf&#252;gen</a></nav>
+<section id="seite-liste" data-seite="liste" aria-label="Liste">
+<h1>Einkaufsliste</h1>
+<p class="t-wert" data-sammlung="einkaeufe" data-mass="anzahl"><span>Noch zu kaufen</span> <strong>0</strong></p>
+<p class="t-wert" data-sammlung="einkaeufe" data-mass="summe:preis"><span>Summe in €</span> <strong>0</strong></p>
+<ul class="t-liste" data-sammlung="einkaeufe" data-leer="Noch nichts auf der Liste – tippe auf „Etwas hinzuf&#252;gen“."><li class="t-leer">Noch nichts auf der Liste – tippe auf „Etwas hinzuf&#252;gen“.</li></ul>
+<p><a class="btn" href="#seite-neu">Etwas hinzuf&#252;gen</a></p>
+</section>
+<section id="seite-neu" data-seite="neu" aria-label="Hinzuf&#252;gen">
+<h1>Etwas hinzuf&#252;gen</h1>
+<p>Felder mit * m&#252;ssen ausgef&#252;llt sein.</p>
+<form class="t-form" data-sammlung="einkaeufe" novalidate>
+<label>Artikel *<input name="artikel" type="text" required></label>
+<label>Menge<input name="menge" type="number" step="any" inputmode="decimal"></label>
+<label>Preis (€)<input name="preis" type="number" step="any" inputmode="decimal"></label>
+<p class="t-fehler" role="alert" hidden></p>
+<button type="submit" class="btn">Auf die Liste</button>
+</form>
+<p><a class="btn" href="#seite-liste">Zur Liste</a></p>
+</section>
+<script type="application/json" id="trendo-app">{"Version":2,"Title":"Einkaufsliste","Accent":"#C8A04A","AppId":"06d694aed0f5","Pages":[{"Id":"liste","Name":"Liste","Blocks":[{"Kind":"h1","Text":"Einkaufsliste","Url":""},{"Kind":"stat","Text":"Noch zu kaufen","Url":"anzahl","Data":"einkaeufe"},{"Kind":"stat","Text":"Summe in \u20AC","Url":"summe:preis","Data":"einkaeufe"},{"Kind":"datalist","Text":"Noch nichts auf der Liste \u2013 tippe auf \u201EEtwas hinzuf\u00FCgen\u201C.","Url":"","Data":"einkaeufe"},{"Kind":"button","Text":"Etwas hinzuf\u00FCgen","Url":"seite:neu"}]},{"Id":"neu","Name":"Hinzuf\u00FCgen","Blocks":[{"Kind":"h1","Text":"Etwas hinzuf\u00FCgen","Url":""},{"Kind":"p","Text":"Felder mit * m\u00FCssen ausgef\u00FCllt sein.","Url":""},{"Kind":"form","Text":"Auf die Liste","Url":"","Data":"einkaeufe"},{"Kind":"button","Text":"Zur Liste","Url":"seite:liste"}]}],"Collections":[{"Id":"einkaeufe","Name":"Eink\u00E4ufe","Fields":[{"Id":"artikel","Label":"Artikel","Type":"text","Required":true},{"Id":"menge","Label":"Menge","Type":"zahl","Required":false},{"Id":"preis","Label":"Preis (\u20AC)","Type":"zahl","Required":false}]}]}</script>
+<script>(function () {
+  'use strict';
+  var cfgEl = document.getElementById('trendo-app');
+  var app; try { app = JSON.parse(cfgEl ? cfgEl.textContent : ''); } catch (e) { return; }
+  if (!app || !app.Pages) return;
+  var pre = 'trendo-app/' + (app.AppId || 'app') + '/';
+  function alle(sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); }
+  function sammlung(id) { var c = app.Collections || []; for (var i = 0; i < c.length; i++) if (c[i].Id === id) return c[i]; return null; }
+  function lade(id) { try { var t = window.localStorage.getItem(pre + id); var a = t ? JSON.parse(t) : []; return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+  function speichere(id, a) { try { window.localStorage.setItem(pre + id, JSON.stringify(a)); return true; } catch (e) { return false; } }
+  function zahl(v) { var n = parseFloat(String(v == null ? '' : v).replace(',', '.')); return isFinite(n) ? n : 0; }
+  function fmt(n) { try { return n.toLocaleString('de-DE', { maximumFractionDigits: 2 }); } catch (e) { return String(n); } }
+  function zeichne() {
+    alle('ul.t-liste').forEach(function (ul) {
+      var id = ul.getAttribute('data-sammlung'); var c = sammlung(id); var a = lade(id);
+      while (ul.firstChild) ul.removeChild(ul.firstChild);
+      if (!c || a.length === 0) { var leer = document.createElement('li'); leer.className = 't-leer'; leer.textContent = ul.getAttribute('data-leer') || ''; ul.appendChild(leer); return; }
+      a.forEach(function (e, i) {
+        var li = document.createElement('li'); var s = document.createElement('span'); var teile = [];
+        c.Fields.forEach(function (f, k) { var v = e[f.Id]; if (v === undefined || v === null || v === '') return; teile.push(k === 0 ? String(v) : f.Label + ': ' + (f.Type === 'zahl' ? fmt(zahl(v)) : String(v))); });
+        s.textContent = teile.join(' · ');
+        var weg = document.createElement('button'); weg.type = 'button'; weg.className = 't-weg'; weg.textContent = 'Entfernen';
+        weg.addEventListener('click', function () { var x = lade(id); x.splice(i, 1); speichere(id, x); zeichne(); });
+        li.appendChild(s); li.appendChild(weg); ul.appendChild(li);
+      });
+    });
+    alle('.t-wert').forEach(function (p) {
+      var a = lade(p.getAttribute('data-sammlung')); var m = p.getAttribute('data-mass') || 'anzahl'; var w = a.length;
+      if (m.indexOf('summe:') === 0) { var f = m.slice(6); w = 0; a.forEach(function (e) { w += zahl(e[f]); }); }
+      var st = p.querySelector('strong'); if (st) st.textContent = fmt(w);
+    });
+  }
+  alle('form.t-form').forEach(function (form) {
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var id = form.getAttribute('data-sammlung'); var c = sammlung(id); var fehler = form.querySelector('.t-fehler');
+      if (!c) return;
+      var e = {}; var fehlt = [];
+      c.Fields.forEach(function (f) {
+        var inp = form.querySelector('[name="' + f.Id + '"]'); var v = inp ? String(inp.value).trim() : '';
+        if (f.Required && v === '') fehlt.push(f.Label);
+        e[f.Id] = f.Type === 'zahl' && v !== '' ? zahl(v) : v;
+      });
+      if (fehlt.length) { fehler.textContent = 'Bitte ausfüllen: ' + fehlt.join(', ') + '.'; fehler.hidden = false; return; }
+      e.zeit = Date.now();
+      var a = lade(id); a.push(e);
+      if (!speichere(id, a)) { fehler.textContent = 'Konnte nicht speichern – der Browser erlaubt hier keinen Speicher.'; fehler.hidden = false; return; }
+      fehler.textContent = 'Gespeichert.'; fehler.hidden = false; form.reset(); zeichne();
+    });
+  });
+  function zeige() {
+    var ziel = (location.hash || '').replace(/^#seite-/, ''); var secs = alle('section[data-seite]');
+    if (!secs.some(function (s) { return s.getAttribute('data-seite') === ziel; })) ziel = secs.length ? secs[0].getAttribute('data-seite') : '';
+    secs.forEach(function (s) { s.hidden = s.getAttribute('data-seite') !== ziel; });
+    alle('nav.t-nav a').forEach(function (l) { if (l.getAttribute('href') === '#seite-' + ziel) l.setAttribute('aria-current', 'page'); else l.removeAttribute('aria-current'); });
+  }
+  window.addEventListener('hashchange', function () { zeige(); window.scrollTo(0, 0); });
+  window.addEventListener('storage', zeichne);
+  zeige(); zeichne();
+  document.documentElement.setAttribute('data-app', 'bereit');
+})();</script>
+</body>
+</html>
