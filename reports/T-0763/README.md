@@ -21,3 +21,11 @@ Alle Pfade ohne Benutzernamen (`C:\Users\<user>`). Prüfsummen: `SHA256SUMS.txt`
 | `app-tests-fix1-rohlog.txt` | 64 App-Testklassen nach Fix 1: 325 Tests, 0 Fehler, 2 übersprungen |
 | `app-tests-fix1b-rohlog.txt` | T0763SystemAlltagUi, W7_Ui, X02_Ui nach letzter Textänderung: 15 Tests, 0 Fehler |
 | `bilder/*.png` | neu gerendert (Betriebsmodus ohne goldenen Stick-Knopf, Heilung mit Grenze und Prüfung beim Öffnen, Alles prüfen) |
+
+## Nachtrag Fix 2
+| Datei | Inhalt |
+|---|---|
+| `fix2-rot-vorher-rohlog.txt` | Rot: die 6 neuen Tests `T0763Fix2Tests` gegen den Stand 1f0fcab8d – alle 6 schlagen fehl (u. a. „ORIGINAL“ draußen überschrieben, Junction „logs“ beschrieben) |
+| `core-tests-rohlog.txt` | Grün: 22 Core-Tests `T0763*` mit `TRENDO_BELEG_DIR` (Hardlinks per `CreateHardLinkW`, Junctions per `mklink /J`) |
+| `app-tests-fix2-rohlog.txt` | 9 App-Testklassen (T0763, X02, Sys13, W7, TaskManager, SetupFeedback, T0736, Hardware, DesignPaket1): 59 Tests, 0 Fehler |
+| `installation-echt.txt`, `lastprobe.txt` | neu erzeugt; echte Installation nur lesend: 0 Abweichungen, keine Fremddateien, keine Verknüpfungen |

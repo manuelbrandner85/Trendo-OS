@@ -26,7 +26,7 @@ public sealed class SelfHealer(string dataRoot, AuditLog audit)
         // 2 JSON-Dateien
         var bad = new List<string>(); var kept = new List<string>();
         var restored = Restored(dataRoot); // T-0763: vom Nutzer zurückgeholte Dateien bleiben liegen, solange sie unverändert sind
-        foreach (var f in Directory.Exists(dataRoot) ? Directory.EnumerateFiles(dataRoot, "*.json", new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true }).Where(f => !f.Contains(Path.DirectorySeparatorChar + QuarantineFolder + Path.DirectorySeparatorChar)).ToList() : [])
+        foreach (var f in Directory.Exists(dataRoot) ? Directory.EnumerateFiles(dataRoot, "*.json", new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true }).Where(f => !f.Contains(Path.DirectorySeparatorChar + QuarantineFolder + Path.DirectorySeparatorChar) && PathGuard.LinkOnWay(dataRoot, f) is null).ToList() : [])
         {
             try { using var d = JsonDocument.Parse(File.ReadAllText(f)); }
             catch (JsonException)
@@ -38,6 +38,8 @@ public sealed class SelfHealer(string dataRoot, AuditLog audit)
         var keptNote = kept.Count == 0 ? "" : $" {KeptPrefix} {string.Join(", ", kept.Select(Path.GetFileName))} – bleibt wie gewünscht liegen. Zum Reparieren mit einem Texteditor öffnen oder löschen.";
         // T-0763 Fix N2: eine bewusst zurückgeholte Datei ist ein Hinweis, kein Problem – sonst stünde die Ampel dauerhaft auf Gelb
         if (bad.Count == 0) r.Add(new("json", "Einstellungsdateien", HealState.Ok, kept.Count == 0 ? "Alle lesbar." : "Alle lesbar außer zurückgeholten Dateien." + keptNote));
+        else if (repair && (PathGuard.LinkOnWay(dataRoot, Path.Combine(dataRoot, QuarantineFolder, "x")) ?? PathGuard.LinkOnWay(dataRoot, OriginPath(dataRoot))) is { } qlink)
+            r.Add(new("json", "Einstellungsdateien", HealState.NeedsYou, $"{bad.Count} Datei(en) beschädigt. Nicht beiseitegelegt: {Path.GetFileName(qlink)} ist eine Verknüpfung (Junction/Link) – Trendo legt dort nichts ab. Entferne die Verknüpfung, dann erneut prüfen.{keptNote}"));
         else if (repair)
         {
             var stamp = now.ToString("yyyyMMdd-HHmmss");
@@ -63,15 +65,18 @@ public sealed class SelfHealer(string dataRoot, AuditLog audit)
                 var map = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(tools)) ?? [];
                 var gone = map.Where(kv => !File.Exists(kv.Value) && !Directory.Exists(kv.Value)).Select(kv => kv.Key).ToList();
                 if (gone.Count == 0) r.Add(new("tools", "Verknüpfte Programme", HealState.Ok, $"{map.Count} verknüpft, alle gefunden."));
-                else if (repair) { foreach (var g in gone) map.Remove(g); File.WriteAllText(tools, JsonSerializer.Serialize(map)); r.Add(new("tools", "Verknüpfte Programme", HealState.Repaired, $"Nicht mehr vorhanden, Verknüpfung gelöst: {string.Join(", ", gone)}. Beim nächsten Öffnen sucht Trendo neu.")); }
+                else if (repair && PathGuard.LinkOnWay(dataRoot, tools) is null) { foreach (var g in gone) map.Remove(g); File.WriteAllText(tools, JsonSerializer.Serialize(map)); r.Add(new("tools", "Verknüpfte Programme", HealState.Repaired, $"Nicht mehr vorhanden, Verknüpfung gelöst: {string.Join(", ", gone)}. Beim nächsten Öffnen sucht Trendo neu.")); }
                 else r.Add(new("tools", "Verknüpfte Programme", HealState.NeedsYou, $"Nicht mehr gefunden: {string.Join(", ", gone)}"));
             }
             catch (JsonException) { }
         }
         // 4 alte Zwischendateien
         var tmp = Path.Combine(dataRoot, "tmp");
-        var old = Directory.Exists(tmp) ? Directory.GetFiles(tmp, "*", SearchOption.AllDirectories).Where(f => (now - File.GetLastWriteTime(f)).TotalDays > 7).ToList() : [];
-        if (old.Count == 0) r.Add(new("tmp", "Zwischendateien", HealState.Ok, "Aufgeräumt."));
+        var tmpLink = PathGuard.LinkOnWay(dataRoot, Path.Combine(tmp, "x")); // F2: nie über eine Verknüpfung fremde Dateien löschen
+        var old = Directory.Exists(tmp) && tmpLink is null ? Directory.EnumerateFiles(tmp, "*", new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true, AttributesToSkip = FileAttributes.ReparsePoint })
+            .Where(f => PathGuard.LinkOnWay(dataRoot, f) is null && (now - File.GetLastWriteTime(f)).TotalDays > 7).ToList() : [];
+        if (tmpLink is not null) r.Add(new("tmp", "Zwischendateien", HealState.NeedsYou, "Der Ordner tmp ist eine Verknüpfung (Junction/Link) – Trendo räumt dort nichts auf."));
+        else if (old.Count == 0) r.Add(new("tmp", "Zwischendateien", HealState.Ok, "Aufgeräumt."));
         else if (repair) { foreach (var o in old) try { File.Delete(o); } catch (IOException) { } r.Add(new("tmp", "Zwischendateien", HealState.Repaired, $"{old.Count} alte Datei(en) gelöscht.")); }
         else r.Add(new("tmp", "Zwischendateien", HealState.NeedsYou, $"{old.Count} alte Datei(en)."));
         // 5 Speicherplatz (nur melden)
@@ -84,7 +89,7 @@ public sealed class SelfHealer(string dataRoot, AuditLog audit)
         var a = new AuditLog(Path.Combine(dataRoot, "audit", "audit.jsonl"));
         r.Add(a.Verify() ? new("audit", "Protokoll", HealState.Ok, "Vollständig und unverändert.") : new("audit", "Protokoll", HealState.NeedsYou, "Verändert. Das repariert Trendo bewusst nicht – sonst wären Spuren weg."));
         if (repair || r.Any(x => x.State != HealState.Ok)) audit.Append("selbstheilung", repair ? "heal.repair" : "heal.check", string.Join(", ", r.Select(x => $"{x.Id}={x.State}")));
-        if (repair) // T-0763 Fix N1: ein reiner Prüflauf („Alles prüfen“) ändert keine Dateien – nur der Protokolleintrag oben
+        if (repair && PathGuard.LinkOnWay(dataRoot, Path.Combine(dataRoot, "logs", "selbstheilung-letzte.json")) is null) // N1 + F2: kein Schreiben über eine Verknüpfung „logs“
         {
             var log = Path.Combine(dataRoot, "logs"); Directory.CreateDirectory(log);
             File.WriteAllText(Path.Combine(log, "selbstheilung-letzte.json"), JsonSerializer.Serialize(new { at = now, repair, results = r }));
@@ -139,6 +144,9 @@ public sealed class SelfHealer(string dataRoot, AuditLog audit)
         if (!target.StartsWith(root, StringComparison.OrdinalIgnoreCase)) throw new InvalidOperationException("Der alte Ort liegt außerhalb des Datenordners – Trendo legt dort nichts ab.");
         if (PathGuard.LinkOnWay(dataRoot, target) is { } link) throw new InvalidOperationException($"Auf dem Weg zum alten Ort liegt eine Verknüpfung ({link}) – Trendo legt dort nichts ab, sonst landete die Datei woanders.");
         if (!File.Exists(item.File)) throw new FileNotFoundException("Die Datei liegt nicht mehr im Ordner quarantaene.", item.File);
+        // F2: Herkunfts- und Rückhollisten liegen in „logs“, die Datei in „quarantaene“ – beides nie über eine Verknüpfung
+        if ((PathGuard.LinkOnWay(dataRoot, OriginPath(dataRoot)) ?? PathGuard.LinkOnWay(dataRoot, Path.Combine(dataRoot, "logs", RestoredFile)) ?? PathGuard.LinkOnWay(dataRoot, item.File)) is { } l2)
+            throw new InvalidOperationException($"{Path.GetFileName(l2)} ist eine Verknüpfung (Junction/Link) – Trendo schreibt dort nichts. Entferne die Verknüpfung, dann erneut versuchen.");
         Directory.CreateDirectory(Path.GetDirectoryName(target)!);
         string? kept = null;
         if (File.Exists(target))
@@ -178,8 +186,9 @@ public static class InstallIntegrity
     public const string AppPrefix = "lib/app/";
     /// <summary>Dateien im Paket, die Velopack beim Installieren bewusst nicht in den Programmordner legt (gemessen an der echten Installation 0.9.108:
     /// „Squirrel.exe“ nur für alte Squirrel-Kompatibilität, „&lt;Name&gt;_ExecutionStub.exe“ wird zum Startprogramm im Ordner darüber).</summary>
-    /// <summary>Dateien, die Velopack oder Trendo selbst im Programmordner anlegen dürfen (nicht „fremd“): „sq.version“ und Zwischendateien einer Reparatur.</summary>
-    static bool OwnExtra(string rel) => rel.Equals("sq.version", StringComparison.OrdinalIgnoreCase) || rel.EndsWith(".trendo-reparatur", StringComparison.OrdinalIgnoreCase);
+    /// <summary>Datei, die Velopack selbst in den Programmordner legt (nicht „fremd“). T-0763 Fix F1: liegengebliebene Zwischendateien einer Reparatur werden
+    /// nicht mehr ausgeblendet, sondern als Hinweis gemeldet (eine solche Datei kann ein Hardlink nach außen sein).</summary>
+    static bool OwnExtra(string rel) => rel.Equals("sq.version", StringComparison.OrdinalIgnoreCase);
     public static bool NotInAppFolder(string rel) => rel.Equals("Squirrel.exe", StringComparison.OrdinalIgnoreCase) || (!rel.Contains('/') && rel.EndsWith("_ExecutionStub.exe", StringComparison.OrdinalIgnoreCase));
     public sealed record Finding(string File, string Problem);
     public sealed record Report(bool Installed, string? Package, string? Version, int Checked, IReadOnlyList<Finding> Findings, string Note)
@@ -187,6 +196,8 @@ public static class InstallIntegrity
         public bool Ok => Installed && Package is not null && Findings.Count == 0;
         /// <summary>T-0763 Fix M3: Dateien im Programmordner, die nicht im Paket stehen (Hinweis, kein Fehler).</summary>
         public IReadOnlyList<string> Extra { get; init; } = [];
+        /// <summary>T-0763 Fix F4: Verknüpfungen (Junction, symbolischer Link) im Programmordner – eigener Hinweis.</summary>
+        public IReadOnlyList<string> Links { get; init; } = [];
     }
     /// <summary>T-0763 Fix M3: ehrliche Grenze der Prüfung – steht in der Karte und im grünen Befund.</summary>
     public const string Limit = "Erkennt Beschädigung, schützt nicht vor gezielter Manipulation – Trendo ist nicht code-signiert.";
@@ -198,13 +209,21 @@ public static class InstallIntegrity
         if (!File.Exists(f)) return null;
         try
         {
-            var x = System.Xml.Linq.XDocument.Load(f);
+            using var fs = File.OpenRead(f);
+            var x = SafeXml(fs);
             string? V(string n) => x.Descendants().FirstOrDefault(e => e.Name.LocalName == n)?.Value.Trim();
             return V("id") is { Length: > 0 } id && V("version") is { Length: > 0 } ver ? (id, ver) : null;
         }
         catch (Exception e) when (e is System.Xml.XmlException or IOException) { return null; }
     }
     public static string? InstalledVersion(string appDir) => Installed(appDir)?.Version;
+
+    /// <summary>T-0763 Fix F3: XML ohne DTD und ohne externe Verweise lesen (DOCTYPE → XmlException).</summary>
+    static System.Xml.Linq.XDocument SafeXml(Stream s)
+    {
+        using var r = System.Xml.XmlReader.Create(s, new System.Xml.XmlReaderSettings { DtdProcessing = System.Xml.DtdProcessing.Prohibit, XmlResolver = null });
+        return System.Xml.Linq.XDocument.Load(r);
+    }
 
     /// <summary>T-0763 Fix M1: genau das Paket „{Kennung}-{Version}-full.nupkg“ im Ordner „packages“ neben dem Programmordner – und nur, wenn dessen
     /// .nuspec dieselbe Kennung und Version nennt. Ein fremdes Paket gleicher Version wird nie benutzt.</summary>
@@ -220,7 +239,7 @@ public static class InstallIntegrity
             var spec = z.Entries.FirstOrDefault(e => !e.FullName.Contains('/') && e.FullName.EndsWith(".nuspec", StringComparison.OrdinalIgnoreCase));
             if (spec is null) return null;
             using var s = spec.Open();
-            var x = System.Xml.Linq.XDocument.Load(s);
+            var x = SafeXml(s);
             string? V(string n) => x.Descendants().FirstOrDefault(e => e.Name.LocalName == n)?.Value.Trim();
             return string.Equals(V("id"), id, StringComparison.OrdinalIgnoreCase) && V("version") == version ? pkg : null;
         }
@@ -229,7 +248,10 @@ public static class InstallIntegrity
 
     public static Report Check(string appDir)
     {
-        if (Installed(appDir) is not var (id, ver)) return new(false, null, null, 0, [], "Trendo läuft hier ohne Installation (z. B. aus dem Quelltext). Die Programmdateien lassen sich nur in der installierten Version prüfen.");
+        if (Installed(appDir) is not var (id, ver))
+            return File.Exists(Path.Combine(appDir, "sq.version"))
+                ? new(true, null, null, 0, [], "Die Datei sq.version im Programmordner ist nicht lesbar oder enthält unerlaubte Angaben (z. B. DOCTYPE). Trendo vergleicht so nichts – führe das Setup erneut aus.")
+                : new(false, null, null, 0, [], "Trendo läuft hier ohne Installation (z. B. aus dem Quelltext). Die Programmdateien lassen sich nur in der installierten Version prüfen.");
         var pkg = FindPackage(appDir, id, ver);
         if (pkg is null) return new(true, null, ver, 0, [], $"Kein passendes Installationspaket ({id} {ver}) im Ordner „packages“. Ohne Paket kann Trendo die Programmdateien nicht vergleichen – führe das Setup erneut aus.");
         var findings = new List<Finding>(); var n = 0; var inPkg = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -261,25 +283,36 @@ public static class InstallIntegrity
         var full = Path.GetFullPath(appDir);
         var extra = Directory.EnumerateFiles(full, "*", new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true, AttributesToSkip = FileAttributes.ReparsePoint })
             .Select(f => Path.GetRelativePath(full, f).Replace('\\', '/')).Where(r => !inPkg.Contains(r) && !OwnExtra(r)).OrderBy(r => r, StringComparer.OrdinalIgnoreCase).ToList();
-        return new(true, pkg, ver, n, findings, findings.Count == 0 ? $"Alle {n} Programmdateien stimmen mit dem Installationspaket überein." : $"{findings.Count} von {n} Programmdateien weichen vom Installationspaket ab.") { Extra = extra };
+        var links = Directory.EnumerateFileSystemEntries(full, "*", new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true, AttributesToSkip = 0 })
+            .Where(f => { try { return File.GetAttributes(f).HasFlag(FileAttributes.ReparsePoint); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return false; } })
+            .Select(f => Path.GetRelativePath(full, f).Replace('\\', '/')).OrderBy(r => r, StringComparer.OrdinalIgnoreCase).ToList();
+        return new(true, pkg, ver, n, findings, findings.Count == 0 ? $"Alle {n} Programmdateien stimmen mit dem Installationspaket überein." : $"{findings.Count} von {n} Programmdateien weichen vom Installationspaket ab.") { Extra = extra, Links = links };
     }
 
     /// <summary>Dateien aus dem Paket zurückschreiben (erst Zwischendatei, dann ersetzen). Dateien, die das laufende Trendo gerade benutzt, lassen sich unter
     /// Windows nicht ersetzen – sie kommen in „Failed“ mit dem Hinweis, das Setup erneut auszuführen.</summary>
     public static (List<string> Repaired, List<string> Failed) Repair(string appDir, string package, IEnumerable<string> files, AuditLog? audit = null)
     {
-        var ok = new List<string>(); var bad = new List<string>();
+        var ok = new List<string>(); var bad = new List<string>(); var removed = new List<string>();
         using (var z = ZipFile.OpenRead(package))
             foreach (var rel in files.Distinct())
             {
                 var e = z.GetEntry(AppPrefix + rel.Replace('\\', '/'));
                 if (e is null || !Inside(appDir, rel, out var file)) { bad.Add(rel); continue; }
                 if (PathGuard.LinkOnWay(appDir, file) is not null) { bad.Add(rel); continue; } // T-0763 Fix M2: nie über eine Verknüpfung (Junction/Symlink) nach außen schreiben
-                var tmp = file + ".trendo-reparatur";
+                // T-0763 Fix F1: nie in eine vorhandene Datei schreiben (sie kann ein Hardlink nach außen sein). Alte Zwischendatei nur entfernen (löscht den
+                // Verweis, nicht das Ziel), neue Zwischendatei mit zufälligem Namen exklusiv neu anlegen, dann die Zieldatei durch Verschieben ersetzen –
+                // ein zweiter Hardlink der alten Zieldatei bleibt dabei unverändert.
+                var stale = file + ".trendo-reparatur";
+                var tmp = Path.Combine(Path.GetDirectoryName(file)!, $".{Path.GetFileName(file)}.{Guid.NewGuid():N}.trendo-reparatur");
                 try
                 {
+                    if (File.Exists(stale)) { File.Delete(stale); removed.Add(Path.GetFileName(stale)); }
                     Directory.CreateDirectory(Path.GetDirectoryName(file)!);
-                    e.ExtractToFile(tmp, true);
+                    if (PathGuard.LinkOnWay(appDir, tmp) is not null) { bad.Add(rel); continue; }
+                    using (var src = e.Open())
+                    using (var dst = new FileStream(tmp, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+                        src.CopyTo(dst);
                     File.Move(tmp, file, true);
                     ok.Add(rel);
                 }
@@ -288,7 +321,7 @@ public static class InstallIntegrity
                     bad.Add(rel); try { File.Delete(tmp); } catch (Exception d) when (d is IOException or UnauthorizedAccessException) { }
                 }
             }
-        audit?.Append("selbstheilung", "installation.reparatur", $"ersetzt={ok.Count} nicht={bad.Count}" + (bad.Count > 0 ? ": " + string.Join(", ", bad.Take(10)) : ""));
+        audit?.Append("selbstheilung", "installation.reparatur", $"ersetzt={ok.Count} nicht={bad.Count}" + (bad.Count > 0 ? ": " + string.Join(", ", bad.Take(10)) : "") + (removed.Count > 0 ? $"; alte Zwischendateien entfernt: {string.Join(", ", removed.Take(10))}" : ""));
         return (ok, bad);
     }
 

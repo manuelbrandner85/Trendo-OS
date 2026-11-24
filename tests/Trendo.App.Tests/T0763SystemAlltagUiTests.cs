@@ -218,6 +218,24 @@ public class T0763SystemAlltagUi
         w.Close();
     }
 
+    [AvaloniaFact(DisplayName = "X-02 (T-0763 Fix F4): Verknüpfung im Programmordner erscheint als eigener Hinweis in der Karte und gelb in „Alles prüfen“")]
+    public async Task Links_in_app_folder()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        var (w, _, root) = Ui.Open();
+        var app = FakeInstall(Path.Combine(root, "inst")); w.InstallDirOverride = app;
+        var outside = Path.Combine(root, "draussen"); Directory.CreateDirectory(outside);
+        using (var p = Process.Start(new ProcessStartInfo("cmd.exe", $"/c mklink /J \"{Path.Combine(app, "plugins")}\" \"{outside}\"") { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true })!) p.WaitForExit(10000);
+        Assert.True(new DirectoryInfo(Path.Combine(app, "plugins")).Attributes.HasFlag(FileAttributes.ReparsePoint));
+        w.Show("heilung");
+        await w.HealInstallTask!; await Until(() => w.TryFind<TextBlock>("heal-install-links") is not null);
+        Assert.Contains("plugins", w.Find<TextBlock>("heal-install-links").Text);
+        var areas = await w.RunCheckupAsync();
+        Assert.Equal(Trendo.Core.Sys.Checkup.Light.Gelb, areas.Single(a => a.Id == "installation").Light);
+        Directory.Delete(Path.Combine(app, "plugins")); // nur die Verknüpfung
+        w.Close();
+    }
+
     [AvaloniaFact(DisplayName = "SYS-01 (T-0763): Betriebsmodus sagt klar „Desktop Edition für Windows 11, Linux/Pi nicht im Angebot“; Stick-Schreiber bleibt erreichbar")]
     public void Mode_offer()
     {

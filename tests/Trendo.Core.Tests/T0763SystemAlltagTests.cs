@@ -89,7 +89,7 @@ public class T0763SystemAlltagTests
         // Fix N2: Hinweis statt dauerhaft Gelb, mit passendem nächsten Schritt
         Assert.Equal(HealState.Ok, again.State); Assert.Contains(SelfHealer.KeptPrefix, again.Detail); Assert.True(File.Exists(broken));
         var data = Checkup.Data(h.Run(false, now.AddMinutes(6)));
-        Assert.Equal(Checkup.Light.Gruen, data.Light); Assert.Contains("kaputt", data.Finding.Replace("modell.json", "kaputt")); Assert.Contains("Texteditor", data.Next);
+        Assert.Equal(Checkup.Light.Gruen, data.Light); Assert.Contains("modell.json", data.Finding); Assert.Contains("Texteditor", data.Next);
         // verändert sich die Datei (immer noch kaputt), wird sie wieder beiseitegelegt
         File.WriteAllText(broken, "{ noch kaputter");
         Assert.Equal(HealState.Repaired, h.Run(true, now.AddMinutes(7)).Single(r => r.Id == "json").State);
@@ -214,7 +214,7 @@ public class T0763SystemAlltagTests
         if (InstallIntegrity.Installed(app) is not var (id, ver) || InstallIntegrity.FindPackage(app, id, ver) is not { } pkg) return; // kein installiertes Trendo: nichts zu prüfen
         var sw = Stopwatch.StartNew();
         var r = InstallIntegrity.Check(app); // nur lesen – an der echten Installation ändert der Test nichts
-        Assert.Empty(r.Extra); // Fix M3: die echte Installation darf nicht fälschlich „nicht aus dem Paket“ melden
+        Assert.Empty(r.Extra); Assert.Empty(r.Links); // Fix M3/F4: die echte Installation darf nicht fälschlich „nicht aus dem Paket“ oder „Verknüpfung“ melden
         Assert.Equal(Checkup.Light.Gruen, Checkup.Installation(r).Light);
         var checkSecs = sw.Elapsed.TotalSeconds;
         var root = Tmp();

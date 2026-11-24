@@ -125,6 +125,8 @@ public partial class MainWindow
         {
             var color = r.Ok ? "#4ADE80" : !r.Installed ? "#93A4C3" : "#FACC15";
             body.Children.Add(new TextBlock { Name = "heal-install-result", Text = (r.Ok ? "✓ " : "") + r.Note, Foreground = Brush.Parse(color), FontSize = 12, TextWrapping = TextWrapping.Wrap });
+            if (r.Links.Count > 0) body.Children.Add(new TextBlock { Name = "heal-install-links", Foreground = Brush.Parse("#FACC15"), FontSize = 12, TextWrapping = TextWrapping.Wrap, // T-0763 Fix F4
+                Text = $"Hinweis: {r.Links.Count} Verknüpfung(en) (Junction/Link) im Programmordner: {string.Join(", ", r.Links.Take(8))}{(r.Links.Count > 8 ? " …" : "")}. Darüber ersetzt Trendo nichts. Hast du sie nicht selbst angelegt, führe das Setup erneut aus." });
             if (r.Extra.Count > 0) body.Children.Add(new TextBlock { Name = "heal-install-extra", Foreground = Brush.Parse("#FACC15"), FontSize = 12, TextWrapping = TextWrapping.Wrap,
                 Text = $"Hinweis: {r.Extra.Count} Datei(en) im Programmordner sind nicht aus dem Paket: {string.Join(", ", r.Extra.Take(8))}{(r.Extra.Count > 8 ? " …" : "")}. Hast du sie nicht selbst abgelegt, führe das Setup erneut aus." });
             if (!r.Installed) body.Children.Add(P("Nur für Entwickler: Ohne Installation gibt es kein Paket zum Vergleichen.", Muted, 11));

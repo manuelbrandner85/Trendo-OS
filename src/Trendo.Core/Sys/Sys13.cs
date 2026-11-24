@@ -147,8 +147,11 @@ public static class Checkup
     public static Area Installation(InstallIntegrity.Report r) =>
         !r.Installed ? new("installation", "Programmdateien", Light.Gruen, "Nur für Entwickler: Trendo läuft aus dem Quelltext, es gibt kein Installationspaket zum Vergleichen.", "Nichts zu tun.", null)
         : r.Package is null ? new("installation", "Programmdateien", Light.Gelb, r.Note, "Setup erneut ausführen (Trendo-Setup von GitHub).", "heilung")
-        : r.Findings.Count == 0 && r.Extra.Count > 0 ? new("installation", "Programmdateien", Light.Gelb, $"{r.Note} Hinweis: {r.Extra.Count} Datei(en) im Programmordner stammen nicht aus dem Paket: {string.Join(", ", r.Extra.Take(3))}{(r.Extra.Count > 3 ? " …" : "")}. {InstallIntegrity.Limit}",
-            "Unter „Einrichten & Reparieren“ ansehen; hast du sie nicht selbst abgelegt, Setup erneut ausführen.", "heilung")
+        : r.Findings.Count == 0 && (r.Extra.Count > 0 || r.Links.Count > 0) ? new("installation", "Programmdateien", Light.Gelb, r.Note
+            + (r.Links.Count > 0 ? $" Hinweis: {r.Links.Count} Verknüpfung(en) (Junction/Link) im Programmordner: {string.Join(", ", r.Links.Take(3))}{(r.Links.Count > 3 ? " …" : "")}." : "")
+            + (r.Extra.Count > 0 ? $" Hinweis: {r.Extra.Count} Datei(en) im Programmordner stammen nicht aus dem Paket: {string.Join(", ", r.Extra.Take(3))}{(r.Extra.Count > 3 ? " …" : "")}." : "")
+            + " " + InstallIntegrity.Limit,
+            "Unter „Einrichten & Reparieren“ ansehen; hast du sie nicht selbst angelegt, Setup erneut ausführen.", "heilung")
         : r.Findings.Count == 0 ? new("installation", "Programmdateien", Light.Gruen, $"{r.Note} {InstallIntegrity.Limit}", "Nichts zu tun.", null)
         : new("installation", "Programmdateien", Light.Rot, $"{r.Findings.Count} Programmdatei(en) fehlen oder sind verändert: {string.Join(", ", r.Findings.Take(3).Select(f => $"{f.File} ({f.Problem})"))}{(r.Findings.Count > 3 ? " …" : "")}",
             "Unter „Einrichten & Reparieren“ aus dem Installationspaket ersetzen.", "heilung");

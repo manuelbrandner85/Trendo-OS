@@ -1,0 +1,114 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0763-fix2\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:06.98]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:07.48]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:07.51]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:00:07.71]     T-0763 F4: Verknüpfung (Junction) im Programmordner ist ein eigener gelber Hinweis [FAIL]
+[xUnit.net 00:00:07.71]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:07.71]       Expected: Gelb
+[xUnit.net 00:00:07.71]       Actual:   Gruen
+[xUnit.net 00:00:07.71]       Stack Trace:
+[xUnit.net 00:00:07.71]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0763-fix2\tests\Trendo.Core.Tests\T0763Fix2Tests.cs(122,0): at Trendo.Core.Tests.T0763Fix2Tests.F4_links_in_app_folder()
+[xUnit.net 00:00:07.71]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:07.71]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:07.82]     T-0763 F2: Zurückholen schreibt die Listen nicht über eine Junction „logs“ nach außen [FAIL]
+[xUnit.net 00:00:07.82]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:07.82]       Expected: typeof(System.InvalidOperationException)
+[xUnit.net 00:00:07.82]       Stack Trace:
+[xUnit.net 00:00:07.82]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0763-fix2\tests\Trendo.Core.Tests\T0763Fix2Tests.cs(90,0): at Trendo.Core.Tests.T0763Fix2Tests.F2_restore_logs_junction()
+[xUnit.net 00:00:07.82]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:07.82]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:07.83]     T-0763 F1: liegengebliebene *.trendo-reparatur wird als Hinweis gemeldet, nicht ausgeblendet [FAIL]
+[xUnit.net 00:00:07.83]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:07.83]       Expected: Gelb
+[xUnit.net 00:00:07.83]       Actual:   Gruen
+[xUnit.net 00:00:07.83]       Stack Trace:
+[xUnit.net 00:00:07.83]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0763-fix2\tests\Trendo.Core.Tests\T0763Fix2Tests.cs(55,0): at Trendo.Core.Tests.T0763Fix2Tests.F1_stale_temp_is_reported()
+[xUnit.net 00:00:07.83]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:07.83]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:07.94]     T-0763 F2: Ordner „quarantaene“ und „logs“ als Junction nach außen – Selbstheilung und Zurückholen schreiben dort nichts hin [FAIL]
+[xUnit.net 00:00:07.94]       Assert.Empty() Failure: Collection was not empty
+[xUnit.net 00:00:07.94]       Collection: ["C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-tes"···]
+[xUnit.net 00:00:07.94]       Stack Trace:
+[xUnit.net 00:00:07.94]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0763-fix2\tests\Trendo.Core.Tests\T0763Fix2Tests.cs(70,0): at Trendo.Core.Tests.T0763Fix2Tests.F2_data_folders_as_junction()
+[xUnit.net 00:00:07.94]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:07.94]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:07.95]     T-0763 F1: vorab gelegte Zwischendatei als Hardlink nach außen – Reparatur schreibt nicht hinein, Ziel mit zweitem Hardlink wird ersetzt statt überschrieben [FAIL]
+[xUnit.net 00:00:07.95]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:00:07.95]                  ↓ (pos 0)
+[xUnit.net 00:00:07.95]       Expected: "ORIGINAL"
+[xUnit.net 00:00:07.95]       Actual:   "KERN"
+[xUnit.net 00:00:07.95]                  ↑ (pos 0)
+[xUnit.net 00:00:07.95]       Stack Trace:
+[xUnit.net 00:00:07.95]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0763-fix2\tests\Trendo.Core.Tests\T0763Fix2Tests.cs(37,0): at Trendo.Core.Tests.T0763Fix2Tests.F1_hardlink_temp_and_target()
+[xUnit.net 00:00:07.95]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:07.95]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:07.97]     T-0763 F3: sq.version und .nuspec mit DOCTYPE werden abgelehnt (keine DTD, keine externen Verweise) [FAIL]
+[xUnit.net 00:00:07.97]       Assert.Contains() Failure: Sub-string not found
+[xUnit.net 00:00:07.97]       String:    "Trendo läuft hier ohne Installation (z. B"···
+[xUnit.net 00:00:07.97]       Not found: "sq.version"
+[xUnit.net 00:00:07.97]       Stack Trace:
+[xUnit.net 00:00:07.97]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0763-fix2\tests\Trendo.Core.Tests\T0763Fix2Tests.cs(102,0): at Trendo.Core.Tests.T0763Fix2Tests.F3_no_dtd()
+[xUnit.net 00:00:07.97]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:07.97]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:07.97]   Finished:    Trendo.Core.Tests
+  Fehler T-0763 F4: Verknüpfung (Junction) im Programmordner ist ein eigener gelber Hinweis [166 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: Gelb
+Actual:   Gruen
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0763Fix2Tests.F4_links_in_app_folder() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0763-fix2\tests\Trendo.Core.Tests\T0763Fix2Tests.cs:line 122
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0763 F2: Zurückholen schreibt die Listen nicht über eine Junction „logs“ nach außen [118 ms]
+  Fehlermeldung:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.InvalidOperationException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0763Fix2Tests.F2_restore_logs_junction() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0763-fix2\tests\Trendo.Core.Tests\T0763Fix2Tests.cs:line 90
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0763 F1: liegengebliebene *.trendo-reparatur wird als Hinweis gemeldet, nicht ausgeblendet [9 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: Gelb
+Actual:   Gruen
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0763Fix2Tests.F1_stale_temp_is_reported() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0763-fix2\tests\Trendo.Core.Tests\T0763Fix2Tests.cs:line 55
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0763 F2: Ordner „quarantaene“ und „logs“ als Junction nach außen – Selbstheilung und Zurückholen schreiben dort nichts hin [106 ms]
+  Fehlermeldung:
+   Assert.Empty() Failure: Collection was not empty
+Collection: ["C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-tes"···]
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0763Fix2Tests.F2_data_folders_as_junction() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0763-fix2\tests\Trendo.Core.Tests\T0763Fix2Tests.cs:line 70
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0763 F1: vorab gelegte Zwischendatei als Hardlink nach außen – Reparatur schreibt nicht hinein, Ziel mit zweitem Hardlink wird ersetzt statt überschrieben [11 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "ORIGINAL"
+Actual:   "KERN"
+           ↑ (pos 0)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0763Fix2Tests.F1_hardlink_temp_and_target() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0763-fix2\tests\Trendo.Core.Tests\T0763Fix2Tests.cs:line 37
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0763 F3: sq.version und .nuspec mit DOCTYPE werden abgelehnt (keine DTD, keine externen Verweise) [18 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Sub-string not found
+String:    "Trendo läuft hier ohne Installation (z. B"···
+Not found: "sq.version"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0763Fix2Tests.F3_no_dtd() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0763-fix2\tests\Trendo.Core.Tests\T0763Fix2Tests.cs:line 102
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 6
+     Nicht bestanden: 6
+ Gesamtzeit: 13,5270 Sekunden
