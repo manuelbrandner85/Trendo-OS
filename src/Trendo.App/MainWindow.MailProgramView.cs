@@ -491,7 +491,7 @@ public partial class MainWindow
         var attach = MailBtn("send-attach", "Anhang hinzufügen", async () =>
         {
             string[]? got = PickOverride is { } fake ? await fake(new PickRequest("send-attach", false, true, []))
-                : (await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Anhang wählen", AllowMultiple = true })).Select(x => x.TryGetLocalPath()).OfType<string>().ToArray();
+                : (await PickOpenFiles(new FilePickerOpenOptions { Title = "Anhang wählen", AllowMultiple = true })).Select(x => x.TryGetLocalPath()).OfType<string>().ToArray();
             if (got is { Length: > 0 }) MailAttach(got);
         }, tip: "Oder Dateien einfach hierher ziehen");
         attRow.Children.Add(attach);

@@ -64,7 +64,7 @@ public sealed partial class MainWindow
     {
         var req = new PickRequest("wiz-avatar-photo", false, false, ["png", "jpg", "jpeg", "webp", "bmp"]);
         string[]? got = PickOverride is { } f ? await f(req)
-            : (await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Profilbild wählen", FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Bilder") { Patterns = ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.bmp"] }] }))
+            : (await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Profilbild wählen", FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Bilder") { Patterns = ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.bmp"] }] }))
                 .Select(x => x.TryGetLocalPath()).OfType<string>().ToArray();
         if (got is not { Length: > 0 }) return;
         try

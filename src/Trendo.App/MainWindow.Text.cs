@@ -167,11 +167,11 @@ public partial class MainWindow
         if (PickOverride is { } fake) return (await fake(req)) is [var f, ..] ? f : null;
         if (save)
         {
-            var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions { Title = "Speichern unter", SuggestedFileName = suggested, DefaultExtension = "docx",
+            var file = await PickSaveFile(new FilePickerSaveOptions { Title = "Speichern unter", SuggestedFileName = suggested, DefaultExtension = "docx",
                 FileTypeChoices = [new FilePickerFileType("Word-Dokument") { Patterns = ["*.docx"] }, new FilePickerFileType("LibreOffice-Dokument") { Patterns = ["*.odt"] }, new FilePickerFileType("Reiner Text") { Patterns = ["*.txt"] }, new FilePickerFileType("PDF") { Patterns = ["*.pdf"] }] });
             return file?.TryGetLocalPath();
         }
-        var got = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Dokument öffnen", FileTypeFilter = [new FilePickerFileType("Dokumente") { Patterns = ["*.docx", "*.odt", "*.txt"] }] });
+        var got = await PickOpenFiles(new FilePickerOpenOptions { Title = "Dokument öffnen", FileTypeFilter = [new FilePickerFileType("Dokumente") { Patterns = ["*.docx", "*.odt", "*.txt"] }] });
         return got.Select(f => f.TryGetLocalPath()).OfType<string>().FirstOrDefault();
     }
 
@@ -355,7 +355,7 @@ public partial class MainWindow
         img.Click += async (_, _) =>
         {
             var req = new PickRequest("text-image", false, false, ["png", "jpg", "jpeg", "gif"]);
-            var f = PickOverride is { } fake ? (await fake(req))?.FirstOrDefault() : (await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Bild wählen", FileTypeFilter = [new FilePickerFileType("Bilder") { Patterns = ["*.png", "*.jpg", "*.jpeg", "*.gif"] }] })).Select(x => x.TryGetLocalPath()).OfType<string>().FirstOrDefault();
+            var f = PickOverride is { } fake ? (await fake(req))?.FirstOrDefault() : (await PickOpenFiles(new FilePickerOpenOptions { Title = "Bild wählen", FileTypeFilter = [new FilePickerFileType("Bilder") { Patterns = ["*.png", "*.jpg", "*.jpeg", "*.gif"] }] })).Select(x => x.TryGetLocalPath()).OfType<string>().FirstOrDefault();
             if (f is not null) TextInsertImage(f);
             Show("text");
         };

@@ -128,7 +128,7 @@ public partial class MainWindow
         var req = new PickRequest("sum-open", false, false, SumExtensions);
         string[]? got;
         if (PickOverride is { } fake) got = await fake(req);
-        else got = (await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Text zum Zusammenfassen öffnen",
+        else got = (await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Text zum Zusammenfassen öffnen",
             FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("PDF, Word, Text") { Patterns = SumExtensions.Select(e => "*." + e).ToList() }] }))
             .Select(f => Avalonia.Platform.Storage.StorageProviderExtensions.TryGetLocalPath(f)).OfType<string>().ToArray();
         if (got is [var f, ..]) ProgramRun(SumKey, () => SumOpenFile(d, f));

@@ -242,7 +242,7 @@ public partial class MainWindow
             var req = new PickRequest("learn-import-file", false, false, ["csv", "txt", "tsv"]);
             string[]? got;
             if (PickOverride is { } fake) got = await fake(req);
-            else got = (await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Karten öffnen",
+            else got = (await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Karten öffnen",
                 FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Kartenliste") { Patterns = ["*.csv", "*.txt", "*.tsv"] }] }))
                 .Select(f => Avalonia.Platform.Storage.StorageProviderExtensions.TryGetLocalPath(f)).OfType<string>().ToArray();
             if (got is [var f, ..]) LearnImportFile(Deck(), f);

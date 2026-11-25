@@ -465,7 +465,7 @@ public partial class MainWindow
         {
             string? dir;
             if (PickOverride is { } fake) dir = (await fake(new PickRequest("code-folder", true, false, []))) is [var f, ..] ? f : null;
-            else dir = (await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions { Title = "Projektordner öffnen" })).Select(x => x.TryGetLocalPath()).OfType<string>().FirstOrDefault();
+            else dir = (await PickFolders(new FolderPickerOpenOptions { Title = "Projektordner öffnen" })).Select(x => x.TryGetLocalPath()).OfType<string>().FirstOrDefault();
             if (dir is not null) Try(CEK, () => { CodeOpenFolder(dir); Show(CEK); });
         };
         bar.Children.Add(folderBtn);

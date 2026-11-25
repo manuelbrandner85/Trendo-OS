@@ -123,7 +123,7 @@ public partial class MainWindow
     {
         string[]? got;
         if (PickOverride is { } fake) got = await fake(new PickRequest("media-batch-pick", false, true, MediaStudio.Inputs));
-        else got = (await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Dateien für den Stapel", AllowMultiple = true,
+        else got = (await PickOpenFiles(new FilePickerOpenOptions { Title = "Dateien für den Stapel", AllowMultiple = true,
             FileTypeFilter = [new FilePickerFileType("Video, Ton und Bilder") { Patterns = MediaStudio.Inputs.Select(e => "*" + e).ToArray() }] })).Select(f => f.TryGetLocalPath()).OfType<string>().ToArray();
         if (got is { Length: > 0 }) MediaBatchAdd(got);
     }
@@ -132,7 +132,7 @@ public partial class MainWindow
     {
         string? dir;
         if (PickOverride is { } fake) dir = (await fake(new PickRequest("media-batch-out", true, false, []))) is [var f0, ..] ? f0 : null;
-        else dir = (await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions { Title = "Wohin mit den Ergebnissen?" })).Select(x => x.TryGetLocalPath()).OfType<string>().FirstOrDefault();
+        else dir = (await PickFolders(new FolderPickerOpenOptions { Title = "Wohin mit den Ergebnissen?" })).Select(x => x.TryGetLocalPath()).OfType<string>().FirstOrDefault();
         if (dir is null) return;
         if (File.Exists(dir)) { Say("Bitte einen Ordner wählen, keine Datei.", MBK); return; }
         MediaBatchOut = dir; Say("Ergebnisse kommen nach „" + dir + "“.", MBK);

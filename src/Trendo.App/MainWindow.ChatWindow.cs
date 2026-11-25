@@ -63,7 +63,7 @@ public partial class MainWindow
     {
         string[]? got;
         if (PickOverride is { } fake) got = await fake(new PickRequest("ask-attach", false, true, KiAttachments.Patterns));
-        else got = (await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Datei an die Frage hängen", AllowMultiple = true,
+        else got = (await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Datei an die Frage hängen", AllowMultiple = true,
             FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Text, PDF, Word, Bild") { Patterns = KiAttachments.Patterns }] })).Select(f => f.TryGetLocalPath()).OfType<string>().ToArray();
         if (got is { Length: > 0 }) AskAttach(got);
     }

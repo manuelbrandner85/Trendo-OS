@@ -95,8 +95,10 @@ public static class MediaLibrary
         return res;
     }
     /// <summary>Spieler wählen: mpv, sonst VLC, sonst Standardprogramm (null).</summary>
+    /// <remarks>T-0764 (8. Prüfrunde): mpv ohne Einstellungen und Skripte aus %APPDATA%\mpv, mit Trendos fester, sicherer Tastenbelegung;
+    /// VLC ohne Lua-Erweiterungen.</remarks>
     public static (string Exe, string[] Args)? Player(string file, string? mpv, string? vlc) =>
-        mpv is not null ? (mpv, ["--force-window=yes", file]) : vlc is not null ? (vlc, ["--play-and-exit", file]) : null;
+        mpv is not null ? (mpv, [.. MpvSafe.Args(keys: true), "--force-window=yes", file]) : vlc is not null ? (vlc, ["--no-lua", "--play-and-exit", file]) : null;
 }
 
 // P11 Batch-Umbenennen (mit Rückgängig), P22 Fotos ordnen
@@ -261,8 +263,38 @@ public static class Archives
     public static List<string> ExecutableEntries(string zip)
     {
         using var z = ZipFile.OpenRead(zip);
-        return z.Entries.Where(e => !e.FullName.EndsWith('/') && (Path.GetExtension(e.Name).Length == 0 || ProgramTrust.CodeExtensions.Contains(Path.GetExtension(e.Name))
-            || Software.IsInstallerLike(e.Name) || Software.MountLike(e.Name))).Select(e => e.FullName).ToList();
+        return z.Entries.Where(e => !e.FullName.EndsWith('/') && UnsafeEntryName(e.FullName)).Select(e => e.FullName).ToList();
+    }
+
+    static readonly System.Text.RegularExpressions.Regex DeviceName = new(@"^(CON|PRN|AUX|NUL|CONIN\$|CONOUT\$|COM[0-9¹²³]|LPT[0-9¹²³])(\..*)?$", System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
+    /// <summary>T-0764 (7./8. Prüfrunde): Eintrag ist ausführbar oder unsicher? Jeder Pfadteil wird wie unter Windows normalisiert (Leerzeichen und Punkte
+    /// am Ende fallen weg: „spiel.exe.“ ist „spiel.exe“). Unsicher sind auch alternative Datenströme („:“), Gerätenamen (CON, NUL, COM1 …, auch mit
+    /// Endung) und Steuerzeichen; ausführbar: Code-Endungen, Installer, Verknüpfungen, Abbilder, Dateien ohne Endung.</summary>
+    public static bool UnsafeEntryName(string fullName)
+    {
+        var parts = fullName.Replace('\\', '/').Split('/', StringSplitOptions.RemoveEmptyEntries).Select(p => p.TrimEnd(' ', '.')).ToList();
+        if (parts.Count == 0) return true;
+        foreach (var p in parts)
+            if (p.Length == 0 || p.Contains(':') || p.Any(char.IsControl) || DeviceName.IsMatch(p) || DeviceName.IsMatch(p.Split('.')[0])) return true;
+        var name = parts[^1]; var ext = Path.GetExtension(name);
+        return ext.Length == 0 || ProgramTrust.CodeExtensions.Contains(ext) || Software.IsInstallerLike(name) || Software.MountLike(name);
+    }
+
+    /// <summary>T-0764 (8. Prüfrunde): Obergrenzen beim Entpacken im Kinderprofil (vorab aus dem Inhaltsverzeichnis): Gesamtgröße, Anzahl, Packverhältnis.</summary>
+    public const long MaxChildUnpackBytes = 2L * 1024 * 1024 * 1024;
+    public const int MaxChildUnpackEntries = 10_000;
+    public const double MaxChildRatio = 100; // mehr als 100:1 bei über 10 MB gilt als verdächtig („ZIP-Bombe“)
+
+    /// <summary>Grund, warum ein Archiv für Kinder zu groß oder verdächtig ist – sonst null.</summary>
+    public static string? ChildLimits(string zip)
+    {
+        using var z = ZipFile.OpenRead(zip);
+        if (z.Entries.Count > MaxChildUnpackEntries) return $"mehr als {MaxChildUnpackEntries} Einträge";
+        long total = 0, packed = 0;
+        foreach (var e in z.Entries) { total += e.Length; packed += e.CompressedLength; if (total > MaxChildUnpackBytes) return "größer als 2 GB"; }
+        if (total > 10L * 1024 * 1024 && total > MaxChildRatio * Math.Max(1, packed)) return "verdächtiges Packverhältnis";
+        return null;
     }
 
     /// <summary>T-0764 (7. Prüfrunde): Entpacken als <paramref name="by"/> – das Kinderprofil nur ZIP-Archive ohne ausführbaren Inhalt (sonst „rbac.denied“
@@ -273,6 +305,7 @@ public static class Archives
         {
             if (!Path.GetExtension(zip).Equals(".zip", StringComparison.OrdinalIgnoreCase)) Rbac.DemandSoftware(by, "entpacken " + Path.GetFileName(zip), audit, Rbac.NurErwachseneArchiv);
             if (ExecutableEntries(zip) is { Count: > 0 } x) Rbac.DemandSoftware(by, $"entpacken {Path.GetFileName(zip)} ({x.Count} ausführbar, z. B. {Path.GetFileName(x[0])})", audit, Rbac.NurErwachseneArchiv);
+            if (ChildLimits(zip) is { } why) Rbac.DemandSoftware(by, $"entpacken {Path.GetFileName(zip)} ({why})", audit, Rbac.NurErwachseneArchiv); // 8. Prüfrunde
         }
         return Unpack(zip, dest, mode);
     }

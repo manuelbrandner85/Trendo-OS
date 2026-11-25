@@ -493,7 +493,7 @@ public partial class MainWindow
     {
         var req = new PickRequest(id, false, false, [.. patterns.Select(p => p.TrimStart('*'))]);
         if (PickOverride is { } fake) return (await fake(req)) is [var f, ..] ? f : null;
-        var got = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Datei wählen", FileTypeFilter = [new FilePickerFileType("Dateien") { Patterns = patterns }] });
+        var got = await PickOpenFiles(new FilePickerOpenOptions { Title = "Datei wählen", FileTypeFilter = [new FilePickerFileType("Dateien") { Patterns = patterns }] });
         return got.Select(f => f.TryGetLocalPath()).OfType<string>().FirstOrDefault();
     }
 

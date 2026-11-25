@@ -544,7 +544,7 @@ public partial class MainWindow
         {
             try
             {
-                var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+                var files = await PickOpenFiles(new FilePickerOpenOptions
                 {
                     Title = "3D-Datei öffnen",
                     AllowMultiple = true,

@@ -144,7 +144,7 @@ public partial class MainWindow
     async Task PickPrintFile()
     {
         var req = new PickRequest("3d-druck-datei", false, false, ["3mf", "stl", "step", "obj"]);
-        var f = PickOverride is { } fake ? (await fake(req))?.FirstOrDefault() : (await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Datei für den 3D-Druck", FileTypeFilter = [new FilePickerFileType("3D-Modelle") { Patterns = ["*.3mf", "*.stl", "*.step", "*.stp", "*.obj"] }] })).Select(x => x.TryGetLocalPath()).OfType<string>().FirstOrDefault();
+        var f = PickOverride is { } fake ? (await fake(req))?.FirstOrDefault() : (await PickOpenFiles(new FilePickerOpenOptions { Title = "Datei für den 3D-Druck", FileTypeFilter = [new FilePickerFileType("3D-Modelle") { Patterns = ["*.3mf", "*.stl", "*.step", "*.stp", "*.obj"] }] })).Select(x => x.TryGetLocalPath()).OfType<string>().FirstOrDefault();
         if (f is not null) Open3dPrint(f);
     }
 

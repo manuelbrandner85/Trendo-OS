@@ -78,7 +78,7 @@ public partial class MainWindow
         var req = new PickRequest("book-open", false, false, BookKit.ImportExtensions);
         string[]? got;
         if (PickOverride is { } fake) got = await fake(req);
-        else got = (await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Manuskript öffnen",
+        else got = (await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Manuskript öffnen",
             FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Manuskript") { Patterns = ["*.docx", "*.odt", "*.txt", "*.md"] }] }))
             .Select(f => f.TryGetLocalPath()).OfType<string>().ToArray();
         if (got is [var f, ..]) ProgramRun(BookKey, () => BookOpenFile(d, f));
@@ -635,7 +635,7 @@ public partial class MainWindow
     async Task<string?> PickFolderPath(string title)
     {
         if (FolderPickOverride is { } o) return o(title);
-        var r = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions { Title = title, AllowMultiple = false });
+        var r = await PickFolders(new FolderPickerOpenOptions { Title = title, AllowMultiple = false });
         return r.Select(x => x.TryGetLocalPath()).OfType<string>().FirstOrDefault();
     }
     /// <summary>Tests: Ordnerwahl ohne Dialog.</summary>

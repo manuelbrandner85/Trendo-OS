@@ -35,7 +35,7 @@ public class Kreatur_Ui
             Assert.DoesNotContain("--python", args);
             var i = args.ToList().IndexOf("--python-expr"); Assert.True(i >= 0);
             using (var s = Avalonia.Platform.AssetLoader.Open(new Uri("avares://TrendoOS/Assets/blender/trendo_kreatur.py")))
-                Assert.Contains(Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(s)), args[i + 1]);
+                Assert.Contains(Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(s)), Trendo.Core.BlenderScript.Decode(args[i + 1]));
             var opt = System.Text.Json.JsonDocument.Parse(args[^1]).RootElement;
             Assert.Equal("drache", opt.GetProperty("art").GetString()); Assert.Equal("gruen", opt.GetProperty("farbe").GetString());
             Assert.True(opt.GetProperty("bild").GetBoolean());

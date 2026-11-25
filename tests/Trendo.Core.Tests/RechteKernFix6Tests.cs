@@ -75,7 +75,7 @@ public class RechteKernFix6
     {
         var path = Path.Combine(Path.GetTempPath(), "Ordner mit ' und \" und ä", "trendo_kreatur.py");
         var sha = new string('a', 64);
-        var e = Studio3D.VerifiedScriptExpr(path, sha);
+        var e = BlenderScript.Decode(Studio3D.VerifiedScriptExpr(path, sha)); // 8. Prüfrunde: Ausdruck als Base64-Zeile
         // 7. Prüfrunde: gemeinsamer Startausdruck (BlenderScript) – Prüffunktion _t, dann genau die gelesenen Bytes ausführen
         Assert.StartsWith("import hashlib,sys,types", e);
         Assert.Contains("if hashlib.sha256(d).hexdigest()!=h: sys.exit('TRENDO-SKRIPT-VERAENDERT')", e);

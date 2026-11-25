@@ -348,7 +348,7 @@ public partial class MainWindow
         if (PickOverride is { } fake) files = await fake(req);
         else
         {
-            var got = await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Fotos von Dokumenten", AllowMultiple = true,
+            var got = await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Fotos von Dokumenten", AllowMultiple = true,
                 FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Bilder") { Patterns = [.. ScanExt.Select(e => "*" + e)] }] });
             files = [.. got.Select(f => f.TryGetLocalPath()).OfType<string>()];
         }

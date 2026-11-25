@@ -30,7 +30,7 @@ public sealed class MpvAudio(string mpvPath) : IAudioOut
 
     /// <summary>Startargumente: unsichtbar, nur Ton, Steuerung über eine benannte Pipe.</summary>
     public static string[] StartArgs(string pipe) =>
-        ["--force-window=no", "--vo=null", "--no-video", "--idle=yes", "--no-terminal", "--really-quiet", "--audio-display=no", $"--input-ipc-server=\\\\.\\pipe\\{pipe}"];
+        [.. Trendo.Core.MpvSafe.Args(), "--force-window=no", "--vo=null", "--no-video", "--idle=yes", "--no-terminal", "--really-quiet", "--audio-display=no", $"--input-ipc-server=\\\\.\\pipe\\{pipe}"];
 
     /// <summary>Prozess des Players (für Tests: hat er ein Fenster?).</summary>
     public Process? ProcessForTests => _proc;

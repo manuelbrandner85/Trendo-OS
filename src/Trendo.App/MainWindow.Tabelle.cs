@@ -395,11 +395,11 @@ public partial class MainWindow
         if (PickOverride is { } fake) return (await fake(req)) is [var f, ..] ? f : null;
         if (save)
         {
-            var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions { Title = "Speichern unter", SuggestedFileName = Path.GetFileName(DefaultSheetName(".xlsx")), DefaultExtension = "xlsx",
+            var file = await PickSaveFile(new FilePickerSaveOptions { Title = "Speichern unter", SuggestedFileName = Path.GetFileName(DefaultSheetName(".xlsx")), DefaultExtension = "xlsx",
                 FileTypeChoices = [new FilePickerFileType("Excel-Mappe") { Patterns = ["*.xlsx"] }, new FilePickerFileType("CSV (nur dieses Blatt)") { Patterns = ["*.csv"] }] });
             return file?.TryGetLocalPath();
         }
-        var got = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Tabelle öffnen", FileTypeFilter = [new FilePickerFileType("Tabellen") { Patterns = ["*.xlsx", "*.ods", "*.csv"] }] });
+        var got = await PickOpenFiles(new FilePickerOpenOptions { Title = "Tabelle öffnen", FileTypeFilter = [new FilePickerFileType("Tabellen") { Patterns = ["*.xlsx", "*.ods", "*.csv"] }] });
         return got.Select(f => f.TryGetLocalPath()).OfType<string>().FirstOrDefault();
     }
 

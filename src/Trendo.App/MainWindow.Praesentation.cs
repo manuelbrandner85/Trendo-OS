@@ -215,11 +215,11 @@ public partial class MainWindow
         if (PickOverride is { } fake) return (await fake(req)) is [var f, ..] ? f : null;
         if (save)
         {
-            var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions { Title = "Speichern unter", SuggestedFileName = Path.GetFileName(DefaultDeckName(".pptx")), DefaultExtension = "pptx",
+            var file = await PickSaveFile(new FilePickerSaveOptions { Title = "Speichern unter", SuggestedFileName = Path.GetFileName(DefaultDeckName(".pptx")), DefaultExtension = "pptx",
                 FileTypeChoices = [new FilePickerFileType("PowerPoint-Präsentation") { Patterns = ["*.pptx"] }, new FilePickerFileType("PDF") { Patterns = ["*.pdf"] }] });
             return file?.TryGetLocalPath();
         }
-        var got = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Präsentation öffnen", FileTypeFilter = [new FilePickerFileType("Präsentationen") { Patterns = ["*.pptx", "*.odp"] }] });
+        var got = await PickOpenFiles(new FilePickerOpenOptions { Title = "Präsentation öffnen", FileTypeFilter = [new FilePickerFileType("Präsentationen") { Patterns = ["*.pptx", "*.odp"] }] });
         return got.Select(f => f.TryGetLocalPath()).OfType<string>().FirstOrDefault();
     }
 
@@ -227,7 +227,7 @@ public partial class MainWindow
     {
         var req = new PickRequest(field, false, false, patterns.Select(p => p.TrimStart('*')).ToList());
         if (PickOverride is { } fake) return (await fake(req)) is [var f, ..] ? f : null;
-        var got = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = title, FileTypeFilter = [new FilePickerFileType(title) { Patterns = patterns }] });
+        var got = await PickOpenFiles(new FilePickerOpenOptions { Title = title, FileTypeFilter = [new FilePickerFileType(title) { Patterns = patterns }] });
         return got.Select(f => f.TryGetLocalPath()).OfType<string>().FirstOrDefault();
     }
 

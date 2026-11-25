@@ -244,7 +244,7 @@ public partial class MainWindow
     async Task MixamoPickFigure(ProgramDocument d)
     {
         var got = PickOverride is { } fake ? await fake(new PickRequest("game-mixamo-rigger", false, false, ["glb", "gltf", "obj", "fbx", "blend"]))
-            : (await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Eigene Figur (ohne Skelett) für Mixamo", FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("3D-Figur") { Patterns = ["*.glb", "*.gltf", "*.obj", "*.fbx", "*.blend"] }] }))
+            : (await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Eigene Figur (ohne Skelett) für Mixamo", FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("3D-Figur") { Patterns = ["*.glb", "*.gltf", "*.obj", "*.fbx", "*.blend"] }] }))
                 .Select(f => Avalonia.Platform.Storage.StorageProviderExtensions.TryGetLocalPath(f)).OfType<string>().ToArray();
         if (got is { Length: > 0 }) await MixamoRigger(d, got[0]);
     }

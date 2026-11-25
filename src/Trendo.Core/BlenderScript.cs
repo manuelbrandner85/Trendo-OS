@@ -27,7 +27,17 @@ public static class BlenderScript
     {
         static string Hex(string s) => s.Length == 64 && s.All(Uri.IsHexDigit) ? s.ToLowerInvariant() : throw new ArgumentException("SHA-256 erwartet.", nameof(sha256));
         static string Lit(string p) => JsonSerializer.Serialize(System.IO.Path.GetFullPath(p));
-        var sb = new StringBuilder("import hashlib,sys,types\n");
+        var sb = new StringBuilder("import hashlib,sys,types,os,tempfile\n");
+        // 8. Prüfrunde (M2): Import-Pfade bereinigen – Skriptordner, aktueller Ordner, Temp und %APPDATA% (Blender-Benutzerskripte) fliegen aus sys.path,
+        // bevor irgendein Trendo-Skript läuft; ein „import“ kann so keine hineingelegte Datei aus einem beschreibbaren Ordner laden.
+        var dirs = new[] { path }.Concat((modules ?? []).Select(m => m.Path)).Select(p => System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(p))!).Distinct();
+        // Blenders eigene Ordner (neben dem Programm) bleiben immer; der aktuelle Ordner fliegt nur als genauer Eintrag (nicht seine Unterordner).
+        sb.Append("_n=lambda x:os.path.normcase(os.path.abspath(x))\n");
+        sb.Append("try:\n import bpy;_own=_n(os.path.dirname(bpy.app.binary_path))\nexcept Exception:\n _own=_n(os.path.dirname(sys.executable))\n");
+        sb.Append($"_scr=[_n(x) for x in [{string.Join(",", dirs.Select(Lit))}]]\n");
+        sb.Append("_bad=_scr+[_n(tempfile.gettempdir())]+([_n(os.environ['APPDATA'])] if os.environ.get('APPDATA') else [])\n");
+        sb.Append("_in=lambda x,b:x==b or x.startswith(b.rstrip(os.sep)+os.sep)\n");
+        sb.Append("sys.path[:]=[x for x in sys.path if x and x!='.' and not any(_in(_n(x),s) for s in _scr) and (_in(_n(x),_own) or (_n(x)!=_n(os.getcwd()) and not any(_in(_n(x),b) for b in _bad)))]\n");
         sb.Append("def _t(p,h):\n d=open(p,'rb').read()\n if hashlib.sha256(d).hexdigest()!=h: sys.exit('TRENDO-SKRIPT-VERAENDERT')\n return d\n");
         foreach (var (m, p, s) in modules ?? [])
         {
@@ -35,6 +45,16 @@ public static class BlenderScript
             sb.Append($"_m=types.ModuleType('{m}');_m.__file__={Lit(p)};exec(compile(_t({Lit(p)},'{Hex(s)}'),{Lit(p)},'exec'),_m.__dict__);sys.modules['{m}']=_m\n");
         }
         sb.Append($"_p={Lit(path)}\nexec(compile(_t(_p,'{Hex(sha256)}'),_p,'exec'),{{'__name__':'__main__','__file__':_p}})\n");
-        return sb.ToString();
+        // 8. Prüfrunde: als eine Zeile ohne Anführungszeichen, Zeilenumbrüche und Leerzeichen (Base64) – so übersteht der Ausdruck jede Kommandozeilen-
+        // Zerlegung unter Windows unverändert (auch Startskripte, die Argumente weiterreichen). Lesbar: <see cref="Decode"/>.
+        return "import base64;exec(base64.b64decode('" + Convert.ToBase64String(new UTF8Encoding(false).GetBytes(sb.ToString())) + "').decode('utf-8'))";
+    }
+
+    /// <summary>Den Python-Code eines Startausdrucks lesbar machen (Prüfung, Tests).</summary>
+    public static string Decode(string expr)
+    {
+        const string head = "import base64;exec(base64.b64decode('", tail = "').decode('utf-8'))";
+        if (!expr.StartsWith(head, StringComparison.Ordinal) || !expr.EndsWith(tail, StringComparison.Ordinal)) throw new FormatException("Kein Trendo-Startausdruck.");
+        return Encoding.UTF8.GetString(Convert.FromBase64String(expr[head.Length..^tail.Length]));
     }
 }

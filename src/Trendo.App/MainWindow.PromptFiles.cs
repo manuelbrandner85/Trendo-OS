@@ -101,7 +101,7 @@ public partial class MainWindow
         var name = all || one is null ? "ki-anweisungen.json" : PromptFileName(one.Name) + ".md";
         string? f;
         if (PickOverride is { } fake) f = (await fake(new PickRequest(all ? "prompt-export-all" : "prompt-export", false, true, [Path.GetExtension(name)]))) is [var x, ..] ? x : null;
-        else f = (await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions { Title = all ? "Alle KI-Anweisungen speichern" : "KI-Anweisung speichern", SuggestedFileName = name,
+        else f = (await PickSaveFile(new FilePickerSaveOptions { Title = all ? "Alle KI-Anweisungen speichern" : "KI-Anweisung speichern", SuggestedFileName = name,
             DefaultExtension = Path.GetExtension(name).TrimStart('.'),
             FileTypeChoices = all ? [new FilePickerFileType("Sammlung (.json)") { Patterns = ["*.json"] }]
                 : [new FilePickerFileType("Markdown mit Kopfzeilen (.md)") { Patterns = ["*.md"] }, new FilePickerFileType("JSON (.json)") { Patterns = ["*.json"] }] }))?.TryGetLocalPath();

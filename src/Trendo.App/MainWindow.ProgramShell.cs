@@ -792,7 +792,7 @@ public partial class MainWindow
                 var filters = new List<FilePickerFileType>();
                 if (extensions.Count > 0) filters.Add(new FilePickerFileType(title) { Patterns = extensions.Select(e => "*." + e.TrimStart('.')).ToList() });
                 filters.Add(new FilePickerFileType("Alle Dateien") { Patterns = ["*"] });
-                got = (await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = title, AllowMultiple = multiple, FileTypeFilter = filters })).Select(f => f.TryGetLocalPath()).OfType<string>().ToArray();
+                got = (await PickOpenFiles(new FilePickerOpenOptions { Title = title, AllowMultiple = multiple, FileTypeFilter = filters })).Select(f => f.TryGetLocalPath()).OfType<string>().ToArray();
             }
         }
         catch (Exception e) when (e is not OutOfMemoryException) { ProgramRun(key, () => throw new IOException(FriendlyError.Say(e), e)); return; }
@@ -838,10 +838,10 @@ public partial class MainWindow
         var type = new Avalonia.Platform.Storage.FilePickerFileType("Trendo-Dokument") { Patterns = ["*" + ProgramDocument.Extension] };
         if (save)
         {
-            var file = await StorageProvider.SaveFilePickerAsync(new Avalonia.Platform.Storage.FilePickerSaveOptions { Title = "Speichern unter", SuggestedFileName = suggested, DefaultExtension = ProgramDocument.Extension.TrimStart('.'), FileTypeChoices = [type] });
+            var file = await PickSaveFile(new Avalonia.Platform.Storage.FilePickerSaveOptions { Title = "Speichern unter", SuggestedFileName = suggested, DefaultExtension = ProgramDocument.Extension.TrimStart('.'), FileTypeChoices = [type] });
             return file?.TryGetLocalPath();
         }
-        var got = await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Dokument öffnen", AllowMultiple = false, FileTypeFilter = [type] });
+        var got = await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Dokument öffnen", AllowMultiple = false, FileTypeFilter = [type] });
         return got.Select(f => f.TryGetLocalPath()).OfType<string>().FirstOrDefault();
     }
 

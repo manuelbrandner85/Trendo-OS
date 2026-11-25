@@ -102,17 +102,17 @@ public class RechteKernFix7
         // die beiden öffentlichen Argument-Bauer: Startausdruck mit der Prüfsumme genau des eingebauten Skripts
         var a = Studio3DEngines.Args("s.py", "in.blend", "unity", "o.fbx", "r.json");
         Assert.DoesNotContain("--python", a);
-        Assert.Contains(BlenderScript.Sha(Studio3DEngines.Script), a[a.IndexOf("--python-expr") + 1]);
+        Assert.Contains(BlenderScript.Sha(Studio3DEngines.Script), BlenderScript.Decode(a[a.IndexOf("--python-expr") + 1]));
         var m = MixamoBlender.Args("m.py", ["x"]);
         Assert.DoesNotContain("--python", m);
-        Assert.Contains(BlenderScript.Sha(MixamoBlender.Script), m[m.IndexOf("--python-expr") + 1]);
+        Assert.Contains(BlenderScript.Sha(MixamoBlender.Script), BlenderScript.Decode(m[m.IndexOf("--python-expr") + 1]));
     }
 
     [Fact(DisplayName = "T-0764 N: Startausdruck prüft auch mitgeladene Module (trendo_moebel) und lehnt ungültige Modulnamen und Prüfsummen ab")]
     public void Startausdruck_Module()
     {
         var s = new string('b', 64);
-        var e = BlenderScript.Expr(Path.Combine(Path.GetTempPath(), "foto.py"), new string('a', 64), [("trendo_moebel", Path.Combine(Path.GetTempPath(), "m'oebel.py"), s)]);
+        var e = BlenderScript.Decode(BlenderScript.Expr(Path.Combine(Path.GetTempPath(), "foto.py"), new string('a', 64), [("trendo_moebel", Path.Combine(Path.GetTempPath(), "m'oebel.py"), s)]));
         Assert.Contains($"'{s}'", e);
         Assert.Contains("sys.modules['trendo_moebel']", e);
         Assert.Contains("TRENDO-SKRIPT-VERAENDERT", e);

@@ -216,7 +216,7 @@ public partial class MainWindow
         {
             var req = new PickRequest("or-file", false, false, ["png", "jpg", "jpeg", "webp", "gif", "wav", "mp3", "ogg", "flac", "m4a", "mp4", "webm", "mov"]);
             string[]? got = PickOverride is { } f ? await f(req)
-                : (await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Bild, Audio oder Video wählen", FileTypeFilter = [new FilePickerFileType("Bild, Audio, Video") { Patterns = req.Extensions.Select(e => "*." + e).ToList() }] }))
+                : (await PickOpenFiles(new FilePickerOpenOptions { Title = "Bild, Audio oder Video wählen", FileTypeFilter = [new FilePickerFileType("Bild, Audio, Video") { Patterns = req.Extensions.Select(e => "*." + e).ToList() }] }))
                     .Select(x => x.TryGetLocalPath()).OfType<string>().ToArray();
             if (got is { Length: > 0 }) { _orFile = got[0]; Show("ki-internet"); }
         };

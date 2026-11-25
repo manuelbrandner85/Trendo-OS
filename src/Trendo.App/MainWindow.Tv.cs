@@ -69,7 +69,8 @@ public sealed class MpvView : NativeControlHost
     /// <paramref name="wid"/> = Fenster, in das mpv zeichnet (null: kein eingebettetes Fenster).</summary>
     public static List<string> Args(string? wid, string pipe, bool muted, string url)
     {
-        var a = new List<string>(ExtraArgs);
+        var a = new List<string>(Trendo.Core.MpvSafe.Args()); // T-0764 (8. Prüfrunde): nichts aus %APPDATA%\mpv – keine Einstellungen, Skripte, Standardtasten
+        a.AddRange(ExtraArgs);
         if (wid is not null) a.Add($"--wid={wid}");
         a.AddRange(["--no-terminal", "--force-window=yes", "--keep-open=yes", "--idle=yes", "--osc=yes", "--input-vo-keyboard=no", $"--user-agent={Xtream.UserAgent}", "--cache=yes",
             "--demuxer-max-back-bytes=1GiB", "--demuxer-max-bytes=150MiB", "--hwdec=auto-safe", $"--input-ipc-server=\\\\.\\pipe\\{pipe}", muted ? "--mute=yes" : "--mute=no", url]);
@@ -792,7 +793,7 @@ public partial class MainWindow
         var file = TvButton("tv-src-file", "M3U-Datei wählen …", async () =>
         {
             var req = new PickRequest("tv-src-file", false, false, ["m3u", "m3u8"]);
-            string[]? got = PickOverride is { } f ? await f(req) : (await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Senderliste wählen", FileTypeFilter = [new FilePickerFileType("Senderliste") { Patterns = ["*.m3u", "*.m3u8"] }] })).Select(x => x.TryGetLocalPath()).OfType<string>().ToArray();
+            string[]? got = PickOverride is { } f ? await f(req) : (await PickOpenFiles(new FilePickerOpenOptions { Title = "Senderliste wählen", FileTypeFilter = [new FilePickerFileType("Senderliste") { Patterns = ["*.m3u", "*.m3u8"] }] })).Select(x => x.TryGetLocalPath()).OfType<string>().ToArray();
             if (got is { Length: > 0 }) { await TvAddSource(name.Text is { Length: > 0 } n ? n : Path.GetFileNameWithoutExtension(got[0]), "datei", got[0], epg.Text); Show("tv"); }
         });
         // Adressen kann man eintippen oder aus der Zwischenablage einfügen (Wunsch 27.10.2026) – „Datei wählen“ ist nur der zusätzliche Weg

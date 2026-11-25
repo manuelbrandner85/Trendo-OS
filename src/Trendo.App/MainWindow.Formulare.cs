@@ -136,7 +136,7 @@ public partial class MainWindow
         var req = new PickRequest("fo-open", false, false, ["pdf"]);
         string[]? got;
         if (PickOverride is { } fake) got = await fake(req);
-        else got = (await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Formular öffnen", FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("PDF") { Patterns = ["*.pdf"] }] }))
+        else got = (await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Formular öffnen", FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("PDF") { Patterns = ["*.pdf"] }] }))
             .Select(f => f.TryGetLocalPath()).OfType<string>().ToArray();
         if (got is [var f, ..]) ProgramRun(FoKey, () => FoOpen(d, f));
     }

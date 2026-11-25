@@ -5,7 +5,7 @@
 import bpy, bmesh, sys, os, json, math, random
 from mathutils import Vector
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# T-0764 (8. Prüfrunde): kein sys.path-Eintrag für den (beschreibbaren) Skriptordner – Trendo lädt trendo_moebel geprüft vorab (sys.modules)
 import trendo_moebel as tm
 
 def fail(msg):

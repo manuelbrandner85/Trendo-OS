@@ -208,7 +208,7 @@ public partial class MainWindow
         var req = new PickRequest("geld-import", false, false, ["csv", "txt", "xml", "sta", "mta", "940"]);
         string[]? got;
         if (PickOverride is { } fake) got = await fake(req);
-        else got = (await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Kontoauszug öffnen", FileTypeFilter = [new("Kontoauszug (CSV, CAMT.053, MT940)") { Patterns = ["*.csv", "*.txt", "*.xml", "*.sta", "*.mta", "*.940"] }, new("Alle Dateien") { Patterns = ["*"] }] }))
+        else got = (await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Kontoauszug öffnen", FileTypeFilter = [new("Kontoauszug (CSV, CAMT.053, MT940)") { Patterns = ["*.csv", "*.txt", "*.xml", "*.sta", "*.mta", "*.940"] }, new("Alle Dateien") { Patterns = ["*"] }] }))
             .Select(f => f.TryGetLocalPath()).OfType<string>().ToArray();
         if (got is [var f, ..]) GeldImport(f);
     }

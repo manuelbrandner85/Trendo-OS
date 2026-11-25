@@ -276,7 +276,7 @@ public partial class MainWindow
     async Task GameDocPickImage(ProgramDocument d, string id)
     {
         var got = PickOverride is { } fake ? await fake(new PickRequest($"game-doc-{id}-img", false, false, ["png", "jpg", "jpeg"]))
-            : (await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Bild für den Abschnitt", FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Bilder") { Patterns = ["*.png", "*.jpg", "*.jpeg"] }] }))
+            : (await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Bild für den Abschnitt", FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Bilder") { Patterns = ["*.png", "*.jpg", "*.jpeg"] }] }))
                 .Select(f => Avalonia.Platform.Storage.StorageProviderExtensions.TryGetLocalPath(f)).OfType<string>().ToArray();
         if (got is { Length: > 0 }) ProgramRun(GK, () => d.Edit("Bild einfügen", x => GameDocument.AddImage(x, id, got[0])));
     }

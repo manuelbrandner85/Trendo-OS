@@ -141,7 +141,7 @@ public partial class MainWindow
         var name = Path.GetFileNameWithoutExtension(d.Text("batchSource")); if (name.Length == 0) name = "vorhersagen";
         string? f;
         if (PickOverride is { } fake) f = (await fake(new PickRequest("train-batch-save", false, true, [".csv"]))) is [var x, ..] ? x : null;
-        else f = (await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions { Title = "Vorhersagen speichern", SuggestedFileName = name + "-vorhersagen.csv", DefaultExtension = "csv",
+        else f = (await PickSaveFile(new FilePickerSaveOptions { Title = "Vorhersagen speichern", SuggestedFileName = name + "-vorhersagen.csv", DefaultExtension = "csv",
             FileTypeChoices = [new FilePickerFileType("CSV-Tabelle") { Patterns = ["*.csv"] }] }))?.TryGetLocalPath();
         if (f is null) return;
         ProgramRun(TrainKey, () => { TrainWriteBatch(d, f); _progMsg[TrainKey] = $"✓ Gespeichert: {Path.GetFileName(f)}"; });

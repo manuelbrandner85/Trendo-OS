@@ -303,7 +303,7 @@ public partial class MainWindow
         if (PickOverride is { } fake) f = (await fake(req))?.FirstOrDefault();
         else
         {
-            var got = await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Bild für den Stoffdruck", FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Bilder") { Patterns = ["*.png", "*.jpg", "*.jpeg"] }] });
+            var got = await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Bild für den Stoffdruck", FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Bilder") { Patterns = ["*.png", "*.jpg", "*.jpeg"] }] });
             f = got.Count > 0 ? got[0].TryGetLocalPath() : null;
         }
         if (f is not null) ProgramRun(ModeKey, () => d.Set("gPatternImage", f, "Stoffdruck wählen"));

@@ -150,7 +150,7 @@ public partial class MainWindow
         foreach (var a in c.Attachments.OrderBy(a => a.No)) sp.Children.Add(P($"Anlage {a.No}: {a.Title}  ·  SHA-256 {a.Sha256[..12]}…", Text, 12));
         sp.Children.Add(Row(Btn("att-add", "Anlage hinzufügen …", async () =>
         {
-            var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Anlage wählen", AllowMultiple = true });
+            var files = await PickOpenFiles(new FilePickerOpenOptions { Title = "Anlage wählen", AllowMultiple = true });
             foreach (var f in files) if (f.TryGetLocalPath() is { } p) Cases.AddAttachment(c, p, Path.GetFileNameWithoutExtension(p), Principal.LocalOwner);
             Show("akte");
         }), Btn("att-renumber", "Neu nummerieren", () => { Cases.Renumber(c, Principal.LocalOwner); Show("akte"); })));
@@ -180,7 +180,7 @@ public partial class MainWindow
         var ephemeral = new CheckBox { Name = "inc-ephemeral", Content = "Nur forensische Kopie (nach 120 Stunden automatisch löschen)", Foreground = Text };
         sp.Children.Add(Row(Btn("inc-add", "Scan/Foto einlesen …", async () =>
         {
-            var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Brief-Foto oder Scan", FileTypeFilter = [new("Bilder") { Patterns = Ocr.ImageExt.Select(e => "*" + e).ToList() }, new("Text") { Patterns = ["*.txt"] }] });
+            var files = await PickOpenFiles(new FilePickerOpenOptions { Title = "Brief-Foto oder Scan", FileTypeFilter = [new("Bilder") { Patterns = Ocr.ImageExt.Select(e => "*" + e).ToList() }, new("Text") { Patterns = ["*.txt"] }] });
             foreach (var f in files) if (f.TryGetLocalPath() is { } p) await ImportIncoming(c, p, ephemeral.IsChecked == true);
             Show("akte");
         }), ephemeral));

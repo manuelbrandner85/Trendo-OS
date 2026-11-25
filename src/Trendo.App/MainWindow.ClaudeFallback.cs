@@ -225,7 +225,7 @@ public partial class MainWindow
         else if (kind == "verbessern")
         {
             var got = PickOverride is { } fake ? await fake(new PickRequest("claude-tool-verbessern", false, false, ["png", "jpg", "jpeg", "webp"])) : null;
-            if (got is null && PickOverride is null) got = (await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Bild zum Verbessern" })).Select(f => Avalonia.Platform.Storage.StorageProviderExtensions.TryGetLocalPath(f)).OfType<string>().ToArray();
+            if (got is null && PickOverride is null) got = (await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Bild zum Verbessern" })).Select(f => Avalonia.Platform.Storage.StorageProviderExtensions.TryGetLocalPath(f)).OfType<string>().ToArray();
             input = got is { Length: > 0 } ? got[0] : "";
         }
         else input = ui.Input.Text?.Trim() ?? "";

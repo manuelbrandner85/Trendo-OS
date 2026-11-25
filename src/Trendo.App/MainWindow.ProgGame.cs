@@ -368,7 +368,7 @@ public partial class MainWindow
             var pick = Act($"game-anim-pick-{id}", o is null ? "Bild…" : "✓ " + Path.GetFileName(o["file"].AsText() ?? ""), async () =>
             {
                 var got = PickOverride is { } fake ? await fake(new PickRequest($"game-anim-{st}", false, false, ["png", "jpg", "webp", "gif"]))
-                    : (await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Bildstreifen für „" + label + "“", FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Bilder") { Patterns = ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.gif"] }] }))
+                    : (await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Bildstreifen für „" + label + "“", FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Bilder") { Patterns = ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.gif"] }] }))
                         .Select(f => Avalonia.Platform.Storage.StorageProviderExtensions.TryGetLocalPath(f)).OfType<string>().ToArray();
                 if (got is { Length: > 0 }) ProgramRun(GK, () => GameSetAnim(d, st, got[0], int.TryParse(frames.Text, out var a) ? a : 1, int.TryParse(fps.Text, out var b) ? b : 8));
             });

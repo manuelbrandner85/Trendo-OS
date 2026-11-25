@@ -409,7 +409,7 @@ public partial class MainWindow
     async Task PickMergeSource()
     {
         var req = new PickRequest("text-merge-source", false, false, ["csv", "xlsx", "ods"]);
-        var f = PickOverride is { } fake ? (await fake(req))?.FirstOrDefault() : (await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Datenquelle wählen", FileTypeFilter = [new FilePickerFileType("Tabellen") { Patterns = ["*.csv", "*.xlsx", "*.ods"] }] })).Select(x => x.TryGetLocalPath()).OfType<string>().FirstOrDefault();
+        var f = PickOverride is { } fake ? (await fake(req))?.FirstOrDefault() : (await PickOpenFiles(new FilePickerOpenOptions { Title = "Datenquelle wählen", FileTypeFilter = [new FilePickerFileType("Tabellen") { Patterns = ["*.csv", "*.xlsx", "*.ods"] }] })).Select(x => x.TryGetLocalPath()).OfType<string>().FirstOrDefault();
         if (f is null) return;
         try { TextMergeSource(f); } catch (Exception ex) when (ex is IOException or InvalidDataException or System.Xml.XmlException) { _txMsg = "Datenquelle ging nicht: " + Trendo.Core.FriendlyError.Say(ex); }
         Show("text");

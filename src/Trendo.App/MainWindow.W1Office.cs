@@ -81,7 +81,7 @@ public partial class MainWindow
     {
         var req = new PickRequest("letter-export", false, false, ["pdf", "docx"]);
         if (PickOverride is { } fake) return (await fake(req)) is [var f, ..] ? f : null;
-        var file = await StorageProvider.SaveFilePickerAsync(new Avalonia.Platform.Storage.FilePickerSaveOptions { Title = "Brief exportieren", SuggestedFileName = stem, DefaultExtension = "pdf",
+        var file = await PickSaveFile(new Avalonia.Platform.Storage.FilePickerSaveOptions { Title = "Brief exportieren", SuggestedFileName = stem, DefaultExtension = "pdf",
             FileTypeChoices = [new Avalonia.Platform.Storage.FilePickerFileType("PDF") { Patterns = ["*.pdf"] }, new Avalonia.Platform.Storage.FilePickerFileType("Word-Dokument") { Patterns = ["*.docx"] }] });
         return file is null ? null : Avalonia.Platform.Storage.StorageProviderExtensions.TryGetLocalPath(file);
     }
@@ -142,7 +142,7 @@ public partial class MainWindow
         var req = new PickRequest("letter-open-foreign", false, false, LetterImport.Extensions);
         string[]? got;
         if (PickOverride is { } fake) got = await fake(req);
-        else got = (await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Brief öffnen",
+        else got = (await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Brief öffnen",
             FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Brief") { Patterns = ["*.docx", "*.odt", "*.txt"] }] }))
             .Select(f => Avalonia.Platform.Storage.StorageProviderExtensions.TryGetLocalPath(f)).OfType<string>().ToArray();
         if (got is [var f, ..]) LetterOpenForeign(f);

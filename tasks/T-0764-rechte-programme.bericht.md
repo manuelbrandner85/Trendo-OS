@@ -532,6 +532,89 @@ Grund sind die strengeren Regeln; abgeschwächt ist keiner:
 - **Weitere Dateiarten:** Dateiarten ohne eigenen Betrachter (zum Beispiel .kra, .blend, .py, Archive) öffnet nur ein Erwachsener.
 - **Gemeinsames Konto:** Unter einem gemeinsamen Windows-Konto ist der Kinderschutz keine harte Grenze.
 
+## Achte Prüfrunde (Commit „T-0764 fix8“)
+
+Grundlage ist die Gegenprüfung von `0f9633f90`. Sie hatte einen hohen Befund (mpv lädt %APPDATA%\mpv), zwei mittlere (Windows-Dateidialoge im Kinderprofil, `sys.path` in Blender-Skripten) und zwei niedrige (Entpacken).
+
+**Rot auf 0f9633f90:**
+- `reports/T-0764/rot-fix8-core.log`: 9 von 15 Tests rot, darunter 4 der 10 Namensfälle. Rot waren:
+  - H: mpv-Argumente des Player-Fensters, mpv-Starts im Quelltext, Versionsprüfung.
+  - M1: 59 System-Dialoge außerhalb des Helfers.
+  - M2: `sys.path.insert` in `trendo_foto.py`, Startausdruck ohne Bereinigung.
+  - N: `spiel.exe ` mit Leerzeichen am Ende, `CON.txt`, `aux.png`, `COM1.jpg`, ZIP-Bombe, mehr als 10 000 Einträge.
+- Sechs Namensfälle lehnte der alte Stand schon ab, aber nur zufällig über andere Regeln (Datei ohne Endung, `.exe` am Ende, Fehler beim Entpacken). Es sind `spiel.exe.`, `spiel.exe. .`, `nul`, `lpt9`, `bild.png:boese.exe` und `ordner./bild.png:x`.
+- `reports/T-0764/rot-fix8-app.log`: Die eingebetteten Player starteten mpv ohne `--no-config`.
+- Für den Rot-Beleg liefen die Testdateien ohne die Tests, die neue Schnittstellen brauchen (`MpvSafe`-Tastenbelegung, Trendos Auswahl `PickOpenFiles`/`PickSaveFile`). Diese Tests sind nur grün belegt.
+
+### H – mpv nie mit %APPDATA%\mpv
+
+Neu im Kern ist `MpvSafe.Args()`. Jeder mpv-Start von Trendo bekommt es, für alle Profile:
+- `--no-config`, `--load-scripts=no`, `--input-default-bindings=no`
+- `--input-conf=<Trendo-Datei>`; die Datei wird vor jedem Start neu geschrieben.
+
+Betroffen sind:
+- der Ton-Player (`MpvAudio.StartArgs`, auch die Vorschau im Videoschnitt),
+- der eingebettete Fernseh-Player (`MpvView.Args`),
+- das eigene Player-Fenster für Erwachsene (`MediaLibrary.Player`); `Sys02.Play` übergibt jetzt alle Argumente.
+
+**Tastatur:** Die eingebetteten Player bleiben ohne Tastatur (`--input-vo-keyboard=no`, `--no-terminal`) und bekommen eine leere Belegung. Das eigene Fenster bekommt Trendos feste, sichere Belegung (`MpvSafe.SafeKeys`): Pause, Spulen, Lautstärke, Stumm, Vollbild, Beenden. `MpvSafe.IsSafeInputConf` erlaubt genau diese Befehle, also kein `run`, `subprocess`, `load-script`, `script-binding` und keine Befehlsketten.
+
+**Konsole (`--script-opts` geprüft):** Die eingebaute Konsole öffnet sich nur über eine Tastenbindung. Die Standardbindungen sind aus, und Trendos Belegung enthält keine Konsole. Benutzerskripte lädt mpv nicht mehr (`--load-scripts=no`).
+
+Eigene Optionen wie `--load-console=no` setze ich bewusst nicht. Ihre Namen haben sich zwischen mpv-Fassungen geändert, und eine unbekannte Option bricht den Start ab.
+
+**Weitere Startstellen (durchsucht):**
+- Die Versionsprüfung startet `mpv --no-config --version`.
+- VLC startet ohne Lua-Erweiterungen (`--no-lua`).
+- ffplay startet Trendo nirgends.
+
+Ein Quelltext-Test stellt sicher, dass jede mpv-Startstelle die festen Argumente nutzt.
+
+### M1 – Datei-Dialoge im Kinderprofil
+
+Neuer zentraler Helfer `MainWindow.KidPicker.cs` mit `PickOpenFiles`, `PickSaveFile` und `PickFolders`. Alle 59 Aufrufe in 48 Dateien laufen jetzt darüber.
+
+- **Erwachsene:** unverändert der Dialog des Systems.
+- **Kinderprofil:** Trendos eigener Auswahl-Dialog.
+  - Er zeigt nur den Benutzerordner und die bekannten Ordner und kommt nicht weiter nach oben.
+  - Man kann darin nicht starten, umbenennen oder „Öffnen mit“ wählen.
+  - Beim Speichern akzeptiert er nur einfache Dateinamen: keine Pfade, keine Gerätenamen, keine Datenströme, keine Programm- oder Skript-Endungen.
+  - Das Ergebnis kommt als Objekt des Systems zum lokalen Pfad zurück (`TryGetFileFromPathAsync`), ohne Dialog.
+
+Kein Aufruf war zu riskant für die Umstellung; gesperrt ist dafür keine Funktion. Ein Quelltext-Test stellt sicher, dass `StorageProvider.Open…/Save…PickerAsync` nur noch im Helfer vorkommen (genau drei Stellen).
+
+### M2 – `sys.path` in Blender
+
+`trendo_foto.py` setzt `sys.path` nicht mehr; `trendo_moebel` lädt Trendo geprüft vorab in `sys.modules`. `BlenderScript.Expr` bereinigt `sys.path`, bevor irgendein Trendo-Skript läuft:
+- **Raus:** Skriptordner, Temp, %APPDATA% (Blender-Benutzerskripte), der aktuelle Ordner als genauer Eintrag, `''` und `.`.
+- **Bleibt:** Blenders eigene Ordner neben dem Programm.
+
+Der Startausdruck ist jetzt eine einzige Base64-Zeile (`import base64;exec(…)`, lesbar über `BlenderScript.Decode`). Der Grund ist ein Fund aus dem gezielten Lauf: Der mehrzeilige Ausdruck mit Anführungszeichen wurde von der Windows-Kommandozeile falsch zerlegt, sobald Blender über ein Startskript (.cmd) aufgerufen wird (`W4_Core05_Ui`).
+
+Alle eingebauten Blender-Skripte (`Assets/blender/*.py`, `Assets/ki/trendo_anprobe.py`) sind frei von `sys.path`-, `importlib`-, `__import__`- und `runpy`-Tricks; das prüft ein Test. Die übrigen Skripte unter `Assets/ki` sind keine Blender-Skripte, sondern starten installierte KI-Programme.
+
+### N – Entpacken im Kinderprofil
+
+- **Namen:** `Archives.UnsafeEntryName` normalisiert jeden Pfadteil wie Windows (`TrimEnd(' ', '.')`). Unsicher sind auch alternative Datenströme (`:`), Gerätenamen (CON, PRN, AUX, NUL, COM1–9, LPT1–9, CONIN$, CONOUT$, auch mit Endung) und Steuerzeichen.
+- **Grenzen vorab** (aus dem Inhaltsverzeichnis, ohne zu entpacken): höchstens 2 GB entpackt, höchstens 10 000 Einträge. Ein Packverhältnis über 100:1 bei mehr als 10 MB gilt als verdächtig.
+- **Erwachsene:** unverändert.
+
+### Tests
+
+- Build: 0 Fehler.
+- Core gezielt: 301 von 301 grün, Exitcode 0 (`gruen-fix8-core.log`).
+- App gezielt (`gruen-fix8-app.log`): 320 Klassen in 7 Prozessen plus EveryButton_Alltag, zusammen 1369 Tests.
+- Teil 00 bis 05 und EveryButton liefen mit Exitcode 0.
+- Teil 06 hatte einen roten Test: `W4_Core05_Ui`, Blender über ein Startskript (siehe M2). Daraufhin ist der Startausdruck jetzt eine Base64-Zeile.
+- Nachlauf mit dem Endstand: Teil 06 komplett, alle Blender-, 3D-, Kreatur-, Foto-, Anprobe- und Mixamo-Klassen sowie alle RechteKern-Oberflächenklassen, zusammen 99 Klassen und 408 Tests. 0 rot, Exitcode 0.
+
+### Grenzen und offene Punkte
+
+- **mpv-Fassung:** Die Belegung im Player-Fenster ist bewusst knapp. Weitere mpv-Funktionen per Taste (Untertitel, Tonspur) gibt es dort nicht mehr.
+- **Kinder-Auswahl:** Sie zeigt keine Vorschaubilder.
+- **Werkzeugordner:** Werkzeuge darin werden weiter nicht vor jedem Start gehasht.
+- **Gemeinsames Konto:** Unter einem gemeinsamen Windows-Konto ist der Kinderschutz keine harte Grenze.
+
 ## Abnahmekriterien
 
 | # | Kriterium | Urteil |

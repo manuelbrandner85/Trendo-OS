@@ -133,7 +133,7 @@ public partial class MainWindow
         var origin = new TextBox { Name = "web-medium-herkunft", PlaceholderText = "Herkunft, z. B. eigenes Foto", Width = 180 };
         var pick = Act("web-medium-waehlen", "Datei wählen …", async () =>
         {
-            var got = await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Medium ins Projekt holen" });
+            var got = await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Medium ins Projekt holen" });
             if (got.Select(f => Avalonia.Platform.Storage.StorageProviderExtensions.TryGetLocalPath(f)).OfType<string>().FirstOrDefault() is { } p) file.Text = p;
         });
         sp.Children.Add(new WrapPanel { Children = { file, new Border { Width = 6 }, pick, new Border { Width = 6 }, art } });

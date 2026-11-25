@@ -22,7 +22,7 @@ public static class StudioTools
     public static readonly IReadOnlyDictionary<string, (string Exe, string? VerifyArgs)> Verify = new Dictionary<string, (string, string?)>
     {
         ["blender"] = ("blender.exe", "--version"), ["libreoffice"] = ("soffice.exe", null) /* --version öffnet unter Windows teils ein Fenster und hängt */, ["ollama"] = ("ollama.exe", "--version"),
-        ["sumatra"] = ("SumatraPDF.exe", null), ["7zip"] = ("7z.exe", null), ["git"] = ("git.exe", "--version"), ["python"] = ("python.exe", "--version"), ["mpv"] = ("mpv.exe", "--version"), ["ffmpeg"] = ("ffmpeg.exe", "-version"),
+        ["sumatra"] = ("SumatraPDF.exe", null), ["7zip"] = ("7z.exe", null), ["git"] = ("git.exe", "--version"), ["python"] = ("python.exe", "--version"), ["mpv"] = ("mpv.exe", "--no-config --version"), ["ffmpeg"] = ("ffmpeg.exe", "-version"),
         ["tesseract"] = ("tesseract.exe", "--version"), ["unreal"] = ("UnrealEditor.exe", null), ["krita"] = ("krita.exe", null),
         ["inkscape"] = ("inkscape.exe", "--version"), ["kdenlive"] = ("kdenlive.exe", null), ["audacity"] = ("Audacity.exe", null),
         ["colmap"] = ("colmap.exe", "-h"), ["meshroom"] = ("meshroom_batch.exe", "--help"),

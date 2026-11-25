@@ -227,7 +227,7 @@ public partial class MainWindow
         var req = new PickRequest("dd-open", false, false, ["pptx", "odp", "txt", "md"]);
         string[]? got;
         if (PickOverride is { } fake) got = await fake(req);
-        else got = (await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Präsentation öffnen",
+        else got = (await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Präsentation öffnen",
             FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Präsentation oder Gliederung") { Patterns = ["*.pptx", "*.odp", "*.txt", "*.md"] }] }))
             .Select(f => f.TryGetLocalPath()).OfType<string>().ToArray();
         if (got is [var f, ..]) ProgramRun(DeckDesignKey, () => DdOpenFile(d, f));
