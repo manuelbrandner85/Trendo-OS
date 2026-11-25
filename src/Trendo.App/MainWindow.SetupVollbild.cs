@@ -86,6 +86,7 @@ public partial class MainWindow
 
     Control SetupStartView()
     {
+        if (_roleChild) return KidSetupPage(); // T-0764 (14. Prüfrunde)
         var sp = new StackPanel { Name = "wiz-start", Spacing = 14 };
         sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 14, Children = {
             new Image { Source = TrendoLogo.Emblem(), Width = 56, Height = 56 },

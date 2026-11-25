@@ -119,7 +119,7 @@ public partial class MainWindow
         var ef = Field("settings-file", "Datei zum Einlesen (.json)");
         sp.Children.Add(Card(Section("Einstellungen sichern", "Alle Einstellungen in eine Datei speichern oder auf einem anderen Rechner wieder einlesen.",
             Line(Act("settings-export", "Speichern", () => Try(V, () => { var f = Path.Combine(WorkFolder("Einstellungen"), $"trendo-einstellungen-{DateTime.Now:yyyyMMdd-HHmm}.json"); A11y.ExportSettings(_settings, f); Say("Gespeichert: " + f, V); }), true),
-                ef, Act("settings-import", "Einlesen", () => Try(V, () => { var s = A11y.ImportSettings(Clean(ef)); s.Save(_core.DataRoot); _settings = s; _core.Audit.Append("app", "settings.import", Path.GetFileName(Clean(ef))); Reopen(V); }))))));
+                ef, Act("settings-import", "Einlesen", () => Try(V, () => { var s = A11y.ImportSettings(Clean(ef), _settings); UseSettings(s); s.Save(_core.DataRoot); /* T-0764 (14. Prüfrunde, H1): Rolle, Person, Ordner und Sperren bleiben */ _core.Audit.Append("app", "settings.import", Path.GetFileName(Clean(ef))); Reopen(V); }))))));
         return BedienPage("Bedienung – Hilfen", sp);
     }
 

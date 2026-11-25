@@ -1,0 +1,119 @@
+T-0764 fix14 – App: alle 490 Klassen (ohne MpvWindowTests/Echtlauf/Echt/Live/Browser/Fake/Probe/Stub/Handler) in 6 Teilen + EveryButton_Alltag einzeln
+=== Teil 00 (82 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0699 Echtlauf Videos mit KI: echte Bild-KI malt 2 Schlüsselbilder, echte Stimme spricht, FFmpeg rendert MP4 mit Ton und Untertitel; ffprobe prüft, Standbilder einer Szene unterscheiden sich [SKIP]
+      Übersprungen – Echtlauf mit Bild-KI nur mit TRENDO_ECHT_VIDEO=1.
+    T-0699 Echtlauf Bilder erkennen: echtes YOLOX-S erkennt Hund und Fahrrad, echtes Tesseract liest gedruckten Text; Suche findet beide Fotos, Seitendatei geschrieben [SKIP]
+      Übersprungen – YOLOX-Prüfumgebung fehlt (%TEMP%/trendo-tools-b/yolox).
+    T-0729: Ablauf im Kindprozess (Fenster, Chrome-Vorschau, LibreOffice-Export) [SKIP]
+      Läuft nur als Kindprozess von „Typischer Ablauf im Kindprozess“.
+    T-0731: Bildschirmfoto ohne ffmpeg (echt, GDI) – nimmt ein fremdes Fenster eines anderen Prozesses auf, PNG enthält dessen Pixel [SKIP]
+      Übersprungen – das Testfenster ist von einem anderen Fenster verdeckt (oben liegt 0x3BB0582); der Bildschirm zeigt gerade etwas anderes.
+  Finished:    Trendo.App.Tests (ID = '97b5c1f5500875191cbeb0c8517e66ccd14cf2b868c8f66523c10ec2c1278210')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 237, Errors: 0, Failed: 0, Skipped: 4, Not Run: 0, Time: 682,886s
+Waiting 10 seconds for foreground threads to exit...
+Teil 00 exit=0 Total: 237, Errors: 0, Failed: 0, Skipped: 4 690s
+=== Teil 01 (82 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    CORE-04 UI: mit echtem Begleiter koppeln (Code vom Gerät), Details holen, Erreichbarkeit, Aufgabe zuordnen, entfernen [SKIP]
+      Übersprungen – nur unter Linux prüfbar.
+    Geräte: namenloses PCI-Gerät erscheint mit Kennung und Angebot; „Namen nachschlagen“ lädt die Liste (Prüfsumme) und zeigt Hersteller und Modell; danach kein Angebot mehr [SKIP]
+      Übersprungen – braucht Windows und pci.ids im Prüfordner.
+  Finished:    Trendo.App.Tests (ID = '97b5c1f5500875191cbeb0c8517e66ccd14cf2b868c8f66523c10ec2c1278210')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 323, Errors: 0, Failed: 0, Skipped: 2, Not Run: 0, Time: 322,142s
+Waiting 10 seconds for foreground threads to exit...
+Teil 01 exit=0 Total: 323, Errors: 0, Failed: 0, Skipped: 2 329s
+=== Teil 02 (82 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+T-0727 B6 echt: 9 Modelle von Ollama, Grafikspeicher 11,9 GB → Standard qwen3:14b
+  Finished:    Trendo.App.Tests (ID = '97b5c1f5500875191cbeb0c8517e66ccd14cf2b868c8f66523c10ec2c1278210')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 299, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 889,111s
+Waiting 10 seconds for foreground threads to exit...
+Teil 02 exit=0 Total: 299, Errors: 0, Failed: 0, Skipped: 0 893s
+=== Teil 03 (82 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0202: Kein Klick auf irgendeiner Seite stürzt ab (Klick-Audit, Bericht der stummen Knöpfe) [SKIP]
+      Langer Klick-Audit über alle Seiten: TRENDO_ALL_BUTTONS=1 setzen
+    Z3 PC-Lauf: echtes Modell (Poly Haven, CC0) über Blender nach GLB, HDR-Licht, Grafikkarte, Bilder und gemessene Bildrate unter reports/ (nur mit TRENDO_PC_LAUF=1) [SKIP]
+      Übersprungen – nur mit TRENDO_PC_LAUF=1 (echte Grafikkarte, Blender, Quellen unter %TEMP%\trendo-z3-quellen).
+  Finished:    Trendo.App.Tests (ID = '97b5c1f5500875191cbeb0c8517e66ccd14cf2b868c8f66523c10ec2c1278210')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 378, Errors: 0, Failed: 0, Skipped: 2, Not Run: 0, Time: 992,449s
+Waiting 10 seconds for foreground threads to exit...
+Teil 03 exit=0 Total: 378, Errors: 0, Failed: 0, Skipped: 2 1000s
+=== Teil 04 (81 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+T-0747-fix: Klick bis Oberfläche wieder frei 119 ms, fertig nach 5453 ms, 180 Wände
+    SYS-13-P13: Jede Seite gehört zu einem Modul aus requirements.yaml [FAIL]
+      prog-programm
+      Stack Trace:
+        tests\Trendo.App.Tests\Sys13UiTests.cs(15,0): at Trendo.App.Tests.Sys13_Qualitaet_Ui.Modules()
+           at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Finished:    Trendo.App.Tests (ID = '97b5c1f5500875191cbeb0c8517e66ccd14cf2b868c8f66523c10ec2c1278210')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 305, Errors: 0, Failed: 1, Skipped: 0, Not Run: 0, Time: 391,912s
+Waiting 10 seconds for foreground threads to exit...
+Teil 04 exit=1 Total: 305, Errors: 0, Failed: 1, Skipped: 0 396s
+=== Teil 05 (81 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    SYS-03-P14: Seite als PDF – A4, Prüfsumme im Protokoll (nur wenn Chrome/Edge da) [SKIP]
+      Übersprungen: pdfinfo ist nicht installiert.
+  Finished:    Trendo.App.Tests (ID = '97b5c1f5500875191cbeb0c8517e66ccd14cf2b868c8f66523c10ec2c1278210')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 241, Errors: 0, Failed: 0, Skipped: 1, Not Run: 0, Time: 875,813s
+Waiting 10 seconds for foreground threads to exit...
+Teil 05 exit=0 Total: 241, Errors: 0, Failed: 0, Skipped: 1 882s
+=== Teil EB (1 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = '97b5c1f5500875191cbeb0c8517e66ccd14cf2b868c8f66523c10ec2c1278210')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 162,178s
+Teil EB exit=0 Total: 1, Errors: 0, Failed: 0, Skipped: 0 163s
+
+Nachlauf mit Endstand (nach Update-Schaltern für Kinder und Modulzuordnung prog-programm):
+=== Nachlauf 04 (Endstand) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+T-0747-fix: Klick bis Oberfläche wieder frei 70 ms, fertig nach 3066 ms, 180 Wände
+  Finished:    Trendo.App.Tests (ID = '97b5c1f5500875191cbeb0c8517e66ccd14cf2b868c8f66523c10ec2c1278210')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 305, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 387,023s
+Waiting 10 seconds for foreground threads to exit...
+Nachlauf 04 exit=0 Total: 305, Errors: 0, Failed: 0, Skipped: 0 391s
+=== Nachlauf Nachzug (Endstand) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = '97b5c1f5500875191cbeb0c8517e66ccd14cf2b868c8f66523c10ec2c1278210')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 43, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 214,413s
+Nachlauf Nachzug exit=0 Total: 43, Errors: 0, Failed: 0, Skipped: 0 215s

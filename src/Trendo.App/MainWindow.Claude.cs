@@ -278,7 +278,7 @@ public partial class MainWindow
         return b;
     }
 
-    string ProjectsFolderForClaude() => _settings.ProjectsFolder is { Length: > 0 } pf ? pf : UserSettings.DefaultProjectsFolder();
+    string ProjectsFolderForClaude() => ProjectsRoot;
 
     /// <summary>„Neu prüfen“: Stand frisch lesen und das Ergebnis mit Uhrzeit melden (sichtbare Rückmeldung).</summary>
     async Task ClaudeRecheck()

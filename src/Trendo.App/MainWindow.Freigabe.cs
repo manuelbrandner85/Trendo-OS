@@ -22,7 +22,31 @@ public partial class MainWindow
     public ApprovalRequest? LastFreigabe { get; private set; }
 
     /// <summary>B4: die angemeldete Person mit ihrer Rolle aus dem Profil. Kinderprofil = Rolle Benutzer – der Kern lehnt dessen Freigaben ab.</summary>
-    public Principal CurrentPrincipal => Principal.ForProfile(_settings.Child);
+    public Principal CurrentPrincipal => Principal.ForProfile(_roleChild);
+
+    /// <summary>T-0764 (14. Prüfrunde, H1/H2): Rolle aus der geschützten Quelle (<see cref="ProfileRole"/>), nie aus settings.json. Bis zum Laden: Kind (fail-closed).</summary>
+    bool _roleChild = true;
+
+    /// <summary>Die EINZIGE Stelle, die <c>_settings</c> ersetzt (Start, Einlesen, Zurücksetzen, Wiederherstellen): Rolle neu aus der geschützten Quelle,
+    /// <see cref="UserSettings.Child"/> nur als Spiegel.</summary>
+    void UseSettings(UserSettings s)
+    {
+        _roleChild = ProfileRole.IsChild(_core.DataRoot);
+        s.Child = _roleChild;
+        _settings = s;
+    }
+
+    /// <summary>T-0764 (14. Prüfrunde, M): Projektordner – für Kinder nur in der Freigabe (sonst „projekte“ im Datenordner, fail-closed). Erwachsene: wie eingestellt.</summary>
+    internal string ProjectsBase(string fallback)
+    {
+        var pf = _settings.ProjectsFolder;
+        var want = string.IsNullOrEmpty(pf) || !Path.IsPathRooted(pf) ? fallback : pf;
+        if (!_roleChild) return want;
+        return Trendo.Core.Sys.ChildWrite.Problem(CurrentPrincipal, want, checkName: false) is null ? want : Path.Combine(_core.DataRoot, "projekte");
+    }
+
+    /// <summary>T-0764 (14. Prüfrunde): Einrichtung, Zurücksetzen, Wiederherstellen – nur Erwachsene. Kinder bekommen eine Seite mit Hinweis.</summary>
+    Control KidSetupPage() => Page("Einrichtung", new StackPanel { Spacing = 8, Children = { P(Rbac.NurErwachseneEinstellungen, Text, 13) } });
     /// <summary>Darf die angemeldete Person Wirkungen freigeben? (Anzeige; durchgesetzt wird es im Kern.)</summary>
     public bool CanApprove => Rbac.Has(CurrentPrincipal, Permission.ApproveAction);
 

@@ -42,6 +42,9 @@ public static class Rbac
         throw new UnauthorizedAccessException($"Rolle {p.Role} hat keine Berechtigung {perm}.");
     }
 
+    /// <summary>T-0764 (14. Prüfrunde): Rolle, Einrichtung, Zurücksetzen, Wiederherstellen.</summary>
+    public const string NurErwachseneProfil = "Ob ein Profil ein Kinder- oder Erwachsenen-Profil ist, legt nur ein Erwachsener fest. Es wurde nichts geändert.";
+    public const string NurErwachseneEinstellungen = "Alle Einstellungen zurücksetzen, eine Sicherung zurückholen oder die Einrichtung ändern kann nur ein Erwachsener. Farben, Schrift und Bedienung kannst du selbst einstellen.";
     /// <summary>T-0764: Hinweis, wenn ein Kinderprofil Programme installieren oder entfernen möchte.</summary>
     public const string NurErwachseneSoftware = "Programme installieren und entfernen geht nur in einem Erwachsenen-Profil. Es wurde nichts geändert.";
 

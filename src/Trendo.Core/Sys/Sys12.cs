@@ -104,13 +104,22 @@ public static class A11y
 
     // P22 Einstellungen sichern
     public static void ExportSettings(UserSettings s, string file) => File.WriteAllText(file, JsonSerializer.Serialize(s, new JsonSerializerOptions { WriteIndented = true }));
-    public static UserSettings ImportSettings(string file)
+    /// <summary>Einstellungen aus einer Datei übernehmen. T-0764 (14. Prüfrunde, H1): nur Bedien- und Darstellungsfelder – Rolle, Person und
+    /// Sperren bleiben wie in <paramref name="current"/> (<see cref="KeptOnImport"/>), für jede Rolle. Die Rolle selbst kommt ohnehin aus der
+    /// geschützten Quelle (<see cref="ProfileRole"/>).</summary>
+    public static UserSettings ImportSettings(string file, UserSettings current)
     {
         UserSettings? s; try { s = JsonSerializer.Deserialize<UserSettings>(File.ReadAllText(file)); } catch (JsonException) { throw new InvalidDataException("Das ist keine Trendo-Einstellungsdatei."); }
         if (s is null || !UserSettings.Themes.Contains(s.Theme)) throw new InvalidDataException("Die Datei enthält ungültige Einstellungen.");
         s.UiScale = UserSettings.ClampScale(s.UiScale); if (!FontMins.Contains(s.FontMin)) s.FontMin = 0; if (!NotifyStyles.Contains(s.NotifyStyle)) s.NotifyStyle = "normal";
+        foreach (var name in KeptOnImport) { var p = typeof(UserSettings).GetProperty(name)!; p.SetValue(s, p.GetValue(current)); }
         return s;
     }
+
+    /// <summary>Felder, die „Einstellungen einlesen“ nie aus der Datei übernimmt: Rolle, Person, Ordner und Sperr-/Update-Rechte.</summary>
+    public static readonly string[] KeptOnImport = [nameof(UserSettings.Child), nameof(UserSettings.ProjectsFolder), nameof(UserSettings.Name), nameof(UserSettings.Avatar),
+        nameof(UserSettings.LockOnStart), nameof(UserSettings.SetupDone), nameof(UserSettings.SetupStep), nameof(UserSettings.AutoUpdate), nameof(UserSettings.UpdatePolicy),
+        nameof(UserSettings.UpdateWhen), nameof(UserSettings.UpdateHour), nameof(UserSettings.PhotoFolders), nameof(UserSettings.SearchWindowsFolders), nameof(UserSettings.PhoneAutoStart)];
 
     // P25 Bericht
     public sealed record PageCheck(string Page, int Controls, List<string> Unnamed, List<string> EnglishLabels, List<string> LowContrast, int Depth);

@@ -1,0 +1,27 @@
+T-0764 fix14 ROT-BELEG auf 8549c75ed (src unverändert; nur der Quelltext-Wächter – Verhaltenstests brauchen ProfileRole)
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix14\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:04.62]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:05.30]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:05.33]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:00:06.14]     T-0764 (14.) Wächter: Zuweisungen an Child, ProjectsFolder und das Ersetzen von _settings nur an freigegebenen Stellen; Rolle nur aus ProfileRole [FAIL]
+[xUnit.net 00:00:06.15]       Rolle/Projektordner/Einstellungen ohne Freigabe: src/Trendo.App/MainWindow.axaml.cs settings: 1 (frei: 0); src/Trendo.App/MainWindow.Setup.cs settings: 2 (frei: 1); src/Trendo.App/MainWindow.Sys11.cs settings: 1 (frei: 0); src/Trendo.App/MainWindow.Sys12.cs settings: 1 (frei: 0); src/Trendo.Core/Profile.cs child: 1 (frei: 2); src/Trendo.App/MainWindow.Freigabe.cs child: verwaist; src/Trendo.App/MainWindow.Freigabe.cs settings: verwaist; src/Trendo.Core/Profile.cs with-child: verwaist
+[xUnit.net 00:00:06.15]       Stack Trace:
+[xUnit.net 00:00:06.15]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix14\tests\Trendo.Core.Tests\RechteKernFix14Tests.cs(64,0): at Trendo.Core.Tests.RechteKernFix14.Rollen_Waechter()
+[xUnit.net 00:00:06.15]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:06.15]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:06.16]   Finished:    Trendo.Core.Tests
+  Fehler T-0764 (14.) Wächter: Zuweisungen an Child, ProjectsFolder und das Ersetzen von _settings nur an freigegebenen Stellen; Rolle nur aus ProfileRole [769 ms]
+  Fehlermeldung:
+   Rolle/Projektordner/Einstellungen ohne Freigabe: src/Trendo.App/MainWindow.axaml.cs settings: 1 (frei: 0); src/Trendo.App/MainWindow.Setup.cs settings: 2 (frei: 1); src/Trendo.App/MainWindow.Sys11.cs settings: 1 (frei: 0); src/Trendo.App/MainWindow.Sys12.cs settings: 1 (frei: 0); src/Trendo.Core/Profile.cs child: 1 (frei: 2); src/Trendo.App/MainWindow.Freigabe.cs child: verwaist; src/Trendo.App/MainWindow.Freigabe.cs settings: verwaist; src/Trendo.Core/Profile.cs with-child: verwaist
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix14.Rollen_Waechter() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix14\tests\Trendo.Core.Tests\RechteKernFix14Tests.cs:line 64
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 1
+     Nicht bestanden: 1
+ Gesamtzeit: 7,2543 Sekunden
+exit 1

@@ -18,7 +18,7 @@ public partial class MainWindow
         RegisterTab(ProgTabs, "prog-start", "Starten", "SYS-11", ProgStartView, "verknüpfung", "parameter", "autostart", "dateizuordnung", "öffnen mit");
         RegisterTab(ProgTabs, "prog-pruefen", "Prüfen", "SYS-11", ProgCheckView, "systemvoraussetzungen", "kompatibel", "integrationstest", "speicherplatz", "softwareliste", "csv", "wiederherstellen", "winget import", "selbsttest");
         RegisterTab(ProgTabs, "prog-extern", "Externe Programme", "SYS-11", ProgExternView, "blender", "unreal", "vs code", "vscode", "libreoffice", "obs", "externe programme", "öffnen in");
-        _showMap[ProgDetail] = ProgDetailView; // T-0764: eine Seite je Programm (Starten, Aktualisieren, Entfernen)
+        _showMap[ProgDetail] = ProgDetailView; PageModules[ProgDetail] = "SYS-11"; // T-0764: eine Seite je Programm (Starten, Aktualisieren, Entfernen); 14. Prüfrunde: Modul zugeordnet (SYS-13-P13)
     }
     private Control ProgPage(string title, Control body) => W45Page(title, ProgTabs, "prog", body);
     private string ProgFolder => WorkFolder("Programme");
@@ -72,7 +72,7 @@ public partial class MainWindow
                 Act("uninstall-appcenter", "Programme verwalten (winget)", () => Show("appcenter"))))));
 
         sp.Children.Add(Card(Section("Trendo-Einstellungen zurücksetzen", "Vorher wird automatisch eine Sicherung angelegt – du kannst sie wiederherstellen.",
-            _resetAsk ? Line(P("Wirklich alle Einstellungen zurücksetzen?"), Act("reset-yes", "Ja, zurücksetzen", () => Try(V, () => { _resetAsk = false; var b = Software.ResetSettings(_core.DataRoot, _core.Audit); _settings = new(); Say("Zurückgesetzt. Sicherung: " + Path.GetFileName(b), V); }), true), Act("reset-no", "Abbrechen", () => { _resetAsk = false; Say("Nichts geändert.", V); }))
+            _resetAsk ? Line(P("Wirklich alle Einstellungen zurücksetzen?"), Act("reset-yes", "Ja, zurücksetzen", () => Try(V, () => { _resetAsk = false; Rbac.DemandSoftware(CurrentPrincipal, "einstellungen.zuruecksetzen", _core.Audit, Rbac.NurErwachseneEinstellungen); /* T-0764 (14. Prüfrunde, H2) */ var b = Software.ResetSettings(_core.DataRoot, _core.Audit); UseSettings(UserSettings.Load(_core.DataRoot)); /* Rolle bleibt (geschützte Quelle) */ Say("Zurückgesetzt. Sicherung: " + Path.GetFileName(b), V); }), true), Act("reset-no", "Abbrechen", () => { _resetAsk = false; Say("Nichts geändert.", V); }))
                       : Line(Act("reset-ask", "Zurücksetzen …", () => { _resetAsk = true; Show(V); })))));
         if (_progOut.Length > 0) sp.Children.Add(Card(Out("prog-out")));
         return ProgPage("Programme pflegen", sp);

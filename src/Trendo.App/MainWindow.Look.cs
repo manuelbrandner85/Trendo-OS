@@ -330,8 +330,8 @@ public sealed partial class MainWindow
             b.Click += (_, _) => { _settingsSection = "bedienung"; _settings.PowerProfile = id; Reopen("settings"); };
             power.Children.Add(b);
         }
-        var upd = new CheckBox { Name = "auto-update", Content = $"Updates automatisch laden ({_updateInfo})", IsChecked = _settings.AutoUpdate, Foreground = Text };
-        upd.IsCheckedChanged += (_, _) => { _settings.AutoUpdate = upd.IsChecked == true; SaveSettings(); };
+        var upd = new CheckBox { Name = "auto-update", Content = $"Updates automatisch laden ({_updateInfo})", IsChecked = _settings.AutoUpdate, Foreground = Text, IsEnabled = !_roleChild }; // T-0764 (14.): Updates stellt ein Erwachsener ein
+        upd.IsCheckedChanged += (_, _) => { if (_roleChild) return; _settings.AutoUpdate = upd.IsChecked == true; SaveSettings(); };
         var sizes = new WrapPanel();
         foreach (var (v, label) in new[] { (1.0, "Normal"), (1.15, "Groß"), (1.3, "Sehr groß") })
         {

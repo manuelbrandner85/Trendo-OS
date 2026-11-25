@@ -364,7 +364,7 @@ public class RechteKernFix13
         ["Sys10.DokuWriteView:tpl-file"] = "liest; Vorlage in Trendos Datenordner",
         ["Sys11.ProgCareView:offline-folder"] = "liest (Prüfsummen); Starten nur nach Bestätigung mit Software-Recht",
         ["Sys11.ProgCheckView:restore-file"] = "liest (Liste)",
-        ["Sys12.BedienHelpView:settings-file"] = "liest; Einstellungen in Trendos Datenordner",
+        ["Sys12.BedienHelpView:settings-file"] = "liest; übernimmt nur Bedienfelder (A11y.ImportSettings behält Rolle, Person, Projektordner, Sperren – 14. Prüfrunde); die Rolle kommt aus der geschützten Quelle (ProfileRole), settings.json landet in Trendos Datenordner",
         ["TrainBatch.TrainHasBatch:batchFile"] = "liest",
         ["VideoExportSettings.EditExportOptions:subs"] = "liest (Untertitel einbrennen)",
         ["VisionErkennen.VisionRecognizeCurrent:image"] = "liest; Seitendatei prüft VisionRecognizeFile (ChildWrite)",

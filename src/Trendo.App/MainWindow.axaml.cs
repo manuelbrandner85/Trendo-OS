@@ -115,7 +115,7 @@ public sealed partial class MainWindow : Window
         Trendo.Core.MpvSafe.CleanupStale(); // alte mpv-Ordner beendeter Trendo-Läufe
         InitVollpaketOnline(); // ohne Vollpaket: dieselben Pakete vom GitHub-Release
         StartupTrace.Mark("ctor.deps");
-        _settings = UserSettings.Load(core.DataRoot);
+        UseSettings(UserSettings.Load(core.DataRoot)); // T-0764 (14. Prüfrunde): Rolle aus der geschützten Quelle
         SimpleWords.AnySimple = ProgramLevel == Trendo.Core.Programs.UserLevel.Einfach; // V3: schneller Ausstieg, wenn „Einfach“ nicht gilt
         if (_settings.LookVersion < 2) { if (_settings.Accent == "#2F86F6") _settings.Accent = "#C9A227"; _settings.LookVersion = 2; } // Dunkel-Gold-Look (02.11.2026): alte Blau-Vorgabe wird Gold
         ApplyTheme(_settings);

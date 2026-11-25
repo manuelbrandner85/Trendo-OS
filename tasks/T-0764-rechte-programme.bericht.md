@@ -1205,6 +1205,124 @@ Grundlage ist die Gegenprüfung von `5560ddcbc` („nicht freigabefähig“). Be
 - **Eingebettete Webansichten:** Downloads dort steuert WebView2 selbst.
 - **Gemeinsames Konto:** Unter einem gemeinsamen Windows-Konto ist der Kinderschutz keine harte Grenze.
 
+## Vierzehnte Prüfrunde (Commit „T-0764 fix14“)
+
+Grundlage ist die Gegenprüfung von `8549c75ed` („nicht freigabefähig“).
+
+**Befunde:**
+- **H1:** „Einstellungen einlesen“ übernahm die ganze `UserSettings`, also auch `Child:false`. Ein Kind wurde so dauerhaft Besitzer.
+- **H2:** „Trendo-Einstellungen zurücksetzen“ setzte `_settings = new()`. Weil `Child = false` der Standard ist, galt das Kind danach als Erwachsener.
+- **M:** Im Einrichtungsassistenten (Schritt 2, auch über `_showMap` und die KI-Brücke) setzte ein Kind den Projektordner frei, z. B. nach AppData. `WorkFolder` und `ProjectsRoot` prüften nichts.
+
+**Rot auf 8549c75ed:**
+- `reports/T-0764/rot-fix14-app.log`: 5 von 5 rot. Einlesen mit Child:false, Zurücksetzen, manipulierte bzw. gelöschte settings.json, Assistent mit Projektordner außerhalb (das Kind legte dort „Einstellungen“ an) und Wiederherstellen einer Sicherung.
+- `reports/T-0764/rot-fix14-core.log`: Der Quelltext-Wächter fand `_settings`-Ersetzungen außerhalb einer freigegebenen Stelle (Start, Zurücksetzen, Einlesen, Wiederherstellen) und eine Rolle direkt aus `_settings.Child`. Die Verhaltenstests des Kerns brauchen `ProfileRole` und liefen deshalb nur im Endstand.
+
+### Rollen-Umbau: warum und wie
+
+Die Rolle stand in settings.json. Diese Datei schreibt, ersetzt, liest ein und setzt zurück das Profil selbst. Damit konnte jede dieser Funktionen die Rolle ändern. Jetzt gilt:
+
+- **Geschützte Quelle (`ProfileRole`, Kern):**
+  - Für weitere Personen der Eintrag in `personen.json` im Hauptordner (`PersonStore`).
+  - Für das Hauptprofil `profil/rolle.json` im Hauptordner.
+  - Beide liegen außerhalb der Kinder-Freigabe: ChildWrite gibt nur Dokumente, Bilder, Musik, Videos, Downloads, Desktop und „projekte“ frei. Damit sind sie für Kinder über Dateimanager, Speichern, Entpacken, Kopieren, Umbenennen und Sortieren unbeschreibbar.
+  - Einlesen fasst sie nicht an. Sicherung wiederherstellen und Zurücksetzen sind für Kinder gesperrt.
+  - Der Test `RechteKernFix14.Quelle_geschuetzt` prüft das.
+- **Fail-closed:**
+  - Kind gilt bei einer Person ohne Eintrag, einer unlesbaren Liste oder rolle.json, und wenn Personen da sind, aber weder rolle.json noch settings.json.
+  - `settings.json` ist nur noch Spiegel. Sie kann die Rolle verschärfen (Child:true), aber nie lockern.
+- **Einzige Ausnahmen ohne Eintrag:**
+  - Die echte Ersteinrichtung des Hauptprofils (gar nichts da) gilt als Besitzer.
+  - Ein Stand vor diesem Umbau wird beim ersten Start EINMAL aus settings.json übernommen und in rolle.json geschrieben. Danach zählt nur rolle.json. Ein Kind kann rolle.json nicht löschen, also tritt dieser Fall nicht wieder ein.
+- **Erwachsenen-Weg:**
+  - „Person hinzufügen“ ist wie bisher nur im Erwachsenen-Profil sichtbar und schreibt `personen.json`.
+  - Neu ist `ProfileRole.Set(by, …)`. Es ändert die Rolle nur durch ein Erwachsenen-Profil (sonst „rbac.denied“) und zieht den Spiegel nach.
+  - Die Oberfläche hat dafür weiterhin keinen eigenen Schalter (wie bisher). Die Schnittstelle ist für die Handy-Kopplung bzw. Elternverwaltung gedacht.
+- **App:**
+  - `CurrentPrincipal` kommt aus `_roleChild`. Bis zum Laden gilt Kind.
+  - `_roleChild` setzt nur `UseSettings(…)`. Das ist die einzige Stelle, die `_settings` ersetzt (Start, Einlesen, Zurücksetzen, Wiederherstellen), und sie zieht die Rolle jedes Mal neu aus `ProfileRole`.
+  - Die Kommandozeile (`CliPrincipal`), der Kinderschutz-Hinweis und `AdultsWithoutLockBesideChild` lesen ebenfalls `ProfileRole`.
+
+### Weitere Korrekturen
+
+- **H1 Einlesen:** `A11y.ImportSettings(datei, aktuell)` übernimmt für JEDE Rolle nie diese Felder (`KeptOnImport`):
+  - Rolle und Person: Child, Name, Avatar
+  - Ordner: ProjectsFolder, PhotoFolders
+  - Sperren und Einrichtung: LockOnStart, SetupDone, SetupStep
+  - Updates und Handy: AutoUpdate, UpdatePolicy, UpdateWhen, UpdateHour, SearchWindowsFolders, PhoneAutoStart
+- **H2 Zurücksetzen:** gesperrt für Kinder (`DemandSoftware`, „rbac.denied“). Bei Erwachsenen bleibt die Rolle aus der geschützten Quelle.
+- **Sicherung wiederherstellen:** gesperrt für Kinder. Bei Erwachsenen bleibt die Rolle.
+- **M Assistent:**
+  - Kinder bekommen weder „einrichtung“ und „einrichtung-0…8“ noch „einrichtung-start“, auch nicht über `_showMap` oder die KI-Brücke. Sie sehen stattdessen einen Hinweis.
+  - Ausnahme ist „Anmeldung ändern“ (eigene PIN, Schritt 1).
+  - Beim ersten Start eines Kinderprofils erscheint kein Assistent mehr (`NeedsSetup`). Vorhandene Profile werden nicht umgestellt.
+- **M Projektordner:**
+  - `WorkFolder` und `ProjectsRoot` gehen über `ProjectsBase`. Für Kinder gilt der Ordner nur in der Freigabe, sonst `DataRoot\projekte` (fail-closed).
+  - Die Wächter-Ausnahmen „Trendos Ordner/WorkFolder“ sind daran gebunden; `RechteKernFix14.Rollen_Waechter` prüft das.
+- **Einstellungsseiten:** Kinder können die Update-Schalter (automatisch laden, wann installieren) nicht mehr ändern.
+- **Wächter 2:** Die Ausnahme `Sys12.BedienHelpView:settings-file` ist korrigiert. Sie übernimmt nur Bedienfelder, Rolle aus ProfileRole.
+
+### Liste: Schreiber von Einstellungen, Rolle, Person, PIN, Sperren, Projektordner
+
+| Datei:Zeile | Feld / Weg | Schutz |
+|---|---|---|
+| `MainWindow.Freigabe.cs` `UseSettings` | `_settings` ersetzen, `Child` (Spiegel) | einzige Stelle; Rolle aus `ProfileRole` |
+| `MainWindow.axaml.cs:118` | Start: Einstellungen laden | über `UseSettings` |
+| `MainWindow.Sys12.cs:122` | Einstellungen einlesen | `ImportSettings(…, _settings)` behält KeptOnImport; `UseSettings` |
+| `MainWindow.Sys11.cs:75` | Zurücksetzen | Kinder gesperrt; `UseSettings` |
+| `MainWindow.Setup.cs:603` | Sicherung wiederherstellen | Kinder gesperrt; `UseSettings` |
+| `MainWindow.Setup.cs:28` | ProjectsFolder Vorgabe | Datenordner bzw. Dokumente; Kinder über `ProjectsBase` |
+| `MainWindow.Setup.cs:204` | ProjectsFolder (Assistent Schritt 2) | nur Erwachsene erreichen den Schritt; Kinder über `ProjectsBase` |
+| `MainWindow.Setup.cs:111/120/78` | Name, Avatar (Assistent / Profilbild) | Assistent nur Erwachsene; Profilbild: eigenes Bild, keine Rolle |
+| `MainWindow.Setup.cs:99/448` | SetupStep, SetupDone | Assistent nur Erwachsene |
+| `MainWindow.Setup.cs:337/340/447` | AutoUpdate, PhoneAutoStart, SearchWindowsFolders (Assistent) | nur Erwachsene |
+| `MainWindow.Setup.cs:366`, `MainWindow.Lock.cs:302` | Person anlegen (Kind/Erwachsen) | nur Erwachsene sichtbar; schreibt `personen.json` |
+| `MainWindow.Lock.cs:264` | LockOnStart (eigene Anmeldung) | nur das eigene Profil, keine Rolle |
+| `MainWindow.Lock.cs` „Anmeldung zurücksetzen“ / „Entfernen“ | PIN anderer Personen, Person entfernen | nur Erwachsene (wie bisher) |
+| `MainWindow.Look.cs:334`, `MainWindow.Updates.cs:157/164` | AutoUpdate, UpdateWhen | Kinder: Schalter gesperrt |
+| `MainWindow.Updates.cs:55/58` | UpdatePolicy, LastSeenVersion | von Trendo selbst gesetzt |
+| `MainWindow.W1Office.cs:294/295` | Absender, Name (nur wenn leer) | Briefdaten, keine Rolle |
+| `MainWindow.Look.cs`, `OsStyles.cs`, `Sys12.cs`, `Sys12ReadFont.cs`, `StartMenu.cs`, `ProgramShell.cs:1278`, `LetterPro.cs`, `W5Money.cs:77`, `W5Finance.cs:76` | Darstellung, Bedienung, Reihenfolgen, Brief/Rechnung | Bedienfelder (frei) |
+| `Core/Profile.cs` `PersonStore.Add` | Person + Spiegel Child | Erwachsenen-Weg |
+| `Core/Profile.cs` `ProfileRole.Set` / `PersonStore.SetChild` | Rolle | nur Erwachsene (`DemandSoftware`) |
+| `Core/Sys/Sys12.cs` `ImportSettings` | Einlesen | KeptOnImport (alle Rollen) |
+| `Core/Sys/Sys11.cs` `ResetSettings` / `RestoreSettings` | settings.json löschen bzw. zurückkopieren | ändert die Rolle nicht mehr (nur Spiegel); App: Kinder gesperrt |
+| Profilwechsel (`SwitchPerson`) | neues Fenster mit dem Datenordner der Person | Rolle aus `personen.json` |
+| KI-Brücke / `_showMap` | Seiten öffnen | Assistent, Zurücksetzen und Wiederherstellen prüfen selbst (s. o.); KI-Adapter lesen Einstellungen nur |
+| Sync/Cloud | – | schreibt keine Einstellungen (nichts gefunden) |
+| Handy-Kopplung (T-0767) | Schnittstelle | Rollenänderung nur über `ProfileRole.Set(by, …)` mit Erwachsenen-Rolle; Einstellungen nur über `UseSettings` |
+
+### Quelltext-Wächter 3 (`RechteKernFix14.Rollen_Waechter`)
+
+- **Rot wird:** jede Zuweisung an `….Child` von Einstellungs-Variablen, an `.ProjectsFolder`, jedes `_settings = …`, jedes `new UserSettings { … Child = … }` und `with { Child = … }` in `src`, außerhalb der freigegebenen Stellen. Die Freigaben stehen mit Anzahl und Grund im Test; verwaiste werden ebenfalls rot.
+- **Zusätzlich geprüft:**
+  - `CurrentPrincipal` und die Kommandozeile nutzen nur `ProfileRole`, und `ForProfile` wird nur mit der geschützten Rolle aufgerufen.
+  - `WorkFolder` und `ProjectsRoot` gehen über `ProjectsBase` mit ChildWrite.
+- **Grenzen:** Der Wächter ist eine Heuristik über Variablennamen. Zuweisungen über Reflexion (z. B. `ImportSettings` mit `KeptOnImport`) oder unter anderen Variablennamen findet er nicht. Die Liste oben ist dafür die Durchsicht von Hand.
+
+### Angepasste Tests (nicht abgeschwächt)
+
+- `Sys12Tests.Transfer` ruft die neue Signatur `ImportSettings(datei, aktuell)` auf. Als aktuelle Einstellungen dient der Standard; die Prüfung „verlustfrei“ ist unverändert.
+- Die Ausnahme-Begründung `Sys12.BedienHelpView:settings-file` in `RechteKernFix13Tests` ist korrigiert.
+
+### Auswirkung für Kinder (ehrlich)
+
+- Kinder können Bedien- und Darstellungseinstellungen weiter einlesen.
+- Zurücksetzen, Sicherung wiederherstellen, den Einrichtungsassistenten und die Update-Schalter gibt es nur für Erwachsene. Die eigene PIN über „Anmeldung ändern“ bleibt möglich.
+- Liegt der eingestellte Projektordner außerhalb der Freigabe, arbeitet ein Kind in „projekte“ im Datenordner.
+
+### Tests
+
+- Build: 0 Fehler.
+- Kern vollständig (`reports/T-0764/gruen-fix14-core.log`): 3684 Tests, 3642 bestanden, 42 übersprungen, 0 rot, Exit 0 – darin RechteKernFix14 (Hauptprofil, Personen, Erwachsenen-Weg, Einlesen, Quelle geschützt, Wächter 3). Nachlauf der Quelltext-Wächter (RechteKernFix1–14) mit dem Endstand: 111 grün.
+- App (`reports/T-0764/gruen-fix14-app.log`): diesmal ALLE 490 Klassen (die Rolle wirkt überall) in sechs Teilen plus EveryButton_Alltag, 1784 Testfälle. Teile 00–03, 05 und EB grün. In Teil 04 war `SYS-13-P13: Jede Seite gehört zu einem Modul` rot: Die Seite `prog-programm` (seit dem ersten T-0764-Commit, in früheren Runden nicht in der Klassenauswahl) hatte kein Modul – jetzt `SYS-11` zugeordnet. Nachlauf mit dem Endstand (danach kamen noch die Update-Schalter für Kinder dazu): Teil 04 (305) und die betroffenen Klassen (Setup, Assistent, Look, Updates, Sys11/Sys12, RechteKernFix12–14, EveryButton_Alltag; 43) grün. Kein Flaky-Fall in diesem Lauf.
+
+### Grenzen und offene Punkte
+
+- **Gemeinsames Konto:** Unter einem gemeinsamen Windows-Konto kann ein Kind rolle.json mit Windows-Mitteln außerhalb von Trendo ändern. Der Kinderschutz ist dort keine harte Grenze (Hinweis in Trendo wie bisher).
+- **Wächter:** Er ist eine Heuristik (siehe oben).
+- **Eingebettete Webansichten:** Downloads dort steuert WebView2 selbst.
+
 ## Abnahmekriterien
 
 | # | Kriterium | Urteil |

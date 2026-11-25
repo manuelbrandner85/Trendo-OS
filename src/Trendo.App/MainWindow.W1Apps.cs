@@ -327,7 +327,9 @@ public partial class MainWindow
         return AppsPage("Medien", new StackPanel { Spacing = 8, Children = { MediaTabs(), MusicView() } });
     }
 
-    private string ProjectsRoot => string.IsNullOrEmpty(_settings.ProjectsFolder) ? UserSettings.DefaultProjectsFolder() : _settings.ProjectsFolder;
+    private string ProjectsRoot => ProjectsBase(UserSettings.DefaultProjectsFolder()); // T-0764 (14. Prüfrunde, M)
+    /// <summary>Projektordner, der gerade gilt (Anzeige, Tests) – für Kinder nur in der Freigabe.</summary>
+    public string ProjectsFolderInUse => ProjectsRoot;
 
     // ---------- X-09: Speicher & Leistung ----------
     // ResourcesView: siehe MainWindow.TaskManager.cs (Task-Manager, Runde 7)

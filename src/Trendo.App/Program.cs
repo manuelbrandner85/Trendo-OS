@@ -13,7 +13,7 @@ class Program
     internal static void RaiseUiError(Exception e) => UiErrorCaught?.Invoke(e);
 
     /// <summary>T-0764: Person der Kommandozeile = Rolle aus dem Profil des Datenordners (Kinderprofil → Rolle Benutzer).</summary>
-    internal static Principal CliPrincipal(TrendoCore core) => Principal.ForProfile(UserSettings.Load(core.DataRoot).Child);
+    internal static Principal CliPrincipal(TrendoCore core) => Principal.ForProfile(ProfileRole.IsChild(core.DataRoot)); // T-0764 (14.): geschützte Quelle
 
     /// <summary>T-0764: Kommandozeilen-Installation im Kinderprofil abweisen – verständliche Meldung, Protokoll „rbac.denied“, Rückgabewert 4. Sonst null.</summary>
     /// <remarks>T-0764 (2. Prüfrunde N-B): Gibt es auf diesem PC weitere Personen oder ist für dieses Profil eine Anmeldung eingerichtet, braucht die

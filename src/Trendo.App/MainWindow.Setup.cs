@@ -35,7 +35,7 @@ public sealed partial class MainWindow
         // Updates (U1–U6): siehe MainWindow.Updates.cs – startet nach dem Öffnen des Fensters
     }
 
-    private bool NeedsSetup(AppOptions opt) => opt.FirstRun && !_settings.SetupDone && opt.Page is null;
+    private bool NeedsSetup(AppOptions opt) => opt.FirstRun && !_settings.SetupDone && opt.Page is null && !_roleChild; // T-0764 (14.): Kinder bekommen den Assistenten nicht
 
     // ---------- Ersteinrichtung – Wunsch 27.10.2026 (B1–B8): „wie bei Windows, aber viel besser“ ----------
     private ProfileLock.Kind _wizLockKind = ProfileLock.Kind.None;
@@ -83,6 +83,8 @@ public sealed partial class MainWindow
 
     private Control SetupWizardView()
     {
+        // T-0764 (14. Prüfrunde, M): Kinder bekommen den Assistenten nicht (auch nicht über _showMap oder die KI-Brücke) – außer „Anmeldung ändern“ (eigene PIN, Schritt 1)
+        if (_roleChild && !(_wizChangeLock && _wizStep == 1)) return KidSetupPage();
         var sp = new StackPanel { Spacing = 10, MaxWidth = 680, HorizontalAlignment = HorizontalAlignment.Left };
         var titles = WizardTitles;
         // Fortschritt: Punkte statt nur Zahlen
@@ -199,7 +201,7 @@ public sealed partial class MainWindow
             {
                 sp.Children.Add(P("Hier speichert Trendo deine Projekte, Briefe und Vorlagen. Deine Daten bleiben auf diesem PC.", Text, 13));
                 var folder = new TextBox { Name = "wiz-folder", Text = _settings.ProjectsFolder, PlaceholderText = "Ordner für Projekte", Width = 460, HorizontalAlignment = HorizontalAlignment.Left };
-                folder.TextChanged += (_, _) => _settings.ProjectsFolder = folder.Text?.Trim() ?? "";
+                folder.TextChanged += (_, _) => _settings.ProjectsFolder = folder.Text?.Trim() ?? ""; // nur Erwachsene erreichen Schritt 2 (siehe oben); Kinder: ProjectsBase
                 sp.Children.Add(folder);
                 sp.Children.Add(H("Aus Windows übernehmen", 15));
                 var found = _opt.Isolated ? 0 : BrowserImport.BookmarkFiles(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)).Count();
@@ -598,7 +600,7 @@ public sealed partial class MainWindow
                 yes.Click += (_, _) =>
                 {
                     _backupConfirm = null;
-                    try { var n = Backups.Restore(file, DateTime.Now); _settings = UserSettings.Load(_core.DataRoot); _backupMsg = $"Wiederhergestellt: {n} Dateien. Der vorherige Stand wurde vorher gesichert."; }
+                    try { Rbac.DemandSoftware(CurrentPrincipal, "sicherung.wiederherstellen", _core.Audit, Rbac.NurErwachseneEinstellungen); /* T-0764 (14. Prüfrunde) */ var n = Backups.Restore(file, DateTime.Now); UseSettings(UserSettings.Load(_core.DataRoot)); /* Rolle bleibt (geschützte Quelle) */ _backupMsg = $"Wiederhergestellt: {n} Dateien. Der vorherige Stand wurde vorher gesichert."; }
                     catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException) { _backupMsg = "Wiederherstellen hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex); }
                     Show("sicherung");
                 };

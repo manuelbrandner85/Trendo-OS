@@ -209,7 +209,7 @@ public partial class MainWindow
     /// Trendos Kinderschutz ersetzt kein eigenes Windows-Konto.</summary>
     internal Control? KinderschutzHinweis()
     {
-        var hasChild = _settings.Child || Persons.All().Any(p => p.Child) || UserSettings.Load(PersonStore.BaseOf(_core.DataRoot)).Child;
+        var hasChild = _roleChild || Persons.All().Any(p => p.Child) || ProfileRole.IsChild(PersonStore.BaseOf(_core.DataRoot)); // T-0764 (14.): geschützte Quelle
         if (!hasChild) return null;
         return WCard(new StackPanel { Spacing = 4, Children = {
             new TextBlock { Text = "Gut zu wissen: Grenzen des Kinderschutzes", Foreground = Text, FontWeight = FontWeight.SemiBold },

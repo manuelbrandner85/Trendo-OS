@@ -153,15 +153,15 @@ public partial class MainWindow
         var sp = new StackPanel { Spacing = 10 };
         sp.Children.Add(P($"Du hast Trendo OS {Updater.Current}. Trendo sucht selbst nach neuen Versionen, lädt sie leise im Hintergrund und installiert sie, wann du willst. Updates kommen nur aus den offiziellen, geprüften Veröffentlichungen.", Text, 13));
         if (_updateMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "upd-msg", Text = _updateMsg, Foreground = Text, FontSize = 13, TextWrapping = TextWrapping.Wrap });
-        var auto = new CheckBox { Name = "upd-auto", Content = "Automatisch nach Updates suchen und laden", IsChecked = _settings.AutoUpdate, Foreground = Text };
-        auto.IsCheckedChanged += (_, _) => { _settings.AutoUpdate = auto.IsChecked == true; SaveSettings(); };
+        var auto = new CheckBox { Name = "upd-auto", Content = "Automatisch nach Updates suchen und laden", IsChecked = _settings.AutoUpdate, Foreground = Text, IsEnabled = !_roleChild }; // T-0764 (14.): Updates stellt ein Erwachsener ein
+        auto.IsCheckedChanged += (_, _) => { if (_roleChild) return; _settings.AutoUpdate = auto.IsChecked == true; SaveSettings(); };
         sp.Children.Add(auto);
         var when = new StackPanel { Name = "upd-when", Spacing = 4 };
         when.Children.Add(H("Wann installieren?", 14));
         foreach (var (id, label) in UpdateSchedule.Modes)
         {
             var rb = new RadioButton { Name = "upd-when-" + id, GroupName = "upd-when", Content = id == "nacht" ? $"Nachts um {_settings.UpdateHour} Uhr (wenn du nicht am PC bist)" : label, IsChecked = _settings.UpdateWhen == id, Foreground = Text };
-            var m = id; rb.IsCheckedChanged += (_, _) => { if (rb.IsChecked == true && _settings.UpdateWhen != m) { _settings.UpdateWhen = m; SaveSettings(); } };
+            var m = id; rb.IsEnabled = !_roleChild; rb.IsCheckedChanged += (_, _) => { if (!_roleChild && rb.IsChecked == true && _settings.UpdateWhen != m) { _settings.UpdateWhen = m; SaveSettings(); } };
             when.Children.Add(rb);
         }
         when.Children.Add(P("Beim Installieren zeigt Trendo kurz einen Bildschirm „Trendo wird aktualisiert“. Danach startet es neu und deine Fenster sind wieder da.", null, 11.5));
