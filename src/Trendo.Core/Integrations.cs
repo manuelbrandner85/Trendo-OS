@@ -143,7 +143,22 @@ public sealed class Integrations(ApprovalGate gate, ProjectStore projects, IProc
             if (!(Sys.ProgramTrust.InChildAllowList(full) && TrustedProgramPath?.Invoke(full) == true))
                 Rbac.DemandSoftware(by, "start " + Path.GetFileName(full), audit, Rbac.NurErwachseneProgramm);
         }
+        // T-0764 (7. Prüfrunde): Das Kinderprofil übergibt NIE eine Datei an ShellExecute bzw. das Windows-Standardprogramm (fail-closed) – auch keine
+        // Dokumente (.zip, .iso, .py, .kra, .blend … öffnen sonst den Explorer oder ein Programm mit Skript-Konsole). Die App leitet auf Trendos eigene
+        // Betrachter um. Erlaubt bleiben nur Adressen aus der Liste für Kinder (http, https, mailto, einzelne ms-settings-Seiten).
+        foreach (var t in userTargets)
+            if (t is not null && !IsChildAddress(t))
+                Rbac.DemandSoftware(by, "datei " + SafeName(t), audit, Rbac.NurErwachseneDatei);
     }
+
+    /// <summary>T-0764 (7. Prüfrunde): Ziel ist eine erlaubte Adresse (kein Pfad, kein file:) – nur dann darf ein Kinderprofil es an Windows übergeben.</summary>
+    static bool IsChildAddress(string t)
+    {
+        var s = t.Trim().Trim('"');
+        if (s.Length == 0 || s.Any(char.IsControl) || s.StartsWith("file:", StringComparison.OrdinalIgnoreCase)) return false;
+        return System.Text.RegularExpressions.Regex.IsMatch(s, @"^[A-Za-z][A-Za-z0-9+.\-]+:") && Sys.ProgramTrust.ChildSchemeAllowed(s);
+    }
+    static string SafeName(string t) { try { return Path.GetFileName(t.Trim().Trim('"')); } catch (ArgumentException) { return "?"; } }
 
     /// <summary>Voller Pfad, wenn <paramref name="p"/> ein Programm ist (.exe als Ziel; das Programm eines Aufrufs immer), sonst null.</summary>
     static string? ProgramFullPath(string p, bool isExe)

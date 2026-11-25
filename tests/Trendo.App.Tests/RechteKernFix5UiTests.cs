@@ -85,13 +85,15 @@ public class RechteKernFix5Ui
             var dir = Path.Combine(croot, "werkzeuge", "sumatra"); Directory.CreateDirectory(Path.Combine(dir, "daten")); // 6. Prüfrunde (A): Komponente der Erlaubnisliste
             var exe = Path.Combine(dir, "SumatraPDF.exe"); File.WriteAllText(exe, "MZ"); File.WriteAllText(Path.Combine(dir, "daten", "a.txt"), "x");
             ProgramTrust.WriteMarker(dir, "notiz", "test");
-            Assert.True(c.LaunchAs(exe));
-            await c.ChildLaunchTask; Settle();
-            Assert.Equal([exe], cl.Opened);
-            File.WriteAllText(Path.Combine(dir, "daten", "neu.py"), "import os");
             Assert.True(c.LaunchAs(exe)); // die Prüfung läuft im Hintergrund
             await c.ChildLaunchTask; Settle();
-            Assert.Single(cl.Opened);
+            Assert.True(ProgramTrust.Verified(exe, [Path.Combine(croot, "werkzeuge")])); // Ordner geprüft …
+            Assert.Equal(Rbac.NurErwachseneProgramm, c.LastLaunchRefused); // … aber 7. Prüfrunde: Erlaubnisliste leer, Kinder starten kein Fremdprogramm
+            File.WriteAllText(Path.Combine(dir, "daten", "neu.py"), "import os");
+            Assert.False(ProgramTrust.Verified(exe, [Path.Combine(croot, "werkzeuge")]));
+            Assert.True(c.LaunchAs(exe));
+            await c.ChildLaunchTask; Settle();
+            Assert.Empty(cl.Opened);
             Assert.Contains("Erwachsenen-Profil", c.LastLaunchRefused);
         }
         finally { c.Close(); }

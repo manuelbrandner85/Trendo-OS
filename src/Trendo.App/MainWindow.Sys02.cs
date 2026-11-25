@@ -124,7 +124,7 @@ public partial class MainWindow
         {
             _zipFile = zu.Text;
             var z = Clean(zu); var d = Path.Combine(Path.GetDirectoryName(z)!, Path.GetFileNameWithoutExtension(z));
-            var n = Archives.Unpack(z, d, mode);
+            var n = Archives.UnpackAs(CurrentPrincipal, z, d, _core.Audit, mode); // T-0764 (7. Prüfrunde): Kinder nur ZIP ohne ausführbaren Inhalt
             _core.Audit.Append(Principal.LocalOwner.Name, "zip.unpack", $"{Path.GetFileName(z)} {mode} {n}");
             return $"{n} Dateien entpackt nach {Path.GetFileName(d)}.";
         }
@@ -314,6 +314,7 @@ public partial class MainWindow
                 Say($"Spielt in Trendo: {Path.GetFileName(file)}", V); return;
             }
             catch (AudioBlockedException) { /* Format kann Trendo nicht selbst – wie bisher im fremden Player öffnen */ }
+        if (!CanManageSoftware) { if (!OpenInOwnViewer(file)) { RefuseChildFile(file); Say(Rbac.NurErwachseneDatei, V); } return; } // T-0764 (7. Prüfrunde): nie über Windows
         var by = Play(file);
         Say(by is null ? $"Öffnet im Windows-Programm: {Path.GetFileName(file)}" : $"Öffnet im Player {by}: {Path.GetFileName(file)}", V);
     }

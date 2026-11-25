@@ -128,6 +128,12 @@ public partial class MainWindow
         if (Trendo.Core.Sys.Software.NeedsSoftwareRight(path, _core.Integrations.TrustedProgramPath))
             try { Rbac.DemandSoftware(CurrentPrincipal, "datei.oeffnen " + Path.GetFileName(path), _core.Audit, Rbac.NurErwachseneStart); }
             catch (UnauthorizedAccessException e) { FilesMessage = e.Message; Show(FK); return; }
+        // T-0764 (7. Prüfrunde): Kinderprofil – nur Trendos eigene Betrachter, nie das Windows-Standardprogramm (vor Testersatz und Testmodus)
+        if (!CanManageSoftware && !Path.GetExtension(path).Equals(".tdoc", StringComparison.OrdinalIgnoreCase))
+        {
+            if (OpenInOwnViewer(path)) return;
+            RefuseChildFile(path); FilesMessage = Rbac.NurErwachseneDatei; Show(FK); return;
+        }
         if (FilesOpenOverride is { } o) { o(path); return; }
         if (Path.GetExtension(path).Equals(".tdoc", StringComparison.OrdinalIgnoreCase) || _opt.Isolated) { FilesMessage = "Öffnen: " + Path.GetFileName(path); Show(FK); return; }
         LaunchAs(path);

@@ -42,6 +42,9 @@ public static class Software
     /// <summary>T-0764 (Gegenprüfung M3): Dateien, deren Öffnen etwas installiert, entfernt oder Befehle ausführt – Installer, Pakete, Skripte,
     /// Registrierungsdateien und .exe mit „setup“, „install“, „unins“ oder „update“ im Namen. Sie brauchen das Recht „Programme verwalten“.
     /// Normale Dokumente, Bilder und gewöhnliche Programme öffnen bleibt für alle erlaubt.</summary>
+    /// <summary>T-0764 (7. Prüfrunde): Abbilder und Container, die Windows einbindet oder auspackt (.iso, .img, .vhd, .vhdx, .cab, .wim) – im Kinderprofil gesperrt.</summary>
+    public static bool MountLike(string path) => Path.GetExtension(path).ToLowerInvariant() is ".iso" or ".img" or ".vhd" or ".vhdx" or ".cab" or ".wim" or ".esd";
+
     public static bool IsInstallerLike(string path)
     {
         var ext = Path.GetExtension(path).ToLowerInvariant();

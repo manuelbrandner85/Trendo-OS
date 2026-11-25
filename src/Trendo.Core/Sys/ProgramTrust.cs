@@ -63,10 +63,19 @@ public static class ProgramTrust
     {
         ".exe", ".dll", ".pyd", ".py", ".pyc", ".pyo", ".pyw", ".asar", ".js", ".mjs", ".cjs", ".lua", ".ps1", ".psm1", ".bat", ".cmd", ".vbs", ".vbe", ".wsf", ".wsh",
         ".jar", ".class", ".com", ".scr", ".cpl", ".ocx", ".sys", ".msi", ".msp", ".hta", ".lnk", ".url", ".node", ".so", ".dylib", ".sh", ".rb", ".pl", ".php", ".tcl", ".gd", ".pck",
+        ".pth", // 7. Prüfrunde: Python führt „import …“-Zeilen in .pth-Dateien beim Start aus
     };
 
-    /// <summary>T-0764 (6. Prüfrunde C): Dateien, die ein Programm beim Laufen selbst anlegt und die die Ordnerprüfung nicht sperren sollen – Protokolle
-    /// (<c>*.log</c>) und alles in Ordnern namens <c>cache</c> oder <c>logs</c>, sofern es kein Code ist (<see cref="CodeExtensions"/>, keine Endung).
+    /// <summary>T-0764 (7. Prüfrunde): reine Datenendungen, die in <c>cache</c>/<c>logs</c> ausgenommen sind (Bilder, Zwischenstände). Nicht dabei:
+    /// .json, .ini, .txt, .cfg, .xml, .yaml (Einstellungen können Befehlszeilen enthalten), .bin/.dat (Electron lädt z. B. snapshot_blob.bin).</summary>
+    public static readonly HashSet<string> DataExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp", ".ico", ".tmp", ".cache",
+    };
+
+    /// <summary>T-0764 (6./7. Prüfrunde C): Dateien, die ein Programm beim Laufen selbst anlegt und die die Ordnerprüfung nicht sperren sollen – Protokolle
+    /// (<c>*.log</c>) überall und in Ordnern namens <c>cache</c> oder <c>logs</c> nur reine Daten (<see cref="DataExtensions"/>); Code und Dateien ohne
+    /// Endung nie.
     /// Nicht ausgenommen: Einstellungsdateien und -ordner (z. B. SumatraPDF-settings.txt, mpv „portable_config“), denn sie können Befehlszeilen oder
     /// Skripte enthalten, und <c>__pycache__</c>/<c>.pyc</c> (siehe <see cref="CodeExtensions"/>).</summary>
     public static bool IgnoredInFolderCheck(string folder, string file)
@@ -76,7 +85,7 @@ public static class ProgramTrust
         if (string.Equals(ext, ".log", StringComparison.OrdinalIgnoreCase)) return true;
         var rel = System.IO.Path.GetRelativePath(folder, file);
         var parts = rel.Split(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
-        return parts[..^1].Any(p => p.Equals("cache", StringComparison.OrdinalIgnoreCase) || p.Equals("logs", StringComparison.OrdinalIgnoreCase));
+        return DataExtensions.Contains(ext) && parts[..^1].Any(p => p.Equals("cache", StringComparison.OrdinalIgnoreCase) || p.Equals("logs", StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>Einträge (Pfad, Prüfsumme) in die geschützte Liste schreiben – erzeugt den Schlüssel, falls es noch keinen gibt.</summary>
@@ -287,18 +296,21 @@ public static class ProgramTrust
     /// <summary>T-0764 (6. Prüfrunde A): ERLAUBNISLISTE für das Kinderprofil – statt einer Sperrliste, die nie vollständig wird. Ein Kind startet ein
     /// fremdes Programm nur, wenn es genau diese Vollpaket-Komponente ist (Ordner direkt unter einem angemeldeten Programmordner + Pfad darin) UND
     /// geprüft ist (geschützte Liste, ganzer Ordner unverändert). Aufgenommen sind nur reine Betrachter ohne Skript-Konsole, Makros oder Erweiterungen:
-    /// <list type="bullet">
-    /// <item>SumatraPDF (Komponente „sumatra“): PDF-, E-Book- und Comic-Betrachter; keine Skripte, keine Erweiterungen.</item>
-    /// </list>
-    /// Bewusst NICHT aufgenommen (geprüft): mpv (eingebaute Konsole mit Befehl „run“ startet beliebige Programme; Lua-Skripte aus dem Benutzerordner),
+    /// 7. Prüfrunde: Die Liste ist LEER – Kinder starten keine Fremdprogramme mehr. SumatraPDF wurde entfernt (liest „ExternalViewers“ und
+    /// „InverseSearchCmdLine“ aus %LOCALAPPDATA%, startet damit beliebige Befehle); PDFs öffnen Kinder in Trendos eigenem PDF-Betrachter.
+    /// Der Mechanismus bleibt, damit ein späterer, geprüfter Eintrag möglich ist.
+    /// Bewusst NICHT aufgenommen (geprüft): SumatraPDF (siehe oben), mpv (eingebaute Konsole mit Befehl „run“ startet beliebige Programme; Lua-Skripte aus dem Benutzerordner),
     /// VLC (Lua-Erweiterungen), Krita, GIMP, Inkscape (Python-Erweiterungen/Skript-Konsole), OBS (Python/Lua-Skripte), Audacity (Makros, Nyquist,
     /// mod-script-pipe), Kdenlive, LibreOffice (Makros), Blender, Godot, Unreal, Unity, alle Editoren, f3d (Befehlskonsole), mGBA (Lua-Skripte),
     /// scrcpy/adb (steuert das Handy), 7-Zip, Git, Python. Trendos eigene Werkstätten laufen in Trendo selbst und brauchen keinen Eintrag.</summary>
-    public static readonly IReadOnlyList<(string Component, string Exe)> ChildPrograms = [("sumatra", "SumatraPDF.exe")];
+    public static readonly IReadOnlyList<(string Component, string Exe)> ChildPrograms = [];
 
     /// <summary>T-0764 (6. Prüfrunde A): Steht <paramref name="exe"/> in der Erlaubnisliste für Kinder – Abgleich am Programmordner (Komponente) und am
     /// genauen Pfad darin, nicht nur am Dateinamen? (Die Prüfung „unverändert“ macht der Aufrufer über die geschützte Liste.)</summary>
-    public static bool InChildAllowList(string exe)
+    public static bool InChildAllowList(string exe) => InAllowList(exe, ChildPrograms);
+
+    /// <summary>Abgleich gegen eine Liste (Komponente, Pfad darin) unter den angemeldeten Programmordnern – getrennt prüfbar, ohne die Liste zu ändern.</summary>
+    public static bool InAllowList(string exe, IEnumerable<(string Component, string Exe)> list)
     {
         string full;
         try { full = System.IO.Path.GetFullPath(exe.Trim().Trim('"')); } catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { return false; }
@@ -306,7 +318,7 @@ public static class ProgramTrust
         {
             if (!full.StartsWith(root, StringComparison.OrdinalIgnoreCase)) continue;
             var rel = full[root.Length..];
-            if (ChildPrograms.Any(c => string.Equals(rel, System.IO.Path.Combine(c.Component, c.Exe), StringComparison.OrdinalIgnoreCase))) return true;
+            if (list.Any(c => string.Equals(rel, System.IO.Path.Combine(c.Component, c.Exe), StringComparison.OrdinalIgnoreCase))) return true;
         }
         return false;
     }

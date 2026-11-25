@@ -78,14 +78,17 @@ public class RechteKernFix2Ui
             Assert.Empty(l.Opened);
             Assert.Contains("Erwachsenen-Profil", c.LastLaunchRefused);
             // Dokument: erlaubt; Programm der Erlaubnisliste im Werkzeugordner (6. Prüfrunde A: Komponente „sumatra“), geprüft: erlaubt
-            var doc = F("brief.pdf"); await c.OpenHit(new SearchHit("datei", "brief", doc, 1));
+            // 7. Prüfrunde: Dokumente öffnet das Kinderprofil nur in Trendos eigenem Betrachter; Fremdprogramme (Erlaubnisliste leer) gar nicht
+            var doc = F("brief.txt"); await c.OpenHit(new SearchHit("datei", "brief", doc, 1)); Settle();
+            Assert.Equal("text", c.CurrentView);
             var own = Path.Combine(root, "werkzeuge", "sumatra", "SumatraPDF.exe"); Directory.CreateDirectory(Path.GetDirectoryName(own)!); File.WriteAllText(own, "MZ"); Trendo.Core.Sys.ProgramTrust.WriteMarker(Path.GetDirectoryName(own)!, "notiz", "test"); // T-0764 (P3-1): Vertrauen nur mit Kennung und Prüfsumme
             await c.OpenHit(new SearchHit("datei", "notiz", own, 1)); await c.ChildLaunchTask; Settle(); // 5. Prüfrunde M2: Prüfung des Programmordners läuft im Hintergrund
-            Assert.Equal([doc, own], l.Opened);
+            Assert.Empty(l.Opened);
+            Assert.Equal(Rbac.NurErwachseneProgramm, c.LastLaunchRefused);
             // Dateimanager: dieselbe Regel vor dem Testersatz
             var opened = new List<string>(); c.FilesOpenOverride = opened.Add;
             c.FilesOpen(F("vlc-3.0.21-win64.exe")); c.FilesOpen(F("Spiel.lnk")); c.FilesOpen(doc);
-            Assert.Equal([doc], opened);
+            Assert.Empty(opened); // auch das Dokument geht nicht an den Testersatz (= Windows), sondern an Trendos Betrachter
             Assert.Contains("Erwachsenen-Profil", c.FilesMessage + c.LastLaunchRefused);
         }
         finally { c.Close(); }

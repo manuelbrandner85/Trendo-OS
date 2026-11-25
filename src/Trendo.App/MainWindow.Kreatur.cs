@@ -33,7 +33,7 @@ public partial class MainWindow
         byte[] content;
         using (var s = AssetLoader.Open(new Uri("avares://TrendoOS/Assets/blender/trendo_kreatur.py"))) using (var m = new MemoryStream()) { s.CopyTo(m); content = m.ToArray(); }
         File.WriteAllBytes(f, content);
-        return ["--python-expr", Trendo.Core.Studio3D.VerifiedScriptExpr(f, Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(content)))];
+        return ["--python-expr", Trendo.Core.BlenderScript.Expr(f, Trendo.Core.BlenderScript.Sha(content))];
     }
 
     /// <summary>Kreatur bauen. sichtbar = Blender öffnet sich und man sieht das Ergebnis dort (Fenster bleibt offen); sonst im Hintergrund mit Vorschaubild.</summary>

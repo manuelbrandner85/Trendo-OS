@@ -133,12 +133,13 @@ public class RechteKernFix1Ui
         {
             var opened = new List<string>(); w.FilesOpenOverride = opened.Add;
             var setup = Path.Combine(root, "setup.exe"); File.WriteAllText(setup, "MZ");
-            var doc = Path.Combine(root, "brief.pdf"); File.WriteAllText(doc, "%PDF");
+            var doc = Path.Combine(root, "brief.txt"); File.WriteAllText(doc, "Hallo");
             w.FilesOpen(setup);
             Assert.Empty(opened);
             Assert.Contains("Erwachsenen-Profil", w.FilesMessage);
-            w.FilesOpen(doc);
-            Assert.Equal([doc], opened);
+            w.FilesOpen(doc); // 7. Prüfrunde: Dokumente öffnet das Kinderprofil in Trendos eigenem Betrachter – nie über Windows, auch nicht über den Testersatz
+            Assert.Empty(opened);
+            Assert.Equal("text", w.CurrentView);
         }
         finally { w.Close(); }
     }

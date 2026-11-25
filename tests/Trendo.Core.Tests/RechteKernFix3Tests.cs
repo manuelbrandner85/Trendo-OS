@@ -36,26 +36,29 @@ public class RechteKernFix3
         var zip = Zip(Path.Combine(f.Root, "q"), ("SumatraPDF.exe", "MZ-echt"));
         var dir = Software.InstallPortable(Principal.LocalOwner, zip, ShaOf(zip), tools, "sumatra", f.Core.Audit);
         var exe = Path.Combine(dir, "SumatraPDF.exe");
-        f.Core.Integrations.LaunchDirect(Principal.ChildProfile, exe, f.Core.Audit);
-        Assert.Single(f.Launcher.Opened);
+        Assert.True(ProgramTrust.Verified(exe, [tools])); // 7. Prüfrunde: Erlaubnisliste leer – Kinder starten kein Fremdprogramm; die Herkunftsprüfung selbst zeigt Verified
+        Assert.Throws<UnauthorizedAccessException>(() => f.Core.Integrations.LaunchDirect(Principal.ChildProfile, exe, f.Core.Audit));
         // fremde exe in einen Ordner mit Kennung kopiert, eigener Ordner ohne Kennung, Altbestand ohne Prüfsummen
         var copied = Path.Combine(dir, "spiel.exe"); File.WriteAllText(copied, "MZ-fremd");
         var own = Path.Combine(tools, "meins", "spiel.exe"); Directory.CreateDirectory(Path.GetDirectoryName(own)!); File.WriteAllText(own, "MZ-fremd");
         var old = Path.Combine(tools, "alt", "alt.exe"); Directory.CreateDirectory(Path.GetDirectoryName(old)!); File.WriteAllText(old, "MZ");
         File.WriteAllText(Path.Combine(tools, "alt", Software.PortableMarker), "{\"name\":\"alt\",\"sha256\":\"x\"}");
         foreach (var e in new[] { copied, own, old })
+        {
+            Assert.False(ProgramTrust.Verified(e, [tools]));
             Assert.Throws<UnauthorizedAccessException>(() => f.Core.Integrations.LaunchDirect(Principal.ChildProfile, e, f.Core.Audit));
+        }
         // ausgetauschter Inhalt (andere Größe → neuer Eintrag im Zwischenspeicher) wird erkannt
         File.WriteAllText(exe, "MZ-ausgetauscht-und-laenger");
-        Assert.Throws<UnauthorizedAccessException>(() => f.Core.Integrations.LaunchDirect(Principal.ChildProfile, exe, f.Core.Audit));
-        Assert.Single(f.Launcher.Opened);
+        Assert.False(ProgramTrust.Verified(exe, [tools]));
+        Assert.Empty(f.Launcher.Opened);
         // GitHub-Programm: Kennung mit Prüfsumme
         var gz = Zip(Path.Combine(f.Root, "g"), ("tool.exe", "MZ-gh"));
         var gh = GitHubApps.Install(Principal.LocalOwner, tools, "o/tool", new GitHubApps.Release("v1", "", []), new GitHubApps.Asset("tool-windows-x64.zip", "https://github.com/o/tool/x", new FileInfo(gz).Length, ShaOf(gz)), gz, "MIT", "", f.Core.Audit);
         Assert.True(ProgramTrust.Verified(GitHubApps.ExePath(tools, gh), [tools]));
         // Erwachsene: wie bisher
         f.Core.Integrations.LaunchDirect(Principal.LocalOwner, own, f.Core.Audit);
-        Assert.Equal(2, f.Launcher.Opened.Count);
+        Assert.Single(f.Launcher.Opened);
     }
 
     [Fact(DisplayName = "T-0764 P3-2: Interpreter (python, git, cmd …) und freie Parameter – im Kinderprofil nie, auch wenn von Trendo eingerichtet; feste Trendo-Aufrufe ja")]
@@ -76,11 +79,13 @@ public class RechteKernFix3
         Assert.Throws<UnauthorizedAccessException>(() => f.Core.Integrations.LaunchArgs(Principal.ChildProfile, game, f.Core.Audit, ["--irgendwas"]));
         Assert.Throws<UnauthorizedAccessException>(() => f.Core.Integrations.LaunchArgs(Principal.ChildProfile, py, f.Core.Audit, [doc]));
         Assert.Empty(f.Launcher.Opened);
-        f.Core.Integrations.LaunchDirect(Principal.ChildProfile, game, f.Core.Audit, doc, userExe: true); // geprüftes Programm mit einer Datei
-        f.Core.Integrations.LaunchArgs(Principal.ChildProfile, game, f.Core.Audit, ["--fest", doc], internalCall: true); // fester Trendo-Aufruf
+        Assert.True(ProgramTrust.Verified(game, [tools])); // 7. Prüfrunde: Erlaubnisliste leer – Kinder starten kein Fremdprogramm; die Herkunftsprüfung selbst zeigt Verified
+        Assert.Throws<UnauthorizedAccessException>(() => f.Core.Integrations.LaunchDirect(Principal.ChildProfile, game, f.Core.Audit, doc, userExe: true));
+        Assert.Throws<UnauthorizedAccessException>(() => f.Core.Integrations.LaunchArgs(Principal.ChildProfile, game, f.Core.Audit, ["--fest", doc], internalCall: true));
+        Assert.Empty(f.Launcher.Opened);
+        f.Core.Integrations.LaunchArgs(Principal.LocalOwner, game, f.Core.Audit, ["--fest", doc], internalCall: true); // Erwachsene: wie bisher
+        f.Core.Integrations.LaunchDirect(Principal.LocalOwner, py, f.Core.Audit, "-c 1", userExe: true);
         Assert.Equal(2, f.Launcher.Opened.Count);
-        f.Core.Integrations.LaunchDirect(Principal.LocalOwner, py, f.Core.Audit, "-c 1", userExe: true); // Erwachsene: wie bisher
-        Assert.Equal(3, f.Launcher.Opened.Count);
     }
 
     [Theory(DisplayName = "T-0764 P3-3: Adressen im Kinderprofil – nur http(s), mailto, genutzte ms-settings-Seiten, Papierkorb; file: wie ein Pfad")]

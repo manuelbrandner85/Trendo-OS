@@ -215,6 +215,7 @@ public partial class MainWindow
             var f = Path.Combine(Path.GetTempPath(), $"trendo-druck-{DateTime.Now:yyyyMMdd-HHmmss}.pdf");
             SheetExportPdf(f);
             var sumatra = ToolPath("sumatra");
+            if (!CanManageSoftware) { OpenPdf(f); Show("pdf"); _shMsg = NurErwachseneDrucken; _core.Audit.Append(CurrentPrincipal.Name, "rbac.denied", "User fehlt ManageSoftware: drucken " + Path.GetFileName(f)); return; } // T-0764 (7. Prüfrunde): nie über Windows
             if (sumatra is not null && !_opt.Isolated) System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(sumatra, $"-print-dialog \"{f}\"") { UseShellExecute = false });
             else Launch(f);
             _shMsg = "Druckansicht geöffnet – dort Drucker wählen.";

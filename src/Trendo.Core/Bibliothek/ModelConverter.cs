@@ -71,11 +71,12 @@ public static class ModelConverter
         blender ??= FindBlender() ?? throw new InvalidOperationException("Blender wurde nicht gefunden – es gehört zum Trendo-Vollpaket und lässt sich unter Programme einrichten.");
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(output))!);
         var script = Path.Combine(Path.GetTempPath(), $"trendo-convert-{Guid.NewGuid():N}.py");
-        await File.WriteAllTextAsync(script, Script(Path.GetFullPath(input), Path.GetFullPath(output), onlyLocalTextures), ct);
+        var content = Script(Path.GetFullPath(input), Path.GetFullPath(output), onlyLocalTextures);
+        var scriptArgs = BlenderScript.Args(script, content); // T-0764 (7. Prüfrunde): geprüfter Startausdruck statt Skriptpfad
         try
         {
             var psi = new ProcessStartInfo(blender) { RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true };
-            foreach (var a in new[] { "-b", "--factory-startup", "--disable-autoexec", "--python", script }) psi.ArgumentList.Add(a);
+            foreach (var a in new[] { "-b", "--factory-startup", "--disable-autoexec" }.Concat(scriptArgs)) psi.ArgumentList.Add(a);
             using var p = Process.Start(psi) ?? throw new InvalidOperationException("Blender ließ sich nicht starten.");
             var outTask = p.StandardOutput.ReadToEndAsync(ct); var errTask = p.StandardError.ReadToEndAsync(ct);
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct); cts.CancelAfter(timeout ?? TimeSpan.FromMinutes(3));

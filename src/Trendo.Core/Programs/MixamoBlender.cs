@@ -14,7 +14,7 @@ public static class MixamoBlender
     public const string InPlace = "inplace", RootMotion = "root";
 
     public static List<string> Args(string script, IEnumerable<string> rest) =>
-        ["--background", "--factory-startup", "--python-exit-code", "1", "--python", script, "--", .. rest];
+        ["--background", "--factory-startup", "--python-exit-code", "1", "--python-expr", BlenderScript.Expr(script, BlenderScript.Sha(Script)), "--", .. rest]; // T-0764 (7. Prüfrunde): geprüft, WriteScript schreibt genau Script
 
     public const string Script = """
 import bpy, sys, os, re, json, math

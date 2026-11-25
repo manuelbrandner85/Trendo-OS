@@ -1,0 +1,27 @@
+T-0764 fix7 – ROT auf 6de0e9798 (App: RechteKernFix7Ui, vor dem Fix)
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0764 H: Kind – Text, Tabelle, Bild, 3D in Trendos eigenen Betrachtern; .zip, .iso, .py, .kra, .blend, .vhdx mit Hinweis; nichts geht an Windows [FAIL]
+      Assert.Equal() Failure: Strings differ
+                 ↓ (pos 0)
+      Expected: "text"
+      Actual:   "start"
+                 ↑ (pos 0)
+      Stack Trace:
+        tests\Trendo.App.Tests\RechteKernFix7UiTests.cs(41,0): at Trendo.App.Tests.RechteKernFix7Ui.Kind_eigene_Betrachter()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    T-0764 H: Kind – ZIP mit Programm wird nicht entpackt (Hinweis), ZIP nur mit Bildern schon [FAIL]
+      Assert.False() Failure
+      Expected: False
+      Actual:   True
+      Stack Trace:
+        tests\Trendo.App.Tests\RechteKernFix7UiTests.cs(76,0): at Trendo.App.Tests.RechteKernFix7Ui.Kind_Archiv()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Finished:    Trendo.App.Tests (ID = 'aa8b45df0cb690f0b66398bb43c61c53e692c5ee693a1066369b779c043c6f1e')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 2, Errors: 0, Failed: 2, Skipped: 0, Not Run: 0, Time: 6,037s
+exit 1

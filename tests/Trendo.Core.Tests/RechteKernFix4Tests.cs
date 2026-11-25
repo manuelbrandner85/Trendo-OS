@@ -36,8 +36,8 @@ public class RechteKernFix4
         var (f, tools, store) = Setup(); using var _ = f;
         var dir = Install(f, tools, "sumatra", ("SumatraPDF.exe", "MZ-echt")); // 6. Prüfrunde (A): Komponente der Erlaubnisliste
         var exe = Path.Combine(dir, "SumatraPDF.exe");
-        f.Core.Integrations.LaunchDirect(Principal.ChildProfile, exe, f.Core.Audit);
-        Assert.Single(f.Launcher.Opened);
+        Assert.True(ProgramTrust.Verified(exe, [tools])); // 7. Prüfrunde: Erlaubnisliste leer – Kinder starten kein Fremdprogramm; die Prüfung selbst zeigt Verified
+        Kind(f, exe);
         Assert.True(File.Exists(Path.Combine(store, "programm-vertrauen.json")));
         Assert.True(File.Exists(Path.Combine(store, "vertrauen.key")));
         if (OperatingSystem.IsWindows()) Assert.NotEqual(32, new FileInfo(Path.Combine(store, "vertrauen.key")).Length); // per DPAPI geschützt, nicht roh
@@ -45,19 +45,19 @@ public class RechteKernFix4
         var fake = Path.Combine(tools, "spiel"); Directory.CreateDirectory(fake);
         var fakeExe = Path.Combine(fake, "spiel.exe"); File.WriteAllText(fakeExe, "MZ-fremd");
         File.WriteAllText(Path.Combine(fake, Software.PortableMarker), JsonSerializer.Serialize(new { Name = "spiel", Sha256 = "x", Am = "", Dateien = new Dictionary<string, string> { ["spiel.exe"] = Sha(fakeExe) } }));
-        Kind(f, fakeExe);
+        Kind(f, fakeExe); Assert.False(ProgramTrust.Verified(fakeExe, [tools]));
         // Eintrag in der Liste ohne gültigen HMAC (z. B. von Hand ergänzt)
         var list = Path.Combine(store, "programm-vertrauen.json");
         var json = File.ReadAllText(list);
         File.WriteAllText(list, json.Replace("\"Entries\":[", "\"Entries\":[{\"Path\":" + JsonSerializer.Serialize(Path.GetFullPath(fakeExe)) + ",\"Sha256\":\"" + Sha(fakeExe) + "\",\"Mac\":\"00\"},"));
-        Kind(f, fakeExe);
+        Kind(f, fakeExe); Assert.False(ProgramTrust.Verified(fakeExe, [tools]));
         // Prüfsumme in der Liste verändert → HMAC passt nicht mehr
         File.WriteAllText(list, json.Replace(Sha(exe), new string('a', 64)));
-        Kind(f, exe);
-        Assert.Single(f.Launcher.Opened);
+        Kind(f, exe); Assert.False(ProgramTrust.Verified(exe, [tools]));
+        Assert.Empty(f.Launcher.Opened);
         // Erwachsene: wie bisher
         f.Core.Integrations.LaunchDirect(Principal.LocalOwner, fakeExe, f.Core.Audit);
-        Assert.Equal(2, f.Launcher.Opened.Count);
+        Assert.Single(f.Launcher.Opened);
     }
 
     [Fact(DisplayName = "T-0764 M1 (5. Prüfrunde): keine Übernahme alter Kennungen – älterer Stand im Kinderprofil abgelehnt mit „Bitte einmal als Erwachsener neu einrichten“; Erwachsene wie bisher")]
@@ -80,7 +80,7 @@ public class RechteKernFix4
         var (f, tools, _) = Setup(); using var _f = f;
         var dir = Install(f, tools, "sumatra", ("SumatraPDF.exe", "MZ-echt-AAAA"), ("helfer.dll", "MZ-dll")); // 6. Prüfrunde (A): Komponente der Erlaubnisliste
         var exe = Path.Combine(dir, "SumatraPDF.exe");
-        f.Core.Integrations.LaunchDirect(Principal.ChildProfile, exe, f.Core.Audit);
+        Assert.True(ProgramTrust.Verified(exe, [tools])); // 7. Prüfrunde: Erlaubnisliste leer – Kinder starten kein Fremdprogramm; die Prüfung selbst zeigt Verified
         var t = File.GetLastWriteTimeUtc(exe);
         File.WriteAllText(exe, "MZ-boes-BBBB"); File.SetLastWriteTimeUtc(exe, t);
         Kind(f, exe);
@@ -96,7 +96,7 @@ public class RechteKernFix4
         File.WriteAllText(Path.Combine(dir3, "helfer.dll"), "MZ-dll-ausgetauscht");
         Kind(f, Path.Combine(dir3, "drei.exe"));
         Assert.False(ProgramTrust.Verified(Path.Combine(dir3, "drei.exe"), [tools]));
-        Assert.Single(f.Launcher.Opened);
+        Assert.Empty(f.Launcher.Opened);
     }
 
     [Fact(DisplayName = "T-0764 M2: Für Kinder fester Ort nur „Programme“; %LOCALAPPDATA%\\Programs nur mit Listeneintrag oder Signatur des erwarteten Herausgebers")]

@@ -69,12 +69,12 @@ public class RechteKernFix5
         var (f, tools) = Setup(); using var _f = f;
         var dir = Install(f, tools, "sumatra", ("SumatraPDF.exe", "MZ-app"), ("resources/app.asar", "ASAR-echt")); // 6. Prüfrunde (A): Komponente der Erlaubnisliste
         var exe = Path.Combine(dir, "SumatraPDF.exe");
-        f.Core.Integrations.LaunchDirect(Principal.ChildProfile, exe, f.Core.Audit);
-        Assert.Single(f.Launcher.Opened);
+        Assert.True(ProgramTrust.Verified(exe, [tools])); // 7. Prüfrunde: Erlaubnisliste leer – Kinder starten kein Fremdprogramm; die Prüfung selbst zeigt Verified
         var p = Path.Combine(dir, rel); Directory.CreateDirectory(Path.GetDirectoryName(p)!);
         File.WriteAllText(p, replace ? "ASAR-boese" : "neu");
+        Assert.False(ProgramTrust.Verified(exe, [tools])); // neue oder ausgetauschte Datei: nicht mehr geprüft
         Assert.Throws<UnauthorizedAccessException>(() => f.Core.Integrations.LaunchDirect(Principal.ChildProfile, exe, f.Core.Audit));
         f.Core.Integrations.LaunchDirect(Principal.LocalOwner, exe, f.Core.Audit); // Erwachsene: wie bisher
-        Assert.Equal(2, f.Launcher.Opened.Count);
+        Assert.Single(f.Launcher.Opened);
     }
 }

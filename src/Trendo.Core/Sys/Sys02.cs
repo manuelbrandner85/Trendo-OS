@@ -257,6 +257,26 @@ public static class Archives
         using var z = ZipFile.OpenRead(zip);
         return z.Entries.Where(e => !e.FullName.EndsWith('/') && File.Exists(Path.Combine(dest, e.FullName))).Select(e => e.FullName).Take(max).ToList();
     }
+    /// <summary>T-0764 (7. Prüfrunde): Einträge mit ausführbarem Inhalt (Programme, Skripte, Installer, Verknüpfungen, Dateien ohne Endung).</summary>
+    public static List<string> ExecutableEntries(string zip)
+    {
+        using var z = ZipFile.OpenRead(zip);
+        return z.Entries.Where(e => !e.FullName.EndsWith('/') && (Path.GetExtension(e.Name).Length == 0 || ProgramTrust.CodeExtensions.Contains(Path.GetExtension(e.Name))
+            || Software.IsInstallerLike(e.Name) || Software.MountLike(e.Name))).Select(e => e.FullName).ToList();
+    }
+
+    /// <summary>T-0764 (7. Prüfrunde): Entpacken als <paramref name="by"/> – das Kinderprofil nur ZIP-Archive ohne ausführbaren Inhalt (sonst „rbac.denied“
+    /// und Hinweis); Erwachsene wie bisher.</summary>
+    public static int UnpackAs(Principal by, string zip, string dest, AuditLog audit, ArchiveConflict mode = ArchiveConflict.Ask)
+    {
+        if (!Rbac.Has(by, Permission.ManageSoftware))
+        {
+            if (!Path.GetExtension(zip).Equals(".zip", StringComparison.OrdinalIgnoreCase)) Rbac.DemandSoftware(by, "entpacken " + Path.GetFileName(zip), audit, Rbac.NurErwachseneArchiv);
+            if (ExecutableEntries(zip) is { Count: > 0 } x) Rbac.DemandSoftware(by, $"entpacken {Path.GetFileName(zip)} ({x.Count} ausführbar, z. B. {Path.GetFileName(x[0])})", audit, Rbac.NurErwachseneArchiv);
+        }
+        return Unpack(zip, dest, mode);
+    }
+
     /// <summary>Entpackt; Einträge, die aus dem Zielordner ausbrechen (Zip-Slip), werden abgewiesen – dann wird gar nichts entpackt.
     /// Vorhandene Dateien: <see cref="ArchiveConflict.Ask"/> (Standard) bricht vorher ab und nennt sie; Skip lässt sie stehen,
     /// KeepBoth legt „Name (2).ext“ daneben, Overwrite ersetzt sie (nur nach ausdrücklicher Wahl).</summary>

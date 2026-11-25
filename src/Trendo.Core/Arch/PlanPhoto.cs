@@ -63,8 +63,12 @@ public static class PlanPhoto
     }
 
     /// <summary>Szene schreiben und mit Blender rendern; meldet den Fortschritt (0–1) aus den Cycles-Zeilen. Gibt den Pfad des PNG zurück.</summary>
-    public static async Task<string> Render(JsonObject scene, string scriptDir, string output, string blender, IProgress<double>? progress = null, TimeSpan? timeout = null, CancellationToken ct = default)
+    /// <param name="scriptSha256">T-0764 (7. Prüfrunde): erwartete SHA-256 von trendo_foto.py und trendo_moebel.py (aus Trendos eingebauten Skripten) –
+    /// Blender prüft beide vor dem Ausführen; ohne Angabe wird nichts gestartet.</param>
+    public static async Task<string> Render(JsonObject scene, string scriptDir, string output, string blender, IProgress<double>? progress = null, TimeSpan? timeout = null, CancellationToken ct = default, IReadOnlyDictionary<string, string>? scriptSha256 = null)
     {
+        if (scriptSha256 is null || !scriptSha256.ContainsKey("trendo_foto.py") || !scriptSha256.ContainsKey("trendo_moebel.py")) throw new InvalidOperationException("Prüfsummen der Blender-Skripte fehlen – es wird nichts gestartet.");
+        var expr = BlenderScript.Expr(Path.Combine(scriptDir, "trendo_foto.py"), scriptSha256["trendo_foto.py"], [("trendo_moebel", Path.Combine(scriptDir, "trendo_moebel.py"), scriptSha256["trendo_moebel.py"])]);
         scene["out"] = Path.GetFullPath(output);
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(output))!);
         var json = Path.Combine(Path.GetTempPath(), $"trendo-foto-{Guid.NewGuid():N}.json");
@@ -72,7 +76,7 @@ public static class PlanPhoto
         try
         {
             var psi = new ProcessStartInfo(blender) { RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true };
-            foreach (var a in new[] { "-b", "--factory-startup", "--python", Path.Combine(scriptDir, "trendo_foto.py"), "--", json }) psi.ArgumentList.Add(a);
+            foreach (var a in new[] { "-b", "--factory-startup", "--python-expr", expr, "--", json }) psi.ArgumentList.Add(a); // T-0764 (7. Prüfrunde): geprüfter Startausdruck
             using var proc = Process.Start(psi) ?? throw new InvalidOperationException("Blender ließ sich nicht starten.");
             string? error = null; var final = false; var errTask = proc.StandardError.ReadToEndAsync(ct);
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct); cts.CancelAfter(timeout ?? TimeSpan.FromMinutes(15));

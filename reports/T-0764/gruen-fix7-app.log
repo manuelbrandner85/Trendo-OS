@@ -1,0 +1,79 @@
+T-0764 fix7 – gezielter App-Lauf mit dem Endstand: 245 Klassen (alle, die die geänderten Wege nutzen) in 6 Prozessen + EveryButton_Alltag, Zeitlimit je 3600 s.
+
+=== Teil 00 (44 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0202: Kein Klick auf irgendeiner Seite stürzt ab (Klick-Audit, Bericht der stummen Knöpfe) [SKIP]
+      Langer Klick-Audit über alle Seiten: TRENDO_ALL_BUTTONS=1 setzen
+  Finished:    Trendo.App.Tests (ID = 'aa8b45df0cb690f0b66398bb43c61c53e692c5ee693a1066369b779c043c6f1e')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 195, Errors: 0, Failed: 0, Skipped: 1, Not Run: 0, Time: 646,452s
+Waiting 10 seconds for foreground threads to exit...
+Teil 00 exit 0 (649 s)
+=== Teil 01 (43 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = 'aa8b45df0cb690f0b66398bb43c61c53e692c5ee693a1066369b779c043c6f1e')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 151, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 235,103s
+Waiting 10 seconds for foreground threads to exit...
+Teil 01 exit 0 (243 s)
+=== Teil 02 (41 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = 'aa8b45df0cb690f0b66398bb43c61c53e692c5ee693a1066369b779c043c6f1e')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 152, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 890,912s
+Waiting 10 seconds for foreground threads to exit...
+Teil 02 exit 0 (893 s)
+=== Teil 03 (40 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = 'aa8b45df0cb690f0b66398bb43c61c53e692c5ee693a1066369b779c043c6f1e')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 335, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 944,110s
+Waiting 10 seconds for foreground threads to exit...
+Teil 03 exit 0 (947 s)
+=== Teil 04 (35 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0731: Bildschirmfoto ohne ffmpeg (echt, GDI) – nimmt ein fremdes Fenster eines anderen Prozesses auf, PNG enthält dessen Pixel [SKIP]
+      Übersprungen – das Testfenster ist von einem anderen Fenster verdeckt (oben liegt 0x5AB09D4); der Bildschirm zeigt gerade etwas anderes.
+T-0727 B6 echt: 9 Modelle von Ollama, Grafikspeicher 11,9 GB → Standard qwen3:14b
+T-0747-fix: Klick bis Oberfläche wieder frei 177 ms, fertig nach 4173 ms, 180 Wände
+  Finished:    Trendo.App.Tests (ID = 'aa8b45df0cb690f0b66398bb43c61c53e692c5ee693a1066369b779c043c6f1e')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 192, Errors: 0, Failed: 0, Skipped: 1, Not Run: 0, Time: 402,320s
+Waiting 10 seconds for foreground threads to exit...
+Teil 04 exit 0 (408 s)
+=== Teil 05 (42 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    Z3 PC-Lauf: echtes Modell (Poly Haven, CC0) über Blender nach GLB, HDR-Licht, Grafikkarte, Bilder und gemessene Bildrate unter reports/ (nur mit TRENDO_PC_LAUF=1) [SKIP]
+      Übersprungen – nur mit TRENDO_PC_LAUF=1 (echte Grafikkarte, Blender, Quellen unter %TEMP%\trendo-z3-quellen).
+  Finished:    Trendo.App.Tests (ID = 'aa8b45df0cb690f0b66398bb43c61c53e692c5ee693a1066369b779c043c6f1e')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 133, Errors: 0, Failed: 0, Skipped: 1, Not Run: 0, Time: 305,765s
+Waiting 10 seconds for foreground threads to exit...
+Teil 05 exit 0 (309 s)
+=== Teil EB (1 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = 'aa8b45df0cb690f0b66398bb43c61c53e692c5ee693a1066369b779c043c6f1e')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 190,811s
+Teil EB exit 0 (192 s)

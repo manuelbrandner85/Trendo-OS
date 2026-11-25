@@ -444,6 +444,94 @@ Grund ist die Erlaubnisliste; abgeschwächt ist keiner:
 - **Dokumente:** Sie öffnet Windows mit dem Standardprogramm des Dateityps. Das kann ein Programm außerhalb der Erlaubnisliste sein.
 - **Gemeinsames Konto:** Unter einem gemeinsamen Windows-Konto ist der Kinderschutz weiter keine harte Grenze.
 
+## Siebte Prüfrunde (Commit „T-0764 fix7“)
+
+Grundlage ist die Gegenprüfung von `6de0e9798`. Sie hatte einen hohen Befund (Dokumente gehen an das Windows-Standardprogramm), einen mittleren (SumatraPDF) und zwei niedrige.
+
+**Rot auf 6de0e9798:**
+- `reports/T-0764/rot-fix7-core.log`: 22 von 22 rot.
+  - H: 11 Dateiarten werden an Windows übergeben.
+  - M: SumatraPDF startet im Kinderprofil.
+  - N: `.pth` gilt nicht als Code; `.json`, `.ini`, `.txt`, `.bin` in `cache`/`logs` sind ausgenommen; Blender bekommt an sieben Stellen `--python <Datei>`.
+- `reports/T-0764/rot-fix7-app.log`: 2 von 2 rot. Das Kind öffnet `brief.txt` über Windows statt im eigenen Betrachter, und eine ZIP-Datei mit Programm wird entpackt.
+- Für den Rot-Beleg lief die Core-Testdatei ohne die Tests, die neue Schnittstellen brauchen (`InAllowList`, `BlenderScript`, `UnpackAs`). Diese Tests sind nur grün belegt.
+
+### H – Kinderprofil übergibt nie etwas an Windows
+
+**Kern, fail-closed:** `Integrations.DemandLaunch` lehnt im Kinderprofil jedes Ziel ab, das keine erlaubte Adresse ist (`Rbac.NurErwachseneDatei`: „Diese Datei kann nur ein Erwachsener öffnen.“).
+- Das gilt für Dokumente, Archive, Abbilder, Skripte und `file:`-Adressen.
+- Erlaubt bleiben nur http, https, mailto und die einzelnen ms-settings-Seiten, wie bisher geprüft.
+- Zusammen mit der leeren Erlaubnisliste (M) gilt: Ein Kinderprofil übergibt nichts an ShellExecute und startet kein Programm.
+
+**App:** `LaunchAs` und der Dateimanager (`FilesOpen`, vor Testersatz und Testmodus) leiten Dateien im Kinderprofil auf Trendos eigene Betrachter um (`OpenInOwnViewer`):
+
+| Dateiart | Eigener Betrachter |
+|---|---|
+| PDF | Trendo PDF |
+| .docx, .odt, .txt, .md, .rtf | Trendo Text |
+| .xlsx, .ods, .csv | Tabelle |
+| .pptx, .odp | Präsentation |
+| Bilder | Fotos |
+| Musik | Trendos eigener Player |
+| Videos | Medien bearbeiten |
+| .glb, .gltf, .obj, .stl | 3D-Modelle ansehen |
+
+Für alles andere erscheint der Hinweis, mit Protokoll „rbac.denied“.
+
+**Umgestellte direkte Aufrufe:**
+- Diashow `OpenMedia` (vorher ShellExecute).
+- Mediathek `LibraryPlay`.
+- Drucken: `PrintNow` mit SumatraPDF bzw. Windows-Verb „print“; Kinder bekommen `NurErwachseneDrucken`.
+- Drucken aus Text und Tabelle (SumatraPDF): Kinder sehen das PDF in Trendo.
+- Alle übrigen `LaunchAs`- und `Launch`-Aufrufe mit Dateien laufen über die zentrale Umleitung, zum Beispiel FileRow „Öffnen“, `OpenOfficeDoc`, Toast „Öffnen“ und Suche.
+- `ShellProcessLauncher` wird nur über `Integrations` erreicht, also über die Kern-Prüfung.
+
+**Weitere ShellExecute-Stellen**, die nur hinter einer Freigabe laufen (Kinder können keine erteilen): Telegram-, Tailscale- und KI-Quellen-Setup. Kittl-Konsole und Hochladen sind schon über `DarfAusfuehren` geschützt.
+
+**Archive (geprüft):**
+- Vorher hat Trendos Entpacken (`Archives.Unpack`, nur ZIP) ausführbaren Inhalt nicht geprüft.
+- Jetzt gilt `Archives.UnpackAs`: Im Kinderprofil nur ZIP und nur ohne ausführbare Einträge (Code-Endungen inklusive `.pth`, Installer, Verknüpfungen, Abbilder, Dateien ohne Endung), sonst `NurErwachseneArchiv`.
+- .7z und .rar entpackt Trendo im Kinderprofil nicht.
+- .iso, .img, .vhd, .vhdx, .cab, .wim und .esd (`Software.MountLike`) sind gesperrt: Sie gehen nicht an Windows, und in einem ZIP verhindern sie das Entpacken.
+
+### M – SumatraPDF aus der Erlaubnisliste
+
+`ProgramTrust.ChildPrograms` ist leer. Grund: SumatraPDF liest `ExternalViewers` und `InverseSearchCmdLine` aus %LOCALAPPDATA% und kann damit beliebige Befehle starten.
+
+Der Mechanismus bleibt: Der Abgleich an Komponente und Pfad ist mit einer Testliste prüfbar (`InAllowList`), ohne die echte Liste zu ändern.
+
+**Ehrlich:** Kinder starten keine Fremdprogramme mehr. PDFs öffnen sie in Trendos eigenem PDF-Betrachter.
+
+### N – Niedrige Befunde
+
+- **`.pth` und Konfiguration:** `.pth` gehört jetzt zu `CodeExtensions`. In `cache\` und `logs\` sind nur noch `*.log` und reine Datenendungen (`ProgramTrust.DataExtensions`: Bilder, `.tmp`, `.cache`) ausgenommen.
+  - Nicht mehr ausgenommen: `.json`, `.ini`, `.txt`, `.cfg` und `.bin`/`.dat` (Electron lädt zum Beispiel `snapshot_blob.bin`).
+- **Neuer Weg `BlenderScript`:** Er gilt für alle Blender-Hintergrundläufe und die Anprobe, nämlich Studio3D (Modell/Vorschau/Umwandeln und Szene), Studio3DEngines, Studio3DPro, PlanPhoto, ModelConverter, MixamoBlender, ProgModeGarment und Kreatur.
+  - Blender liest jede Datei selbst, prüft die SHA-256 gegen den Inhalt, den Trendo geschrieben hat, und führt genau diese Bytes aus.
+  - PlanPhoto: Das mitgeladene Modul `trendo_moebel` wird ebenso geprüft und vorab in `sys.modules` eingetragen, damit `import` nicht die Datei liest. Die Prüfsummen kommen aus den eingebauten Skripten; ohne sie startet PlanPhoto nichts.
+  - Ein Test durchsucht den Quelltext: Kein Blender-Aufruf übergibt mehr `--python <Datei>`.
+
+### Angepasste bestehende Tests
+
+Grund sind die strengeren Regeln; abgeschwächt ist keiner:
+- **Erlaubnisliste:** Dort, wo ein Kind bisher SumatraPDF startete (Fix3 `Herkunft`, `Interpreter_und_Parameter`, Fix4 `Liste_mit_HMAC`, `Neu_rechnen_und_DLL`, Fix5 `Ganzer_Ordner`, Fix6 `Erlaubnisliste_Sumatra`, `Zwischenspeicher`, Fix5Ui `Pruefung_im_Hintergrund`, Fix2Ui `Starten_zentral`), wird jetzt die Ablehnung erwartet.
+  - Die Herkunfts- und Ordnerprüfung selbst prüft `ProgramTrust.Verified` direkt (geprüft ja/nein); den Abgleich prüft `InAllowList`.
+- **Dateien:** Fix1Ui `Dateien_Installer` und Fix2Ui `Starten_zentral` erwarten, dass das Kind Dokumente in Trendo Text öffnet und nichts an den Testersatz (Windows) geht.
+- **Zwischenspeicher:** Fix6 `Zwischenspeicher` erwartet `logs\start.txt` und `cache\*.bin` jetzt streng.
+- **Startausdruck:** Fix6 `Skript_Startausdruck` prüft den gemeinsamen Startausdruck.
+
+### Tests
+
+- Build: 0 Fehler.
+- Core gezielt: 281 von 281 grün, Exitcode 0 (`gruen-fix7-core.log`).
+- App gezielt (`gruen-fix7-app.log`): 245 Klassen, die die geänderten Wege nutzen, in 6 Prozessen plus EveryButton_Alltag, zusammen 1159 Tests. 0 rot, jeder Prozess mit Exitcode 0, alles mit dem Endstand.
+
+### Grenzen und offene Punkte
+
+- **Eigene Betrachter:** Betrachter für Musik und Video nutzen intern FFmpeg bzw. mpv ohne Fenster und Tastatur, mit festen Trendo-Aufrufen. Werkzeuge im beschreibbaren Werkzeugordner werden weiter nicht vor jedem Start gehasht.
+- **Weitere Dateiarten:** Dateiarten ohne eigenen Betrachter (zum Beispiel .kra, .blend, .py, Archive) öffnet nur ein Erwachsener.
+- **Gemeinsames Konto:** Unter einem gemeinsamen Windows-Konto ist der Kinderschutz keine harte Grenze.
+
 ## Abnahmekriterien
 
 | # | Kriterium | Urteil |

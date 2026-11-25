@@ -123,6 +123,8 @@ public partial class MainWindow
 
     private void PrintNow(string file, string? sumatra)
     {
+        // T-0764 (7. Prüfrunde): Drucken übergibt die Datei an SumatraPDF bzw. Windows (Standardprogramm, Verb „print“) – nicht im Kinderprofil
+        Rbac.DemandSoftware(CurrentPrincipal, "drucken " + Path.GetFileName(file), _core.Audit, NurErwachseneDrucken);
         _core.Audit.Append("app", "print", Path.GetFileName(file));
         if (sumatra is not null) { Cli.Run(sumatra, ["-print-to-default", "-silent", file], timeoutMs: 60000); return; }
         if (OperatingSystem.IsWindows()) { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(file) { Verb = "print", UseShellExecute = true }); return; }

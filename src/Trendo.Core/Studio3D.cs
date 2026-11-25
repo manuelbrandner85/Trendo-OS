@@ -8,13 +8,7 @@ public static class Studio3D
     /// <summary>T-0764 (6. Prüfrunde E): Startausdruck für Blender („--python-expr“) statt eines Skriptpfads. Blender liest die Datei einmal, prüft die
     /// SHA-256 gegen <paramref name="sha256"/> und führt genau diese Bytes aus – sonst beendet es sich mit „TRENDO-SKRIPT-VERAENDERT“.
     /// Der Pfad wird als JSON-Zeichenkette eingesetzt (auch ein gültiges Python-Zeichenkettenliteral).</summary>
-    public static string VerifiedScriptExpr(string scriptPath, string sha256)
-    {
-        if (sha256.Length != 64 || !sha256.All(Uri.IsHexDigit)) throw new ArgumentException("SHA-256 erwartet.", nameof(sha256));
-        var p = System.Text.Json.JsonSerializer.Serialize(Path.GetFullPath(scriptPath));
-        return $"import hashlib,sys;p={p};d=open(p,'rb').read();hashlib.sha256(d).hexdigest()=='{sha256.ToLowerInvariant()}' or sys.exit('TRENDO-SKRIPT-VERAENDERT');"
-             + "exec(compile(d,p,'exec'),{'__name__':'__main__','__file__':p})";
-    }
+    public static string VerifiedScriptExpr(string scriptPath, string sha256) => BlenderScript.Expr(scriptPath, sha256); // 7. Prüfrunde: gemeinsamer Weg für alle Blender-Läufe
 
     public static readonly (string Id, string Label)[] Shapes = [("cube", "Würfel"), ("sphere", "Kugel"), ("monkey", "Affenkopf"), ("text", "3D-Schrift")];
     public static readonly (string Ext, string Label)[] Formats = [(".glb", "glTF (Web, Spiele)"), (".obj", "OBJ"), (".stl", "STL (3D-Druck)"), (".fbx", "FBX"), (".blend", "Blender-Datei")];
@@ -87,8 +81,8 @@ elif mode == "info":
     private static Cli.Result Blender(string blender, string mode, string src, string outp, string extra = "", string color = "#2F86F6")
     {
         var script = Path.Combine(Path.GetTempPath(), "trendo-3d-" + Environment.ProcessId + ".py");
-        File.WriteAllText(script, Script, new UTF8Encoding(false));
-        return Cli.Run(blender, ["--background", "--factory-startup", "--python-exit-code", "1", "--python", script, "--", mode, src, outp, extra, color], null, 600000);
+        // T-0764 (7. Prüfrunde): geprüfter Startausdruck statt Skriptpfad (BlenderScript)
+        return Cli.Run(blender, ["--background", "--factory-startup", "--python-exit-code", "1", .. BlenderScript.Args(script, Script), "--", mode, src, outp, extra, color], null, 600000);
     }
 
     private static string Free(string p)
@@ -387,8 +381,8 @@ print("TRENDO_BLEND ok")
     public static (Cli.Result R, string Out) ExportBlend(string blender, string specPath, string outBlend, string? alsoFbx = null)
     {
         var script = Path.Combine(Path.GetTempPath(), "trendo-3d-scene-" + Environment.ProcessId + ".py");
-        File.WriteAllText(script, SceneScript, new UTF8Encoding(false));
-        var args = new List<string> { "--background", "--factory-startup", "--python-exit-code", "1", "--python", script, "--", specPath, outBlend };
+        var args = new List<string> { "--background", "--factory-startup", "--python-exit-code", "1" }; // T-0764 (7. Prüfrunde): geprüfter Startausdruck
+        args.AddRange(BlenderScript.Args(script, SceneScript)); args.AddRange(["--", specPath, outBlend]);
         if (alsoFbx is not null) args.Add(alsoFbx);
         var r = Cli.Run(blender, args, null, 600000);
         return (r, outBlend);
