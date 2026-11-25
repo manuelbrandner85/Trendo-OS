@@ -542,6 +542,8 @@ else if (shot == "seite")
     }
     win.Show(page);
     if (win.Windows.Active is { Maximized: false } pageWin) win.Windows.ToggleMaximize(pageWin.Id);
+    if (Environment.GetEnvironmentVariable("TRENDO_CHECKUP") == "1") // T-0763: „Alles prüfen“ mit Ergebnis zeigen
+    { win.RunCheckupAsync().GetAwaiter().GetResult(); Avalonia.Threading.Dispatcher.UIThread.RunJobs(); }
     win.Show(page);
     if (Environment.GetEnvironmentVariable("TRENDO_3D_DEMO") is "bearbeiten") // T-0691: Bearbeitungsmodus zeigen (Würfel, Flächen gewählt und extrudiert)
     {

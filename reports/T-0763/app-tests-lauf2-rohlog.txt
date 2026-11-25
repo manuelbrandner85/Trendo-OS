@@ -1,0 +1,9 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    CORE-04 UI: mit echtem Begleiter koppeln (Code vom Gerät), Details holen, Erreichbarkeit, Aufgabe zuordnen, entfernen [SKIP]
+      Übersprungen – nur unter Linux prüfbar.
+  Finished:    Trendo.App.Tests (ID = '8ef5a3a86022ab35f068b2bee6323ccbf674516500a713e4a13eb77633077cad')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 59, Errors: 0, Failed: 0, Skipped: 1, Not Run: 0, Time: 102,269s

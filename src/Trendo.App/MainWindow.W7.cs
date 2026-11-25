@@ -122,21 +122,31 @@ public partial class MainWindow
         return SysPage("Geräteverbund", sp);
     }
 
+    /// <summary>T-0763 Fix M4: Zeilen, die nur der Raspberry Pi könnte, ehrlich als „nicht im Angebot“ statt als bloßes „BLOCKIERT“.</summary>
+    internal static string ModeDetail(ModeCapability c) =>
+        c.State == CapState.Blockiert && c.Detail.Contains("Raspberry Pi") ? "Nicht verfügbar – nur auf dem Raspberry Pi, der derzeit nicht im Angebot ist"
+        : (c.State == CapState.Blockiert ? "BLOCKIERT – " : c.State == CapState.Fehlt ? "fehlt – " : "") + c.Detail;
+
     private Control ModeView()
     {
         var mode = TripleMode.DetectHere();
-        var sp = new StackPanel { Spacing = 8, Children = { P("Trendo läuft als Windows-App, von einem Linux-USB-Stick oder auf dem Raspberry Pi. Hier steht ehrlich, was im aktuellen Modus geht."),
+        // T-0763 (SYS-01): klare Aussage statt Modus-Versprechen – im Angebot ist nur die Desktop Edition für Windows 11
+        var sp = new StackPanel { Spacing = 8, Children = {
+            WCard(new StackPanel { Name = "mode-offer", Spacing = 4, Children = {
+                new TextBlock { Name = "mode-offer-head", Text = "Trendo OS gibt es derzeit als Desktop Edition für Windows 11.", Foreground = Text, FontSize = 15, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
+                new TextBlock { Name = "mode-offer-text", Text = "Linux und Raspberry Pi sind derzeit nicht im Angebot – dafür gibt es kein unterstütztes Setup. Der Stick-Schreiber unten ist eine Vorschau. Die Liste zeigt ehrlich, was auf diesem Gerät geht.", Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap } } }),
             new TextBlock { Name = "mode-now", Text = "Aktueller Modus: " + TripleMode.Label(mode), Foreground = Text, FontSize = 15 } } };
         bool Has(string t) => t switch { "soffice" => true /* eigenes Office */, "winget" => ToolPath("winget") is not null || OperatingSystem.IsWindows(), "unreal" => ToolPath("unreal") is not null, "apt" => File.Exists("/usr/bin/apt"), _ => ToolPath(t) is not null };
         var i = 0;
         foreach (var c in TripleMode.Capabilities(mode, Has))
             sp.Children.Add(Row2(new TextBlock { Name = $"mode-cap-{i++}", Text = $"{(c.State switch { CapState.Ok => "✓", CapState.Fehlt => "○", _ => "✕" })} {c.Feature}", Foreground = Text },
-                new TextBlock { Text = (c.State == CapState.Blockiert ? "BLOCKIERT – " : c.State == CapState.Fehlt ? "fehlt – " : "") + c.Detail, Foreground = c.State == CapState.Blockiert ? Brush.Parse("#F87171") : Muted, FontSize = 11, VerticalAlignment = VerticalAlignment.Center }));
+                new TextBlock { Text = ModeDetail(c), Foreground = c.State == CapState.Blockiert ? Brush.Parse("#F87171") : Muted, FontSize = 11, VerticalAlignment = VerticalAlignment.Center }));
         // Seit 0.9.71 schreibt Trendo das eigene Trendo-OS-Abbild selbst (geprüft, mit Rücklesen) – keine fremden Werkzeuge mehr nötig
         var plan = new StackPanel { Spacing = 6, Children = {
             new TextBlock { Text = "Trendo OS auf USB-Stick oder externe SSD", Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold },
             P($"Eigenes System zum Mitnehmen: Trendo lädt das geprüfte Abbild aus dem neuesten Release, schreibt es auf das gewählte Laufwerk (mind. {MinStickGb:0} GB) und liest alles zur Kontrolle zurück. Windows und Trendo auf diesem PC bleiben unverändert.", null, 12),
-            Act("mode-write-stick", "Stick oder SSD schreiben …", () => { EnterSetupFullscreen(); SetupUse("stick"); }, true) } };
+            new TextBlock { Name = "mode-stick-note", Text = "Nicht Teil der Desktop Edition: Das Stick-System ist eine Vorschau ohne Unterstützung. Der Start von einem geschriebenen Stick ist auf echter Hardware noch nicht nachgewiesen.", Foreground = Brush.Parse("#FACC15"), FontSize = 11.5, TextWrapping = TextWrapping.Wrap },
+            Act("mode-write-stick", "Stick oder SSD schreiben (Vorschau) …", () => { EnterSetupFullscreen(); SetupUse("stick"); }) } }; // T-0763 Fix M4: Vorschau, keine goldene Hauptaktion
         sp.Children.Add(WCard(plan));
         return SysPage("Betriebsmodus", sp);
     }

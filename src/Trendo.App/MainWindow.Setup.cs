@@ -518,15 +518,23 @@ public sealed partial class MainWindow
             b.Click += async (_, _) =>
             {
                 _repairMsg = $"{c.Name}: wird repariert …"; Show(CurrentView);
-                // T-0713: Reparieren fragt wie die Ersteinrichtung (Liste mit Lizenz, Größe, Herkunft) und richtet nur mit dieser einen Freigabe ein
-                var granted = await SammelFreigabeAsync([c], $"„{c.Name}“ reparieren?");
-                if (granted.Count == 0) { _repairMsg = $"{c.Name}: nicht repariert – es wurde nichts geändert."; ReloadStudios(); Show(CurrentView); return; }
-                bool ok; try { ok = await InstallFreigegebenAsync(c, granted[0].Id); } catch (Exception ex) { ok = false; _depLog.Text = ex.Message; SammelVerwerfen([granted[0].Id]); }
-                _repairMsg = ok ? $"{c.Name}: repariert ✓" : $"{c.Name}: hat nicht geklappt{(_core.Offline ? " – keine Internetverbindung" : "")}. {_depLog.Text}".Trim();
+                _repairMsg = await RepairComponentAsync(c, "reparieren", "repariert");
                 ReloadStudios(); Show(CurrentView);
             };
             return b;
         }
+    }
+
+    /// <summary>Ein Zusatzprogramm über den vorhandenen Nachlade-Weg einrichten: erst die Sammel-Rückfrage (Lizenz, Größe, Herkunft – eigener Dialog,
+    /// nie im selben Klick freigegeben), dann genau diese eine Freigabe einlösen. Liefert den Satz für die Seite. Genutzt vom Systemcheck und (T-0763)
+    /// von „Einrichten & Reparieren“.</summary>
+    internal async Task<string> RepairComponentAsync(Component c, string verb, string done)
+    {
+        // T-0713: Reparieren fragt wie die Ersteinrichtung (Liste mit Lizenz, Größe, Herkunft) und richtet nur mit dieser einen Freigabe ein
+        var granted = await SammelFreigabeAsync([c], $"„{c.Name}“ {verb}?");
+        if (granted.Count == 0) return $"{c.Name}: nicht {done} – es wurde nichts geändert.";
+        bool ok; try { ok = await InstallFreigegebenAsync(c, granted[0].Id); } catch (Exception ex) { ok = false; _depLog.Text = ex.Message; SammelVerwerfen([granted[0].Id]); }
+        return ok ? $"{c.Name}: {done} ✓" : $"{c.Name}: hat nicht geklappt{(_core.Offline ? " – keine Internetverbindung" : "")}. {_depLog.Text}".Trim();
     }
 
     // ---------- Sicherung & Wiederherstellung ----------

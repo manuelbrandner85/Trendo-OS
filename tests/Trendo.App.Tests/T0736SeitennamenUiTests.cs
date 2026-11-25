@@ -58,7 +58,8 @@ public class T0736Seitennamen_Ui
         var w = Open();
         try
         {
-            var page = MainWindow.SettingsGroups.SelectMany(g => g.Pages).First(p => p.Key == "qual-leistung");
+            // T-0763: Startseite des Studios „Qualität prüfen“ ist jetzt „Alles prüfen“ (vorher „Leistung messen“) – gleiche Prüfung an der neuen Startseite
+            var page = MainWindow.SettingsGroups.SelectMany(g => g.Pages).First(p => p.Key == "qual-check");
             var studio = w.ShellLabel(page.Key, page.Label);
             Assert.NotEqual(page.Label, studio); // die Seite ist Startseite eines Studios mit anderem Namen
             Assert.Contains(w.SettingsSearch(page.Label), h => h.Key == page.Key && h.Label == studio); // alter Name findet, gezeigt wird der neue
