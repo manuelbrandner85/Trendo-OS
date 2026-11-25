@@ -1,0 +1,14 @@
+# T-0766: Werkstatt-Export, danach mit Windows tar.exe (bsdtar, Fremdprogramm) gelesen
+Bauen: seq []
+Export-Fehler: seq []
+ZIP: eigene.zentrierte-tabelle-1.0.0.zip
+SHA-256 ZIP: 411752d49e2b52c0826031072f6dce91b21c231e29029acb48e32fe958e135e4
+## C:\Windows\System32\tar.exe -tvf eigene.zip
+-rw-rw-r--  0 0      0        1081 Nov 24 12:38 modul.wasm
+-rw-rw-r--  0 0      0         575 Nov 24 12:38 trendo-extension.json
+-rw-rw-r--  0 0      0        6959 Nov 24 12:38 quelle/modul.wat
+exit 0
+## sha256sum
+411752d49e2b52c0826031072f6dce91b21c231e29029acb48e32fe958e135e4 *eigene.zip
+702f52b86e91ab225330a3dfd2045c0214ff0502231642c047688ff8730fa351 *modul.wasm
+"ModuleSha256": "702f52b86e91ab225330a3dfd2045c0214ff0502231642c047688ff8730fa351"

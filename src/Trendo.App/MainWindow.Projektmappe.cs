@@ -140,6 +140,7 @@ public partial class MainWindow
             var ren = new Button { Name = "proj-rename-go", Content = "Umbenennen", FontSize = 12 };
             ren.Click += (_, _) => Try(V, () => { _core.Projects.Rename(pid, newName.Text ?? ""); _projMsg = "Umbenannt."; Show(V); });
             right.Children.Add(new DockPanel { Children = { Dk(ren, Avalonia.Controls.Dock.Right), newName } });
+            ExtProjectCommands(right, pid); // T-0766: Knöpfe freigegebener Funktions-Erweiterungen (Ergebnis landet im Projekt, rückgängig machbar)
         }
 
         Border Panel(Control c, string name, double? w = null) => new() { Name = name, Child = new ScrollViewer { Content = c }, Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Padding = new Thickness(10), BoxShadow = CardShadow, Width = w ?? double.NaN };

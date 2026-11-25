@@ -1,0 +1,90 @@
+# Bericht T-0766: Echte Erweiterungen (X-04)
+
+**Branch:** `claude/T-0766-echte-erweiterungen` (Basis `main` = Release 0.9.109), Kopie je Auftrag in `%TEMP%\trendo-auftrag-T-0766`.
+
+## Was war → was ist jetzt
+
+| Punkt | Vorher (Beleg) | Jetzt | Nachweis (echt/ersetzt) |
+|---|---|---|---|
+| 1 Sandbox | Erweiterungen nur Daten (`Extensions.cs:8,15-17` alt), keine Funktionen | Art `modul`: WebAssembly-Modul (WASI preview 1) in **Wasmtime 50.0.1** (NuGet, Apache-2.0 WITH LLVM-exception, Bytecode Alliance, Release 06.11.2026). Importe nur aus fester WASI-Liste (kein `sock_*`, kein `poll_oneoff`, keine Links), keine Umgebung, keine geerbten Ein-/Ausgaben; Ordner nur `/daten` (eigener Datenordner, wenn Recht) und `/projekt` (nur lesen, wenn Recht); Zeitgrenze per Epoche 15 s, Rechengrenze per Fuel, Speicher 64 MB, Ein-/Ausgabe je 16 MB; Not-Stopp bricht über `ApprovalGate.HaltToken` ab. Kein .NET-Code der Erweiterung im Prozess | `T0766_ExtensionSandbox` (5 Tests, echte Wasmtime-Laufzeit, nichts ersetzt) |
+| 2 Rechte-Manifest | Rechte `dateien-lesen`, `internet-links` ohne Wirkung | Rechte `befehl`, `eingabe-datei`, `projekt-schreiben`, `projekt-lesen`, `daten-ordner`; „netz“ wird abgewiesen. Anzeige verständlich vor dem Installieren (Rückfrage, auch beim Katalog). Freigabe **eigener Schritt** (eigene Rückfrage, eigene ApprovalGate-Aktion `ext.grant`, Ziel `Kennung@Prüfsumme`) – die Installations-Freigabe gilt dafür nicht. Entziehen jederzeit. Nach Update andere Prüfsumme → Rechte erlöschen. `ModuleSha256` im Manifest; getauschtes Modul in der ZIP wird abgewiesen; Freigabe an die Quell-Prüfsumme wie bisher | `T0766_ExtensionModules.Separate_approvals_and_halt`, `.Tampered_rejected`, UI-Test |
+| 3 Einbindung | – | Knopf je freigegebenem Befehl im Studio „Projekte“ (rechts „Mit Erweiterung“, Dateiauswahl nach Endung); Ergebnis als neue Datei im offenen Projekt, nie überschreiben („kunden (2).md“); „Rückgängig“ entfernt nur die unveränderte Ergebnisdatei (Prüfsumme) | `Install_grant_run_undo`, UI-Test vom Klick bis zur Datei |
+| 4 Selbst erstellen | kein Editor, kein Export, kein Update (Audit X-04 „Was fehlt“ 2.–3.) | Werkstatt (Expander „Eigene Erweiterung bauen“): Vorlage, Manifest-Editor (Name, Version, Beschreibung, Knopfname, Endungen, Rechte), Quelltext-Editor (WAT) mit Sichern nach Tipp-Pause, „Bauen und prüfen“ mit dem WAT-Übersetzer **aus der Wasmtime-Bibliothek** (kein weiteres Werkzeug), „Als ZIP ausgeben“, „Diese ZIP installieren …“. Aktualisieren: höhere Version ersetzt atomar, ältere wird abgewiesen. Rust: `rustup`/`cargo` auf diesem PC **nicht vorhanden** → nicht genutzt, nichts installiert. Beispielmodul „CSV als Tabelle“ als Quelle (`src/Trendo.Core/Erweiterungen/csv-tabelle.wat`) + Binär (`csv-tabelle.wasm`, 1081 Byte) + `csv-tabelle.wasm.sha256` | `Workshop_roundtrip_and_update`, `Sample_reproducible_and_converts` (Quelle baut byte-gleich zur Binärdatei), UI-Test, `reports/T-0766/export-zip.log` |
+| 5 Feindliche Tests | – | Datei außerhalb (`../geheim.txt`, absoluter Pfad, ohne Ordner) → verweigert, mit Gegenprobe im eigenen Ordner; Netz (`sock_accept`, `sock_send`, `env.http_get`, `poll_oneoff`) → bei Prüfung und Installation abgewiesen; Endlosschleife → Zeitgrenze (≤ 8 s), Rechengrenze, Not-Stopp; Speicher → 125-MB-Startspeicher nicht gestartet, Wachsen endet bei 1009 Seiten (< 64 MB), Ausgabe-Deckel; danach läuft das Beispielmodul normal | `T0766_ExtensionSandbox.Hostile_*` |
+| 6 Katalogtext/KI | „Neue Funktionen für Trendo hinzufügen“ stimmte nicht (Audit X-04 Nr. 12) | Stimmt jetzt; Leerzustand erklärt Funktionen + Sandbox. KI-Aktion `erweiterung.entwerfen` unverändert nur Entwurf, `erweiterung.installieren` bleibt gesperrt | unverändert `PromptActionTests` |
+
+Bestehende Daten-Arten `seite`, `vorhaben`, `links`, `text` bleiben gültig und nutzbar (`Data_kinds_unchanged`, `W5_X04_Extensions`, `W5_X04_Ui`); der mitgelieferte Katalog hat jetzt 4 statt 3 Einträge (Tests von 3 auf 4 angehoben, nicht abgeschwächt).
+
+## Tests (gezielt, kein Volltest)
+- `dotnet build Trendo.sln -c Release`: 0 Fehler.
+- Core: `--filter T0766|W5_X04|SystemPages|Sys13|NoFixedUser` → **42 bestanden, 0 Fehler** nach fix3: **68 bestanden, 1 übersprungen (restic nicht vorhanden), 0 Fehler** mit `Backup`-Klassen (`reports/T-0766/core-tests.log`, neu erzeugt).
+- App: `T0766ErweiterungenUi` 3/3 (nach fix1), `W5_X04_Ui` 2/2, `W5_X04_CatalogUi` 1/1, `StyleAndBrand_Ui` 2/2, `Projektmappe_Ui` 1/1, `T0726Offen_Ui` 4/4 → alle grün (`reports/T-0766/app-tests.log`).
+- Rot-Grün: auf `main` kompilieren die neuen Tests nicht (Typen `ExtensionSandbox`, `ExtensionModuleSample`, `ExtensionWorkshop`, `ExtensionResultUndo` fehlen), Katalog-Test erwartet 4 statt 3 Einträge.
+- Bildprüfung: `reports/T-0766/erweiterungen-modul-werkstatt.png`, `projekte-knopf.png` (Render mit neuer Hilfe `TRENDO_EXT_DEMO=offen|werkstatt|projekt`).
+- Belege mit SHA-256: `reports/T-0766/SHA256SUMS.txt`. Export-ZIP mit Windows `tar.exe` (bsdtar) gelesen und entpackt, Modul-Prüfsumme = Manifest.
+
+## Abnahmekriterien
+1. Aus leerer Vorlage echtes Ergebnis: **VOLLWERTIG** (Werkstatt → Modul → Tabelle im Projekt, UI-Test).
+2. Fremddatei importieren/bearbeiten/exportieren, Export im Fremdprogramm: **TEILWEISE** – echte CSV wird umgewandelt, Export-ZIP mit `tar.exe` gelesen; die erzeugte `.md` wurde nicht in einem Markdown-Programm geöffnet.
+3. Absturz ≤ 30 s: **TEILWEISE** – Werkstatt-Felder und Quelltext werden nach der Tipp-Pause gesichert (`SaveOnPause`), Manifest atomar; nicht mit echtem Prozessabbruch geprüft.
+4. KI-Fachaufgabe im Dokument, rückgängig: **FEHLT (bewusst)** – Vorgabe: KI entwirft nur, Installation bleibt beim Nutzer.
+5. Test vom Klick bis zur echten Datei: **VOLLWERTIG** (`T0766ErweiterungenUi`, echte Sandbox).
+6. Einfach/Profi, Tastenkürzel, Rechtsklick, Ziehen: **NICHT GETESTET / FEHLT** – keine neuen Kürzel oder Rechtsklick-Menüs.
+
+## Gegenprüfung fix1 (unabhängige Prüfung von 94847f78d)
+
+| Befund | Änderung | Test (echte Wasmtime-Laufzeit) |
+|---|---|---|
+| M1 Datenordner ohne Grenze | Datenordner ist über WASI nur noch **lesbar** (kein Anlegen, kein `fd_filestat_set_size`/`fd_allocate`/Schreiben). Schreiben nur über die Trendo-Funktionen `trendo.daten_schreiben`/`trendo.daten_loeschen`; Grenze 100 MB und 1000 Dateien wird **vor** jedem Schreiben geprüft, Überschreitung → Fehlernummer + Abbruch des Laufs; Rückstopp räumt im Lauf geänderte Dateien, bis der Ordner unter der Grenze ist. Grenze steht im Rechte-Text. (Ein Umhüllen der WASI-Funktionen ist nicht möglich: von außen aufgerufene WASI-Funktionen finden den Speicher des Moduls nicht – im Versuch belegt.) | `T0766_Gegenpruefung.M1_data_quota` (Schreibschleife endet bei ≤ 4 MB Testgrenze, alte Daten bleiben, Gegenprobe, Ausbruch per „../“, ohne Recht EACCES) |
+| M2 Übersetzen ohne Grenze | Formprüfung **vor** dem Übersetzen: ≤ 4 MB, ≤ 20 000 Funktionen, ≤ 200 Importe, ≤ 1 Speicher. (Der in fix1 eingeführte Zwischenspeicher ist in fix2 wegen H1 wieder gestrichen.) Installieren, Katalog-Installieren und Werkstatt-Bauen laufen per `Task.Run`. Feste Ausstattung ohne GC/Ausnahmen/Mehrspeicher/64-Bit-Speicher/Komponenten. | `M2_shape_and_cache` (25 000 Funktionen und > 4 MB in < 3 s abgewiesen, zwei Speicher abgewiesen, Cache-Manipulation erkannt), UI-Tests warten jetzt auf das Ende |
+| N1 stderr | Text gekürzt auf 200 Zeichen, Steuer-/Formatzeichen entfernt, „Text der Erweiterung: „…““ | `N1_stderr` |
+| N2 RunCommand | IO-/Zugriffsfehler → verständliches Ergebnis; `UniqueRel` umgeht auch Ordner; Knopf in `finally` wieder bedienbar | `N2_N4_N5` (Datei gesperrt, Ordner `kunden.md`) |
+| N3 Ordner-Hash | Verfahren v2 mit Längen vor Name und Inhalt; alte Freigabe wird erkannt („gilt nicht mehr … neu freigeben“), nichts gilt stillschweigend weiter | `N3_hash` |
+| N4 Freigabe an Prüfsumme | Rückfrage zeigt Fassung + Prüfsumme; Klick vergleicht (App und Kern) | `N2_N4_N5`, UI `Netzkatalog_Update_Pruefsumme` |
+| N5 Update | Rückfrage nennt „Ersetzt die installierte Fassung X“ (und ältere wird abgewiesen); Datenordner nur mit eigenem Haken „behalten“, Vorgabe leeren | `N2_N4_N5`, UI-Test |
+| N6 Netz-Katalog | erst laden + Prüfsumme prüfen, dann Rechte (ExtPeek) zeigen, dann Rückfrage; Erfolgsmeldung nennt „Noch ohne Rechte …“ | UI `Netzkatalog_Update_Pruefsumme` (Laden mit `ExtFetchOverride` ersetzt) |
+| N7 Zeitgeber | `IncrementEpoch` gegen freigegebene Engine abgesichert, Zeitgeber wird mit Warte-Handle beendet, Abmeldung des Not-Stopps vor Freigabe | `N7_timer_race` (24 parallele Kurzläufe) |
+| N8 Meldungen | zwei Speicher, Speichergrenze, Laufzeitspeicher, „abgebrochen“ vs. „ließ sich nicht starten“ getrennt | `M2_shape_and_cache`, bestehende Feindtests |
+| N9 Beleg/Bild | Logs neu, Anonymisierung `C:\Users\<user>`; Werkstatt-Texte brechen um, Aufklapper im Dunkel-Gold-Look; Bild angesehen | `reports/T-0766/*.png`, `SHA256SUMS.txt` |
+
+Offen aus der Gegenprüfung: Ein Kindprozess mit Job-Objekt (harte Speicher-/Zeitgrenze auch für das Übersetzen selbst) ist **nicht** umgesetzt – nicht klein machbar; das Übersetzen bleibt durch die Formgrenzen beschränkt, ist aber selbst nicht per Not-Stopp unterbrechbar. Die Anzahl leerer Ordner über `path_create_directory` entfällt (Datenordner nur lesbar).
+
+## Gegenprüfung fix2 (zweite Prüfrunde von e7c00b0b4)
+
+| Befund | Änderung | Test | Gemessen |
+|---|---|---|---|
+| H1 Zwischenspeicher = nativer Code | Zwischenspeicher **ganz gestrichen** (ersetzt den fix1-Weg). Jeder Lauf übersetzt aus dem installierten, prüfsummengeprüften `.wasm`; `Module.Deserialize`/`DeserializeFile`/`Serialize` kommen im Produkt nicht vor. Alter Ordner `erweiterungen-cache` wird beim ersten Zugriff der Verwaltung und beim Entfernen gelöscht; `Backup` sichert ihn nicht und überspringt ihn beim Wiederherstellen (auch Einzeldatei). | `T0766_Gegenpruefung2.H1_no_cache`: fremdes Kompilat mit gleicher Ausstattung + stimmiger `.sha256` → Ergebnis ist die echte Tabelle; Ordner gelöscht; fremde Sicherungs-ZIP stellt ihn nicht her; Grep über `src/` | – |
+| M3 Locals/Körpergröße | Formprüfung zählt vor dem Übersetzen Locals je Funktion (≤ 2 000), im Modul (≤ 200 000) und Körpergröße je Funktion (≤ 512 KB). Übersetzen läuft in einer eigenen Aufgabe und zählt zur Zeitgrenze; Not-Stopp oder abgelaufene Zeit beenden den Lauf sofort, die Übersetzung wird im Hintergrund verworfen (nie ausgeführt). | `M3_locals` (Angriffsmodul 19 999 × 49 000 Locals, i64 und v128, je 156 KB), `M3_compile_in_time_budget` | Abweisung beider Angriffsmodule zusammen < 3 s. Schlimmster gemessener Fall unter den Grenzen: 20 000 Funktionen × 10 v128-Locals (117 KB) **2,9–3,3 s** Übersetzen; 100 × 2 000 v128 0,05 s; 1 Funktion 512 KB 0,02 s. Not-Stopp während dieses Übersetzens: Lauf endet nach **57 ms** |
+| N10 parallele Läufe | Läufe mit demselben Datenordner laufen nacheinander (Sperre je Ordner, Warten im Zeit-/Not-Stopp-Rahmen); Aufräumen löscht nur in diesem Lauf geschriebene Dateien | `N10_parallel` (5 parallele Läufe, 3 Runden) | – |
+| N11 Namen | Name ≤ 255 Zeichen, ≤ 8 Ebenen, vollständiger Pfad < 260; Windows-Gerätenamen (CON, PRN, AUX, NUL, CONIN$, CONOUT$, CLOCK$, COM/LPT 0–9 und ¹²³, auch mit Endung/Leerzeichen) abgelehnt; Punkt/Leerzeichen am Ende, verbotene Zeichen abgelehnt; Ordner zählen in die 1000er-Grenze (auch neu anzulegende); Ordner oder Verknüpfung/Junction als Ziel oder auf dem Weg sofort abgelehnt | `N11_names` (Liste gut/schlecht, echte Läufe, `mklink /J`, 999 Ordner) | Junction-Fälle zusammen < 2 s (gesamter Test 0,8 s) |
+
+Weiter offen: Kindprozess mit Job-Objekt (harte Grenze auch für das Übersetzen selbst) – nicht klein machbar. Das Übersetzen eines abgebrochenen Laufs läuft im Hintergrund zu Ende (höchstens rund 3 s im schlimmsten gemessenen Fall) und verbraucht so lange CPU.
+
+## Gegenprüfung fix3 (dritte Prüfrunde von 2df7b4320)
+
+| Befund | Änderung | Test |
+|---|---|---|
+| N12 parallele verworfene Übersetzungen | Gemeinsames Kontingent: höchstens 2 Übersetzungen gleichzeitig; auch eine nach Not-Stopp verworfene hält ihren Platz bis zum Ende. Ein Lauf wartet höchstens 1 s auf einen Platz, sonst Meldung „Trendo übersetzt noch eine andere Erweiterung …“; Installieren/Bauen warten. Höchstens 10 Befehle je Erweiterung (Manifest-Prüfung). | `T0766_Gegenpruefung3.N12_compile_slots`: 10 Not-Stopps in 1,3 s → gleichzeitig höchstens 2 Übersetzungen, „übersetzt noch“ für einen weiteren Lauf; 11 Befehle abgewiesen, 10 erlaubt. Sandbox-Testklassen laufen in einer gemeinsamen xUnit-Sammlung nacheinander. |
+| N13 Meldungen | Eigene Meldung „höchstens 1 000 Dateien und Ordner“; MB-Meldung nur bei der Größengrenze; „… entfernt“ nur mit tatsächlicher Anzahl entfernter Dateien | `N13_messages` |
+| N14 Wiederherstellen | `Restore`, `RestoreOne` und `Preview` prüfen Audit und alle Skip-Bereiche am normalisierten relativen Zielpfad (`GetRelativePath`, `\`→`/`, ohne Groß/Klein) | `N14_restore_normalized` (`x/../erweiterungen-cache/…`, `./web-mixamo/…`, `x\..\web-mixamo\…`, `Erweiterungen-Cache/…`, `a/../AUDIT/…`), Backup-Testklassen grün |
+
+## Nicht geprüft
+- Linux-/Pi-Edition (Wasmtime liefert `linux-x64`/`linux-arm64`, nicht gestartet); Setup-Größe (+~21 MB `wasmtime.dll` für win-x64) nicht im echten Setup gemessen.
+- Ein echtes Rust→`wasm32-wasip1`-Modul (Werkzeug fehlt auf dem PC); die Sandbox ist dafür ausgelegt (WASI-Befehlsmodul mit `_start`).
+- Katalog-Laden aus dem Netz mit Modul (Download weiterhin nur in Tests nachgebildet, wie vorher).
+
+## Offene Punkte / Risiken
+- Recht „Werkzeug für die KI“ ist bewusst **nicht** angeboten (keine Scheinfunktion); wäre ein Folgeauftrag.
+- Ansicht „Erweiterungen“ hat wie vorher zwei goldene Knöpfe (Installieren + Hauptaktion der gewählten Erweiterung) – Vorbestand, nicht verändert.
+- Rechte- und Datenordner liegen außerhalb des Erweiterungsordners (`erweiterungen-rechte/`, `erweiterungen-daten/`), damit die Prüfsumme gleich bleibt.
+
+## Berührte Dateien
+`src/Trendo.Core/Extensions.cs`, `src/Trendo.Core/ExtensionCatalog.cs`, `src/Trendo.Core/ExtensionSandbox.cs` (neu), `src/Trendo.Core/ExtensionModules.cs` (neu), `src/Trendo.Core/Erweiterungen/csv-tabelle.wat|.wasm|.wasm.sha256` (neu), `src/Trendo.Core/Trendo.Core.csproj`, `src/Trendo.App/MainWindow.W5Ext.cs`, `src/Trendo.App/MainWindow.W5ExtCat.cs`, `src/Trendo.App/MainWindow.W5ExtMod.cs` (neu), `src/Trendo.App/MainWindow.Projektmappe.cs` (1 Zeile), `tools/Trendo.Render/Program.cs` (Render-Hilfe), `tests/Trendo.Core.Tests/ExtensionSandboxTests.cs` (neu), `tests/Trendo.Core.Tests/ExtCatalogTests.cs`, `tests/Trendo.App.Tests/T0766ErweiterungenUiTests.cs` (neu), `tests/Trendo.App.Tests/ExtCatalogUiTests.cs`, `THIRD_PARTY.md`, `THIRD_PARTY_NUGET.md`, `docs/commercial/THIRD_PARTY_LICENSES.md`, `reports/T-0766/*`, `tasks/T-0766-*`.
+
+## Neue Abhängigkeit
+Wasmtime 50.0.1 (NuGet `Wasmtime`, Quelle github.com/bytecodealliance/wasmtime-dotnet) – Lizenz Apache-2.0 WITH LLVM-exception; gepflegt (letzte Fassung 06.11.2026); bringt native Laufzeit für win-x64/arm64, linux-x64/arm64, osx mit. Nichts systemweit installiert.
+
+## Sprachwahl
+Rust: **NEIN** – keine Rust-Toolchain auf dem PC; die Sandbox selbst ist Wasmtime (in Rust geschrieben, als fertige NuGet-Bibliothek eingebunden). Eigener Code C#, Beispielmodul in WebAssembly-Text.
+
+**Status:** umgesetzt und gezielt getestet; Volltest macht die Hauptsitzung.

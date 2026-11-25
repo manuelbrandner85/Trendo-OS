@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace Trendo.Core;
 
-/// <summary>X-04 Katalog: Liste von Erweiterungen (nur Daten) mit Prüfsumme. Quellen: mitgelieferter lokaler Katalog oder ein GitHub-Katalog.
+/// <summary>X-04 Katalog: Liste von Erweiterungen (Daten und Funktions-Erweiterungen in der Sandbox, T-0766) mit Prüfsumme. Quellen: mitgelieferter lokaler Katalog oder ein GitHub-Katalog.
 /// Core lädt nichts aus dem Netz (QA-019) – das Herunterladen macht die App, Core prüft nur.</summary>
 public sealed record CatalogEntry(string Id, string Name, string Version, string Kind, string Description, string Url, string Sha256);
 
@@ -44,7 +44,7 @@ public static class ExtensionCatalog
     /// <summary>T-0241: Weiterleitung beim Herunterladen nur zu GitHub über https (nie auf http oder fremde Server).</summary>
     public static bool RedirectAllowed(Uri target) => target.Scheme == Uri.UriSchemeHttps && target.Port == 443 && GitHubHosts.Contains(target.Host);
 
-    public static (InstalledExt? Ext, List<string> Errors) InstallVerified(ExtensionStore store, CatalogEntry e, string zip, string? approvalId = null)
+    public static (InstalledExt? Ext, List<string> Errors) InstallVerified(ExtensionStore store, CatalogEntry e, string zip, string? approvalId = null, bool keepData = false)
     {
         if (!File.Exists(zip)) return (null, ["Datei nicht gefunden."]);
         var h = FileSha256(zip);
@@ -60,7 +60,7 @@ public static class ExtensionCatalog
                 var m = JsonSerializer.Deserialize<ExtManifest>(new StreamReader(mf.Open()).ReadToEnd(), Opt);
                 if (m?.Id != e.Id || m.Version != e.Version) return (null, ["Inhalt passt nicht zum Katalogeintrag (Kennung/Version)."]);
             }
-            return store.Install(zip, approvalId);
+            return store.Install(zip, approvalId, keepData);
         }
         catch (JsonException) { return (null, ["Beschreibung in der ZIP ist ungültig."]); }
         finally { TempDir.Delete(tmp); }
@@ -71,7 +71,7 @@ public static class ExtensionCatalog
     {
         Directory.CreateDirectory(dir);
         var src = Path.Combine(dir, "quellen"); if (Directory.Exists(src)) Directory.Delete(src, true);
-        var dirs = new List<string> { ExtensionSamples.WriteSample(src), WriteTextSample(src), WriteLinksSample(src) };
+        var dirs = new List<string> { ExtensionSamples.WriteSample(src), WriteTextSample(src), WriteLinksSample(src), ExtensionModuleSample.Write(src) }; // T-0766: plus Funktions-Erweiterung
         var list = new List<CatalogEntry>();
         foreach (var d in dirs)
         {
