@@ -122,9 +122,11 @@ public static class Renamer
         if (dup is not null) throw new ArgumentException("Zwei Dateien bekämen denselben Namen: " + Path.GetFileName(dup.Key));
         return res;
     }
-    /// <summary>Führt aus (über Zwischennamen, damit Tausch-Umbenennungen klappen) und schreibt eine Rückgängig-Datei.</summary>
-    public static string Apply(List<Move> moves, string undoDir)
+    /// <summary>Führt aus (über Zwischennamen, damit Tausch-Umbenennungen klappen) und schreibt eine Rückgängig-Datei.
+    /// T-0764 (13. Prüfrunde): <paramref name="by"/> – im Kinderprofil nur in der Freigabe und ohne neue ausführbare Endung (<see cref="ChildWrite.DemandMove"/>), geprüft vor dem ersten Schritt.</summary>
+    public static string Apply(Principal by, AuditLog audit, List<Move> moves, string undoDir)
     {
+        foreach (var m in moves) ChildWrite.DemandMove(by, m.From, m.To, audit);
         var targets = moves.Select(m => m.To).ToHashSet(StringComparer.OrdinalIgnoreCase); var sources = moves.Select(m => m.From).ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (var t in targets) if (File.Exists(t) && !sources.Contains(t)) throw new IOException("Gibt es schon: " + Path.GetFileName(t));
         var tmp = moves.Select(m => (m, T: m.From + ".trendo-" + Guid.NewGuid().ToString("N")[..8])).ToList();
@@ -133,9 +135,10 @@ public static class Renamer
         Directory.CreateDirectory(undoDir);
         var u = Path.Combine(undoDir, $"rueckgaengig-{DateTime.Now:yyyyMMdd-HHmmssfff}.json"); J.Save(u, moves); return u;
     }
-    public static void Undo(string undoFile)
+    public static void Undo(Principal by, AuditLog audit, string undoFile)
     {
         var back = J.Load<Move>(undoFile).Select(m => new Move(m.To, m.From)).ToList();
+        foreach (var m in back) ChildWrite.DemandMove(by, m.From, m.To, audit); // T-0764 (13. Prüfrunde): auch zurück nur in der Freigabe
         foreach (var m in back) if (!File.Exists(m.From)) throw new IOException("Datei fehlt inzwischen: " + Path.GetFileName(m.From));
         var tmp = back.Select(m => (m, T: m.From + ".trendo-" + Guid.NewGuid().ToString("N")[..8])).ToList();
         foreach (var (m, t) in tmp) File.Move(m.From, t);

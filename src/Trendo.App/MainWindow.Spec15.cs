@@ -236,7 +236,7 @@ public partial class MainWindow
         var srt = Field("bc-srt-path", "SRT-Datei (.srt)", 150); sp.Children.Add(srt);
         var shift = new TextBox { Name = "bc-srt-shift", Text = "0", Width = 70 };
         sp.Children.Add(Row(P("Versatz in Sekunden (− = früher)", Text, 12), shift));
-        sp.Children.Add(B("bc-srt", "Kopie verschieben", () => { var f = Need(srt, "die SRT-Datei"); if (!File.Exists(f)) throw new IOException("Diese Datei gibt es nicht."); var (s2, n, p) = BroadcastPlus.ShiftSrt(File.ReadAllText(f), TimeSpan.FromSeconds(Fach.Num(shift.Text ?? "0"))); var o = Path.Combine(Path.GetDirectoryName(f) ?? ".", Path.GetFileNameWithoutExtension(f) + ".versetzt.srt"); AtomicFile.WriteAllText(o, s2); _bcMsg = $"{n} Untertitel" + (p.Count == 0 ? "" : " · ⚠ " + string.Join(" · ", p)) + $" – gespeichert: {o}"; }));
+        sp.Children.Add(B("bc-srt", "Kopie verschieben", () => { var f = Need(srt, "die SRT-Datei"); if (!File.Exists(f)) throw new IOException("Diese Datei gibt es nicht."); var (s2, n, p) = BroadcastPlus.ShiftSrt(File.ReadAllText(f), TimeSpan.FromSeconds(Fach.Num(shift.Text ?? "0"))); var o = UserFile(Path.Combine(Path.GetDirectoryName(f) ?? ".", Path.GetFileNameWithoutExtension(f) + ".versetzt.srt")); AtomicFile.WriteAllText(o, s2); _bcMsg = $"{n} Untertitel" + (p.Count == 0 ? "" : " · ⚠ " + string.Join(" · ", p)) + $" – gespeichert: {o}"; }));
         return sp;
     }
     /// <summary>T-0203: schreibt die OBS-Szenensammlung zur aktuellen Sendung.</summary>

@@ -272,8 +272,9 @@ public static class PhotoOrganizer
 
     /// <summary>Kopiert oder verschiebt Datei für Datei direkt zum Ziel (ohne Zwischennamen), überschreibt nie.
     /// Das Protokoll für „Rückgängig“ entsteht auch, wenn der Lauf mittendrin abbricht (z. B. Platte voll); eine halbe Kopie wird gelöscht.</summary>
-    public static string Run(List<Move> plan, string undoDir, bool copy)
+    public static string Run(Principal by, AuditLog audit, List<Move> plan, string undoDir, bool copy)
     {
+        foreach (var m in plan) ChildWrite.DemandMove(by, m.From, m.To, audit, fromReadOnly: copy); // T-0764 (13. Prüfrunde): Zielordner frei getippt – Kinder nur in der Freigabe
         var done = new List<LogItem>();
         Directory.CreateDirectory(undoDir);
         var log = Path.Combine(undoDir, $"fotos-{(copy ? "kopiert" : "verschoben")}-{DateTime.Now:yyyyMMdd-HHmmss-fff}.json");
@@ -299,9 +300,10 @@ public static class PhotoOrganizer
 
     /// <summary>Macht einen Lauf rückgängig: Kopien werden nur gelöscht, wenn ihr Inhalt unverändert ist; verschobene Fotos kommen zurück, wenn am alten Platz nichts liegt.
     /// Was nicht geht, bleibt unangetastet und wird gezählt.</summary>
-    public static (int Done, int Skipped) Undo(string log)
+    public static (int Done, int Skipped) Undo(Principal by, AuditLog audit, string log)
     {
         var l = JsonSerializer.Deserialize<RunLog>(File.ReadAllText(log)) ?? throw new InvalidDataException("Protokoll unlesbar.");
+        foreach (var m in l.Items) ChildWrite.DemandMove(by, m.To, m.From, audit, fromReadOnly: false); // T-0764 (13. Prüfrunde)
         int ok = 0, skip = 0;
         foreach (var m in l.Items)
         {

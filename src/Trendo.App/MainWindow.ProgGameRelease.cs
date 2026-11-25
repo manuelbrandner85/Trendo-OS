@@ -107,7 +107,7 @@ public partial class MainWindow
     /// <summary>Vorschlag 12: fertiges Windows-Spiel aus dem Unreal-Projekt – Unreals Paketierer (BuildCookRun, Shipping) und ein ZIP zum Weitergeben.</summary>
     public async Task GameUnrealPackage(ProgramDocument d, string outDir)
     {
-        UserDir(outDir); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
+        UserDirFixedNames(outDir); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
         if (!DarfAusfuehren("spiel.unreal.paket", out _)) { _progMsg[GK] = NurErwachseneEngine; Show(GK); return; } // T-0764 (6. Prüfrunde B): RunUAT
         var built = d.Text("built");
         var uproject = built.Length > 0 && Directory.Exists(built) ? Directory.GetFiles(built, "*.uproject").FirstOrDefault() : null;

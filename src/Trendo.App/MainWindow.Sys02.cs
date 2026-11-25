@@ -76,12 +76,12 @@ public partial class MainWindow
 
         var rd = Field("ren-folder", "Ordner mit den Dateien"); var rp = Field("ren-pattern", "Muster, z. B. Urlaub_{n:000}", 220, "{name}"); var rf = Field("ren-find", "Suchen (optional)", 140); var rr = Field("ren-replace", "Ersetzen durch", 140);
         var prev = new StackPanel { Name = "ren-preview" };
-        List<Move> Plan() => Renamer.Plan(Directory.GetFiles(Clean(rd)), rp.Text ?? "{name}", rf.Text ?? "", rr.Text ?? "");
+        List<Move> Plan() { var p = Renamer.Plan(Directory.GetFiles(UserDirFixedNames(Clean(rd))), rp.Text ?? "{name}", rf.Text ?? "", rr.Text ?? ""); UserMoves(p); return p; } // T-0764 (13. Prüfrunde): Ordner/Datei frei getippt – Kinder nur Freigabe, keine neue ausführbare Endung (schon in der Vorschau)
         sp.Children.Add(Card(Section("Viele Dateien umbenennen", "Erst Vorschau ansehen, dann umbenennen. Mit „Rückgängig“ kommt alles zurück. Platzhalter: {name}, {n}, {n:000}, {datum}.",
             Line(rd, rp), Line(rf, rr,
                 Act("ren-preview-btn", "Vorschau", () => Try(V, () => { prev.Children.Clear(); foreach (var m in Plan().Take(30)) prev.Children.Add(P($"{Path.GetFileName(m.From)} → {Path.GetFileName(m.To)}", Text, 11)); })),
-                Act("ren-apply", "Umbenennen", () => Try(V, () => { Need(rd, "den Ordner mit den Dateien"); var p = Plan(); if (p.Count == 0) { Say("Nichts umzubenennen – im Ordner passt keine Datei zum Muster.", V); return; } _lastUndo = Renamer.Apply(p, Path.Combine(_core.DataRoot, "werkzeuge", "rueckgaengig")); _core.Audit.Append("app", "files.rename", $"{p.Count} Dateien"); Say($"{p.Count} Dateien umbenannt.", V); }), true),
-                Act("ren-undo", "Rückgängig", () => Try(V, () => { if (_lastUndo is null) throw new InvalidOperationException("Es gibt nichts rückgängig zu machen."); Renamer.Undo(_lastUndo); _lastUndo = null; Say("Zurückgesetzt.", V); }))), prev)));
+                Act("ren-apply", "Umbenennen", () => Try(V, () => { Need(rd, "den Ordner mit den Dateien"); var p = Plan(); if (p.Count == 0) { Say("Nichts umzubenennen – im Ordner passt keine Datei zum Muster.", V); return; } _lastUndo = Renamer.Apply(CurrentPrincipal, _core.Audit, p, Path.Combine(_core.DataRoot, "werkzeuge", "rueckgaengig")); _core.Audit.Append("app", "files.rename", $"{p.Count} Dateien"); Say($"{p.Count} Dateien umbenannt.", V); }), true),
+                Act("ren-undo", "Rückgängig", () => Try(V, () => { if (_lastUndo is null) throw new InvalidOperationException("Es gibt nichts rückgängig zu machen."); Renamer.Undo(CurrentPrincipal, _core.Audit, _lastUndo); _lastUndo = null; Say("Zurückgesetzt.", V); }))), prev)));
 
         var dd = Field("dup-folder", "Ordner durchsuchen"); var dupOut = new StackPanel { Name = "dup-result" };
         sp.Children.Add(Card(Section("Doppelte Dateien finden", "Vergleicht den Inhalt (nicht nur den Namen). Trendo löscht nichts – du entscheidest selbst.",
@@ -119,7 +119,7 @@ public partial class MainWindow
             row.Children.Add(Sp(Act("zip-conflict-cancel", "Abbrechen", () => { zipAsk.Children.Clear(); Say("Abgebrochen – nichts verändert.", V); })));
             zipAsk.Children.Add(row);
         }
-        string DoPack(ArchiveConflict mode) { _zipSrc = zs.Text; var s = Clean(zs).TrimEnd('/', '\\'); var z = Archives.Pack([s], s + ".zip", mode); return "Gepackt: " + Path.GetFileName(z); }
+        string DoPack(ArchiveConflict mode) { _zipSrc = zs.Text; var s = Clean(zs).TrimEnd('/', '\\'); var z = Archives.Pack([s], UserFile(s + ".zip"), mode); return "Gepackt: " + Path.GetFileName(z); }
         string DoUnpack(ArchiveConflict mode)
         {
             _zipFile = zu.Text;
@@ -134,8 +134,8 @@ public partial class MainWindow
 
         var pf = Field("photo-folder", "Ordner mit Fotos"); var pOut = new StackPanel { Name = "photo-preview" };
         sp.Children.Add(Card(Section("Fotos nach Datum ordnen", "Sortiert nach Aufnahmedatum in Ordner wie 2026/2026-10. Erst Probelauf, dann ausführen – rückgängig machbar.",
-            Line(pf, Act("photo-sim", "Probelauf", () => Try(V, () => { pOut.Children.Clear(); var p = PhotoSorter.Plan(Need(pf, "den Ordner mit den Fotos (Probelauf)")); pOut.Children.Add(P($"{p.Count} Fotos würden verschoben:", Text)); foreach (var m in p.Take(20)) pOut.Children.Add(P($"{Path.GetFileName(m.From)} → {Path.GetRelativePath(Clean(pf), m.To)}", null, 11)); })),
-                Act("photo-apply", "Ordnen", () => Try(V, () => { var p = PhotoSorter.Plan(Need(pf, "den Ordner mit den Fotos")); if (p.Count == 0) { Say("Keine Fotos zum Ordnen gefunden.", V); return; } _lastUndo = Renamer.Apply(p, Path.Combine(_core.DataRoot, "werkzeuge", "rueckgaengig")); Say($"{p.Count} Fotos einsortiert. „Rückgängig“ oben setzt es zurück.", V); }), true)), pOut)));
+            Line(pf, Act("photo-sim", "Probelauf", () => Try(V, () => { pOut.Children.Clear(); var p = PhotoSorter.Plan(UserDirFixedNames(Need(pf, "den Ordner mit den Fotos (Probelauf)"))); UserMoves(p); pOut.Children.Add(P($"{p.Count} Fotos würden verschoben:", Text)); foreach (var m in p.Take(20)) pOut.Children.Add(P($"{Path.GetFileName(m.From)} → {Path.GetRelativePath(Clean(pf), m.To)}", null, 11)); })),
+                Act("photo-apply", "Ordnen", () => Try(V, () => { var p = PhotoSorter.Plan(UserDirFixedNames(Need(pf, "den Ordner mit den Fotos"))); if (p.Count == 0) { Say("Keine Fotos zum Ordnen gefunden.", V); return; } _lastUndo = Renamer.Apply(CurrentPrincipal, _core.Audit, p, Path.Combine(_core.DataRoot, "werkzeuge", "rueckgaengig")); Say($"{p.Count} Fotos einsortiert. „Rückgängig“ oben setzt es zurück.", V); }), true)), pOut)));
 
         var trash = new StackPanel { Spacing = 3, Name = "trash-list" };
         if (_trash.Count > 0) trash.Children.Add(P($"{_trash.Count} Einträge, zusammen {ResourceMonitor.Size(_trash.Sum(t => t.Bytes))}", Text));
@@ -177,9 +177,9 @@ public partial class MainWindow
         var img = Field("img-file", "Bilddatei (PNG, JPG …)");
         var size = Field("img-size", "längste Seite in Pixeln", 160, "1600");
         sp.Children.Add(Card(Section("Bild drehen oder verkleinern", "Es entsteht immer eine Kopie neben dem Original – das Original bleibt unverändert.",
-            Line(img, Act("img-rotate", "Nach rechts drehen", () => Try(V, () => Say("Gespeichert: " + Path.GetFileName(ImageTools.Rotate(Clean(img), 90)), V))),
-                Act("img-left", "Nach links drehen", () => Try(V, () => Say("Gespeichert: " + Path.GetFileName(ImageTools.Rotate(Need(img, "ein Bild (zum Drehen)"), 270)), V)))),
-            Line(size, Act("img-resize", "Verkleinern", () => Try(V, () => Say("Gespeichert: " + Path.GetFileName(ImageTools.Resize(Need(img, "ein Bild (zum Verkleinern)"), int.TryParse(size.Text, out var s) && s > 0 ? s : throw new ArgumentException("Bitte die neue Breite in Pixeln eintragen, z. B. 1200."))), V)))))));
+            Line(img, Act("img-rotate", "Nach rechts drehen", () => Try(V, () => Say("Gespeichert: " + Path.GetFileName(ImageTools.Rotate(UserBeside(Clean(img)), 90)), V))),
+                Act("img-left", "Nach links drehen", () => Try(V, () => Say("Gespeichert: " + Path.GetFileName(ImageTools.Rotate(UserBeside(Need(img, "ein Bild (zum Drehen)")), 270)), V)))),
+            Line(size, Act("img-resize", "Verkleinern", () => Try(V, () => Say("Gespeichert: " + Path.GetFileName(ImageTools.Resize(UserBeside(Need(img, "ein Bild (zum Verkleinern)")), int.TryParse(size.Text, out var s) && s > 0 ? s : throw new ArgumentException("Bitte die neue Breite in Pixeln eintragen, z. B. 1200."))), V)))))));
 
         var shotAreas = Field("shot-areas", "Schwärzen: x,y,Breite,Höhe; weitere mit ; trennen", 360);
         var shotFile = Field("shot-file", "oder vorhandenes Bild zum Schwärzen", 340, _lastShot);
@@ -203,7 +203,7 @@ public partial class MainWindow
             {
                 var areas = (shotAreas.Text ?? "").Split(';', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Split(',').Select(x => int.Parse(x.Trim())).ToArray()).Where(a => a.Length == 4).Select(a => (a[0], a[1], a[2], a[3])).ToList();
                 if (areas.Count == 0) throw new ArgumentException("Bitte mindestens einen Bereich angeben, z. B. 10,10,200,40.");
-                Say("Geschwärzte Kopie: " + Path.GetFileName(ImageTools.Redact(Clean(shotFile), areas)), V);
+                Say("Geschwärzte Kopie: " + Path.GetFileName(ImageTools.Redact(UserBeside(Clean(shotFile)), areas)), V);
             }))))));
 
         var recSec = Field("rec-seconds", "Sekunden", 90, "30"); var recAudio = Field("rec-audio", "Tongerät (leer = ohne Ton)", 220);
@@ -222,7 +222,7 @@ public partial class MainWindow
             Line(au, fmt, Act("audio-run", "Umwandeln", () => Try(V, () =>
             {
                 if (ffmpeg is null) throw new InvalidOperationException("Dafür fehlt ffmpeg.");
-                var (ok, msg, sha) = FfmpegJobs.ConvertAudio(ffmpeg, Clean(au), FfmpegJobs.AudioFormats[Math.Max(0, fmt.SelectedIndex)], _core.Audit);
+                var (ok, msg, sha) = FfmpegJobs.ConvertAudio(ffmpeg, UserBeside(Clean(au)), FfmpegJobs.AudioFormats[Math.Max(0, fmt.SelectedIndex)], _core.Audit);
                 Say(ok ? $"Fertig: {msg} (Prüfsumme {sha![..12]}…)" : msg, V);
             }))))));
         return AlltagPage("Bilder & Medien", sp);

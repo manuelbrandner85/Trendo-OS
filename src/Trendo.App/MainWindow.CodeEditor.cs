@@ -40,7 +40,7 @@ public partial class MainWindow
     public void CodeOpenFolder(string dir)
     {
         if (!Directory.Exists(dir)) throw new DirectoryNotFoundException("Ordner nicht gefunden: " + dir);
-        UserDir(dir); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
+        UserDirFixedNames(dir); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
         _ceRoot = Path.GetFullPath(dir); _ceCollapsed.Clear();
         // Unterordner beim Öffnen zugeklappt – übersichtlich auch bei großen Projekten
         foreach (var d in CodeProject.Tree(_ceRoot).Where(e => e.IsDir && e.Depth >= 0)) _ceCollapsed.Add(d.Path);
@@ -365,6 +365,8 @@ public partial class MainWindow
         foreach (var d in CodePendingDrafts())
         {
             if (!Directory.Exists(d.Root)) continue;
+            // T-0764 (13. Prüfrunde, N): Entwürfe stehen in Trendos Datenordner; für Kinder nur Projekte in der Freigabe und keine leere Datei mit gesperrter Endung
+            if (Trendo.Core.Sys.ChildWrite.Problem(CurrentPrincipal, d.Root, checkName: false) is not null || !File.Exists(d.File) && Trendo.Core.Sys.ChildWrite.Problem(CurrentPrincipal, d.File) is not null) continue;
             if (_ceRoot is null || !string.Equals(_ceRoot, d.Root, StringComparison.OrdinalIgnoreCase)) { if (_ceRoot is not null) continue; CodeOpenFolder(d.Root); }
             if (!File.Exists(d.File)) { Directory.CreateDirectory(Path.GetDirectoryName(d.File)!); File.WriteAllText(d.File, ""); }
             CodeOpenFile(d.File);

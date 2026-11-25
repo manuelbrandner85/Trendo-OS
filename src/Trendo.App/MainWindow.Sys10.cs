@@ -92,7 +92,7 @@ public partial class MainWindow
         sp.Children.Add(Card(Section("Persönliche Angaben entfernen und Barrierefreiheit prüfen", "Vor dem Weitergeben: Autor, Firma und Programmname aus einer Kopie entfernen. Die Prüfung zeigt, was Bildschirmleser brauchen.",
             Line(mf, Act("meta-strip", "Angaben entfernen", () => Try(V, () =>
             {
-                var f = Clean(mf); var o = Path.GetExtension(f).Equals(".pdf", StringComparison.OrdinalIgnoreCase) ? Pdf.StripMeta(f) : Ooxml.StripOfficeMeta(f);
+                var f = UserBeside(Clean(mf)); var o = Path.GetExtension(f).Equals(".pdf", StringComparison.OrdinalIgnoreCase) ? Pdf.StripMeta(f) : Ooxml.StripOfficeMeta(f);
                 Say("Kopie ohne Angaben: " + Path.GetFileName(o), V);
             }), true), Act("a11y-check", "Barrierefreiheit prüfen", () => Try(V, () =>
             {
@@ -105,7 +105,7 @@ public partial class MainWindow
         foreach (var f in _formFields) { var t = new TextBox { Name = "form-field-" + boxes.Count, Text = f.Value, Width = 260, PlaceholderText = f.Type == "Btn" ? "ja / nein" : "" }; boxes[f.Name] = t; fields.Children.Add(Line(P(f.Name, Text), t)); }
         sp.Children.Add(Card(Section("PDF-Formular ausfüllen", "Liest die Felder eines PDF-Formulars. Ausgefüllt wird eine Kopie – das Original bleibt.",
             Line(ff, Act("form-read", "Felder lesen", () => Try(V, () => { _formFile = Need(ff, "die PDF-Datei mit dem Formular"); _formFields = PdfForm.Fields(_formFile); Say(_formFields.Count == 0 ? "Keine ausfüllbaren Felder gefunden." : $"{_formFields.Count} Felder gefunden.", V); })),
-                Act("form-save", "Ausgefüllt speichern", () => Try(V, () => { if (string.IsNullOrEmpty(_formFile) || _formFields.Count == 0) { Say("Erst „Felder lesen“ – dann ausfüllen und speichern.", V); return; } var o = PdfForm.Fill(_formFile, boxes.ToDictionary(b => b.Key, b => b.Value.Text ?? "")); _formFields = []; Say("Gespeichert und geöffnet: " + Path.GetFileName(o), V); Launch(o); }), true)), fields)));
+                Act("form-save", "Ausgefüllt speichern", () => Try(V, () => { if (string.IsNullOrEmpty(_formFile) || _formFields.Count == 0) { Say("Erst „Felder lesen“ – dann ausfüllen und speichern.", V); return; } var o = PdfForm.Fill(UserBeside(_formFile), boxes.ToDictionary(b => b.Key, b => b.Value.Text ?? "")); _formFields = []; Say("Gespeichert und geöffnet: " + Path.GetFileName(o), V); Launch(o); }), true)), fields)));
 
         var pf = Field("print-file", "PDF zum Drucken", 340, _printFile); var info = new StackPanel { Name = "print-info" };
         var sumatra = ToolPath("sumatra");
@@ -181,7 +181,7 @@ public partial class MainWindow
             Line(sd, si, Act("sig-run", "Unterschrift einfügen", () => Try(V, () =>
             {
                 var (w, h) = ImageTools.Size(Clean(si)); var k = Math.Min(1.0, 220.0 / w);
-                var o = Ooxml.InsertSignature(Clean(sd), File.ReadAllBytes(Clean(si)), (int)(w * k), (int)(h * k), "Bild-Unterschrift – nicht rechtsverbindlich im Sinne einer qualifizierten elektronischen Signatur.");
+                var o = Ooxml.InsertSignature(UserBeside(Clean(sd)), File.ReadAllBytes(Clean(si)), (int)(w * k), (int)(h * k), "Bild-Unterschrift – nicht rechtsverbindlich im Sinne einer qualifizierten elektronischen Signatur.");
                 Say("Gespeichert: " + Path.GetFileName(o), V);
             }))),
             Line(pm, pa, Act("pkg-run", "Paket erstellen", () => Try(V, () =>

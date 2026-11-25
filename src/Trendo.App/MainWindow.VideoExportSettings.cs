@@ -102,7 +102,7 @@ public partial class MainWindow
         var orig = TimedText.FromSrt(File.ReadAllText(src));
         var lines = text.Replace("\r\n", "\n").Split('\n').Select(l => l.Trim()).Where(l => l.Length > 0).ToList();
         var tr = TimedText.Translate(orig, lines);
-        var f = Path.Combine(Path.GetDirectoryName(src)!, Path.GetFileNameWithoutExtension(src) + $".{lang}.srt");
+        var f = UserFile(Path.Combine(Path.GetDirectoryName(src)!, Path.GetFileNameWithoutExtension(src) + $".{lang}.srt")); // T-0764 (13. Prüfrunde): Ort aus dem Dokument – Kinder nur Freigabe
         File.WriteAllText(f, TimedText.ToSrt(tr));
         d.Edit("Sprachfassung", x => { var o = x["subsLang"] as JsonObject ?? (JsonObject)(x["subsLang"] = new JsonObject()); o[lang] = f; });
         _progMsg[VK] = $"Sprachfassung {TimedText.Languages.First(l => l.Code == lang).Label}: {tr.Count} Untertitel, Zeiten wie im Original – kommt als .{lang}.srt und .{lang}.vtt neben jedes Video.";

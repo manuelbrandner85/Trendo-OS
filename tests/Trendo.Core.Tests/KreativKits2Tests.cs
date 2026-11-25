@@ -10,6 +10,7 @@ namespace Trendo.Core.Tests;
 
 public class KreativKits2Tests
 {
+    static AuditLog Au13(string d) => new(d.TrimEnd(Path.DirectorySeparatorChar) + "-audit13.jsonl"); // T-0764 (13. Prüfrunde): Kern verlangt die Rolle – hier Erwachsene (unverändert)
     [Fact(DisplayName = "Bücher: Kapitel und Vorwort, Wortzahl, Seiten, Ziel, EPUB 3 gültig (mimetype zuerst, unkomprimiert, XHTML lesbar)")]
     public void Buch()
     {
@@ -103,22 +104,22 @@ public class KreativKits2Tests
             File.WriteAllBytes(Path.Combine(Directory.CreateDirectory(Path.Combine(dst, "2026", "11 November")).FullName, "b.jpg"), [7]); // liegt schon da
             plan = PhotoOrganizer.Plan(photos, dst, "jahr-monat", false);
             Assert.Contains(plan, m => m.To.EndsWith("b (2).jpg"));
-            var log = PhotoOrganizer.Run(plan, undo, copy: true);
+            var log = PhotoOrganizer.Run(Principal.LocalOwner, Au13(root), plan, undo, copy: true);
             Assert.All(plan, m => Assert.True(File.Exists(m.To)));
             Assert.Equal([7], File.ReadAllBytes(Path.Combine(dst, "2026", "11 November", "b.jpg"))); // nicht überschrieben
             Assert.Equal(4, Directory.GetFiles(src, "*", SearchOption.AllDirectories).Length); // Originale bleiben
             Assert.Empty(PhotoOrganizer.Plan(photos, dst, "jahr-monat", false)); // zweiter Lauf: alles schon da, nichts doppelt
             var changed = plan[0].To; File.WriteAllBytes(changed, [5, 5, 5, 5]); // Kopie inzwischen bearbeitet, gleiche Größe
-            Assert.Equal((2, 1), PhotoOrganizer.Undo(log));
+            Assert.Equal((2, 1), PhotoOrganizer.Undo(Principal.LocalOwner, Au13(root), log));
             Assert.True(File.Exists(changed)); // bearbeitete Kopie bleibt
             File.Delete(changed);
             Assert.All(plan, m => Assert.False(File.Exists(m.To)));
 
             // Verschieben und zurück, ohne Zwischennamen
-            var moveLog = PhotoOrganizer.Run(PhotoOrganizer.Plan(photos, dst, "jahr", false), undo, copy: false);
+            var moveLog = PhotoOrganizer.Run(Principal.LocalOwner, Au13(root), PhotoOrganizer.Plan(photos, dst, "jahr", false), undo, copy: false);
             Assert.Single(Directory.GetFiles(src, "*", SearchOption.AllDirectories)); // das Doppel bleibt in der Quelle
             Assert.Empty(Directory.GetFiles(root, "*.trendo-*", SearchOption.AllDirectories));
-            Assert.Equal((3, 0), PhotoOrganizer.Undo(moveLog));
+            Assert.Equal((3, 0), PhotoOrganizer.Undo(Principal.LocalOwner, Au13(root), moveLog));
             Assert.Equal(4, Directory.GetFiles(src, "*", SearchOption.AllDirectories).Length);
             Assert.Throws<ArgumentException>(() => PhotoOrganizer.Plan(photos, "//rechner/freigabe", "jahr", false));
             var (years, noExif, dups) = PhotoOrganizer.Summary(photos);

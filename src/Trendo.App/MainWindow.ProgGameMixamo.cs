@@ -305,7 +305,7 @@ public partial class MainWindow
         var glb = d.Data["mixamoPrepared"]?["glb"]?.GetValue<string>() ?? "";
         if (dir.Length == 0 || !Directory.Exists(dir)) throw new InvalidOperationException("Erst „Als Godot-Projekt“ unter „Bauen“.");
         if (!File.Exists(glb)) throw new InvalidOperationException("Erst „Mit Blender aufbereiten“.");
-        var target = Path.Combine(dir, "assets", "mixamo"); Directory.CreateDirectory(target);
+        var target = Path.Combine(UserDirFixedNames(dir), "assets", "mixamo"); Directory.CreateDirectory(target); // T-0764 (13. Prüfrunde): Ordner/Datei aus der Projektdatei – Kinder nur Freigabe, keine neue ausführbare Endung
         File.Copy(glb, Path.Combine(target, "mixamo.glb"), true);
         // Godot braucht die Datei im Projekt; damit sie nicht über Git weitergegeben wird, schließt eine .gitignore sie aus
         File.WriteAllText(Path.Combine(target, ".gitignore"), "# Mixamo-Dateien nur im fertigen Spiel, nicht weitergeben (Mixamo-Bedingungen)\n*.glb\n*.fbx\n");

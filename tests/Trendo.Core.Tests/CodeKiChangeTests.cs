@@ -8,6 +8,7 @@ namespace Trendo.Core.Tests;
 /// T-0723 (D6 „Code mit KI“): Vorschlag der KI lesen, Projektgrenzen, Diff je Datei mit Ja/Nein je Änderung, Anwenden als ein Schritt, Rückgängig/Wiederholen.
 public class CodeKiChangeTests
 {
+    static AuditLog Au13(string d) => new(d.TrimEnd(Path.DirectorySeparatorChar) + "-audit13.jsonl"); // T-0764 (13. Prüfrunde): Kern verlangt die Rolle – hier Erwachsene (unverändert)
     static string Proj()
     {
         var d = Path.Combine(Path.GetTempPath(), "trendo-t0723-" + Guid.NewGuid().ToString("N")[..8]); Directory.CreateDirectory(d);
@@ -48,7 +49,7 @@ public class CodeKiChangeTests
             Assert.NotNull(CodeKiChange.Blocked(d, "konfig/server.key"));
             File.WriteAllBytes(Path.Combine(d, "bild.bin"), [1, 0, 2]);
             Assert.NotNull(CodeKiChange.Blocked(d, "bild.bin"));
-            var pv = CodeKiChange.Build(d, new([], [new("../draussen.py", "x\n"), new("rechner.py", "neu\n")]));
+            var pv = CodeKiChange.Build(Principal.LocalOwner, d, new([], [new("../draussen.py", "x\n"), new("rechner.py", "neu\n")]));
             Assert.Single(pv.Files); Assert.Single(pv.Rejected);
             Assert.False(File.Exists(Path.Combine(Path.GetDirectoryName(d)!, "draussen.py")));
         }
@@ -62,7 +63,7 @@ public class CodeKiChangeTests
         try
         {
             var before = File.ReadAllText(Path.Combine(d, "rechner.py"));
-            var pv = CodeKiChange.Build(d, CodeKiChange.Parse(Answer));
+            var pv = CodeKiChange.Build(Principal.LocalOwner, d, CodeKiChange.Parse(Answer));
             Assert.Equal(2, pv.Files.Count);
             var r = pv.Files.Single(f => f.Path == "rechner.py");
             Assert.False(r.IsNew); Assert.Equal(2, r.Hunks.Count); // Prüfung auf null und neue Funktion = zwei Änderungen
@@ -71,18 +72,18 @@ public class CodeKiChangeTests
             var only = CodeKiChange.Merge(r, new HashSet<int> { 1 });
             Assert.Contains("multipliziere", only); Assert.DoesNotContain("ValueError", only);
             var acc = new Dictionary<string, IReadOnlySet<int>> { ["rechner.py"] = new HashSet<int> { 1 }, ["tests/test_neu.py"] = new HashSet<int>() };
-            var step = CodeKiChange.Apply(d, pv, acc, "multiplizieren", "Ersatz")!;
+            var step = CodeKiChange.Apply(Principal.LocalOwner, Au13(d), d, pv, acc, "multiplizieren", "Ersatz")!;
             Assert.Single(step.Files);
             Assert.Equal(only, File.ReadAllText(Path.Combine(d, "rechner.py")));
             Assert.False(File.Exists(Path.Combine(d, "tests", "test_neu.py")));
             // Rückgängig: alles des Schritts auf einmal
-            Assert.Empty(CodeKiChange.Write(step.Files, d, back: true));
+            Assert.Empty(CodeKiChange.Write(Principal.LocalOwner, Au13(d), step.Files, d, back: true));
             Assert.Equal(before, File.ReadAllText(Path.Combine(d, "rechner.py")));
-            Assert.Empty(CodeKiChange.Write(step.Files, d, back: false));
+            Assert.Empty(CodeKiChange.Write(Principal.LocalOwner, Au13(d), step.Files, d, back: false));
             Assert.Equal(only, File.ReadAllText(Path.Combine(d, "rechner.py")));
             // danach von Hand geändert → Rückgängig lässt die Datei in Ruhe und meldet sie
             File.AppendAllText(Path.Combine(d, "rechner.py"), "# eigene Zeile\n");
-            Assert.Equal(["rechner.py"], CodeKiChange.Write(step.Files, d, back: true));
+            Assert.Equal(["rechner.py"], CodeKiChange.Write(Principal.LocalOwner, Au13(d), step.Files, d, back: true));
             Assert.Contains("# eigene Zeile", File.ReadAllText(Path.Combine(d, "rechner.py")));
             // Schritt-Datei und Eintrag im Dokument
             var f = Path.Combine(d, "schritt.json"); CodeKiChange.Save(f, step);
@@ -101,15 +102,15 @@ public class CodeKiChangeTests
         try
         {
             File.WriteAllText(Path.Combine(d, "win.py"), "a = 1\r\nb = 2\r\n");
-            var pv = CodeKiChange.Build(d, new(["x"], [new("win.py", "a = 1\nb = 3\n"), new("rechner.py", "x = 1\n")]));
+            var pv = CodeKiChange.Build(Principal.LocalOwner, d, new(["x"], [new("win.py", "a = 1\nb = 3\n"), new("rechner.py", "x = 1\n")]));
             var all = pv.Files.ToDictionary(f => f.Path, f => (IReadOnlySet<int>)Enumerable.Range(0, f.Hunks.Count).ToHashSet());
             File.AppendAllText(Path.Combine(d, "rechner.py"), "# inzwischen\n");
-            Assert.Throws<InvalidOperationException>(() => CodeKiChange.Apply(d, pv, all, "w", "m"));
+            Assert.Throws<InvalidOperationException>(() => CodeKiChange.Apply(Principal.LocalOwner, Au13(d), d, pv, all, "w", "m"));
             Assert.Equal("a = 1\r\nb = 2\r\n", File.ReadAllText(Path.Combine(d, "win.py"))); // nichts halb geschrieben
-            var pv2 = CodeKiChange.Build(d, new(["x"], [new("win.py", "a = 1\nb = 3\n")]));
-            CodeKiChange.Apply(d, pv2, new Dictionary<string, IReadOnlySet<int>> { ["win.py"] = new HashSet<int> { 0 } }, "w", "m");
+            var pv2 = CodeKiChange.Build(Principal.LocalOwner, d, new(["x"], [new("win.py", "a = 1\nb = 3\n")]));
+            CodeKiChange.Apply(Principal.LocalOwner, Au13(d), d, pv2, new Dictionary<string, IReadOnlySet<int>> { ["win.py"] = new HashSet<int> { 0 } }, "w", "m");
             Assert.Equal("a = 1\r\nb = 3\r\n", File.ReadAllText(Path.Combine(d, "win.py")));
-            Assert.Null(CodeKiChange.Apply(d, pv2 with { Files = [] }, new Dictionary<string, IReadOnlySet<int>>(), "w", "m"));
+            Assert.Null(CodeKiChange.Apply(Principal.LocalOwner, Au13(d), d, pv2 with { Files = [] }, new Dictionary<string, IReadOnlySet<int>>(), "w", "m"));
             Assert.Contains("DATEI:", CodeKiChange.SystemPrompt("Python-Programm", "python -m unittest -v"));
             Assert.Contains("(gerade geöffnet)", CodeKiChange.UserPrompt("x", [("rechner.py", "a")], "rechner.py", ["rechner.py"]));
             Assert.Equal("KI: ", AssistChain.UndoPrefix);

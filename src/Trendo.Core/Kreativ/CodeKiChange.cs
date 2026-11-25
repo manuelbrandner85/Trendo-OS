@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Trendo.Core.Programs;
+using Trendo.Core.Sys;
 
 namespace Trendo.Core.Kreativ;
 
@@ -106,7 +107,11 @@ public static partial class CodeKiChange
 
     /// <summary>Darf die KI an <paramref name="rel"/> schreiben? null = ja, sonst der Grund in einem Satz.
     /// Nur relative Pfade im Projektordner, keine verknüpften Ordner, keine Bau-/Git-Ordner (<see cref="CodeProject.Hidden"/>), keine Zugangsdaten, keine Binärdateien.</summary>
-    public static string? Blocked(string root, string rel)
+    public static string? Blocked(string root, string rel) => Blocked(Principal.LocalOwner, root, rel);
+
+    /// <summary>T-0764 (13. Prüfrunde): wie <see cref="Blocked(string, string)"/>, dazu für <paramref name="by"/> die Freigabe (<see cref="ChildWrite.Problem"/>):
+    /// im Kinderprofil nur Projektordner in der Freigabe und keine ausführbare oder auslösende Endung (start.bat, .ps1, .url …). Erwachsene: unverändert.</summary>
+    public static string? Blocked(Principal by, string root, string rel)
     {
         if (string.IsNullOrWhiteSpace(rel)) return "Die KI hat keinen Dateinamen genannt.";
         var r = rel.Trim().Replace('\\', '/');
@@ -125,6 +130,7 @@ public static partial class CodeKiChange
         if (name.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0) return $"„{rel}“ ist kein gültiger Dateiname.";
         var full = Path.GetFullPath(Path.Combine(root, r.Replace('/', Path.DirectorySeparatorChar)));
         if (!CodeAiKit.InsideNoLinks(root, full)) return $"„{rel}“ liegt nicht im Projektordner (oder hinter einem verknüpften Ordner).";
+        if (ChildWrite.Problem(by, full) is { } kid) return $"„{rel}“: {kid}";
         if (Directory.Exists(full)) return $"„{rel}“ ist ein Ordner.";
         if (File.Exists(full))
         {
@@ -170,13 +176,13 @@ public static partial class CodeKiChange
     }
 
     /// <summary>Vorschau aus dem Vorschlag bauen: Pfade prüfen, aktuellen Inhalt lesen, Diff und Blöcke. Unveränderte Dateien fallen weg, Abgelehnte stehen in <see cref="Preview.Rejected"/>.</summary>
-    public static Preview Build(string root, Proposal p)
+    public static Preview Build(Principal by, string root, Proposal p)
     {
         var files = new List<FilePreview>(); var rejected = new List<string>();
         foreach (var f in p.Files)
         {
             if (files.Count >= MaxFiles) { rejected.Add($"„{f.Path}“: mehr als {MaxFiles} Dateien in einem Vorschlag."); continue; }
-            if (Blocked(root, f.Path) is { } why) { rejected.Add(why); continue; }
+            if (Blocked(by, root, f.Path) is { } why) { rejected.Add(why); continue; }
             if (f.Content.Length > CodeAiKit.MaxTextBytes) { rejected.Add($"„{f.Path}“: der neue Inhalt ist zu groß."); continue; }
             var rel = f.Path.Trim().Replace('\\', '/');
             var full = Path.Combine(root, rel.Replace('/', Path.DirectorySeparatorChar));
@@ -226,14 +232,17 @@ public static partial class CodeKiChange
 
     /// <summary>Angenommenes anwenden: alle Dateien des Schritts auf einmal (jede Datei atomar). Ändert sich eine Datei seit der Vorschau, wird gar nichts geschrieben.
     /// <paramref name="accepted"/>: je Pfad die angenommenen Blöcke. Gibt den Schritt zurück (null, wenn nichts angenommen wurde).</summary>
-    public static Step? Apply(string root, Preview p, IReadOnlyDictionary<string, IReadOnlySet<int>> accepted, string wish, string model, DateTime? nowUtc = null)
+    /// T-0764 (13. Prüfrunde): <paramref name="by"/> – im Kinderprofil nur ein Projektordner in der Freigabe und keine ausführbare Endung („rbac.denied“ und Ausnahme, es wird nichts geschrieben).
+    public static Step? Apply(Principal by, AuditLog audit, string root, Preview p, IReadOnlyDictionary<string, IReadOnlySet<int>> accepted, string wish, string model, DateTime? nowUtc = null)
     {
+        ChildWrite.Demand(by, root, audit, checkName: false);
         var plan = new List<(string Full, StepFile File)>();
         foreach (var f in p.Files)
         {
             if (!accepted.TryGetValue(f.Path, out var acc) || acc.Count == 0) continue;
             if (Blocked(root, f.Path) is { } why) throw new InvalidOperationException(why);
             var full = Path.Combine(root, f.Path.Replace('/', Path.DirectorySeparatorChar));
+            ChildWrite.Demand(by, full, audit);
             var now = File.Exists(full) ? CodeProject.ReadText(full) : null;
             if ((now is null) != f.IsNew || now is not null && ShaOf(Norm(now)) != f.BeforeSha)
                 throw new InvalidOperationException($"„{f.Path}“ wurde seit dem Vorschlag geändert. Es wurde nichts übernommen – bitte den Vorschlag neu holen.");
@@ -248,7 +257,7 @@ public static partial class CodeKiChange
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException)
         {
-            Write(done.Select(x => x.File), root, back: true); // halbe Schritte gibt es nicht
+            Write(by, audit, done.Select(x => x.File), root, back: true); // halbe Schritte gibt es nicht
             throw new InvalidOperationException("Übernehmen ging nicht: " + e.Message);
         }
         return new Step(Guid.NewGuid().ToString("N")[..12], wish, model, nowUtc ?? DateTime.UtcNow, plan.Select(x => x.File).ToList());
@@ -256,13 +265,14 @@ public static partial class CodeKiChange
 
     /// <summary>Schritt zurücknehmen (<paramref name="back"/>) oder wieder anwenden. Eine Datei wird nur angefasst, wenn sie genau den erwarteten Stand hat
     /// (sonst hat sie jemand danach geändert – dann bleibt sie und steht in der Rückgabe).</summary>
-    public static IReadOnlyList<string> Write(IEnumerable<StepFile> files, string root, bool back)
+    public static IReadOnlyList<string> Write(Principal by, AuditLog audit, IEnumerable<StepFile> files, string root, bool back)
     {
         var skipped = new List<string>();
         foreach (var f in back ? files.Reverse() : files)
         {
             var full = Path.Combine(root, f.Path.Replace('/', Path.DirectorySeparatorChar));
             if (!CodeAiKit.InsideNoLinks(root, full)) { skipped.Add(f.Path); continue; }
+            ChildWrite.Demand(by, full, audit, checkName: (back ? f.Before : f.After) is not null); // T-0764 (13. Prüfrunde): Rückgängig/Wiederholen ebenso
             var now = File.Exists(full) ? Norm(File.ReadAllText(full)) : null;
             var expect = back ? f.After : f.Before; var target = back ? f.Before : f.After;
             if (now == (target is null ? null : Norm(target))) continue; // schon so

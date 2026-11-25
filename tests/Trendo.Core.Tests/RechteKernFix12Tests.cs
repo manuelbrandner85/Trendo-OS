@@ -59,7 +59,7 @@ public class RechteKernFix12
         var hdr = new Regex(@"^\s*(public|internal|private|protected)[^=;(]*?\s(\w+)\s*\(([^)]*)\)\s*(=>.*|\{?\s*)$");
         var par = new Regex(@"\bstring\??\s+(path|file|target|folder|dir|relative|outDir|outFile|dest|ziel)\b");
         var wr = new Regex(@"File\.(WriteAll|AppendAll|Copy|Move|Create|Replace)|new FileStream\(|Directory\.(CreateDirectory|Move)|WriteText\(|ExtractToFile|AtomicFile\.|\.Save\(|SaveAs\(|Export[A-Za-z]*\(|Unpack");
-        var ok = new Regex(@"UserFile\(|UserDir\(|ChildWrite\.|ProtectedFolders\.");
+        var ok = new Regex(@"UserFile\(|UserDir\w*\(|ChildWrite\.|ProtectedFolders\.");
         var bad = new List<string>(); var seen = new HashSet<string>();
         foreach (var f in Directory.EnumerateFiles(Repo("src/Trendo.App"), "*.cs"))
         {
@@ -84,7 +84,7 @@ public class RechteKernFix12
         {
             var at = code.IndexOf(m, StringComparison.Ordinal); Assert.True(at >= 0, m);
             var end = code.IndexOf("\n    }", at, StringComparison.Ordinal);
-            Assert.Matches(new Regex(@"UserFile\(|UserDir\("), code[at..end]);
+            Assert.Matches(new Regex(@"UserFile\(|UserDir\w*\("), code[at..end]);
         }
     }
 

@@ -58,11 +58,11 @@ public partial class MainWindow
             Line(fu, ft, Act("form-run", "Prüfen", () => { fo.Children.Clear(); fo.Children.Add(Hints("form-hints", Web.FormHints(Clean(fu), ft.Text ?? ""), "Nichts Heikles erkannt. Trotzdem: Nur auf Seiten eintragen, die du selbst aufgerufen hast.")); })), fo)));
 
         var qf = Field("q-file", "Verdächtige Datei"); var ql = new StackPanel { Spacing = 2 }; var qi = 0;
-        foreach (var q in Web.QuarantineList(_core.DataRoot)) { var id = q.Id; ql.Children.Add(Row(P($"{Path.GetFileName(q.Original)} – seit {q.At:dd.MM.yyyy}", Text, 11.5), Act($"q-restore-{qi++}", "Zurücklegen", () => Try(V, () => { Web.Restore(_core.DataRoot, id); Say("Zurückgelegt.", V); })))); }
+        foreach (var q in Web.QuarantineList(_core.DataRoot)) { var id = q.Id; ql.Children.Add(Row(P($"{Path.GetFileName(q.Original)} – seit {q.At:dd.MM.yyyy}", Text, 11.5), Act($"q-restore-{qi++}", "Zurücklegen", () => Try(V, () => { Web.Restore(CurrentPrincipal, _core.DataRoot, id, _core.Audit); Say("Zurückgelegt.", V); })))); }
         if (qi == 0) ql.Children.Add(P("Die Quarantäne ist leer."));
         var mp = OperatingSystem.IsWindows() ? Environment.ExpandEnvironmentVariables(Web.MpCmdRun) : null;
         sp.Children.Add(Card(Section("Quarantäne und Virenprüfung", "Verdächtige Dateien werden weggesperrt (umbenannt, nicht startbar). Die Prüfung nutzt den Windows-Virenschutz Defender – ohne Administratorrechte.",
-            Line(qf, Act("q-add", "In Quarantäne", () => Try(V, () => { Web.Quarantine(_core.DataRoot, Clean(qf), _core.Audit); Say("Weggesperrt.", V); }), true),
+            Line(qf, Act("q-add", "In Quarantäne", () => Try(V, () => { Web.Quarantine(CurrentPrincipal, _core.DataRoot, Clean(qf), _core.Audit); Say("Weggesperrt.", V); }), true),
                 Act("q-scan", "Mit Defender prüfen", () => Try(V, () =>
                 {
                     if (mp is null || !File.Exists(mp)) throw new InvalidOperationException("Nicht möglich: Windows Defender ist hier nicht vorhanden (BLOCKED).");
@@ -93,9 +93,9 @@ public partial class MainWindow
 
         var sf = Field("dlsort-folder", "Ordner", 340, Browsers.DownloadsFolder()); var so = new StackPanel { Name = "dlsort-preview" };
         sp.Children.Add(Card(Section("Downloads aufräumen", "Sortiert nach Art in Unterordner (Dokumente, Bilder, Programme …). Erst Vorschau, rückgängig machbar über „Dateien“.",
-            Line(sf, Act("dlsort-sim", "Vorschau", () => Try(V, () => { so.Children.Clear(); var p = Web.SortPlan(Clean(sf)); so.Children.Add(P($"{p.Count} Dateien:", Text)); foreach (var g in p.GroupBy(m => Path.GetFileName(Path.GetDirectoryName(m.To)))) so.Children.Add(P($"{g.Key}: {g.Count()}", null, 11)); })),
-                Act("dlsort-apply", "Sortieren", () => Try(V, () => { var p = Web.SortPlan(Need(sf, "den Ordner zum Aufräumen")); if (p.Count == 0) { Say("Nichts zu sortieren – der Ordner ist schon aufgeräumt.", V); return; } _lastUndo = Renamer.Apply(p, Path.Combine(_core.DataRoot, "werkzeuge", "rueckgaengig")); Say($"{p.Count} Dateien einsortiert.", V); })),
-                Act("dlsort-undo", "Rückgängig", () => Try(V, () => { if (_lastUndo is null) throw new InvalidOperationException("Es gibt nichts rückgängig zu machen."); Renamer.Undo(_lastUndo); _lastUndo = null; Say("Zurückgesetzt.", V); }))), so)));
+            Line(sf, Act("dlsort-sim", "Vorschau", () => Try(V, () => { so.Children.Clear(); var p = Web.SortPlan(UserDirFixedNames(Clean(sf))); UserMoves(p); so.Children.Add(P($"{p.Count} Dateien:", Text)); foreach (var g in p.GroupBy(m => Path.GetFileName(Path.GetDirectoryName(m.To)))) so.Children.Add(P($"{g.Key}: {g.Count()}", null, 11)); })),
+                Act("dlsort-apply", "Sortieren", () => Try(V, () => { var p = Web.SortPlan(UserDirFixedNames(Need(sf, "den Ordner zum Aufräumen"))); if (p.Count == 0) { Say("Nichts zu sortieren – der Ordner ist schon aufgeräumt.", V); return; } _lastUndo = Renamer.Apply(CurrentPrincipal, _core.Audit, p, Path.Combine(_core.DataRoot, "werkzeuge", "rueckgaengig")); Say($"{p.Count} Dateien einsortiert.", V); })),
+                Act("dlsort-undo", "Rückgängig", () => Try(V, () => { if (_lastUndo is null) throw new InvalidOperationException("Es gibt nichts rückgängig zu machen."); Renamer.Undo(CurrentPrincipal, _core.Audit, _lastUndo); _lastUndo = null; Say("Zurückgesetzt.", V); }))), so)));
 
         var pu = Field("page-url", "Adresse einer Webseite", 420);
         var reader = new SelectableTextBlock { Name = "reader-text", Text = _reader, Foreground = Text, TextWrapping = TextWrapping.Wrap, FontSize = 13.5, MaxWidth = 760 };

@@ -944,6 +944,267 @@ In der Code-Werkstatt und bei „Code mit KI“ legen Kinder keine Programm- ode
 - **Eingebettete Webansichten:** Downloads dort steuert WebView2 selbst.
 - **Gemeinsames Konto:** Unter einem gemeinsamen Windows-Konto ist der Kinderschutz keine harte Grenze.
 
+## Dreizehnte Prüfrunde (Commit „T-0764 fix13“)
+
+Grundlage ist die Gegenprüfung von `5560ddcbc` („nicht freigabefähig“). Beide MITTEL-Befunde lagen in den Lücken des Wächtertests der zwölften Runde, der nur Methoden mit Pfad-Parameter sah.
+
+- **M1 „Code mit KI“:** Ein Kind tippte als Projektordner den Autostart-Ordner ein. Die KI schlug `start.bat` vor, das Kind übernahm, und die Datei lag im Autostart. `CaRoot` prüfte nur `KreativSafe.LocalDir`. `CodeKiChange.Blocked` kannte keine ausführbaren Endungen.
+- **M2 „Viele Dateien umbenennen“:** Mit dem Muster `{name}.cmd{ext}` wurde aus `spiel` die Datei `spiel.cmd`. Als Ordner ging auch AppData oder ein Trendo-Ordner. Ebenso offen waren Downloads sortieren, Fotos ordnen (Werkzeug und Fotoalbum-Studio) und die Quarantäne.
+
+**Rot auf 5560ddcbc:**
+- `reports/T-0764/rot-fix13-app.log`: 2 von 2 rot.
+  - M1: Im Kinderprofil legte „Code mit KI“ mit eingetipptem Autostart-Testordner `start.bat` an (Ersatz-KI, nichts startet).
+  - M2: Im Kinderprofil entstand `spiel.cmd` aus `spiel`.
+- `reports/T-0764/rot-fix13-core.log`: Der neue Wächter fand die ungeschützten Feld-Flüsse, u. a. `ren-folder`, `photo-folder`, `dlsort`, `PhotosScan/target`, `ScanFolder` und `MixamoToGodot`. Der Reflexionstest fand Kern-Helfer ohne Rolle (`Renamer.Apply`). Die Verhaltenstests des Kerns brauchen die neue Schnittstelle und liefen deshalb nur im Endstand.
+
+### Korrektur im Kern (Prüfung nicht nur in der Oberfläche)
+
+- **`ChildWrite.DemandMove(by, von, nach, audit)`:**
+  - Für Kinder müssen beide Orte in der Freigabe liegen. Beim Kopieren zählt nur das Ziel.
+  - Eine ausführbare oder auslösende Endung ist nur erlaubt, wenn der Name gleich bleibt. Downloads nach Art sortieren verschiebt `setup.exe` als `setup.exe` – das bleibt erlaubt. `spiel` → `spiel.cmd` ist gesperrt, ebenso `bild.png.bat` und `spiel.cmd.`.
+- **Kern-Helfer mit Rolle als erstem Parameter:**
+  - `Renamer.Apply/Undo(by, audit, …)` und `PhotoOrganizer.Run/Undo(by, audit, …)` prüfen jede Bewegung vor dem ersten Schritt. Abgelehnt heißt: nichts wird bewegt, Eintrag „rbac.denied“.
+  - `CodeKiChange.Build(by, …)` lehnt gesperrte Orte und Endungen schon in der Vorschau ab. `Blocked(by, …)` nutzt `ChildWrite.Problem`.
+  - `CodeKiChange.Apply(by, audit, …)` prüft Ordner und jede Datei. `CodeKiChange.Write(by, audit, …)` deckt Rückgängig und Wiederholen ab.
+  - `Web.Quarantine/Restore(by, …)`: Kinder sperren nur Dateien aus der Freigabe weg. Zurücklegen geht nur dorthin. Eine weggesperrte `.exe` legt nur ein Erwachsener zurück.
+  - Ein Reflexionstest prüft, dass alle diese Helfer und `Archives.UnpackAs` die Rolle als ersten Parameter haben.
+
+### Korrektur in der App
+
+- **Neue Helfer:**
+  - `UserMoves(Plan)`: wie DemandMove, für eine Vorschau.
+  - `UserBeside(Datei)`: Das Ergebnis entsteht neben der gewählten Datei mit festem Namen; geprüft wird deren Ordner.
+  - **N:** `UserDir` heißt jetzt `UserDirFixedNames`. Die Doku sagt, dass der Helfer nur den Ort prüft und danach nur Namen entstehen dürfen, die Trendo festlegt. Wo der Nutzer oder die KI Namen wählt, kommt zusätzlich `UserFile` je Datei dazu.
+- **„Code mit KI“:** Vorschau (Kern), Übernehmen (`UserDirFixedNames(root)` + `UserFile` je Plan-Datei + Kern) sowie Rückgängig und Wiederholen über `CkWrite` (Kern mit Rolle).
+- **Ordner-Werkzeuge (Sys02/Sys03):**
+  - Umbenennen, Fotos ordnen und Downloads sortieren: Ordner und jedes Ziel werden schon in der Vorschau geprüft.
+  - Anwenden und Rückgängig laufen über den Kern mit Rolle.
+  - ZIP packen: `UserFile(….zip)`.
+  - Bild drehen/verkleinern, Schwärzen und Audio umwandeln: `UserBeside`.
+  - Quarantäne mit Rolle.
+- **Fotoalbum-Studio** (`KreativStudios2`): Probelauf und Anwenden prüfen den Zielordner und alle Ziele; Rückgängig läuft mit Rolle.
+- **Weitere Schreibstellen:**
+  - Dokumente: Scannen in einen eigenen Ordner (`ScanSavePdf`, `ScanSearchablePdf`), persönliche Angaben entfernen, Formular ausfüllen, Unterschrift einfügen.
+  - Medien und Spiele: SRT verschieben, Podcast „…-fertig.mp3“, Untertitel-Sprachfassung, Mixamo → Godot-Projekt, Seitendatei der Bilderkennung (außerhalb der Freigabe ohne Seitendatei, die Erkennung bleibt).
+  - Werkstatt-Entwürfe: `CodeRestoreDrafts` stellt für Kinder nur Projekte in der Freigabe wieder her und legt keine leere Datei mit gesperrter Endung an. Begründung: Die Entwürfe stehen in Trendos Datenordner, ihr Ziel aber nicht.
+- **Nebenbefund:** Das Konsolen-Studio „Frei portieren“ startete die PS2Recomp-Werkzeuge im gewählten Ordner und den Probelauf ohne Rollenprüfung. Jetzt gilt `DarfAusfuehrenStill` wie bei den Engines.
+
+### Quelltext-Wächter 2 (Heuristik)
+
+- **Erfasst:** Gesucht werden in `src/Trendo.App` alle Lesungen eines Pfades aus der Oberfläche oder einem Dokument:
+  - `Field("…")` mit Pfad-Schlüssel (folder, dir, file, path, zip, img, doc, csv, template …) über `Clean`, `Need` oder `.Text`
+  - `d.Text("…")` mit Pfad-Schlüssel (root, file, folder, dir, target, source, path, master, image, subs, built, godotProject …)
+  - Methoden, die so einen Pfad als `string` liefern (CaRoot, ScanFolder, ImgDir, VideoDir, TrainBatchFile)
+- **Regel:**
+  - Prüfeinheit ist die Methode. In Ansichten mit mehreren Knöpfen ist es der Knopf-Block oder die Anweisung.
+  - Die Einheit muss `UserFile`, `UserDirFixedNames`, `UserBeside`, `UserMoves` oder `ChildWrite` aufrufen oder die Rolle an einen Kern-Helfer geben (`(CurrentPrincipal,`). Sonst muss der Fluss mit Grund in der Ausnahmeliste stehen.
+  - Verwaiste und inzwischen geschützte Ausnahmen sind rot.
+  - Methoden ohne Zugriffsmodifizierer (z. B. `Control BcSide()`) werden mitgezählt. Diese Lücke fiel beim Bau auf und brachte 64 weitere Flüsse, die jetzt alle durchgesehen sind.
+- **Grenzen:**
+  - Pfade unter anderen Schlüsseln oder aus berechneten Schlüsseln werden nicht gefunden (z. B. `d.Text(engine + "Project")` – Engine-Läufe sind ohnehin nur für Erwachsene).
+  - Nicht erfasst sind auch TextBoxen ohne `Field(…)` (z. B. „pdf-merge-files“, „pkg-att“ – beide lesen nur) und Pfade, die über Felder der Klasse weitergereicht werden.
+  - Je Methode und Schlüssel zählt eine ungeprüfte Stelle für alle Stellen. Liegen Lesen und Schreiben im selben Schlüssel, steht der Fluss mit „liest; Schreiben prüft …“ in der Liste (z. B. meta-file, form-file, q-file).
+  - Der Kern wird zusätzlich per Reflexion geprüft, aber nicht nach Feldern durchsucht. Kern-Helfer bekommen Pfade nur von der App, und die App-Flüsse stehen unten.
+
+### Liste der Feld→Schreib-Flüsse (vollständig, aus dem Wächter)
+
+| Datei:Zeile | Feld / Schlüssel | Methode | Ziel / Wirkung | geschützt |
+|---|---|---|---|---|
+| `MainWindow.AudioEditor.cs:354` | `source` | AuProperties | zeigt nur Name/Länge der Aufnahme | nein (Grund) |
+| `MainWindow.AudioEditor.cs:164` | `source` | AuRendered | liest (Wiedergabe) | nein (Grund) |
+| `MainWindow.AudioEditor.cs:40` | `source` | InitAudioEditor | Vorlage, liest | nein (Grund) |
+| `MainWindow.AudioFoley.cs:36` | `source` | AuFoleyAdd | liest die Aufnahme, Ergebnis in Trendos Audio-Ordner | nein (Grund) |
+| `MainWindow.AudioQa.cs:21` | `source` | AuQaSources | liest (Prüfung) | nein (Grund) |
+| `MainWindow.CodeAiKi.cs:165` | `CaRoot()` | CkApplyRun | Übernehmen der KI-Änderung → UserDirFixedNames(Ordner) + UserFile je Datei; Kern CodeKiChange.Apply(by) | **ja** |
+| `MainWindow.CodeAiKi.cs:92` | `CaRoot()` | CkProposeRun | Vorschau → Kern CodeKiChange.Build(by) lehnt gesperrte Orte/Endungen ab | **ja** |
+| `MainWindow.CodeAiKi.cs:59` | `CaRoot()` | CkSync | Rückgängig/Wiederholen über CkWrite → Kern CodeKiChange.Write mit Rolle | nein (Grund) |
+| `MainWindow.ConsolePort.cs:173` | `image` | ConsoleDevices | Anzeige | nein (Grund) |
+| `MainWindow.ConsolePort.cs:64` | `image` | ConsoleGame | Anzeige/Prüfung, liest | nein (Grund) |
+| `MainWindow.ConsolePort.cs:151` | `image` | ConsoleRun | Auftrag an Claude (nur Erwachsene), liest | nein (Grund) |
+| `MainWindow.ConsolePort.cs:135` | `image` | ConsoleSend | nur Text im Auftrag an Claude (Claude: nur Erwachsene) | nein (Grund) |
+| `MainWindow.ConsolePort.cs:35` | `image` | InitConsolePort | Vorlage/Prüfung, liest | nein (Grund) |
+| `MainWindow.DocScan.cs:474` | `ScanFolder()` | DocScanProperties | Anzeige des Ablageorts | nein (Grund) |
+| `MainWindow.DocScan.cs:254` | `folder` | ScanFolder | liefert nur den Pfad – Aufrufer ScanSavePdf/ScanSearchablePdf prüfen (UserDirFixedNames + UserFile) | nein (Grund) |
+| `MainWindow.DocScan.cs:279` | `ScanFolder()` | ScanSavePdf | Scan als PDF in den eingetippten Ordner → UserDirFixedNames + UserFile | **ja** |
+| `MainWindow.DocScan.cs:308` | `ScanFolder()` | ScanSearchablePdf | durchsuchbare PDF in den eingetippten Ordner → UserDirFixedNames + UserFile | **ja** |
+| `MainWindow.Formulare.cs:214` | `file` | FoExport | Export → UserFile (12. Runde) | **ja** |
+| `MainWindow.Formulare.cs:108` | `file` | FoFields | liest das Formular | nein (Grund) |
+| `MainWindow.Formulare.cs:176` | `file` | FoGo | liest (öffnet das Formular) | nein (Grund) |
+| `MainWindow.Formulare.cs:184` | `file` | FoPlace | liest (Seitengröße) | nein (Grund) |
+| `MainWindow.Formulare.cs:225` | `file` | FoSave | nur der Name; Ziel in Trendos Ordner „Formulare“, FoExport prüft (UserFile) | nein (Grund) |
+| `MainWindow.Formulare.cs:156` | `file` | FoSuggest | liest | nein (Grund) |
+| `MainWindow.Formulare.cs:321` | `file` | FoWorkspaceCore | Anzeige | nein (Grund) |
+| `MainWindow.Formulare.cs:420` | `lastSaved` | FoWorkspaceCore | Anzeige (Ordner zeigen) | nein (Grund) |
+| `MainWindow.Formulare.cs:81` | `file` | InitFormulare | Vorlage, liest | nein (Grund) |
+| `MainWindow.FreePort.cs:48` | `fp_elf` | FpChecks | liest (Prüfungen) | nein (Grund) |
+| `MainWindow.FreePort.cs:48` | `fp_recomp` | FpChecks | liest (Prüfungen) | nein (Grund) |
+| `MainWindow.FreePort.cs:170` | `fp_recomp` | FpCleanArea | Anzeige; Entfernen über FreePortCleanOld (UserDirFixedNames) | nein (Grund) |
+| `MainWindow.FreePort.cs:39` | `fp_elf` | FpElfSha | liest (Prüfsumme) | nein (Grund) |
+| `MainWindow.FreePort.cs:45` | `fp_elf` | FpJob | liest; Lauf nur Erwachsene (FreePortStart) | nein (Grund) |
+| `MainWindow.FreePort.cs:45` | `fp_recomp` | FpJob | liest; Lauf nur Erwachsene (FreePortStart) | nein (Grund) |
+| `MainWindow.FreePort.cs:195` | `fp_recomp` | FreePortCleanOld | löscht Trendo-Dateien im PS2Recomp-Ordner → UserDirFixedNames | **ja** |
+| `MainWindow.FreePort.cs:217` | `fp_recomp` | FreePortStatus | Anzeige | nein (Grund) |
+| `MainWindow.FreePort.cs:256` | `fp_recomp` | FreePortTrial | nur Erwachsene (DarfAusfuehrenStill, startet das Programm) | nein (Grund) |
+| `MainWindow.FreePort.cs:102` | `fp_elf` | FreePortView | Anzeige | nein (Grund) |
+| `MainWindow.FreePort.cs:130` | `fp_recomp` | FreePortView | Anzeige | nein (Grund) |
+| `MainWindow.Helfer.cs:146` | `ed-path` | EditorView | Öffnen liest; Speichern geht über EditorSave (UserFile) | nein (Grund) |
+| `MainWindow.Helfer.cs:601` | `nb-image-path` | NbTools | liest; fügt nur einen Bild-Verweis in die Notiz ein | nein (Grund) |
+| `MainWindow.KreativStudios2.cs:804` | `dir` | ImgDir | nur eine geprüfte Kennung (32 Hex), Ordner unter Trendos ki-bilder | nein (Grund) |
+| `MainWindow.KreativStudios2.cs:873` | `ImgDir()` | ImgGenerate | Trendos Ordner ki-bilder | nein (Grund) |
+| `MainWindow.KreativStudios2.cs:872` | `dir` | ImgGenerate | nur eine geprüfte Kennung (32 Hex), Ordner unter Trendos ki-bilder | nein (Grund) |
+| `MainWindow.KreativStudios2.cs:809` | `ImgDir()` | ImgList | liest (Trendos Ordner) | nein (Grund) |
+| `MainWindow.KreativStudios2.cs:671` | `target` | PhotosApply | Fotos kopieren/verschieben → UserDirFixedNames; Kern PhotoOrganizer.Run(by) | **ja** |
+| `MainWindow.KreativStudios2.cs:576` | `target` | PhotosGrid | Anzeige | nein (Grund) |
+| `MainWindow.KreativStudios2.cs:646` | `source` | PhotosScan | Probelauf (Plan) → UserDirFixedNames + UserMoves | **ja** |
+| `MainWindow.KreativStudios2.cs:655` | `target` | PhotosScan | Probelauf (Plan) → UserDirFixedNames + UserMoves | **ja** |
+| `MainWindow.KreativStudios2.cs:689` | `lastLog` | PhotosUndo | Rückgängig → Kern PhotoOrganizer.Undo(by); Protokoll nur aus Trendos Ordner | **ja** |
+| `MainWindow.KreativStudios2.cs:723` | `lastLog` | PhotosWorkspace | Anzeige | nein (Grund) |
+| `MainWindow.KreativStudios2.cs:747` | `target` | PhotosWorkspace | Anzeige | nein (Grund) |
+| `MainWindow.KreativStudios3.cs:405` | `music` | VideoAiWorkspace | Anzeige | nein (Grund) |
+| `MainWindow.KreativStudios3.cs:234` | `music` | VideoBuild | liest die Musik, Video in Trendos Ordner | nein (Grund) |
+| `MainWindow.KreativStudios3.cs:68` | `dir` | VideoDir | nur eine geprüfte Kennung (32 Hex), Ordner unter Trendos ki-videos | nein (Grund) |
+| `MainWindow.KreativStudios3.cs:122` | `VideoDir()` | VideoImages | Trendos Ordner ki-videos | nein (Grund) |
+| `MainWindow.KreativStudios3.cs:74` | `VideoDir()` | VideoOwn | liest (Prüfung, eigener Ordner) | nein (Grund) |
+| `MainWindow.KreativStudios3.cs:168` | `VideoDir()` | VideoOwnImage | liest (Prüfung, eigener Ordner) | nein (Grund) |
+| `MainWindow.KreativStudios3.cs:64` | `VideoDir()` | VideoOwnMedia | liest (Prüfung, eigener Ordner) | nein (Grund) |
+| `MainWindow.KreativStudios4.cs:391` | `CaRoot()` | CaClaude | Auftrag an Claude (nur Erwachsene) | nein (Grund) |
+| `MainWindow.KreativStudios4.cs:258` | `CaRoot()` | CaClaudeChangeRun | Claude ändert nur mit Erwachsenen-Recht (ClaudeRunProcess); Sicherung in Trendos Datenordner | nein (Grund) |
+| `MainWindow.KreativStudios4.cs:377` | `CaRoot()` | CaExcerpt | liest (Ausschnitt für die KI) | nein (Grund) |
+| `MainWindow.KreativStudios4.cs:79` | `CaRoot()` | CaFile | liefert nur den Pfad (im Projektordner) | nein (Grund) |
+| `MainWindow.KreativStudios4.cs:79` | `file` | CaFile | liefert nur den Pfad (im Projektordner) | nein (Grund) |
+| `MainWindow.KreativStudios4.cs:107` | `CaRoot()` | CaKind | liest (Projektart) | nein (Grund) |
+| `MainWindow.KreativStudios4.cs:480` | `CaRoot()` | CaReport | Anzeige | nein (Grund) |
+| `MainWindow.KreativStudios4.cs:74` | `root` | CaRoot | liefert nur den Pfad – Schreibstellen prüfen selbst (CkApplyRun, CodeAiSaveFile, Kern CodeKiChange) | nein (Grund) |
+| `MainWindow.KreativStudios4.cs:91` | `CaRoot()` | CaSnapshot | liest (Trendos Schnappschuss) | nein (Grund) |
+| `MainWindow.KreativStudios4.cs:70` | `CaRoot()` | CaState | liest (Baum) | nein (Grund) |
+| `MainWindow.KreativStudios4.cs:412` | `CaRoot()` | CaTestClick | Testlauf nur Erwachsene (CodeAiRunTests, DarfAusfuehren) | nein (Grund) |
+| `MainWindow.KreativStudios4.cs:173` | `CaRoot()` | CodeAiChanges | liest (Vergleich mit Schnappschuss) | nein (Grund) |
+| `MainWindow.KreativStudios4.cs:316` | `CaRoot()` | CodeAiClaudeAccept | löscht nur Trendos Sicherung | nein (Grund) |
+| `MainWindow.KreativStudios4.cs:328` | `CaRoot()` | CodeAiClaudeRevert | stellt nur den Stand vor einem Claude-Lauf (nur Erwachsene) wieder her, Namen aus der Sicherung | nein (Grund) |
+| `MainWindow.KreativStudios4.cs:183` | `CaRoot()` | CodeAiDiff | liest | nein (Grund) |
+| `MainWindow.KreativStudios4.cs:128` | `CaRoot()` | CodeAiOpenFile | liest (öffnet) | nein (Grund) |
+| `MainWindow.KreativStudios4.cs:213` | `CaRoot()` | CodeAiRunTests | nur Erwachsene (DarfAusfuehren) | nein (Grund) |
+| `MainWindow.KreativStudios4.cs:162` | `CaRoot()` | CodeAiSnapshot | liest; Schnappschuss in Trendos Datenordner | nein (Grund) |
+| `MainWindow.KreativStudios4.cs:498` | `CaRoot()` | CodeAiWorkspace | Anzeige | nein (Grund) |
+| `MainWindow.KreativStudios4.cs:452` | `CaRoot()` | InitCodeAi | Anzeige | nein (Grund) |
+| `MainWindow.KreativStudios4.cs:824` | `image` | InitVision | Vorlage, liest | nein (Grund) |
+| `MainWindow.KreativStudios4.cs:843` | `image` | ViClaude | Bild an Claude (nur Erwachsene), liest | nein (Grund) |
+| `MainWindow.KreativStudios4.cs:733` | `image` | VisionOcr | liest (Texterkennung) | nein (Grund) |
+| `MainWindow.KreativStudios4.cs:918` | `folder` | VisionWorkspace | Anzeige | nein (Grund) |
+| `MainWindow.KreativStudios4.cs:853` | `image` | VisionWorkspace | Anzeige | nein (Grund) |
+| `MainWindow.Library3D.cs:165` | `bib-import-path` | BibSide | liest; Import kopiert in Trendos 3D-Bibliothek | nein (Grund) |
+| `MainWindow.PodcastStudio.cs:369` | `intro` | PodcLoudness | liest; die fertige MP3 neben der Aufnahme → UserFile | **ja** |
+| `MainWindow.PodcastStudio.cs:369` | `outro` | PodcLoudness | liest; die fertige MP3 neben der Aufnahme → UserFile | **ja** |
+| `MainWindow.PodcastStudio.cs:403` | `audio` | PodcRss | liest; Feed-Datei aus der Export-Liste (Trendos Projektordner, feste Endung) | nein (Grund) |
+| `MainWindow.PodcastStudio.cs:404` | `master` | PodcRss | liest | nein (Grund) |
+| `MainWindow.PodcastStudio.cs:445` | `intro` | PodcWorkspace | Anzeige | nein (Grund) |
+| `MainWindow.PodcastStudio.cs:450` | `master` | PodcWorkspace | Anzeige | nein (Grund) |
+| `MainWindow.PodcastStudio.cs:446` | `outro` | PodcWorkspace | Anzeige | nein (Grund) |
+| `MainWindow.ProgGame.cs:255` | `built` | GameBuildView | Anzeige; Bauordner legt Trendo an (Spiele-Ordner) | nein (Grund) |
+| `MainWindow.ProgGame.cs:73` | `built` | GamePlay | startet die Vorschau, schreibt nicht | nein (Grund) |
+| `MainWindow.ProgGameBoard.cs:21` | `built` | GamePreviewCard | Anzeige | nein (Grund) |
+| `MainWindow.ProgGameEngines.cs:130` | `godotProject` | GameEnginesView | Anzeige; Engine-Läufe nur Erwachsene (GameEngineTest) | nein (Grund) |
+| `MainWindow.ProgGameEngines.cs:130` | `unityProject` | GameEnginesView | Anzeige; Engine-Läufe nur Erwachsene | nein (Grund) |
+| `MainWindow.ProgGameEngines.cs:56` | `built` | GameToEngine | liest; Engine-Projekt in Trendos Spiele-Ordner | nein (Grund) |
+| `MainWindow.ProgGameFree.cs:87` | `built` | GameBrowserCheck | liest (Prüfung im Browser) | nein (Grund) |
+| `MainWindow.ProgGameMixamo.cs:304` | `godotProject` | MixamoToGodot | kopiert mixamo.glb ins Godot-Projekt → UserDirFixedNames | **ja** |
+| `MainWindow.ProgGameMixamo.cs:281` | `built` | MixamoToUnreal | Unreal-Lauf nur Erwachsene (EngineRun) | nein (Grund) |
+| `MainWindow.ProgGameRelease.cs:93` | `built` | GameReleasePack | liest; Pakete in Trendos Ordner „Spiele/Veröffentlicht“ | nein (Grund) |
+| `MainWindow.ProgGameRelease.cs:67` | `built` | GameReleaseView | Anzeige; Paket über GameUnrealPackage (UserDirFixedNames) | nein (Grund) |
+| `MainWindow.ProgGameRelease.cs:112` | `built` | GameUnrealPackage | Unreal-Paket → UserDirFixedNames (12. Runde) | **ja** |
+| `MainWindow.ProgGameStage3.cs:88` | `built` | GameEngineStatus | liest (Prüfbericht) | nein (Grund) |
+| `MainWindow.ProgGameStage3.cs:88` | `godotProject` | GameEngineStatus | liest (Prüfbericht) | nein (Grund) |
+| `MainWindow.ProgGameStage3.cs:88` | `unityProject` | GameEngineStatus | liest (Prüfbericht) | nein (Grund) |
+| `MainWindow.ProgGameStage3.cs:204` | `built` | GameRunsPanel | Anzeige | nein (Grund) |
+| `MainWindow.ProgGameUnreal.cs:40` | `built` | GameUnrealCheck | nur Erwachsene (Unreal-Lauf) | nein (Grund) |
+| `MainWindow.ProgGameUnreal.cs:174` | `built` | GameUnrealPlay | nur Erwachsene (Unreal-Lauf) | nein (Grund) |
+| `MainWindow.ProgGameUnreal.cs:199` | `built` | GameUnrealView | Anzeige | nein (Grund) |
+| `MainWindow.ProgModeGarment.cs:291` | `gPatternImage` | GarmentLook | liest (Stoffbild) | nein (Grund) |
+| `MainWindow.ProgModeGarment.cs:363` | `gPatternImage` | GarmentTryOn | liest (Stoffbild) | nein (Grund) |
+| `MainWindow.ProgramShell.cs:1061` | `prog-saveas-path` | ProgramWorkParts | geht an ProgramSave (UserFile) | nein (Grund) |
+| `MainWindow.SimpleMode.cs:93` | `built` | GameNextCard | Anzeige | nein (Grund) |
+| `MainWindow.Spec01.cs:406` | `arch-bg-path` | ArchProperties | liest (Hintergrundbild) | nein (Grund) |
+| `MainWindow.Spec04.cs:55` | `xr-file-path` | XrView | liest (Modell öffnen) | nein (Grund) |
+| `MainWindow.Spec05.cs:220` | `ms-csv-path` | SheetProperties | liest (CSV) | nein (Grund) |
+| `MainWindow.Spec09.cs:184` | `pc-cmp-path` | ScanProperties | liest (zweiter Scan) | nein (Grund) |
+| `MainWindow.Spec09.cs:141` | `pc-file-path` | ScanProperties | liest (Scan laden) | nein (Grund) |
+| `MainWindow.Spec10.cs:158` | `twin-csv-path` | TwinView | liest (CSV) | nein (Grund) |
+| `MainWindow.Spec13.cs:211` | `mk-gpx-path` | MapProperties | liest (GPX) | nein (Grund) |
+| `MainWindow.Spec13.cs:235` | `mk-pack-path` | MapProperties | liest (Kartenpaket) | nein (Grund) |
+| `MainWindow.Spec14.cs:231` | `cnc-file-path` | CncProperties | liest (G-Code) | nein (Grund) |
+| `MainWindow.Spec15.cs:239` | `bc-srt-path` | BcSide | Untertitel-Kopie „….versetzt.srt“ neben der Datei → UserFile | **ja** |
+| `MainWindow.Sys02.cs:99` | `du-folder` | AlltagFilesView | liest (Speicherplatz) | nein (Grund) |
+| `MainWindow.Sys02.cs:90` | `dup-folder` | AlltagFilesView | liest (Doppelte, löscht nichts) | nein (Grund) |
+| `MainWindow.Sys02.cs:137` | `photo-folder` | AlltagFilesView | Fotos nach Datum ordnen → UserDirFixedNames + UserMoves; Kern Renamer.Apply(by) | **ja** |
+| `MainWindow.Sys02.cs:79` | `ren-folder` | AlltagFilesView | Viele Dateien umbenennen (Vorschau und Anwenden) → UserDirFixedNames + UserMoves; Kern Renamer.Apply(by) | **ja** |
+| `MainWindow.Sys02.cs:106` | `zip-file` | AlltagFilesView | merkt nur den getippten Pfad; Entpacken: Archives.UnpackAs mit Rolle | nein (Grund) |
+| `MainWindow.Sys02.cs:106` | `zip-src` | AlltagFilesView | merkt nur den getippten Pfad; Packen: UserFile(…zip) | nein (Grund) |
+| `MainWindow.Sys02.cs:434` | `color-file` | AlltagHelperView | liest (Pipette) | nein (Grund) |
+| `MainWindow.Sys02.cs:225` | `audio-file` | AlltagMediaView | umgewandelte Datei neben dem Original → UserBeside | **ja** |
+| `MainWindow.Sys02.cs:180` | `img-file` | AlltagMediaView | Kopie „-gedreht/-verkleinert“ neben dem Bild → UserBeside | **ja** |
+| `MainWindow.Sys02.cs:182` | `img-size` | AlltagMediaView | Zahl im selben Knopf-Block wie img-file (geprüft) | **ja** |
+| `MainWindow.Sys02.cs:206` | `shot-file` | AlltagMediaView | geschwärzte Kopie neben dem Bild → UserBeside | **ja** |
+| `MainWindow.Sys03.cs:148` | `bm-folder` | NetBrowserView | Name einer Lesezeichen-Gruppe, kein Dateipfad | nein (Grund) |
+| `MainWindow.Sys03.cs:149` | `bm-import` | NetBrowserView | liest (Lesezeichen-Datei) | nein (Grund) |
+| `MainWindow.Sys03.cs:36` | `hash-file` | NetCheckView | liest (Prüfsumme) | nein (Grund) |
+| `MainWindow.Sys03.cs:69` | `q-file` | NetCheckView | Defender-Prüfung liest; Wegsperren über Web.Quarantine mit Rolle | nein (Grund) |
+| `MainWindow.Sys03.cs:96` | `dlsort-folder` | NetLoadView | Downloads nach Art sortieren (Vorschau und Anwenden) → UserDirFixedNames + UserMoves; Kern Renamer.Apply(by) | **ja** |
+| `MainWindow.Sys10.cs:107` | `form-file` | DokuPdfView | liest die Felder; Speichern prüft (UserBeside) | nein (Grund) |
+| `MainWindow.Sys10.cs:99` | `meta-file` | DokuPdfView | Barrierefreiheit liest, Bericht in Trendos Dokumente-Ordner; Entfernen prüft (UserBeside) | nein (Grund) |
+| `MainWindow.Sys10.cs:68` | `pdf-split-file` | DokuPdfView | liest; Ergebnis in Trendos Dokumente-Ordner, Name „…-seiten-a-b.pdf“ | nein (Grund) |
+| `MainWindow.Sys10.cs:78` | `pdf-text-file` | DokuPdfView | liest; Ergebnis in Trendos Dokumente-Ordner (.txt/.pdf) | nein (Grund) |
+| `MainWindow.Sys10.cs:115` | `print-file` | DokuPdfView | liest (Vorschau/Drucken) | nein (Grund) |
+| `MainWindow.Sys10.cs:243` | `docsearch-folder` | DokuWriteView | liest (Suche) | nein (Grund) |
+| `MainWindow.Sys10.cs:152` | `merge-csv` | DokuWriteView | liest; Serienbriefe in Trendos Dokumente-Ordner | nein (Grund) |
+| `MainWindow.Sys10.cs:153` | `merge-template` | DokuWriteView | liest; Serienbriefe in Trendos Dokumente-Ordner | nein (Grund) |
+| `MainWindow.Sys10.cs:189` | `pkg-main` | DokuWriteView | liest; Paket in Trendos Dokumente-Ordner | nein (Grund) |
+| `MainWindow.Sys10.cs:184` | `sig-doc` | DokuWriteView | „-unterschrieben.docx“ neben dem Dokument → UserBeside | **ja** |
+| `MainWindow.Sys10.cs:183` | `sig-img` | DokuWriteView | liest das Bild im selben Block wie sig-doc (geprüft) | **ja** |
+| `MainWindow.Sys10.cs:205` | `table-file` | DokuWriteView | liest (Tabelle ansehen) | nein (Grund) |
+| `MainWindow.Sys10.cs:146` | `tpl-file` | DokuWriteView | liest; Vorlage in Trendos Datenordner | nein (Grund) |
+| `MainWindow.Sys11.cs:53` | `offline-folder` | ProgCareView | liest (Prüfsummen); Starten nur nach Bestätigung mit Software-Recht | nein (Grund) |
+| `MainWindow.Sys11.cs:45` | `portable-zip` | ProgCareView | Software.InstallPortable(by) (frühere Runde) | **ja** |
+| `MainWindow.Sys11.cs:159` | `restore-file` | ProgCheckView | liest (Liste) | nein (Grund) |
+| `MainWindow.Sys12.cs:122` | `settings-file` | BedienHelpView | liest; Einstellungen in Trendos Datenordner | nein (Grund) |
+| `MainWindow.TrainBatch.cs:211` | `TrainBatchFile()` | TrainBatchCard | Trendos Ordner (Name geprüft) | nein (Grund) |
+| `MainWindow.TrainBatch.cs:112` | `TrainBatchFile()` | TrainBatchCsv | liest (Trendos Ordner) | nein (Grund) |
+| `MainWindow.TrainBatch.cs:106` | `batchFile` | TrainBatchFile | nur ein geprüfter Name (TrainBatchName) in Trendos Ordner | nein (Grund) |
+| `MainWindow.TrainBatch.cs:103` | `batchFile` | TrainHasBatch | liest | nein (Grund) |
+| `MainWindow.TrainBatch.cs:164` | `batchPath` | TrainHeaderToggled | liest die Quelle erneut | nein (Grund) |
+| `MainWindow.TrainBatch.cs:154` | `TrainBatchFile()` | TrainWriteBatch | Trendos Ordner, Name geprüft | nein (Grund) |
+| `MainWindow.VideoExportSettings.cs:27` | `subs` | EditExportOptions | liest (Untertitel einbrennen) | nein (Grund) |
+| `MainWindow.VideoExportSettings.cs:146` | `subs` | EditExportSettings | Anzeige | nein (Grund) |
+| `MainWindow.VideoExportSettings.cs:100` | `subs` | EditSubsLanguage | Sprachfassung „.xx.srt“ neben den Untertiteln → UserFile | **ja** |
+| `MainWindow.VideoKiTon.cs:78` | `VideoDir()` | VideoMoveScene | Trendos Ordner ki-videos | nein (Grund) |
+| `MainWindow.VideoKiTon.cs:128` | `VideoDir()` | VideoMusicPick | Trendos Ordner ki-videos | nein (Grund) |
+| `MainWindow.VideoKiTon.cs:34` | `VideoDir()` | VideoVoices | Trendos Ordner ki-videos | nein (Grund) |
+| `MainWindow.VisionErkennen.cs:141` | `image` | VisionRecognizeCurrent | liest; Seitendatei prüft VisionRecognizeFile (ChildWrite) | nein (Grund) |
+
+### Angepasste Tests (nicht abgeschwächt)
+
+- **Kern-Schnittstelle:** `Sys02Tests`, `Sys03Tests`, `KreativKits2Tests` und `CodeKiChangeTests` übergeben jetzt die Rolle. Es ist die Erwachsenen-Rolle, das Verhalten ist unverändert. Die Prüfungen sind gleich geblieben.
+- **`RechteKernFix12Tests`:** Der Wächter erkennt den umbenannten Helfer `UserDir\w*\(`.
+
+### Auswirkung für Kinder (ehrlich)
+
+- Umbenennen mit neuer ausführbarer Endung ist gesperrt. Muster ohne neue Endung und das Sortieren von Downloads gehen weiter.
+- Eine weggesperrte `.exe` legt nur ein Erwachsener zurück.
+- „Frei portieren“ (PS2Recomp) und der Probelauf sind nur für Erwachsene.
+- Liegt das Bild außerhalb der Freigabe, legt die Bilderkennung keine Seitendatei an.
+- Alles andere in der Freigabe bleibt wie bisher.
+
+### Tests
+
+- Build: 0 Fehler.
+- Kern vollständig (`reports/T-0764/gruen-fix13-core.log`): 3678 Tests, 3636 bestanden, 42 übersprungen, 0 rot, Exit 0 – darin RechteKernFix13 (M1, M2, Fotos/Quarantäne, Reflexion, Wächter 2) und weiter RechteKernFix12.
+- App gezielt (`reports/T-0764/gruen-fix13-app.log`): 270 betroffene Klassen in fünf Teilen plus EveryButton_Alltag einzeln, 1114 Testfälle, alle Teile Exit 0 – darin RechteKernFix13Ui (M1 Code mit KI im Autostart-Testordner, M2 Umbenennen), RechteKernFix12Ui, RechteKernFix4Ui, CodeAiKi_Ui, Sys02/Sys03-Oberfläche. In diesem Lauf trat kein Flaky-Fall auf (der bekannte Avalonia-Aufräumfehler „Test Case Cleanup Failure … different thread owns it“ blieb diesmal aus).
+
+### Grenzen und offene Punkte
+
+- **Wächtertest:** Er ist eine Heuristik (siehe oben).
+- **Eingebettete Webansichten:** Downloads dort steuert WebView2 selbst.
+- **Gemeinsames Konto:** Unter einem gemeinsamen Windows-Konto ist der Kinderschutz keine harte Grenze.
+
 ## Abnahmekriterien
 
 | # | Kriterium | Urteil |

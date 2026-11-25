@@ -177,6 +177,18 @@ public static class ChildWrite
         if (Problem(by, path, checkName) is { } msg) Rbac.DemandSoftware(by, "schreiben " + System.IO.Path.GetFileName(System.IO.Path.TrimEndingDirectorySeparator(path)), audit, msg);
     }
 
+    /// <summary>T-0764 (13. Prüfrunde): Verschieben, Umbenennen oder Kopieren von <paramref name="from"/> nach <paramref name="to"/> (Ordner-Werkzeuge im Kern:
+    /// Umbenennen, Sortieren, Fotos ordnen, Rückgängig). Beide Orte müssen in der Freigabe liegen (<paramref name="fromReadOnly"/>: die Quelle wird nur gelesen –
+    /// dann zählt nur das Ziel). Eine ausführbare oder auslösende Endung ist nur erlaubt, wenn der Name gleich bleibt (Downloads nach Art sortieren:
+    /// „setup.exe“ bleibt „setup.exe“) – „spiel“ → „spiel.cmd“ ist für Kinder gesperrt. Erwachsene: unverändert.</summary>
+    public static void DemandMove(Principal by, string from, string to, AuditLog audit, bool fromReadOnly = false)
+    {
+        if (Rbac.Has(by, Permission.ManageSoftware)) return;
+        if (!fromReadOnly) Demand(by, from, audit, checkName: false);
+        var same = string.Equals(System.IO.Path.GetFileName(from), System.IO.Path.GetFileName(to), StringComparison.OrdinalIgnoreCase);
+        Demand(by, to, audit, checkName: !same);
+    }
+
     /// <summary>Für Rückruf-Prüfungen (Dateimanager): Meldung oder null; protokolliert die Ablehnung.</summary>
     public static string? WriteProblem(Principal by, string path, AuditLog audit, bool checkName = true)
     {

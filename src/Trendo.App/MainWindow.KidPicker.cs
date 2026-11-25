@@ -55,8 +55,17 @@ public partial class MainWindow
     /// sonst „rbac.denied“ und eine verständliche Meldung (UnauthorizedAccessException) – es entsteht keine Datei. Erwachsene: unverändert.
     /// Ein Quelltext-Wächtertest prüft, dass Methoden mit einem Pfad-Parameter, die schreiben, hierüber laufen.</summary>
     internal string UserFile(string path) { Trendo.Core.Sys.ChildWrite.Demand(CurrentPrincipal, path, _core.Audit); return path; }
-    /// <summary>Wie <see cref="UserFile"/>, für einen Zielordner (nur der Ort, die Namen darin legt Trendo fest).</summary>
-    internal string UserDir(string dir) { Trendo.Core.Sys.ChildWrite.Demand(CurrentPrincipal, dir, _core.Audit, checkName: false); return dir; }
+    /// <summary>Wie <see cref="UserFile"/>, für einen Zielordner – prüft NUR den Ort. T-0764 (13. Prüfrunde, N): der Name sagt es – danach dürfen in diesem
+    /// Ordner nur Namen entstehen, die Trendo festlegt (feste Endung). Wo der Nutzer oder eine KI Namen wählt, zusätzlich <see cref="UserFile"/> je Datei
+    /// (der Quelltext-Wächter RechteKernFix13 sucht dafür jede Feld-Lesung mit Pfadbedeutung).</summary>
+    internal string UserDirFixedNames(string dir) { Trendo.Core.Sys.ChildWrite.Demand(CurrentPrincipal, dir, _core.Audit, checkName: false); return dir; }
+
+    /// <summary>T-0764 (13. Prüfrunde): Ergebnis entsteht NEBEN der gewählten Datei mit einem Namen, den Trendo festlegt (Kopie „-gedreht.png“, „-umgewandelt.mp3“ …) –
+    /// geprüft wird der Ordner der Datei. Gibt die Datei zurück.</summary>
+    internal string UserBeside(string file) { UserDirFixedNames(Path.GetDirectoryName(Path.GetFullPath(file)) ?? file); return file; }
+
+    /// <summary>T-0764 (13. Prüfrunde): Ordner-Werkzeuge im Kern (Umbenennen, Sortieren, Fotos ordnen) – Verschieben mit der Rolle.</summary>
+    internal void UserMoves(IEnumerable<Trendo.Core.Sys.Move> moves) { foreach (var m in moves) Trendo.Core.Sys.ChildWrite.DemandMove(CurrentPrincipal, m.From, m.To, _core.Audit); }
 
     /// <summary>Für Tests: das zuletzt geöffnete Auswahlfenster des Kinderprofils und die zuletzt gewählten Pfade.</summary>
     public Window? KidPickWindow { get; private set; }

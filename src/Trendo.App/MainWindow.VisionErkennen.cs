@@ -128,7 +128,8 @@ public partial class MainWindow
         if (sources.Count == 0) return null;
         var rec = VisionTags.Build(file, sha, w, h, objects, desc, descTags, text, sources, DateTime.UtcNow);
         ViStore(d, rec);
-        if (d.Text("sidecar") != "nein") VisionTags.WriteSidecar(rec);
+        // T-0764 (13. Prüfrunde): Seitendatei entsteht neben dem Bild – im Kinderprofil nur in der Freigabe (sonst ohne Seitendatei, die Erkennung bleibt)
+        if (d.Text("sidecar") != "nein" && Trendo.Core.Sys.ChildWrite.Problem(CurrentPrincipal, Path.GetDirectoryName(Path.GetFullPath(file)) ?? file, checkName: false) is null) VisionTags.WriteSidecar(rec);
         return rec;
     }
 

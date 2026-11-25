@@ -361,6 +361,7 @@ public partial class MainWindow
         var meta = Path.Combine(Path.GetTempPath(), "trendo-podcast-" + Guid.NewGuid().ToString("N") + ".txt");
         var mix = Path.Combine(Path.GetTempPath(), "trendo-podcast-" + Guid.NewGuid().ToString("N") + ".wav");
         var output = Path.Combine(Path.GetDirectoryName(src)!, Path.GetFileNameWithoutExtension(src) + "-fertig.mp3");
+        try { UserFile(output); } catch (UnauthorizedAccessException e) { _progMsg[PodcKey] = e.Message; Show(PodcKey); return; } // T-0764 (13. Prüfrunde): Ordner/Datei frei getippt – Kinder nur Freigabe, keine neue ausführbare Endung
         _podcBusy = true; // ab hier setzt das finally unten den Merker in jedem Fall zurück
         try
         {
