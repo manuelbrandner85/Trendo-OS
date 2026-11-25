@@ -323,7 +323,7 @@ public partial class MainWindow
     private string? Play(string file)
     {
         var p = MediaLibrary.Player(file, ToolPath("mpv"), Cli.Find("vlc"));
-        if (p is { } x && CanManageSoftware) { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(x.Exe, x.Args) { UseShellExecute = false }); /* 8. Prüfrunde: alle Argumente (MpvSafe) */ _core.Audit.Append("app", "media.play", Path.GetFileName(file)); return Path.GetFileNameWithoutExtension(x.Exe); }
+        if (p is { } x && CanManageSoftware && Trendo.Core.MpvSafe.TargetAllowed(file)) { Trendo.Core.MpvSafe.HoldUntilExit(x.Args, System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(x.Exe, x.Args) { UseShellExecute = false })); /* 8./9. Prüfrunde: alle Argumente (MpvSafe), Tastendatei gesperrt bis Ende */ _core.Audit.Append("app", "media.play", Path.GetFileName(file)); return Path.GetFileNameWithoutExtension(x.Exe); }
         Launch(file); return null;
     }
 

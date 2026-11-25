@@ -41,8 +41,11 @@ public sealed class MpvAudio(string mpvPath) : IAudioOut
         Close();
         var psi = new ProcessStartInfo(mpvPath) { UseShellExecute = false, CreateNoWindow = true };
         // „--force-window=no“ und „--vo=null“: neuere mpv-Fassungen öffneten sonst trotz „--no-video“ ein eigenes Fenster (Fehler 07.11.2026 – Trendo Musik soll selbst abspielen)
-        foreach (var a in StartArgs(_name)) psi.ArgumentList.Add(a);
-        _proc = Process.Start(psi) ?? throw new InvalidOperationException("Der Player ließ sich nicht starten.");
+        var args = StartArgs(_name);
+        foreach (var a in args) psi.ArgumentList.Add(a);
+        try { _proc = Process.Start(psi) ?? throw new InvalidOperationException("Der Player ließ sich nicht starten."); }
+        catch { Trendo.Core.MpvSafe.Release(args); throw; }
+        Trendo.Core.MpvSafe.HoldUntilExit(args, _proc); // 9. Prüfrunde: Tastendatei gesperrt, bis mpv endet
         var pipe = new NamedPipeClientStream(".", _name, PipeDirection.InOut, PipeOptions.Asynchronous);
         for (var i = 0; ; i++) { try { pipe.Connect(250); break; } catch (TimeoutException) when (i < 20) { } }
         _pipe = pipe; _w = new StreamWriter(pipe, new UTF8Encoding(false)) { AutoFlush = true, NewLine = "\n" };
@@ -78,7 +81,7 @@ public sealed class MpvAudio(string mpvPath) : IAudioOut
         lock (_lock) { try { _w?.WriteLine(JsonSerializer.Serialize(new { command })); } catch (Exception x) when (x is IOException or ObjectDisposedException) { } }
     }
 
-    public void Load(string file) { Ensure(); Send("loadfile", file, "replace"); Send("set_property", "pause", false); }
+    public void Load(string file) { if (!Trendo.Core.MpvSafe.TargetAllowed(file)) throw new ArgumentException("Diese Datei spielt Trendo nicht ab."); Ensure(); /* 9. Prüfrunde */ Send("loadfile", file, "replace"); Send("set_property", "pause", false); }
     public void SetPause(bool pause) => Send("set_property", "pause", pause);
     public void Seek(double seconds) => Send("seek", seconds, "absolute");
     public void SetVolume(int percent) => Send("set_property", "volume", Math.Clamp(percent, 0, 130));

@@ -98,7 +98,7 @@ public static class MediaLibrary
     /// <remarks>T-0764 (8. Prüfrunde): mpv ohne Einstellungen und Skripte aus %APPDATA%\mpv, mit Trendos fester, sicherer Tastenbelegung;
     /// VLC ohne Lua-Erweiterungen.</remarks>
     public static (string Exe, string[] Args)? Player(string file, string? mpv, string? vlc) =>
-        mpv is not null ? (mpv, [.. MpvSafe.Args(keys: true), "--force-window=yes", file]) : vlc is not null ? (vlc, ["--no-lua", "--play-and-exit", file]) : null;
+        mpv is not null ? (mpv, [.. MpvSafe.Args(keys: true), "--force-window=yes", "--", file]) : vlc is not null ? (vlc, ["--no-lua", "--play-and-exit", "--", file]) : null; // 9. Prüfrunde: „--“
 }
 
 // P11 Batch-Umbenennen (mit Rückgängig), P22 Fotos ordnen

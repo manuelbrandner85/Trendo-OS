@@ -374,7 +374,7 @@ public partial class MainWindow
                 var script = Path.Combine(dir, "trendo_anprobe.py");
                 byte[] bytes; using (var s = AssetLoader.Open(new Uri("avares://TrendoOS/Assets/ki/trendo_anprobe.py"))) using (var m = new MemoryStream()) { await s.CopyToAsync(m); bytes = m.ToArray(); }
                 await File.WriteAllBytesAsync(script, bytes);
-                var r = await Task.Run(() => Cli.Run(blender!, ["--python-expr", Trendo.Core.BlenderScript.Expr(script, Trendo.Core.BlenderScript.Sha(bytes)), "--", jobFile], dir, 1_800_000)); // T-0764 (7. Prüfrunde): geprüfter Startausdruck
+                var r = await Task.Run(() => Cli.Run(blender!, ["--factory-startup", "--python-expr", Trendo.Core.BlenderScript.Expr(script, Trendo.Core.BlenderScript.Sha(bytes)), "--", jobFile], dir, 1_800_000)); // T-0764 (7. Prüfrunde): geprüfter Startausdruck
                 problem = r.Ok && r.Out.Contains("TRENDO_FERTIG") ? null : (r.Err.Length > 0 ? r.Err : r.Out).Trim().Split('\n').LastOrDefault(l => l.Trim().Length > 0) ?? "Blender hat abgebrochen.";
             }
             GarmentImages = new[] { "nah", "vorn", "schraeg", "hinten" }.Select(v => Path.Combine(dir, $"bild-{v}.png")).Where(File.Exists).ToList();

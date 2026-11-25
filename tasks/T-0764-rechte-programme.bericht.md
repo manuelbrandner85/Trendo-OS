@@ -615,6 +615,89 @@ Alle eingebauten Blender-Skripte (`Assets/blender/*.py`, `Assets/ki/trendo_anpro
 - **Werkzeugordner:** Werkzeuge darin werden weiter nicht vor jedem Start gehasht.
 - **Gemeinsames Konto:** Unter einem gemeinsamen Windows-Konto ist der Kinderschutz keine harte Grenze.
 
+## Neunte Prüfrunde (Commit „T-0764 fix9“)
+
+Grundlage ist die Gegenprüfung von `d73089760`. Sie hatte einen mittleren Befund (`PickInto` umgeht den Helfer) und sechs niedrige.
+
+**Rot auf d73089760:**
+- `reports/T-0764/rot-fix9-core.log`: 5 von 5 rot.
+  - M: System-Dialog in `MainWindow.Files.cs:185/191`.
+  - N1: mpv über `LaunchAs(player, …)` bzw. ohne gesperrte Tastendatei.
+  - N2: Datei ohne „--“.
+  - N3: Anprobe ohne `--factory-startup`.
+  - N4: fehlende Tasten.
+- `reports/T-0764/rot-fix9-app.log`: 2 von 2 rot. „Datei wählen …“ am Pfad-Feld öffnete beim Kind keine Trendo-Auswahl, und der Fernseh-Player bekam die Adresse ohne „--“.
+- Für den Rot-Beleg lief die Core-Datei ohne die Tests, die neue Schnittstellen brauchen (`MpvSafe.Release`, `TargetAllowed`). Diese Tests sind nur grün belegt.
+
+### M – „Durchsuchen …“ an Pfad-Feldern
+
+- `PickInto` nutzt jetzt `PickFolders` bzw. `PickOpenFiles`. Kinder bekommen Trendos Auswahl, Erwachsene den System-Dialog.
+- **Quelltext-Test verschärft:** Jedes `.OpenFilePickerAsync(`, `.SaveFilePickerAsync(` und `.OpenFolderPickerAsync(` außerhalb von `MainWindow.KidPicker.cs` ist rot, egal über welche Variable. Ebenso `TryGetFolderFromPathAsync`/`TryGetFileFromPathAsync` und Avalonias Launcher (`Launcher.Launch…`, `LaunchFileAsync`, `LaunchUriAsync` …).
+- **Ganzes Repo durchsucht:** Danach gibt es keine weiteren Stellen.
+
+### N1 – mpv in Videoliste und Mediathek
+
+`FileRow` (Videos in der Musik-Ansicht und in den Dateilisten) startet mpv nicht mehr über `LaunchAs(player, file)`, sondern über `Play`, also `MediaLibrary.Player` mit `MpvSafe`. Kinder bekommen dort Trendos eigenen Betrachter.
+
+Der Quelltext-Test erfasst jetzt auch `Launch`/`LaunchAs`/`LaunchArgsAs` mit einem mpv-Pfad als Variable. Außerdem muss jedes `ProcessStartInfo(<mpv-Pfad>)` die Tastendatei bis zum Ende sperren (`HoldUntilExit`).
+
+### N2 – „--“ und erlaubte Ziele
+
+`MpvSafe.TargetAllowed` lässt nur http, https, rtmp, rtmps und rtsp zu oder eine vorhandene lokale Datei mit vollem Pfad (eigene Aufnahmen, Mediathek). Abgelehnt sind file:, memory:, av:/lavfi:, alles mit „-“ am Anfang und Steuerzeichen. Es gilt für:
+- `MpvView.Args`: Adresse hinter „--“, sonst eine Ausnahme.
+- `MpvView.Play`, auch beim schnellen Umschalten per `loadfile`.
+- `TvPlayUrl`: Meldung statt Start.
+- `MpvAudio.Load`.
+- `MediaLibrary.Player`: mpv und VLC bekommen die Datei hinter „--“; `Sys02.Play` prüft vorher.
+
+### N3 – `--factory-startup`
+
+- Ergänzt bei der Anprobe.
+- Bei der Kreatur und beim ModelConverter steht es jetzt direkt in der Argumentliste des Skripts.
+- Jeder Blender-Lauf mit Trendo-Skript hat es; ein Quelltext-Test prüft das.
+- **Bewusst ohne:** die Blender-Oberfläche für Erwachsene (eigene Datei öffnen, `ExternalApps` „In Blender öffnen“), damit ihre eigenen Einstellungen und Add-ons bleiben. Kinder starten die Blender-Oberfläche nicht (Konsolen-Programm).
+
+### N4 – Tasten
+
+`SafeKeys` hat jetzt zusätzlich:
+- `cycle sub`, `cycle audio`
+- `add speed ±0.1`, `set speed 1`
+- `screenshot`
+- `add chapter ±1`
+- `seek ±60` (Umschalt + Pfeil)
+- `frame-step`, `frame-back-step`
+
+`IsSafeInputConf` erlaubt genau diese Befehle zusätzlich, weiter ohne `run`, `subprocess`, `script-*`, `load-script`, `set` für Pfad-Optionen, Ketten und Anführungszeichen. Kinder bekommen dieselbe Belegung, eingebettete Player die leere.
+
+### N5 – Tastendatei (TOCTOU)
+
+- Jeder Start bekommt eine eigene Datei.
+- Ablauf: schreiben, dann mit `FileShare.Read` sperren. Andere dürfen nur lesen; Ändern, Umbenennen und Löschen schlagen fehl.
+- Anschließend wird der Inhalt über genau diesen gesperrten Zugriff geprüft. Wurde die Datei zwischen Schreiben und Sperren ausgetauscht, startet nichts.
+- Die Sperre hält, bis mpv endet (`HoldUntilExit`); danach wird die Datei gelöscht.
+- **`memory://`** für `--input-conf` nutze ich nicht. Mitgeliefert ist der shinchiro-Build 20261021, und ob er das für input.conf sicher kann, ließe sich nur mit einem echten mpv-Lauf belegen. Ich habe es nicht geraten.
+
+### N6 – Syntaxprüfung des Startausdrucks
+
+Weggelassen, mit Grund: Dafür müsste der Test ein fremdes Python starten, und ob ein solches sicher vorhanden ist, ist nicht gewährleistet. Der Ausdruck wird weiter über `BlenderScript.Decode` inhaltlich geprüft.
+
+### Tests
+
+- Build: 0 Fehler.
+- Core VOLLSTÄNDIG (`gruen-fix9-core.log`), ohne Filter: 3602 Tests, davon 3560 grün und 42 übersprungen, Exitcode 0 (Lauf 3, ohne parallele Testsammlungen).
+- Lauf 1 und 2 (parallel) hatten je einen roten Zeit- bzw. Leistungstest ohne Bezug zu T-0764: einmal `KiModelT0703Tests` (Zeitgrenze, einzeln zweimal grün), einmal T-0747-fix2 „Zickzack“ (Geschwindigkeit). Beide Auszüge stehen im Log.
+- Der vollständige Lauf enthält bestehende Tests, die vorhandene Werkzeuge wie FFmpeg nutzen, wenn sie installiert sind.
+- App gezielt (`gruen-fix9-app.log`): 223 Klassen in 5 Prozessen plus EveryButton_Alltag, zusammen 955 Tests.
+- Teil 00 bis 03 und EveryButton liefen mit Exitcode 0.
+- Teil 04 hatte einen roten Zeittest mit echtem FFmpeg ohne Bezug zu T-0764 (`TonT0732_Ui.Record_until_stop`: 2,92 s statt 3 s).
+- Die Wiederholung von Teil 04 war mit allen 154 Tests grün, Exitcode 0.
+
+### Grenzen und offene Punkte
+
+- **Blender-Oberfläche:** Erwachsene öffnen sie weiter mit ihren eigenen Einstellungen (ohne `--factory-startup`).
+- **Werkzeugordner:** Werkzeuge darin werden weiter nicht vor jedem Start gehasht.
+- **Gemeinsames Konto:** Unter einem gemeinsamen Windows-Konto ist der Kinderschutz keine harte Grenze.
+
 ## Abnahmekriterien
 
 | # | Kriterium | Urteil |

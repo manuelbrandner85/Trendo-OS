@@ -33,7 +33,7 @@ public partial class MainWindow
         byte[] content;
         using (var s = AssetLoader.Open(new Uri("avares://TrendoOS/Assets/blender/trendo_kreatur.py"))) using (var m = new MemoryStream()) { s.CopyTo(m); content = m.ToArray(); }
         File.WriteAllBytes(f, content);
-        return ["--python-expr", Trendo.Core.BlenderScript.Expr(f, Trendo.Core.BlenderScript.Sha(content))];
+        return ["--factory-startup", "--python-expr", Trendo.Core.BlenderScript.Expr(f, Trendo.Core.BlenderScript.Sha(content))];
     }
 
     /// <summary>Kreatur bauen. sichtbar = Blender öffnet sich und man sieht das Ergebnis dort (Fenster bleibt offen); sonst im Hintergrund mit Vorschaubild.</summary>
@@ -51,7 +51,7 @@ public partial class MainWindow
             var basis = Path.Combine(Folder3D, DevStudio.SafeName($"{name}-{DateTime.Now:yyyyMMdd-HHmmss}"));
             var json = JsonSerializer.Serialize(new { art = _kreaturArt, farbe = _kreaturFarbe, ausgabe = basis.Replace('\\', '/'), bild = !sichtbar, samples = 96 });
             var args = new List<string>(); if (!sichtbar) args.Add("-b");
-            args.Add("--factory-startup"); args.AddRange(KreaturScriptArgs()); args.AddRange(["--", json]);
+            args.AddRange(KreaturScriptArgs()); /* enthält --factory-startup (9. Prüfrunde) */ args.AddRange(["--", json]);
             _kreaturMsg = sichtbar ? "Blender öffnet sich und baut die Kreatur – du siehst sie gleich im Blender-Fenster." : "Blender baut die Kreatur im Hintergrund und rendert ein Vorschaubild …";
             Show("3d");
             _core.Audit.Append(Principal.LocalOwner.Name, "3d.kreatur", $"{_kreaturArt} {(sichtbar ? "sichtbar" : "hintergrund")}");

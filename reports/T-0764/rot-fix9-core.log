@@ -1,0 +1,91 @@
+T-0764 fix9 – ROT auf d73089760 (Core: RechteKernFix9 ohne Tests mit neuen Schnittstellen, vor dem Fix)
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix9\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:02.81]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:03.35]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:03.37]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:00:03.41]     T-0764 N4: sichere Tasten erweitert (Untertitel, Tonspur, Tempo, Bildschirmfoto, Kapitel, 60 s, Einzelbild); weiter ohne run, subprocess, script-*, Pfad-Optionen, Ketten [FAIL]
+[xUnit.net 00:00:03.41]       Assert.Contains() Failure: Sub-string not found
+[xUnit.net 00:00:03.41]       String:    "SPACE cycle pause\r\np cycle pause\r\nLEFT se"···
+[xUnit.net 00:00:03.41]       Not found: "cycle sub"
+[xUnit.net 00:00:03.41]       Stack Trace:
+[xUnit.net 00:00:03.42]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix9\tests\Trendo.Core.Tests\RechteKernFix9Tests.cs(76,0): at Trendo.Core.Tests.RechteKernFix9.Tasten_erweitert()
+[xUnit.net 00:00:03.42]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:03.42]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:03.70]     T-0764 N1: mpv nie über LaunchAs oder ein eigenes Process.Start mit einem mpv-Pfad; jede Startstelle sperrt die Tastendatei bis zum Ende (HoldUntilExit) [FAIL]
+[xUnit.net 00:00:03.70]       MainWindow.Tv.cs:63 ohne HoldUntilExit, MainWindow.W1Apps.cs:168 LaunchAs mit mpv, MpvAudio.cs:42 ohne HoldUntilExit
+[xUnit.net 00:00:03.71]       Stack Trace:
+[xUnit.net 00:00:03.71]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix9\tests\Trendo.Core.Tests\RechteKernFix9Tests.cs(36,0): at Trendo.Core.Tests.RechteKernFix9.Mpv_Startstellen()
+[xUnit.net 00:00:03.71]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:03.71]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:03.87]     T-0764 N3: jeder Blender-Lauf mit Trendo-Skript (--python-expr) startet mit --factory-startup (Quelltext durchsucht) [FAIL]
+[xUnit.net 00:00:03.87]       MainWindow.Kreatur.cs:36, MainWindow.ProgModeGarment.cs:377, ModelConverter.cs:75
+[xUnit.net 00:00:03.87]       Stack Trace:
+[xUnit.net 00:00:03.87]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix9\tests\Trendo.Core.Tests\RechteKernFix9Tests.cs(57,0): at Trendo.Core.Tests.RechteKernFix9.Blender_factory_startup()
+[xUnit.net 00:00:03.87]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:03.87]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:04.10]     T-0764 M: kein System-Dialog und kein System-Launcher außerhalb von MainWindow.KidPicker.cs – über welche Variable auch immer [FAIL]
+[xUnit.net 00:00:04.10]       MainWindow.Files.cs:185, MainWindow.Files.cs:191
+[xUnit.net 00:00:04.10]       Stack Trace:
+[xUnit.net 00:00:04.10]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix9\tests\Trendo.Core.Tests\RechteKernFix9Tests.cs(30,0): at Trendo.Core.Tests.RechteKernFix9.Dialoge_nur_im_Helfer()
+[xUnit.net 00:00:04.10]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:04.10]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:04.11]     T-0764 N2: eigenes mpv-/VLC-Fenster – Datei immer hinter „--“ (nie als Option lesbar) [FAIL]
+[xUnit.net 00:00:04.11]       Assert.Equal() Failure: Collections differ
+[xUnit.net 00:00:04.11]                  ↓ (pos 0)
+[xUnit.net 00:00:04.11]       Expected: ["--", "-–x.mp3"]
+[xUnit.net 00:00:04.11]       Actual:   ["--force-window=yes", "-–x.mp3"]
+[xUnit.net 00:00:04.11]                  ↑ (pos 0)
+[xUnit.net 00:00:04.11]       Stack Trace:
+[xUnit.net 00:00:04.11]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix9\tests\Trendo.Core.Tests\RechteKernFix9Tests.cs(49,0): at Trendo.Core.Tests.RechteKernFix9.Player_mit_Trenner()
+[xUnit.net 00:00:04.11]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:04.11]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:04.11]   Finished:    Trendo.Core.Tests
+  Fehler T-0764 N4: sichere Tasten erweitert (Untertitel, Tonspur, Tempo, Bildschirmfoto, Kapitel, 60 s, Einzelbild); weiter ohne run, subprocess, script-*, Pfad-Optionen, Ketten [9 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Sub-string not found
+String:    "SPACE cycle pause\r\np cycle pause\r\nLEFT se"···
+Not found: "cycle sub"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix9.Tasten_erweitert() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix9\tests\Trendo.Core.Tests\RechteKernFix9Tests.cs:line 76
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0764 N1: mpv nie über LaunchAs oder ein eigenes Process.Start mit einem mpv-Pfad; jede Startstelle sperrt die Tastendatei bis zum Ende (HoldUntilExit) [291 ms]
+  Fehlermeldung:
+   MainWindow.Tv.cs:63 ohne HoldUntilExit, MainWindow.W1Apps.cs:168 LaunchAs mit mpv, MpvAudio.cs:42 ohne HoldUntilExit
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix9.Mpv_Startstellen() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix9\tests\Trendo.Core.Tests\RechteKernFix9Tests.cs:line 36
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0764 N3: jeder Blender-Lauf mit Trendo-Skript (--python-expr) startet mit --factory-startup (Quelltext durchsucht) [167 ms]
+  Fehlermeldung:
+   MainWindow.Kreatur.cs:36, MainWindow.ProgModeGarment.cs:377, ModelConverter.cs:75
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix9.Blender_factory_startup() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix9\tests\Trendo.Core.Tests\RechteKernFix9Tests.cs:line 57
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0764 M: kein System-Dialog und kein System-Launcher außerhalb von MainWindow.KidPicker.cs – über welche Variable auch immer [222 ms]
+  Fehlermeldung:
+   MainWindow.Files.cs:185, MainWindow.Files.cs:191
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix9.Dialoge_nur_im_Helfer() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix9\tests\Trendo.Core.Tests\RechteKernFix9Tests.cs:line 30
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 N2: eigenes mpv-/VLC-Fenster – Datei immer hinter „--“ (nie als Option lesbar) [11 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Collections differ
+           ↓ (pos 0)
+Expected: ["--", "-–x.mp3"]
+Actual:   ["--force-window=yes", "-–x.mp3"]
+           ↑ (pos 0)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix9.Player_mit_Trenner() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix9\tests\Trendo.Core.Tests\RechteKernFix9Tests.cs:line 49
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 5
+     Nicht bestanden: 5
+ Gesamtzeit: 5,6667 Sekunden
+exit 1

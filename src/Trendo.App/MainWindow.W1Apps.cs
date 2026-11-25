@@ -165,7 +165,7 @@ public partial class MainWindow
     private Control FileRow(FileInfo f, int i, string prefix, string? player = null)
     {
         var open = new Button { Name = $"{prefix}-open-{i}", Content = "Öffnen", FontSize = 11, Padding = new Thickness(10, 2) };
-        open.Click += (_, _) => { if (player is not null) LaunchAs(player, f.FullName); else Launch(f.FullName); };
+        open.Click += (_, _) => { if (player is not null) Play(f.FullName); else Launch(f.FullName); }; // T-0764 (9. Prüfrunde): mpv nur über MediaLibrary.Player (MpvSafe), Kinder: eigener Betrachter
         var folder = new Button { Name = $"{prefix}-folder-{i}", Content = "Ordner", FontSize = 11, Padding = new Thickness(10, 2) };
         folder.Click += (_, _) => Launch(f.DirectoryName ?? "");
         return new Border { Background = TileBg, CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 5), Child = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = {

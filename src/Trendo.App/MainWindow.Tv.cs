@@ -51,6 +51,7 @@ public sealed class MpvView : NativeControlHost
 
     public void Play(string url)
     {
+        if (!Trendo.Core.MpvSafe.TargetAllowed(url)) return; // T-0764 (9. Prüfrunde): nur http(s), rtmp(s), rtsp oder eigene lokale Datei
         Url = url;
         if (_proc is { HasExited: false } && Send("loadfile", url)) return; // schnelles Umschalten ohne Neustart
         Start(url);
@@ -61,19 +62,22 @@ public sealed class MpvView : NativeControlHost
         Kill();
         if (_hwnd == IntPtr.Zero || MpvPath is null || !File.Exists(MpvPath)) return;
         var psi = new ProcessStartInfo(MpvPath) { UseShellExecute = false, CreateNoWindow = true };
-        foreach (var a in Args(_hwnd.ToString(), Pipe, Muted, url)) psi.ArgumentList.Add(a);
+        var args = Args(_hwnd.ToString(), Pipe, Muted, url);
+        foreach (var a in args) psi.ArgumentList.Add(a);
         try { _proc = Process.Start(psi); } catch (System.ComponentModel.Win32Exception) { _proc = null; }
+        Trendo.Core.MpvSafe.HoldUntilExit(args, _proc); // 9. Prüfrunde: Tastendatei gesperrt, bis mpv endet
     }
 
     /// <summary>T-0746: Aufruf von mpv für eine Adresse – an einer Stelle, damit der Echtlauf genau diese Einstellungen mit dem echten mpv prüft.
     /// <paramref name="wid"/> = Fenster, in das mpv zeichnet (null: kein eingebettetes Fenster).</summary>
     public static List<string> Args(string? wid, string pipe, bool muted, string url)
     {
+        if (!Trendo.Core.MpvSafe.TargetAllowed(url)) throw new ArgumentException("Diese Adresse spielt Trendo nicht ab (nur http, https, rtmp, rtmps, rtsp oder eine eigene Datei).");
         var a = new List<string>(Trendo.Core.MpvSafe.Args()); // T-0764 (8. Prüfrunde): nichts aus %APPDATA%\mpv – keine Einstellungen, Skripte, Standardtasten
         a.AddRange(ExtraArgs);
         if (wid is not null) a.Add($"--wid={wid}");
         a.AddRange(["--no-terminal", "--force-window=yes", "--keep-open=yes", "--idle=yes", "--osc=yes", "--input-vo-keyboard=no", $"--user-agent={Xtream.UserAgent}", "--cache=yes",
-            "--demuxer-max-back-bytes=1GiB", "--demuxer-max-bytes=150MiB", "--hwdec=auto-safe", $"--input-ipc-server=\\\\.\\pipe\\{pipe}", muted ? "--mute=yes" : "--mute=no", url]);
+            "--demuxer-max-back-bytes=1GiB", "--demuxer-max-bytes=150MiB", "--hwdec=auto-safe", $"--input-ipc-server=\\\\.\\pipe\\{pipe}", muted ? "--mute=yes" : "--mute=no", "--", url]); // 9. Prüfrunde: „--“ – die Adresse ist nie eine Option
         return a;
     }
 
@@ -349,6 +353,7 @@ public partial class MainWindow
         url = real;
         TvApplyLanguage();
         if (TvPlayOverride is { } o) { o(slot, url); TvUpdateNow(); return true; }
+        if (!Trendo.Core.MpvSafe.TargetAllowed(url)) { _tvMsg = "✗ Diese Adresse spielt Trendo nicht ab – erlaubt sind http, https, rtmp, rtmps, rtsp und eigene Aufnahmen."; return false; } // T-0764 (9. Prüfrunde)
         if (MpvExe is null) { _tvMsg = "Zum Abspielen braucht Trendo den freien Player mpv – einmal „Player jetzt einrichten“ klicken."; return false; }
         var view = slot == "main" ? _tvPlayer : _tvMulti[int.Parse(slot[1..])];
         if (view is null) return false;
