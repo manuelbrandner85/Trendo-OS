@@ -30,6 +30,12 @@ public class Kreatur_Ui
             await w.KreaturBuild(false); Dispatcher.UIThread.RunJobs();
             var (args, visible) = Assert.Single(calls);
             Assert.False(visible); Assert.Contains("-b", args); Assert.Contains("--factory-startup", args);
+            // T-0764 (6. Prüfrunde E): kein Skriptpfad mit „--python“ – Blender liest die Datei selbst, prüft die SHA-256 des eingebauten Skripts
+            // und führt genau die gelesenen Bytes aus (kein Austausch zwischen Prüfen und Starten möglich)
+            Assert.DoesNotContain("--python", args);
+            var i = args.ToList().IndexOf("--python-expr"); Assert.True(i >= 0);
+            using (var s = Avalonia.Platform.AssetLoader.Open(new Uri("avares://TrendoOS/Assets/blender/trendo_kreatur.py")))
+                Assert.Contains(Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(s)), args[i + 1]);
             var opt = System.Text.Json.JsonDocument.Parse(args[^1]).RootElement;
             Assert.Equal("drache", opt.GetProperty("art").GetString()); Assert.Equal("gruen", opt.GetProperty("farbe").GetString());
             Assert.True(opt.GetProperty("bild").GetBoolean());

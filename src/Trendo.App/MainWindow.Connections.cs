@@ -43,6 +43,7 @@ public partial class MainWindow
     /// <summary>Ein Programm ausführen – im Testmodus nie echt. „visible“: eigenes Fenster (z. B. für den Anmeldecode von GitHub).</summary>
     async Task<(int Code, string Out)> ConnRun(string exe, IReadOnlyList<string> args, string cwd, IReadOnlyDictionary<string, string> env, bool visible = false)
     {
+        if (!DarfAusfuehrenStill("verbindung " + Path.GetFileName(exe), out var nein)) return (-1, nein); // T-0764 (6. Prüfrunde B): gh/git/claude (Erweiterungen, Hooks, Agent)
         if (ConnRunOverride is { } o) return await o(exe, args, cwd, env, visible);
         if (_opt.Isolated) throw new InvalidOperationException("Testmodus: es wird kein echtes Programm gestartet.");
         if (!visible) { var r = await Task.Run(() => Cli.Run(exe, args, cwd, 300000, env.ToDictionary())); return (r.Exit, r.Out + "\n" + r.Err); }
@@ -60,7 +61,7 @@ public partial class MainWindow
     public async Task GitHubCheck()
     {
         _ghChecked = true;
-        if (GhExe() is not { } gh) { _ghUser = null; return; }
+        if (!CanManageSoftware || GhExe() is not { } gh) { _ghUser = null; return; } // T-0764 (6. Prüfrunde B): Kinderprofil startet gh nicht (auch nicht zur Anzeige)
         try { var (_, outp) = await ConnRun(gh, GitHubLink.StatusArgs, Path.GetTempPath(), GhEnv()); _ghUser = GitHubLink.UserFrom(outp); }
         catch (InvalidOperationException e) { _ghUser = null; _connMsg = e.Message; }
     }

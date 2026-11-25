@@ -277,6 +277,7 @@ public partial class MainWindow
 
     public async Task MixamoToUnreal(ProgramDocument d)
     {
+        if (!DarfAusfuehren("spiel.mixamo.unreal", out _)) { _mxMsg = NurErwachseneEngine; GameRefresh(); return; } // T-0764 (6. Prüfrunde B): UnrealEditor-Cmd
         var built = d.Text("built");
         var uproject = built.Length > 0 && Directory.Exists(built) ? Directory.GetFiles(built, "*.uproject").FirstOrDefault() : null;
         if (uproject is null) { _mxMsg = "⚠ Erst „Bauen“ – dann holt Trendo die Animationen ins Unreal-Projekt."; GameRefresh(); return; }

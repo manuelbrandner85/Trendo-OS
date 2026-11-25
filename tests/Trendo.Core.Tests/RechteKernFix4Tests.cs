@@ -34,8 +34,8 @@ public class RechteKernFix4
     public void Liste_mit_HMAC()
     {
         var (f, tools, store) = Setup(); using var _ = f;
-        var dir = Install(f, tools, "notiz", ("notiz.exe", "MZ-echt"));
-        var exe = Path.Combine(dir, "notiz.exe");
+        var dir = Install(f, tools, "sumatra", ("SumatraPDF.exe", "MZ-echt")); // 6. Prüfrunde (A): Komponente der Erlaubnisliste
+        var exe = Path.Combine(dir, "SumatraPDF.exe");
         f.Core.Integrations.LaunchDirect(Principal.ChildProfile, exe, f.Core.Audit);
         Assert.Single(f.Launcher.Opened);
         Assert.True(File.Exists(Path.Combine(store, "programm-vertrauen.json")));
@@ -78,18 +78,24 @@ public class RechteKernFix4
     public void Neu_rechnen_und_DLL()
     {
         var (f, tools, _) = Setup(); using var _f = f;
-        var dir = Install(f, tools, "notiz", ("notiz.exe", "MZ-echt-AAAA"), ("helfer.dll", "MZ-dll"));
-        var exe = Path.Combine(dir, "notiz.exe");
+        var dir = Install(f, tools, "sumatra", ("SumatraPDF.exe", "MZ-echt-AAAA"), ("helfer.dll", "MZ-dll")); // 6. Prüfrunde (A): Komponente der Erlaubnisliste
+        var exe = Path.Combine(dir, "SumatraPDF.exe");
         f.Core.Integrations.LaunchDirect(Principal.ChildProfile, exe, f.Core.Audit);
         var t = File.GetLastWriteTimeUtc(exe);
         File.WriteAllText(exe, "MZ-boes-BBBB"); File.SetLastWriteTimeUtc(exe, t);
         Kind(f, exe);
+        Assert.False(ProgramTrust.Verified(exe, [tools]));
+        // 6. Prüfrunde: „zwei“ und „drei“ stehen nicht in der Erlaubnisliste – die Prüfung selbst (Verified) zeigt, dass die DLL erkannt wird
         var dir2 = Install(f, tools, "zwei", ("zwei.exe", "MZ-zwei"));
+        Assert.True(ProgramTrust.Verified(Path.Combine(dir2, "zwei.exe"), [tools]));
         File.WriteAllText(Path.Combine(dir2, "version.dll"), "MZ-boese-dll");
         Kind(f, Path.Combine(dir2, "zwei.exe"));
+        Assert.False(ProgramTrust.Verified(Path.Combine(dir2, "zwei.exe"), [tools]));
         var dir3 = Install(f, tools, "drei", ("drei.exe", "MZ-drei"), ("helfer.dll", "MZ-dll"));
+        Assert.True(ProgramTrust.Verified(Path.Combine(dir3, "drei.exe"), [tools]));
         File.WriteAllText(Path.Combine(dir3, "helfer.dll"), "MZ-dll-ausgetauscht");
         Kind(f, Path.Combine(dir3, "drei.exe"));
+        Assert.False(ProgramTrust.Verified(Path.Combine(dir3, "drei.exe"), [tools]));
         Assert.Single(f.Launcher.Opened);
     }
 

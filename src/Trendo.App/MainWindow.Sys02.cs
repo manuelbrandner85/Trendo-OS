@@ -322,7 +322,7 @@ public partial class MainWindow
     private string? Play(string file)
     {
         var p = MediaLibrary.Player(file, ToolPath("mpv"), Cli.Find("vlc"));
-        if (p is { } x) { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(x.Exe) { ArgumentList = { x.Args[0], x.Args[1] }, UseShellExecute = false }); _core.Audit.Append("app", "media.play", Path.GetFileName(file)); return Path.GetFileNameWithoutExtension(x.Exe); }
+        if (p is { } x && CanManageSoftware) { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(x.Exe) { ArgumentList = { x.Args[0], x.Args[1] }, UseShellExecute = false }); _core.Audit.Append("app", "media.play", Path.GetFileName(file)); return Path.GetFileNameWithoutExtension(x.Exe); }
         Launch(file); return null;
     }
 

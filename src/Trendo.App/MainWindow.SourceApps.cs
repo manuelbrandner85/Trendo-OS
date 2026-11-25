@@ -184,6 +184,7 @@ public partial class MainWindow
 
     async Task<int> SourceRun(string exe, string args, string dir, IReadOnlyDictionary<string, string> env, Action<string> line, CancellationToken ct)
     {
+        if (!DarfAusfuehrenStill("quellcode.bauen " + Path.GetFileName(exe), out var nein)) throw new UnauthorizedAccessException(nein); // T-0764 (6. Prüfrunde B): Build-Werkzeuge im Quellcode-Ordner
         if (SourceRunOverride is { } o) return await o(exe, args, dir, env, line, ct);
         if (_opt.Isolated) throw new InvalidOperationException("Testmodus: Programme aus dem Quellcode werden nicht wirklich eingerichtet.");
         var psi = new ProcessStartInfo(exe, args) { WorkingDirectory = dir, UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true,
@@ -295,6 +296,7 @@ public partial class MainWindow
     /// <summary>Starten: Web-Seite über Trendos lokalen Server, Web-Programm unsichtbar + Browser, sonst in einem Fenster mit Ausgabe (bleibt nach dem Ende offen).</summary>
     public async Task SourceStart(SourceApps.Installed e)
     {
+        if (!DarfAusfuehren("quellcode.start " + e.Id, out var nein)) { Say(nein, CurrentView); return; } // T-0764 (6. Prüfrunde B): startet Code aus dem Quellcode-Ordner
         var dir = SourceApps.Dir(_deps.ToolsRoot, e.Id);
         try
         {

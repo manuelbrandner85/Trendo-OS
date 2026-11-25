@@ -1,0 +1,119 @@
+T-0764 fix6 – gezielter App-Lauf: 194 Klassen (alle, die die geänderten Wege nutzen) in 5 Teilen + EveryButton_Alltag, je ein Prozess, Zeitlimit 3600 s.
+Danach eine letzte Änderung (GameEngineTest prüft die Rolle ohne Hinweisfenster, da auch im Hintergrund aufgerufen) – Nachlauf mit dem Endstand: Teil 00 komplett, GameStage3_Ui, alle RechteKern*-Oberflächenklassen, Kreatur_Ui.
+
+##### Hauptlauf
+=== Teil 00 (41 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    Browser ECHT (ohne Ersatz): Spiel von der Seite in Chrome – laufen, Münze, Wand, mit der Leertaste darüber springen, Ziel = gewonnen; zweites Spiel: Stacheln mit einem Leben = verloren, Leertaste startet neu; eigenes Bild wird geladen [FAIL]
+      Assert.Equal() Failure: Strings differ
+                 ↓ (pos 0)
+      Expected: "true"
+      Actual:   "false"
+                 ↑ (pos 0)
+      Stack Trace:
+        tests\Trendo.App.Tests\GameFreeUiTests.cs(217,0): at Trendo.App.Tests.GameFree_Ui.Browser_side_win_and_lose()
+        --- End of stack trace from previous location ---
+  Finished:    Trendo.App.Tests (ID = '618de29a74084e46f5eb0238dced2fd4e5efdeb97e47c7fcd15909a5e96b72b0')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 187, Errors: 0, Failed: 1, Skipped: 0, Not Run: 0, Time: 899,299s
+Waiting 10 seconds for foreground threads to exit...
+Teil 00 exit 1 (906 s)
+=== Teil 01 (40 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = '618de29a74084e46f5eb0238dced2fd4e5efdeb97e47c7fcd15909a5e96b72b0')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 126, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 182,568s
+Waiting 10 seconds for foreground threads to exit...
+Teil 01 exit 0 (186 s)
+=== Teil 02 (42 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = '618de29a74084e46f5eb0238dced2fd4e5efdeb97e47c7fcd15909a5e96b72b0')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 149, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 457,861s
+Waiting 10 seconds for foreground threads to exit...
+Teil 02 exit 0 (461 s)
+=== Teil 03 (32 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    SYS-03-P14: Seite als PDF – A4, Prüfsumme im Protokoll (nur wenn Chrome/Edge da) [SKIP]
+      Übersprungen: pdfinfo ist nicht installiert.
+  Finished:    Trendo.App.Tests (ID = '618de29a74084e46f5eb0238dced2fd4e5efdeb97e47c7fcd15909a5e96b72b0')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 333, Errors: 0, Failed: 0, Skipped: 1, Not Run: 0, Time: 932,307s
+Waiting 10 seconds for foreground threads to exit...
+Teil 03 exit 0 (937 s)
+=== Teil 04 (39 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+T-0727 B6 echt: 9 Modelle von Ollama, Grafikspeicher 11,9 GB → Standard qwen3:14b
+    T-0729: Ablauf im Kindprozess (Fenster, Chrome-Vorschau, LibreOffice-Export) [SKIP]
+      Läuft nur als Kindprozess von „Typischer Ablauf im Kindprozess“.
+  Finished:    Trendo.App.Tests (ID = '618de29a74084e46f5eb0238dced2fd4e5efdeb97e47c7fcd15909a5e96b72b0')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 132, Errors: 0, Failed: 0, Skipped: 1, Not Run: 0, Time: 127,491s
+Waiting 10 seconds for foreground threads to exit...
+Teil 04 exit 0 (129 s)
+=== Teil EB (1 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = '618de29a74084e46f5eb0238dced2fd4e5efdeb97e47c7fcd15909a5e96b72b0')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 184,553s
+Teil EB exit 0 (187 s)
+
+##### Nachlauf 1 (Endstand)
+=== Nachlauf mit Endstand (50 Klassen: Teil 00 komplett, GameStage3_Ui, alle RechteKern*-Oberflächenklassen, Kreatur_Ui; Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    [Test Case Cleanup Failure (Audio Mehrspur: Projekt anlegen, zwei Spuren, Clip mit der Maus verschieben, Stumm und Solo per Knopf, Abmischen öffnet eine Spur)] System.InvalidOperationException
+      System.InvalidOperationException : The calling thread cannot access this object because a different thread owns it.
+      Stack Trace:
+           at Avalonia.Threading.Dispatcher.<VerifyAccess>g__ThrowVerifyAccess|17_0()
+           at Avalonia.Threading.Dispatcher.VerifyAccess()
+           at Avalonia.Rendering.DefaultRenderLoop.Add(IRenderLoopTask i)
+           at Avalonia.Rendering.Composition.Server.ServerCompositor..ctor(IRenderLoop renderLoop, IPlatformGraphics platformGraphics, CompositionOptions options, BatchStreamObjectPool`1 batchObjectPool, BatchStreamMemoryPool batchMemoryPool)
+           at Avalonia.Rendering.Composition.Compositor..ctor(IRenderLoop loop, IPlatformGraphics gpu, Boolean useUiThreadForSynchronousCommits, ICompositorScheduler scheduler, Boolean reclaimBuffersImmediately, Dispatcher dispatcher, CompositionOptions options)
+           at Avalonia.Rendering.Composition.Compositor..ctor(IRenderLoop loop, IPlatformGraphics gpu, Boolean useUiThreadForSynchronousCommits)
+           at Avalonia.Rendering.Composition.Compositor..ctor(IPlatformGraphics gpu, Boolean useUiThreadForSynchronousCommits)
+           at Avalonia.Headless.AvaloniaHeadlessPlatform.Initialize(AvaloniaHeadlessPlatformOptions opts)
+           at Avalonia.Headless.AvaloniaHeadlessPlatformExtensions.<>c__DisplayClass0_0.<UseHeadless>b__0()
+           at Avalonia.AppBuilder.SetupUnsafe()
+           at Avalonia.Headless.HeadlessUnitTestSession.EnsureIsolatedApplication()
+           at Avalonia.Headless.HeadlessUnitTestSession.<>c__DisplayClass12_0`1.<DispatchCore>b__0()
+        --- End of stack trace from previous location ---
+           at Avalonia.Headless.XUnit.AvaloniaTestRunner.Run(IXunitTest test, IMessageBus messageBus, Object[] constructorArguments, ExplicitOption explicitOption, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, IReadOnlyCollection`1 beforeAfterAttributes, HeadlessUnitTestSession session)
+           at Avalonia.Headless.XUnit.AvaloniaTestRunner.Run(IXunitTest test, IMessageBus messageBus, Object[] constructorArguments, ExplicitOption explicitOption, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, IReadOnlyCollection`1 beforeAfterAttributes, HeadlessUnitTestSession session)
+  Finished:    Trendo.App.Tests (ID = '618de29a74084e46f5eb0238dced2fd4e5efdeb97e47c7fcd15909a5e96b72b0')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 220, Errors: 1, Failed: 0, Skipped: 0, Not Run: 0, Time: 420,793s
+Waiting 10 seconds for foreground threads to exit...
+Nachlauf exit 1 (423 s)
+
+##### Nachlauf 2 (Endstand, Wiederholung)
+=== Nachlauf 2 mit Endstand (dieselben 50 Klassen; Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = '618de29a74084e46f5eb0238dced2fd4e5efdeb97e47c7fcd15909a5e96b72b0')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 221, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 414,621s
+Waiting 10 seconds for foreground threads to exit...
+Nachlauf 2 exit 0 (417 s)

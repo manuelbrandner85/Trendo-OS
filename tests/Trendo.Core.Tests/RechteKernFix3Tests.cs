@@ -32,9 +32,10 @@ public class RechteKernFix3
     public void Herkunft()
     {
         var (f, tools) = Setup(); using var _ = f;
-        var zip = Zip(Path.Combine(f.Root, "q"), ("notiz/notiz.exe", "MZ-echt"));
-        var dir = Software.InstallPortable(Principal.LocalOwner, zip, ShaOf(zip), tools, "notiz", f.Core.Audit);
-        var exe = Path.Combine(dir, "notiz", "notiz.exe");
+        // 6. Prüfrunde (A): Kinder starten nur Programme der Erlaubnisliste – daher hier die Komponente „sumatra“ (Herkunftsprüfung unverändert)
+        var zip = Zip(Path.Combine(f.Root, "q"), ("SumatraPDF.exe", "MZ-echt"));
+        var dir = Software.InstallPortable(Principal.LocalOwner, zip, ShaOf(zip), tools, "sumatra", f.Core.Audit);
+        var exe = Path.Combine(dir, "SumatraPDF.exe");
         f.Core.Integrations.LaunchDirect(Principal.ChildProfile, exe, f.Core.Audit);
         Assert.Single(f.Launcher.Opened);
         // fremde exe in einen Ordner mit Kennung kopiert, eigener Ordner ohne Kennung, Altbestand ohne Prüfsummen
@@ -63,7 +64,11 @@ public class RechteKernFix3
         var (f, tools) = Setup(); using var _ = f;
         var zip = Zip(Path.Combine(f.Root, "q"), ("python.exe", "MZ-py"), ("spiel.exe", "MZ-spiel"));
         var dir = Software.InstallPortable(Principal.LocalOwner, zip, ShaOf(zip), tools, "python", f.Core.Audit);
-        var py = Path.Combine(dir, "python.exe"); var game = Path.Combine(dir, "spiel.exe");
+        var py = Path.Combine(dir, "python.exe");
+        // 6. Prüfrunde (A): Kinder starten nur Programme der Erlaubnisliste – das geprüfte Programm ist hier die Komponente „sumatra“
+        var zs = Zip(Path.Combine(f.Root, "s"), ("SumatraPDF.exe", "MZ-spiel"));
+        var game = Path.Combine(Software.InstallPortable(Principal.LocalOwner, zs, ShaOf(zs), tools, "sumatra", f.Core.Audit), "SumatraPDF.exe");
+        Assert.Throws<UnauthorizedAccessException>(() => f.Core.Integrations.LaunchArgs(Principal.ChildProfile, Path.Combine(dir, "spiel.exe"), f.Core.Audit, ["--fest"], internalCall: true));
         var doc = Path.Combine(f.Root, "brief.txt"); File.WriteAllText(doc, "x");
         Assert.Throws<UnauthorizedAccessException>(() => f.Core.Integrations.LaunchDirect(Principal.ChildProfile, py, f.Core.Audit));
         Assert.Throws<UnauthorizedAccessException>(() => f.Core.Integrations.LaunchDirect(Principal.ChildProfile, py, f.Core.Audit, "-m pip install x", userExe: true));
@@ -102,7 +107,12 @@ public class RechteKernFix3
         var pf = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Beispiel GmbH", "werkzeug.exe"); // 5. Prüfrunde: Blender ist jetzt ein Konsolen-Programm (nie für Kinder) – hier ein gewöhnliches Programm
         Assert.True(ProgramTrust.InFixedLocation(pf));
         Assert.False(ProgramTrust.InFixedLocation(foreign));
-        f.Core.Integrations.LaunchDirect(Principal.ChildProfile, pf, f.Core.Audit, ""); // FakeLauncher: nichts wird wirklich gestartet
+        // 6. Prüfrunde (A): Ein fester Ort allein reicht für einen Start im Kinderprofil nicht mehr – nur die Erlaubnisliste (InFixedLocation gilt weiter
+        // für Trendos eigene Hintergrund-Aufrufe, z. B. Blender -b mit Trendo-Skript)
+        var e = Assert.Throws<UnauthorizedAccessException>(() => f.Core.Integrations.LaunchDirect(Principal.ChildProfile, pf, f.Core.Audit, ""));
+        Assert.Equal(Rbac.NurErwachseneProgramm, e.Message);
+        Assert.Empty(f.Launcher.Opened);
+        f.Core.Integrations.LaunchDirect(Principal.LocalOwner, pf, f.Core.Audit, ""); // Erwachsene: wie bisher (FakeLauncher: nichts wird wirklich gestartet)
         Assert.Single(f.Launcher.Opened);
     }
 

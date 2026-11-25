@@ -46,6 +46,16 @@ public partial class MainWindow
         catch (UnauthorizedAccessException e) { why = e.Message; Toast(e.Message); return false; }
     }
     public const string NurErwachseneAusfuehren = "Programme, Skripte und Befehle ausführen darf nur ein Erwachsenen-Profil. Schreiben und Speichern geht weiter.";
+    /// <summary>T-0764 (6. Prüfrunde B): wie <see cref="DarfAusfuehren"/>, aber ohne Hinweisfenster – für zentrale Prüfungen, die auch aus einem
+    /// Hintergrund-Thread laufen (Engine-, Unreal-, Bibliotheks- und Claude-Aufrufe). Protokolliert „rbac.denied“.</summary>
+    internal bool DarfAusfuehrenStill(string what, out string why)
+    {
+        why = "";
+        try { Rbac.DemandSoftware(CurrentPrincipal, "code " + what, _core.Audit, NurErwachseneAusfuehren); return true; }
+        catch (UnauthorizedAccessException e) { why = e.Message; return false; }
+    }
+    /// <summary>T-0764 (6. Prüfrunde B): Hinweis im Spiele-Studio – Kinder spielen und prüfen in Trendos eigener Vorschau, ohne Engine.</summary>
+    public const string NurErwachseneEngine = "Godot, Unity und Unreal (bauen, prüfen, spielen, Paket) startet nur ein Erwachsenen-Profil. Dein Spiel läuft in Trendos eigener Vorschau.";
     internal bool LaunchAs(string exe, string arg, bool userExe = false) => LaunchTry(() => _core.Integrations.LaunchDirect(CurrentPrincipal, exe, _core.Audit, arg, userExe), exe);
     /// <param name="internalCall">T-0764 (P3-2): fester Aufruf aus Trendos Code (Programm und Parameter legt der Code fest).</param>
     internal bool LaunchArgsAs(string exe, IReadOnlyList<string> args, bool internalCall = true) => LaunchTry(() => _core.Integrations.LaunchArgs(CurrentPrincipal, exe, _core.Audit, args, internalCall), exe);

@@ -25,6 +25,7 @@ public partial class MainWindow
 
     (int Exit, string Log) UnrealRun(string exe, IReadOnlyList<string> args, string logFile, int timeoutMs)
     {
+        if (!DarfAusfuehrenStill("spiel.unreal " + Path.GetFileName(exe), out var nein)) return (-1, nein); // T-0764 (6. Prüfrunde B): Rolle zuerst, auch vor dem Testersatz
         if (UnrealRunOverride is { } o) { var r = o(exe, args); try { File.WriteAllText(logFile, r.Log); } catch (IOException) { } return r; }
         var run = Cli.Run(exe, args, Path.GetDirectoryName(logFile), timeoutMs);
         var log = File.Exists(logFile) ? File.ReadAllText(logFile) : "";
@@ -35,6 +36,7 @@ public partial class MainWindow
     /// <summary>Kompilieren, Unreal-Tests, Startlauf – Schritt für Schritt mit Meldung; Bericht im Projektordner „Trendo-Pruefung“.</summary>
     public async Task GameUnrealCheck(ProgramDocument d, bool screenshot = true)
     {
+        if (!DarfAusfuehren("spiel.unreal.pruefen", out _)) { _progMsg[GK] = NurErwachseneEngine; Show(GK); return; } // T-0764 (6. Prüfrunde B)
         var built = d.Text("built");
         var uproject = built.Length > 0 && Directory.Exists(built) ? Directory.GetFiles(built, "*.uproject").FirstOrDefault() : null;
         if (uproject is null) { _progMsg[GK] = "Bitte zuerst „Bauen“ – dann prüft Trendo das Unreal-Spiel."; Show(GK); return; }
@@ -168,6 +170,7 @@ public partial class MainWindow
     /// <summary>Spiel in Unreal starten (ohne Editor).</summary>
     public void GameUnrealPlay(ProgramDocument d)
     {
+        if (!DarfAusfuehren("spiel.unreal.spielen", out _)) { _progMsg[GK] = NurErwachseneEngine; return; } // T-0764 (6. Prüfrunde B): Process.Start des Editors
         var built = d.Text("built");
         var uproject = built.Length > 0 && Directory.Exists(built) ? Directory.GetFiles(built, "*.uproject").FirstOrDefault() : null;
         if (uproject is null) throw new InvalidOperationException("Bitte zuerst „Bauen“.");

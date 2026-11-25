@@ -167,7 +167,8 @@ public partial class MainWindow
         if (exe is not null)
         {
             var open = new Button { Name = "print-open-studio", Content = "In Bambu Studio öffnen", Background = Accent, IsEnabled = PrintFile is not null };
-            open.Click += (_, _) => { if (PrintFile is { } f && !_opt.Isolated) { try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(exe) { ArgumentList = { f }, UseShellExecute = false }); _core.Audit.Append(Principal.LocalOwner.Name, "3ddruck.slicer", Path.GetFileName(f)); } catch (System.ComponentModel.Win32Exception ex) { _prMsg = ex.Message; } } };
+            open.Click += (_, _) => { if (!CanManageSoftware) { _prMsg = Rbac.NurErwachseneProgramm; Toast(Rbac.NurErwachseneProgramm); _core.Audit.Append(CurrentPrincipal.Name, "rbac.denied", "User fehlt ManageSoftware: start bambu-studio"); return; } // T-0764 (6. Prüfrunde A): Bambu Studio nicht in der Erlaubnisliste
+                if (PrintFile is { } f && !_opt.Isolated) { try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(exe) { ArgumentList = { f }, UseShellExecute = false }); _core.Audit.Append(Principal.LocalOwner.Name, "3ddruck.slicer", Path.GetFileName(f)); } catch (System.ComponentModel.Win32Exception ex) { _prMsg = ex.Message; } } };
             slicer.Children.Add(open);
         }
         else

@@ -5,6 +5,17 @@ namespace Trendo.Core;
 /// <summary>CORE-05: 3D-Studio – steuert Blender im Hintergrund (ohne Fenster): Modell anlegen, Vorschau rendern, Formate umwandeln.</summary>
 public static class Studio3D
 {
+    /// <summary>T-0764 (6. Prüfrunde E): Startausdruck für Blender („--python-expr“) statt eines Skriptpfads. Blender liest die Datei einmal, prüft die
+    /// SHA-256 gegen <paramref name="sha256"/> und führt genau diese Bytes aus – sonst beendet es sich mit „TRENDO-SKRIPT-VERAENDERT“.
+    /// Der Pfad wird als JSON-Zeichenkette eingesetzt (auch ein gültiges Python-Zeichenkettenliteral).</summary>
+    public static string VerifiedScriptExpr(string scriptPath, string sha256)
+    {
+        if (sha256.Length != 64 || !sha256.All(Uri.IsHexDigit)) throw new ArgumentException("SHA-256 erwartet.", nameof(sha256));
+        var p = System.Text.Json.JsonSerializer.Serialize(Path.GetFullPath(scriptPath));
+        return $"import hashlib,sys;p={p};d=open(p,'rb').read();hashlib.sha256(d).hexdigest()=='{sha256.ToLowerInvariant()}' or sys.exit('TRENDO-SKRIPT-VERAENDERT');"
+             + "exec(compile(d,p,'exec'),{'__name__':'__main__','__file__':p})";
+    }
+
     public static readonly (string Id, string Label)[] Shapes = [("cube", "Würfel"), ("sphere", "Kugel"), ("monkey", "Affenkopf"), ("text", "3D-Schrift")];
     public static readonly (string Ext, string Label)[] Formats = [(".glb", "glTF (Web, Spiele)"), (".obj", "OBJ"), (".stl", "STL (3D-Druck)"), (".fbx", "FBX"), (".blend", "Blender-Datei")];
     public static readonly string[] Imports = [".glb", ".gltf", ".obj", ".stl", ".fbx", ".blend"];

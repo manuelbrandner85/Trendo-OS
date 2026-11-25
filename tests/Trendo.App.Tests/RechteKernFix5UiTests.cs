@@ -82,8 +82,8 @@ public class RechteKernFix5Ui
         var (c, cl, croot) = Open(true);
         try
         {
-            var dir = Path.Combine(croot, "werkzeuge", "notiz"); Directory.CreateDirectory(Path.Combine(dir, "daten"));
-            var exe = Path.Combine(dir, "notiz.exe"); File.WriteAllText(exe, "MZ"); File.WriteAllText(Path.Combine(dir, "daten", "a.txt"), "x");
+            var dir = Path.Combine(croot, "werkzeuge", "sumatra"); Directory.CreateDirectory(Path.Combine(dir, "daten")); // 6. Prüfrunde (A): Komponente der Erlaubnisliste
+            var exe = Path.Combine(dir, "SumatraPDF.exe"); File.WriteAllText(exe, "MZ"); File.WriteAllText(Path.Combine(dir, "daten", "a.txt"), "x");
             ProgramTrust.WriteMarker(dir, "notiz", "test");
             Assert.True(c.LaunchAs(exe));
             await c.ChildLaunchTask; Settle();

@@ -40,8 +40,10 @@ public class RechteKernFix2
         Assert.Throws<UnauthorizedAccessException>(() => f.Core.Integrations.LaunchDirect(Principal.ChildProfile, foreign, f.Core.Audit, "", userExe: true));
         Assert.Throws<UnauthorizedAccessException>(() => f.Core.Integrations.LaunchArgs(Principal.ChildProfile, "cmd.exe", f.Core.Audit, [foreign]));
         Assert.Empty(f.Launcher.Opened);
-        f.Core.Integrations.LaunchDirect(Principal.ChildProfile, own, f.Core.Audit);
+        // 6. Prüfrunde (A): Auch ein vertrauenswürdiges Trendo-Programm startet im Kinderprofil nur, wenn es in der Erlaubnisliste steht
+        Assert.Equal(Rbac.NurErwachseneProgramm, Assert.Throws<UnauthorizedAccessException>(() => f.Core.Integrations.LaunchDirect(Principal.ChildProfile, own, f.Core.Audit)).Message);
         f.Core.Integrations.LaunchDirect(Principal.ChildProfile, "https://example.org/", f.Core.Audit);
+        f.Core.Integrations.LaunchDirect(Principal.LocalOwner, own, f.Core.Audit);
         f.Core.Integrations.LaunchDirect(Principal.LocalOwner, foreign, f.Core.Audit);
         Assert.Equal(3, f.Launcher.Opened.Count);
         // andere Rollen (Agent, API) starten weiterhin gar nicht direkt

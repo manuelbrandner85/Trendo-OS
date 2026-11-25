@@ -54,10 +54,12 @@ public static class Rbac
         throw new UnauthorizedAccessException(message ?? NurErwachseneSoftware);
     }
 
-    /// <summary>T-0764 (2. Prüfrunde N-D): Hinweis, wenn ein Kinderprofil ein Programm oder einen Installer starten möchte.</summary>
     /// <summary>T-0764 (5. Prüfrunde H1): Hinweis für Programme mit eigener Skript-Konsole.</summary>
     public const string NurErwachseneKonsole = "Programme mit eigener Skript-Konsole (VS Code, Blender, Unreal, Godot, LibreOffice …) öffnet nur ein Erwachsenen-Profil.";
+    /// <summary>T-0764 (6. Prüfrunde A): Hinweis für Programme, die nicht in der Erlaubnisliste für Kinder stehen.</summary>
+    public const string NurErwachseneProgramm = "Dieses Programm öffnet nur ein Erwachsenen-Profil. Im Kinderprofil starten Trendos eigene Werkstätten (z. B. Malen, Musik, Texte) und der PDF-Betrachter.";
     /// <summary>T-0764 (5. Prüfrunde M1): älterer Stand ohne Eintrag in der geschützten Liste.</summary>
     public const string NurErwachseneNeuEinrichten = "Dieses Programm stammt aus einem älteren Trendo-Stand. Bitte einmal als Erwachsener neu einrichten – danach kann es auch dieses Profil starten.";
+    /// <summary>T-0764 (2. Prüfrunde N-D): Hinweis, wenn ein Kinderprofil ein Programm oder einen Installer starten möchte.</summary>
     public const string NurErwachseneStart = "Programme starten und einrichten darf nur ein Erwachsenen-Profil. Dokumente, Bilder, Musik und Videos kannst du weiter öffnen.";
 }

@@ -56,6 +56,29 @@ public static class ProgramTrust
         return Directory.EnumerateFiles(dir, "*", opt).Where(f => !string.Equals(System.IO.Path.GetFileName(f), Software.PortableMarker, StringComparison.OrdinalIgnoreCase)).Take(50_000);
     }
 
+    /// <summary>T-0764 (6. Prüfrunde C): Dateiendungen, die als Code gelten (ausführbar, ladbar oder von einem Interpreter gelesen) – sie bleiben in der
+    /// Ordnerprüfung immer streng, auch in Zwischenspeicher- und Protokollordnern. Ebenso Dateien ohne Endung. <c>.pyc</c> ist bewusst Code: Python führt
+    /// eine .pyc auch dann aus, wenn ihre Kopfdaten zur .py passen, der Inhalt aber ein anderer ist.</summary>
+    public static readonly HashSet<string> CodeExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".exe", ".dll", ".pyd", ".py", ".pyc", ".pyo", ".pyw", ".asar", ".js", ".mjs", ".cjs", ".lua", ".ps1", ".psm1", ".bat", ".cmd", ".vbs", ".vbe", ".wsf", ".wsh",
+        ".jar", ".class", ".com", ".scr", ".cpl", ".ocx", ".sys", ".msi", ".msp", ".hta", ".lnk", ".url", ".node", ".so", ".dylib", ".sh", ".rb", ".pl", ".php", ".tcl", ".gd", ".pck",
+    };
+
+    /// <summary>T-0764 (6. Prüfrunde C): Dateien, die ein Programm beim Laufen selbst anlegt und die die Ordnerprüfung nicht sperren sollen – Protokolle
+    /// (<c>*.log</c>) und alles in Ordnern namens <c>cache</c> oder <c>logs</c>, sofern es kein Code ist (<see cref="CodeExtensions"/>, keine Endung).
+    /// Nicht ausgenommen: Einstellungsdateien und -ordner (z. B. SumatraPDF-settings.txt, mpv „portable_config“), denn sie können Befehlszeilen oder
+    /// Skripte enthalten, und <c>__pycache__</c>/<c>.pyc</c> (siehe <see cref="CodeExtensions"/>).</summary>
+    public static bool IgnoredInFolderCheck(string folder, string file)
+    {
+        var ext = System.IO.Path.GetExtension(file);
+        if (ext.Length == 0 || CodeExtensions.Contains(ext)) return false;
+        if (string.Equals(ext, ".log", StringComparison.OrdinalIgnoreCase)) return true;
+        var rel = System.IO.Path.GetRelativePath(folder, file);
+        var parts = rel.Split(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
+        return parts[..^1].Any(p => p.Equals("cache", StringComparison.OrdinalIgnoreCase) || p.Equals("logs", StringComparison.OrdinalIgnoreCase));
+    }
+
     /// <summary>Einträge (Pfad, Prüfsumme) in die geschützte Liste schreiben – erzeugt den Schlüssel, falls es noch keinen gibt.</summary>
     static void Record(IEnumerable<(string Path, string Sha)> items)
     {
@@ -111,7 +134,7 @@ public static class ProgramTrust
         if (DirFor(full) is not { } d || Key(d, create: false) is not { } key) return false;
         var map = Load(d).ToDictionary(e => Norm(e.Path), StringComparer.Ordinal);
         if (!Listed(d, key, map, full)) return false;
-        try { return Programs(folder).All(f => Listed(d, key, map, f)); }
+        try { return Programs(folder).All(f => Listed(d, key, map, f) || IgnoredInFolderCheck(folder, f)); } // 6. Prüfrunde C: Protokolle, Zwischenspeicher
         catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return false; }
     }
 
@@ -260,6 +283,33 @@ public static class ProgramTrust
         "studio64", "eclipse", "notepad++", "sublime_text", "atom", "arduino", "arduino ide", "processing", "spyder", "jupyter", "jupyter-lab", "thonny", "idle", "kate", "geany",
         "unity", "unity hub", "excel", "winword", "powerpnt", "msaccess",
     };
+
+    /// <summary>T-0764 (6. Prüfrunde A): ERLAUBNISLISTE für das Kinderprofil – statt einer Sperrliste, die nie vollständig wird. Ein Kind startet ein
+    /// fremdes Programm nur, wenn es genau diese Vollpaket-Komponente ist (Ordner direkt unter einem angemeldeten Programmordner + Pfad darin) UND
+    /// geprüft ist (geschützte Liste, ganzer Ordner unverändert). Aufgenommen sind nur reine Betrachter ohne Skript-Konsole, Makros oder Erweiterungen:
+    /// <list type="bullet">
+    /// <item>SumatraPDF (Komponente „sumatra“): PDF-, E-Book- und Comic-Betrachter; keine Skripte, keine Erweiterungen.</item>
+    /// </list>
+    /// Bewusst NICHT aufgenommen (geprüft): mpv (eingebaute Konsole mit Befehl „run“ startet beliebige Programme; Lua-Skripte aus dem Benutzerordner),
+    /// VLC (Lua-Erweiterungen), Krita, GIMP, Inkscape (Python-Erweiterungen/Skript-Konsole), OBS (Python/Lua-Skripte), Audacity (Makros, Nyquist,
+    /// mod-script-pipe), Kdenlive, LibreOffice (Makros), Blender, Godot, Unreal, Unity, alle Editoren, f3d (Befehlskonsole), mGBA (Lua-Skripte),
+    /// scrcpy/adb (steuert das Handy), 7-Zip, Git, Python. Trendos eigene Werkstätten laufen in Trendo selbst und brauchen keinen Eintrag.</summary>
+    public static readonly IReadOnlyList<(string Component, string Exe)> ChildPrograms = [("sumatra", "SumatraPDF.exe")];
+
+    /// <summary>T-0764 (6. Prüfrunde A): Steht <paramref name="exe"/> in der Erlaubnisliste für Kinder – Abgleich am Programmordner (Komponente) und am
+    /// genauen Pfad darin, nicht nur am Dateinamen? (Die Prüfung „unverändert“ macht der Aufrufer über die geschützte Liste.)</summary>
+    public static bool InChildAllowList(string exe)
+    {
+        string full;
+        try { full = System.IO.Path.GetFullPath(exe.Trim().Trim('"')); } catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { return false; }
+        foreach (var root in Stores.Keys)
+        {
+            if (!full.StartsWith(root, StringComparison.OrdinalIgnoreCase)) continue;
+            var rel = full[root.Length..];
+            if (ChildPrograms.Any(c => string.Equals(rel, System.IO.Path.Combine(c.Component, c.Exe), StringComparison.OrdinalIgnoreCase))) return true;
+        }
+        return false;
+    }
 
     public static bool IsConsoleProgram(string path)
     {

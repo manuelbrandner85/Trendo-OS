@@ -133,6 +133,28 @@ public sealed class Integrations(ApprovalGate gate, ProjectStore projects, IProc
         if (!internalCall && rawArgs is not null)
             foreach (var a in rawArgs.Where(a => a.Trim().Length > 0))
                 if (!File.Exists(a.Trim('"')) && !Directory.Exists(a.Trim('"'))) No("Parameter " + (a.Length > 40 ? a[..40] : a)); // P3-2: keine freien Parameter
+        // T-0764 (6. Prüfrunde A): ERLAUBNISLISTE statt Sperrliste – ein Programm startet im Kinderprofil nur, wenn es genau eine erlaubte
+        // Vollpaket-Komponente ist (Programmordner + Pfad, nicht nur der Name) UND geprüft (geschützte Liste, ganzer Ordner unverändert).
+        // Alles andere (Krita, GIMP, Inkscape, OBS, Audacity, Editoren, Programme unter „Programme“ …) öffnet nur ein Erwachsenen-Profil.
+        foreach (var p in userTargets.Append(exe))
+        {
+            if (p is null || ProgramFullPath(p, p == exe) is not { } full) continue;
+            if (string.Equals(full, Environment.ProcessPath, StringComparison.OrdinalIgnoreCase)) continue; // Trendo selbst (z. B. zweites Fenster)
+            if (!(Sys.ProgramTrust.InChildAllowList(full) && TrustedProgramPath?.Invoke(full) == true))
+                Rbac.DemandSoftware(by, "start " + Path.GetFileName(full), audit, Rbac.NurErwachseneProgramm);
+        }
+    }
+
+    /// <summary>Voller Pfad, wenn <paramref name="p"/> ein Programm ist (.exe als Ziel; das Programm eines Aufrufs immer), sonst null.</summary>
+    static string? ProgramFullPath(string p, bool isExe)
+    {
+        var t = p.Trim().Trim('"');
+        try
+        {
+            if (isExe) return Path.IsPathFullyQualified(t) ? Path.GetFullPath(t) : t; // Programm ohne Pfad (z. B. „krita“) – nie in der Erlaubnisliste
+            return Path.IsPathFullyQualified(t) && string.Equals(Path.GetExtension(t), ".exe", StringComparison.OrdinalIgnoreCase) ? Path.GetFullPath(t) : null;
+        }
+        catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { return isExe ? t : null; }
     }
 
     /// <summary>Direkter Start per Klick (Dock/Schnellstart, Dateien öffnen). Kein Agent darf das; wird auditiert.

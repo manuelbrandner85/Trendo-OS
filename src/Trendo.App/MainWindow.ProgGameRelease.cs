@@ -107,6 +107,7 @@ public partial class MainWindow
     /// <summary>Vorschlag 12: fertiges Windows-Spiel aus dem Unreal-Projekt – Unreals Paketierer (BuildCookRun, Shipping) und ein ZIP zum Weitergeben.</summary>
     public async Task GameUnrealPackage(ProgramDocument d, string outDir)
     {
+        if (!DarfAusfuehren("spiel.unreal.paket", out _)) { _progMsg[GK] = NurErwachseneEngine; Show(GK); return; } // T-0764 (6. Prüfrunde B): RunUAT
         var built = d.Text("built");
         var uproject = built.Length > 0 && Directory.Exists(built) ? Directory.GetFiles(built, "*.uproject").FirstOrDefault() : null;
         if (uproject is null) { _progMsg[GK] = "Zuerst „Bauen“ – dann packt Trendo das Unreal-Spiel."; Show(GK); return; }

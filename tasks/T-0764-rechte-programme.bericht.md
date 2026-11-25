@@ -295,6 +295,155 @@ Angepasste bestehende Tests (wegen der strengeren Regeln, nicht abgeschwächt):
 - Ohne Sperrlisten-Auskunft im Zwischenspeicher gilt eine Signatur nicht. Das Netz wird nicht abgefragt.
 - Weiter gilt: Unter einem gemeinsamen Windows-Konto ist der Kinderschutz keine harte Grenze.
 
+## Sechste Prüfrunde (Commit „T-0764 fix6“)
+
+Grundlage ist die Gegenprüfung von `f99bd3045`. Sie hatte zwei hohe Befunde (A, B) und drei niedrige (C, D, E).
+
+**Rot auf f99bd3045:**
+- `reports/T-0764/rot-fix6-core.log`: 11 von 17 rot. Darunter alle Fälle der Erlaubnisliste (A) und die vier erlaubten Fälle bei Zwischenspeicher und Protokollen (C).
+- `reports/T-0764/rot-fix6-app.log`: 4 von 4 rot.
+  - B: Godot/Unity (`G.exe` lief), Unreal (`Build.bat`, `UnrealEditor-Cmd.exe`, `UnrealEditor.exe` liefen), Spiele-Bibliothek und Kittl.
+  - E: Kreatur übergab `--python <Datei im Zwischenspeicher>`.
+- Der Test für den Startausdruck (E) kam erst mit der neuen Hilfsfunktion dazu. Er ist deshalb nur grün belegt.
+
+### A – Erlaubnisliste statt Sperrliste
+
+**Was gilt jetzt:** Im Kinderprofil startet ein Programm (.exe) nur, wenn beides zutrifft:
+1. Es ist genau eine erlaubte Vollpaket-Komponente: Programmordner direkt unter einem angemeldeten Werkzeugordner plus genauer Pfad darin, nicht nur der Dateiname (`ProgramTrust.ChildPrograms`, `InChildAllowList`).
+2. Es ist geprüft: Eintrag in der geschützten HMAC-Liste, der ganze Ordner ist unverändert (M2).
+
+Die Prüfung sitzt zentral in `Integrations.DemandLaunch`. Sie gilt für Ziele und Programme, mit und ohne `internalCall`. Ein fester Ort wie „Programme“ reicht nicht mehr. `InFixedLocation` gilt nur noch für Trendos eigene Hintergrundaufrufe, zum Beispiel Blender `-b` mit Trendo-Skript.
+
+Alles andere bekommt den Hinweis `Rbac.NurErwachseneProgramm`: „Dieses Programm öffnet nur ein Erwachsenen-Profil. Im Kinderprofil starten Trendos eigene Werkstätten … und der PDF-Betrachter.“ Programme mit Skript-Konsole bekommen weiter `NurErwachseneKonsole`. Die Konsolen-Liste bleibt als zusätzliche Sicherung.
+
+**Jeder Eintrag geprüft:**
+
+| Programm | Entscheidung | Grund |
+|---|---|---|
+| SumatraPDF (`sumatra\SumatraPDF.exe`) | erlaubt | Reiner Betrachter, keine Skripte, keine Erweiterungen |
+| mpv | nicht erlaubt | Eingebaute Konsole mit Befehl `run` startet beliebige Programme; lädt Lua-Skripte aus dem Benutzerordner |
+| VLC | nicht erlaubt | Lua-Erweiterungen |
+| mGBA | nicht erlaubt | Lua-Skripte |
+| f3d | nicht erlaubt | Befehlskonsole |
+| Krita, GIMP, Inkscape | nicht erlaubt | Python-Erweiterungen bzw. Skript-Konsole |
+| OBS | nicht erlaubt | Python- und Lua-Skripte |
+| Audacity | nicht erlaubt | Makros, Nyquist, mod-script-pipe |
+| Kdenlive, LibreOffice | nicht erlaubt | Skripte bzw. Makros |
+| Blender, Godot, Unreal, Unity, alle Editoren | nicht erlaubt | Skript-Konsole, führen Projektcode aus |
+| scrcpy/adb | nicht erlaubt | Steuert das Handy |
+| 7-Zip, Git, Python | nicht erlaubt | Interpreter und Werkzeuge |
+
+Trendos interne mpv-Nutzung bleibt, denn sie hat keine Tastatur und keine Konsole:
+- Der Fernseh-Player ist eingebettet und läuft mit `--input-vo-keyboard=no` und `--no-terminal`; gesteuert wird er über eine Pipe.
+- Der Ton-Player hat kein Fenster.
+
+**Ehrlich festgehalten:**
+- Kinder können kreative Fremdprogramme wie Krita, GIMP, Inkscape, OBS oder Audacity nicht mehr selbst starten.
+- Trendos eigene Malwerkstatt und die übrigen eigenen Werkstätten bleiben nutzbar.
+- Auch von Trendo eingerichtete, geprüfte Programme außerhalb der Liste (GitHub- und Portable-Programme) startet nur ein Erwachsener.
+- An der Oberfläche:
+  - „Im Player öffnen“ (mpv/VLC) öffnet für Kinder das Windows-Programm des Dateityps; dabei gilt die zentrale Dokumentprüfung.
+  - „In Bambu Studio öffnen“ zeigt den Hinweis.
+
+**Tests:**
+- Core `RechteKernFix6.Erlaubnisliste_nicht_drin` (Krita, OBS, Inkscape, Audacity, GIMP, eigenes Programm – eingerichtet und unverändert, trotzdem nein; Erwachsene ja).
+- Core `Erlaubnisliste_Sumatra` (richtige Komponente ja; gleicher Name in anderem Ordner, tiefer verschachtelt oder unter „Programme“ nein; ausgetauschte Datei nein).
+
+### B – Spiele-Studio und weitere Ausführwege
+
+**Neu geschützt mit `DarfAusfuehren`, Rolle als erste Prüfung.** Zentral auch ohne Hinweisfenster über `DarfAusfuehrenStill`, das aus Hintergrund-Threads laufen kann und vor jedem Testersatz greift:
+
+| Stelle | Was dort ausgeführt wird |
+|---|---|
+| `ProgGameEngines.EngineRun` (zentral) + `GameEngineTest` | Godot: Import, Level-, Spiel- und Spielstand-Prüfung. Unity: EditMode und PlayMode |
+| `ProgGameUnreal.UnrealRun` (zentral) + `GameUnrealCheck` + `GameUnrealPlay` | `Build.bat`, `UnrealEditor-Cmd`, Welt und Mensch, Editor mit `Process.Start` |
+| `ProgGameRelease.GameUnrealPackage` | RunUAT (Paket) |
+| `ProgGameMixamo.MixamoToUnreal` | UnrealEditor-Cmd |
+| `GameLibrary.LibStart` (zentral) + `LibPlayGodot` | Godot-Projekte aus der Bibliothek, mGBA |
+| `PodDesigner.KittlCli` + `PodKittlLogin` | Claude Code (`mcp …`, Anmelde-Konsole) |
+| `SourceApps.SourceRun` (zentral) + `SourceStart` | Build-Werkzeuge im Quellcode-Ordner, Start der Quellcode-Programme |
+| `Connections.ConnRun` (zentral) | gh, git, claude. Den GitHub-Status fragt das Kinderprofil gar nicht erst ab |
+| `Print3D` „In Bambu Studio öffnen“ | `Process.Start`; Kinder bekommen den Hinweis (A) |
+| `Sys02` „Im Player öffnen“ | `Process.Start` mpv/VLC; Kinder öffnen das Windows-Programm über die zentrale Prüfung |
+
+Kinder spielen und prüfen weiter in Trendos eigener Vorschau ohne Engine. Der Hinweis ist `NurErwachseneEngine`.
+
+**Schon vorher geschützt (4./5. Prüfrunde):**
+- Code-Werkstatt, Code mit KI (Tests, Claude-Änderungen), n8n/Node-RED (Einrichten und Start), Hochladen (butler/SteamCMD), Claude Code und Claude-Erweiterungen, Blender-Anprobe.
+- npm-Einrichtungen (axe-core, FreeSewing, glTF-Transform) und alle Installer (Programme, Telegram, Tailscale, KI-Quellen) laufen nur nach einer Freigabe, die ein Kind nicht erteilen kann.
+
+**Systematisch durchgesehen und nicht geändert, weil kein Code aus Nutzerordnern ausgeführt wird:**
+- Medien- und Datenwerkzeuge mit festen Trendo-Aufrufen: FFmpeg (viele Stellen), whisper.cpp, Tesseract, pdftoppm, qpdf.
+- Entpacken mit 7-Zip, Drucken mit SumatraPDF, Defender-Prüfung, Drucken zu PDF mit Edge/Chrome, Browser-App-Fenster.
+- Interner mpv (Fernsehen, Ton), adb/scrcpy, netsh.
+- Bambu-Studio-Befehlszeile (Slicen eines Modells).
+- `git clone` (Klonen führt keinen Code des Repos aus).
+- Syntaxprüfung mit `py_compile` und `node --check` (führt nichts aus).
+- Versionsabfragen (`--version`).
+- Trendo selbst (zweites Fenster, Stick-Schreiber mit Windows-Rückfrage), `ollama serve`, Deinstallation.
+
+**Tests:**
+- App `RechteKernFix6Ui.Engines_Kind`: Kind startet nichts, Erwachsene wie bisher.
+- App `Unreal_Kind`.
+- App `Bibliothek_und_Kittl_Kind`.
+
+### C – Zwischenspeicher und Protokolle
+
+`ProgramTrust.IgnoredInFolderCheck`: Die Ordnerprüfung übergeht diese Dateien, sofern sie kein Code sind:
+- `*.log`,
+- alles in Ordnern namens `cache` oder `logs`.
+
+Code bleibt immer streng (`ProgramTrust.CodeExtensions`): `.exe`, `.dll`, `.pyd`, `.py`, `.pyc`, `.asar`, `.js`, `.lua`, `.ps1`, `.bat`, `.cmd`, `.vbs`, `.jar` und weitere sowie Dateien ohne Endung.
+
+Nicht ausgenommen, ehrlich festgehalten:
+- **`.pyc` und `__pycache__`:** Python führt auch eine `.pyc` aus, deren Kopfdaten (Zeit, Größe) zur `.py` passen, deren Inhalt aber ein anderer ist. Die Prüfung „passende .py ist geprüft“ wäre deshalb wackelig.
+- **Portable Einstellungsordner und -dateien:** Sie können Befehlszeilen oder Skripte enthalten, zum Beispiel `SumatraPDF-settings.txt` (`InverseSearchCmdLine`) oder mpv `portable_config`.
+
+Ein Programm, das dort schreibt, richtet ein Erwachsener danach einmal neu ein.
+
+**Test:** Core `RechteKernFix6.Zwischenspeicher` mit 10 Fällen.
+
+### E – Kreatur-Skript
+
+Blender bekommt keinen Skriptpfad mehr, sondern `--python-expr` mit einem kurzen Startausdruck (`Studio3D.VerifiedScriptExpr`). Blender liest die Datei einmal, vergleicht die SHA-256 mit dem eingebauten Inhalt und führt genau diese Bytes aus. Ein Austausch zwischen Prüfen und Starten ist so nicht möglich; eine veränderte Datei bricht mit „TRENDO-SKRIPT-VERAENDERT“ ab.
+
+Der Pfad wird als JSON-Zeichenkette eingesetzt, Anführungszeichen sind maskiert. Eine ungültige Prüfsumme lehnt die Funktion ab.
+
+**Tests:**
+- App `Kreatur_Ui` (verschärft: kein `--python`, Prüfsumme des eingebauten Skripts im Ausdruck).
+- Core `RechteKernFix6.Skript_Startausdruck`.
+
+### D
+
+Wie vereinbart nicht geändert. Bleibt als niedriger, offener Punkt aus der Gegenprüfung bestehen.
+
+### Angepasste bestehende Tests
+
+Grund ist die Erlaubnisliste; abgeschwächt ist keiner:
+- Fix2 `Zentral_im_Kern`: Ein vertrauenswürdiges Trendo-Programm ist für Kinder jetzt abgelehnt, mit Meldung.
+- Fix3 `Herkunft`, `Interpreter_und_Parameter`, Fix4 `Liste_mit_HMAC`, `Neu_rechnen_und_DLL`, Fix5 `Ganzer_Ordner`, Fix2Ui `Starten_zentral` und Fix5Ui `Pruefung_im_Hintergrund`: Der erlaubte Fall nutzt jetzt die Komponente `sumatra\SumatraPDF.exe`.
+  - In `Neu_rechnen_und_DLL` prüft zusätzlich `Verified` direkt, dass DLLs erkannt werden.
+  - `Interpreter_und_Parameter` prüft zusätzlich, dass ein geprüftes Programm außerhalb der Liste abgelehnt wird.
+- Fix3 `Feste_Orte`: Ein Programm unter „Programme“ ist für Kinder jetzt abgelehnt (`NurErwachseneProgramm`); Erwachsene wie bisher.
+
+### Tests gesamt
+
+- Build: 0 Fehler.
+- Core gezielt: 208 von 208 grün (`gruen-fix6-core.log`).
+- App gezielt (`gruen-fix6-app.log`): 194 Klassen, die die geänderten Wege nutzen, in 5 Prozessen plus EveryButton_Alltag, zusammen 928 Tests. Teil 01 bis 04 und EveryButton liefen mit Exitcode 0.
+- Teil 00 hatte einen roten Test: den echten Chrome-Lauf `GameFree_Ui.Browser_side_win_and_lose` (Zeitverhalten unter Last). Er hängt nicht an dieser Änderung.
+- Danach kam eine letzte Änderung: `GameEngineTest` prüft die Rolle ohne Hinweisfenster, weil die Funktion auch im Hintergrund läuft.
+- Nachlauf mit dem Endstand: Teil 00 komplett, GameStage3_Ui, alle RechteKern-Oberflächenklassen und Kreatur_Ui, zusammen 221 Tests.
+  - Nachlauf 1: kein roter Test, aber Exitcode 1. Grund ist ein Aufräumfehler des Avalonia-Testrahmens nach einem Audio-Test („different thread owns it“).
+  - Nachlauf 2: 0 rot, Exitcode 0.
+
+### Grenzen und offene Punkte
+
+- **KI-Programme:** Trendos eigene KI-Programme (Python-Umgebungen für Musik, Bilder, IFC) und Werkzeuge wie FFmpeg liegen im Werkzeugordner. Ein Erwachsener hat sie eingerichtet, der Ordner ist für das Windows-Konto beschreibbar. Sie laufen mit festen Trendo-Aufrufen auch im Kinderprofil, ihre Dateien werden aber nicht vor jedem Start gehasht.
+- **Weitere Blender-Skripte:** Im Kern übergeben Studio3D, PlanPhoto, Mixamo und ModelConverter weiter `--python <Datei>`. E ist nur für die Kreatur umgesetzt.
+- **Dokumente:** Sie öffnet Windows mit dem Standardprogramm des Dateityps. Das kann ein Programm außerhalb der Erlaubnisliste sein.
+- **Gemeinsames Konto:** Unter einem gemeinsamen Windows-Konto ist der Kinderschutz weiter keine harte Grenze.
+
 ## Abnahmekriterien
 
 | # | Kriterium | Urteil |

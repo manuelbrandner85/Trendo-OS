@@ -67,8 +67,8 @@ public class RechteKernFix5
     public void Ganzer_Ordner(string rel, bool replace)
     {
         var (f, tools) = Setup(); using var _f = f;
-        var dir = Install(f, tools, "app", ("app.exe", "MZ-app"), ("resources/app.asar", "ASAR-echt"));
-        var exe = Path.Combine(dir, "app.exe");
+        var dir = Install(f, tools, "sumatra", ("SumatraPDF.exe", "MZ-app"), ("resources/app.asar", "ASAR-echt")); // 6. Prüfrunde (A): Komponente der Erlaubnisliste
+        var exe = Path.Combine(dir, "SumatraPDF.exe");
         f.Core.Integrations.LaunchDirect(Principal.ChildProfile, exe, f.Core.Audit);
         Assert.Single(f.Launcher.Opened);
         var p = Path.Combine(dir, rel); Directory.CreateDirectory(Path.GetDirectoryName(p)!);
