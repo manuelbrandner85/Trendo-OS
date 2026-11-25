@@ -171,7 +171,8 @@ public partial class MainWindow
     private readonly HashSet<string> _pageMoreOpen = [];
     /// <summary>Seiten, die eine geschlossene Arbeitsfläche sind oder von anderen gepflegt werden; sie bleiben, wie sie sind.</summary>
     // T-0717: „ki-rollen“ – Auftrag, „Rolle starten“ und dessen Rückgängig/Wiederholen sind der Hauptinhalt; vorher blieb die Seite knapp unter der Grenze und ganz sichtbar
-    private static readonly HashSet<string> NoPageMore = ["start", "studios", "ki-rollen"];
+    // T-0765: „baukasten“ – der App-Designer (Seiten, Bausteine, Vorschau, Eigenschaften) ist die Arbeitsfläche; vorher lag er in „Einfach“ ganz hinter „Mehr anzeigen“
+    private static readonly HashSet<string> NoPageMore = ["start", "studios", "ki-rollen", "baukasten"];
     private static readonly HashSet<string> NoPageMoreStudios = ["STUDIO-MUSIK-01", "STUDIO-TV-01", "SPEC-15", "CORE-08", "CORE-07"];
 
     private static StackPanel? MainStack(Control c)

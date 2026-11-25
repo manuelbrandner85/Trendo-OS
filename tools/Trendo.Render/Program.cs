@@ -545,6 +545,13 @@ else if (shot == "seite")
     if (Environment.GetEnvironmentVariable("TRENDO_CHECKUP") == "1") // T-0763: „Alles prüfen“ mit Ergebnis zeigen
     { win.RunCheckupAsync().GetAwaiter().GetResult(); Avalonia.Threading.Dispatcher.UIThread.RunJobs(); }
     win.Show(page);
+    if (Environment.GetEnvironmentVariable("TRENDO_BUILDER_DEMO") is { Length: > 0 } builderDemo && page == "baukasten") // T-0765: App-Baukasten mit Vorlage „Einkaufsliste“ (liste | formular | text)
+    {
+        win.BuilderUseTemplate("einkaufsliste");
+        if (builderDemo == "formular") { win.BuilderGoTo(1); win.BuilderSel = 2; win.Show(page); }
+        else if (builderDemo == "text") win.BuilderEditInline(0);
+        else { win.BuilderSel = 2; win.Show(page); }
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_3D_DEMO") is "bearbeiten") // T-0691: Bearbeitungsmodus zeigen (Würfel, Flächen gewählt und extrudiert)
     {
         win.Studio3DAddShape("cube"); win.Studio3DEditMode(true); win.Studio3DSelectMode("flaeche");

@@ -33,7 +33,7 @@ public class T0716_HuelleE4Tests(ITestOutputHelper output)
             Assert.Empty(Directory.GetFiles(dir, "*.tmp"));
             Assert.Equal("Neu", SitePage.Load(f).Title);
             // neuere Fassung: verständlich abgelehnt, Datei bleibt unverändert
-            var newer = text.Replace("\"Version\": 1", "\"Version\": 2");
+            var newer = text.Replace("\"Version\": 1", $"\"Version\": {SitePage.FormatVersion + 1}"); // T-0765: Fassung 2 (Apps) kennt Trendo jetzt – „neuer“ ist die übernächste
             File.WriteAllText(f, newer);
             var ex = Assert.Throws<InvalidDataException>(() => SitePage.Load(f));
             Assert.Contains("neueren Trendo-Fassung", ex.Message);

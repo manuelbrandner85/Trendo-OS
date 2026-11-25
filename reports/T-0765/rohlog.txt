@@ -1,0 +1,91 @@
+14:48:56.081 Browser: C:\Program Files\Google\Chrome\Application\chrome.exe 157.0.8103.79
+14:48:56.230 ZIP: <temp>\Einkaufsliste.zip (3797 Bytes), entpackt nach <temp>\entpackt
+14:48:56.251 [Lauf 1] Chrome gestartet, PID 3596, Profil <temp>\profil
+14:48:56.715 [Lauf 1] Netz: file:///<temp>/entpackt/index.html
+14:48:56.860 OK    Start: nur Seite „Liste“ sichtbar → liste
+14:48:56.861 Liste: (leer) Noch nichts auf der Liste – tippe auf „Etwas hinzufügen“.
+14:48:56.861 Auswertung: Noch zu kaufen 0 | Summe in € 0
+14:48:56.862 OK    Anzahl und Summe 0
+14:48:56.869 Klick auf #seite-liste a.btn[href='#seite-neu'] bei (97,368)
+14:48:57.051 OK    Knopf „Etwas hinzufügen“ führt zur zweiten Seite → neu
+14:48:57.096 Klick auf #seite-neu form button[type=submit] bei (79,476)
+14:48:57.259 OK    Pflichtfeld: leeres Formular wird abgelehnt → „Bitte ausfüllen: Artikel.“
+14:48:57.260 OK    nichts gespeichert
+14:48:57.266 Klick auf #seite-neu input[name=artikel] bei (226,253)
+14:48:57.426 Getippt in #seite-neu input[name=artikel]: „Milch“
+14:48:57.429 Klick auf #seite-neu input[name=menge] bei (226,337)
+14:48:57.592 Getippt in #seite-neu input[name=menge]: „2“
+14:48:57.595 Klick auf #seite-neu input[name=preis] bei (226,421)
+14:48:57.759 Getippt in #seite-neu input[name=preis]: „1.29“
+14:48:57.762 Klick auf #seite-neu form button[type=submit] bei (79,512)
+14:48:57.927 Klick auf #seite-neu input[name=artikel] bei (226,253)
+14:48:58.092 Getippt in #seite-neu input[name=artikel]: „Brot“
+14:48:58.094 Klick auf #seite-neu input[name=preis] bei (226,421)
+14:48:58.266 Getippt in #seite-neu input[name=preis]: „2.79“
+14:48:58.282 Klick auf #seite-neu form button[type=submit] bei (79,512)
+14:48:58.441 OK    Formular meldet „Gespeichert.“
+14:48:58.448 Klick auf nav.t-nav a[href='#seite-liste'] bei (46,51)
+14:48:58.605 OK    Navigation zurück zur Liste
+14:48:58.606 Liste: Milch · Menge: 2 · Preis (€): 1,29 | Brot · Preis (€): 2,79
+14:48:58.606 OK    zwei Einträge in der Liste
+14:48:58.608 OK    Anzahl 2, Summe 4,08 → Noch zu kaufen 2 | Summe in € 4,08
+14:48:58.608 localStorage: ["trendo-app/f7a9c347b301/einkaeufe"]
+14:48:58.666 Bild: lauf1-liste.png
+14:48:59.022 [Lauf 1] Chrome beendet (Exit 0)
+14:48:59.031 [Lauf 2 (Neustart, gleiches Profil)] Chrome gestartet, PID 44880, Profil <temp>\profil
+14:48:59.401 [Lauf 2 (Neustart, gleiches Profil)] Netz: file:///<temp>/entpackt/index.html
+14:48:59.541 Liste nach Neustart: Milch · Menge: 2 · Preis (€): 1,29 | Brot · Preis (€): 2,79
+14:48:59.541 OK    Einträge nach Neustart des Browsers noch da
+14:48:59.542 OK    Auswertung nach Neustart
+14:48:59.717 Bild: lauf2-nach-neustart.png
+14:48:59.722 Klick auf #seite-liste ul.t-liste li:first-child button.t-weg bei (503,310)
+14:48:59.874 OK    „Entfernen“ löscht den Eintrag
+14:48:59.875 OK    Auswertung danach
+14:48:59.879 Klick auf #seite-liste a.btn[href='#seite-neu'] bei (97,373)
+14:49:00.094 Bild: lauf2-formular.png
+14:49:00.213 [Lauf 2 (Neustart, gleiches Profil)] Chrome beendet (Exit 0)
+14:49:00.214 OK    zwei getrennte Browser-Prozesse (PID 3596, 44880)
+14:49:00.245 [Lauf 3 (Gegenprüfung)] Chrome gestartet, PID 44292, Profil <temp>\profil
+14:49:00.678 [Lauf 3 (Gegenprüfung)] Netz: file:///<temp>/falle/index.html
+14:49:02.720 OK    M1: präparierte Kennungen – keine Weiterleitung, Seite bleibt file:///<temp>/falle/index.html
+14:49:02.721 OK    M1: kein eingeschleustes <meta refresh> und kein fremdes Element im DOM
+14:49:02.727 Klick auf form.t-form input bei (226,82)
+14:49:02.888 Getippt in form.t-form input: „geht“
+14:49:02.897 Klick auf form.t-form button[type=submit] bei (47,138)
+14:49:03.048 OK    M1: Formular mit bereinigter Kennung speichert weiter
+14:49:03.052 [Lauf 3 (Gegenprüfung)] Netz: file:///<temp>/termine/index.html
+14:49:03.194 Klick auf input[name=was] bei (226,175)
+14:49:03.353 Getippt in input[name=was]: „Arzt“
+14:49:03.355 Klick auf input[name=zeit] bei (226,258)
+14:49:03.521 Getippt in input[name=zeit]: „18 Uhr“
+14:49:03.523 Klick auf input[name=betrag] bei (226,342)
+14:49:03.688 Getippt in input[name=betrag]: „12“
+14:49:03.692 Klick auf form.t-form button[type=submit] bei (70,397)
+14:49:03.853 OK    M2: Feld „Zeit“ bleibt erhalten → Arzt · Zeit: 18 Uhr · Betrag: 12
+14:49:03.853 OK    M2: gespeichert mit eigenem Zeitstempel-Schlüssel _t → {"was":"Arzt","zeit":"18 Uhr","betrag":12,"_t":<zeit>}
+14:49:03.855 Klick auf input[name=was] bei (226,175)
+14:49:04.009 Getippt in input[name=was]: „Riesig“
+14:49:04.011 Klick auf input[name=betrag] bei (226,342)
+14:49:04.173 Getippt in input[name=betrag]: „1e20“
+14:49:04.176 Klick auf form.t-form button[type=submit] bei (70,433)
+14:49:04.337 OK    N2: sehr große Zahl abgelehnt → „Diese Zahl ist zu groß oder keine Zahl: Betrag (höchstens 1 Billion).“
+14:49:04.337 OK    N2: nichts gespeichert
+14:49:04.337 OK    N3: Hinweis in der App sichtbar → „Deine Einträge liegen nur in diesem Browser auf diesem Gerät – kein Abgleich mit anderen Geräten. Wer die Browserdaten löscht, löscht auch die Einträge. Als Datei geöffnet (file://) können andere Seiten auf diesem Gerät sie mitlesen.“
+14:49:04.382 Bild: lauf3-termine.png
+14:49:04.385 [Lauf 3 (Gegenprüfung)] Netz: file:///<temp>/formularnamen/index.html
+14:49:04.399 Klick auf form.t-form input[name='elements-2'] bei (226,82)
+14:49:04.553 Getippt in form.t-form input[name='elements-2']: „Eins“
+14:49:04.555 Klick auf form.t-form input[name='reset-2'] bei (226,166)
+14:49:04.720 Getippt in form.t-form input[name='reset-2']: „Zwei“
+14:49:04.722 Klick auf form.t-form input[name='submit-2'] bei (226,249)
+14:49:04.887 Getippt in form.t-form input[name='submit-2']: „Drei“
+14:49:04.890 Klick auf form.t-form button[type=submit] bei (70,305)
+14:49:05.042 OK    L1: Felder „Elements/Reset/Submit“ werden gespeichert → Eins · Reset: Zwei · Submit: Drei
+14:49:05.042 OK    L1: Anzahl 1
+14:49:05.043 OK    L1: Formular nach dem Speichern geleert (reset trotz Feldnamen)
+14:49:05.043 OK    L1: kein Skriptfehler (0)
+14:49:05.150 [Lauf 3 (Gegenprüfung)] Chrome beendet (Exit 0)
+14:49:05.151 OK    keine Netzanfrage außer file:// (5 Anfragen gesamt)
+14:49:05.159 OK    Rundreise: exportierte ZIP wieder geöffnet = gleiche App (2 Seiten, 1 Sammlung)
+14:49:05.190 OK    keine externen Skripte oder Stylesheets in index.html
+14:49:05.192 ERGEBNIS: BESTANDEN
