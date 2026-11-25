@@ -107,11 +107,11 @@ public partial class MainWindow
             var exe = GitHubApps.ExePath(_deps.ToolsRoot, e);
             var rd = _ossReadme.GetValueOrDefault(e.Repo);
             var guide = ProgramGuide.ForGitHub(e.Repo, e.Description, e.License, null, 0, e.Version, e.Asset, null, rd.Intro, rd.Features, _ossGerman.GetValueOrDefault(e.Repo));
-            var start = new Button { Name = "btn-gh-start-" + e.Id, Content = "Starten", IsEnabled = File.Exists(exe) }; start.Click += (_, _) => Launch(exe);
+            var start = new Button { Name = "btn-gh-start-" + e.Id, Content = "Starten", IsEnabled = File.Exists(exe) }; start.Click += (_, _) => GitHubLaunch(e);
             var upd = _ghUpdates.TryGetValue(e.Id, out var newTag) ? Act("btn-gh-update-" + e.Id, $"Auf {newTag} aktualisieren", () => _ = GitHubUpdate(e), true) : null;
             var remove = RemoveButton("gh:" + e.Id, "btn-gh-remove-" + e.Id, () =>
             {
-                try { if (Path.IsPathRooted(e.Exe) && File.Exists(e.Exe)) GitHubRunUninstaller(e.Exe); _depLog.Text = GitHubApps.Uninstall(_deps.ToolsRoot, e.Id, _core.Audit) ? $"{e.Repo} wurde entfernt." : $"{e.Repo} war nicht installiert."; }
+                try { GitHubReleaseStart(e.Id); if (Path.IsPathRooted(e.Exe) && File.Exists(e.Exe)) GitHubRunUninstaller(e.Exe); _depLog.Text = GitHubApps.Uninstall(_deps.ToolsRoot, e.Id, _core.Audit) ? $"{e.Repo} wurde entfernt." : $"{e.Repo} war nicht installiert."; }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _depLog.Text = $"{e.Repo} läuft noch oder ist gesperrt: bitte schließen und erneut versuchen. ({ex.Message})"; }
             });
             sp.Children.Add(Card(new StackPanel { Spacing = 4, Children = {
@@ -140,6 +140,7 @@ public partial class MainWindow
         if (_core.Offline) { Say("Trendo ist offline. Das Installieren braucht Internet.", "oss"); return null; }
         if (_depBusy) return null;
         _depBusy = true;
+        if (GitHubApps.ValidRepo(repo.FullName)) GitHubReleaseStart(GitHubApps.IdFor(repo.FullName)); // T-0762: wartender Erststart gibt die Programmdatei frei (Neuinstallation ersetzt sie)
         _core.Audit.Append(Principal.LocalOwner.Name, "github.install.start", $"{repo.FullName} {repo.LicenseId}");
         BeginSetupOverlay($"{repo.FullName.Split('/')[1]} wird eingerichtet");
         string? file = null; string? exe = null;
@@ -183,12 +184,17 @@ public partial class MainWindow
             }
             catch (GitHubApps.InstallerOnlyException io)
             {
-                SetupOverlayProgress(3, 4, $"Installer wird still für dich ausgeführt ({io.Kind}) …");
-                exe = await GitHubRunInstaller(io, repo, rel, asset);
+                // T-0762 (X-06): nie im selben Klick ausführen – erst Signaturprüfung mit Ampel, dann eigene Bestätigung auf der Seite
+                GitHubHoldInstaller(io, repo, rel, asset, start);
+                file = null; // die Datei bleibt bis zur Entscheidung liegen
+                return null;
             }
             SetupOverlayProgress(4, 4, "Fertig ✓");
-            if (start && exe is not null) { Launch(exe); _core.Audit.Append(Principal.LocalOwner.Name, "github.start", repo.FullName); }
-            var msg = $"„{repo.FullName.Split('/')[1]}“ ist eingerichtet{(start ? " und startet gerade" : "")}. Du findest es unter „Programme“ und im Startmenü.";
+            // T-0762 B2: Start nur, wenn gültig signiert oder schon erlaubt – sonst Ampel-Karte „Erster Start“ mit eigener Bestätigung
+            var started = false;
+            if (start && GitHubApps.List(_deps.ToolsRoot).FirstOrDefault(x => x.Id == GitHubApps.IdFor(repo.FullName)) is { } inst)
+            { FinishSetupOverlay("Bereit", "Eingerichtet.", []); started = GitHubLaunch(inst); if (!started) return exe; }
+            var msg = $"„{repo.FullName.Split('/')[1]}“ ist eingerichtet{(started ? " und startet gerade" : "")}. Du findest es unter „Programme“ und im Startmenü.";
             FinishSetupOverlay("Bereit", msg, []);
             Say(msg, "oss");
             return exe;

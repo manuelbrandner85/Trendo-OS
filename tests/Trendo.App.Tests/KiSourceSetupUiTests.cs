@@ -29,8 +29,13 @@ public class KiSourceSetupUiTests
         Assert.True(w.SetupFinishShown); w.Find<Button>("setup-overlay-done").Press(); Pump();
         Assert.Throws<InvalidOperationException>(() => w.KiSourceStart("koboldcpp")); // noch kein Sprachmodell
         var gguf = Path.Combine(w.KiStore.Root, "qwen", "qwen.gguf"); Directory.CreateDirectory(Path.GetDirectoryName(gguf)!); File.WriteAllBytes(gguf, new byte[8]);
-        Assert.True(w.KiSourceStart("koboldcpp"));
+        // T-0762 N3b: das Programm von GitHub ist nicht signiert – erst Ampel-Karte und eigene Bestätigung, dann startet der Server
+        Assert.False(w.KiSourceStart("koboldcpp")); Pump(); await w.GitHubStartCheckTask; Pump();
+        Assert.Null(started); Assert.NotNull(w.GitHubPendingStart);
+        w.GitHubAcceptStartRisk(true);
+        Assert.True(w.GitHubConfirmStart()); Pump();
         Assert.Contains(gguf, started!.Value.Args);
+        started = null; w.KiSourceStart("koboldcpp"); await w.GitHubStartCheckTask; Pump(); Assert.NotNull(started); // erlaubt: ohne Rückfrage
         w.Show("ki-quellen"); Pump();
         Assert.NotNull(w.TryFind<Button>("src-start-koboldcpp"));
         w.Close();

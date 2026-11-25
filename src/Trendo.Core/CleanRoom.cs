@@ -89,14 +89,24 @@ public static partial class CleanRoom
 
     public static string Report(string dir, IReadOnlyList<Similar> sims, string? theirs)
     {
-        var sb = new StringBuilder($"# Prüfbericht: {Path.GetFileName(dir)}\n\nErstellt: {DateTimeOffset.Now:yyyy-MM-dd HH:mm zzz}\n_Technische Hilfe, keine Rechtsberatung._\n\n## Ähnlichkeit zum Original\n");
+        var now = DateTimeOffset.Now;
+        var sb = new StringBuilder($"# Prüfbericht: {Path.GetFileName(dir)}\n\nErstellt: {now:yyyy-MM-dd HH:mm zzz}\n_Technische Hilfe, keine Rechtsberatung. Jeder Eintrag nennt seine Herkunft und sein Datum._\n\n## Ähnlichkeit zum Original\n");
         if (theirs is null) sb.AppendLine("Nicht geprüft (kein Original-Ordner angegeben).");
-        else if (sims.Count == 0) sb.AppendLine("Keine Datei über der Schwelle (25 % gemeinsame Abschnitte).");
-        else foreach (var s in sims) sb.AppendLine($"- ⚠ {s.Ours} ↔ {s.Theirs}: {s.Score:P0}");
+        else if (sims.Count == 0) sb.AppendLine($"Keine Datei über der Schwelle (25 % gemeinsame Abschnitte). Herkunft: Vergleich „2-Umsetzung“ ↔ Ordner „{Path.GetFileName(theirs.TrimEnd('\\', '/'))}“ · Datum: {now:yyyy-MM-dd HH:mm}");
+        else foreach (var s in sims) sb.AppendLine($"- ⚠ {s.Ours} ↔ {s.Theirs}: {s.Score:P0} · Herkunft: eigener Code „2-Umsetzung/{s.Ours.Replace('\\', '/')}“, Vergleichstext „{Path.GetFileName(theirs.TrimEnd('\\', '/'))}/{s.Theirs.Replace('\\', '/')}“ · Datum: {now:yyyy-MM-dd HH:mm}");
+        // T-0762: Anforderungsliste mit Herkunft (Quelle) und Datum je Eintrag
+        var reqs = LoadRequirements(dir);
+        sb.AppendLine("\n## Anforderungen");
+        if (reqs.Count == 0) sb.AppendLine("Noch keine Anforderungen erfasst.");
+        else
+        {
+            sb.AppendLine($"{reqs.Count(r => r.Status == StatusDone)} erfüllt · {reqs.Count(r => r.Status == StatusPartly)} teilweise · {reqs.Count(r => r.Status == StatusOpen)} offen\n");
+            sb.Append(RequirementsTable(reqs));
+        }
         sb.AppendLine("\n## Tagebuch");
-        foreach (var j in Journal(dir)) sb.AppendLine($"- {j.At:yyyy-MM-dd HH:mm} [{j.Role}] {j.Text}");
+        foreach (var j in Journal(dir)) sb.AppendLine($"- {j.At:yyyy-MM-dd HH:mm} [{j.Role}] {j.Text} · Herkunft: Tagebuch, Rolle „{j.Role}“ · Datum: {j.At:yyyy-MM-dd HH:mm}");
         var roles = Journal(dir).Select(j => j.Role).Distinct().ToList();
         sb.AppendLine("\n## Rollen").AppendLine(roles.Contains("Beschreiben") && roles.Contains("Umsetzen") ? "Beide Rollen haben Einträge." : "⚠ Es fehlen Einträge für Beschreiben oder Umsetzen.");
-        var p = Path.Combine(dir, "3-Pruefung", "PRUEFBERICHT.md"); File.WriteAllText(p, sb.ToString()); return p;
+        var p = Path.Combine(dir, "3-Pruefung", "PRUEFBERICHT.md"); Directory.CreateDirectory(Path.GetDirectoryName(p)!); AtomicFile.WriteAllText(p, sb.ToString()); return p;
     }
 }

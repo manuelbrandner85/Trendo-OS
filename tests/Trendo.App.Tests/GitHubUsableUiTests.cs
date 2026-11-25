@@ -14,7 +14,7 @@ public class GitHubUsableUiTests
     static void Pump() { for (var i = 0; i < 5; i++) Dispatcher.UIThread.RunJobs(); }
     static OssRepo Repo(string full) => new(full, "Ein freies Musikprogramm", "https://github.com/" + full, "https://github.com/" + full + ".git", 1234, "MIT", "TypeScript", DateTimeOffset.UtcNow);
 
-    [AvaloniaFact(DisplayName = "Installer-Programm: Installieren & starten führt den Installer still aus, erkennt das Programm, startet es; Entfernen ruft den Deinstaller")]
+    [AvaloniaFact(DisplayName = "Installer-Programm: erst Signaturprüfung mit Ampel (unsigniert = Rot), Ausführen nie im selben Klick, Rot nur nach eigener Risiko-Bestätigung; dann still ausführen, erkennen, starten; Entfernen ruft den Deinstaller")]
     public async Task Installer_is_usable()
     {
         var (w, l, root) = Ui.Open();
@@ -24,10 +24,25 @@ public class GitHubUsableUiTests
         w.GitHubFetchOverride = _ => Task.FromResult((new GitHubApps.Release("v3.12.0", "v3.12.0", [new GitHubApps.Asset("YouTube-Music-3.12.0.exe", "https://github.com/x", 10, null)]), (string?)inst));
         string[]? args = null;
         w.GitHubInstallerRunOverride = (_, a) => { args = a; var d = Path.Combine(programs, "youtube-music"); Directory.CreateDirectory(d); File.WriteAllText(Path.Combine(d, "YouTube Music.exe"), new string('x', 400)); File.WriteAllText(Path.Combine(d, "Uninstall YouTube Music.exe"), "x"); return Task.CompletedTask; };
-        var exe = await w.GitHubInstall(Repo("pear-devs/pear-desktop")); Pump();
+        Assert.Null(await w.GitHubInstall(Repo("pear-devs/pear-desktop"))); Pump();
+        Assert.Null(args); // T-0762: „Installieren“ führt den Installer NICHT aus
+        var pending = w.GitHubPendingInstaller!;
+        Assert.Equal(GitHubApps.Ampel.Rot, pending.Check.Ampel); // echte Authenticode-Prüfung: die Datei ist nicht signiert
+        Assert.True(pending.Check.NeedsRiskConsent);
+        w.Find<Button>("setup-overlay-done").Press(); Pump();
+        w.Show("oss"); Pump();
+        Assert.Contains("Rot", w.Find<TextBlock>("oss-installer-ampel").Text);
+        Assert.False(w.Find<Button>("oss-installer-run").IsEnabled); // ohne Häkchen gesperrt
+        Assert.Null(await w.GitHubConfirmInstaller()); Assert.Null(args); // auch direkt aufgerufen: ohne Risiko-Bestätigung nichts
+        w.Find<CheckBox>("oss-installer-risk").IsChecked = true; Pump();
+        Assert.True(w.Find<Button>("oss-installer-run").IsEnabled);
+        Assert.Null(args); // das Häkchen allein führt nichts aus
+        var exe = await w.GitHubConfirmInstaller(); Pump(); await w.GitHubStartCheckTask; Pump();
         Assert.EndsWith("YouTube Music.exe", exe);
         Assert.Contains("/S", args!);
-        Assert.Contains(l.Opened, o => o.EndsWith("YouTube Music.exe")); // sofort gestartet
+        Assert.Empty(l.Opened); // T-0762 Z1b: erster Start ist ein eigener Schritt (Karte „Erster Start“)
+        w.GitHubAcceptStartRisk(true); Assert.True(w.GitHubConfirmStart()); Pump();
+        Assert.Contains(l.Opened, o => o.EndsWith("YouTube Music.exe"));
         var entry = Assert.Single(GitHubApps.List(w.ToolsRootForTests));
         Assert.Equal(exe, GitHubApps.ExePath(w.ToolsRootForTests, entry));
         Assert.True(w.SetupFinishShown); w.Find<Button>("setup-overlay-done").Press(); Pump();

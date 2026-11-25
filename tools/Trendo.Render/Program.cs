@@ -491,6 +491,55 @@ else if (shot == "seite")
         Trendo.Core.Sys.PdfFormular.AddFields(blank, form, [new("Name", "text", 0, 60, 100, 220, 20), new("Zustimmung", "haken", 0, 60, 140, 12, 12)]);
         win.OpenPdf(form);
     }
+    if (Environment.GetEnvironmentVariable("TRENDO_NACHBAU_DEMO") is { Length: > 0 }) // T-0762: Anforderungsliste mit Abgleich und Treffer nebeneinander
+    {
+        var dir = CleanRoom.Create(win.CleanFolder, "Notizen", "ein bekannter Notizblock");
+        var doc = new CleanRoom.RequirementsDoc(dir);
+        foreach (var (fn, src, link) in new[] { ("Notiz speichern", "Handbuch Kapitel 2", "2-Umsetzung/test_notiz.py#test_speichern"), ("Notiz löschen", "eigene Beobachtung", "2-Umsetzung/test_notiz.py#test_loeschen"), ("Suche über alle Notizen", "Video Bedienung 03:10", "") })
+        { var r = doc.Add(fn, src); doc.Update(r.Id, x => x with { Link = link, Expected = fn + " wirkt sofort und bleibt nach Neustart", Check = "Test " + (link.Length > 0 ? link.Split('#')[1] : "fehlt") }); }
+        var impl = Path.Combine(dir, "2-Umsetzung");
+        File.WriteAllText(Path.Combine(impl, "notiz.py"), "def speichern(t):\n    return t.strip()\n\ndef loeschen(liste, i):\n    return liste\n");
+        File.WriteAllText(Path.Combine(impl, "test_notiz.py"), "def test_speichern(): pass\n");
+        var run = new DevBuild.TestRun([new("test_notiz.T.test_speichern", true, false, "", null, 0)]);
+        doc.Change(l => CleanRoom.ReconcileAll(dir, l, run));
+        var orig = Path.Combine(root, "vergleich"); Directory.CreateDirectory(orig);
+        File.WriteAllText(Path.Combine(orig, "fremd.py"), "# fremd\ndef save(t):\n    return t.strip()\n\ndef remove(items, i):\n    return items\n");
+        win.CleanOpen(dir); win.CleanCheck(orig);
+    }
+    if (Environment.GetEnvironmentVariable("TRENDO_OSS_DEMO") is { Length: > 0 }) // T-0762: geholtes Projekt und wartender, nicht signierter Installer
+    {
+        var proj = Path.Combine(win.OssFolder, "beispiel_hallo"); Directory.CreateDirectory(proj);
+        File.WriteAllText(Path.Combine(proj, "Hallo.csproj"), "<Project Sdk=\"Microsoft.NET.Sdk\"/>");
+        File.WriteAllText(OpenSource.OriginFile(proj), "Quelle: https://github.com/beispiel/hallo.git\n");
+        var inst = Path.Combine(root, "Tool-Setup-1.0.exe"); File.WriteAllBytes(inst, [.. "MZ"u8.ToArray(), .. System.Text.Encoding.ASCII.GetBytes("Inno Setup")]);
+        win.GitHubFetchOverride = _ => Task.FromResult((new GitHubApps.Release("v1.0", "v1.0", [new GitHubApps.Asset("Tool-1.0.exe", "https://github.com/x", 10, null)]), (string?)inst));
+        var t = win.GitHubInstall(new OssRepo("beispiel/tool", "Ein freies Werkzeug", "https://github.com/beispiel/tool", "https://github.com/beispiel/tool.git", 10, "MIT", "C#", DateTimeOffset.UtcNow));
+        while (!t.IsCompleted) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(10); }
+        win.GitHubFetchOverride = null;
+        if (win.SetupFinishShown) win.GetLogicalDescendants().OfType<Button>().First(b => b.Name == "setup-overlay-done").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        if (Environment.GetEnvironmentVariable("TRENDO_OSS_DEMO") is "start" or "gruen") // T-0762 N2/Z1 (gruen: alles signiert – trotzdem eigener Schritt): fertiges Programm mit unsignierter DLL – Karte „Erster Start“
+        {
+            win.GitHubCancelInstaller();
+            var zip = Path.Combine(root, "dl.zip");
+            using (var z = System.IO.Compression.ZipFile.Open(zip, System.IO.Compression.ZipArchiveMode.Create))
+            { using (var s1 = new StreamWriter(z.CreateEntry("werkzeug/werkzeug.exe").Open())) s1.Write("MZ"); using (var s2 = new StreamWriter(z.CreateEntry("werkzeug/helfer.dll").Open())) s2.Write("MZ"); }
+            win.GitHubFetchOverride = _ => Task.FromResult<(GitHubApps.Release, string?)>((new GitHubApps.Release("v2.0", "", [new("werkzeug-windows-x64.zip", "https://github.com/beispiel/werkzeug/releases/download/v2.0/werkzeug-windows-x64.zip", new FileInfo(zip).Length, null)]), zip));
+            win.GitHubSignatureOverride = f => Environment.GetEnvironmentVariable("TRENDO_OSS_DEMO") == "gruen" || f.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? new Trendo.Core.Sys.SignatureInfo(Trendo.Core.Sys.SigState.Gueltig, "Beispiel GmbH", "Gültig signiert (in der Datei).") : new Trendo.Core.Sys.SignatureInfo(Trendo.Core.Sys.SigState.Unsigniert, null, "Die Datei ist nicht signiert.");
+            var t2 = win.GitHubInstall(new OssRepo("beispiel/werkzeug", "Ein freies Werkzeug", "https://github.com/beispiel/werkzeug", "https://github.com/beispiel/werkzeug.git", 10, "MIT", "C#", DateTimeOffset.UtcNow));
+            while (!t2.IsCompleted) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(10); }
+            var chk = win.GitHubStartCheckTask; while (!chk.IsCompleted) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(10); } // L1: Prüfung läuft im Hintergrund
+            Dispatcher.UIThread.RunJobs();
+            win.GitHubFetchOverride = null;
+            if (win.SetupFinishShown) win.GetLogicalDescendants().OfType<Button>().First(b => b.Name == "setup-overlay-done").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        }
+    }
+    if (Environment.GetEnvironmentVariable("TRENDO_CODE_OSS_DEMO") is { Length: > 0 }) // T-0762 N3a: Rückfrage vor dem ersten Lauf eines Projekts aus „Open Source“
+    {
+        var proj = Path.Combine(win.OssFolder, "beispiel_py"); Directory.CreateDirectory(proj);
+        File.WriteAllText(Path.Combine(proj, "main.py"), "print('Hallo')\n"); File.WriteAllText(Path.Combine(proj, "pyproject.toml"), "[project]\nname='x'\n");
+        File.WriteAllText(OpenSource.OriginFile(proj), "Quelle: https://github.com/beispiel/py.git\n");
+        win.OssOpenInCode(proj); win.CodeHintRun(OpenSource.BuildHints(proj)[0].Command);
+    }
     win.Show(page);
     if (win.Windows.Active is { Maximized: false } pageWin) win.Windows.ToggleMaximize(pageWin.Id);
     win.Show(page);
@@ -1261,6 +1310,7 @@ if (Environment.GetEnvironmentVariable("TRENDO_DUMP") is { Length: > 0 } dump) /
 if (composed is not null) composed.Save(outPath); else frame!.Save(outPath);
 Console.WriteLine($"OK {outPath}");
 foreach (var crash in CrashLog.List(root).Take(1)) Console.Error.WriteLine("ABSTURZ beim Rendern:" + Environment.NewLine + File.ReadAllText(crash));
+win.GitHubCancelStart(); win.GitHubCancelInstaller(); // T-0762: gesperrte Dateien freigeben, bevor der Ordner gelöscht wird
 Directory.Delete(root, true);
 sealed class NoopL : IProcessLauncher { public void Open(string t) { } }
 

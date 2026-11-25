@@ -109,10 +109,12 @@ public partial class MainWindow
     public string CodeTerminalText => _ceTerm;
     const int CeOutMax = 200_000;
 
-    bool CodeMayStart(out string why)
+    bool CodeMayStart(out string why, string? label = null, Action? retry = null)
     {
         why = "";
         if (_ceRunCts is not null) throw new InvalidOperationException("Es läuft schon ein Programm. Warte, bis es fertig ist – oder klick auf „Abbrechen“.");
+        // T-0762 N3a: Projekt aus „Open Source“ ohne Freigabe – Ausführen/Bauen/Testen/Paket fragen wie die Bauanleitung zuerst nach
+        if (label is not null && retry is not null && CodeNeedsOssConsent(label, retry)) { why = $"Erst bestätigen: „{label}“ führt Code aus diesem fremden Projekt mit deinen Rechten aus."; return false; }
         if (_opt.Isolated && CodeRunOverride is null && !CodeRealToolsInTests) { why = "Testmodus: Trendo startet keine Programme."; return false; }
         return true;
     }
@@ -126,7 +128,7 @@ public partial class MainWindow
     public void CodeRunProject()
     {
         var root = _ceRoot ?? throw new InvalidOperationException("Erst einen Projektordner öffnen.");
-        if (!CodeMayStart(out var why)) { CodeSave(all: true); _ceTab = "ausgabe"; _ceOut = why; return; }
+        if (!CodeMayStart(out var why, "Ausführen", CodeRunProject)) { CodeSave(all: true); _ceTab = "ausgabe"; _ceOut = why; return; }
         CodeSave(all: true); _ceTab = "ausgabe";
         DevBuild.Cmd cmd;
         if (CodeRunOverride is { } forced) cmd = new(forced.Exe, forced.Args, forced.Cwd);
@@ -161,7 +163,7 @@ public partial class MainWindow
     {
         var root = _ceRoot ?? throw new InvalidOperationException("Erst einen Projektordner öffnen.");
         CodeSave(all: true); _ceTab = "ausgabe";
-        if (!CodeMayStart(out var why)) { _ceOut = why; return; }
+        if (!CodeMayStart(out var why, "Bauen", CodeBuild)) { _ceOut = why; return; }
         var plan = DevBuild.Build(DevBuild.Detect(root));
         if (plan.Cmd is not { } cmd) { _ceOut = (plan.Blocked is not null ? "✗ " + plan.Blocked : plan.Note) ?? ""; return; }
         CodeStartCmd("build", cmd, 600000, "Wird gebaut …");
@@ -173,7 +175,7 @@ public partial class MainWindow
     {
         var root = _ceRoot ?? throw new InvalidOperationException("Erst einen Projektordner öffnen.");
         CodeSave(all: true); _ceTab = "ausgabe";
-        if (!CodeMayStart(out var why)) { _ceOut = why; return; }
+        if (!CodeMayStart(out var why, "Testen", CodeTest)) { _ceOut = why; return; }
         DevBuild.Cmd cmd;
         if (CodeRunOverride is { } forced) { cmd = new(forced.Exe, forced.Args, forced.Cwd); _ceResults = null; }
         else
@@ -191,7 +193,7 @@ public partial class MainWindow
     {
         var root = _ceRoot ?? throw new InvalidOperationException("Erst einen Projektordner öffnen.");
         CodeSave(all: true); _ceTab = "ausgabe";
-        if (!CodeMayStart(out var why)) { _ceOut = why; return; }
+        if (!CodeMayStart(out var why, "Paket bauen", CodePublish)) { _ceOut = why; return; }
         var p = DevBuild.Detect(root);
         CodeStart("publish", "Paket wird gebaut … (beim ersten Mal lädt .NET noch Bestandteile nach, das dauert)", async (line, ct) =>
         {
@@ -218,7 +220,7 @@ public partial class MainWindow
             // cmd versteht die Maskierung von Anführungszeichen in Programm-Argumenten nicht – der Befehl kommt deshalb unverändert in eine Skriptdatei
             var script = Path.Combine(_core.DataRoot, "code-editor", "terminal.cmd"); Directory.CreateDirectory(Path.GetDirectoryName(script)!);
             File.WriteAllText(script, $"@echo off\r\nchcp 65001 >nul\r\ncd /d \"{root}\"\r\n{command}\r\n", new System.Text.UTF8Encoding(false));
-            cmd = new DevBuild.Cmd("cmd", ["/d", "/c", script], root, new Dictionary<string, string> { ["PYTHONIOENCODING"] = "utf-8" }, true);
+            cmd = new DevBuild.Cmd("cmd", ["/d", "/c", script], root, new Dictionary<string, string> { ["PYTHONIOENCODING"] = "utf-8", ["NoDefaultCurrentDirectoryInExePath"] = "1" }, true); // T-0762 B1: „python“ nie aus dem Projektordner holen
         }
         else cmd = new DevBuild.Cmd("sh", ["-c", command], root);
         CodeStartCmd("terminal", cmd, 1800000, "");
@@ -565,8 +567,9 @@ public partial class MainWindow
             b.Click += (_, _) => { _ceTab = ii; Show(CEK); }; bottomTabs.Children.Add(b);
         }
         _ceOutBox = null; _ceTermBox = null;
-        Control body = _ceTab switch { "suche" => CodeSearchPanel(), "git" => CodeGitPanel(), "tests" => CodeTestsPanel(), "fehler" => CodeProblemsPanel(), "terminal" => CodeTerminalPanel(), "paket" => CodePackagePanel(), _ => _ceOutBox = new SelectableTextBlock { Name = "ce-output", Text = _ceOut.Length == 0 ? "Hier erscheinen Ausgaben von „Ausführen“ und „Testen“." : _ceOut,
+        Control body0 = _ceTab switch { "suche" => CodeSearchPanel(), "git" => CodeGitPanel(), "tests" => CodeTestsPanel(), "fehler" => CodeProblemsPanel(), "terminal" => CodeTerminalPanel(), "paket" => CodePackagePanel(), _ => _ceOutBox = new SelectableTextBlock { Name = "ce-output", Text = _ceOut.Length == 0 ? "Hier erscheinen Ausgaben von „Ausführen“ und „Testen“." : _ceOut,
             FontFamily = new FontFamily("Cascadia Code, Consolas, monospace"), FontSize = 12, Foreground = _ceOut.StartsWith('✗') ? Brush.Parse("#FCA5A5") : Brush.Parse("#C9D1D9"), TextWrapping = TextWrapping.Wrap } };
+        Control body = _ceHintAsk is not null && _ceTab != "terminal" ? new StackPanel { Spacing = 6, Children = { CodeAskBox(), body0 } } : body0; // T-0762 N3a: Rückfrage sichtbar
         var bottom = new Border { Name = "ce-bottom", Height = 220, Background = panelBg, BorderBrush = edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(8, 6), Margin = new Thickness(0, 8, 0, 0),
             Child = new DockPanel { Children = { bottomTabs, new ScrollViewer { Content = body } } } };
         DockPanel.SetDock(bottomTabs, Avalonia.Controls.Dock.Top);
@@ -649,6 +652,8 @@ public partial class MainWindow
         var sp = new StackPanel { Spacing = 4 };
         if (_ceRoot is null) { sp.Children.Add(P("Erst einen Projektordner öffnen.", Muted, 12)); return sp; }
         sp.Children.Add(P($"Befehle laufen im Projektordner „{Path.GetFileName(_ceRoot)}“ ({(OperatingSystem.IsWindows() ? "Eingabeaufforderung" : "sh")}). Jeder Start wird im Protokoll vermerkt. „■ Abbrechen“ beendet den Befehl.", Muted, 11));
+        sp.Children.Add(CodeHintsBar()); // T-0762: erkannte Bauanleitung eines geholten Projekts
+        if (_ceHintAsk is not null) sp.Children.Add(CodeAskBox());
         var input = new TextBox { Name = "ce-term-input", PlaceholderText = "Befehl eingeben und Enter, z. B. dotnet --info oder python --version", FontSize = 12.5, FontFamily = new FontFamily("Cascadia Code, Consolas, monospace"), IsEnabled = !CodeRunning };
         input.KeyDown += (_, e) => { if (e.Key == Key.Enter) { e.Handled = true; var c = input.Text ?? ""; Try(CEK, () => { CodeTerminal(c); Show(CEK); }); } };
         sp.Children.Add(input);

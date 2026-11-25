@@ -85,8 +85,8 @@ public partial class MainWindow
         {
             var entry = e;
             items.Add(new("gh:" + e.Id, "github", e.Repo, $"Von GitHub · Version {e.Version}", true, null,
-                () => { if (GitHubApps.ExePath(_deps.ToolsRoot, entry) is { } exe) Launch(exe); return Task.CompletedTask; },
-                () => { if (Path.IsPathRooted(entry.Exe) && File.Exists(entry.Exe)) GitHubRunUninstaller(entry.Exe); GitHubApps.Uninstall(_deps.ToolsRoot, entry.Id, _core.Audit); return Task.CompletedTask; },
+                () => { GitHubLaunch(entry); return Task.CompletedTask; },
+                () => { GitHubReleaseStart(entry.Id); if (Path.IsPathRooted(entry.Exe) && File.Exists(entry.Exe)) GitHubRunUninstaller(entry.Exe); GitHubApps.Uninstall(_deps.ToolsRoot, entry.Id, _core.Audit); return Task.CompletedTask; },
                 async () => { await GitHubInstall(new OssRepo(entry.Repo, "", "https://github.com/" + entry.Repo, "https://github.com/" + entry.Repo + ".git", 0, entry.License, "", DateTimeOffset.Now)); }, entry.License));
         }
         // Erweiterungen

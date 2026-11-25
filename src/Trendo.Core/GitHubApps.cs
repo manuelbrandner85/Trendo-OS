@@ -29,7 +29,9 @@ public static partial class GitHubApps
         [property: JsonPropertyName("asset")] string Asset,
         [property: JsonPropertyName("sha256")] string Sha256,
         [property: JsonPropertyName("description")] string Description,
-        [property: JsonPropertyName("installed")] DateTimeOffset InstalledAt);
+        [property: JsonPropertyName("installed")] DateTimeOffset InstalledAt,
+        // T-0762: SHA-256 der Programmdatei, deren ersten Start die Person nach der Signaturprüfung ausdrücklich erlaubt hat (null = noch nicht)
+        [property: JsonPropertyName("startFreigabe")] string? StartApproved = null);
 
     [GeneratedRegex(@"^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]{1,100}$")] private static partial Regex RepoName();
 

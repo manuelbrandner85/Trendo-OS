@@ -101,6 +101,322 @@ public partial class MainWindow
     }
     public void GitHubRemoveToken() { _core.Secrets.Delete(GitHubTokenKey); GitHubToken = null; _ghTokenMsg = "Abgemeldet – wieder 60 Abfragen pro Stunde."; _core.Audit.Append(Principal.LocalOwner.Name, "github.token.removed", ""); Show("oss"); }
 
+    // ───── T-0762 (X-06): Installer und fremde Programme erst nach Signaturprüfung und eigener Bestätigung ─────
+
+    /// <summary>Ein Installer wartet auf die Entscheidung der Person (Datei, Projekt, Veröffentlichung, Prüfergebnis, danach starten?).
+    /// <see cref="Lock"/>: die Datei bleibt vom Prüfen bis zum Start gesperrt (nur Lesen erlaubt) – kein Austausch dazwischen (B5).</summary>
+    public sealed record PendingInstaller(GitHubApps.InstallerOnlyException Io, OssRepo Repo, GitHubApps.Release Release, GitHubApps.Asset Asset, GitHubApps.InstallerCheck Check, bool Start, FileStream? Lock);
+    PendingInstaller? _ghPending; bool _ghRiskAccepted;
+    public PendingInstaller? GitHubPendingInstaller => _ghPending;
+    /// <summary>Für Tests: Signaturprüfung ersetzen (sonst echte Authenticode-Prüfung über Windows).</summary>
+    public Func<string, Trendo.Core.Sys.SignatureInfo>? GitHubSignatureOverride { get; set; }
+
+    static FileStream? TryLock(string file) { try { return File.Exists(file) ? GitHubApps.OpenLocked(file) : null; } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return null; } }
+
+    void GitHubHoldInstaller(GitHubApps.InstallerOnlyException io, OssRepo repo, GitHubApps.Release rel, GitHubApps.Asset asset, bool start)
+    {
+        if (_ghPending is { } old) { old.Lock?.Dispose(); if (old.Io.File != io.File && GitHubFetchOverride is null) try { File.Delete(old.Io.File); } catch (IOException) { } }
+        var lk = TryLock(io.File);
+        var chk = GitHubApps.CheckInstaller(io.File, io.Kind, GitHubSignatureOverride, lk);
+        if (lk is null) chk = chk with { Blocked = true };
+        _ghPending = new(io, repo, rel, asset, chk, start, lk); _ghRiskAccepted = false;
+        _core.Audit.Append(Principal.LocalOwner.Name, "github.installer.held", $"{repo.FullName} {asset.Name} ampel={chk.Ampel} signer={chk.Publisher ?? "-"} sha256={chk.Sha256}");
+        var msg = $"„{asset.Name}“ ist ein Installer ({chk.Title}). Trendo hat ihn NICHT ausgeführt – entscheide in der Karte „Installer wartet“ unter „Projekte von GitHub holen“.";
+        FinishSetupOverlay("Installer: deine Entscheidung", msg, []);
+        Say(msg, "oss");
+    }
+
+    /// <summary>Zweiter, eigener Schritt: Gelb/Rot brauchen vorher die ausdrückliche Risiko-Bestätigung (<see cref="GitHubAcceptInstallerRisk"/>).
+    /// <paramref name="expected"/> (B6): nur genau der angezeigte Installer – wurde er inzwischen ersetzt, passiert nichts.
+    /// Vor dem Lauf wird die gesperrte Datei erneut gehasht (SHA-256).</summary>
+    public async Task<string?> GitHubConfirmInstaller(PendingInstaller? expected = null)
+    {
+        if (_ghPending is not { } p) return null;
+        if (expected is not null && !ReferenceEquals(expected, p)) { Say("Inzwischen wartet ein anderer Installer – bitte die neue Karte prüfen.", "oss"); return null; }
+        if (p.Check.Blocked || p.Lock is null) { Say("Der Installer ist nicht mehr da – bitte noch einmal „Installieren“.", "oss"); GitHubCancelInstaller(); return null; }
+        if (p.Check.NeedsRiskConsent && !_ghRiskAccepted) { Say("Dieser Installer ist nicht vertrauenswürdig signiert. Erst das Risiko ausdrücklich bestätigen, dann ausführen.", "oss"); return null; }
+        if (GitHubApps.Sha256Of(p.Lock) != p.Check.Sha256)
+        { Say("Die Installer-Datei hat sich seit der Prüfung verändert – Trendo führt sie nicht aus.", "oss"); GitHubCancelInstaller(); return null; }
+        if (_depBusy) return null;
+        _depBusy = true; _ghPending = null;
+        _core.Audit.Append(Principal.LocalOwner.Name, "github.installer.consent", $"{p.Repo.FullName} {p.Asset.Name} ampel={p.Check.Ampel} risiko-bestaetigt={_ghRiskAccepted}");
+        BeginSetupOverlay($"{p.Repo.FullName.Split('/')[1]} wird eingerichtet");
+        try
+        {
+            SetupOverlayProgress(3, 4, $"Installer läuft still für dich ({p.Io.Kind}) …");
+            var exe = await GitHubRunInstaller(p.Io, p.Repo, p.Release, p.Asset); // die Sperre hält, bis der Installer fertig ist
+            SetupOverlayProgress(4, 4, "Fertig ✓");
+            // Z1b: auch nach dem Installer ist der erste Start ein eigener bestätigter Schritt (Karte „Erster Start“)
+            var entry = GitHubApps.List(_deps.ToolsRoot).FirstOrDefault(x => x.Id == GitHubApps.IdFor(p.Repo.FullName));
+            FinishSetupOverlay("Bereit", $"„{p.Repo.FullName.Split('/')[1]}“ ist eingerichtet.", []);
+            if (p.Start && entry is not null) { _depBusy = false; GitHubGate(entry, exe, () => Launch(exe)); return exe; }
+            var msg = $"„{p.Repo.FullName.Split('/')[1]}“ ist eingerichtet. Du findest es unter „Programme“.";
+            Say(msg, "oss");
+            return exe;
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            var why = GitHubWhy(ex);
+            _core.Audit.Append(Principal.LocalOwner.Name, "github.install.failed", $"{p.Repo.FullName}: {ex.GetType().Name}: {ex.Message}");
+            FinishSetupOverlay("Installieren hat nicht geklappt", why, [why]); Say("Installieren hat nicht geklappt: " + why, "oss");
+            return null;
+        }
+        finally
+        {
+            _depBusy = false; _ghRiskAccepted = false;
+            p.Lock.Dispose();
+            if (GitHubFetchOverride is null) try { File.Delete(p.Io.File); } catch (IOException) { }
+        }
+    }
+
+    /// <summary>Eigene ausdrückliche Bestätigung für Gelb/Rot (Häkchen) – führt selbst nichts aus.</summary>
+    public void GitHubAcceptInstallerRisk(bool accepted, PendingInstaller? expected = null)
+    {
+        _ghRiskAccepted = accepted && _ghPending is not null && (expected is null || ReferenceEquals(expected, _ghPending));
+        if (_ghRiskAccepted) _core.Audit.Append(Principal.LocalOwner.Name, "github.installer.risk", _ghPending!.Repo.FullName);
+    }
+
+    public void GitHubCancelInstaller()
+    {
+        if (_ghPending is not { } p) return;
+        _ghPending = null; _ghRiskAccepted = false;
+        p.Lock?.Dispose();
+        if (GitHubFetchOverride is null) try { File.Delete(p.Io.File); } catch (IOException) { }
+        _core.Audit.Append(Principal.LocalOwner.Name, "github.installer.declined", p.Repo.FullName);
+        Say($"Installer von „{p.Repo.FullName}“ nicht ausgeführt und gelöscht.", "oss");
+    }
+
+    /// <summary>Hinweis-Karte mit Ampel: wer signiert hat, was das bedeutet, Prüfsumme; Ausführen ist ein eigener Klick, bei Gelb/Rot erst nach dem Häkchen.</summary>
+    Control GitHubInstallerCard()
+    {
+        if (_ghPending is not { } p) return new Panel();
+        return AmpelCard("oss-installer", p.Check, $"Installer wartet: {p.Repo.FullName} · {p.Check.Title}", $"Datei: {p.Asset.Name}",
+            p.Check.Ampel == GitHubApps.Ampel.Gruen ? "Installer ausführen" : "Trotzdem ausführen", "Nicht ausführen (löschen)",
+            "Ich habe verstanden: Trendo kann diesen Installer nicht als vertrauenswürdig bestätigen. Er läuft mit meinen Rechten und ich vertraue dem Projekt trotzdem.",
+            () => _ghRiskAccepted, ok => GitHubAcceptInstallerRisk(ok, p), () => _ = GitHubConfirmInstaller(p), () => { GitHubCancelInstaller(); Show("oss"); }, () => _depBusy);
+    }
+
+    Border AmpelCard(string id, GitHubApps.InstallerCheck c, string title, string file, string runLabel, string cancelLabel, string riskText, Func<bool> risk, Action<bool> setRisk, Action run, Action cancel, Func<bool> busy)
+    {
+        var (col, bg, dot) = c.Ampel switch { GitHubApps.Ampel.Gruen => ("#4ADE80", "#1A22B35E", "● Grün"), GitHubApps.Ampel.Gelb => ("#FACC15", "#1AF5A524", "● Gelb"), _ => ("#F87171", "#1FB91C1C", "● Rot") };
+        var runBtn = Act($"{id}-run", runLabel, run);
+        runBtn.IsEnabled = !c.Blocked && (!c.NeedsRiskConsent || risk()) && !busy();
+        var sp = new StackPanel { Spacing = 6, Children = {
+            new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = {
+                new TextBlock { Name = $"{id}-ampel", Text = dot, Foreground = Brush.Parse(col), FontWeight = FontWeight.Bold, FontSize = 13 },
+                new TextBlock { Text = title, Foreground = Text, FontWeight = FontWeight.SemiBold, FontSize = 13.5, TextWrapping = TextWrapping.Wrap } } },
+            P(c.Text, Text, 12),
+            new SelectableTextBlock { Text = $"{file} · SHA-256: {c.Sha256}", Foreground = Muted, FontSize = 11, TextWrapping = TextWrapping.Wrap } } };
+        if (c.NeedsRiskConsent && !c.Blocked)
+        {
+            var box = new CheckBox { Name = $"{id}-risk", IsChecked = risk(), Content = new TextBlock { Text = riskText, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap } };
+            box.IsCheckedChanged += (_, _) => { setRisk(box.IsChecked == true); runBtn.IsEnabled = risk() && !busy(); };
+            sp.Children.Add(box);
+        }
+        sp.Children.Add(new WrapPanel { Children = { runBtn, new Border { Width = 8 }, Act($"{id}-cancel", cancelLabel, cancel) } });
+        return new Border { Name = $"{id}-card", Background = Brush.Parse(bg), BorderBrush = Brush.Parse(col), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Padding = new Thickness(12, 10), Child = sp };
+    }
+
+    // ───── B2/N2/Z1: erster Start eines Programms – immer ein eigener bestätigter Schritt ─────
+
+    /// <summary>Ein Programmstart wartet auf die eigene Bestätigung. <see cref="Locks"/>: Startdatei und alle ausführbaren Inhalte des Ordners bleiben bis dahin gesperrt.
+    /// <see cref="Run"/> startet danach genau so, wie der Aufrufer es wollte; <see cref="Approve"/> merkt die Erlaubnis zur Ordner-Prüfsumme.</summary>
+    public sealed record PendingStart(string Key, string Label, string Exe, string Dir, GitHubApps.InstallerCheck Check, GitHubApps.FileLocks Locks, Action Run, Action<string> Approve, string? EntryId, GitHubApps.StartPrint Print);
+    PendingStart? _ghStart; bool _ghStartRisk;
+    public PendingStart? GitHubPendingStart => _ghStart;
+
+    /// <summary>Programmordner eines Eintrags: eigener Ordner im Werkzeugordner bzw. (bei Installern) der Ordner der Startdatei.</summary>
+    string GitHubProgramDir(GitHubApps.Installed e) => Path.IsPathRooted(e.Exe) ? Path.GetDirectoryName(e.Exe)! : Path.Combine(_deps.ToolsRoot, e.Id);
+
+    /// <summary>Gehört <paramref name="exe"/> zu einem Programm von GitHub? (für KI-Quellen und Bambu Studio)</summary>
+    GitHubApps.Installed? GitHubEntryFor(string exe)
+    {
+        var full = Path.GetFullPath(exe);
+        return GitHubApps.List(_deps.ToolsRoot).FirstOrDefault(e => full.StartsWith(Path.GetFullPath(GitHubProgramDir(e)).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>Programm von GitHub starten (ohne Argumente über die Shell).</summary>
+    public bool GitHubLaunch(GitHubApps.Installed e) { var exe = GitHubApps.ExePath(_deps.ToolsRoot, e); return GitHubGate(e, exe, () => Launch(exe)); }
+
+    /// <summary>Tor vor jedem Start eines GitHub-Programms.</summary>
+    public bool GitHubGate(GitHubApps.Installed e, string exe, Action run)
+    {
+        var dir = Path.GetFullPath(exe).StartsWith(Path.GetFullPath(GitHubProgramDir(e)), StringComparison.OrdinalIgnoreCase) ? GitHubProgramDir(e) : Path.GetDirectoryName(exe)!;
+        var approved = GitHubApps.List(_deps.ToolsRoot).FirstOrDefault(x => x.Id == e.Id)?.StartApproved; // immer der aktuelle Stand der Liste
+        return StartGate("gh:" + e.Id, e.Repo, exe, dir, approved, h => GitHubApps.ApproveStart(_deps.ToolsRoot, e.Id, h), run, e.Id);
+    }
+
+    /// <summary>Z3a: Tor für ein Programm außerhalb der GitHub-Liste (KI-Programm vom Hersteller); Erlaubnis in „start-freigaben.json“.</summary>
+    public bool ExternalGate(string key, string label, string exe, Action run) =>
+        StartGate(key, label, exe, Path.GetDirectoryName(Path.GetFullPath(exe))!, GitHubApps.ExternalApproval(_deps.ToolsRoot, key), h => GitHubApps.ApproveExternal(_deps.ToolsRoot, key, h), run, null);
+
+    CancellationTokenSource? _ghCheckCts; Task? _ghCheckTask; string? _ghCheckLabel; string _ghCheckText = ""; TextBlock? _ghCheckBlock;
+    volatile GitHubApps.FileLocks? _ghCheckLocks; string? _ghCheckEntry;
+    /// <summary>L1: laufende Start-Prüfung (Hintergrund). Tests warten darauf; fertig = Karte da oder Programm gestartet.</summary>
+    public Task GitHubStartCheckTask => _ghCheckTask ?? Task.CompletedTask;
+    public bool GitHubStartChecking => _ghCheckTask is { IsCompleted: false };
+    /// <summary>Laufende Prüfung abbrechen (Sperren werden freigegeben, nichts startet).</summary>
+    public void GitHubCancelCheck() => _ghCheckCts?.Cancel();
+    /// <summary>Für Tests: läuft auf dem UI-Thread direkt nach dem Ende der Hintergrund-Prüfung, vor der Entscheidung (Start/Karte).</summary>
+    public Action? GitHubCheckAfterBackground { get; set; }
+
+    /// <summary>L1: Tor vor dem Start. Kehrt sofort zurück; Sperren, Fingerabdruck (Index aller Dateien + SHA-256 der ausführbaren Inhalte) und – beim ersten Mal –
+    /// Signaturprüfung laufen im Hintergrund mit Fortschritt und „Abbrechen“. Schon erlaubt (gleicher Fingerabdruck) → Start unter Sperre; sonst – auch bei Grün –
+    /// Karte „Erster Start“. Rückgabe: false (der Start passiert ggf. danach) bzw. false, wenn schon eine Prüfung läuft.</summary>
+    bool StartGate(string key, string label, string exe, string dir, string? approved, Action<string> approve, Action run, string? entryId)
+    {
+        if (GitHubStartChecking) { Say($"Trendo prüft gerade „{_ghCheckLabel}“ – bitte kurz warten oder dort „Abbrechen“.", "oss"); return false; }
+        var cts = _ghCheckCts = new CancellationTokenSource();
+        _ghCheckLabel = label; _ghCheckEntry = entryId; _ghCheckText = $"Prüfe „{label}“ …";
+        if (CurrentView == "oss") Show("oss");
+        var sigOverride = GitHubSignatureOverride;
+        var progress = new Progress<string>(t => { _ghCheckText = t; if (_ghCheckBlock is { } b) b.Text = t; });
+        IProgress<string> prog = progress;
+        _ghCheckTask = Run();
+        return false;
+
+        async Task Run()
+        {
+            GitHubApps.FileLocks? locks = null;
+            try
+            {
+                var res = await Task.Run(() =>
+                {
+                    if (!File.Exists(exe)) throw new FileNotFoundException(Path.GetFileName(exe));
+                    var exec = GitHubApps.ExecSet(dir, exe);
+                    var lk = new GitHubApps.FileLocks(exec.Count <= GitHubApps.MaxExecutables + 1 ? exec : [exe]);
+                    _ghCheckLocks = lk; if (cts.IsCancellationRequested) { lk.Dispose(); cts.Token.ThrowIfCancellationRequested(); }
+                    try
+                    {
+                        prog.Report($"Prüfe „{label}“: {exec.Count} ausführbare Datei(en) lesen …");
+                        var print = GitHubApps.Fingerprint(dir, exec, cts.Token, new Progress<(int Done, int Total)>(p => { if (p.Done % 25 == 0 || p.Done == p.Total) prog.Report($"Prüfe „{label}“: {p.Done} von {p.Total} ausführbaren Dateien gelesen …"); }));
+                        if (approved is { } ok && ok == print.Key && print.LinkCount == 0) return (lk, print, (GitHubApps.InstallerCheck?)null);
+                        prog.Report($"Prüfe „{label}“: Signaturen …");
+                        var chk = GitHubApps.CheckProgramFolder(exe, dir, print, sigOverride, cts.Token, new Progress<(int Done, int Total)>(p => { if (p.Done % 10 == 0 || p.Done == p.Total) prog.Report($"Prüfe „{label}“: Signatur {p.Done} von {p.Total} …"); }));
+                        return (lk, print, (GitHubApps.InstallerCheck?)chk);
+                    }
+                    catch { lk.Dispose(); throw; }
+                }, cts.Token);
+                locks = res.lk;
+                GitHubCheckAfterBackground?.Invoke();
+                // P1: Abbruch (auch durch Entfernen) zwischen Ende der Prüfung und hier – nie starten, keine Karte
+                if (cts.IsCancellationRequested) { Say($"Prüfung von „{label}“ abgebrochen – nichts gestartet.", "oss"); return; } // Sperren gibt finally frei
+                if (res.Item3 is not { } chk)
+                {
+                    using (locks) run();
+                    locks = null;
+                    _core.Audit.Append(Principal.LocalOwner.Name, "github.start", label);
+                    return;
+                }
+                if (_ghStart is { } old) old.Locks.Dispose();
+                _ghStart = new(key, label, exe, dir, chk, locks, run, approve, entryId, res.print); _ghStartRisk = false;
+                locks = null; // gehören jetzt zur Karte
+                _core.Audit.Append(Principal.LocalOwner.Name, "github.start.held", $"{label} ampel={chk.Ampel} fingerabdruck={chk.Sha256}");
+                Say($"„{label}“ ist noch nicht gestartet ({chk.Title}). Der erste Start ist ein eigener Schritt: entscheide in der Karte „Erster Start“ unter „Projekte von GitHub holen“.", "oss"); // N6: springt dorthin
+            }
+            catch (OperationCanceledException) { Say($"Prüfung von „{label}“ abgebrochen – nichts gestartet.", "oss"); }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ObjectDisposedException) { Say($"„{label}“ ließ sich nicht prüfen (fehlt oder gesperrt): {ex.Message}", "oss"); }
+            finally
+            {
+                locks?.Dispose();
+                _ghCheckTask = null; _ghCheckCts = null; _ghCheckLabel = null; _ghCheckLocks = null; _ghCheckEntry = null; cts.Dispose();
+                if (CurrentView == "oss") Show("oss");
+            }
+        }
+    }
+
+    /// <summary>Fortschritt der Hintergrund-Prüfung mit „Abbrechen“ (Oberfläche bleibt bedienbar).</summary>
+    Control GitHubCheckCard()
+    {
+        if (!GitHubStartChecking) { _ghCheckBlock = null; return new Panel(); }
+        _ghCheckBlock = new TextBlock { Name = "oss-check-text", Text = _ghCheckText, Foreground = Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center };
+        return new Border { Name = "oss-check-card", Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Padding = new Thickness(12, 8),
+            Child = new DockPanel { Children = { Dk(Act("oss-check-cancel", "Abbrechen", () => { GitHubCancelCheck(); }), Avalonia.Controls.Dock.Right), _ghCheckBlock } } };
+    }
+
+    /// <summary>Eigene Bestätigung für den ersten Start (Gelb/Rot erst nach dem Häkchen); nur für genau die angezeigte Karte (B6).
+    /// L1: kein zweites Lesen – vor dem Start nur Index (Verzeichnisdaten) und SHA-256 der Startdatei erneut vergleichen; die ausführbaren Inhalte sind seit der Prüfung gesperrt.
+    /// L2: mit Verknüpfungen im Ordner wird keine Erlaubnis gespeichert (Trendo fragt jedes Mal).</summary>
+    public bool GitHubConfirmStart(PendingStart? expected = null)
+    {
+        if (_ghStart is not { } p) return false;
+        if (expected is not null && !ReferenceEquals(expected, p)) return false;
+        if (p.Check.NeedsRiskConsent && !_ghStartRisk) { Say("Dieses Programm ist nicht vollständig vertrauenswürdig signiert. Erst das Risiko ausdrücklich bestätigen, dann starten.", "oss"); return false; }
+        _ghStart = null;
+        using (p.Locks)
+        {
+            bool same;
+            try
+            {
+                using var fs = new FileStream(p.Exe, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
+                same = GitHubApps.FolderIndex(p.Dir).Index == p.Print.Index && p.Print.ExecSha.TryGetValue(Path.GetFullPath(p.Exe), out var h) && Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(fs)) == h;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { same = false; }
+            if (!same) { Say("Der Programmordner hat sich seit der Prüfung verändert – Trendo startet nicht. Bitte erneut „Starten“.", "oss"); return false; }
+            if (p.Print.LinkCount == 0) p.Approve(p.Print.Key);
+            _core.Audit.Append(Principal.LocalOwner.Name, "github.start.consent", $"{p.Label} ampel={p.Check.Ampel} risiko-bestaetigt={_ghStartRisk} gemerkt={p.Print.LinkCount == 0}");
+            p.Run();
+        }
+        _ghStartRisk = false;
+        Say(p.Print.LinkCount == 0 ? $"„{p.Label}“ startet. Künftig startet es ohne Rückfrage, solange sich keine Datei im Programmordner ändert."
+            : $"„{p.Label}“ startet. Wegen der Verknüpfungen im Programmordner fragt Trendo beim nächsten Start wieder.", "oss");
+        return true;
+    }
+
+    /// <summary>Wartenden Start eines Programms verwerfen, das gerade entfernt wird (gibt die Sperren frei).</summary>
+    void GitHubReleaseStart(string id)
+    {
+        if (_ghStart is { } p && p.EntryId == id) { _ghStart = null; _ghStartRisk = false; p.Locks.Dispose(); }
+        if (_ghCheckEntry == id) { _ghCheckCts?.Cancel(); _ghCheckLocks?.Dispose(); } // laufende Prüfung dieses Programms abbrechen, Sperren sofort frei
+    }
+
+    public void GitHubCancelStart()
+    {
+        if (_ghStart is not { } p) return;
+        _ghStart = null; _ghStartRisk = false; p.Locks.Dispose();
+        _core.Audit.Append(Principal.LocalOwner.Name, "github.start.declined", p.Label);
+        Say($"„{p.Label}“ wurde nicht gestartet.", "oss");
+    }
+
+    Control GitHubStartCard()
+    {
+        if (_ghStart is not { } p) return new Panel();
+        return AmpelCard("oss-firststart", p.Check, $"Erster Start: {p.Label} · {p.Check.Title}", $"Programm: {Path.GetFileName(p.Exe)} · Fingerabdruck über alle {p.Print.FileCount} Dateien des Programmordners",
+            p.Check.Ampel == GitHubApps.Ampel.Gruen ? "Starten" : "Trotzdem starten", "Nicht starten",
+            "Ich habe verstanden: Trendo kann dieses Programm (samt seinem Ordner) nicht als vertrauenswürdig bestätigen. Es läuft mit meinen Rechten und ich vertraue dem Projekt trotzdem.",
+            () => _ghStartRisk, ok => { _ghStartRisk = ok && ReferenceEquals(_ghStart, p); if (_ghStartRisk) _core.Audit.Append(Principal.LocalOwner.Name, "github.start.risk", p.Label); },
+            () => { GitHubConfirmStart(p); Show("oss"); }, () => { GitHubCancelStart(); Show("oss"); }, () => false);
+    }
+
+    /// <summary>Für Tests und die Karte: Häkchen „Risiko verstanden“ beim ersten Start.</summary>
+    public void GitHubAcceptStartRisk(bool ok) { _ghStartRisk = ok && _ghStart is not null; }
+
+    // ───── Z3: KI-Programme vom Hersteller ─────
+
+    bool _kiExtGateOpen;
+    /// <summary>Z3a: Start eines nicht portablen KI-Programms (Herstellerinstallation) durch das Tor. Null = schon durch das Tor, normal weiter starten;
+    /// sonst Ergebnis des Tors (true = gestartet, false = Karte „Erster Start“ wartet). <paramref name="again"/> ruft den Start erneut auf.</summary>
+    bool? KiExternalStartGate(string id, string exe, Func<bool> again)
+    {
+        if (_kiExtGateOpen) return null;
+        return ExternalGate("ki:" + id, KiCatalog.Sources.FirstOrDefault(x => x.Id == id)?.Name ?? id, exe, () => { _kiExtGateOpen = true; try { again(); } finally { _kiExtGateOpen = false; } });
+    }
+
+    /// <summary>Z3b: Installer des Herstellers vor dem Start prüfen (Authenticode, Ampel, SHA-256) und eigene Rückfrage (eigener Dialog, nie im selben Klick wie „Einrichten“).
+    /// Die Datei bleibt von der Prüfung bis zum Start gesperrt; Rückgabe: Sperre (vom Aufrufer nach dem Start freizugeben) oder null = nicht ausführen.</summary>
+    async Task<IDisposable?> KiInstallerGate(string file, string name)
+    {
+        FileStream lk;
+        try { lk = GitHubApps.OpenLocked(file); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _srcMsg = "Installer nicht lesbar: " + ex.Message; return null; }
+        var c = GitHubApps.CheckVendorInstaller(file, name, GitHubSignatureOverride, lk);
+        var ampel = c.Ampel switch { GitHubApps.Ampel.Gruen => "● Grün", GitHubApps.Ampel.Gelb => "● Gelb", _ => "● Rot" };
+        var text = $"{ampel} – {c.Title}\n\n{c.Text}\n\nSHA-256: {c.Sha256}" + (c.NeedsRiskConsent ? "\n\nMit „Trotzdem ausführen“ bestätigst du ausdrücklich, dass du dem Hersteller trotzdem vertraust." : "");
+        var ok = await FreigabeAsync(new Wirkung("ki.installer.run", name, $"Installer für {name} ausführen?", text, c.NeedsRiskConsent ? "Trotzdem ausführen" : "Installer ausführen"));
+        _core.Audit.Append(Principal.LocalOwner.Name, ok is null ? "ki.installer.declined" : "ki.installer.consent", $"{name} ampel={c.Ampel} sha256={c.Sha256}");
+        if (ok is null || GitHubApps.Sha256Of(lk) != c.Sha256) { lk.Dispose(); if (ok is not null) _srcMsg = "Die Installer-Datei hat sich verändert – nicht ausgeführt."; return null; }
+        return lk;
+    }
+
     Control GitHubTokenBox()
     {
         var box = new TextBox { Name = "oss-token", PasswordChar = '•', PlaceholderText = "GitHub-Schlüssel (fine-grained, nur Lesen)", Width = 320 };

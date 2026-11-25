@@ -167,7 +167,7 @@ public partial class MainWindow
         if (exe is not null)
         {
             var open = new Button { Name = "print-open-studio", Content = "In Bambu Studio öffnen", Background = Accent, IsEnabled = PrintFile is not null };
-            open.Click += (_, _) => { if (PrintFile is { } f && !_opt.Isolated) { try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(exe) { ArgumentList = { f }, UseShellExecute = false }); _core.Audit.Append(Principal.LocalOwner.Name, "3ddruck.slicer", Path.GetFileName(f)); } catch (System.ComponentModel.Win32Exception ex) { _prMsg = ex.Message; } } };
+            open.Click += (_, _) => { if (PrintFile is { } f && !_opt.Isolated) { void Go() { try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(exe) { ArgumentList = { f }, UseShellExecute = false }); _core.Audit.Append(Principal.LocalOwner.Name, "3ddruck.slicer", Path.GetFileName(f)); } catch (System.ComponentModel.Win32Exception ex) { _prMsg = ex.Message; } } if (GitHubEntryFor(exe) is { } ghe) GitHubGate(ghe, exe, Go); else Go(); } }; // T-0762 N3b
             slicer.Children.Add(open);
         }
         else

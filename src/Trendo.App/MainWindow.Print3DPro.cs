@@ -118,6 +118,20 @@ public partial class MainWindow
         Show("3d-druck");
     }
 
+    bool _bambuGateOpen; // T-0762 N3b: Start läuft schon durch das Tor (GitHubGate)
+
+    /// <summary>T-0762 Z3c: Sperre über die ausführbaren Inhalte von Bambu Studio (nur bei der Version von GitHub). Ok = Ordner unverändert seit der Freigabe.</summary>
+    sealed class BambuLock(GitHubApps.FileLocks locks, bool ok) : IDisposable { public bool Ok { get; } = ok; public void Dispose() => locks.Dispose(); }
+    BambuLock? BambuHold(string exe)
+    {
+        if (GitHubEntryFor(exe) is not { } e) return null;
+        var dir = GitHubProgramDir(e);
+        var locks = new GitHubApps.FileLocks(GitHubApps.ExecutableFiles(dir).Append(exe).Distinct(StringComparer.OrdinalIgnoreCase));
+        var approved = GitHubApps.List(_deps.ToolsRoot).FirstOrDefault(x => x.Id == e.Id)?.StartApproved;
+        var print = GitHubApps.Fingerprint(dir, GitHubApps.ExecSet(dir, exe)); // L1: Index + ausführbare Inhalte (wie beim Start-Tor)
+        return new BambuLock(locks, approved is not null && approved == print.Key && print.LinkCount == 0);
+    }
+
     /// <summary>B3: Modell direkt in Trendo für den Druck vorbereiten (Bambu Studio im Hintergrund) – danach „Hochladen und drucken“.</summary>
     public async Task PrepareForPrint()
     {
@@ -128,6 +142,10 @@ public partial class MainWindow
         if (SliceOverride is { } fake) ok = await fake(f, out3mf);
         else if (BambuStudioExe() is { } exe && !_opt.Isolated)
         {
+            if (!_bambuGateOpen && GitHubEntryFor(exe) is { } ghe) { GitHubGate(ghe, exe, () => { _bambuGateOpen = true; _ = PrepareForPrint().ContinueWith(_ => _bambuGateOpen = false, TaskScheduler.FromCurrentSynchronizationContext()); }); return; } // T-0762 N3b
+            // T-0762 Z3c: Programmdateien bis zum Ende des Laufs gesperrt; vorher prüfen, dass der Ordner noch der freigegebene ist
+            using var held = await Task.Run(() => BambuHold(exe)); // L1: Prüfen im Hintergrund
+            if (held is { Ok: false }) { _prMsg = "Bambu Studio hat sich seit der Freigabe verändert – bitte über „In Bambu Studio öffnen“ erneut bestätigen."; Show("3d-druck"); return; }
             var r = await Task.Run(() => Cli.Run(exe, BambuStudioCli.SliceArgs(f, out3mf), Path.GetDirectoryName(f), 600_000));
             ok = r.Ok && File.Exists(out3mf);
             if (!ok) { _prMsg = "Bambu Studio konnte nicht vorbereiten: " + Short(r.Err.Length > 0 ? r.Err : r.Out) + " – „In Bambu Studio öffnen“ geht immer."; Show("3d-druck"); return; }

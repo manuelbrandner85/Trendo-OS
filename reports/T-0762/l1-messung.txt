@@ -1,0 +1,17 @@
+T-0762 L1 Messung · 2026-11-24 15:20 +01:00 · 16 Kerne
+
+## 3000 Dateien, 286 MB, davon 300 echte System-DLLs (59 MB)
+alt – Start mit Erlaubnis (FolderHashAll, liest alle Dateien): 0,74 s
+neu – Start mit Erlaubnis (Index + SHA-256 der 301 ausführbaren Dateien): 0,10 s (im Hintergrund)
+neu – Bestätigen (nur Index, Verzeichnisdaten): 0,019 s
+neu – erste Prüfung, Signaturen von 301 Dateien (echtes WinVerifyTrust): 3,52 s → Gruen
+neu – zweite Prüfung (Signatur-Zwischenspeicher im Speicher): 0,01 s
+
+## 20000 Dateien, 1900 MB, davon 1000 echte System-DLLs (166 MB)
+alt – Start mit Erlaubnis (FolderHashAll, liest alle Dateien): 7,61 s
+neu – Start mit Erlaubnis (Index + SHA-256 der 1001 ausführbaren Dateien): 0,27 s (im Hintergrund)
+neu – Bestätigen (nur Index, Verzeichnisdaten): 0,039 s
+neu – erste Prüfung, Signaturen von 1001 Dateien (echtes WinVerifyTrust): 5,64 s → Gelb
+neu – zweite Prüfung (Signatur-Zwischenspeicher im Speicher): 0,02 s
+
+Kalt (leerer Dateicache) nicht gemessen: den Windows-Dateicache zu leeren braucht Administratorrechte. Alle Werte warm; die Prüfung läuft in der App im Hintergrund.
