@@ -35,6 +35,16 @@ public static class Browsers
 
     public static string DownloadsFolder() => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
 
-    public static bool Risky(string file) => Path.GetExtension(file).ToLowerInvariant() is ".exe" or ".msi" or ".bat" or ".cmd" or ".ps1" or ".vbs" or ".js" or ".scr" or ".com";
+    /// <summary>Gemeinsame Liste für Downloads, Mail-Anhänge und Dateien vom Handy (T-0767 R3-N1): Dateien, die beim Öffnen etwas ausführen,
+    /// installieren, einbinden oder umleiten können. Die frühere Liste (.exe .msi .bat .cmd .ps1 .vbs .js .scr .com) ist vollständig enthalten.</summary>
+    static readonly HashSet<string> RiskyExt = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".exe", ".msi", ".bat", ".cmd", ".ps1", ".vbs", ".js", ".scr", ".com",
+        ".msix", ".appx", ".lnk", ".url", ".scf", ".psm1", ".vbe", ".jse", ".wsf", ".wsh", ".hta", ".cpl", ".jar", ".reg", ".dll",
+        ".pif", ".application", ".appref-ms", ".msp", ".mst", ".xll", ".settingcontent-ms", ".wsc", ".sct", ".inf", ".msc", ".ps1xml", ".psd1",
+        ".chm", ".iso", ".img", ".vhd", ".vhdx", ".diagcab", ".gadget", ".docm", ".xlsm", ".pptm",
+    };
+
+    public static bool Risky(string file) => RiskyExt.Contains(Path.GetExtension(file)) || Path.GetFileName(file).Equals("desktop.ini", StringComparison.OrdinalIgnoreCase);
     public static bool Unfinished(string file) => Path.GetExtension(file).ToLowerInvariant() is ".crdownload" or ".part" or ".partial" or ".tmp";
 }

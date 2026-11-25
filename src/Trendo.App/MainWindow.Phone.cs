@@ -51,6 +51,7 @@ public partial class MainWindow
         if (adb is null) { W7Say("Android-Werkzeug (adb) fehlt. Trendo installiert es nur, wenn du zustimmst.", "handy"); return; }
         var (e, _) = await Runner.RunAsync(adb, args);
         _core.Audit.Append("local-owner", "phone.push", $"{System.IO.Path.GetFileName(file)} sha={LetterKit.Sha(file)[..16]} {d.Link} exit={e}");
+        PhoneRun.Record(PhoneRunLog.Steps.CablePush, "adb:" + d.Serial, null, path: e == 0 ? file : null, ok: e == 0, note: e == 0 ? "adb push in den Download-Ordner" : $"adb meldet Exit {e}");
         W7Say(e == 0 ? m + " ✓" : $"Übertragung fehlgeschlagen (Exit {e}).", "handy");
     }
 
@@ -73,6 +74,7 @@ public partial class MainWindow
     {
         var (ok, m, f) = await AndroidSide.LatestPhotoAsync(Runner, AdbPath(), d.Serial, PhoneFolder, consent);
         if (ok) _core.Audit.Append("local-owner", "phone.photo", $"{System.IO.Path.GetFileName(f)} {d.Link} sha={LetterKit.Sha(f!)[..16]}");
+        if (ok) PhoneRun.Record(PhoneRunLog.Steps.CablePull, "adb:" + d.Serial, null, path: f, note: "neuestes Foto per adb geholt");
         W7Say(m, "handy");
     }
 
