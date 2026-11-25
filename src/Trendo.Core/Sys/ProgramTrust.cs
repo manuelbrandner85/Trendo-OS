@@ -52,7 +52,8 @@ public static class ProgramTrust
     static IEnumerable<string> Programs(string dir)
     {
         var opt = new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true, AttributesToSkip = FileAttributes.ReparsePoint, MaxRecursionDepth = 8 };
-        return Directory.EnumerateFiles(dir, "*.exe", opt).Concat(Directory.EnumerateFiles(dir, "*.dll", opt)).Take(5000);
+        // T-0764 (5. Prüfrunde M2): alle Dateien des Programmordners samt Unterordnern (Skripte, app.asar, Daten …) – außer der Kennungsdatei
+        return Directory.EnumerateFiles(dir, "*", opt).Where(f => !string.Equals(System.IO.Path.GetFileName(f), Software.PortableMarker, StringComparison.OrdinalIgnoreCase)).Take(50_000);
     }
 
     /// <summary>Einträge (Pfad, Prüfsumme) in die geschützte Liste schreiben – erzeugt den Schlüssel, falls es noch keinen gibt.</summary>
@@ -99,7 +100,56 @@ public static class ProgramTrust
         catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { return false; }
         var inside = roots.Where(r => !string.IsNullOrWhiteSpace(r)).Select(r => System.IO.Path.TrimEndingDirectorySeparator(System.IO.Path.GetFullPath(r)) + System.IO.Path.DirectorySeparatorChar)
             .Any(r => full.StartsWith(r, StringComparison.OrdinalIgnoreCase) && !full[r.Length..].StartsWith('.') && full[r.Length..].Contains(System.IO.Path.DirectorySeparatorChar));
-        return inside && ListedWithDlls(full);
+        return inside && ListedFolder(full, roots);
+    }
+
+    /// <summary>T-0764 (5. Prüfrunde M2): Programmordner (direkt unter einem Wurzelordner) – jede Datei darin, auch in Unterordnern, muss mit
+    /// gültigem Eintrag und unveränderter Prüfsumme in der Liste stehen; jede neue oder ausgetauschte Datei führt zur Ablehnung (fail-closed).</summary>
+    static bool ListedFolder(string full, IEnumerable<string> roots)
+    {
+        if (ProgramFolder(full, roots) is not { } folder) return false;
+        if (DirFor(full) is not { } d || Key(d, create: false) is not { } key) return false;
+        var map = Load(d).ToDictionary(e => Norm(e.Path), StringComparer.Ordinal);
+        if (!Listed(d, key, map, full)) return false;
+        try { return Programs(folder).All(f => Listed(d, key, map, f)); }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return false; }
+    }
+
+    /// <summary>Programmordner einer Datei: der Ordner direkt unter dem Wurzelordner, der sie enthält.</summary>
+    static string? ProgramFolder(string full, IEnumerable<string> roots)
+    {
+        foreach (var r in roots.Where(r => !string.IsNullOrWhiteSpace(r)))
+        {
+            var root = System.IO.Path.TrimEndingDirectorySeparator(System.IO.Path.GetFullPath(r)) + System.IO.Path.DirectorySeparatorChar;
+            if (!full.StartsWith(root, StringComparison.OrdinalIgnoreCase)) continue;
+            var top = full[root.Length..].Split(System.IO.Path.DirectorySeparatorChar)[0];
+            if (top.Length > 0 && !top.StartsWith('.')) return System.IO.Path.Combine(root, top);
+        }
+        return null;
+    }
+
+    /// <summary>Steht für diese Datei überhaupt ein Eintrag in der geschützten Liste (unabhängig vom jetzigen Inhalt)?</summary>
+    public static bool IsKnown(string path)
+    {
+        try { return DirFor(path) is { } d && Load(d).Any(e => Norm(e.Path) == Norm(path)); }
+        catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { return false; }
+    }
+
+    /// <summary>T-0764 (5. Prüfrunde M1): Liegt das Programm in einem Ordner mit alter Kennungsdatei (älterer Stand, nicht in der geschützten Liste)?
+    /// Dann soll ein Erwachsener es einmal neu einrichten.</summary>
+    public static bool HasLegacyMarker(string path)
+    {
+        if (IsKnown(path)) return false; // in der geschützten Liste (dann ist der Ordner nur verändert – keine Neu-Einrichtungs-Meldung)
+        try
+        {
+            for (var d = System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(path)); d is not null; d = System.IO.Path.GetDirectoryName(d))
+            {
+                if (File.Exists(System.IO.Path.Combine(d, Software.PortableMarker))) return true;
+                if (Stores.Keys.Any(k => string.Equals(System.IO.Path.TrimEndingDirectorySeparator(k), d, StringComparison.OrdinalIgnoreCase))) break;
+            }
+        }
+        catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { }
+        return false;
     }
 
     static bool ListedWithDlls(string full) => (DirFor(full) is { } own ? [own] : AllDirs).Any(d => ListedWithDlls(d, full));
@@ -118,30 +168,7 @@ public static class ProgramTrust
         return true;
     }
 
-    /// <summary>M1: Einmalige Übernahme für Erwachsene – alte Kennungsdateien (mit Prüfsummen) in den Programmordnern werden in die geschützte Liste
-    /// übernommen, soweit die Dateien noch genau so sind. Nur in einem Erwachsenen-Profil aufrufen; danach zählt nur noch die Liste.</summary>
-    public static int MigrateMarkers(Principal by, IEnumerable<string> roots)
-    {
-        if (!Rbac.Has(by, Permission.ManageSoftware)) return 0;
-        var items = new List<(string, string)>();
-        foreach (var root in roots.Where(Directory.Exists).Where(r => DirFor(System.IO.Path.Combine(r, "x")) is { } d && !File.Exists(System.IO.Path.Combine(d, "kennungen-uebernommen-" + Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(Norm(r))))[..12]))))
-            foreach (var dir in Directory.GetDirectories(root).Where(x => !System.IO.Path.GetFileName(x).StartsWith('.')))
-            {
-                var mf = System.IO.Path.Combine(dir, Software.PortableMarker);
-                if (!File.Exists(mf)) continue;
-                Marker? m;
-                try { m = JsonSerializer.Deserialize<Marker>(File.ReadAllText(mf)); } catch (Exception e) when (e is JsonException or IOException) { continue; }
-                foreach (var (rel, sha) in m?.Dateien ?? [])
-                {
-                    var f = System.IO.Path.Combine(dir, rel.Replace('/', System.IO.Path.DirectorySeparatorChar));
-                    try { if (File.Exists(f) && string.Equals(Sha(f), sha, StringComparison.OrdinalIgnoreCase)) items.Add((f, sha)); } catch (IOException) { }
-                }
-            }
-        if (items.Count > 0) Record(items);
-        foreach (var root in roots.Where(Directory.Exists))
-            if (DirFor(System.IO.Path.Combine(root, "x")) is { } d) { Directory.CreateDirectory(d); File.WriteAllText(System.IO.Path.Combine(d, "kennungen-uebernommen-" + Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(Norm(root))))[..12]), DateTime.Now.ToString("O")); }
-        return items.Count;
-    }
+    // T-0764 (5. Prüfrunde M1): Die Übernahme alter Kennungsdateien ist ersatzlos gestrichen – ältere Stände richtet ein Erwachsener einmal neu ein.
 
     // ---------- Schlüssel (DPAPI) ----------
     static byte[]? Key(string d, bool create)
@@ -201,21 +228,43 @@ public static class ProgramTrust
 
     /// <summary>T-0764 (M2): Erwarteter Herausgeber (Authenticode) je Programmdatei, die in Benutzerordnern liegen darf (%LOCALAPPDATA%\Programs,
     /// winget-Ablage). Nur bekannte, sicher zugeordnete Einträge – alles andere braucht einen Eintrag in der Vertrauensliste.</summary>
-    public static readonly IReadOnlyDictionary<string, string> ExpectedPublishers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    public sealed record ExpectedSigner(string Publisher, string OriginalFilename, string ProductName);
+    public static readonly IReadOnlyDictionary<string, ExpectedSigner> ExpectedPublishers = new Dictionary<string, ExpectedSigner>(StringComparer.OrdinalIgnoreCase)
     {
-        ["Code.exe"] = "Microsoft Corporation",
+        ["Code.exe"] = new("Microsoft Corporation", "electron.exe", "Visual Studio Code"),
     };
 
-    /// <summary>Tests: ersetzt die Signaturprüfung (Datei → Herausgeber oder null).</summary>
-    public static Func<string, string?>? SignatureOverride { get; set; }
-
-    static bool SignedByExpected(string full)
+    /// <summary>T-0764 (5. Prüfrunde H2): nur eingebettete, gültige Signatur (keine Katalog-Signatur, Sperrlisten geprüft) des erwarteten Herausgebers
+    /// UND passende Versionsinfos (OriginalFilename, ProductName). Eine kopierte, umbenannte Windows-Datei (z. B. cmd.exe als Code.exe) zählt nicht.</summary>
+    public static bool SignedByExpected(string full)
     {
         if (!ExpectedPublishers.TryGetValue(System.IO.Path.GetFileName(full), out var want)) return false;
-        string? pub;
-        if (SignatureOverride is { } o) pub = o(full);
-        else { var s = Authenticode.Check(full); pub = s.State == SigState.Gueltig ? s.Publisher : null; }
-        return pub is not null && string.Equals(pub, want, StringComparison.OrdinalIgnoreCase);
+        var s = Authenticode.CheckEmbeddedStrict(full);
+        if (s.State != SigState.Gueltig || s.ViaCatalog || !string.Equals(s.Publisher, want.Publisher, StringComparison.OrdinalIgnoreCase)) return false;
+        try
+        {
+            var v = System.Diagnostics.FileVersionInfo.GetVersionInfo(full);
+            return string.Equals(v.OriginalFilename?.Trim(), want.OriginalFilename, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(v.ProductName?.Trim(), want.ProductName, StringComparison.OrdinalIgnoreCase);
+        }
+        catch (FileNotFoundException) { return false; }
+    }
+
+    /// <summary>T-0764 (5. Prüfrunde H1): Programme mit eigener Skript-Konsole bzw. Makros (IDEs, Blender, Unreal-, Godot-Editor, LibreOffice …).
+    /// Im Kinderprofil starten sie nie mit Oberfläche – auch nicht bei festen Aufrufen von Trendo. Ausnahme außerhalb dieser Prüfung:
+    /// Blender im Hintergrund (-b) mit Trendos eigenen festen Skripten.</summary>
+    public static readonly HashSet<string> ConsolePrograms = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "code", "code-insiders", "codium", "vscodium", "cursor", "windsurf", "zed", "blender", "blender-launcher", "unrealeditor", "unrealeditor-cmd", "ue4editor",
+        "soffice", "soffice.bin", "swriter", "scalc", "simpress", "sdraw", "sbase", "smath", "devenv", "rider64", "idea64", "pycharm64", "webstorm64", "clion64",
+        "studio64", "eclipse", "notepad++", "sublime_text", "atom", "arduino", "arduino ide", "processing", "spyder", "jupyter", "jupyter-lab", "thonny", "idle", "kate", "geany",
+        "unity", "unity hub", "excel", "winword", "powerpnt", "msaccess",
+    };
+
+    public static bool IsConsoleProgram(string path)
+    {
+        var n = System.IO.Path.GetFileNameWithoutExtension(path.Trim().Trim('"'));
+        return ConsolePrograms.Contains(n) || n.StartsWith("godot", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>T-0764 (P3-4, M2): Fester Ort für Programme, die Trendo selbst auswählt (z. B. Blender aus der Erkennung) – im Kinderprofil.

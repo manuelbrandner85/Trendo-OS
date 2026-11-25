@@ -189,6 +189,7 @@ public partial class MainWindow
         var results = Path.Combine(_core.DataRoot, "code-ki", "testlaeufe", Guid.NewGuid().ToString("N")[..12]);
         var plan = DevBuild.Test(p, results);
         if (plan.Cmd is not { } cmd) { _ckMsg += " " + (plan.Blocked ?? plan.Note ?? "Für dieses Projekt kennt Trendo keinen Test."); _progMsg[CodeAiKey] = _ckMsg; Show(CodeAiKey); return; }
+        if (!DarfAusfuehren("codeai.ki.test", out var nein)) { _ckOut = nein; Show(CodeAiKey); return; } // T-0764 (5. Prüfrunde H3)
         if (_opt.Isolated && CodeAiRunOverride is null && !CodeRealToolsInTests) { _ckOut = "Testmodus: Trendo startet keine Programme."; Show(CodeAiKey); return; }
         var limit = int.TryParse(d.Text("timeout"), out var t) ? Math.Clamp(t, 10, 3600) : 300;
         var name = Path.GetFileName(r.TrimEnd(Path.DirectorySeparatorChar));

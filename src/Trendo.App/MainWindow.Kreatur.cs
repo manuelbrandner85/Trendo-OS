@@ -38,6 +38,7 @@ public partial class MainWindow
         if (bl is null && KreaturRunOverride is null) { await AskBlender(); return null; }
         if (_kreaturBusy) return null;
         if (bl is not null && !ToolStartAllowed(bl)) { _kreaturMsg = Rbac.NurErwachseneStart; Show("3d"); return null; } // T-0764 (P3-4): Blender-Pfad im Kinderprofil nur von festem Ort
+        if (sichtbar && !CanManageSoftware) { _kreaturMsg = Rbac.NurErwachseneKonsole + " Im Hintergrund rendern („Vorschaubild rendern“) geht."; _core.Audit.Append(CurrentPrincipal.Name, "rbac.denied", "User fehlt ManageSoftware: start blender (Oberfläche)"); Show("3d"); return null; } // T-0764 (5. Prüfrunde H1): Blender-Oberfläche nie für Kinder
         _kreaturBusy = true;
         try
         {

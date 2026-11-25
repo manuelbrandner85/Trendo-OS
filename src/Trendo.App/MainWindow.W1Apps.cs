@@ -34,7 +34,7 @@ public partial class MainWindow
         // T-0764 (4. Prüfrunde M3): Ordner öffnet ein Kinderprofil in Trendos eigenem Dateimanager, nie im Windows-Explorer
         if (!CanManageSoftware && !string.IsNullOrWhiteSpace(target) && target.IndexOfAny(Path.GetInvalidPathChars()) < 0 && Directory.Exists(target))
         { _core.Audit.Append(CurrentPrincipal.Name, "ordner.trendo-dateien", Path.GetFileName(Path.TrimEndingDirectorySeparator(target))); FilesGo(target); return true; }
-        return LaunchTry(() => _core.Integrations.LaunchDirect(CurrentPrincipal, target, _core.Audit));
+        return LaunchTry(() => _core.Integrations.LaunchDirect(CurrentPrincipal, target, _core.Audit), target);
     }
 
     /// <summary>T-0764 (4. Prüfrunde H): Programme, Skripte und Befehle ausführen (Code-Werkstatt, Terminal, n8n, Claude Code, Hochladen) – nur
@@ -46,9 +46,9 @@ public partial class MainWindow
         catch (UnauthorizedAccessException e) { why = e.Message; Toast(e.Message); return false; }
     }
     public const string NurErwachseneAusfuehren = "Programme, Skripte und Befehle ausführen darf nur ein Erwachsenen-Profil. Schreiben und Speichern geht weiter.";
-    internal bool LaunchAs(string exe, string arg, bool userExe = false) => LaunchTry(() => _core.Integrations.LaunchDirect(CurrentPrincipal, exe, _core.Audit, arg, userExe));
+    internal bool LaunchAs(string exe, string arg, bool userExe = false) => LaunchTry(() => _core.Integrations.LaunchDirect(CurrentPrincipal, exe, _core.Audit, arg, userExe), exe);
     /// <param name="internalCall">T-0764 (P3-2): fester Aufruf aus Trendos Code (Programm und Parameter legt der Code fest).</param>
-    internal bool LaunchArgsAs(string exe, IReadOnlyList<string> args, bool internalCall = true) => LaunchTry(() => _core.Integrations.LaunchArgs(CurrentPrincipal, exe, _core.Audit, args, internalCall));
+    internal bool LaunchArgsAs(string exe, IReadOnlyList<string> args, bool internalCall = true) => LaunchTry(() => _core.Integrations.LaunchArgs(CurrentPrincipal, exe, _core.Audit, args, internalCall), exe);
     /// <summary>Letzte abgelehnte Startmeldung (Tests, Anzeige).</summary>
     public string LastLaunchRefused { get; private set; } = "";
     static bool Under(string path, string dir)
@@ -59,6 +59,26 @@ public partial class MainWindow
             return Path.GetFullPath(path).StartsWith(d, StringComparison.OrdinalIgnoreCase) && !Path.GetFullPath(path).Contains(Path.DirectorySeparatorChar + ".entfernt" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
         }
         catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { return false; }
+    }
+
+    /// <summary>T-0764 (5. Prüfrunde M2): Start eines Trendo-Programms im Kinderprofil – die Prüfung aller Dateien des Programmordners läuft im
+    /// Hintergrund (Task.Run) mit Hinweis „wird geprüft“; Ergebnis fail-closed. Tests warten darauf.</summary>
+    public Task ChildLaunchTask { get; private set; } = Task.CompletedTask;
+
+    bool LaunchTry(Action a, string? program)
+    {
+        if (!CanManageSoftware && program is { } p && p.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) && File.Exists(p)
+            && (Under(p, _deps.ToolsRoot) || Under(p, Path.Combine(_core.DataRoot, "werkzeuge"))))
+        {
+            Toast("Programm wird geprüft …");
+            ChildLaunchTask = Task.Run(() =>
+            {
+                try { a(); }
+                catch (UnauthorizedAccessException e) { _ui.Post(() => { LastLaunchRefused = e.Message; Toast(e.Message); }); }
+            });
+            return true;
+        }
+        return LaunchTry(a);
     }
 
     bool LaunchTry(Action a)

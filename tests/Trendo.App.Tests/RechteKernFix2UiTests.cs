@@ -80,7 +80,7 @@ public class RechteKernFix2Ui
             // Dokument: erlaubt; Trendo-eigenes Programm im Werkzeugordner: erlaubt
             var doc = F("brief.pdf"); await c.OpenHit(new SearchHit("datei", "brief", doc, 1));
             var own = Path.Combine(root, "werkzeuge", "notiz", "notiz.exe"); Directory.CreateDirectory(Path.GetDirectoryName(own)!); File.WriteAllText(own, "MZ"); Trendo.Core.Sys.ProgramTrust.WriteMarker(Path.GetDirectoryName(own)!, "notiz", "test"); // T-0764 (P3-1): Vertrauen nur mit Kennung und Prüfsumme
-            await c.OpenHit(new SearchHit("datei", "notiz", own, 1));
+            await c.OpenHit(new SearchHit("datei", "notiz", own, 1)); await c.ChildLaunchTask; Settle(); // 5. Prüfrunde M2: Prüfung des Programmordners läuft im Hintergrund
             Assert.Equal([doc, own], l.Opened);
             // Dateimanager: dieselbe Regel vor dem Testersatz
             var opened = new List<string>(); c.FilesOpenOverride = opened.Add;

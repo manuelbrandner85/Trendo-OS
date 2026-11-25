@@ -110,6 +110,14 @@ public sealed class Integrations(ApprovalGate gate, ProjectStore projects, IProc
         if (by != Principal.ChildProfile) Rbac.Demand(by, Permission.ApproveAction, audit);
         if (Rbac.Has(by, Permission.ManageSoftware)) return; // Erwachsene: wie bisher, ohne Prüfsummen-Rechnen
         void No(string what) => Rbac.DemandSoftware(by, "start " + what, audit, Rbac.NurErwachseneStart);
+        // T-0764 (5. Prüfrunde H1): Konsolen-Programme nie – unabhängig von internalCall
+        foreach (var c in userTargets.Append(exe).Concat(rawArgs ?? []).Where(x => x is not null))
+            if (Sys.ProgramTrust.IsConsoleProgram(c!) && (c == exe || c!.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) || File.Exists(c!)))
+                Rbac.DemandSoftware(by, "start " + Path.GetFileName(c!.Trim('"')), audit, Rbac.NurErwachseneKonsole);
+        // T-0764 (5. Prüfrunde M1): älterer Stand mit Kennungsdatei, aber ohne Eintrag in der geschützten Liste → klarer Hinweis
+        foreach (var c in userTargets.Append(exe).Where(x => x is not null && x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) && File.Exists(x)))
+            if (Sys.ProgramTrust.HasLegacyMarker(c!) && TrustedProgramPath?.Invoke(Path.GetFullPath(c!)) != true)
+                Rbac.DemandSoftware(by, "start " + Path.GetFileName(c!), audit, Rbac.NurErwachseneNeuEinrichten);
         foreach (var t in userTargets)
         {
             if (t is null) continue;

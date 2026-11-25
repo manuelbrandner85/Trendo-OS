@@ -369,6 +369,8 @@ public partial class MainWindow
             if (GarmentRunOverride is { } fake) problem = await fake(jobFile);
             else
             {
+                // T-0764 (5. Prüfrunde H1): diese Anprobe startet Blender mit Oberfläche (ohne -b) – im Kinderprofil nicht
+                if (!CanManageSoftware) { GarmentMessage = Rbac.NurErwachseneKonsole; _core.Audit.Append(CurrentPrincipal.Name, "rbac.denied", "User fehlt ManageSoftware: start blender (Anprobe)"); return; }
                 var script = Path.Combine(dir, "trendo_anprobe.py");
                 using (var s = AssetLoader.Open(new Uri("avares://TrendoOS/Assets/ki/trendo_anprobe.py"))) using (var t = File.Create(script)) await s.CopyToAsync(t);
                 var r = await Task.Run(() => Cli.Run(blender!, ["--python", script, "--", jobFile], dir, 1_800_000));

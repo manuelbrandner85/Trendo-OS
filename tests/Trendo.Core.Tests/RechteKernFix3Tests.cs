@@ -99,7 +99,7 @@ public class RechteKernFix3
         var (f, _) = Setup(); using var _f = f;
         var foreign = Path.Combine(f.Root, "fremd", "tool.exe"); Directory.CreateDirectory(Path.GetDirectoryName(foreign)!); File.WriteAllText(foreign, "MZ");
         Assert.Throws<UnauthorizedAccessException>(() => f.Core.Integrations.LaunchDirect(Principal.ChildProfile, foreign, f.Core.Audit, ""));
-        var pf = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Blender Foundation", "blender.exe");
+        var pf = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Beispiel GmbH", "werkzeug.exe"); // 5. Prüfrunde: Blender ist jetzt ein Konsolen-Programm (nie für Kinder) – hier ein gewöhnliches Programm
         Assert.True(ProgramTrust.InFixedLocation(pf));
         Assert.False(ProgramTrust.InFixedLocation(foreign));
         f.Core.Integrations.LaunchDirect(Principal.ChildProfile, pf, f.Core.Audit, ""); // FakeLauncher: nichts wird wirklich gestartet

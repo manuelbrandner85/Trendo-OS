@@ -262,6 +262,39 @@ Grundlage ist die Gegenprüfung von `f8492745c`.
 - Wirksamer Kinderschutz braucht ein eigenes Windows-Standardkonto. So steht es auch auf der Personen-Seite.
 - Direkte `Process.Start`-Aufrufe für bekannte Werkzeuge (ffmpeg, mpv, Ollama, KI-Server, Musik-Werkzeuge, Blender und Unreal außerhalb der Kreatur-Werkstatt) sind weiter nicht einzeln über `ToolStartAllowed` geführt. Ihre Pfade stammen aus Trendos Erkennung beziehungsweise aus der geprüften tools.json.
 
+## Fünfte Prüfrunde (Commit „T-0764 fix5“)
+
+Grundlage ist die Gegenprüfung von `90d49ca70`.
+
+**Rot auf 90d49ca70:** `reports/T-0764/rot-fix5-app.log` – 8 von 8 rot (H1 mit 3 Fällen, H2, H3/N3, M1, M2 mit 2 Fällen).
+- Bei H2 zeigt der Beleg genau den Befund: `Authenticode.Check` hält eine kopierte cmd.exe namens Code.exe für „Gueltig, Microsoft Corporation, Katalog=True“.
+- Die Testdatei gab es nur für diesen Beleg; sie ist nicht eingecheckt. Sie startet nichts echt und nutzt keine statischen Hooks.
+
+| Befund | Was geändert | Test (grün) |
+|---|---|---|
+| H1 Konsolen-Programme | Neu im Kern `ProgramTrust.ConsolePrograms`: VS Code, Codium, Cursor, Windsurf, Zed, Blender, Unreal-Editor, alles, was mit „Godot“ beginnt, LibreOffice (soffice/swriter/scalc …), Visual Studio, JetBrains-IDEs, Android Studio, Eclipse, Notepad++, Sublime, Arduino, Spyder, Jupyter, Thonny, IDLE, Kate, Geany, Unity sowie Excel/Word/PowerPoint/Access (Makros). Im Kinderprofil verweigert `DemandLaunch` sie unabhängig von `internalCall`, mit dem Hinweis „Programme mit eigener Skript-Konsole … öffnet nur ein Erwachsenen-Profil“. Damit sind gesperrt: W4Web „In VS Code öffnen“, W4Studio3D (Blender-Oberfläche), W4Game (Unreal) und ProgGame „Spielen“ (jetzt über `LaunchArgsAs` statt direktem `Process.Start`). Zusätzlich gesperrt: Kreatur „In Blender bauen (sichtbar)“ und die Kleidungs-Anprobe (Blender ohne `-b`). Erlaubt bleibt Blender im Hintergrund (`-b --python` mit Trendos eigenem Skript), also „Vorschaubild rendern“. | Core `RechteKernFix5.Konsolen_Programme` (5 Programme, auch fester Aufruf; Erwachsene wie bisher); App `Konsole_und_Papierkorb` |
+| H2 Signatur | `ExpectedPublishers` verlangt jetzt (1) eine in der Datei eingebettete, gültige Signatur – keine Katalog-Signatur (neu `Authenticode.CheckEmbeddedStrict`), (2) den erwarteten Herausgeber und (3) passende Versionsinfos `OriginalFilename` und `ProductName` (für Code.exe: electron.exe / Visual Studio Code, am echten VS Code dieses PCs abgelesen). | **echt** `RechteKernFix5.Signatur_streng`: kopierte cmd.exe als Code.exe → nein; echtes VS Code → ja |
+| H3 Code mit KI | `CodeAiRunTests`: zuerst `DarfAusfuehren`, dann `FreigabeAsync(Wirkung("code-ki.test"))`, Ausführung in `Approvals.Execute`. Auch der Testlauf nach „Mit Claude ändern“ (CodeAiKi) prüft die Rolle zuerst. Weitere Aufrufer von `TestCommand`/`BuildCommand`/`RunCommand`: Code-Werkstatt (schon mit `DarfAusfuehren`), KI-Weg `SoftwarePromptAdapter` (nur nach Freigabe, die ein Kind nicht erteilen kann). Die übrigen Fundstellen zeigen den Befehl nur an. | App `RechteKernFix5Ui.Code_mit_KI_Tests` (Kind: keine Anfrage, nichts gestartet; Erwachsene: „Nein“ → nichts ausgeführt) |
+| M1 Übernahme | `MigrateMarkers` ist ersatzlos gestrichen. Liegt eine alte Kennungsdatei vor, das Programm steht aber nicht in der geschützten Liste, lautet die Ablehnung im Kinderprofil: „Dieses Programm stammt aus einem älteren Trendo-Stand. Bitte einmal als Erwachsener neu einrichten …“. Für Erwachsene ändert sich nichts. | Core `RechteKernFix4.Keine_Uebernahme` (ersetzt den früheren Übernahme-Test) |
+| M2 Ganzer Ordner | Die Liste erfasst beim Einrichten alle Dateien des Programmordners samt Unterordnern (außer der Kennungsdatei). Vor dem Start im Kinderprofil muss jede Datei eingetragen und unverändert sein; neue Dateien führen zur Ablehnung (fail-closed). In der App läuft diese Prüfung für Trendo-Programme im Kinderprofil in `Task.Run`, mit Hinweis „Programm wird geprüft …“ und anschließender Meldung. | Core `RechteKernFix5.Ganzer_Ordner` (neue .py in Unterordner, ausgetauschte app.asar, neue .ini); App `Pruefung_im_Hintergrund` |
+| N1 Sperrlisten | `CheckEmbeddedStrict` prüft die Sperrlisten der ganzen Kette (`WTD_REVOKE_WHOLECHAIN`, `WTD_REVOCATION_CHECK_CHAIN`), nur aus dem Zwischenspeicher von Windows (`WTD_CACHE_ONLY_URL_RETRIEVAL`) – ohne Warten auf das Netz. Fehlt dort eine Auskunft, gilt die Signatur als nicht bestätigt. Das bestehende `Authenticode.Check` (Gefahren-Prüfung T-0755) bleibt unverändert. | im Test `Signatur_streng` enthalten (echtes VS Code besteht mit Sperrlisten-Prüfung) |
+| N3 Papierkorb | Der Papierkorb-Knopf in der Leiste ist im Kinderprofil ausgeblendet; die irreführende Meldung entfällt. | App `Konsole_und_Papierkorb` |
+
+Angepasste bestehende Tests (wegen der strengeren Regeln, nicht abgeschwächt):
+- `RechteKernFix3.Feste_Orte` und `RechteKernFix4.Feste_Orte_streng` nutzen statt blender.exe ein gewöhnliches Programm, denn Blender ist jetzt ein Konsolen-Programm.
+- `RechteKernFix2Ui.Starten_zentral` wartet auf die Hintergrundprüfung (M2).
+
+**Tests:**
+- Build: 0 Fehler.
+- Core gezielt: 289 von 289 grün (`gruen-fix5-core.log`). Darin enthalten sind alle Authenticode-Nutzer (T0755-Klassen) – das bisherige Verhalten ist unverändert.
+- App gezielt: 1157 Tests in 266 Klassen, 0 rot, jeder Teil mit Exitcode 0 (`gruen-fix5-app.log`); dazu EveryButton_Alltag einzeln mit Exitcode 0 (`gruen-fix5-app-everybutton.log`). Der Lauf ist in 6 Prozesse aufgeteilt. Grund: Der PC war durch ein fremdes Blender dauerhaft zu 100 % ausgelastet, und ein einzelner Prozess mit allen Klassen endete zweimal mit Exitcode 1 (Zeitlimit von EveryButton, danach „Foreground threads were left running“, `fix5-app-lauf1-zeitlimit.log`). Teil 03 und 04 (Seitenrundgänge wie PathPickAuditTests) liefen zuerst ins Zeitlimit von 1500 s, ohne roten Test, und waren bei der Wiederholung mit 3600 s grün mit Exitcode 0. Alle seit fix4 neuen Klassen wurden zusätzlich einzeln mit Exitcode 0 geprüft.
+
+**Grenzen und offene Punkte:**
+- Ein Programm, das beim Laufen Dateien in seinem eigenen Ordner anlegt (Einstellungen, Zwischenspeicher), lässt sich danach im Kinderprofil erst wieder starten, wenn ein Erwachsener es neu einrichtet. Das ist bewusst fail-closed.
+- Die Herausgeber-Liste ist bewusst klein (nur Code.exe, und das ist ohnehin ein Konsolen-Programm).
+- Ohne Sperrlisten-Auskunft im Zwischenspeicher gilt eine Signatur nicht. Das Netz wird nicht abgefragt.
+- Weiter gilt: Unter einem gemeinsamen Windows-Konto ist der Kinderschutz keine harte Grenze.
+
 ## Abnahmekriterien
 
 | # | Kriterium | Urteil |

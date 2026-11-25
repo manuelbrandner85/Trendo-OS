@@ -95,9 +95,7 @@ public sealed partial class MainWindow : Window
         var trustDir = Path.Combine(PersonStore.BaseOf(core.DataRoot), "sicherheit");
         Trendo.Core.Sys.ProgramTrust.RegisterStore(_deps.ToolsRoot, trustDir);
         Trendo.Core.Sys.ProgramTrust.RegisterStore(Path.Combine(core.DataRoot, "werkzeuge"), trustDir);
-        if (!UserSettings.Load(core.DataRoot).Child) // einmalige Übernahme alter Kennungen nur in einem Erwachsenen-Profil
-            try { Trendo.Core.Sys.ProgramTrust.MigrateMarkers(Principal.LocalOwner, [_deps.ToolsRoot, Path.Combine(core.DataRoot, "werkzeuge")]); }
-            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        // T-0764 (5. Prüfrunde M1): keine Übernahme alter Kennungen mehr – ältere Stände richtet ein Erwachsener einmal neu ein
         core.Integrations.TrustedProgramPath = p => string.Equals(p, Environment.ProcessPath, StringComparison.OrdinalIgnoreCase)
             || Trendo.Core.Sys.ProgramTrust.Verified(p, [_deps.ToolsRoot, Path.Combine(core.DataRoot, "werkzeuge")]);
         InitVollpaketOnline(); // ohne Vollpaket: dieselben Pakete vom GitHub-Release
@@ -641,6 +639,7 @@ public sealed partial class MainWindow : Window
         ToolTip.SetTip(trash, "Papierkorb"); Avalonia.Automation.AutomationProperties.SetName(trash, "Papierkorb");
         ToolTip.SetPlacement(trash, Avalonia.Controls.PlacementMode.Top); ToolTip.SetVerticalOffset(trash, -6);
         trash.Click += (_, _) => LaunchAs(OperatingSystem.IsWindows() ? "shell:RecycleBinFolder" : "trash://");
+        trash.IsVisible = CanManageSoftware; // T-0764 (5. Prüfrunde N3): Papierkorb im Windows-Explorer – im Kinderprofil ausgeblendet (gelöschte Dateien zeigt Trendos Dateimanager)
         Border Sep() => new() { Width = 1, Height = 32, VerticalAlignment = VerticalAlignment.Center, Background = Brush.Parse(C("#26FFFFFF", "#1F000000")) };
         var webSep = Sep(); webSep.Bind(IsVisibleProperty, _dockWeb.GetObservable(IsVisibleProperty));
         var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { DockWord(StartButton(), "Start"), Sep(), bar, webSep, _dockWeb, Sep(), trash } };

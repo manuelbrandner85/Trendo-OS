@@ -76,8 +76,9 @@ public partial class MainWindow
         var proj = Directory.GetFiles(built, "*.uproject").FirstOrDefault() ?? throw new InvalidOperationException("Im Ordner liegt kein Spiel.");
         var engine = _opt.Isolated ? null : GameStudio.FindEngines().FirstOrDefault();
         if (engine is null) { Launch(built); _progMsg[GK] = "Unreal Engine 5 ist nicht installiert – der Projektordner wurde geöffnet."; return; }
-        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(GameStudio.EditorExe(engine)) { ArgumentList = { proj }, UseShellExecute = false });
-        _core.Audit.Append(Principal.LocalOwner.Name, "game.open.unreal", Path.GetFileName(proj));
+        // T-0764 (5. Prüfrunde H1): über die zentrale Prüfung – der Unreal-Editor öffnet im Kinderprofil nie
+        if (!LaunchArgsAs(GameStudio.EditorExe(engine), [proj])) { _progMsg[GK] = LastLaunchRefused; return; }
+        _core.Audit.Append(CurrentPrincipal.Name, "game.open.unreal", Path.GetFileName(proj));
     }
 
     private Control GameWorkspace(ProgramDocument d)

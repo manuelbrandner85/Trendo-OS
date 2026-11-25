@@ -1,0 +1,92 @@
+T-0764 fix5 – gezielter App-Lauf (266 Klassen ohne EveryButton_Alltag, das separat in gruen-fix5-app-everybutton.log mit Exitcode 0 lief).
+Aufgeteilt in 6 Prozesse wegen Dauerlast (CPU 100 % durch ein fremdes Blender). Teil 03 und 04 liefen im ersten Durchgang ins Zeitlimit von 1500 s (kein roter Test) und wurden mit 3600 s wiederholt.
+
+##### Durchgang 1
+=== Teil 00 (48 Klassen) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = '7d261b75ce1eeca6a71aef00a582c5c800bc946a5569832b92c23fcd0aec95a0')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 140, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 677,303s
+Waiting 10 seconds for foreground threads to exit...
+Teil 00 exit 0 (691 s)
+=== Teil 01 (46 Klassen) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0202: Kein Klick auf irgendeiner Seite stürzt ab (Klick-Audit, Bericht der stummen Knöpfe) [SKIP]
+      Langer Klick-Audit über alle Seiten: TRENDO_ALL_BUTTONS=1 setzen
+  Finished:    Trendo.App.Tests (ID = '7d261b75ce1eeca6a71aef00a582c5c800bc946a5569832b92c23fcd0aec95a0')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 202, Errors: 0, Failed: 0, Skipped: 1, Not Run: 0, Time: 729,720s
+Waiting 10 seconds for foreground threads to exit...
+Teil 01 exit 0 (737 s)
+=== Teil 02 (42 Klassen) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    Musik-KI live: Paket prüfen, entpacken, Server starten, 30 s Lied erzeugen [SKIP]
+      Echter Lauf: TRENDO_ACE_LIVE und TRENDO_7Z setzen
+  Finished:    Trendo.App.Tests (ID = '7d261b75ce1eeca6a71aef00a582c5c800bc946a5569832b92c23fcd0aec95a0')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 132, Errors: 0, Failed: 0, Skipped: 1, Not Run: 0, Time: 348,336s
+Waiting 10 seconds for foreground threads to exit...
+Teil 02 exit 0 (351 s)
+=== Teil 03 (46 Klassen) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+Teil 03 exit 124 (1501 s)
+=== Teil 04 (37 Klassen) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0727 B6: Testfenster ohne Modelle wählt wie ein frischer PC das kleine Standardmodell (gewollt); mit Ui.UseRealModels über den Weg der App das echte beste Modell (ECHT, nur wenn Ollama läuft) [SKIP]
+      Ollama läuft nicht – Echtteil übersprungen.
+Teil 04 exit 124 (1500 s)
+=== Teil 05 (47 Klassen) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+T-0747-fix: Klick bis Oberfläche wieder frei 476 ms, fertig nach 12799 ms, 180 Wände
+    Z3 PC-Lauf: echtes Modell (Poly Haven, CC0) über Blender nach GLB, HDR-Licht, Grafikkarte, Bilder und gemessene Bildrate unter reports/ (nur mit TRENDO_PC_LAUF=1) [SKIP]
+      Übersprungen – nur mit TRENDO_PC_LAUF=1 (echte Grafikkarte, Blender, Quellen unter %TEMP%\trendo-z3-quellen).
+    T-0699 Echtlauf Bilder erkennen: echtes YOLOX-S erkennt Hund und Fahrrad, echtes Tesseract liest gedruckten Text; Suche findet beide Fotos, Seitendatei geschrieben [SKIP]
+      Übersprungen – YOLOX-Prüfumgebung fehlt (%TEMP%/trendo-tools-b/yolox).
+    T-0699 Echtlauf Videos mit KI: echte Bild-KI malt 2 Schlüsselbilder, echte Stimme spricht, FFmpeg rendert MP4 mit Ton und Untertitel; ffprobe prüft, Standbilder einer Szene unterscheiden sich [SKIP]
+      Übersprungen – Echtlauf mit Bild-KI nur mit TRENDO_ECHT_VIDEO=1.
+  Finished:    Trendo.App.Tests (ID = '7d261b75ce1eeca6a71aef00a582c5c800bc946a5569832b92c23fcd0aec95a0')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 146, Errors: 0, Failed: 0, Skipped: 3, Not Run: 0, Time: 1010,211s
+Waiting 10 seconds for foreground threads to exit...
+Teil 05 exit 0 (1018 s)
+
+##### Wiederholung Teil 03 und 04
+=== Teil 03 Wiederholung (46 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = '7d261b75ce1eeca6a71aef00a582c5c800bc946a5569832b92c23fcd0aec95a0')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 158, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 2183,269s
+Waiting 10 seconds for foreground threads to exit...
+Teil 03 exit 0 (2188 s)
+=== Teil 04 Wiederholung (37 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+T-0727 B6 echt: 9 Modelle von Ollama, Grafikspeicher 11,9 GB → Standard qwen3:14b
+  Finished:    Trendo.App.Tests (ID = '7d261b75ce1eeca6a71aef00a582c5c800bc946a5569832b92c23fcd0aec95a0')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 379, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 1619,038s
+Waiting 10 seconds for foreground threads to exit...
+Teil 04 exit 0 (1629 s)

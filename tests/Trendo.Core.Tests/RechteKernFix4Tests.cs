@@ -60,20 +60,18 @@ public class RechteKernFix4
         Assert.Equal(2, f.Launcher.Opened.Count);
     }
 
-    [Fact(DisplayName = "T-0764 M1: Einmalige Übernahme alter Kennungen nur für Erwachsene, nur unveränderte Dateien")]
-    public void Uebernahme()
+    [Fact(DisplayName = "T-0764 M1 (5. Prüfrunde): keine Übernahme alter Kennungen – älterer Stand im Kinderprofil abgelehnt mit „Bitte einmal als Erwachsener neu einrichten“; Erwachsene wie bisher")]
+    public void Keine_Uebernahme()
     {
         var (f, tools, _) = Setup(); using var _f = f;
         var dir = Path.Combine(tools, "alt"); Directory.CreateDirectory(dir);
         var a = Path.Combine(dir, "alt.exe"); File.WriteAllText(a, "MZ-alt");
-        var b = Path.Combine(dir, "geaendert.exe"); File.WriteAllText(b, "MZ-b");
-        File.WriteAllText(Path.Combine(dir, Software.PortableMarker), JsonSerializer.Serialize(new { Name = "alt", Sha256 = "x", Am = "", Dateien = new Dictionary<string, string> { ["alt.exe"] = Sha(a), ["geaendert.exe"] = new string('0', 64) } }));
-        Assert.Equal(0, ProgramTrust.MigrateMarkers(Principal.ChildProfile, [tools]));
-        Kind(f, a);
-        Assert.Equal(1, ProgramTrust.MigrateMarkers(Principal.LocalOwner, [tools]));
-        Assert.Equal(0, ProgramTrust.MigrateMarkers(Principal.LocalOwner, [tools])); // nur einmal
-        f.Core.Integrations.LaunchDirect(Principal.ChildProfile, a, f.Core.Audit);
-        Kind(f, b);
+        File.WriteAllText(Path.Combine(dir, Software.PortableMarker), JsonSerializer.Serialize(new { Name = "alt", Sha256 = "x", Am = "", Dateien = new Dictionary<string, string> { ["alt.exe"] = Sha(a) } }));
+        Assert.Null(typeof(ProgramTrust).GetMethod("MigrateMarkers")); // ersatzlos gestrichen
+        var e = Assert.Throws<UnauthorizedAccessException>(() => f.Core.Integrations.LaunchDirect(Principal.ChildProfile, a, f.Core.Audit));
+        Assert.Equal(Rbac.NurErwachseneNeuEinrichten, e.Message);
+        f.Core.Integrations.LaunchDirect(Principal.LocalOwner, a, f.Core.Audit);
+        Assert.Single(f.Launcher.Opened);
     }
 
     [Fact(DisplayName = "T-0764 N1/N2: gleich große, gleich datierte ausgetauschte exe und hineingelegte DLL werden erkannt (vor jedem Start neu gerechnet)")]
@@ -99,7 +97,7 @@ public class RechteKernFix4
     public void Feste_Orte_streng()
     {
         var (f, _, _) = Setup(); using var _f = f;
-        var pf = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Blender Foundation", "blender.exe");
+        var pf = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Beispiel GmbH", "werkzeug.exe"); // 5. Prüfrunde: Blender ist jetzt ein Konsolen-Programm (nie für Kinder) – hier ein gewöhnliches Programm
         Assert.True(ProgramTrust.InFixedLocation(pf));
         var local = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         var lp = Path.Combine(local, "Programs", "Irgendwas", "irgendwas.exe");
