@@ -325,7 +325,7 @@ public partial class MainWindow
         if (!CanManageSoftware || !Trendo.Core.MpvSafe.TargetAllowed(file)) { Launch(file); return null; } // Kinder: Trendos eigener Betrachter
         var shots = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Trendo"); // 10. Prüfrunde: Bildschirmfotos dorthin
         var p = MediaLibrary.Player(file, ToolPath("mpv"), Cli.Find("vlc"), shots);
-        if (p is { } x) { if (x.Args.Any(a => a.StartsWith("--screenshot-directory=", StringComparison.Ordinal))) Directory.CreateDirectory(shots); Trendo.Core.MpvSafe.HoldUntilExit(x.Args, System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(x.Exe, x.Args) { UseShellExecute = false, WorkingDirectory = Trendo.Core.MpvSafe.WorkDir() })); /* 8./9. Prüfrunde: alle Argumente (MpvSafe), Tastendatei gesperrt bis Ende */ _core.Audit.Append("app", "media.play", Path.GetFileName(file)); return Path.GetFileNameWithoutExtension(x.Exe); }
+        if (p is { } x) { if (x.Args.Any(a => a.StartsWith("--screenshot-directory=", StringComparison.Ordinal))) Directory.CreateDirectory(shots); var work = Trendo.Core.MpvSafe.WorkDir(); Trendo.Core.MpvSafe.HoldUntilExit(x.Args, System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(x.Exe, x.Args) { UseShellExecute = false, WorkingDirectory = work }), work); /* MpvSafe.WorkDir() */ /* 8./9. Prüfrunde: alle Argumente (MpvSafe), Tastendatei gesperrt bis Ende */ _core.Audit.Append("app", "media.play", Path.GetFileName(file)); return Path.GetFileNameWithoutExtension(x.Exe); }
         Launch(file); return null;
     }
 

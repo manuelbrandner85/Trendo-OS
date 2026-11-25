@@ -55,14 +55,14 @@ public partial class MainWindow
     public IReadOnlyList<string> KidPickLast { get; private set; } = [];
 
     /// <summary>Ordner, in denen das Kinderprofil wählen darf: der Benutzerordner und die bekannten Ordner (Dokumente, Bilder …).</summary>
-    internal IReadOnlyList<string> KidPickRoots() =>
-        new[] { Files.Home }.Concat(Files.KnownFolders().Select(k => k.Path)).Where(p => p.Length > 0).Select(p => Path.TrimEndingDirectorySeparator(Path.GetFullPath(p))).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+    internal IReadOnlyList<string> KidPickRoots() => // T-0764 (11. Prüfrunde): nur Orte der Freigabeliste (ChildWrite)
+        new[] { Files.Home }.Concat(Files.KnownFolders().Select(k => k.Path)).Concat(Trendo.Core.Sys.ChildWrite.Roots()).Where(p => p.Length > 0 && Trendo.Core.Sys.ChildWrite.InAllowedRoot(p) && !Trendo.Core.Sys.ProtectedFolders.IsProtected(p)).Select(p => Path.TrimEndingDirectorySeparator(Path.GetFullPath(p))).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 
     internal bool KidPickAllowed(string path)
     {
         string full;
         try { full = Path.GetFullPath(path); } catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { return false; }
-        if (Trendo.Core.Sys.ProtectedFolders.IsProtected(full)) return false; // T-0764 (10. Prüfrunde): nie in Trendos eigene Ordner
+        if (Trendo.Core.Sys.ProtectedFolders.IsProtected(full) || !Trendo.Core.Sys.ChildWrite.InAllowedRoot(full)) return false; // T-0764 (10./11. Prüfrunde): nur Freigabe, nie Trendo-Ordner
         return KidPickRoots().Any(r => string.Equals(full, r, StringComparison.OrdinalIgnoreCase) || full.StartsWith(r + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
     }
 

@@ -263,7 +263,7 @@ public static class Archives
     public static List<string> ExecutableEntries(string zip)
     {
         using var z = ZipFile.OpenRead(zip);
-        return z.Entries.Where(e => !e.FullName.EndsWith('/') && UnsafeEntryName(e.FullName)).Select(e => e.FullName).ToList();
+        return z.Entries.Where(e => !e.FullName.EndsWith('/') && (UnsafeEntryName(e.FullName) || ChildWrite.BlockedName(Path.GetFileName(e.FullName.Replace('\\', '/'))))).Select(e => e.FullName).ToList(); // 11. Prüfrunde: auch .lnk, .url, .scf …
     }
 
     static readonly System.Text.RegularExpressions.Regex DeviceName = new(@"^(CON|PRN|AUX|NUL|CONIN\$|CONOUT\$|COM[0-9¹²³]|LPT[0-9¹²³])(\..*)?$", System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant);
@@ -302,6 +302,7 @@ public static class Archives
     public static int UnpackAs(Principal by, string zip, string dest, AuditLog audit, ArchiveConflict mode = ArchiveConflict.Ask)
     {
         ProtectedFolders.DemandWrite(by, dest, audit); // 10. Prüfrunde: nie in Trendos eigene Ordner
+        ChildWrite.Demand(by, dest, audit, checkName: false); // 11. Prüfrunde: nur in freigegebene Orte
         if (!Rbac.Has(by, Permission.ManageSoftware))
         {
             if (!Path.GetExtension(zip).Equals(".zip", StringComparison.OrdinalIgnoreCase)) Rbac.DemandSoftware(by, "entpacken " + Path.GetFileName(zip), audit, Rbac.NurErwachseneArchiv);

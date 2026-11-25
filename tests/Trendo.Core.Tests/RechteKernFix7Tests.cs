@@ -130,6 +130,7 @@ public class RechteKernFix7
             using var a = ZipFile.Open(z, ZipArchiveMode.Create); foreach (var e in entries) using (var w = new StreamWriter(a.CreateEntry(e).Open())) w.Write("x");
             return z;
         }
+        ChildWrite.AllowInside(f.Root); // 11. Prüfrunde: der Testordner steht für einen freigegebenen Ort (sonst lehnt schon der Ort ab)
         Assert.Equal(1, Archives.UnpackAs(Principal.ChildProfile, Zip("bilder.zip", "bild.png"), Path.Combine(f.Root, "a"), f.Core.Audit));
         foreach (var bad in new[] { "spiel.exe", "tools/run.ps1", "lib/x.pth", "abbild.iso", "LIESMICH" })
         {

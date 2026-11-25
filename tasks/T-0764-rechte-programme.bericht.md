@@ -777,6 +777,97 @@ Fix7Ui `Kind_Archiv` legt die ZIP-Dateien jetzt im eigenen Ordner des Kindes ab.
 - **Werkzeugordner:** Werkzeuge darin werden weiter nicht vor jedem Start gehasht. Kinder können dort aber über Trendo nichts mehr ablegen.
 - **Gemeinsames Konto:** Unter einem gemeinsamen Windows-Konto ist der Kinderschutz keine harte Grenze. Andere Programme dieses Kontos können weiter schreiben.
 
+## Elfte Prüfrunde (Commit „T-0764 fix11“)
+
+Grundlage ist die Gegenprüfung von `7911e2d4e`.
+
+**Befund:** Ein Kind konnte im Trendo-Dateimanager eine setup.exe, eine .lnk oder eine .url nach `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup` kopieren. Windows startet sie bei der nächsten Anmeldung.
+
+**Grund für den Wechsel zur Freigabeliste:** Die Sperrliste der Trendo-Ordner (10. Prüfrunde) schützte nur Trendos eigene Orte. Windows hat aber viele Orte, an denen eine Datei etwas auslöst: Autostart, Startmenü, SendTo, AppData, ProgramData, Vorlagen und mehr. Jede Prüfrunde fand einen weiteren. Eine Sperrliste wird hier nie vollständig. Darum gilt jetzt das Umgekehrte: Kinder schreiben nur in ausdrücklich freigegebene Orte, und sie legen nirgends Dateien an, die etwas starten oder auslösen.
+
+**Rot auf 7911e2d4e:**
+- `reports/T-0764/rot-fix11-core.log`: 9 von 9 rot.
+  - Die Kind-Schreibprüfung des alten Stands ließ Autostart (setup.exe, .lnk, .url), AppData, Startmenü, SendTo, ProgramData und Temp zu.
+  - Im Dateimanager gingen das Umbenennen in .exe und das Kopieren einer .lnk durch.
+  - Diese Rot-Datei gab es nur für den Beleg; sie ist nicht eingecheckt.
+- `reports/T-0764/rot-fix11-app.log`: 2 von 2 rot. Der Dateimanager kopierte setup.exe und .lnk und benannte in .exe um, „Dieser PC“ war erreichbar, und der Download einer setup.exe kam in die Warteschlange.
+
+### M1 – Freigabeliste (`ChildWrite` im Kern)
+
+**Freigegeben sind:**
+- Dokumente, Bilder, Musik, Videos, Desktop (`Environment.SpecialFolder`) und Downloads (FOLDERID_Downloads) des Kontos, jeweils aufgelöst. Bei OneDrive-Umleitung zählt das Ziel.
+- `DataRoot\projekte`.
+- Im Testmodus der Testordner.
+- Der eigene Trendo-Ordner des Kindes (`Files.Home`) nur, wenn er selbst kein Systemort ist. Im normalen Betrieb ist das der ganze Benutzerordner mit AppData; der wird nie Freigabe.
+
+**Regeln:**
+- Eine Wurzel darf keine Laufwerks- oder Profilwurzel sein und keinen Systemort enthalten oder in einem liegen. Systemorte sind AppData (Roaming, Local, LocalLow), Autostart, Startmenü, SendTo, ProgramData, Programme, Windows, Temp und Vorlagen.
+- Die einzige Ausnahme ist `AllowInside` für Trendos „projekte“ unter %APPDATA%: Sie darf in einem Systemort liegen, aber keinen enthalten.
+- Alles andere ist für Kinder schreibgeschützt, fail-closed: andere Benutzer, Laufwerkswurzeln und Wechseldatenträger eingeschlossen.
+- Pfad und aufgelöstes Ziel müssen beide in der Freigabe liegen. Eine Junction oder ein Symlink mit Ziel draußen gilt als draußen.
+- `ProtectedFolders` (Trendo-Ordner) wirkt zusätzlich.
+
+**Wo die Regel greift:**
+- **Dateimanager:** `FileBrowser.WriteGuard` beim Anlegen (Ordner samt neuem Namen), beim Kopieren und Verschieben (Ziel samt Namen, bei Ordnern jede enthaltene Datei), beim Umbenennen (neuer Name), Löschen, Papierkorb, Zurücklegen und Rückgängig/Wiederholen.
+- **Entpacken:** `Archives.UnpackAs` prüft das Ziel.
+- **Kinder-Auswahl beim Speichern und Öffnen:** `KidPickRoots`/`KidPickAllowed`.
+- **Download-Manager.**
+
+### M2 – keine ausführbaren oder auslösenden Dateien
+
+`ChildWrite.BlockedName` sperrt:
+- die Endungen aus `ProgramTrust.CodeExtensions` und Installer (`IsInstallerLike`),
+- dazu .lnk .url .scf .library-ms .settingcontent-ms .appref-ms .hta .chm .msc .cpl .jar .reg .ps1 .psm1 .vbs .vbe .js .jse .wsf .wsh .bat .cmd .com .pif .scr .msi .msp .appx .msix .xll .application .inf,
+- Office-Dateien mit Makros und weitere Auslöser.
+
+Geprüft wird jede Teilendung (Doppelendung wie „bild.exe.png“) nach dem Kürzen von Punkten und Leerzeichen am Ende. Gesperrt sind auch Datenströme („:“) und Gerätenamen.
+
+Die Regel gilt beim Kopieren, Verschieben, Umbenennen („a.txt“ → „a.exe“), Speichern (Kinder-Auswahl), Entpacken (ZIP-Einträge, jetzt auch .lnk/.url/.scf …) und Herunterladen. Lesen und Öffnen im eigenen Betrachter bleiben wie bisher; ShellExecute bleibt ohnehin gesperrt.
+
+### M3 – Downloads, die ein Kind auslöst
+
+- **Download-Manager:** Ziel-Ort und Name werden vor dem Einreihen geprüft. Eine gesperrte Endung bricht mit verständlicher Meldung ab („Abgebrochen: … legt nur ein Erwachsener an“).
+- **Medien-Bibliothek:** Das Dateiformat aus den Quelldaten wird vorher geprüft.
+- **3D-Bibliothek:** Ausführbare Dateien in einem Kinder-Download werden sofort entfernt.
+- **Studio- und KI-Ausgaben:** Sie schreibt Trendo selbst mit festen Endungen (Bild, Ton, Video, 3D) in Trendos Ordner.
+
+### M4 – Dateimanager im Kinderprofil
+
+Er zeigt nur die freigegebenen Wurzeln. „Dieser PC“, nicht freigegebene Ordner und „nach oben“ über die Wurzeln hinaus führen zurück in die Freigabe. AppData erscheint auch mit „Ausgeblendete Elemente“ nicht, weil es außerhalb liegt. `List` läuft weiter über die Schreibprüfung, ohne Namensprüfung; der Kommentar ist angepasst.
+
+### Niedrige Punkte
+
+- **5) Arbeitsordner:** `MpvSafe.WorkDir()` legt je Start einen frischen Ordner `leer-<GUID>` an. Ist der mpv-Ordner oder der neue Ordner ein Umleitungspunkt, bricht der Start ab. Entfernt wird der Ordner beim Ende des Players (`HoldUntilExit(…, workDir)`). `MpvSafe.SafeDelete` entfernt Junctions und Symlinks selbst und folgt nie ihrem Ziel. Das gilt auch für `CleanupStale`.
+- **6) Steuerleitung:** Der Name der Fernseh-Steuerleitung ist jetzt zufällig (`trendo-tv-<Slot>-<GUID>`). Der Ton-Player war es schon.
+- **7) Testcode:** In `RechteKernFix7Ui.Kind_Archiv` steht `Directory.CreateDirectory(…)` wieder als Code.
+
+### Was weiter geht (geprüft)
+
+Kinder speichern Bilder, Musik und Videos und exportieren Projekte in die Freigabe. Sie laden erlaubte Dateien herunter (Bild in die Warteschlange) und entpacken ZIPs ohne Code dort. Für Erwachsene ist alles unverändert; das prüfen die Tests mit.
+
+### Angepasste Tests
+
+Grund sind die strengeren Regeln; abgeschwächt ist keiner:
+- **Fix7 `Archive_Kind`, Fix8 `Entpacken_Namen`/`Entpacken_Grenzen`, Fix10 `Umweg_und_Entpacken`:** Der Testordner wird als freigegebener Ort angemeldet. Sonst würde schon der Ort ablehnen und die eigentliche Regel bliebe ungeprüft.
+- **Fix10 `Arbeitsordner_leer`:** jetzt je Start ein frischer Ordner.
+- **Fix10 `Dateimanager_Kind`:** neue Signatur der Prüfung.
+
+### Tests
+
+- Build: 0 Fehler.
+- Core VOLLSTÄNDIG mit dem Endstand (`gruen-fix11-core.log`), ohne Filter und ohne parallele Testsammlungen: 3671 Tests, davon 3629 grün und 42 übersprungen, Exitcode 0. Ein erster vollständiger Lauf vor dem Zwischenspeichern der Freigabe-Wurzeln hatte dasselbe Ergebnis.
+- App gezielt (`gruen-fix11-app.log`): 257 Klassen in 6 Prozessen plus EveryButton_Alltag, zusammen 1079 Tests.
+- Teil 01, 02, 04, 05 und EveryButton liefen mit Exitcode 0.
+- Teil 00: kein roter Test, aber Exitcode 1 wegen des bekannten Avalonia-Aufräumfehlers.
+- Teil 03: ein roter Test, `RechteKernFix4Ui.Ordner_im_Dateimanager`. Er öffnete beim Kind einen Ordner außerhalb der Freigabe, den der Dateimanager Kindern jetzt bewusst nicht mehr zeigt. Der Test nutzt jetzt einen Ordner der Freigabe und ist nicht abgeschwächt.
+- Teil 03 brauchte im Hauptlauf auffällig lange (1968 s), und die erste Wiederholung lief ins Zeitlimit. Einzeln waren alle 50 Klassen grün und schnell. Die Freigabe-Wurzeln werden jetzt zwischengespeichert, die Systemorte nur einmal aufgelöst.
+- Wiederholung von Teil 00 und 03 mit dem Endstand: 432 Tests in 348 s, 0 rot, Exitcode 0.
+
+### Grenzen und offene Punkte
+
+- **Eingebettete Webansichten:** Downloads in Claude-Anmeldung und Vorschau (`NativeWebView`/WebView2) steuert WebView2 selbst. Trendo kann sie dort nicht abfangen.
+- **Gemeinsames Konto:** Unter einem gemeinsamen Windows-Konto ist der Kinderschutz keine harte Grenze. Andere Programme dieses Kontos können weiter überall schreiben, wo das Konto darf.
+
 ## Abnahmekriterien
 
 | # | Kriterium | Urteil |

@@ -53,11 +53,15 @@ public class RechteKernFix10
     [Fact(DisplayName = "T-0764 M b: Arbeitsordner wird vor jedem Start geleert (hineingelegte yt-dlp.exe ist weg) und ist geschützt")]
     public void Arbeitsordner_leer()
     {
+        // 11. Prüfrunde: je Start ein frischer, leerer Ordner mit Zufallsnamen – eine in einen früheren Ordner gelegte yt-dlp.exe erreicht den nächsten Start nie
         var d = MpvSafe.WorkDir();
         File.WriteAllText(Path.Combine(d, "yt-dlp.exe"), "MZ");
-        Assert.Equal(d, MpvSafe.WorkDir());
-        Assert.Empty(Directory.EnumerateFileSystemEntries(d));
-        Assert.True(ProtectedFolders.IsProtected(Path.Combine(d, "yt-dlp.exe")));
+        var d2 = MpvSafe.WorkDir();
+        Assert.NotEqual(d, d2);
+        Assert.Empty(Directory.EnumerateFileSystemEntries(d2));
+        Assert.True(ProtectedFolders.IsProtected(Path.Combine(d2, "yt-dlp.exe")));
+        MpvSafe.SafeDelete(d); MpvSafe.SafeDelete(d2);
+        Assert.False(Directory.Exists(d));
     }
 
     [Fact(DisplayName = "T-0764 M c: Kinder schreiben nie in Trendos eigene Ordner (Dateimanager: anlegen, kopieren, verschieben, umbenennen, löschen) – eigene Projekte und Erwachsene wie bisher")]
@@ -69,7 +73,7 @@ public class RechteKernFix10
         ProtectedFolders.Protect(trendo); ProtectedFolders.Allow(proj);
         var exe = Path.Combine(home, "yt-dlp.exe"); File.WriteAllText(exe, "MZ");
         var inTools = Path.Combine(tools, "alt.txt"); File.WriteAllText(inTools, "x");
-        var kid = new FileBrowser { WriteGuard = p => ProtectedFolders.WriteProblem(Principal.ChildProfile, p, f.Core.Audit) };
+        var kid = new FileBrowser { WriteGuard = (p, _) => ProtectedFolders.WriteProblem(Principal.ChildProfile, p, f.Core.Audit) }; // nur die Trendo-Ordner-Regel (Freigabeliste: RechteKernFix11)
         Assert.Equal(Rbac.NurErwachseneTrendoOrdner, Assert.Throws<UnauthorizedAccessException>(() => kid.Paste(exe, tools, move: false)).Message);
         Assert.Throws<UnauthorizedAccessException>(() => kid.Paste(exe, tools, move: true));
         Assert.Throws<UnauthorizedAccessException>(() => kid.NewFolder(tools));
@@ -80,7 +84,7 @@ public class RechteKernFix10
         Assert.True(File.Exists(kid.Paste(inTools, home, move: false))); // Lesen (Kopie heraus) bleibt erlaubt
         Assert.True(File.Exists(kid.Paste(exe, proj, move: false))); // eigene Projekte: frei
         Assert.Contains(f.Core.Audit.ReadAll(), a => a.Action == "rbac.denied" && a.Detail.Contains("schreiben"));
-        var adult = new FileBrowser { WriteGuard = p => ProtectedFolders.WriteProblem(Principal.LocalOwner, p, f.Core.Audit) };
+        var adult = new FileBrowser { WriteGuard = (p, _) => ProtectedFolders.WriteProblem(Principal.LocalOwner, p, f.Core.Audit) };
         Assert.True(File.Exists(adult.Paste(exe, tools, move: false))); // Erwachsene: wie bisher
     }
 
@@ -90,7 +94,7 @@ public class RechteKernFix10
         using var f = new Fixture();
         var trendo = Path.Combine(f.Root, "TrendoOS"); var tools = Path.Combine(trendo, "werkzeuge"); var home = Path.Combine(f.Root, "home");
         Directory.CreateDirectory(tools); Directory.CreateDirectory(home);
-        ProtectedFolders.Protect(trendo);
+        ProtectedFolders.Protect(trendo); ChildWrite.AllowInside(home); // 11. Prüfrunde: „home“ steht für einen freigegebenen Ort
         var link = Path.Combine(home, "abkuerzung");
         var linked = false;
         try { Directory.CreateSymbolicLink(link, tools); linked = true; } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } // ohne Recht für Symlinks: Teil entfällt

@@ -39,13 +39,14 @@ public sealed class MpvAudio(string mpvPath) : IAudioOut
     {
         if (_proc is { HasExited: false } && _pipe is { IsConnected: true }) return;
         Close();
-        var psi = new ProcessStartInfo(mpvPath) { UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = Trendo.Core.MpvSafe.WorkDir() }; // 10. Prüfrunde: leerer eigener Arbeitsordner
+        var work = Trendo.Core.MpvSafe.WorkDir();
+        var psi = new ProcessStartInfo(mpvPath) { UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = work }; // 10./11. Prüfrunde: frischer leerer Arbeitsordner, MpvSafe.WorkDir()
         // „--force-window=no“ und „--vo=null“: neuere mpv-Fassungen öffneten sonst trotz „--no-video“ ein eigenes Fenster (Fehler 07.11.2026 – Trendo Musik soll selbst abspielen)
         var args = StartArgs(_name);
         foreach (var a in args) psi.ArgumentList.Add(a);
         try { _proc = Process.Start(psi) ?? throw new InvalidOperationException("Der Player ließ sich nicht starten."); }
-        catch { Trendo.Core.MpvSafe.Release(args); throw; }
-        Trendo.Core.MpvSafe.HoldUntilExit(args, _proc); // 9. Prüfrunde: Tastendatei gesperrt, bis mpv endet
+        catch { Trendo.Core.MpvSafe.Release(args); Trendo.Core.MpvSafe.SafeDelete(work); throw; }
+        Trendo.Core.MpvSafe.HoldUntilExit(args, _proc, work); // 9. Prüfrunde: Tastendatei gesperrt, bis mpv endet
         var pipe = new NamedPipeClientStream(".", _name, PipeDirection.InOut, PipeOptions.Asynchronous);
         for (var i = 0; ; i++) { try { pipe.Connect(250); break; } catch (TimeoutException) when (i < 20) { } }
         _pipe = pipe; _w = new StreamWriter(pipe, new UTF8Encoding(false)) { AutoFlush = true, NewLine = "\n" };

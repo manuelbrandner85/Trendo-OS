@@ -34,6 +34,9 @@ public partial class MainWindow
         var n = 0;
         foreach (var u in links)
         {
+            // T-0764 (11. Prüfrunde): Kinder laden nur Dateien ohne ausführbare Endung in freigegebene Orte
+            if (Trendo.Core.Sys.ChildWrite.Problem(CurrentPrincipal, Path.Combine(DownloadManagerFolder, Trendo.Core.Sys.Web.SafeFileName(u))) is { } nein)
+            { Trendo.Core.Sys.ChildWrite.WriteProblem(CurrentPrincipal, Path.Combine(DownloadManagerFolder, Trendo.Core.Sys.Web.SafeFileName(u)), _core.Audit); _dlMsg = "Abgebrochen: " + nein; return n; }
             try { Downloads.Add(u, DownloadManagerFolder, links.Count == 1 ? hash : null); n++; }
             catch (ArgumentException e) { _dlMsg = e.Message; return n; }
         }

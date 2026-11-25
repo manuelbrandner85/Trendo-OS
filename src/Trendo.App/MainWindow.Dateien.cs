@@ -20,7 +20,7 @@ public partial class MainWindow
     public const string PcPlace = "::pc";
     FileBrowser? _fb;
     public FileBrowser Files => _fb ??= new FileBrowser { Root = _opt.Isolated ? Path.Combine(_core.DataRoot, "dateien-test") : null,
-        WriteGuard = p => Trendo.Core.Sys.ProtectedFolders.WriteProblem(CurrentPrincipal, p, _core.Audit) }; // T-0764 (10. Prüfrunde): Kinder nie in Trendos eigene Ordner
+        WriteGuard = (p, name) => Trendo.Core.Sys.ChildWrite.WriteProblem(CurrentPrincipal, p, _core.Audit, name) }; // T-0764 (11. Prüfrunde): Freigabeliste + keine ausführbaren Endungen (Trendo-Ordner zusätzlich)
     public string FilesDir { get; private set; } = PcPlace;
     readonly List<string> _fbSel = [];
     string? _fbAnchor;
@@ -112,6 +112,8 @@ public partial class MainWindow
     // ---------- Bedienung (öffentlich für Tests und die KI) ----------
     public void FilesGo(string dir, bool history = true)
     {
+        // T-0764 (11. Prüfrunde): Kinder sehen nur die Orte der Freigabeliste – kein „Dieser PC“, kein Weg nach oben über die Wurzeln, kein AppData
+        if (!CanManageSoftware && (dir == PcPlace || !KidPickAllowed(dir)) && KidPickRoots() is [var first, ..]) { if (dir != PcPlace) FilesMessage = Rbac.NurErwachseneOrt; dir = first; }
         if (dir != PcPlace && !Directory.Exists(dir)) throw new DirectoryNotFoundException("Ordner nicht gefunden: " + dir);
         if (history && dir != FilesDir) { _fbBack.Add(FilesDir); _fbFwd.Clear(); }
         FilesDir = dir; FilesSelected = null; _fbQuery = ""; _fbRenaming = false; FilesMessage = ""; FilesSearchOpen = false;
@@ -334,6 +336,7 @@ public partial class MainWindow
     readonly Dictionary<string, Button> _fbButtons = [];
     private Control DateienView()
     {
+        if (!CanManageSoftware && (FilesDir == PcPlace || !KidPickAllowed(FilesDir)) && KidPickRoots() is [var kidRoot, ..]) FilesDir = kidRoot; // 11. Prüfrunde
         _fbButtons.Clear();
         // GNOME/Finder: beim allerersten Aufbau gibt es das Fenster noch nicht – danach einmal neu zeichnen, damit die Fensterknöpfe in die Kopfleiste kommen
         if (_style is "mac" or "linux" or "windows" && Windows.Active is not { Page: FK }) _ui.Post(() => { if (Windows.Active is { Page: FK } fa && _titleBars.TryGetValue(fa.Id, out var tb) && !tb.IsVisible) Show(FK); }, Avalonia.Threading.DispatcherPriority.Background);

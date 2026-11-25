@@ -74,7 +74,7 @@ public class RechteKernFix4Ui
         var (c, cl, croot) = Open(true);
         try
         {
-            var dir = Path.Combine(croot, "Bilder"); Directory.CreateDirectory(dir);
+            var dir = Path.Combine(c.Files.Home, "Bilder"); Directory.CreateDirectory(dir); // 11. Prüfrunde: ein Ordner der Freigabe (andere zeigt der Dateimanager Kindern nicht)
             Assert.True(c.LaunchAs(dir)); Settle();
             Assert.Empty(cl.Opened);
             Assert.Equal("dateien", c.CurrentView);

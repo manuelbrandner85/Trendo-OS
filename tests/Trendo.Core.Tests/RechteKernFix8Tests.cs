@@ -88,7 +88,7 @@ public class RechteKernFix8
     [InlineData("aux.png")] [InlineData("COM1.jpg")] [InlineData("lpt9")] [InlineData("ordner./bild.png:x")]
     public void Entpacken_Namen(string entry)
     {
-        using var f = new Fixture(); Directory.CreateDirectory(f.Root);
+        using var f = new Fixture(); Directory.CreateDirectory(f.Root); ChildWrite.AllowInside(f.Root); // 11. Prüfrunde: freigegebener Ort – geprüft wird der Name
         var zip = Path.Combine(f.Root, "a.zip");
         using (var a = ZipFile.Open(zip, ZipArchiveMode.Create)) { using (var w = new StreamWriter(a.CreateEntry("bild.png").Open())) w.Write("x"); using (var w = new StreamWriter(a.CreateEntry(entry).Open())) w.Write("x"); }
         var e = Assert.Throws<UnauthorizedAccessException>(() => Archives.UnpackAs(Principal.ChildProfile, zip, Path.Combine(f.Root, "ziel"), f.Core.Audit));
@@ -99,7 +99,7 @@ public class RechteKernFix8
     [Fact(DisplayName = "T-0764 N: Entpacken im Kinderprofil – verdächtiges Packverhältnis und mehr als 10 000 Einträge abgelehnt (vorab, ohne zu entpacken)")]
     public void Entpacken_Grenzen()
     {
-        using var f = new Fixture(); Directory.CreateDirectory(f.Root);
+        using var f = new Fixture(); Directory.CreateDirectory(f.Root); ChildWrite.AllowInside(f.Root); // 11. Prüfrunde: freigegebener Ort – geprüft werden die Grenzen
         var bomb = Path.Combine(f.Root, "bombe.zip");
         using (var a = ZipFile.Open(bomb, ZipArchiveMode.Create)) using (var s = a.CreateEntry("leer.png", CompressionLevel.SmallestSize).Open()) { var buf = new byte[1 << 20]; for (var i = 0; i < 20; i++) s.Write(buf); }
         Assert.Throws<UnauthorizedAccessException>(() => Archives.UnpackAs(Principal.ChildProfile, bomb, Path.Combine(f.Root, "b"), f.Core.Audit));

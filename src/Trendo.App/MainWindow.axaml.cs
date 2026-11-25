@@ -104,6 +104,9 @@ public sealed partial class MainWindow : Window
         Trendo.Core.Sys.ProtectedFolders.Protect(_deps.VollpaketDir); Trendo.Core.Sys.ProtectedFolders.Protect(Path.GetDirectoryName(Environment.ProcessPath));
         Trendo.Core.Sys.ProtectedFolders.Allow(Path.Combine(core.DataRoot, "projekte"));
         if (_opt.Isolated) Trendo.Core.Sys.ProtectedFolders.Allow(Path.Combine(core.DataRoot, "dateien-test")); // Testordner des Dateimanagers
+        // T-0764 (11. Prüfrunde): Freigabeliste für Kinder – bekannte Ordner des Kontos (im Kern) und Trendos eigene Projekte; im Testmodus Test- und Download-Ordner
+        Trendo.Core.Sys.ChildWrite.AllowInside(Path.Combine(core.DataRoot, "projekte"));
+        if (_opt.Isolated) { Trendo.Core.Sys.ChildWrite.AllowInside(Path.Combine(core.DataRoot, "dateien-test")); Trendo.Core.Sys.ChildWrite.AllowInside(Path.Combine(core.DataRoot, "test-downloads")); Trendo.Core.Sys.ProtectedFolders.Allow(Path.Combine(core.DataRoot, "test-downloads")); }
         Trendo.Core.MpvSafe.CleanupStale(); // alte mpv-Ordner beendeter Trendo-Läufe
         InitVollpaketOnline(); // ohne Vollpaket: dieselben Pakete vom GitHub-Release
         StartupTrace.Mark("ctor.deps");

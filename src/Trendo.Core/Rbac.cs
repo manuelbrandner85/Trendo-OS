@@ -58,6 +58,10 @@ public static class Rbac
     public const string NurErwachseneKonsole = "Programme mit eigener Skript-Konsole (VS Code, Blender, Unreal, Godot, LibreOffice …) öffnet nur ein Erwachsenen-Profil.";
     /// <summary>T-0764 (6. Prüfrunde A): Hinweis für Programme, die nicht in der Erlaubnisliste für Kinder stehen.</summary>
     public const string NurErwachseneProgramm = "Dieses Programm öffnet nur ein Erwachsenen-Profil. Im Kinderprofil starten Trendos eigene Werkstätten (z. B. Malen, Musik, Texte) und der PDF-Betrachter.";
+    /// <summary>T-0764 (11. Prüfrunde): Kinder schreiben nur in freigegebene Orte (Dokumente, Bilder, Musik, Videos, Downloads, Desktop, eigene Projekte).</summary>
+    public const string NurErwachseneOrt = "Hier kann nur ein Erwachsener etwas ablegen oder ändern. Du kannst in Dokumente, Bilder, Musik, Videos, Downloads, Desktop und deine Projekte speichern.";
+    /// <summary>T-0764 (11. Prüfrunde): Kinder legen keine Programme, Skripte oder Verknüpfungen an.</summary>
+    public const string NurErwachseneEndung = "Programme, Skripte und Verknüpfungen (.exe, .lnk, .url, .bat …) legt nur ein Erwachsener an.";
     /// <summary>T-0764 (10. Prüfrunde): Trendos eigene Ordner (Daten, Werkzeuge, Programme, Installation) ändert nur ein Erwachsenen-Profil.</summary>
     public const string NurErwachseneTrendoOrdner = "In Trendos eigene Ordner (Einstellungen, Werkzeuge, Programme) kann nur ein Erwachsener etwas ablegen oder ändern. Deine eigenen Ordner gehen weiter.";
     /// <summary>T-0764 (10. Prüfrunde): Neue Fernseh-Quellen richtet nur ein Erwachsenen-Profil ein.</summary>

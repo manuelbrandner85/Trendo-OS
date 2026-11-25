@@ -79,14 +79,33 @@ q quit
 
     /// <summary>T-0764 (10. Prüfrunde): leerer, Trendo-eigener Arbeitsordner für jeden mpv-/VLC-Start – dort liegt nichts, was der Player nachladen
     /// könnte (z. B. yt-dlp.exe). Vorhandener Inhalt wird vor jedem Start entfernt.</summary>
+    /// <remarks>11. Prüfrunde: je Start ein frischer Ordner mit Zufallsnamen (<c>leer-&lt;GUID&gt;</c>); weder der mpv-Ordner noch der neue Ordner darf ein
+    /// Umleitungspunkt (Junction/Symlink) sein. Freigegeben und gelöscht wird er mit <see cref="HoldUntilExit"/> – Umleitungspunkte werden dabei selbst
+    /// entfernt, ihrem Ziel wird nie gefolgt.</remarks>
     public static string WorkDir()
     {
-        var d = Path.Combine(OwnDir, "leer");
+        Directory.CreateDirectory(OwnDir);
+        if (IsLink(OwnDir)) throw new IOException("Der Player-Ordner ist umgeleitet – es wird nichts gestartet.");
+        var d = Path.Combine(OwnDir, "leer-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(d);
-        foreach (var f in Directory.EnumerateFileSystemEntries(d))
-            try { if (Directory.Exists(f)) Directory.Delete(f, true); else File.Delete(f); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
-        if (Directory.EnumerateFileSystemEntries(d).Any()) throw new IOException("Der Arbeitsordner des Players ist nicht leer – es wird nichts gestartet.");
+        if (IsLink(d) || Directory.EnumerateFileSystemEntries(d).Any()) { SafeDelete(d); throw new IOException("Der Arbeitsordner des Players ist nicht leer – es wird nichts gestartet."); }
         return d;
+    }
+
+    static bool IsLink(string p) { try { return new DirectoryInfo(p).Attributes.HasFlag(FileAttributes.ReparsePoint); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return true; } }
+
+    /// <summary>Löschen, ohne Umleitungspunkten zu folgen: ein Link wird selbst entfernt (nicht sein Ziel), Ordner werden von innen nach außen geleert.</summary>
+    public static void SafeDelete(string path)
+    {
+        try
+        {
+            if (File.Exists(path) && !Directory.Exists(path)) { File.Delete(path); return; }
+            if (!Directory.Exists(path)) return;
+            if (IsLink(path)) { Directory.Delete(path, false); return; } // nur der Link
+            foreach (var e in Directory.EnumerateFileSystemEntries(path)) SafeDelete(e);
+            Directory.Delete(path, false);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
     }
 
     /// <summary>T-0764 (10. Prüfrunde): Ordner „trendo-mpv-&lt;PID&gt;“ früherer Trendo-Läufe aufräumen – nur, wenn der Name genau passt, kein Prozess mit
@@ -103,9 +122,9 @@ q quit
             if (Running(pid)) continue;
             try
             {
-                var own = Directory.EnumerateFileSystemEntries(d).All(e => Directory.Exists(e) ? Path.GetFileName(e) == "leer" : System.Text.RegularExpressions.Regex.IsMatch(Path.GetFileName(e), @"^trendo-(leer|tasten)(-[0-9a-f]{32})?\.conf$"));
+                var own = Directory.EnumerateFileSystemEntries(d).All(e => Directory.Exists(e) ? System.Text.RegularExpressions.Regex.IsMatch(Path.GetFileName(e), @"^leer(-[0-9a-f]{32})?$") && !IsLink(e) : System.Text.RegularExpressions.Regex.IsMatch(Path.GetFileName(e), @"^trendo-(leer|tasten)(-[0-9a-f]{32})?\.conf$"));
                 if (!own) continue;
-                Directory.Delete(d, true); n++;
+                SafeDelete(d); n++;
             }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
         }
@@ -122,8 +141,9 @@ q quit
     static string? ConfOf(IEnumerable<string> args) => args.FirstOrDefault(a => a.StartsWith("--input-conf=", StringComparison.Ordinal))?["--input-conf=".Length..];
 
     /// <summary>Sperre halten, bis der gestartete Player endet (danach Datei freigeben und löschen).</summary>
-    public static void HoldUntilExit(IEnumerable<string> args, Process? p)
+    public static void HoldUntilExit(IEnumerable<string> args, Process? p, string? workDir = null)
     {
+        if (workDir is not null) { if (p is null) SafeDelete(workDir); else try { p.EnableRaisingEvents = true; p.Exited += (_, _) => SafeDelete(workDir); } catch (InvalidOperationException) { SafeDelete(workDir); } }
         if (ConfOf(args) is not { } conf) return;
         if (p is null) { ReleaseConf(conf); return; }
         Held[conf] = 0;

@@ -28,7 +28,8 @@ public sealed class MpvView : NativeControlHost
     public bool Muted { get; set; }
     Process? _proc;
     IntPtr _hwnd;
-    string Pipe => $"trendo-tv-{Slot}-{Environment.ProcessId}";
+    readonly string _pipeId = Guid.NewGuid().ToString("N"); // 11. Prüfrunde: zufälliger Name der Steuerleitung
+    string Pipe => $"trendo-tv-{Slot}-{_pipeId}";
 
     public MpvView(string slot) { Slot = slot; }
     /// <summary>Zusätzliche Einstellungen für jeden Start (Sprache für Ton und Untertitel, 02.11.2026).</summary>
@@ -61,11 +62,12 @@ public sealed class MpvView : NativeControlHost
     {
         Kill();
         if (_hwnd == IntPtr.Zero || MpvPath is null || !File.Exists(MpvPath)) return;
-        var psi = new ProcessStartInfo(MpvPath) { UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = Trendo.Core.MpvSafe.WorkDir() }; // 10. Prüfrunde: leerer eigener Arbeitsordner
+        var work = Trendo.Core.MpvSafe.WorkDir();
+        var psi = new ProcessStartInfo(MpvPath) { UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = work }; // 10./11. Prüfrunde: frischer leerer Arbeitsordner, MpvSafe.WorkDir()
         var args = Args(_hwnd.ToString(), Pipe, Muted, url);
         foreach (var a in args) psi.ArgumentList.Add(a);
         try { _proc = Process.Start(psi); } catch (System.ComponentModel.Win32Exception) { _proc = null; }
-        Trendo.Core.MpvSafe.HoldUntilExit(args, _proc); // 9. Prüfrunde: Tastendatei gesperrt, bis mpv endet
+        Trendo.Core.MpvSafe.HoldUntilExit(args, _proc, work); // 9./11. Prüfrunde: Tastendatei gesperrt und Arbeitsordner, bis mpv endet
     }
 
     /// <summary>T-0746: Aufruf von mpv für eine Adresse – an einer Stelle, damit der Echtlauf genau diese Einstellungen mit dem echten mpv prüft.

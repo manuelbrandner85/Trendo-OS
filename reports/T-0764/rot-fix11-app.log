@@ -1,0 +1,24 @@
+T-0764 fix11 – ROT auf 7911e2d4e (App: RechteKernFix11Ui, vor dem Fix)
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0764 M3: Kind – Download einer setup.exe bricht mit Meldung ab; ein Bild geht in die Warteschlange [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: 0
+      Actual:   1
+      Stack Trace:
+        tests\Trendo.App.Tests\RechteKernFix11UiTests.cs(59,0): at Trendo.App.Tests.RechteKernFix11Ui.Download_Kind()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    T-0764 M2/M4: Kind – Dateimanager benennt nicht in .exe um und kopiert keine setup.exe/.lnk; Bilder weiter; „Dieser PC“ führt in die Freigabe; Erwachsene wie bisher [FAIL]
+      Assert.Throws() Failure: No exception was thrown
+      Expected: typeof(System.UnauthorizedAccessException)
+      Stack Trace:
+        tests\Trendo.App.Tests\RechteKernFix11UiTests.cs(38,0): at Trendo.App.Tests.RechteKernFix11Ui.Dateimanager_Kind()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Finished:    Trendo.App.Tests (ID = '473e2cca64d6c3027a9eb8d24ac7467f67c5f3971d96fc11cb3601b84d165d69')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 2, Errors: 0, Failed: 2, Skipped: 0, Not Run: 0, Time: 4,228s
+exit 1

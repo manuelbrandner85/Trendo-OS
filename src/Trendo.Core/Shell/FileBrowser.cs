@@ -66,7 +66,7 @@ public sealed class FileBrowser
     /// <summary>Inhalt eines Ordners: Ordner zuerst, dann Dateien, jeweils nach Name (wie in allen drei Vorbildern).</summary>
     public IReadOnlyList<Item> List(string dir, string sort = "name", bool descending = false)
     {
-        Guard(dir);
+        Guard(dir, name: false); // T-0764 (10./11. Prüfrunde): läuft bewusst über die Schreibprüfung – im Kinderprofil zeigt der Dateimanager nur Ordner der Freigabe (keine Lesesperre nur für Trendo-Ordner, sondern alles außerhalb der Freigabe), ohne Namensprüfung
         var di = new DirectoryInfo(dir);
         if (!di.Exists) throw new DirectoryNotFoundException("Den Ordner gibt es nicht mehr: " + dir);
         var items = new List<Item>();
@@ -125,21 +125,23 @@ public sealed class FileBrowser
 
     public string NewFolder(string dir, string? name = null)
     {
-        Guard(dir);
+        Guard(dir, name: false);
         bool Ex(string n) => Directory.Exists(System.IO.Path.Combine(dir, n)) || File.Exists(System.IO.Path.Combine(dir, n));
         var p = System.IO.Path.Combine(dir, name is null ? OsBehavior.NewFolderName(Style, Ex) : OsBehavior.CopyName(Style, name, true, Ex));
+        Guard(p); // 11. Prüfrunde: auch der neue Name
         Directory.CreateDirectory(p); return p;
     }
 
     public string Rename(string path, string newName)
     {
-        Guard(path);
+        Guard(path, name: false);
         newName = newName.Trim();
         if (newName.Length == 0 || newName.IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) >= 0 || newName.IndexOfAny(['\\', '/', ':', '*', '?', '"', '<', '>', '|']) >= 0)
             throw new InvalidOperationException("Der Name darf keines dieser Zeichen enthalten: \\ / : * ? \" < > |");
         var target = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(path)!, newName);
         if (string.Equals(target, path, StringComparison.Ordinal)) return path;
         if (File.Exists(target) || Directory.Exists(target)) throw new InvalidOperationException($"„{newName}“ gibt es in diesem Ordner schon.");
+        Guard(target); // 11. Prüfrunde: „a.txt“ → „a.exe“ prüft den neuen Namen
         if (Directory.Exists(path)) Directory.Move(path, target); else File.Move(path, target);
         return target;
     }
@@ -147,13 +149,17 @@ public sealed class FileBrowser
     /// <summary>Kopieren oder Ausschneiden + Einfügen; bei gleichem Namen „ – Kopie“ wie im Explorer.</summary>
     public string Paste(string source, string targetDir, bool move)
     {
-        Guard(source, write: move); Guard(targetDir); // Kopieren liest die Quelle nur
+        Guard(source, write: move, name: false); Guard(targetDir, name: false); // Kopieren liest die Quelle nur
         var name = System.IO.Path.GetFileName(source.TrimEnd('\\', '/'));
         var target = System.IO.Path.Combine(targetDir, name);
         if (move && string.Equals(System.IO.Path.GetDirectoryName(source), targetDir.TrimEnd('\\', '/'), StringComparison.OrdinalIgnoreCase)) return source;
         if (Directory.Exists(source) && (targetDir + System.IO.Path.DirectorySeparatorChar).StartsWith(source.TrimEnd('\\', '/') + System.IO.Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("Ein Ordner kann nicht in sich selbst eingefügt werden.");
         target = System.IO.Path.Combine(targetDir, OsBehavior.CopyName(Style, name, Directory.Exists(source), n => File.Exists(System.IO.Path.Combine(targetDir, n)) || Directory.Exists(System.IO.Path.Combine(targetDir, n))));
+        Guard(target); // 11. Prüfrunde: Ziel samt Namen
+        if (WriteGuard is not null && Directory.Exists(source)) // jede Datei im Ordner, mit ihrem Ziel – kein .exe/.lnk über einen Ordner hinein
+            foreach (var f in Directory.EnumerateFileSystemEntries(source, "*", new EnumerationOptions { RecurseSubdirectories = true, AttributesToSkip = 0, IgnoreInaccessible = false }))
+                Guard(System.IO.Path.Combine(target, System.IO.Path.GetRelativePath(source, f)));
         if (Directory.Exists(source)) { if (move) Directory.Move(source, target); else CopyDir(source, target); }
         else if (move) File.Move(source, target); else File.Copy(source, target);
         return target;
@@ -462,11 +468,12 @@ public sealed class FileBrowser
 
     /// <summary>T-0764 (10. Prüfrunde): Prüfung vor jedem Schreiben (Anlegen, Kopieren-Ziel, Verschieben, Umbenennen, Löschen, Papierkorb,
     /// Zurücklegen) – liefert eine Meldung, wenn das Schreiben nicht erlaubt ist (Kinderprofil in Trendos eigenen Ordnern), sonst null.</summary>
-    public Func<string, string?>? WriteGuard { get; set; }
+    /// <remarks>Zweiter Wert: auch den Namen prüfen (11. Prüfrunde: keine ausführbaren Endungen im Kinderprofil).</remarks>
+    public Func<string, bool, string?>? WriteGuard { get; set; }
 
-    internal void Guard(string p, bool write = true)
+    internal void Guard(string p, bool write = true, bool name = true)
     {
-        if (write && WriteGuard?.Invoke(p) is { } why) throw new UnauthorizedAccessException(why);
+        if (write && WriteGuard?.Invoke(p, name) is { } why) throw new UnauthorizedAccessException(why);
         if (Root is null) return;
         var full = System.IO.Path.GetFullPath(p); var root = System.IO.Path.GetFullPath(Root).TrimEnd('\\', '/');
         if (!full.Equals(root, StringComparison.OrdinalIgnoreCase) && !full.StartsWith(root + System.IO.Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
