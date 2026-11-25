@@ -54,9 +54,9 @@ q quit
     /// <summary>Die festen Argumente für jeden mpv-Start. <paramref name="keys"/>: sichere Tastenbelegung statt leerer Datei. Die Tastendatei bleibt
     /// gesperrt, bis <see cref="HoldUntilExit"/> (nach dem Start) das Ende des Players meldet oder <see cref="Release"/> gerufen wird; ohne Start
     /// spätestens nach 10 Minuten.</summary>
-    public static List<string> Args(bool keys = false, string? confDir = null)
+    public static List<string> Args(bool keys = false, string? confDir = null, string? screenshotDir = null)
     {
-        var dir = confDir ?? Path.Combine(Path.GetTempPath(), "trendo-mpv-" + Environment.ProcessId);
+        var dir = confDir ?? OwnDir;
         Directory.CreateDirectory(dir);
         var conf = Path.Combine(dir, (keys ? "trendo-tasten-" : "trendo-leer-") + Guid.NewGuid().ToString("N") + ".conf");
         var bytes = new UTF8Encoding(false).GetBytes(keys ? SafeKeys : "");
@@ -68,7 +68,55 @@ q quit
         if (n != bytes.Length || !now.AsSpan(0, n).SequenceEqual(bytes)) { fs.Dispose(); throw new IOException("Die Tastendatei für den Player wurde verändert – es wird nichts gestartet."); }
         Locks[conf] = fs;
         _ = Task.Delay(TimeSpan.FromMinutes(10)).ContinueWith(_ => { if (!Held.ContainsKey(conf)) ReleaseConf(conf); }, TaskScheduler.Default);
-        return ["--no-config", "--load-scripts=no", "--input-default-bindings=no", "--input-conf=" + conf];
+        // 10. Prüfrunde: „--ytdl=no“ – der eingebaute yt-dlp-Hook läuft sonst trotz „--load-scripts=no“ und startet yt-dlp.exe (mpv-Ordner, Arbeitsordner)
+        List<string> a = ["--no-config", "--load-scripts=no", "--ytdl=no", "--input-default-bindings=no", "--input-conf=" + conf];
+        if (screenshotDir is not null) a.Add("--screenshot-directory=" + screenshotDir);
+        return a;
+    }
+
+    /// <summary>Trendos eigener mpv-Ordner dieses Laufs (%TEMP%	rendo-mpv-&lt;PID&gt;) – geschützt (<see cref="Sys.ProtectedFolders"/>).</summary>
+    public static string OwnDir => Path.Combine(Path.GetTempPath(), "trendo-mpv-" + Environment.ProcessId);
+
+    /// <summary>T-0764 (10. Prüfrunde): leerer, Trendo-eigener Arbeitsordner für jeden mpv-/VLC-Start – dort liegt nichts, was der Player nachladen
+    /// könnte (z. B. yt-dlp.exe). Vorhandener Inhalt wird vor jedem Start entfernt.</summary>
+    public static string WorkDir()
+    {
+        var d = Path.Combine(OwnDir, "leer");
+        Directory.CreateDirectory(d);
+        foreach (var f in Directory.EnumerateFileSystemEntries(d))
+            try { if (Directory.Exists(f)) Directory.Delete(f, true); else File.Delete(f); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        if (Directory.EnumerateFileSystemEntries(d).Any()) throw new IOException("Der Arbeitsordner des Players ist nicht leer – es wird nichts gestartet.");
+        return d;
+    }
+
+    /// <summary>T-0764 (10. Prüfrunde): Ordner „trendo-mpv-&lt;PID&gt;“ früherer Trendo-Läufe aufräumen – nur, wenn der Name genau passt, kein Prozess mit
+    /// dieser PID mehr läuft und der Ordner nur Trendos eigene Dateien enthält (trendo-leer-/trendo-tasten-*.conf, Ordner „leer“). Nie fremde Ordner.</summary>
+    public static int CleanupStale()
+    {
+        var n = 0;
+        IEnumerable<string> dirs;
+        try { dirs = Directory.EnumerateDirectories(Path.GetTempPath(), "trendo-mpv-*").ToList(); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return 0; }
+        foreach (var d in dirs)
+        {
+            var name = Path.GetFileName(d);
+            if (!System.Text.RegularExpressions.Regex.IsMatch(name, @"^trendo-mpv-[0-9]{1,10}$") || !int.TryParse(name["trendo-mpv-".Length..], out var pid) || pid == Environment.ProcessId) continue;
+            if (Running(pid)) continue;
+            try
+            {
+                var own = Directory.EnumerateFileSystemEntries(d).All(e => Directory.Exists(e) ? Path.GetFileName(e) == "leer" : System.Text.RegularExpressions.Regex.IsMatch(Path.GetFileName(e), @"^trendo-(leer|tasten)(-[0-9a-f]{32})?\.conf$"));
+                if (!own) continue;
+                Directory.Delete(d, true); n++;
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        }
+        return n;
+    }
+
+    static bool Running(int pid)
+    {
+        try { using var p = Process.GetProcessById(pid); return !p.HasExited; }
+        catch (ArgumentException) { return false; } // kein Prozess mit dieser PID
+        catch (Exception e) when (e is InvalidOperationException or System.ComponentModel.Win32Exception) { return true; } // unklar: nicht anfassen
     }
 
     static string? ConfOf(IEnumerable<string> args) => args.FirstOrDefault(a => a.StartsWith("--input-conf=", StringComparison.Ordinal))?["--input-conf=".Length..];
@@ -114,7 +162,7 @@ q quit
         var t = (target ?? "").Trim();
         if (t.Length == 0 || t.StartsWith('-') || t.Any(char.IsControl)) return false;
         if (t.Contains("://", StringComparison.Ordinal))
-            return Uri.TryCreate(t, UriKind.Absolute, out var u) && u.Scheme is "http" or "https" or "rtmp" or "rtmps" or "rtsp";
+            return Uri.TryCreate(t, UriKind.Absolute, out var u) && u.Scheme is "http" or "https" or "rtmp" or "rtmps" or "rtsp" or "udp" or "rtp"; // udp/rtp: IPTV-Multicast (10. Prüfrunde)
         if (System.Text.RegularExpressions.Regex.IsMatch(t, @"^[A-Za-z][A-Za-z0-9+.\-]+:")) return false; // anderes Schema (auch memory:, av:)
         return Path.IsPathFullyQualified(t) && File.Exists(t);
     }

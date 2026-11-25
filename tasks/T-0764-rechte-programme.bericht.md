@@ -698,6 +698,85 @@ Weggelassen, mit Grund: Dafür müsste der Test ein fremdes Python starten, und 
 - **Werkzeugordner:** Werkzeuge darin werden weiter nicht vor jedem Start gehasht.
 - **Gemeinsames Konto:** Unter einem gemeinsamen Windows-Konto ist der Kinderschutz keine harte Grenze.
 
+## Zehnte Prüfrunde (Commit „T-0764 fix10“)
+
+Grundlage ist die Gegenprüfung von `b0fddd56b`. Sie hatte einen mittleren Befund (mpvs yt-dlp-Hook ist aktiv; das Kind kann in Trendos Werkzeugordner schreiben) und niedrige Punkte.
+
+**Rot auf b0fddd56b:**
+- `reports/T-0764/rot-fix10-core.log`: 4 von 4 rot. Es fehlte `--ytdl=no`, mpv/VLC starteten ohne eigenen leeren Arbeitsordner, und udp/rtp wurden abgelehnt.
+- `reports/T-0764/rot-fix10-app.log`: 2 von 2 rot. Das Kind entpackte ein ZIP in `werkzeuge\mpv`, und es fügte eine eigene M3U-Quelle hinzu.
+- Für den Rot-Beleg lief die Core-Datei ohne die Tests, die neue Schnittstellen brauchen (`ProtectedFolders`, `FileBrowser.WriteGuard`, `MpvSafe.WorkDir`/`CleanupStale`). Diese Tests sind nur grün belegt.
+
+### M a – yt-dlp-Hook aus
+
+`MpvSafe.Args()` setzt jetzt `--ytdl=no`, für jeden mpv-Start; ein Test prüft das. Im echten Lauf (siehe unten) lädt mpv den `ytdl_hook` danach nicht mehr.
+
+### M b – leerer eigener Arbeitsordner
+
+`MpvSafe.WorkDir()` liefert `%TEMP%\trendo-mpv-<PID>\leer`. Vor jedem Start wird der Ordner geleert; ist er danach nicht leer, startet nichts. Der Ordner ist geschützt (M c).
+
+Jeder mpv- und VLC-Start setzt `WorkingDirectory` darauf: `MpvAudio`, Fernseh-Player (`MpvView`) und eigenes Player-Fenster (`Sys02.Play`). Ein Quelltext-Test erzwingt das.
+
+### M c – Kinder schreiben nie in Trendos eigene Ordner (eigentliche Ursache)
+
+Neuer zentraler Helfer `ProtectedFolders` im Kern.
+
+**Geschützt sind:**
+- der Hauptordner aller Profile und der Datenordner (mit werkzeuge, programme, sicherheit, cache, tools, Einstellungen, Profilen, Protokollen),
+- der Werkzeugordner, das Vollpaket, der Installationsordner und der Programmordner,
+- Trendos mpv-Ordner in Temp.
+
+**Freigegeben bleiben** die eigenen Projekte (`projekte`).
+
+**Wie geprüft wird:** Der längste passende Eintrag entscheidet. Geprüft werden der Pfad wie angegeben und aufgelöst (`GetFinalPathNameByHandle`: Junction, Symlink, subst), auch für noch nicht vorhandene Ziele. Ein unklarer Pfad gilt als geschützt.
+
+**Wo die Regel greift:**
+- **Dateimanager:** `FileBrowser.WriteGuard` prüft vor jedem Anlegen, Kopier-Ziel, Verschieben (Quelle und Ziel), Umbenennen, Löschen, Papierkorb und Zurücklegen. Das gilt auch für Einfügen aus der Zwischenablage, Ziehen und Ablegen sowie Rückgängig/Wiederholen, weil alle über diese Prüfung laufen. Ausgeblendete Elemente ändern daran nichts. Lesen und Kopieren heraus bleiben erlaubt.
+- **Entpacken:** `Archives.UnpackAs` prüft das Ziel.
+- **Speichern- und Ordner-Auswahl im Kinderprofil:** `KidPickAllowed` lässt geschützte Ordner nicht zu.
+
+**Weitere Schreibwege, durchgesehen:**
+- Downloads landen im Download-Ordner, nicht in Trendos Ordnern.
+- Projekt-Exporte und „Speichern unter“ laufen über die Kinder-Auswahl.
+
+Erwachsene: unverändert. Bei Ablehnung gibt es den Hinweis `Rbac.NurErwachseneTrendoOrdner` und „rbac.denied“.
+
+### M d – Fernseh-Quellen
+
+`TvAddSource` (M3U per Adresse oder Datei, Xtream) richtet nur ein Erwachsener ein; das Kind bekommt `Rbac.NurErwachseneTvQuelle`. Die eingerichteten Sender bleiben nutzbar.
+
+### Niedrige Punkte
+
+1. **Bildschirmfotos:** Das eigene mpv-Fenster für Erwachsene bekommt `--screenshot-directory=<Bilder>\Trendo`; der Ordner wird beim Start angelegt.
+2. **Multicast:** `TargetAllowed` erlaubt zusätzlich `udp://` und `rtp://` (IPTV-Multicast).
+3. **Aufräumen:** `MpvSafe.CleanupStale()` läuft beim Start. Es löscht `%TEMP%\trendo-mpv-<PID>` nur, wenn alle drei Bedingungen zutreffen:
+   - Der Name passt genau.
+   - Es läuft kein Prozess mit dieser PID. Bei unklarem Stand wird nichts angefasst.
+   - Der Ordner enthält nur Trendos eigene Dateien (`trendo-leer-/trendo-tasten-*.conf`, Ordner `leer`).
+   Fremde Ordner bleiben; ein Test belegt das.
+4. **Echter Lauf mit der mitgelieferten mpv-Fassung** v0.41.0-1227-ge471496c5 (shinchiro 20261021), Protokoll `reports/T-0764/mpv-pruefung-fix10.log`. Es lief nur der eigene Prozess, ohne Fenster, Bild und Ton.
+   - `mpv --no-config --ytdl=no --version` wird angenommen (Exitcode 0).
+   - Bei einem Lauf mit `--vo=null --ao=null --length=0.3 -- av://lavfi:sine` und gesperrter Tastendatei (`FileShare.Read`) liest mpv die Datei („parsed: 2 binds“) und nimmt „--“ an. Es lädt keinen `ytdl_hook` und endet sofort (Exitcode 0).
+   - Weiter geladen werden mpvs eingebaute Skripte (osc, console, select, commands, stats, auto_profiles, positioning). Sie sind nur über Tastenbindungen oder IPC erreichbar: Die Standardbindungen sind aus, Trendos Belegung bindet nichts davon, und die IPC-Leitung nutzt nur Trendo.
+
+### Angepasster Test
+
+Fix7Ui `Kind_Archiv` legt die ZIP-Dateien jetzt im eigenen Ordner des Kindes ab. Der Trendo-Datenordner ist für Kinder geschützt. Der Test ist nicht abgeschwächt.
+
+### Tests
+
+- Build: 0 Fehler.
+- Core VOLLSTÄNDIG (`gruen-fix10-core.log`), ohne Filter und ohne parallele Testsammlungen: 3610 Tests, davon 3568 grün und 42 übersprungen, Exitcode 0.
+- App gezielt (`gruen-fix10-app.log`): 226 Klassen in 5 Prozessen plus EveryButton_Alltag, zusammen 1021 Tests.
+- Teil 01 bis 04 und EveryButton liefen mit Exitcode 0.
+- Teil 00 hatte keinen roten Test, endete aber mit Exitcode 1. Grund ist der bekannte Aufräumfehler des Avalonia-Testrahmens (`V-16 Adressbuch`, „different thread owns it“).
+- Die Wiederholung von Teil 00 war mit allen 228 Tests grün, Exitcode 0.
+
+### Grenzen und offene Punkte
+
+- **Werkzeugordner:** Werkzeuge darin werden weiter nicht vor jedem Start gehasht. Kinder können dort aber über Trendo nichts mehr ablegen.
+- **Gemeinsames Konto:** Unter einem gemeinsamen Windows-Konto ist der Kinderschutz keine harte Grenze. Andere Programme dieses Kontos können weiter schreiben.
+
 ## Abnahmekriterien
 
 | # | Kriterium | Urteil |

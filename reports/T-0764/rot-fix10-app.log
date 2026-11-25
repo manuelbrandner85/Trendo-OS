@@ -1,0 +1,24 @@
+T-0764 fix10 – ROT auf b0fddd56b (App: RechteKernFix10Ui, vor dem Fix)
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0764 M c: Kind – ein ZIP im Werkzeugordner wird nicht dorthin entpackt (Trendos eigener Ordner); Erwachsene wie bisher [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: False
+      Actual:   True
+      Stack Trace:
+        tests\Trendo.App.Tests\RechteKernFix10UiTests.cs(41,0): at Trendo.App.Tests.RechteKernFix10Ui.Entpacken_in_Trendo()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    T-0764 M d: Kind – eigene Fernseh-Quelle (M3U) hinzufügen geht nicht; Erwachsene wie bisher [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: 0
+      Actual:   1
+      Stack Trace:
+        tests\Trendo.App.Tests\RechteKernFix10UiTests.cs(58,0): at Trendo.App.Tests.RechteKernFix10Ui.Tv_Quelle_Kind()
+        --- End of stack trace from previous location ---
+  Finished:    Trendo.App.Tests (ID = 'a49211485b6cdacb396d928e4444c23ddb832f515220365a2c94c547a5e0a746')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 2, Errors: 0, Failed: 2, Skipped: 0, Not Run: 0, Time: 3,922s
+exit 1

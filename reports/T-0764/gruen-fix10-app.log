@@ -1,0 +1,107 @@
+T-0764 fix10 – gezielter App-Lauf: 226 Klassen in 5 Prozessen + EveryButton_Alltag (Zeitlimit je 3600 s); Teil 00 wiederholt.
+
+##### Hauptlauf
+=== Teil 00 (47 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    [Test Case Cleanup Failure (V-16: Adressbuch ohne Kontakte – ein Leerzustand mit Knopf, die Spalten reichen bis zum unteren Fensterrand)] System.InvalidOperationException
+      System.InvalidOperationException : The calling thread cannot access this object because a different thread owns it.
+      Stack Trace:
+           at Avalonia.Threading.Dispatcher.<VerifyAccess>g__ThrowVerifyAccess|17_0()
+           at Avalonia.Threading.Dispatcher.VerifyAccess()
+           at Avalonia.Rendering.DefaultRenderLoop.Add(IRenderLoopTask i)
+           at Avalonia.Rendering.Composition.Server.ServerCompositor..ctor(IRenderLoop renderLoop, IPlatformGraphics platformGraphics, CompositionOptions options, BatchStreamObjectPool`1 batchObjectPool, BatchStreamMemoryPool batchMemoryPool)
+           at Avalonia.Rendering.Composition.Compositor..ctor(IRenderLoop loop, IPlatformGraphics gpu, Boolean useUiThreadForSynchronousCommits, ICompositorScheduler scheduler, Boolean reclaimBuffersImmediately, Dispatcher dispatcher, CompositionOptions options)
+           at Avalonia.Rendering.Composition.Compositor..ctor(IRenderLoop loop, IPlatformGraphics gpu, Boolean useUiThreadForSynchronousCommits)
+           at Avalonia.Rendering.Composition.Compositor..ctor(IPlatformGraphics gpu, Boolean useUiThreadForSynchronousCommits)
+           at Avalonia.Headless.AvaloniaHeadlessPlatform.Initialize(AvaloniaHeadlessPlatformOptions opts)
+           at Avalonia.Headless.AvaloniaHeadlessPlatformExtensions.<>c__DisplayClass0_0.<UseHeadless>b__0()
+           at Avalonia.AppBuilder.SetupUnsafe()
+           at Avalonia.Headless.HeadlessUnitTestSession.EnsureIsolatedApplication()
+           at Avalonia.Headless.HeadlessUnitTestSession.<>c__DisplayClass12_0`1.<DispatchCore>b__0()
+        --- End of stack trace from previous location ---
+           at Avalonia.Headless.XUnit.AvaloniaTestRunner.Run(IXunitTest test, IMessageBus messageBus, Object[] constructorArguments, ExplicitOption explicitOption, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, IReadOnlyCollection`1 beforeAfterAttributes, HeadlessUnitTestSession session)
+           at Avalonia.Headless.XUnit.AvaloniaTestRunner.Run(IXunitTest test, IMessageBus messageBus, Object[] constructorArguments, ExplicitOption explicitOption, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, IReadOnlyCollection`1 beforeAfterAttributes, HeadlessUnitTestSession session)
+    T-0202: Kein Klick auf irgendeiner Seite stürzt ab (Klick-Audit, Bericht der stummen Knöpfe) [SKIP]
+      Langer Klick-Audit über alle Seiten: TRENDO_ALL_BUTTONS=1 setzen
+  Finished:    Trendo.App.Tests (ID = 'a49211485b6cdacb396d928e4444c23ddb832f515220365a2c94c547a5e0a746')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 227, Errors: 1, Failed: 0, Skipped: 1, Not Run: 0, Time: 253,014s
+Waiting 10 seconds for foreground threads to exit...
+Teil 00 exit 1 (258 s)
+=== Teil 01 (45 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0306: mpv (echt) – Abspielen meldet Position und Länge, Springen, Pause, Titelende kommt genau einmal [SKIP]
+      Übersprungen – mpv ist auf diesem PC nicht installiert.
+  Finished:    Trendo.App.Tests (ID = 'a49211485b6cdacb396d928e4444c23ddb832f515220365a2c94c547a5e0a746')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 149, Errors: 0, Failed: 0, Skipped: 1, Not Run: 0, Time: 136,594s
+Teil 01 exit 0 (138 s)
+=== Teil 02 (46 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = 'a49211485b6cdacb396d928e4444c23ddb832f515220365a2c94c547a5e0a746')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 181, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 599,105s
+Waiting 10 seconds for foreground threads to exit...
+Teil 02 exit 0 (604 s)
+=== Teil 03 (41 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0731: Bildschirmfoto ohne ffmpeg (echt, GDI) – nimmt ein fremdes Fenster eines anderen Prozesses auf, PNG enthält dessen Pixel [SKIP]
+      Übersprungen – das Testfenster ist von einem anderen Fenster verdeckt (oben liegt 0x2B109A2); der Bildschirm zeigt gerade etwas anderes.
+T-0727 B6 echt: 9 Modelle von Ollama, Grafikspeicher 11,9 GB → Standard qwen3:14b
+  Finished:    Trendo.App.Tests (ID = 'a49211485b6cdacb396d928e4444c23ddb832f515220365a2c94c547a5e0a746')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 301, Errors: 0, Failed: 0, Skipped: 1, Not Run: 0, Time: 679,553s
+Waiting 10 seconds for foreground threads to exit...
+Teil 03 exit 0 (684 s)
+=== Teil 04 (47 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0699 Echtlauf Bilder erkennen: echtes YOLOX-S erkennt Hund und Fahrrad, echtes Tesseract liest gedruckten Text; Suche findet beide Fotos, Seitendatei geschrieben [SKIP]
+      Übersprungen – YOLOX-Prüfumgebung fehlt (%TEMP%/trendo-tools-b/yolox).
+    Z3 PC-Lauf: echtes Modell (Poly Haven, CC0) über Blender nach GLB, HDR-Licht, Grafikkarte, Bilder und gemessene Bildrate unter reports/ (nur mit TRENDO_PC_LAUF=1) [SKIP]
+      Übersprungen – nur mit TRENDO_PC_LAUF=1 (echte Grafikkarte, Blender, Quellen unter %TEMP%\trendo-z3-quellen).
+T-0747-fix: Klick bis Oberfläche wieder frei 114 ms, fertig nach 3610 ms, 180 Wände
+    T-0699 Echtlauf Videos mit KI: echte Bild-KI malt 2 Schlüsselbilder, echte Stimme spricht, FFmpeg rendert MP4 mit Ton und Untertitel; ffprobe prüft, Standbilder einer Szene unterscheiden sich [SKIP]
+      Übersprungen – Echtlauf mit Bild-KI nur mit TRENDO_ECHT_VIDEO=1.
+  Finished:    Trendo.App.Tests (ID = 'a49211485b6cdacb396d928e4444c23ddb832f515220365a2c94c547a5e0a746')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 162, Errors: 0, Failed: 0, Skipped: 3, Not Run: 0, Time: 231,607s
+Waiting 10 seconds for foreground threads to exit...
+Teil 04 exit 0 (233 s)
+=== Teil EB (1 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = 'a49211485b6cdacb396d928e4444c23ddb832f515220365a2c94c547a5e0a746')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 117,051s
+Teil EB exit 0 (118 s)
+
+##### Wiederholung Teil 00
+=== Wiederholung Teil 00 (47 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0202: Kein Klick auf irgendeiner Seite stürzt ab (Klick-Audit, Bericht der stummen Knöpfe) [SKIP]
+      Langer Klick-Audit über alle Seiten: TRENDO_ALL_BUTTONS=1 setzen
+  Finished:    Trendo.App.Tests (ID = 'a49211485b6cdacb396d928e4444c23ddb832f515220365a2c94c547a5e0a746')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 228, Errors: 0, Failed: 0, Skipped: 1, Not Run: 0, Time: 257,009s
+Waiting 10 seconds for foreground threads to exit...
+Teil 00 Wiederholung exit 0 (259 s)

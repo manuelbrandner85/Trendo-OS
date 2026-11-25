@@ -19,7 +19,8 @@ public partial class MainWindow
     const string FK = "dateien";
     public const string PcPlace = "::pc";
     FileBrowser? _fb;
-    public FileBrowser Files => _fb ??= new FileBrowser { Root = _opt.Isolated ? Path.Combine(_core.DataRoot, "dateien-test") : null };
+    public FileBrowser Files => _fb ??= new FileBrowser { Root = _opt.Isolated ? Path.Combine(_core.DataRoot, "dateien-test") : null,
+        WriteGuard = p => Trendo.Core.Sys.ProtectedFolders.WriteProblem(CurrentPrincipal, p, _core.Audit) }; // T-0764 (10. Prüfrunde): Kinder nie in Trendos eigene Ordner
     public string FilesDir { get; private set; } = PcPlace;
     readonly List<string> _fbSel = [];
     string? _fbAnchor;

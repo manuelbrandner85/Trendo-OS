@@ -39,7 +39,7 @@ public sealed class MpvAudio(string mpvPath) : IAudioOut
     {
         if (_proc is { HasExited: false } && _pipe is { IsConnected: true }) return;
         Close();
-        var psi = new ProcessStartInfo(mpvPath) { UseShellExecute = false, CreateNoWindow = true };
+        var psi = new ProcessStartInfo(mpvPath) { UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = Trendo.Core.MpvSafe.WorkDir() }; // 10. Prüfrunde: leerer eigener Arbeitsordner
         // „--force-window=no“ und „--vo=null“: neuere mpv-Fassungen öffneten sonst trotz „--no-video“ ein eigenes Fenster (Fehler 07.11.2026 – Trendo Musik soll selbst abspielen)
         var args = StartArgs(_name);
         foreach (var a in args) psi.ArgumentList.Add(a);

@@ -66,18 +66,18 @@ public class RechteKernFix7Ui
         {
             string Zip(string name, params string[] entries)
             {
-                var z = Path.Combine(root, "dokumente", name); Directory.CreateDirectory(Path.GetDirectoryName(z)!);
+                var z = Path.Combine(c.Files.Home, name); // 10. Prüfrunde: eigener Ordner (der Trendo-Datenordner ist für Kinder geschützt) Directory.CreateDirectory(Path.GetDirectoryName(z)!);
                 using var a = ZipFile.Open(z, ZipArchiveMode.Create); foreach (var e in entries) using (var s = new StreamWriter(a.CreateEntry(e).Open())) s.Write("x");
                 return z;
             }
             void Unpack(string z) { c.Show("alltag-dateien"); Settle(); c.Find<TextBox>("zip-file").Text = z; c.Find<Button>("zip-unpack").Press(); Settle(); }
             var bad = Zip("spiel.zip", "bild.png", "spiel.exe");
             Unpack(bad);
-            Assert.False(Directory.Exists(Path.Combine(root, "dokumente", "spiel")));
+            Assert.False(Directory.Exists(Path.Combine(c.Files.Home, "spiel")));
             Assert.Contains(c.Core.Audit.ReadAll(), a => a.Action == "rbac.denied" && a.Detail.Contains("spiel.zip"));
             var ok = Zip("fotos.zip", "bild.png");
             Unpack(ok);
-            Assert.True(File.Exists(Path.Combine(root, "dokumente", "fotos", "bild.png")));
+            Assert.True(File.Exists(Path.Combine(c.Files.Home, "fotos", "bild.png")));
         }
         finally { c.Close(); }
     }

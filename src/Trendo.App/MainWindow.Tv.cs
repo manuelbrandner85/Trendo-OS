@@ -61,7 +61,7 @@ public sealed class MpvView : NativeControlHost
     {
         Kill();
         if (_hwnd == IntPtr.Zero || MpvPath is null || !File.Exists(MpvPath)) return;
-        var psi = new ProcessStartInfo(MpvPath) { UseShellExecute = false, CreateNoWindow = true };
+        var psi = new ProcessStartInfo(MpvPath) { UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = Trendo.Core.MpvSafe.WorkDir() }; // 10. Prüfrunde: leerer eigener Arbeitsordner
         var args = Args(_hwnd.ToString(), Pipe, Muted, url);
         foreach (var a in args) psi.ArgumentList.Add(a);
         try { _proc = Process.Start(psi); } catch (System.ComponentModel.Win32Exception) { _proc = null; }
@@ -243,6 +243,9 @@ public partial class MainWindow
     /// <summary>Quelle hinzufügen und gleich laden: M3U-Adresse, M3U-Datei oder Xtream-Zugang.</summary>
     public async Task<int> TvAddSource(string name, string kind, string urlOrFile, string? epg = null, string? user = null, string? pass = null)
     {
+        // T-0764 (10. Prüfrunde): eigene Fernseh-Quellen (M3U, Xtream) richtet nur ein Erwachsener ein – Kinder nutzen die eingerichteten Sender
+        try { Rbac.DemandSoftware(CurrentPrincipal, "tv.quelle " + kind, _core.Audit, Rbac.NurErwachseneTvQuelle); }
+        catch (UnauthorizedAccessException e) { _tvMsg = e.Message; return 0; }
         if (_core.Offline && kind != "datei") { _tvMsg = "Trendo ist offline – zum Laden braucht es Internet."; return 0; }
         // Eine eingefügte get.php-Adresse ist ein Xtream-Zugang: dann Sender, Filme, Serien und Programmführer über die Schnittstelle des Anbieters
         if (kind == "url" && Xtream.FromPlaylistUrl(urlOrFile.Trim()) is { } xt) { kind = "xtream"; urlOrFile = xt.Server; user = xt.User; pass = xt.Pass; if (string.IsNullOrWhiteSpace(name)) name = new Uri(xt.Server).Host; }

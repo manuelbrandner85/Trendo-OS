@@ -147,7 +147,7 @@ public sealed class FileBrowser
     /// <summary>Kopieren oder Ausschneiden + Einfügen; bei gleichem Namen „ – Kopie“ wie im Explorer.</summary>
     public string Paste(string source, string targetDir, bool move)
     {
-        Guard(source); Guard(targetDir);
+        Guard(source, write: move); Guard(targetDir); // Kopieren liest die Quelle nur
         var name = System.IO.Path.GetFileName(source.TrimEnd('\\', '/'));
         var target = System.IO.Path.Combine(targetDir, name);
         if (move && string.Equals(System.IO.Path.GetDirectoryName(source), targetDir.TrimEnd('\\', '/'), StringComparison.OrdinalIgnoreCase)) return source;
@@ -460,8 +460,13 @@ public sealed class FileBrowser
 
     internal static void MoveAny(string from, string to) { if (Directory.Exists(from)) Directory.Move(from, to); else File.Move(from, to); }
 
-    internal void Guard(string p)
+    /// <summary>T-0764 (10. Prüfrunde): Prüfung vor jedem Schreiben (Anlegen, Kopieren-Ziel, Verschieben, Umbenennen, Löschen, Papierkorb,
+    /// Zurücklegen) – liefert eine Meldung, wenn das Schreiben nicht erlaubt ist (Kinderprofil in Trendos eigenen Ordnern), sonst null.</summary>
+    public Func<string, string?>? WriteGuard { get; set; }
+
+    internal void Guard(string p, bool write = true)
     {
+        if (write && WriteGuard?.Invoke(p) is { } why) throw new UnauthorizedAccessException(why);
         if (Root is null) return;
         var full = System.IO.Path.GetFullPath(p); var root = System.IO.Path.GetFullPath(Root).TrimEnd('\\', '/');
         if (!full.Equals(root, StringComparison.OrdinalIgnoreCase) && !full.StartsWith(root + System.IO.Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))

@@ -98,6 +98,13 @@ public sealed partial class MainWindow : Window
         // T-0764 (5. Prüfrunde M1): keine Übernahme alter Kennungen mehr – ältere Stände richtet ein Erwachsener einmal neu ein
         core.Integrations.TrustedProgramPath = p => string.Equals(p, Environment.ProcessPath, StringComparison.OrdinalIgnoreCase)
             || Trendo.Core.Sys.ProgramTrust.Verified(p, [_deps.ToolsRoot, Path.Combine(core.DataRoot, "werkzeuge")]);
+        // T-0764 (10. Prüfrunde): Trendos eigene Ordner – das Kinderprofil schreibt dort nie (Dateimanager, Auswahl, Entpacken). Eigene Projekte bleiben frei.
+        Trendo.Core.Sys.ProtectedFolders.Protect(PersonStore.BaseOf(core.DataRoot)); Trendo.Core.Sys.ProtectedFolders.Protect(core.DataRoot);
+        Trendo.Core.Sys.ProtectedFolders.Protect(_deps.ToolsRoot); Trendo.Core.Sys.ProtectedFolders.Protect(AppContext.BaseDirectory);
+        Trendo.Core.Sys.ProtectedFolders.Protect(_deps.VollpaketDir); Trendo.Core.Sys.ProtectedFolders.Protect(Path.GetDirectoryName(Environment.ProcessPath));
+        Trendo.Core.Sys.ProtectedFolders.Allow(Path.Combine(core.DataRoot, "projekte"));
+        if (_opt.Isolated) Trendo.Core.Sys.ProtectedFolders.Allow(Path.Combine(core.DataRoot, "dateien-test")); // Testordner des Dateimanagers
+        Trendo.Core.MpvSafe.CleanupStale(); // alte mpv-Ordner beendeter Trendo-Läufe
         InitVollpaketOnline(); // ohne Vollpaket: dieselben Pakete vom GitHub-Release
         StartupTrace.Mark("ctor.deps");
         _settings = UserSettings.Load(core.DataRoot);

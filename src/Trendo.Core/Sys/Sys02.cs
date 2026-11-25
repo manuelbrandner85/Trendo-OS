@@ -97,8 +97,8 @@ public static class MediaLibrary
     /// <summary>Spieler wählen: mpv, sonst VLC, sonst Standardprogramm (null).</summary>
     /// <remarks>T-0764 (8. Prüfrunde): mpv ohne Einstellungen und Skripte aus %APPDATA%\mpv, mit Trendos fester, sicherer Tastenbelegung;
     /// VLC ohne Lua-Erweiterungen.</remarks>
-    public static (string Exe, string[] Args)? Player(string file, string? mpv, string? vlc) =>
-        mpv is not null ? (mpv, [.. MpvSafe.Args(keys: true), "--force-window=yes", "--", file]) : vlc is not null ? (vlc, ["--no-lua", "--play-and-exit", "--", file]) : null; // 9. Prüfrunde: „--“
+    public static (string Exe, string[] Args)? Player(string file, string? mpv, string? vlc, string? screenshotDir = null) =>
+        mpv is not null ? (mpv, [.. MpvSafe.Args(keys: true, screenshotDir: screenshotDir), "--force-window=yes", "--", file]) : vlc is not null ? (vlc, ["--no-lua", "--play-and-exit", "--", file]) : null; // 9. Prüfrunde: „--“
 }
 
 // P11 Batch-Umbenennen (mit Rückgängig), P22 Fotos ordnen
@@ -301,6 +301,7 @@ public static class Archives
     /// und Hinweis); Erwachsene wie bisher.</summary>
     public static int UnpackAs(Principal by, string zip, string dest, AuditLog audit, ArchiveConflict mode = ArchiveConflict.Ask)
     {
+        ProtectedFolders.DemandWrite(by, dest, audit); // 10. Prüfrunde: nie in Trendos eigene Ordner
         if (!Rbac.Has(by, Permission.ManageSoftware))
         {
             if (!Path.GetExtension(zip).Equals(".zip", StringComparison.OrdinalIgnoreCase)) Rbac.DemandSoftware(by, "entpacken " + Path.GetFileName(zip), audit, Rbac.NurErwachseneArchiv);

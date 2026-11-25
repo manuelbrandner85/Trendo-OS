@@ -62,6 +62,7 @@ public partial class MainWindow
     {
         string full;
         try { full = Path.GetFullPath(path); } catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { return false; }
+        if (Trendo.Core.Sys.ProtectedFolders.IsProtected(full)) return false; // T-0764 (10. Prüfrunde): nie in Trendos eigene Ordner
         return KidPickRoots().Any(r => string.Equals(full, r, StringComparison.OrdinalIgnoreCase) || full.StartsWith(r + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
     }
 
