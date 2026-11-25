@@ -210,6 +210,7 @@ public partial class MainWindow
     /// <summary>Ausgefüllte PDF schreiben: Platzhalter aus „Meine Angaben“ werden erst hier eingesetzt. Meldet leere Pflichtfelder.</summary>
     public string FoExport(ProgramDocument d, string target, bool flatten)
     {
+        UserFile(target); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
         var f = d.Text("file"); if (f.Length == 0 || !File.Exists(f)) throw new InvalidOperationException("Bitte zuerst ein Formular öffnen.");
         var values = FoProfile().Resolve(FoValues(d));
         var r = PdfFormular.Fill(f, target, values, FoOverlays(d), flatten, _core.Audit);

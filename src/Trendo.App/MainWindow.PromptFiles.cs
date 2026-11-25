@@ -88,6 +88,7 @@ public partial class MainWindow
     /// <summary>Vorlage(n) in eine Datei schreiben: .md = genau diese Vorlage mit Kopfzeilen, .json = <paramref name="all"/> oder diese.</summary>
     public string PromptExportFile(string file, PromptTemplate? one, bool all)
     {
+        UserFile(file); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
         var json = Path.GetExtension(file).Equals(".json", StringComparison.OrdinalIgnoreCase);
         if (!json && one is null) throw new InvalidOperationException("Für Markdown bitte eine Vorlage wählen.");
         var text = json ? PromptLibrary.ToJson(all || one is null ? Prompts.All() : [one]) : PromptLibrary.ToMarkdown(one!);

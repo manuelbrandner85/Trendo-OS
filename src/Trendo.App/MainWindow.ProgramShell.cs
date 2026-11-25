@@ -377,6 +377,7 @@ public partial class MainWindow
         if (target is null) target = ProgramNewTarget(spec, d);
         else if (!Path.IsPathRooted(target)) // nur ein Name: neben das Dokument, sonst in den Ordner des Programms, nie ins Arbeitsverzeichnis des Prozesses
             target = Path.Combine(d.Path is { } current && Path.IsPathRooted(current) ? Path.GetDirectoryName(current)! : WorkFolder(spec.Folder), target);
+        if (path is not null) UserFile(target); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
         DocSave(d, target); ProgRecent.Add(spec.Studio, d.Path!); RememberLastDoc(key, d.Path!); DropBackup(d);
         if (path is not null) _progAutoNamed.Remove(d.Id); // selbst benannt: nicht mehr umbenennen
         _core.Audit.Append(Principal.LocalOwner.Name, "program.save", $"{spec.Studio} {Path.GetFileName(d.Path)}");

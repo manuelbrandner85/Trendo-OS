@@ -107,7 +107,7 @@ public partial class MainWindow
     void CadSnapshot() { _cadUndo.Add(Cad.Snapshot()); /* T-0716: Netze der Referenzkörper geteilt (Delta) */ if (_cadUndo.Count > Trendo.Core.Programs.ProgramDocument.MaxUndo) _cadUndo.RemoveAt(0); _cadRedo.Clear(); }
     void CadChanged() { CadDirty = true; _cadBuilt = Cad.Build(); }
 
-    public void CadSave(string path) { Cad.Save(path); CadPath = path; CadDirty = false; OfficeSaved("cad"); _cadMsg = $"Gespeichert: {Path.GetFileName(path)}"; _core.Audit.Append(Principal.LocalOwner.Name, "cad.save", Path.GetFileName(path)); }
+    public void CadSave(string path) { UserFile(path); /* 12. Prüfrunde */ Cad.Save(path); CadPath = path; CadDirty = false; OfficeSaved("cad"); _cadMsg = $"Gespeichert: {Path.GetFileName(path)}"; _core.Audit.Append(Principal.LocalOwner.Name, "cad.save", Path.GetFileName(path)); }
     public void CadOpen(string path) { Cad = CadDoc.Load(path); CadPath = path; CadDirty = false; _cadUndo.Clear(); _cadRedo.Clear(); CadBodyIndex = 0; CadFeatureIndex = -1; _cadBuilt = Cad.Build(); _cadMsg = $"Geöffnet: {Path.GetFileName(path)}"; }
 
     string CadFolder { get { var d = Path.Combine(ProjectsRoot, "3D", "CAD"); Directory.CreateDirectory(d); return d; } }

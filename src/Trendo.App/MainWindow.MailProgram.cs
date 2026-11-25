@@ -406,6 +406,7 @@ public partial class MainWindow
     public string MailSaveAttachment(MailAttachment at)
     {
         var dir = MailAttachmentFolder; var name = MailMime.SafeFileName(at.Name, 0); var target = Path.Combine(dir, name);
+        UserFile(target); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
         for (var n = 2; File.Exists(target); n++) target = Path.Combine(dir, $"{Path.GetFileNameWithoutExtension(name)} ({n}){Path.GetExtension(name)}");
         File.WriteAllBytes(target, at.Data);
         _core.Audit.Append(Principal.LocalOwner.Name, "post.anhang", Path.GetFileName(target));

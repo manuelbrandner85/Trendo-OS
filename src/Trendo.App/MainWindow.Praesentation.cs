@@ -75,6 +75,7 @@ public partial class MainWindow
     /// <summary>Speichert die Präsentation. Liefert false, wenn das Speichern aufgehalten wurde, weil es eine fremde Datei mit nicht übernommenen Inhalten überschriebe (T-0682).</summary>
     public bool DeckSaveAs(string path)
     {
+        UserFile(path); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
         if (ImportGuardStops("praesentation", path)) { _dkMsg = ImportStopMessage("praesentation"); return false; }
         SlideFiles.Save(Deck, path);
         if (path.EndsWith(".pptx", StringComparison.OrdinalIgnoreCase)) { DeckPath = path; DeckDirty = false; RememberDeckRecent(path); OfficeSaved("praesentation"); ImportGuardClear("praesentation"); }
@@ -259,6 +260,7 @@ public partial class MainWindow
     /// <summary>P6: jede Folie als PNG (1920 × 1080) in einen Ordner neben den Präsentationen.</summary>
     public string DeckExportImages(string? folder = null)
     {
+        if (folder is not null) UserDir(folder); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
         var dir = folder ?? DefaultDeckName(" – Bilder"); Directory.CreateDirectory(dir);
         for (var i = 0; i < Deck.Slides.Count; i++) RenderSlidePng(Deck.Slides[i], Path.Combine(dir, $"Folie-{i + 1:00}.png"));
         _dkMsg = $"{Deck.Slides.Count} Bilder gespeichert: {Path.GetFileName(dir)}";

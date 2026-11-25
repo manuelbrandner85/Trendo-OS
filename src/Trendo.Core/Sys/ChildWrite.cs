@@ -89,7 +89,28 @@ public static class ChildWrite
     }
 
     /// <summary>Die Freigabe-Wurzeln – bekannte Ordner des Kontos (aufgelöst) und die zusätzlichen Freigaben, jeweils nur zulässige.</summary>
-    public static IReadOnlyList<string> Roots() => _roots ??= ComputeRoots(); // zwischengespeichert, neu bei jeder weiteren Freigabe
+    /// <remarks>12. Prüfrunde: zwischengespeichert – neu berechnet bei jeder weiteren Freigabe, wenn sich ein bekannter Ordner ändert (z. B. OneDrive-
+    /// Umleitung, billiger Vergleich der Pfade beim Abruf) und spätestens nach 60 Sekunden. <see cref="RootOk"/> gilt bei jeder Neuberechnung.</remarks>
+    public static IReadOnlyList<string> Roots()
+    {
+        var sig = KnownSignature();
+        if (_roots is { } r && _rootsSig == sig && DateTime.UtcNow - _rootsAt < TimeSpan.FromSeconds(60)) return r;
+        var fresh = ComputeRoots(); _rootsSig = sig; _rootsAt = DateTime.UtcNow; _roots = fresh;
+        return fresh;
+    }
+    static volatile string? _rootsSig; static DateTime _rootsAt;
+    static string KnownSignature() => string.Join("|", new[] { Environment.SpecialFolder.MyDocuments, Environment.SpecialFolder.MyPictures, Environment.SpecialFolder.MyMusic,
+        Environment.SpecialFolder.MyVideos, Environment.SpecialFolder.DesktopDirectory }.Select(Environment.GetFolderPath)) + "|" + KnownDownloads();
+
+    /// <summary>NUR FÜR TESTS (und den isolierten Testmodus der App): Freigabe für die Dauer des Bereichs – <c>using (ChildWrite.TestScope(root))</c>.
+    /// Danach ist sie wieder entfernt; der globale Zustand bleibt sauber.</summary>
+    public static IDisposable TestScope(string root, bool inside = true)
+    {
+        var key = Norm(root);
+        if (inside) AllowInside(root); else Allow(root);
+        return new Scope(() => { if (inside) Inner.TryRemove(key, out _); else Extra.TryRemove(key, out _); _roots = null; });
+    }
+    sealed class Scope(Action done) : IDisposable { int _d; public void Dispose() { if (Interlocked.Exchange(ref _d, 1) == 0) done(); } }
 
     static IReadOnlyList<string> ComputeRoots()
     {

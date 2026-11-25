@@ -50,6 +50,14 @@ public partial class MainWindow
     internal enum KidPickMode { Open, Save, Folder }
     internal sealed record KidPickRequest(string Title, KidPickMode Mode, bool Multiple, IReadOnlyList<string> Patterns, string? SuggestedName, string? DefaultExtension = null);
 
+    /// <summary>T-0764 (12. Prüfrunde): EINZIGER Weg für Schreibziele, deren Ort oder Namen der Nutzer bestimmt (eingetippter Dateiname, gewählter Ordner,
+    /// Name eines Mail-Anhangs …). Kinderprofil: nur in freigegebene Orte und nie mit ausführbarer oder auslösender Endung (<see cref="Trendo.Core.Sys.ChildWrite"/>),
+    /// sonst „rbac.denied“ und eine verständliche Meldung (UnauthorizedAccessException) – es entsteht keine Datei. Erwachsene: unverändert.
+    /// Ein Quelltext-Wächtertest prüft, dass Methoden mit einem Pfad-Parameter, die schreiben, hierüber laufen.</summary>
+    internal string UserFile(string path) { Trendo.Core.Sys.ChildWrite.Demand(CurrentPrincipal, path, _core.Audit); return path; }
+    /// <summary>Wie <see cref="UserFile"/>, für einen Zielordner (nur der Ort, die Namen darin legt Trendo fest).</summary>
+    internal string UserDir(string dir) { Trendo.Core.Sys.ChildWrite.Demand(CurrentPrincipal, dir, _core.Audit, checkName: false); return dir; }
+
     /// <summary>Für Tests: das zuletzt geöffnete Auswahlfenster des Kinderprofils und die zuletzt gewählten Pfade.</summary>
     public Window? KidPickWindow { get; private set; }
     public IReadOnlyList<string> KidPickLast { get; private set; } = [];
@@ -72,7 +80,7 @@ public partial class MainWindow
         var n = (name ?? "").Trim().TrimEnd(' ', '.');
         if (n.Length == 0 || n.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || n.Contains(':') || n.Contains("..")) return null;
         if (Path.GetExtension(n).Length == 0 && defaultExt is { Length: > 1 }) n += defaultExt;
-        if (Trendo.Core.Sys.Archives.UnsafeEntryName(n)) return null; // Code-Endungen, Installer, Gerätenamen, ohne Endung
+        if (Trendo.Core.Sys.Archives.UnsafeEntryName(n) || Trendo.Core.Sys.ChildWrite.BlockedName(n)) return null; // Code-Endungen, Installer, Gerätenamen, ohne Endung; 12. Prüfrunde: auch .url, .scf, .library-ms …
         return n;
     }
 

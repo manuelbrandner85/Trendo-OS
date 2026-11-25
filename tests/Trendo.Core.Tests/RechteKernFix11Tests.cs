@@ -8,6 +8,7 @@ namespace Trendo.Core.Tests;
 /// <summary>T-0764, 11. Prüfrunde: Freigabeliste statt Sperrliste – Kinder schreiben nur in freigegebene Orte und legen nie ausführbare oder
 /// auslösende Dateien an (M); frischer mpv-Arbeitsordner je Start, Umleitungspunkte werden nie verfolgt (N). Schreibt NIE in echte Systemorte –
 /// geprüft wird nur die Entscheidung. Startet nichts echt.</summary>
+[Collection("ChildWrite")] // 12. Prüfrunde: ändert die Freigabeliste nur im Bereich, nie parallel
 public class RechteKernFix11
 {
     static string Sys(Environment.SpecialFolder f, params string[] rest) => Path.Combine([Environment.GetFolderPath(f), .. rest]);
@@ -37,9 +38,9 @@ public class RechteKernFix11
         foreach (var f in new[] { Environment.SpecialFolder.MyDocuments, Environment.SpecialFolder.MyPictures, Environment.SpecialFolder.MyMusic, Environment.SpecialFolder.MyVideos, Environment.SpecialFolder.DesktopDirectory })
             Assert.Null(ChildWrite.Problem(Principal.ChildProfile, Sys(f, "Trendo-Test", "bild.png")));
         Assert.Null(ChildWrite.Problem(Principal.ChildProfile, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "musik.mp3")));
-        ChildWrite.Allow(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)); // Profilwurzel enthält AppData – wird nie Freigabe
-        ChildWrite.Allow(Path.GetPathRoot(Environment.SystemDirectory));
-        ChildWrite.AllowInside(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)); // enthält den Autostart – nie
+        using var _a = ChildWrite.TestScope(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), inside: false); // Profilwurzel enthält AppData – wird nie Freigabe
+        using var _b = ChildWrite.TestScope(Path.GetPathRoot(Environment.SystemDirectory)!, inside: false);
+        using var _c = ChildWrite.TestScope(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)); // enthält den Autostart – nie
         Assert.NotNull(ChildWrite.Problem(Principal.ChildProfile, Sys(Environment.SpecialFolder.Startup, "setup.exe")));
         Assert.NotNull(ChildWrite.Problem(Principal.ChildProfile, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "x.txt")));
     }
@@ -54,18 +55,18 @@ public class RechteKernFix11
     [InlineData("bild.png", false)] [InlineData("brief.txt", false)] [InlineData("musik.mp3", false)] [InlineData("foto.2024.jpg", false)] [InlineData("LIESMICH", false)] [InlineData("projekt.zip", false)]
     public void Endungen(string name, bool blocked) => Assert.Equal(blocked, ChildWrite.BlockedName(name));
 
-    static (Fixture F, string Root, FileBrowser Kid) Setup()
+    static (Fixture F, string Root, FileBrowser Kid, IDisposable Scope) Setup()
     {
         var f = new Fixture();
         var root = Path.Combine(f.Root, "eigene"); Directory.CreateDirectory(root);
-        ChildWrite.AllowInside(root); // steht für Dokumente & Co. (der Test schreibt nie in echte Ordner)
-        return (f, root, new FileBrowser { WriteGuard = (p, n) => ChildWrite.WriteProblem(Principal.ChildProfile, p, f.Core.Audit, n) });
+        var scope = ChildWrite.TestScope(root); // steht für Dokumente & Co. (der Test schreibt nie in echte Ordner); 12. Prüfrunde: nur im Bereich
+        return (f, root, new FileBrowser { WriteGuard = (p, n) => ChildWrite.WriteProblem(Principal.ChildProfile, p, f.Core.Audit, n) }, scope);
     }
 
     [Fact(DisplayName = "T-0764 M2: Dateimanager im Kinderprofil – Umbenennen in .exe, Kopieren einer .lnk und eines Ordners mit .exe darin abgelehnt; Bilder und Musik weiter")]
     public void Dateimanager_Endungen()
     {
-        var (f, root, kid) = Setup(); using var _f = f;
+        var (f, root, kid, scope) = Setup(); using var _f = f; using var _s = scope;
         var txt = Path.Combine(root, "a.txt"); File.WriteAllText(txt, "x");
         Assert.Equal(Rbac.NurErwachseneEndung, Assert.Throws<UnauthorizedAccessException>(() => kid.Rename(txt, "a.exe")).Message);
         Assert.Throws<UnauthorizedAccessException>(() => kid.Rename(txt, "a.exe ."));
@@ -84,7 +85,7 @@ public class RechteKernFix11
     [Fact(DisplayName = "T-0764 M1: Junction/Symlink in der Freigabe mit Ziel draußen gilt als draußen; Löschen entfernt nur den Link, nie das Ziel")]
     public void Umleitung()
     {
-        var (f, root, _) = Setup(); using var _f = f;
+        var (f, root, _, scope) = Setup(); using var _f = f; using var _s = scope;
         var outside = Path.Combine(f.Root, "draussen"); Directory.CreateDirectory(outside); File.WriteAllText(Path.Combine(outside, "wichtig.txt"), "x");
         var link = Path.Combine(root, "abkuerzung");
         try { Directory.CreateSymbolicLink(link, outside); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return; } // ohne Recht für Symlinks nicht prüfbar
@@ -98,7 +99,7 @@ public class RechteKernFix11
     [Fact(DisplayName = "T-0764 M1: Entpacken im Kinderprofil nur in freigegebene Orte; ZIP ohne Code dort weiter möglich")]
     public void Entpacken_Ort()
     {
-        var (f, root, _) = Setup(); using var _f = f;
+        var (f, root, _, scope) = Setup(); using var _f = f; using var _s = scope;
         var zip = Path.Combine(root, "bilder.zip");
         using (var a = System.IO.Compression.ZipFile.Open(zip, System.IO.Compression.ZipArchiveMode.Create)) using (var w = new StreamWriter(a.CreateEntry("bild.png").Open())) w.Write("x");
         Assert.Equal(1, Archives.UnpackAs(Principal.ChildProfile, zip, Path.Combine(root, "bilder"), f.Core.Audit));

@@ -31,7 +31,7 @@ public class RechteKernFix4Ui
             var (w, _, root) = Open(child);
             try
             {
-                var proj = Path.Combine(root, "projekt"); Directory.CreateDirectory(proj); File.WriteAllText(Path.Combine(proj, "start.ps1"), "Write-Output hi");
+                var proj = Path.Combine(w.Files.Home, "projekt"); Directory.CreateDirectory(proj); File.WriteAllText(Path.Combine(proj, "start.ps1"), "Write-Output hi"); // 12. Prüfrunde: Projekt in der Freigabe (Trendos Datenordner öffnet ein Kind nicht)
                 w.CodeOpenFolder(proj); Settle();
                 w.CodeRunProject();
                 w.CodeTerminal("dir");

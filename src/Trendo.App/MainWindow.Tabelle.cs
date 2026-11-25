@@ -60,6 +60,7 @@ public partial class MainWindow
     /// <summary>Speichert die Mappe. Liefert false, wenn das Speichern aufgehalten wurde, weil es eine fremde Datei mit nicht übernommenen Inhalten überschriebe (T-0682).</summary>
     public bool SheetSaveAs(string path)
     {
+        UserFile(path); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
         if (ImportGuardStops("tabelle", path)) { _shMsg = ImportStopMessage("tabelle"); return false; }
         if (path.EndsWith(".csv", StringComparison.OrdinalIgnoreCase)) SheetFiles.WriteCsv(SheetDocument, ActiveSheet, path);
         else { SheetFiles.Save(SheetDocument, path); if (!path.EndsWith(".ods", StringComparison.OrdinalIgnoreCase)) { SheetPath = path; SheetDirty = false; OfficeSaved("tabelle"); ImportGuardClear("tabelle"); } }
@@ -192,7 +193,7 @@ public partial class MainWindow
     }
 
     /// <summary>E3: als PDF speichern (A4, auf Seitenbreite angepasst, Kopfzeile wiederholt, Diagramme dabei).</summary>
-    public int SheetExportPdf(string path) => SheetPdf.Export(SheetDocument, ActiveSheet, path, new SheetPdf.Options(Landscape: _shLandscape));
+    public int SheetExportPdf(string path) => SheetPdf.Export(SheetDocument, ActiveSheet, UserFile(path), new SheetPdf.Options(Landscape: _shLandscape)); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
 
     public void SheetSetLandscape(bool on) => _shLandscape = on;
 

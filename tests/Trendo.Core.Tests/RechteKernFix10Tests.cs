@@ -8,6 +8,7 @@ namespace Trendo.Core.Tests;
 
 /// <summary>T-0764, 10. Prüfrunde: mpv ohne yt-dlp-Hook und mit leerem eigenem Arbeitsordner (M a/b), Kinder schreiben nie in Trendos eigene Ordner
 /// (M c), IPTV-Multicast, Aufräumen alter mpv-Ordner (N). Startet nichts echt.</summary>
+[Collection("ChildWrite")] // 12. Prüfrunde: ändert die Freigabeliste nur im Bereich, nie parallel
 public class RechteKernFix10
 {
     static string Repo(string rel)
@@ -94,7 +95,7 @@ public class RechteKernFix10
         using var f = new Fixture();
         var trendo = Path.Combine(f.Root, "TrendoOS"); var tools = Path.Combine(trendo, "werkzeuge"); var home = Path.Combine(f.Root, "home");
         Directory.CreateDirectory(tools); Directory.CreateDirectory(home);
-        ProtectedFolders.Protect(trendo); ChildWrite.AllowInside(home); // 11. Prüfrunde: „home“ steht für einen freigegebenen Ort
+        ProtectedFolders.Protect(trendo); using var _cw = ChildWrite.TestScope(home); // 11. Prüfrunde: „home“ steht für einen freigegebenen Ort
         var link = Path.Combine(home, "abkuerzung");
         var linked = false;
         try { Directory.CreateSymbolicLink(link, tools); linked = true; } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } // ohne Recht für Symlinks: Teil entfällt

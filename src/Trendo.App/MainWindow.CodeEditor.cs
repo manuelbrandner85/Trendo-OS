@@ -40,6 +40,7 @@ public partial class MainWindow
     public void CodeOpenFolder(string dir)
     {
         if (!Directory.Exists(dir)) throw new DirectoryNotFoundException("Ordner nicht gefunden: " + dir);
+        UserDir(dir); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
         _ceRoot = Path.GetFullPath(dir); _ceCollapsed.Clear();
         // Unterordner beim Öffnen zugeklappt – übersichtlich auch bei großen Projekten
         foreach (var d in CodeProject.Tree(_ceRoot).Where(e => e.IsDir && e.Depth >= 0)) _ceCollapsed.Add(d.Path);
@@ -62,6 +63,7 @@ public partial class MainWindow
         foreach (var f in all ? _ceFiles : _ceFiles.Skip(Math.Max(0, _ceActive)).Take(_ceActive >= 0 ? 1 : 0))
         {
             if (!f.Dirty) continue;
+            UserFile(f.Path); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
             CodeProject.WriteText(f.Path, f.Doc.Text); f.Saved = f.Doc.Text; CodeDrafts.Delete(_core.DataRoot, f.Path, ProgLocks);
             _core.Audit.Append(Principal.LocalOwner.Name, "code.save", Path.GetFileName(f.Path));
         }
@@ -80,6 +82,7 @@ public partial class MainWindow
         var root = _ceRoot ?? throw new InvalidOperationException("Erst einen Projektordner öffnen.");
         var full = CodeProject.Inside(root, relative);
         if (File.Exists(full)) throw new InvalidOperationException($"„{relative}“ gibt es schon.");
+        UserFile(full); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung (z. B. start.bat auf dem Desktop)
         Directory.CreateDirectory(Path.GetDirectoryName(full)!); File.WriteAllText(full, "");
         _ceCollapsed.Remove(Path.GetDirectoryName(full)!);
         CodeOpenFile(full); _ceOut = $"„{relative}“ angelegt.";

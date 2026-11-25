@@ -151,6 +151,7 @@ public partial class MainWindow
             _progMsg[CodeAiKey] = $"⚠ „{Path.GetFileName(f)}“ wurde inzwischen geändert (z. B. von Claude). Nochmal speichern überschreibt diese Änderung – oder die Datei links neu öffnen.";
             return;
         }
+        UserFile(f); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
         CodeProject.WriteText(f, _caDoc.Text); _caSaved = _caDoc.Text; _caDiskSha = Sha(f); _caOverwrite = false;
         _core.Audit.Append(Principal.LocalOwner.Name, "code-ki.save", Path.GetFileName(f));
         _progMsg[CodeAiKey] = "Gespeichert: " + Path.GetFileName(f);

@@ -78,6 +78,7 @@ public partial class MainWindow
     /// <summary>Entwurf als PNG mit Transparenz in Druckgröße (300 DPI).</summary>
     public string PodExportPng(ProgramDocument d, string file)
     {
+        UserFile(file); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
         var (w, h) = PodBoardSize(d);
         var items = PodDesign.Items(d.Data);
         if (items.All(i => i.Hidden)) throw new InvalidOperationException("Der Entwurf ist leer.");

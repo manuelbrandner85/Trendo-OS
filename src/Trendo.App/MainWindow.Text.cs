@@ -70,6 +70,7 @@ public partial class MainWindow
     /// <summary>Speichert das Dokument. Liefert false, wenn das Speichern aufgehalten wurde, weil es eine fremde Datei mit nicht übernommenen Inhalten überschriebe (T-0682).</summary>
     public bool TextSaveAs(string path)
     {
+        UserFile(path); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
         if (ImportGuardStops("text", path)) { _txMsg = ImportStopMessage("text"); return false; }
         TextFiles.Save(TextDocument, path);
         if (!path.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase)) { TextPath = path; TextDirty = false; RememberRecent(path); OfficeSaved("text"); ImportGuardClear("text"); }

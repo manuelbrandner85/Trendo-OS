@@ -868,6 +868,82 @@ Grund sind die strengeren Regeln; abgeschwächt ist keiner:
 - **Eingebettete Webansichten:** Downloads in Claude-Anmeldung und Vorschau (`NativeWebView`/WebView2) steuert WebView2 selbst. Trendo kann sie dort nicht abfangen.
 - **Gemeinsames Konto:** Unter einem gemeinsamen Windows-Konto ist der Kinderschutz keine harte Grenze. Andere Programme dieses Kontos können weiter überall schreiben, wo das Konto darf.
 
+## Zwölfte Prüfrunde (Commit „T-0764 fix12“)
+
+Grundlage ist die Gegenprüfung von `1e25eef30`.
+
+**Befund (MITTEL):** Die Code-Werkstatt umging die Endungssperre. `CodeNewFile` und das Speichern schrieben ohne `ChildWrite`. Ein Kind wählte den Desktop als Projektordner und legte `start.bat`, `.ps1`, `.url` und `.hta` an. Ein Doppelklick auf dem Desktop hätte sie gestartet.
+
+**Rot auf 1e25eef30:**
+- `reports/T-0764/rot-fix12-app.log`: 2 von 2 rot. Die Code-Werkstatt legte im Kinderprofil start.bat, .ps1, .url und .hta an, öffnete einen Projektordner im Trendo-Datenordner, und der Notiz-Editor speicherte als .bat.
+- `reports/T-0764/rot-fix12-core.log`: Der neue Quelltext-Wächter fand im alten Stand Schreibstellen mit Nutzer-Pfad ohne `ChildWrite`, darunter `CodeNewFile`, `EditorSave`, `DeckSaveAs` und `FoExport`. Für diesen Beleg lief der Wächter ohne den Test, der die neue Schnittstelle `TestScope` braucht.
+
+### Korrektur
+
+Neue zentrale Helfer der App:
+- `UserFile(path)`: Ort und Name.
+- `UserDir(dir)`: nur der Ort, wenn die Namen darin von Trendo kommen.
+
+Beide laufen über `ChildWrite.Demand`. Im Kinderprofil gilt dann: nur freigegebene Orte, keine ausführbare oder auslösende Endung, sonst „rbac.denied“ und eine verständliche Meldung, und es entsteht keine Datei. Erwachsene: unverändert. Die Kinder-Auswahl beim Speichern prüft den Namen jetzt ebenfalls mit `ChildWrite.BlockedName`, also auch .url, .scf, .library-ms und Ähnliches.
+
+Der Desktop bleibt eine Freigabe-Wurzel. Kinder dürfen dort speichern, die Endungssperre greift jetzt überall.
+
+**Durchgesehene Schreibstellen mit Ort oder Namen vom Nutzer** (Datei:Zeile → fest/frei → geschützt):
+
+| Stelle | Name/Ort | Geschützt |
+|---|---|---|
+| MainWindow.CodeEditor.cs:43 `CodeOpenFolder` | Ort frei | ja (`UserDir`) |
+| MainWindow.CodeEditor.cs:66 `CodeSave` | Name frei (Datei des Projekts) | ja (`UserFile`) |
+| MainWindow.CodeEditor.cs:85 `CodeNewFile` | Name frei, eingetippt | ja (`UserFile`) |
+| MainWindow.KreativStudios4.cs:154 Code mit KI „Speichern“ | Name frei (Projektdatei) | ja |
+| MainWindow.Helfer.cs:100 `EditorSave` (Notiz-Editor) | Name frei, eingetippt | ja |
+| MainWindow.Text.cs:73 `TextSaveAs` | Name frei (Speichern unter) | ja |
+| MainWindow.Tabelle.cs:63 `SheetSaveAs`, :196 `SheetExportPdf` | frei / Endung fest | ja |
+| MainWindow.Praesentation.cs:78 `DeckSaveAs`, :263 `DeckExportImages` | frei / Ordner frei | ja / ja (`UserDir`) |
+| MainWindow.Cad.cs:110 `CadSave` | Name frei | ja |
+| MainWindow.ProgramShell.cs:380 `ProgramSave` (Speichern unter) | Name frei | ja (nur mit gewähltem Pfad; ohne Pfad: Trendos Ordner) |
+| MainWindow.Formulare.cs:213 `FoExport` | Ziel frei | ja |
+| MainWindow.PodDesigner.cs:81 `PodExportPng` | Ziel frei, Endung fest | ja |
+| MainWindow.PromptFiles.cs:91 `PromptExportFile` | Ziel frei | ja |
+| MainWindow.Spec10Alarm.cs:184 `TwinExportRules` | Ziel frei | ja |
+| MainWindow.MusikProfi.cs:27 `MsMaster` (Export-Ziel) | Ziel frei | ja |
+| MainWindow.W4Suite.cs:48 `SuiteExport` | Ordner frei, Namen fest | ja (`UserDir`) |
+| MainWindow.ProgGameRelease.cs:110 `GameUnrealPackage` | Ordner frei | ja (`UserDir`; ohnehin nur Erwachsene) |
+| MainWindow.MailProgram.cs:409 `MailSaveAttachment` | Name vom Absender | ja |
+| Dateimanager: `FileBrowser`-Kopieren, -Verschieben, -Umbenennen, Neuer Ordner, Einfügen aus der Zwischenablage, Ziehen und Ablegen (11. Prüfrunde) | frei | ja (`WriteGuard`) |
+| Download-Manager, Medien- und 3D-Bibliothek (11. Prüfrunde) | Name vom Server | ja |
+| Kinder-Auswahl „Speichern unter“ (`KidSaveName`/`KidPickAllowed`) | frei | ja |
+| Export-Liste der Studios (`ProgramShell` ExportRun) | Name aus dem Titel, Endung fest, Ordner von Trendo | fest – nicht nötig |
+| Studios mit Namensfeld (Spiele-Studio-Export, Mode, Nähen, Tiled …: `DevStudio.SafeName(…)` + feste Endung in Trendos Ordnern) | Name frei, Endung und Ort fest | fest – nicht nötig |
+
+Ausgenommen sind 27 Methoden, die nur lesen oder Ziel und Namen selbst festlegen. Jede steht mit Grund in der Liste `Intern` des Wächtertests.
+
+**Quelltext-Wächtertest** (`RechteKernFix12.Schreibziele_geprueft`). Die Heuristik ist ehrlich beschrieben:
+- **Erfasst:** jede Methode in `src/Trendo.App` mit einem `string`-Parameter namens path, file, target, folder, dir, relative, outDir, outFile, dest oder ziel, die schreibt (File.Write/Copy/Move/Create, FileStream, CreateDirectory, Save/SaveAs/Export, WriteText, Entpacken). Sie muss `UserFile`, `UserDir` oder `ChildWrite` aufrufen oder mit Grund in der Ausnahmeliste stehen.
+- **Zusätzlich:** Verwaiste Ausnahmen sind rot, und die drei Methoden der Code-Werkstatt müssen den Helfer nutzen.
+- **Grenzen:** Der Test findet keine Schreibstellen ohne passenden Parameternamen und keine, die einen Nutzerpfad über eine Feldvariable weiterreichen. Die Tabelle oben ist dafür die Durchsicht von Hand.
+
+### Niedrige Punkte
+
+1. **Globaler Testzustand:** `ChildWrite.TestScope(root)` (`using`) gibt eine Freigabe nur für den Bereich frei und entfernt sie danach. Umgestellt sind RechteKernFix7, 8, 10, 11 und 12. Sie laufen in der nicht parallelen Sammlung „ChildWrite“. Auch der isolierte Testmodus der App meldet seine Testordner nur für die Lebensdauer des Fensters an.
+2. **Zwischenspeicher der Wurzeln:** Er wird neu berechnet bei jeder weiteren Freigabe, wenn sich ein bekannter Ordnerpfad ändert (billiger Vergleich beim Abruf, z. B. OneDrive-Umleitung), und spätestens nach 60 Sekunden. `RootOk` gilt bei jeder Neuberechnung.
+
+### Auswirkung für Kinder (ehrlich)
+
+In der Code-Werkstatt und bei „Code mit KI“ legen Kinder keine Programm- oder Skriptdateien an und speichern keine (.py, .js, .bat, .ps1 …). Text, Markdown, HTML, CSS und JSON gehen weiter. Das folgt der Regel aus der elften Prüfrunde: keine ausführbaren Dateien, egal wohin.
+
+### Tests
+
+- Build: 0 Fehler.
+- Kern vollständig (`reports/T-0764/gruen-fix12-core.log`): 3673 Tests, 3631 bestanden, 42 übersprungen, 0 rot, Exit 0. Darin der neue Quelltext-Wächter `RechteKernFix12.Schreibziele_geprueft` und `Bereich` (TestScope).
+- App gezielt (`reports/T-0764/gruen-fix12-app.log`): 183 Klassen in fünf Teilen plus EveryButton_Alltag einzeln, 948 Testfälle. Teile 01, 03, 04 und EB waren im Hauptlauf grün. Teil 00 meldete nur den bekannten Avalonia-Fehler beim Aufräumen („Test Case Cleanup Failure … different thread owns it“, Fall T-0734 Gegenprüfung), ohne roten Test. Das ist ein bekannter Flaky-Fall. In Teil 02 war `RechteKernFix4Ui.Code_Werkstatt` rot, weil der Test den Projektordner im isolierten Trendo-Datenordner anlegte. Den öffnet die Werkstatt einem Kind jetzt nicht mehr. **Angepasster Test:** Der Projektordner liegt nun in der Freigabe (`Files.Home\projekt`). Geprüft wird weiter dasselbe: Ausführen und Terminal verlangen das Recht. Die Regel ist strenger geworden, der Test ist nicht schwächer. Im Nachlauf mit dem Endstand waren Teil 00 (154 Tests) und Teil 02 (133 Tests) mit Exit 0 grün.
+
+### Grenzen und offene Punkte
+
+- **Wächtertest:** Er ist eine Heuristik (siehe oben).
+- **Eingebettete Webansichten:** Downloads dort steuert WebView2 selbst.
+- **Gemeinsames Konto:** Unter einem gemeinsamen Windows-Konto ist der Kinderschutz keine harte Grenze.
+
 ## Abnahmekriterien
 
 | # | Kriterium | Urteil |
