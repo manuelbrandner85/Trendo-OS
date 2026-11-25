@@ -68,7 +68,7 @@ public partial class MainWindow
         var src = new TextBox { Name = "web-mod-quelle", PlaceholderText = "Mod-Ordner oder ZIP-Datei auf diesem PC", Width = 380 };
         var pick = Act("web-mod-waehlen", "ZIP wählen …", async () =>
         {
-            var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Mod wählen", AllowMultiple = false, FileTypeFilter = [new FilePickerFileType("Mod (ZIP)") { Patterns = ["*.zip"] }] });
+            var files = await PickOpenFiles(new FilePickerOpenOptions { Title = "Mod wählen", AllowMultiple = false, FileTypeFilter = [new FilePickerFileType("Mod (ZIP)") { Patterns = ["*.zip"] }] });
             if (files.Count > 0 && files[0].TryGetLocalPath() is { } lp) src.Text = lp;
         });
         sp.Children.Add(new WrapPanel { Children = { src, new Border { Width = 6 }, pick, new Border { Width = 6 }, Act("web-mod-pruefen", "Prüfen", () => WebDesignModCheck(src.Text ?? "")) } });

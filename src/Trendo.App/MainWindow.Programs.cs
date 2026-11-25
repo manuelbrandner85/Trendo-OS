@@ -41,7 +41,7 @@ public partial class MainWindow
         try
         {
             var args = ExternalApps.Plan(a, file ?? "", appId == "obs" ? ObsDirOverride ?? ExternalApps.ObsScenesDir() : null);
-            _core.Integrations.LaunchArgs(Principal.LocalOwner, exe, _core.Audit, args);
+            LaunchArgsAs(exe, args);
             return $"{a.Name} öffnet „{Path.GetFileName((file ?? "").TrimEnd('/', '\\'))}“.";
         }
         catch (Exception e) when (e is ArgumentException or IOException or InvalidOperationException or UnauthorizedAccessException or System.ComponentModel.Win32Exception) { return "⚠ " + e.Message; }
@@ -65,7 +65,7 @@ public partial class MainWindow
         var yes = Act($"setup-yes-{id}", guided ? "Ja, Seite öffnen" : "Ja, einrichten", async () =>
         {
             _appAsk.Remove(id);
-            if (guided) { if (c?.OfficialUrl is { } u) _core.Integrations.LaunchDirect(Principal.LocalOwner, u, _core.Audit); Say($"{a.Name}: Herstellerseite geöffnet. Nach der Installation erscheint hier „In {a.Name} öffnen“.", page); return; }
+            if (guided) { if (c?.OfficialUrl is { } u) LaunchAs(u); Say($"{a.Name}: Herstellerseite geöffnet. Nach der Installation erscheint hier „In {a.Name} öffnen“.", page); return; }
             // B4 (T-0706): „Ja, einrichten“ auf dieser Rückfrage ist die Freigabe; eingerichtet wird nur über den Kern mit genau dieser Freigabe
             if (FreigabeAusRueckfrage(InstallWirkung(c!, a.Use)) is not { } approvalId) { Show(page); return; }
             var ok = InstallOverride is { } fake ? await _core.Approvals.Execute(approvalId, DependencyManager.InstallAction, c.Id, () => fake(c)) : await InstallOne(c, refresh: false, approvalId: approvalId);
@@ -338,7 +338,7 @@ public partial class MainWindow
         if (!string.IsNullOrWhiteSpace(maske.Angebot.InfoLink))
             knoepfe.Children.Add(Act("fach-inst-link-" + programm.Id, "Seite ansehen", () =>
             {
-                _core.Integrations.LaunchDirect(Principal.LocalOwner, maske.Angebot.InfoLink!, _core.Audit);
+                LaunchAs(maske.Angebot.InfoLink!);
                 Say("Die Seite ist offen. Installiert wurde nichts.", view);
             }));
         knoepfe.Children.Add(Act("fach-inst-no-" + programm.Id, "Schließen", () => { _installMaske.Remove(programm.Id); Show(view); }));

@@ -14,13 +14,82 @@ public static class Software
 
     // P07 Portable Tools
     /// <summary>Entpackt eine Portable-ZIP nach „Werkzeuge/&lt;name&gt;“ im Benutzerordner – nur bei passender Prüfsumme.</summary>
-    public static string InstallPortable(string zip, string expectedSha256, string toolsRoot, string name, AuditLog? audit = null)
+    /// <param name="by">T-0764: angemeldete Person – ein Kinderprofil richtet nichts ein (<see cref="Rbac.DemandSoftware"/>).</param>
+    public static string InstallPortable(Principal by, string zip, string expectedSha256, string toolsRoot, string name, AuditLog? audit = null)
     {
+        Rbac.DemandSoftware(by, "portable.install " + Path.GetFileName(zip), audit);
         var sha = J.Sha(zip);
         if (!sha.Equals(Regex.Replace(expectedSha256, @"\s", ""), StringComparison.OrdinalIgnoreCase)) throw new InvalidOperationException("Prüfsumme stimmt nicht – nichts entpackt.");
-        var safe = string.Concat(name.Where(c => char.IsLetterOrDigit(c) || c is '-' or '_' or '.')); if (safe.Length == 0) throw new ArgumentException("Bitte einen Namen.");
+        var safe = SafeName(name);
         var dest = Path.Combine(toolsRoot, safe); if (Directory.Exists(dest)) Directory.Delete(dest, true);
-        Archives.Unpack(zip, dest); audit?.Append("app", "portable.install", $"{safe} sha256={sha}"); return dest;
+        Archives.Unpack(zip, dest);
+        ProgramTrust.WriteMarker(dest, safe, sha); // T-0764: Kennung „von Trendo eingerichtet“ mit SHA-256 jeder Programmdatei (P3-1)
+        audit?.Append(by.Name, "portable.install", $"{safe} sha256={sha}"); return dest;
+    }
+
+    /// <summary>T-0764: Kennungsdatei, die <see cref="InstallPortable"/> in jeden Programmordner schreibt – nur solche Ordner führt die Programm-Seite.</summary>
+    public const string PortableMarker = ".trendo-portable.json";
+
+    /// <summary>Ordnername für ein Portable-Programm: Buchstaben, Ziffern, „-“, „_“ und „.“ – aber nie „.“, „..“ oder mit Punkt am Anfang
+    /// (T-0764: „..“ zeigte vorher auf den übergeordneten Ordner, und „Ersetzen“ hätte ihn gelöscht).</summary>
+    public static string SafeName(string name)
+    {
+        var safe = string.Concat((name ?? "").Where(c => char.IsLetterOrDigit(c) || c is '-' or '_' or '.')).TrimEnd('.');
+        if (safe.Length == 0 || safe[0] == '.') throw new ArgumentException("Bitte einen Namen aus Buchstaben oder Ziffern.");
+        return safe;
+    }
+
+    /// <summary>T-0764 (Gegenprüfung M3): Dateien, deren Öffnen etwas installiert, entfernt oder Befehle ausführt – Installer, Pakete, Skripte,
+    /// Registrierungsdateien und .exe mit „setup“, „install“, „unins“ oder „update“ im Namen. Sie brauchen das Recht „Programme verwalten“.
+    /// Normale Dokumente, Bilder und gewöhnliche Programme öffnen bleibt für alle erlaubt.</summary>
+    /// <summary>T-0764 (7. Prüfrunde): Abbilder und Container, die Windows einbindet oder auspackt (.iso, .img, .vhd, .vhdx, .cab, .wim) – im Kinderprofil gesperrt.</summary>
+    public static bool MountLike(string path) => Path.GetExtension(path).ToLowerInvariant() is ".iso" or ".img" or ".vhd" or ".vhdx" or ".cab" or ".wim" or ".esd";
+
+    public static bool IsInstallerLike(string path)
+    {
+        var ext = Path.GetExtension(path).ToLowerInvariant();
+        if (ext is ".msi" or ".msp" or ".msix" or ".msixbundle" or ".appx" or ".appxbundle" or ".appinstaller" or ".bat" or ".cmd" or ".ps1" or ".psm1" or ".vbs" or ".vbe" or ".wsf" or ".wsh" or ".js" or ".jse" or ".reg" or ".scr" or ".com" or ".pif"
+            or ".lnk" or ".url" or ".cpl" or ".hta" or ".application" or ".appref-ms" or ".msu" or ".jar" or ".diagcab" or ".settingcontent-ms" or ".gadget" or ".msc"
+            or ".chm" or ".sct" or ".wsc" or ".xll" or ".docm" or ".xlsm" or ".pptm" or ".dotm" or ".xltm" or ".potm" or ".ppsm") return true; // T-0764 N-D, P3-5 (Hilfe mit Skript, Skript-Komponenten, Excel-Add-ins, Dokumente mit Makros)
+        if (ext is not ".exe") return false;
+        var n = Path.GetFileNameWithoutExtension(path).ToLowerInvariant();
+        return n.Contains("setup") || n.Contains("install") || n.Contains("unins") || n.Contains("update") || n.Contains("deinstall");
+    }
+
+    /// <summary>T-0764 (2. Prüfrunde N-C/N-D): Braucht das Öffnen dieses Ziels das Recht „Programme verwalten“? Ja bei Installern, Paketen, Skripten,
+    /// Verknüpfungen (.lnk/.url – ihr Ziel ist nicht geprüft) und bei jeder .exe außerhalb von Trendos eigenen Programmordnern
+    /// (<paramref name="trusted"/>). Adressen (https:, ms-settings:, shell: …), Ordner und Dokumente: nein.</summary>
+    /// <remarks>T-0764 (3. Prüfrunde): Adressen nur aus der Liste für Kinder (<see cref="ProgramTrust.ChildSchemeAllowed"/>), <c>file:</c> wie ein Pfad;
+    /// Interpreter (python, git, cmd, powershell …) immer; eine .exe nur, wenn <paramref name="trusted"/> sie über ihre Herkunft kennt.</remarks>
+    public static bool NeedsSoftwareRight(string target, Func<string, bool>? trusted = null)
+    {
+        if (string.IsNullOrWhiteSpace(target)) return false;
+        if (target.Any(char.IsControl)) return true; // T-0764 (N4): Steuerzeichen im Ziel – nie ohne Recht
+        var t = target.Trim().Trim('"');
+        if (t.StartsWith("file:", StringComparison.OrdinalIgnoreCase))
+        {
+            if (!Uri.TryCreate(t, UriKind.Absolute, out var fu) || !fu.IsFile) return true;
+            t = fu.LocalPath;
+        }
+        else if (Regex.IsMatch(t, @"^[A-Za-z][A-Za-z0-9+.\-]+:") || t.Contains("://", StringComparison.Ordinal)) return !ProgramTrust.ChildSchemeAllowed(t); // Adresse (mind. 2 Zeichen vor „:“), kein Dateipfad – C:\ ist eine Datei
+        string full;
+        try { full = Path.GetFullPath(t); } catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { return true; }
+        if (Directory.Exists(full)) return false;
+        if (IsInstallerLike(full)) return true;
+        if (ProgramTrust.IsInterpreter(full) && Path.GetExtension(full).Length > 0) return true; // P3-2: python.exe, git.exe, cmd.exe … nie frei gewählt
+        return Path.GetExtension(full).Equals(".exe", StringComparison.OrdinalIgnoreCase) && !(trusted?.Invoke(full) ?? false);
+    }
+
+    /// <summary>T-0764: Offline-Installer starten – nur Erwachsene, und nur, wenn die Prüfsumme jetzt (beim Start) noch stimmt.
+    /// Zwischen „Prüfen“ und „Ja, starten“ ausgetauschte Dateien werden so nicht gestartet.</summary>
+    public static void StartOfflineInstaller(Principal by, string file, Integrations integrations, AuditLog audit)
+    {
+        Rbac.DemandSoftware(by, "offline.installer " + Path.GetFileName(file), audit);
+        var full = Path.GetFullPath(file);
+        var pkg = OfflinePackages(Path.GetDirectoryName(full)!).FirstOrDefault(p => string.Equals(Path.GetFullPath(p.File), full, StringComparison.OrdinalIgnoreCase));
+        if (pkg is not { Ok: true }) throw new InvalidOperationException("Die Prüfsumme stimmt nicht (mehr) – der Installer wird nicht gestartet.");
+        audit.Append(by.Name, "offline.installer.start", $"{Path.GetFileName(full)} sha256={pkg.ActualSha}");
+        integrations.LaunchDirect(by, full, audit);
     }
 
     // P09 Deinstallation anleiten

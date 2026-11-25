@@ -1,0 +1,23 @@
+T-0764 fix12 – ROT auf 1e25eef30 (App: RechteKernFix12Ui – Code-Werkstatt legt start.bat & Co. an, vor dem Fix)
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0764 M: Kind – Code-Werkstatt legt start.bat, .ps1, .url, .hta nicht an (Meldung, keine Datei); README.md geht; Erwachsene wie bisher [FAIL]
+      Assert.Throws() Failure: No exception was thrown
+      Expected: typeof(System.UnauthorizedAccessException)
+      Stack Trace:
+        tests\Trendo.App.Tests\RechteKernFix12UiTests.cs(37,0): at Trendo.App.Tests.RechteKernFix12Ui.Code_Werkstatt_Kind()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    T-0764 M: Kind – Code-Werkstatt öffnet keinen Projektordner außerhalb der Freigabe; Notiz-Editor speichert nicht als .bat [FAIL]
+      Assert.Throws() Failure: No exception was thrown
+      Expected: typeof(System.UnauthorizedAccessException)
+      Stack Trace:
+        tests\Trendo.App.Tests\RechteKernFix12UiTests.cs(56,0): at Trendo.App.Tests.RechteKernFix12Ui.Ort_und_Notiz_Kind()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Finished:    Trendo.App.Tests (ID = 'ba7e630c7895ba49f86f6749d2777473aa006af533d9c76feb135ff91c3cf6c2')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 2, Errors: 0, Failed: 2, Skipped: 0, Not Run: 0, Time: 3,558s
+exit 1

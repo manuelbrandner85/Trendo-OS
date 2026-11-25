@@ -274,7 +274,7 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
     /// <summary>Installiert automatisch (AutoUser/AutoElevated). Guided/Bundled werfen.</summary>
     public async Task<bool> InstallAsync(Principal by, Component c, Action<string>? progress = null, CancellationToken ct = default)
     {
-        Rbac.Demand(by, Permission.ApproveAction);
+        Rbac.DemandSoftware(by, "deps.install " + c.Id, audit); // T-0764: eigenes Recht „Programme verwalten“, im Protokoll
         if (!HasConsent) throw new InvalidOperationException("Lizenz-Zustimmung fehlt");
         if (c.Mode is not (DeliveryMode.AutoUser or DeliveryMode.AutoElevated or DeliveryMode.Included)) throw new InvalidOperationException($"{c.Name} wird nicht automatisch installiert ({c.Mode})");
         if (IsInstalled(c)) { progress?.Invoke($"{c.Name}: bereits vorhanden – nichts geändert"); return true; }
@@ -308,7 +308,7 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
             }
             else if (entry is null) r = (1, "Vollpaket nicht gefunden – bitte den Trendo-USB-Stick oder den Ordner mit „Programme“ anschließen.");
             else
-                try { Vollpaket.InstallPackage(srcDir!, entry, ToolsRoot, audit); r = (0, ""); progress?.Invoke($"{c.Name}: aus dem Vollpaket eingerichtet"); }
+                try { Vollpaket.InstallPackage(by, srcDir!, entry, ToolsRoot, audit); r = (0, ""); progress?.Invoke($"{c.Name}: aus dem Vollpaket eingerichtet"); }
                 catch (Exception e) when (e is InvalidOperationException or IOException or InvalidDataException or UnauthorizedAccessException) { r = (1, e.Message); }
                 finally { if (onlineDir is not null) try { File.Delete(Path.Combine(onlineDir, entry.File)); } catch (IOException) { } } // geladenes Paket nicht liegen lassen
             if (r.exit != 0) progress?.Invoke(r.output);
@@ -332,7 +332,7 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
             try
             {
                 r = await Runner.RunAsync(OperatingSystem.IsWindows() ? "curl.exe" : "curl", $"-L --fail --silent --show-error -o \"{tmp}\" {url}", progress, ct);
-                if (r.exit == 0) { global::Trendo.Core.Sys.Software.InstallPortable(tmp, sha, ToolsRoot, c.Id, audit); progress?.Invoke($"{c.Name}: Prüfsumme stimmt, entpackt"); }
+                if (r.exit == 0) { global::Trendo.Core.Sys.Software.InstallPortable(by, tmp, sha, ToolsRoot, c.Id, audit); progress?.Invoke($"{c.Name}: Prüfsumme stimmt, entpackt"); }
             }
             catch (InvalidOperationException e) { r = (1, e.Message); progress?.Invoke(e.Message); }
             finally { try { File.Delete(tmp); } catch (IOException) { } }

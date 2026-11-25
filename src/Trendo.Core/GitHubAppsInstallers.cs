@@ -195,12 +195,13 @@ public static partial class GitHubApps
     }
 
     /// <summary>Ein per Installer eingerichtetes Programm in die Liste eintragen (Programmpfad außerhalb des Werkzeugordners).</summary>
-    public static Installed Register(string toolsRoot, string repo, Release release, Asset asset, string exe, string sha, string license, string description, AuditLog? audit = null)
+    public static Installed Register(Principal by, string toolsRoot, string repo, Release release, Asset asset, string exe, string sha, string license, string description, AuditLog? audit = null)
     {
+        Rbac.DemandSoftware(by, "github.install " + repo, audit); // T-0764
         if (!ValidRepo(repo)) throw new ArgumentException("Ungültiger Projektname.", nameof(repo));
         var entry = new Installed(IdFor(repo), repo, release.Tag, Path.GetFullPath(exe), license, asset.Name, sha, description, DateTimeOffset.Now);
         Save(toolsRoot, List(toolsRoot).Where(i => i.Id != entry.Id).Append(entry));
-        audit?.Append("app", "github.install.installer", $"{repo} {release.Tag} {asset.Name} sha256={sha} → {Path.GetFileName(exe)}");
+        audit?.Append(by.Name, "github.install.installer", $"{repo} {release.Tag} {asset.Name} sha256={sha} → {Path.GetFileName(exe)}");
         return entry;
     }
 

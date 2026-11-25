@@ -82,22 +82,22 @@ public class T0755_Gegenpruefung
         var git = new PackageInfo("Git", "Git.Git", "2.45", "2.47");
         // (a) winget meldet Fehler, die alte Version steht noch da → nicht bestätigt
         var u = c.Plan("upgrade", git); f.Core.Approvals.Approve(u.Id, Principal.LocalOwner);
-        var ur = await c.RunAsync(u, logs, expectVersion: git.Available);
+        var ur = await c.RunAsync(u, Principal.LocalOwner, logs, expectVersion: git.Available);
         Assert.False(ur.ExitOk); Assert.True(ur.Installed); Assert.Equal("2.45", ur.VersionAfter); Assert.False(ur.Verified);
         var log = File.ReadAllText(ur.LogFile);
         Assert.Contains("Version danach: 2.45 · erwartet: 2.47", log); Assert.Contains("Ziel erreicht: nein", log);
         // ohne bekannte Zielversion: nie bestätigt
         var u0 = c.Plan("upgrade", git); f.Core.Approvals.Approve(u0.Id, Principal.LocalOwner);
-        Assert.False((await c.RunAsync(u0, logs)).Verified);
+        Assert.False((await c.RunAsync(u0, Principal.LocalOwner, logs)).Verified);
         // erfolgreiche Aktualisierung → neue Version → bestätigt
         File.WriteAllText(Path.Combine(dir, "upgrade-geht.txt"), "ja");
         var u2 = c.Plan("upgrade", git); f.Core.Approvals.Approve(u2.Id, Principal.LocalOwner);
-        var ok = await c.RunAsync(u2, logs, expectVersion: "2.47");
+        var ok = await c.RunAsync(u2, Principal.LocalOwner, logs, expectVersion: "2.47");
         Assert.True(ok.ExitOk); Assert.Equal("2.47", ok.VersionAfter); Assert.True(ok.Verified);
         // (b) Entfernen klappt, aber „winget list“ scheitert an der Quelle → nicht prüfbar, nicht „entfernt“
         File.WriteAllText(Path.Combine(dir, "quelle-kaputt.txt"), "ja");
         var x = c.Plan("uninstall", git); f.Core.Approvals.Approve(x.Id, Principal.LocalOwner);
-        var xr = await c.RunAsync(x, logs);
+        var xr = await c.RunAsync(x, Principal.LocalOwner, logs);
         Assert.True(xr.ExitOk); Assert.Null(xr.Installed); Assert.False(xr.Verified);
         Assert.Contains("Nachprüfung: nicht prüfbar", File.ReadAllText(xr.LogFile));
         Assert.Null(await c.Backend.IsInstalledAsync("Git.Git"));

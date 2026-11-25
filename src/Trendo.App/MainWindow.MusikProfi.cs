@@ -24,6 +24,7 @@ public partial class MainWindow
     /// <summary>Lied mastern (ersetzt die Datei, wenn beide Läufe klappen). Gibt false zurück, wenn FFmpeg fehlt oder ein Lauf scheitert.</summary>
     public async Task<bool> MsMaster(string songId, bool quiet = false, string? target = null)
     {
+        if (target is not null) UserFile(target); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
         var s = Songs.Get(songId);
         var tg = SongProducer.TargetOf(target ?? s?.MasterTarget);
         if (s is null || !File.Exists(s.File)) return false;

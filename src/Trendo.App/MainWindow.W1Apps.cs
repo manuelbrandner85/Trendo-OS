@@ -26,12 +26,146 @@ public partial class MainWindow
 
     private Control AppsPage(string title, Control body) => Page(title, new StackPanel { Spacing = 8, Children = { AppsNav(), body } });
 
-    private void Launch(string target) => _core.Integrations.LaunchDirect(Principal.LocalOwner, target, _core.Audit);
+    private void Launch(string target) => LaunchAs(target);
+
+    /// <summary>T-0764 (2. Prüfrunde N-C): Starten als angemeldete Person – der Kern prüft Rolle und Ziel. Abgelehnt: Hinweis, kein Absturz, false.</summary>
+    internal bool LaunchAs(string target)
+    {
+        // T-0764 (4. Prüfrunde M3): Ordner öffnet ein Kinderprofil in Trendos eigenem Dateimanager, nie im Windows-Explorer
+        if (!CanManageSoftware && !string.IsNullOrWhiteSpace(target) && target.IndexOfAny(Path.GetInvalidPathChars()) < 0 && Directory.Exists(target))
+        { _core.Audit.Append(CurrentPrincipal.Name, "ordner.trendo-dateien", Path.GetFileName(Path.TrimEndingDirectorySeparator(target))); FilesGo(target); return true; }
+        // T-0764 (7. Prüfrunde): Dateien öffnet ein Kinderprofil nur in Trendos eigenen Betrachtern – nie über Windows (Standardprogramm). Programme
+        // (.exe, Installer, Skripte) gehen weiter an den Kern, der sie mit seiner eigenen Meldung ablehnt.
+        if (!CanManageSoftware && ChildFileTarget(target) is { } file)
+        {
+            if (File.Exists(file) && OpenInOwnViewer(file)) return true;
+            return RefuseChildFile(file);
+        }
+        return LaunchTry(() => _core.Integrations.LaunchDirect(CurrentPrincipal, target, _core.Audit), target);
+    }
+
+    /// <summary>T-0764 (7. Prüfrunde): lokale Datei (Pfad oder file:-Adresse), die kein Programm ist – sonst null.</summary>
+    static string? ChildFileTarget(string target)
+    {
+        var t = (target ?? "").Trim().Trim('"');
+        if (t.Length == 0 || t.IndexOfAny(Path.GetInvalidPathChars()) >= 0) return null;
+        if (t.StartsWith("file:", StringComparison.OrdinalIgnoreCase)) { if (!Uri.TryCreate(t, UriKind.Absolute, out var u) || !u.IsFile) return null; t = u.LocalPath; }
+        else if (System.Text.RegularExpressions.Regex.IsMatch(t, @"^[A-Za-z][A-Za-z0-9+.\-]+:") || t.Contains("://", StringComparison.Ordinal)) return null; // Adresse
+        if (!Path.IsPathFullyQualified(t)) return null;
+        if (Path.GetExtension(t).Equals(".exe", StringComparison.OrdinalIgnoreCase) || Trendo.Core.Sys.Software.NeedsSoftwareRight(t)) return null; // Programme: Kern entscheidet
+        return t;
+    }
+
+    /// <summary>T-0764 (7. Prüfrunde): Hinweis „Diese Datei kann nur ein Erwachsener öffnen.“ mit Protokoll „rbac.denied“.</summary>
+    bool RefuseChildFile(string file)
+    {
+        _core.Audit.Append(CurrentPrincipal.Name, "rbac.denied", "User fehlt ManageSoftware: datei " + Path.GetFileName(file) + " (kein eigener Betrachter)");
+        LastLaunchRefused = Rbac.NurErwachseneDatei; Toast(Rbac.NurErwachseneDatei);
+        return false;
+    }
+
+    /// <summary>T-0764 (7. Prüfrunde): Datei in Trendos eigenem Betrachter bzw. eigener Werkstatt öffnen – PDF, Text/Markdown, Tabelle, Präsentation,
+    /// Bild, Musik, Video, 3D-Modell. Gibt es keinen eigenen Betrachter, false (der Aufrufer zeigt im Kinderprofil den Hinweis). Nie über Windows.</summary>
+    internal bool OpenInOwnViewer(string path)
+    {
+        var ext = Path.GetExtension(path).ToLowerInvariant();
+        string? page;
+        try
+        {
+            switch (ext)
+            {
+                case ".pdf": OpenPdf(path); page = "pdf"; break;
+                case ".docx" or ".odt" or ".txt" or ".md" or ".rtf": TextOpen(path); page = "text"; break;
+                case ".xlsx" or ".ods" or ".csv": SheetOpen(path); page = "tabelle"; break;
+                case ".pptx" or ".odp": DeckOpen(path); page = "praesentation"; break;
+                case ".glb" or ".gltf" or ".obj" or ".stl": XrFile = path; page = "xr"; break;
+                default:
+                    switch (Trendo.Core.Sys.MediaLibrary.KindOf(path))
+                    {
+                        case "Bild": PhotoOpenForPreview(path); _mediaTab = "fotos"; page = "medien"; break;
+                        case "Video": MediaPick(path); page = "kreativ-medien"; break;
+                        case "Musik":
+                            try { var a = SideAudio(); a.SetVolume(80); a.Load(path); SidePlaying = path; Toast("Spielt in Trendo: " + Path.GetFileName(path)); page = null; }
+                            catch (AudioBlockedException) { return false; }
+                            break;
+                        default: return false;
+                    }
+                    break;
+            }
+        }
+        catch (Exception e) when (e is IOException or InvalidDataException or UnauthorizedAccessException or ArgumentException or FormatException or InvalidOperationException)
+        { Toast("Öffnen ging nicht: " + Trendo.Core.FriendlyError.Say(e)); return true; } // eigener Betrachter zuständig – nichts geht an Windows
+        _core.Audit.Append(CurrentPrincipal.Name, "datei.trendo-betrachter", Path.GetFileName(path));
+        if (page is not null) Show(page);
+        return true;
+    }
+
+    /// <summary>T-0764 (4. Prüfrunde H): Programme, Skripte und Befehle ausführen (Code-Werkstatt, Terminal, n8n, Claude Code, Hochladen) – nur
+    /// Erwachsene. Kinderprofil: Protokoll „rbac.denied“, Hinweis, false.</summary>
+    internal bool DarfAusfuehren(string what, out string why)
+    {
+        why = "";
+        try { Rbac.DemandSoftware(CurrentPrincipal, "code " + what, _core.Audit, NurErwachseneAusfuehren); return true; }
+        catch (UnauthorizedAccessException e) { why = e.Message; Toast(e.Message); return false; }
+    }
+    /// <summary>T-0764 (7. Prüfrunde): Drucken geht über SumatraPDF bzw. das Windows-Standardprogramm.</summary>
+    public const string NurErwachseneDrucken = "Drucken über Windows geht nur im Erwachsenen-Profil. Das PDF ist in Trendo geöffnet.";
+    public const string NurErwachseneAusfuehren = "Programme, Skripte und Befehle ausführen darf nur ein Erwachsenen-Profil. Schreiben und Speichern geht weiter.";
+    /// <summary>T-0764 (6. Prüfrunde B): wie <see cref="DarfAusfuehren"/>, aber ohne Hinweisfenster – für zentrale Prüfungen, die auch aus einem
+    /// Hintergrund-Thread laufen (Engine-, Unreal-, Bibliotheks- und Claude-Aufrufe). Protokolliert „rbac.denied“.</summary>
+    internal bool DarfAusfuehrenStill(string what, out string why)
+    {
+        why = "";
+        try { Rbac.DemandSoftware(CurrentPrincipal, "code " + what, _core.Audit, NurErwachseneAusfuehren); return true; }
+        catch (UnauthorizedAccessException e) { why = e.Message; return false; }
+    }
+    /// <summary>T-0764 (6. Prüfrunde B): Hinweis im Spiele-Studio – Kinder spielen und prüfen in Trendos eigener Vorschau, ohne Engine.</summary>
+    public const string NurErwachseneEngine = "Godot, Unity und Unreal (bauen, prüfen, spielen, Paket) startet nur ein Erwachsenen-Profil. Dein Spiel läuft in Trendos eigener Vorschau.";
+    internal bool LaunchAs(string exe, string arg, bool userExe = false) => LaunchTry(() => _core.Integrations.LaunchDirect(CurrentPrincipal, exe, _core.Audit, arg, userExe), exe);
+    /// <param name="internalCall">T-0764 (P3-2): fester Aufruf aus Trendos Code (Programm und Parameter legt der Code fest).</param>
+    internal bool LaunchArgsAs(string exe, IReadOnlyList<string> args, bool internalCall = true) => LaunchTry(() => _core.Integrations.LaunchArgs(CurrentPrincipal, exe, _core.Audit, args, internalCall), exe);
+    /// <summary>Letzte abgelehnte Startmeldung (Tests, Anzeige).</summary>
+    public string LastLaunchRefused { get; private set; } = "";
+    static bool Under(string path, string dir)
+    {
+        try
+        {
+            var d = Path.TrimEndingDirectorySeparator(Path.GetFullPath(dir)) + Path.DirectorySeparatorChar;
+            return Path.GetFullPath(path).StartsWith(d, StringComparison.OrdinalIgnoreCase) && !Path.GetFullPath(path).Contains(Path.DirectorySeparatorChar + ".entfernt" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+        }
+        catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { return false; }
+    }
+
+    /// <summary>T-0764 (5. Prüfrunde M2): Start eines Trendo-Programms im Kinderprofil – die Prüfung aller Dateien des Programmordners läuft im
+    /// Hintergrund (Task.Run) mit Hinweis „wird geprüft“; Ergebnis fail-closed. Tests warten darauf.</summary>
+    public Task ChildLaunchTask { get; private set; } = Task.CompletedTask;
+
+    bool LaunchTry(Action a, string? program)
+    {
+        if (!CanManageSoftware && program is { } p && p.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) && File.Exists(p)
+            && (Under(p, _deps.ToolsRoot) || Under(p, Path.Combine(_core.DataRoot, "werkzeuge"))))
+        {
+            Toast("Programm wird geprüft …");
+            ChildLaunchTask = Task.Run(() =>
+            {
+                try { a(); }
+                catch (UnauthorizedAccessException e) { _ui.Post(() => { LastLaunchRefused = e.Message; Toast(e.Message); }); }
+            });
+            return true;
+        }
+        return LaunchTry(a);
+    }
+
+    bool LaunchTry(Action a)
+    {
+        try { a(); return true; }
+        catch (UnauthorizedAccessException e) { LastLaunchRefused = e.Message; Toast(e.Message); return false; }
+    }
 
     private Control FileRow(FileInfo f, int i, string prefix, string? player = null)
     {
         var open = new Button { Name = $"{prefix}-open-{i}", Content = "Öffnen", FontSize = 11, Padding = new Thickness(10, 2) };
-        open.Click += (_, _) => { if (player is not null) _core.Integrations.LaunchDirect(Principal.LocalOwner, player, _core.Audit, f.FullName); else Launch(f.FullName); };
+        open.Click += (_, _) => { if (player is not null) Play(f.FullName); else Launch(f.FullName); }; // T-0764 (9. Prüfrunde): mpv nur über MediaLibrary.Player (MpvSafe), Kinder: eigener Betrachter
         var folder = new Button { Name = $"{prefix}-folder-{i}", Content = "Ordner", FontSize = 11, Padding = new Thickness(10, 2) };
         folder.Click += (_, _) => Launch(f.DirectoryName ?? "");
         return new Border { Background = TileBg, CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 5), Child = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = {
@@ -40,7 +174,16 @@ public partial class MainWindow
             Pos(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center, Children = { open, folder } }, 1) } } };
     }
 
-    private string? ToolPath(string id) => DependencyCatalog.All.FirstOrDefault(c => c.Id == id) is { } c ? _deps.Integrated(id) ?? _deps.ResolvePath(c) : null;
+    private string? ToolPath(string id) => DependencyCatalog.All.FirstOrDefault(c => c.Id == id) is { } c ? IntegratedChecked(id) ?? _deps.ResolvePath(c) : null;
+
+    /// <summary>T-0764 (P3-4): gespeicherter Programmpfad (tools.json) – im Kinderprofil nur, wenn er an einem festen Installationsort liegt oder
+    /// ein von Trendo eingerichtetes, unverändertes Programm ist (die Datei lässt sich sonst auf ein beliebiges Programm umbiegen).</summary>
+    string? IntegratedChecked(string id) => _deps.Integrated(id) is { } p && (CanManageSoftware || ToolStartAllowed(p)) ? p : null;
+
+    /// <summary>T-0764 (P3-4): gemeinsame Prüfung für Programme, die Trendo direkt startet (Process.Start) – Erwachsene immer; Kinderprofil nur
+    /// feste Installationsorte oder geprüfte Trendo-Programme, nie Installer.</summary>
+    internal bool ToolStartAllowed(string exe) => CanManageSoftware
+        || !Trendo.Core.Sys.Software.IsInstallerLike(exe) && (Trendo.Core.Sys.ProgramTrust.InFixedLocation(exe) || _core.Integrations.TrustedProgramPath?.Invoke(Path.GetFullPath(exe)) == true);
 
     // ---------- SYS-11: Programme – was da ist, startet mit einem Klick; was fehlt, ist einen Klick entfernt ----------
     private Control AppsView()
@@ -184,7 +327,9 @@ public partial class MainWindow
         return AppsPage("Medien", new StackPanel { Spacing = 8, Children = { MediaTabs(), MusicView() } });
     }
 
-    private string ProjectsRoot => string.IsNullOrEmpty(_settings.ProjectsFolder) ? UserSettings.DefaultProjectsFolder() : _settings.ProjectsFolder;
+    private string ProjectsRoot => ProjectsBase(UserSettings.DefaultProjectsFolder()); // T-0764 (14. Prüfrunde, M)
+    /// <summary>Projektordner, der gerade gilt (Anzeige, Tests) – für Kinder nur in der Freigabe.</summary>
+    public string ProjectsFolderInUse => ProjectsRoot;
 
     // ---------- X-09: Speicher & Leistung ----------
     // ResourcesView: siehe MainWindow.TaskManager.cs (Task-Manager, Runde 7)

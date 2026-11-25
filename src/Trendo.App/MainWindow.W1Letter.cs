@@ -150,7 +150,7 @@ public partial class MainWindow
         foreach (var a in c.Attachments.OrderBy(a => a.No)) sp.Children.Add(P($"Anlage {a.No}: {a.Title}  ·  SHA-256 {a.Sha256[..12]}…", Text, 12));
         sp.Children.Add(Row(Btn("att-add", "Anlage hinzufügen …", async () =>
         {
-            var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Anlage wählen", AllowMultiple = true });
+            var files = await PickOpenFiles(new FilePickerOpenOptions { Title = "Anlage wählen", AllowMultiple = true });
             foreach (var f in files) if (f.TryGetLocalPath() is { } p) Cases.AddAttachment(c, p, Path.GetFileNameWithoutExtension(p), Principal.LocalOwner);
             Show("akte");
         }), Btn("att-renumber", "Neu nummerieren", () => { Cases.Renumber(c, Principal.LocalOwner); Show("akte"); })));
@@ -180,7 +180,7 @@ public partial class MainWindow
         var ephemeral = new CheckBox { Name = "inc-ephemeral", Content = "Nur forensische Kopie (nach 120 Stunden automatisch löschen)", Foreground = Text };
         sp.Children.Add(Row(Btn("inc-add", "Scan/Foto einlesen …", async () =>
         {
-            var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Brief-Foto oder Scan", FileTypeFilter = [new("Bilder") { Patterns = Ocr.ImageExt.Select(e => "*" + e).ToList() }, new("Text") { Patterns = ["*.txt"] }] });
+            var files = await PickOpenFiles(new FilePickerOpenOptions { Title = "Brief-Foto oder Scan", FileTypeFilter = [new("Bilder") { Patterns = Ocr.ImageExt.Select(e => "*" + e).ToList() }, new("Text") { Patterns = ["*.txt"] }] });
             foreach (var f in files) if (f.TryGetLocalPath() is { } p) await ImportIncoming(c, p, ephemeral.IsChecked == true);
             Show("akte");
         }), ephemeral));
@@ -345,11 +345,11 @@ public partial class MainWindow
         var approve = Btn("out-approve", "Endgültige Fassung freigeben", () =>
         {
             if (_finalFile is null) throw new InvalidOperationException("Bitte zuerst eine Ausgabe (PDF/DOCX) erzeugen.");
-            _approval = LetterGate.Approve(c, _finalFile, Principal.LocalOwner, _core.Audit); SaveCase("freigegeben");
+            _approval = LetterGate.Approve(c, _finalFile, CurrentPrincipal, _core.Audit); SaveCase("freigegeben");
             _caseMsg = $"Freigegeben: {Path.GetFileName(_finalFile)} an {c.Draft.Recipient.Split('\n')[0]} per {c.FilingChannel}. Trendo verschickt nichts – bitte selbst versenden."; Show("ausgabe");
         }, ready);
         approve.IsEnabled = ready;
-        var check = Btn("out-send", "Versenden …", () => { _caseMsg = LetterGate.TrySendExternally(c, _approval, _finalFile ?? "", _core.Audit, Principal.LocalOwner); Show("ausgabe"); });
+        var check = Btn("out-send", "Versenden …", () => { _caseMsg = LetterGate.TrySendExternally(c, _approval, _finalFile ?? "", _core.Audit, CurrentPrincipal); Show("ausgabe"); });
         sp.Children.Add(Row(approve, check));
         var proofBox = Box("out-proof", "Nachweis, z. B. Einschreiben-Nr., Sendebericht, Eingangsstempel", c.DeliveryProof ?? "", w: 360);
         sp.Children.Add(Row(proofBox, Btn("out-sent", "Als versendet markieren", () => { LetterKit.MarkSent(c, proofBox.Text ?? ""); SaveCase("versendet"); Show("ausgabe"); })));

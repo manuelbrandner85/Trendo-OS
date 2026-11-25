@@ -16,9 +16,9 @@ public class Sys11_Programme
         var d = Tmp(); var z = Path.Combine(d, "t.zip");
         using (var a = ZipFile.Open(z, ZipArchiveMode.Create)) using (var w = new StreamWriter(a.CreateEntry("bin/tool.txt").Open())) w.Write("hi");
         var audit = new AuditLog(Path.Combine(d, "a.jsonl"));
-        Assert.Throws<InvalidOperationException>(() => Software.InstallPortable(z, new string('0', 64), Path.Combine(d, "w"), "tool", audit));
+        Assert.Throws<InvalidOperationException>(() => Software.InstallPortable(Principal.LocalOwner, z, new string('0', 64), Path.Combine(d, "w"), "tool", audit));
         Assert.False(Directory.Exists(Path.Combine(d, "w", "tool")));
-        var dest = Software.InstallPortable(z, Sha(z).ToUpperInvariant(), Path.Combine(d, "w"), "to/ol", audit);
+        var dest = Software.InstallPortable(Principal.LocalOwner, z, Sha(z).ToUpperInvariant(), Path.Combine(d, "w"), "to/ol", audit);
         Assert.True(File.Exists(Path.Combine(dest, "bin", "tool.txt"))); Assert.EndsWith("tool", dest);
         Assert.Contains(audit.ReadAll(), e => e.Action == "portable.install");
     }

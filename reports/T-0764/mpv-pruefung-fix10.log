@@ -1,0 +1,200 @@
+T-0764 fix10 – echter mpv-Lauf (mitgelieferte Fassung %LOCALAPPDATA%\TrendoWerkzeuge\mpv, nur eigener Prozess, ohne Fenster, ohne Bild und Ton)
+1) mpv --no-config --ytdl=no --version  2) Lauf mit gesperrter Tastendatei (FileShare.Read), --ytdl=no, Ziel hinter --, --vo=null --ao=null, sofortiges Ende
+
+== 1: mpv --no-config --ytdl=no --version
+exit=0
+mpv v0.41.0-1227-ge471496c5 Copyright © 2000-2026 mpv/MPlayer/mplayer2 projects
+ built on Oct 21 2026 00:43:16
+libplacebo version: v7.377.0 (v7.360.0-176-g285d1cc-dirty)
+FFmpeg version: N-127893-g9a861e968
+FFmpeg library versions:
+   libavcodec      63.2.100
+   libavdevice     63.2.100
+   libavfilter     12.5.100
+   libavformat     63.11.101
+   libavutil       61.15.100
+   libswresample   7.3.101
+   libswscale      10.2.100
+
+
+== 2: run without video/audio output, key file locked with FileShare.Read, target after --, ends at once
+exit=0
+[cplayer] mpv v0.41.0-1227-ge471496c5 Copyright © 2000-2026 mpv/MPlayer/mplayer2 projects
+[cplayer]  built on Oct 21 2026 00:43:16
+[cplayer] libplacebo version: v7.377.0 (v7.360.0-176-g285d1cc-dirty)
+[cplayer] FFmpeg version: N-127893-g9a861e968
+[cplayer] FFmpeg library versions:
+[cplayer]    libavcodec      63.2.100
+[cplayer]    libavdevice     63.2.100
+[cplayer]    libavfilter     12.5.100
+[cplayer]    libavformat     63.11.101
+[cplayer]    libavutil       61.15.100
+[cplayer]    libswresample   7.3.101
+[cplayer]    libswscale      10.2.100
+[cplayer] Configuration: -Dprefix=/__w/mpv-winbuild-cmake/mpv-winbuild-cmake/build_x86_64/x86_64-w64-mingw32 -Dlibdir=/__w/mpv-winbuild-cmake/mpv-winbuild-cmake/build_x86_64/x86_64-w64-mingw32/lib -Ddefault_library=shared -Dprefer_static=true -Ddebug=true -Db_ndebug=true -Doptimization=3 -Db_lto=true -Db_lto_mode=thin -Dlibmpv=true -Dpdf-build=enabled -Dlua=enabled -Djavascript=enabled -Dsdl2-gamepad=enabled -Dlibarchive=enabled -Dlibbluray=enabled -Ddvdnav=enabled -Duchardet=enabled -Drubberband=enabled -Dlcms2=enabled -Dopenal=enabled -Dspirv-cross=enabled -Dvulkan=enabled -Dvapoursynth=enabled -Dsubrandr=enabled -Dsixel=enabled -Dgl=enabled -Degl-angle=enabled -Dlibcurl=enabled -Dc_args=-Wno-error=int-conversion --cross-file=/__w/mpv-winbuild-cmake/mpv-winbuild-cmake/build_x86_64/meson_cross.txt
+[cplayer] List of enabled features: amf build-date cplugins cuda-hwaccel cuda-interop d3d-hwaccel d3d11 d3d9-hwaccel debug direct3d dos-paths dvda dvdnav dxgi-debug-d3d11 egl-angle egl-angle-win32 ffmpeg ffnvcodec gl gl-dxinterop gl-dxinterop-d3d9 gl-win32 glob glob-win32 gpl iconv javascript jpeg lcms2 libarchive libass libavdevice libbluray libcurl libplacebo luajit openal rubberband rubberband-3 sdl2-gamepad shaderc sixel spirv-cross subrandr uchardet vaapi vaapi-win32 vapoursynth vector vk-khr-display vulkan wasapi win32 win32-desktop win32-executable win32-smtc win32-threads zimg zimg-st428 zlib
+[cplayer] Built with NDEBUG.
+[cplayer] Command line options: '--no-config' '--load-scripts=no' '--ytdl=no' '--input-default-bindings=no' '--input-conf=C:\Users\<user>\AppData\Local\Temp\trendo-mpvpruef-59116\trendo-tasten-test.conf' '--vo=null' '--ao=null' '--idle=no' '--length=0.3' '--log-file=C:\Users\<user>\AppData\Local\Temp\trendo-mpvpruef-59116\mpv.log' '--msg-level=all=v' '--' 'av://lavfi:sine=f=440:d=1'
+[cplayer] mpv v0.41.0-1227-ge471496c5 Copyright © 2000-2026 mpv/MPlayer/mplayer2 projects
+[cplayer]  built on Oct 21 2026 00:43:16
+[cplayer] libplacebo version: v7.377.0 (v7.360.0-176-g285d1cc-dirty)
+[cplayer] FFmpeg version: N-127893-g9a861e968
+[cplayer] FFmpeg library versions:
+[cplayer]    libavcodec      63.2.100
+[cplayer]    libavdevice     63.2.100
+[cplayer]    libavfilter     12.5.100
+[cplayer]    libavformat     63.11.101
+[cplayer]    libavutil       61.15.100
+[cplayer]    libswresample   7.3.101
+[cplayer]    libswscale      10.2.100
+[cplayer] Configuration: -Dprefix=/__w/mpv-winbuild-cmake/mpv-winbuild-cmake/build_x86_64/x86_64-w64-mingw32 -Dlibdir=/__w/mpv-winbuild-cmake/mpv-winbuild-cmake/build_x86_64/x86_64-w64-mingw32/lib -Ddefault_library=shared -Dprefer_static=true -Ddebug=true -Db_ndebug=true -Doptimization=3 -Db_lto=true -Db_lto_mode=thin -Dlibmpv=true -Dpdf-build=enabled -Dlua=enabled -Djavascript=enabled -Dsdl2-gamepad=enabled -Dlibarchive=enabled -Dlibbluray=enabled -Ddvdnav=enabled -Duchardet=enabled -Drubberband=enabled -Dlcms2=enabled -Dopenal=enabled -Dspirv-cross=enabled -Dvulkan=enabled -Dvapoursynth=enabled -Dsubrandr=enabled -Dsixel=enabled -Dgl=enabled -Degl-angle=enabled -Dlibcurl=enabled -Dc_args=-Wno-error=int-conversion --cross-file=/__w/mpv-winbuild-cmake/mpv-winbuild-cmake/build_x86_64/meson_cross.txt
+[cplayer] List of enabled features: amf build-date cplugins cuda-hwaccel cuda-interop d3d-hwaccel d3d11 d3d9-hwaccel debug direct3d dos-paths dvda dvdnav dxgi-debug-d3d11 egl-angle egl-angle-win32 ffmpeg ffnvcodec gl gl-dxinterop gl-dxinterop-d3d9 gl-win32 glob glob-win32 gpl iconv javascript jpeg lcms2 libarchive libass libavdevice libbluray libcurl libplacebo luajit openal rubberband rubberband-3 sdl2-gamepad shaderc sixel spirv-cross subrandr uchardet vaapi vaapi-win32 vapoursynth vector vk-khr-display vulkan wasapi win32 win32-desktop win32-executable win32-smtc win32-threads zimg zimg-st428 zlib
+[cplayer] Built with NDEBUG.
+[cplayer] Setting option 'config' = 'no' (flags = 8)
+[cplayer] Setting option 'load-scripts' = 'no' (flags = 8)
+[cplayer] Setting option 'ytdl' = 'no' (flags = 8)
+[cplayer] Setting option 'input-default-bindings' = 'no' (flags = 8)
+[cplayer] Setting option 'input-conf' = 'C:\Users\<user>\AppData\Local\Temp\trendo-mpvpruef-59116\trendo-tasten-test.conf' (flags = 8)
+[cplayer] Setting option 'vo' = 'null' (flags = 8)
+[cplayer] Setting option 'ao' = 'null' (flags = 8)
+[cplayer] Setting option 'idle' = 'no' (flags = 8)
+[cplayer] Setting option 'length' = '0.3' (flags = 8)
+[cplayer] Setting option 'log-file' = 'C:\Users\<user>\AppData\Local\Temp\trendo-mpvpruef-59116\mpv.log' (flags = 8)
+[cplayer] Setting option 'msg-level' = 'all=v' (flags = 8)
+[ifo_dvda] Opening C:\Users\<user>\AppData\Local\Temp\trendo-mpvpruef-59116\trendo-tasten-test.conf
+[ifo_dvdnav] Opening C:\Users\<user>\AppData\Local\Temp\trendo-mpvpruef-59116\trendo-tasten-test.conf
+[bdmv/bluray] Opening C:\Users\<user>\AppData\Local\Temp\trendo-mpvpruef-59116\trendo-tasten-test.conf
+[file] Opening C:\Users\<user>\AppData\Local\Temp\trendo-mpvpruef-59116\trendo-tasten-test.conf
+[input] Parsing input config file C:\Users\<user>\AppData\Local\Temp\trendo-mpvpruef-59116\trendo-tasten-test.conf
+[input] Input config file C:\Users\<user>\AppData\Local\Temp\trendo-mpvpruef-59116\trendo-tasten-test.conf parsed: 2 binds
+[clipboard] Initialized win32 clipboard backend.
+[cplayer] Waiting for scripts...
+[cplayer] Set property: user-data/osc/visibility="auto" -> 1
+[cplayer] Set property: sub-margin-y-offset=0 -> 1
+[cplayer] Set property: osd-margin-y-offset=0 -> 1
+[cplayer] Set property: sub-margin-y-offset=0 -> 1
+[cplayer] Set property: osd-margin-y-offset=0 -> 1
+[cplayer] Set property: user-data/osc/margins={"b":0,"r":0,"l":0,"t":0} -> 1
+[cplayer] Done loading scripts.
+[cplayer] Running hook: auto_profiles/on_before_start_file
+[cplayer] Failed sending hook command auto_profiles/on_before_start_file. Removing hook.
+[cplayer] Running hook: auto_profiles/on_load
+[cplayer] Failed sending hook command auto_profiles/on_load. Removing hook.
+[cplayer] Set property: sub-margin-y-offset=0 -> 1
+[cplayer] Set property: osd-margin-y-offset=0 -> 1
+[avdevice] Opening av://lavfi:sine=f=440:d=1
+[cplayer] Set property: sub-margin-y-offset=0 -> 1
+[demux] Trying demuxers for level=request.
+[cplayer] Set property: osd-margin-y-offset=0 -> 1
+[cplayer] Set property: user-data/osc/margins={"b":0,"r":0,"l":0,"t":0} -> 1
+[cplayer] Set property: sub-margin-y-offset=0 -> 1
+[cplayer] Set property: osd-margin-y-offset=0 -> 1
+[cplayer] Set property: sub-margin-y-offset=0 -> 1
+[cplayer] Set property: osd-margin-y-offset=0 -> 1
+[cplayer] Set property: user-data/osc/margins={"b":0,"r":0,"l":0,"t":0} -> 1
+[osd/libass] libass API version: 0x1705000
+[osd/libass] libass source: meson, commit: 0.17.5-11-gf61db567e6593df3470e91594bcd4ad2d0473aff
+[lavf] Found 'lavfi' at score=100 size=0 (forced).
+[osd/libass] Shaper: FriBidi 1.0.17 (SIMPLE) HarfBuzz-ng 14.6.0 (COMPLEX)
+[osd/libass] Setting up fonts...
+[osd/libass] Using font provider directwrite (with GDI)
+[osd/libass] Done.
+[cplayer] Set property: sub-margin-y-offset=0 -> 1
+[cplayer] Set property: osd-margin-y-offset=0 -> 1
+[cplayer] Set property: sub-margin-y-offset=0 -> 1
+[cplayer] Set property: osd-margin-y-offset=0 -> 1
+[cplayer] Set property: user-data/osc/margins={"b":0,"r":0,"l":0,"t":0} -> 1
+[lavf] Could not set AVOption user_agent='libmpv'
+[lavf] Could not set AVOption tls_verify='1'
+[lavf] Could not set AVOption icy='1'
+[lavf] Could not set AVOption timeout='60000000'
+[lavf] Could not set AVOption http_persistent='0'
+[lavf] Could not set AVOption http_multiple='1'
+[lavf] avformat_find_stream_info() finished after 0 bytes.
+[demux] Detected file format: lavfi (libavformat)
+[cplayer] Opening done: av://lavfi:sine=f=440:d=1
+[cplayer] Running hook: auto_profiles/on_preloaded
+[cplayer] Failed sending hook command auto_profiles/on_preloaded. Removing hook.
+[cplayer] Running hook: auto_profiles/on_loaded
+[cplayer] Failed sending hook command auto_profiles/on_loaded. Removing hook.
+[lavf] select track 0
+[lavf] refresh track 0 (audio)
+[lavf] refresh seek to 0.000000
+[lavf] execute seek (to 0.000000 flags 32)
+[lavf] Seek failed (Invalid argument)
+[lavf] seek done
+● Audio  --aid=1  (pcm_s16le 1ch 44100 Hz 706 kbps)
+[ad] Codec list:
+[ad]     pcm_s16le - PCM signed 16-bit little-endian
+[ad] Opening decoder pcm_s16le
+[ad] Requesting 1 threads for decoding.
+[ad] Selected decoder: pcm_s16le - PCM signed 16-bit little-endian
+[af] User filter list:
+[af]   (empty)
+[cplayer] Starting playback...
+[lavf] EOF reached.
+[af] [in] 44100Hz mono 1ch s16
+[af] [userspeed] 44100Hz mono 1ch s16
+[af] [userspeed] (disabled)
+[af] [convert] 44100Hz mono 1ch s16
+[cplayer] Set property: sub-margin-y-offset=0 -> 1
+[cplayer] Set property: osd-margin-y-offset=0 -> 1
+[ao] Trying audio driver 'null'
+[ao/null] requested format: 44100 Hz, mono channels, s16
+[ao/null] Channel layouts:
+[ao/null]  - anything
+[ao/null] result: mono
+[ao/null] device buffer: 8704 samples.
+[ao/null] using soft-buffer of 8820 samples.
+AO: [null] 44100Hz mono 1ch s16
+[cplayer] AO: Description: Null audio output
+[af] [convert] (disabled)
+[af] [out] 44100Hz mono 1ch s16
+[cplayer] Set property: sub-margin-y-offset=0 -> 1
+[cplayer] Set property: osd-margin-y-offset=0 -> 1
+[cplayer] Set property: user-data/osc/margins={"b":0,"r":0,"l":0,"t":0} -> 1
+[cplayer] audio ready
+[cplayer] starting audio playback
+[cplayer] playback restart complete @ 0.023220, audio=playing, video=eof
+[ao/null] starting AO
+[cplayer] audio draining
+[cplayer] audio EOF reached
+[cplayer] EOF code: 1  
+[cplayer] Running hook: osc/on_unload
+[ao] dropping frame due to pin disconnect
+[async_queue_in] dropping request due to pin disconnect
+[cplayer] finished playback, success (reason 0)
+Exiting... (End of file)
+[cplayer] Set property: sub-margin-y-offset=0 -> 1
+[cplayer] Set property: osd-margin-y-offset=0 -> 1
+[cplayer] draining left over audio
+[ao/null] audio end or underrun
+[ao/null] audio end or underrun
+
+
+== log excerpt (input.conf, ytdl, scripts)
+[   0.002][v][cplayer] Configuration: -Dprefix=/__w/mpv-winbuild-cmake/mpv-winbuild-cmake/build_x86_64/x86_64-w64-mingw32 -Dlibdir=/__w/mpv-winbuild-cmake/mpv-winbuild-cmake/build_x86_64/x86_64-w64-mingw32/lib -Ddefault_library=shared -Dprefer_static=true -Ddebug=true -Db_ndebug=true -Doptimization=3 -Db_lto=true -Db_lto_mode=thin -Dlibmpv=true -Dpdf-build=enabled -Dlua=enabled -Djavascript=enabled -Dsdl2-gamepad=enabled -Dlibarchive=enabled -Dlibbluray=enabled -Ddvdnav=enabled -Duchardet=enabled -Drubberband=enabled -Dlcms2=enabled -Dopenal=enabled -Dspirv-cross=enabled -Dvulkan=enabled -Dvapoursynth=enabled -Dsubrandr=enabled -Dsixel=enabled -Dgl=enabled -Degl-angle=enabled -Dlibcurl=enabled -Dc_args=-Wno-error=int-conversion --cross-file=/__w/mpv-winbuild-cmake/mpv-winbuild-cmake/build_x86_64/meson_cross.txt
+[   0.002][v][cplayer] List of enabled features: amf build-date cplugins cuda-hwaccel cuda-interop d3d-hwaccel d3d11 d3d9-hwaccel debug direct3d dos-paths dvda dvdnav dxgi-debug-d3d11 egl-angle egl-angle-win32 ffmpeg ffnvcodec gl gl-dxinterop gl-dxinterop-d3d9 gl-win32 glob glob-win32 gpl iconv javascript jpeg lcms2 libarchive libass libavdevice libbluray libcurl libplacebo luajit openal rubberband rubberband-3 sdl2-gamepad shaderc sixel spirv-cross subrandr uchardet vaapi vaapi-win32 vapoursynth vector vk-khr-display vulkan wasapi win32 win32-desktop win32-executable win32-smtc win32-threads zimg zimg-st428 zlib
+[   0.002][v][cplayer] Command line options: '--no-config' '--load-scripts=no' '--ytdl=no' '--input-default-bindings=no' '--input-conf=C:\Users\<user>\AppData\Local\Temp\trendo-mpvpruef-59116\trendo-tasten-test.conf' '--vo=null' '--ao=null' '--idle=no' '--length=0.3' '--log-file=C:\Users\<user>\AppData\Local\Temp\trendo-mpvpruef-59116\mpv.log' '--msg-level=all=v' '--' 'av://lavfi:sine=f=440:d=1'
+[   0.003][v][cplayer] Configuration: -Dprefix=/__w/mpv-winbuild-cmake/mpv-winbuild-cmake/build_x86_64/x86_64-w64-mingw32 -Dlibdir=/__w/mpv-winbuild-cmake/mpv-winbuild-cmake/build_x86_64/x86_64-w64-mingw32/lib -Ddefault_library=shared -Dprefer_static=true -Ddebug=true -Db_ndebug=true -Doptimization=3 -Db_lto=true -Db_lto_mode=thin -Dlibmpv=true -Dpdf-build=enabled -Dlua=enabled -Djavascript=enabled -Dsdl2-gamepad=enabled -Dlibarchive=enabled -Dlibbluray=enabled -Ddvdnav=enabled -Duchardet=enabled -Drubberband=enabled -Dlcms2=enabled -Dopenal=enabled -Dspirv-cross=enabled -Dvulkan=enabled -Dvapoursynth=enabled -Dsubrandr=enabled -Dsixel=enabled -Dgl=enabled -Degl-angle=enabled -Dlibcurl=enabled -Dc_args=-Wno-error=int-conversion --cross-file=/__w/mpv-winbuild-cmake/mpv-winbuild-cmake/build_x86_64/meson_cross.txt
+[   0.003][v][cplayer] List of enabled features: amf build-date cplugins cuda-hwaccel cuda-interop d3d-hwaccel d3d11 d3d9-hwaccel debug direct3d dos-paths dvda dvdnav dxgi-debug-d3d11 egl-angle egl-angle-win32 ffmpeg ffnvcodec gl gl-dxinterop gl-dxinterop-d3d9 gl-win32 glob glob-win32 gpl iconv javascript jpeg lcms2 libarchive libass libavdevice libbluray libcurl libplacebo luajit openal rubberband rubberband-3 sdl2-gamepad shaderc sixel spirv-cross subrandr uchardet vaapi vaapi-win32 vapoursynth vector vk-khr-display vulkan wasapi win32 win32-desktop win32-executable win32-smtc win32-threads zimg zimg-st428 zlib
+[   0.003][v][cplayer] Setting option 'load-scripts' = 'no' (flags = 8)
+[   0.003][v][cplayer] Setting option 'ytdl' = 'no' (flags = 8)
+[   0.003][v][cplayer] Setting option 'input-conf' = 'C:\Users\<user>\AppData\Local\Temp\trendo-mpvpruef-59116\trendo-tasten-test.conf' (flags = 8)
+[   0.004][v][ifo_dvda] Opening C:\Users\<user>\AppData\Local\Temp\trendo-mpvpruef-59116\trendo-tasten-test.conf
+[   0.004][v][ifo_dvdnav] Opening C:\Users\<user>\AppData\Local\Temp\trendo-mpvpruef-59116\trendo-tasten-test.conf
+[   0.005][v][bdmv/bluray] Opening C:\Users\<user>\AppData\Local\Temp\trendo-mpvpruef-59116\trendo-tasten-test.conf
+[   0.005][v][file] Opening C:\Users\<user>\AppData\Local\Temp\trendo-mpvpruef-59116\trendo-tasten-test.conf
+[   0.005][v][input] Parsing input config file C:\Users\<user>\AppData\Local\Temp\trendo-mpvpruef-59116\trendo-tasten-test.conf
+[   0.005][v][input] Input config file C:\Users\<user>\AppData\Local\Temp\trendo-mpvpruef-59116\trendo-tasten-test.conf parsed: 2 binds
+[   0.005][d][osc] Loading lua script @osc.lua...
+[   0.005][d][stats] Loading lua script @stats.lua...
+[   0.006][d][console] Loading lua script @console.lua...
+[   0.006][d][auto_profiles] Loading lua script @auto_profiles.lua...
+[   0.006][d][select] Loading lua script @select.lua...
+[   0.006][d][positioning] Loading lua script @positioning.lua...
+[   0.006][d][commands] Loading lua script @commands.lua...
+[   0.009][d][auto_profiles] loading @auto_profiles.lua
+[   0.009][d][positioning] loading @positioning.lua
+[   0.009][d][commands] loading @commands.lua
+[   0.009][d][select] loading @select.lua

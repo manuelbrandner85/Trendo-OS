@@ -93,7 +93,7 @@ public partial class MainWindow
         var req = new PickRequest("ms-import", false, false, MusicImportExt);
         if (PickOverride is { } fake) return (await fake(req)) is [var f, ..] ? f : null;
         var start = await StorageProvider.TryGetWellKnownFolderAsync(Avalonia.Platform.Storage.WellKnownFolder.Music);
-        var got = await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions
+        var got = await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions
         {
             Title = "Musik oder Video wählen", SuggestedStartLocation = start,
             FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Musik und Videos (MP3, WAV, FLAC, M4A, AAC, OGG, OPUS, WMA, MP4 …)") { Patterns = [.. MusicImportExt.Select(e => "*." + e)] },

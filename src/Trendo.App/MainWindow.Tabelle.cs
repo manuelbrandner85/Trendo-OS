@@ -60,6 +60,7 @@ public partial class MainWindow
     /// <summary>Speichert die Mappe. Liefert false, wenn das Speichern aufgehalten wurde, weil es eine fremde Datei mit nicht übernommenen Inhalten überschriebe (T-0682).</summary>
     public bool SheetSaveAs(string path)
     {
+        UserFile(path); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
         if (ImportGuardStops("tabelle", path)) { _shMsg = ImportStopMessage("tabelle"); return false; }
         if (path.EndsWith(".csv", StringComparison.OrdinalIgnoreCase)) SheetFiles.WriteCsv(SheetDocument, ActiveSheet, path);
         else { SheetFiles.Save(SheetDocument, path); if (!path.EndsWith(".ods", StringComparison.OrdinalIgnoreCase)) { SheetPath = path; SheetDirty = false; OfficeSaved("tabelle"); ImportGuardClear("tabelle"); } }
@@ -192,7 +193,7 @@ public partial class MainWindow
     }
 
     /// <summary>E3: als PDF speichern (A4, auf Seitenbreite angepasst, Kopfzeile wiederholt, Diagramme dabei).</summary>
-    public int SheetExportPdf(string path) => SheetPdf.Export(SheetDocument, ActiveSheet, path, new SheetPdf.Options(Landscape: _shLandscape));
+    public int SheetExportPdf(string path) => SheetPdf.Export(SheetDocument, ActiveSheet, UserFile(path), new SheetPdf.Options(Landscape: _shLandscape)); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
 
     public void SheetSetLandscape(bool on) => _shLandscape = on;
 
@@ -215,6 +216,7 @@ public partial class MainWindow
             var f = Path.Combine(Path.GetTempPath(), $"trendo-druck-{DateTime.Now:yyyyMMdd-HHmmss}.pdf");
             SheetExportPdf(f);
             var sumatra = ToolPath("sumatra");
+            if (!CanManageSoftware) { OpenPdf(f); Show("pdf"); _shMsg = NurErwachseneDrucken; _core.Audit.Append(CurrentPrincipal.Name, "rbac.denied", "User fehlt ManageSoftware: drucken " + Path.GetFileName(f)); return; } // T-0764 (7. Prüfrunde): nie über Windows
             if (sumatra is not null && !_opt.Isolated) System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(sumatra, $"-print-dialog \"{f}\"") { UseShellExecute = false });
             else Launch(f);
             _shMsg = "Druckansicht geöffnet – dort Drucker wählen.";
@@ -394,11 +396,11 @@ public partial class MainWindow
         if (PickOverride is { } fake) return (await fake(req)) is [var f, ..] ? f : null;
         if (save)
         {
-            var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions { Title = "Speichern unter", SuggestedFileName = Path.GetFileName(DefaultSheetName(".xlsx")), DefaultExtension = "xlsx",
+            var file = await PickSaveFile(new FilePickerSaveOptions { Title = "Speichern unter", SuggestedFileName = Path.GetFileName(DefaultSheetName(".xlsx")), DefaultExtension = "xlsx",
                 FileTypeChoices = [new FilePickerFileType("Excel-Mappe") { Patterns = ["*.xlsx"] }, new FilePickerFileType("CSV (nur dieses Blatt)") { Patterns = ["*.csv"] }] });
             return file?.TryGetLocalPath();
         }
-        var got = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Tabelle öffnen", FileTypeFilter = [new FilePickerFileType("Tabellen") { Patterns = ["*.xlsx", "*.ods", "*.csv"] }] });
+        var got = await PickOpenFiles(new FilePickerOpenOptions { Title = "Tabelle öffnen", FileTypeFilter = [new FilePickerFileType("Tabellen") { Patterns = ["*.xlsx", "*.ods", "*.csv"] }] });
         return got.Select(f => f.TryGetLocalPath()).OfType<string>().FirstOrDefault();
     }
 

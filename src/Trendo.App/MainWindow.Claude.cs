@@ -25,8 +25,10 @@ public partial class MainWindow
     {
         // T-0317: passende Skills als Claude-Code-Skills in den Projektordner legen – Claude Code nutzt sie wie eigene
         if (studio is not null) try { Directory.CreateDirectory(folder); Skills.ExportForClaude(folder, null, studio); ClaudeTeamExport(folder, studio); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        // T-0764 (4. Prüfrunde H): Claude Code im Terminal kann Befehle ausführen – im Kinderprofil nicht (vor Testersatz und Testmodus geprüft)
+        if (!DarfAusfuehren("claude.terminal", out var nein)) { _claudeMsg = nein; RefreshKiPage(); return; }
         var args = ClaudeCode.OpenArgs(prompt, system);
-        _core.Audit.Append(Principal.LocalOwner.Name, "claude.open", Path.GetFileName(folder));
+        _core.Audit.Append(CurrentPrincipal.Name, "claude.open", Path.GetFileName(folder));
         if (ClaudeOpenOverride is { } o) { o(folder, args); return; }
         if (ClaudeSandboxed("Claude Code im Ordner öffnen")) return;
         var exe = ClaudeExe(); if (exe is null) { _claudeMsg = "Claude Code ist nicht installiert."; RefreshKiPage(); return; }
@@ -117,6 +119,7 @@ public partial class MainWindow
     /// <summary>Einen Claude-Lauf starten und jede Ausgabezeile weitergeben. Arbeitsordner = Projekt (bzw. leerer Temp-Ordner für Fragen).</summary>
     public async Task<int> ClaudeRun(IReadOnlyList<string> args, string dir, Action<string> line, CancellationToken ct)
     {
+        if (!DarfAusfuehren("claude.agent", out var nein)) throw new InvalidOperationException(nein); // T-0764 (H): KI-Agent mit Shell-Werkzeug
         if (!ClaudeEmbedApproved) throw new InvalidOperationException("Eingebettete Claude-Nutzung über das Abo wartet auf die Freigabe durch Anthropic. Nutze „In Claude Code öffnen“.");
         if (ClaudeRunOverride is { } o) return await o(args, dir, line, ct);
         if (_opt.Isolated) throw new InvalidOperationException("Testmodus: Claude wird nicht gestartet."); // Tests und Vorschaubilder nutzen nie das echte Abo
@@ -211,22 +214,40 @@ public partial class MainWindow
         RefreshKiPage();
     }
 
+    /// <summary>T-0764: Ziel der Freigabe „Claude Code einrichten“.</summary>
+    public const string ClaudeInstallTarget = "claude-code";
     /// <summary>Claude Code mit dem offiziellen Installer von claude.ai einrichten – nur für diesen Benutzer, ohne Admin, nach Zustimmung.</summary>
+    /// <remarks>T-0764 (Gegenprüfung H3): Rolle zuerst (Kinderprofil: nichts), dann eigene Rückfrage (Wirkung „app.install claude-code“), ausgeführt nur im
+    /// Freigabe-Tor. Der Testmodus greift erst innerhalb der Ausführung – er verdeckt Rolle und Freigabe nicht.</remarks>
     public async Task ClaudeInstall()
     {
-        if (ClaudeSandboxed("den Claude-Code-Installer starten")) return;
-        _core.Audit.Append(Principal.LocalOwner.Name, "claude.install.start", "https://claude.ai/install.ps1");
-        _claudeMsg = "Claude Code wird aus der offiziellen Quelle (claude.ai) eingerichtet …"; RefreshKiPage();
+        if (!DarfSoftware("app.install " + ClaudeInstallTarget, "ki")) { _claudeMsg = Rbac.NurErwachseneSoftware; RefreshKiPage(); return; }
+        var w = new Wirkung("app.install", ClaudeInstallTarget, "Claude Code einrichten?",
+            "Programm: Claude Code (Anthropic)\nWoher: offizieller Installer https://claude.ai/install.ps1\n\nTrendo startet den Installer in PowerShell. Er richtet Claude Code nur für dich ein, ohne Administratorrechte.", "Einrichten");
+        if (await FreigabeAsync(w) is not { } approvalId) { _claudeMsg = "Claude Code: abgebrochen – es wurde nichts eingerichtet."; RefreshKiPage(); return; }
+        bool ran;
         try
         {
-            var psi = new ProcessStartInfo("powershell.exe") { UseShellExecute = false, CreateNoWindow = false, WorkingDirectory = Path.GetTempPath() };
-            foreach (var a in new[] { "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", "irm https://claude.ai/install.ps1 | iex" }) psi.ArgumentList.Add(a);
-            using var p = Process.Start(psi); if (p is not null) await p.WaitForExitAsync();
+            ran = await _core.Approvals.Execute(approvalId, "app.install", ClaudeInstallTarget, async () =>
+            {
+                if (ClaudeSandboxed("den Claude-Code-Installer starten")) return false;
+                _core.Audit.Append(CurrentPrincipal.Name, "claude.install.start", "https://claude.ai/install.ps1");
+                _claudeMsg = "Claude Code wird aus der offiziellen Quelle (claude.ai) eingerichtet …"; RefreshKiPage();
+                try
+                {
+                    var psi = new ProcessStartInfo("powershell.exe") { UseShellExecute = false, CreateNoWindow = false, WorkingDirectory = Path.GetTempPath() };
+                    foreach (var a in new[] { "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", "irm https://claude.ai/install.ps1 | iex" }) psi.ArgumentList.Add(a);
+                    using var p = Process.Start(psi); if (p is not null) await p.WaitForExitAsync();
+                }
+                catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException) { _claudeMsg = "Einrichten ließ sich nicht starten: " + Trendo.Core.FriendlyError.Say(e); }
+                return true;
+            });
         }
-        catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException) { _claudeMsg = "Einrichten ließ sich nicht starten: " + Trendo.Core.FriendlyError.Say(e); }
+        catch (ApprovalException e) { _claudeMsg = e.Message; RefreshKiPage(); return; }
+        if (!ran) return; // Testmodus: Freigabe eingelöst, nichts gestartet
         var s = await ClaudeCheck(true);
         _claudeMsg = s.Installed ? "Claude Code ist eingerichtet. Jetzt noch „Mit Claude verbinden“." : "Claude Code wurde nicht gefunden – bitte noch einmal versuchen.";
-        _core.Audit.Append(Principal.LocalOwner.Name, s.Installed ? "claude.install.ok" : "claude.install.fail", "");
+        _core.Audit.Append(CurrentPrincipal.Name, s.Installed ? "claude.install.ok" : "claude.install.fail", "");
         RefreshKiPage();
     }
 
@@ -257,7 +278,7 @@ public partial class MainWindow
         return b;
     }
 
-    string ProjectsFolderForClaude() => _settings.ProjectsFolder is { Length: > 0 } pf ? pf : UserSettings.DefaultProjectsFolder();
+    string ProjectsFolderForClaude() => ProjectsRoot;
 
     /// <summary>„Neu prüfen“: Stand frisch lesen und das Ergebnis mit Uhrzeit melden (sichtbare Rückmeldung).</summary>
     async Task ClaudeRecheck()

@@ -1,0 +1,48 @@
+T-0764 fix14 ROT-BELEG auf 8549c75ed (src unverändert): RechteKernFix14Ui – H1 Einlesen mit Child:false, H2 Zurücksetzen, manipulierte/gelöschte settings.json, M Assistent/Projektordner, Wiederherstellen
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0764 H1: Kind – „Einstellungen einlesen“ mit Child:false, fremdem Namen und Projektordner bleibt Kind; nur Bedienfelder werden übernommen. Erwachsene lesen weiter ein [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: True
+      Actual:   False
+      Stack Trace:
+        tests\Trendo.App.Tests\RechteKernFix14UiTests.cs(49,0): at Trendo.App.Tests.RechteKernFix14Ui.Einlesen()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    T-0764 M: Kind – kein Einrichtungsassistent (auch nicht über die Seitenadresse), Projektordner außerhalb der Freigabe gilt nicht; Erwachsene: Assistent wie bisher [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: False
+      Actual:   True
+      Stack Trace:
+        tests\Trendo.App.Tests\RechteKernFix14UiTests.cs(108,0): at Trendo.App.Tests.RechteKernFix14Ui.Assistent_und_Projektordner()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    T-0764 (14.): Kind – „Sicherung wiederherstellen“ ist gesperrt (Rolle und Dateien bleiben); Erwachsene stellen wieder her [FAIL]
+      Assert.Contains() Failure: Filter not matched in collection
+      Collection: [AuditEntry { Seq = 1, At = 25.11.2026 15:06:48 +01:00, Actor = core, Action = core.start, Detail = v0.2.0-p1 secrets=InMemory (Test-Fallback, nicht persistent) offline=False protokoll=hash-kette, PrevHash = GENESIS, Hash = D2AD4EFBD0CC49B09CB36C7BC5B209A03E8B3A001238042C3C5076C9BBFE14E2, Mac = , Kid =  }, AuditEntry { Seq = 2, At = 25.11.2026 15:06:48 +01:00, Actor = app, Action = app.first_start, Detail = Standardkonfiguration angelegt, PrevHash = D2AD4EFBD0CC49B09CB36C7BC5B209A03E8B3A001238042C3C5076C9BBFE14E2, Hash = 0A955377607E9E4EFC057453370E2FB05674B842249745D40CF106EBA87A9D30, Mac = , Kid =  }, AuditEntry { Seq = 3, At = 25.11.2026 15:06:48 +01:00, Actor = lokaler-besitzer, Action = research.session.end, Detail = , PrevHash = 0A955377607E9E4EFC057453370E2FB05674B842249745D40CF106EBA87A9D30, Hash = 7614C55F738203A55FA6B63D3A9A211B2C5C79C70B14A16F8ABE7BB6F02F8B29, Mac = , Kid =  }, AuditEntry { Seq = 4, At = 25.11.2026 15:06:48 +01:00, Actor = selbstheilung, Action = heal.repair, Detail = folders=Repaired, json=Ok, tmp=Ok, disk=Ok, audit=Ok, PrevHash = 7614C55F738203A55FA6B63D3A9A211B2C5C79C70B14A16F8ABE7BB6F02F8B29, Hash = 7A7C31112329CB5A933AB6446ED5CCE04650C88EDEB6946D585CB47C1BE2F5AC, Mac = , Kid =  }, AuditEntry { Seq = 5, At = 25.11.2026 15:06:48 +01:00, Actor = app, Action = backup.created, Detail = trendo-sicherung-20261125-150648.zip, PrevHash = 7A7C31112329CB5A933AB6446ED5CCE04650C88EDEB6946D585CB47C1BE2F5AC, Hash = BE660276C6B3732BC778BB824438773C304A90945375D1FF9A7C18B7FA2D7F5B, Mac = , Kid =  }, ···]
+      Stack Trace:
+        tests\Trendo.App.Tests\RechteKernFix14UiTests.cs(143,0): at Trendo.App.Tests.RechteKernFix14Ui.Wiederherstellen()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    T-0764 H1/H2: Kind – manipulierte settings.json (Child:false) auf der Platte und gelöschte settings.json: weiter Kind; Person aus personen.json ebenso [FAIL]
+      Assert.True() Failure
+      Expected: True
+      Actual:   False
+      Stack Trace:
+        tests\Trendo.App.Tests\RechteKernFix14UiTests.cs(89,0): at Trendo.App.Tests.RechteKernFix14Ui.Platte()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    T-0764 H2: Kind – „Trendo-Einstellungen zurücksetzen“ ist gesperrt und macht kein Erwachsenen-Profil; Erwachsene setzen zurück und bleiben Erwachsene [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: True
+      Actual:   False
+      Stack Trace:
+        tests\Trendo.App.Tests\RechteKernFix14UiTests.cs(71,0): at Trendo.App.Tests.RechteKernFix14Ui.Zuruecksetzen()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Finished:    Trendo.App.Tests (ID = '97b5c1f5500875191cbeb0c8517e66ccd14cf2b868c8f66523c10ec2c1278210')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 5, Errors: 0, Failed: 5, Skipped: 0, Not Run: 0, Time: 7,952s
+exit 1

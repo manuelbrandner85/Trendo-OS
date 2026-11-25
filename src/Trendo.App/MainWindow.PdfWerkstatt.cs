@@ -162,7 +162,7 @@ public partial class MainWindow
         var req = new PickRequest("pw-add", false, true, img ? ["png", "jpg", "jpeg"] : ["pdf"]);
         string[]? got;
         if (PickOverride is { } fake) got = await fake(req);
-        else got = (await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = img ? "Bilder wählen" : "PDF-Dateien wählen", AllowMultiple = true,
+        else got = (await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = img ? "Bilder wählen" : "PDF-Dateien wählen", AllowMultiple = true,
             FileTypeFilter = [img ? new Avalonia.Platform.Storage.FilePickerFileType("Bilder") { Patterns = ["*.png", "*.jpg", "*.jpeg"] } : new Avalonia.Platform.Storage.FilePickerFileType("PDF") { Patterns = ["*.pdf"] }] }))
             .Select(f => f.TryGetLocalPath()).OfType<string>().ToArray();
         if (got is { Length: > 0 }) ProgramRun(PwKey, () => PwAddFiles(d, got));

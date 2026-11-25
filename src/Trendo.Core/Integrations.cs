@@ -95,26 +95,106 @@ public sealed class Integrations(ApprovalGate gate, ProjectStore projects, IProc
         return gate.Request(by, OpenUrl, $"URL im Standardbrowser öffnen: {u.Host}", u.AbsoluteUri, resumable: true);
     }
 
-    /// <summary>Direkter Start durch den lokalen Owner per Klick (Dock/Schnellstart). Kein Agent darf das; wird auditiert.</summary>
+    /// <summary>T-0764 (2. Prüfrunde N-C): Trendos eigene Programmordner (Werkzeugordner, Programmordner, Portable-Ordner) – .exe darin gelten
+    /// als vertrauenswürdig. Setzt die App; ohne Angabe ist keine .exe vertrauenswürdig.</summary>
+    public Func<string, bool>? TrustedProgramPath { get; set; }
+
+    /// <summary>T-0764: Wer darf direkt starten, und braucht das Ziel das Recht „Programme verwalten“? Erwachsene (Besitzer) dürfen alles; das
+    /// Kinderprofil darf Dokumente, Ordner, Adressen und Trendos eigene Programme öffnen, aber keine Installer, Skripte, Verknüpfungen und
+    /// keine fremde .exe. Andere Rollen (Agenten, API) dürfen gar nicht direkt starten.</summary>
+    /// <param name="exeUserChosen">Das Programm hat die Person gewählt (eigene Verknüpfung) – dann gelten die Regeln für Dateien.</param>
+    /// <param name="internalCall">T-0764 (P3-2): fester Aufruf von Trendo selbst (Programm und Parameter legt der Code fest, nicht die Person).
+    /// Sonst dürfen die Parameter im Kinderprofil nur vorhandene Dateien oder Ordner sein.</param>
+    void DemandLaunch(Principal by, AuditLog audit, IEnumerable<string?> userTargets, string? exe = null, bool exeUserChosen = false, bool internalCall = true, IEnumerable<string>? rawArgs = null)
+    {
+        if (by != Principal.ChildProfile) Rbac.Demand(by, Permission.ApproveAction, audit);
+        if (Rbac.Has(by, Permission.ManageSoftware)) return; // Erwachsene: wie bisher, ohne Prüfsummen-Rechnen
+        void No(string what) => Rbac.DemandSoftware(by, "start " + what, audit, Rbac.NurErwachseneStart);
+        // T-0764 (5. Prüfrunde H1): Konsolen-Programme nie – unabhängig von internalCall
+        foreach (var c in userTargets.Append(exe).Concat(rawArgs ?? []).Where(x => x is not null))
+            if (Sys.ProgramTrust.IsConsoleProgram(c!) && (c == exe || c!.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) || File.Exists(c!)))
+                Rbac.DemandSoftware(by, "start " + Path.GetFileName(c!.Trim('"')), audit, Rbac.NurErwachseneKonsole);
+        // T-0764 (5. Prüfrunde M1): älterer Stand mit Kennungsdatei, aber ohne Eintrag in der geschützten Liste → klarer Hinweis
+        foreach (var c in userTargets.Append(exe).Where(x => x is not null && x.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) && File.Exists(x)))
+            if (Sys.ProgramTrust.HasLegacyMarker(c!) && TrustedProgramPath?.Invoke(Path.GetFullPath(c!)) != true)
+                Rbac.DemandSoftware(by, "start " + Path.GetFileName(c!), audit, Rbac.NurErwachseneNeuEinrichten);
+        foreach (var t in userTargets)
+        {
+            if (t is null) continue;
+            if (Sys.Software.NeedsSoftwareRight(t, TrustedProgramPath)) No(Path.GetFileName(t.Trim('"')));
+            else if (t.IndexOfAny(Path.GetInvalidPathChars()) < 0 && Directory.Exists(t.Trim('"'))) No("Ordner im Windows-Explorer"); // M3: Kinder nutzen Trendos Dateimanager
+        }
+        if (exe is not null)
+        {
+            if (exeUserChosen) { if (Sys.Software.NeedsSoftwareRight(exe, TrustedProgramPath)) No(Path.GetFileName(exe)); }
+            else if (Sys.Software.IsInstallerLike(exe) || !internalCall && Sys.ProgramTrust.IsInterpreter(exe)
+                     || !(TrustedProgramPath?.Invoke(Path.GetFullPath(exe)) == true || Sys.ProgramTrust.InFixedLocation(exe))) No(Path.GetFileName(exe)); // P3-4: Herkunft oder fester Ort
+        }
+        if (!internalCall && rawArgs is not null)
+            foreach (var a in rawArgs.Where(a => a.Trim().Length > 0))
+                if (!File.Exists(a.Trim('"')) && !Directory.Exists(a.Trim('"'))) No("Parameter " + (a.Length > 40 ? a[..40] : a)); // P3-2: keine freien Parameter
+        // T-0764 (6. Prüfrunde A): ERLAUBNISLISTE statt Sperrliste – ein Programm startet im Kinderprofil nur, wenn es genau eine erlaubte
+        // Vollpaket-Komponente ist (Programmordner + Pfad, nicht nur der Name) UND geprüft (geschützte Liste, ganzer Ordner unverändert).
+        // Alles andere (Krita, GIMP, Inkscape, OBS, Audacity, Editoren, Programme unter „Programme“ …) öffnet nur ein Erwachsenen-Profil.
+        foreach (var p in userTargets.Append(exe))
+        {
+            if (p is null || ProgramFullPath(p, p == exe) is not { } full) continue;
+            if (string.Equals(full, Environment.ProcessPath, StringComparison.OrdinalIgnoreCase)) continue; // Trendo selbst (z. B. zweites Fenster)
+            if (!(Sys.ProgramTrust.InChildAllowList(full) && TrustedProgramPath?.Invoke(full) == true))
+                Rbac.DemandSoftware(by, "start " + Path.GetFileName(full), audit, Rbac.NurErwachseneProgramm);
+        }
+        // T-0764 (7. Prüfrunde): Das Kinderprofil übergibt NIE eine Datei an ShellExecute bzw. das Windows-Standardprogramm (fail-closed) – auch keine
+        // Dokumente (.zip, .iso, .py, .kra, .blend … öffnen sonst den Explorer oder ein Programm mit Skript-Konsole). Die App leitet auf Trendos eigene
+        // Betrachter um. Erlaubt bleiben nur Adressen aus der Liste für Kinder (http, https, mailto, einzelne ms-settings-Seiten).
+        foreach (var t in userTargets)
+            if (t is not null && !IsChildAddress(t))
+                Rbac.DemandSoftware(by, "datei " + SafeName(t), audit, Rbac.NurErwachseneDatei);
+    }
+
+    /// <summary>T-0764 (7. Prüfrunde): Ziel ist eine erlaubte Adresse (kein Pfad, kein file:) – nur dann darf ein Kinderprofil es an Windows übergeben.</summary>
+    static bool IsChildAddress(string t)
+    {
+        var s = t.Trim().Trim('"');
+        if (s.Length == 0 || s.Any(char.IsControl) || s.StartsWith("file:", StringComparison.OrdinalIgnoreCase)) return false;
+        return System.Text.RegularExpressions.Regex.IsMatch(s, @"^[A-Za-z][A-Za-z0-9+.\-]+:") && Sys.ProgramTrust.ChildSchemeAllowed(s);
+    }
+    static string SafeName(string t) { try { return Path.GetFileName(t.Trim().Trim('"')); } catch (ArgumentException) { return "?"; } }
+
+    /// <summary>Voller Pfad, wenn <paramref name="p"/> ein Programm ist (.exe als Ziel; das Programm eines Aufrufs immer), sonst null.</summary>
+    static string? ProgramFullPath(string p, bool isExe)
+    {
+        var t = p.Trim().Trim('"');
+        try
+        {
+            if (isExe) return Path.IsPathFullyQualified(t) ? Path.GetFullPath(t) : t; // Programm ohne Pfad (z. B. „krita“) – nie in der Erlaubnisliste
+            return Path.IsPathFullyQualified(t) && string.Equals(Path.GetExtension(t), ".exe", StringComparison.OrdinalIgnoreCase) ? Path.GetFullPath(t) : null;
+        }
+        catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { return isExe ? t : null; }
+    }
+
+    /// <summary>Direkter Start per Klick (Dock/Schnellstart, Dateien öffnen). Kein Agent darf das; wird auditiert.
+    /// T-0764: Rolle und Ziel werden hier geprüft (<see cref="DemandLaunch"/>) – alle Aufrufer profitieren.</summary>
     public void LaunchDirect(Principal by, string target, AuditLog audit)
     {
-        Rbac.Demand(by, Permission.ApproveAction, audit);
+        DemandLaunch(by, audit, [target]);
         audit.Append(by.Name, "user.direct_launch", target);
         launcher.Open(target);
     }
 
     /// <summary>Startet ein Programm mit genau einer Datei/URL als Argument (kein Shell-Parsing).</summary>
-    public void LaunchDirect(Principal by, string exe, AuditLog audit, string arg)
+    /// <param name="userExe">T-0764: Das Programm hat die Person selbst gewählt (eigene Verknüpfung) – dann gilt für die .exe dieselbe Prüfung wie für Dateien.</param>
+    public void LaunchDirect(Principal by, string exe, AuditLog audit, string arg, bool userExe = false)
     {
-        Rbac.Demand(by, Permission.ApproveAction, audit);
+        DemandLaunch(by, audit, [File.Exists(arg) ? arg : null], exe, exeUserChosen: userExe, internalCall: !userExe, rawArgs: userExe ? [arg] : null);
         audit.Append(by.Name, "user.direct_launch", $"{Path.GetFileName(exe)} {arg}");
         launcher.OpenWith(exe, arg);
     }
 
     /// <summary>T-0203: externes Programm mit der aktuellen Datei (geplant von <see cref="ExternalApps.Plan"/>).</summary>
-    public void LaunchArgs(Principal by, string exe, AuditLog audit, IReadOnlyList<string> args)
+    /// <param name="internalCall">T-0764 (P3-2): fester Aufruf von Trendo (der Aufrufer kennzeichnet ihn); sonst sind im Kinderprofil nur Dateien als Parameter erlaubt.</param>
+    public void LaunchArgs(Principal by, string exe, AuditLog audit, IReadOnlyList<string> args, bool internalCall = false)
     {
-        Rbac.Demand(by, Permission.ApproveAction, audit);
+        DemandLaunch(by, audit, args.Where(File.Exists), exe, internalCall: internalCall, rawArgs: args);
         audit.Append(by.Name, "user.direct_launch", $"{Path.GetFileName(exe)} {string.Join(" ", args)}");
         launcher.OpenWithArgs(exe, args);
     }

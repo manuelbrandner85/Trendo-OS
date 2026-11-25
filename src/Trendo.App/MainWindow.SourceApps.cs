@@ -184,6 +184,7 @@ public partial class MainWindow
 
     async Task<int> SourceRun(string exe, string args, string dir, IReadOnlyDictionary<string, string> env, Action<string> line, CancellationToken ct)
     {
+        if (!DarfAusfuehrenStill("quellcode.bauen " + Path.GetFileName(exe), out var nein)) throw new UnauthorizedAccessException(nein); // T-0764 (6. Prüfrunde B): Build-Werkzeuge im Quellcode-Ordner
         if (SourceRunOverride is { } o) return await o(exe, args, dir, env, line, ct);
         if (_opt.Isolated) throw new InvalidOperationException("Testmodus: Programme aus dem Quellcode werden nicht wirklich eingerichtet.");
         var psi = new ProcessStartInfo(exe, args) { WorkingDirectory = dir, UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true,
@@ -210,10 +211,12 @@ public partial class MainWindow
     {
         if (_core.Offline) { Say("Trendo ist offline. Das Einrichten braucht Internet.", "oss"); return null; }
         if (_depBusy) return null;
+        // T-0764: Rechteprüfung im Kern, bevor der alte Stand verschoben oder etwas geladen wird
+        try { SourceApps.BeginInstall(CurrentPrincipal, repo.FullName, $"{repo.FullName} {repo.LicenseId}{(pkg is { } pp ? $" {pp.Registry}:{pp.Package}" : "")}", _core.Audit); }
+        catch (UnauthorizedAccessException e) { Say(e.Message, "oss"); return null; }
         _depBusy = true;
         var name = repo.FullName.Split('/')[1];
         var id = SourceApps.IdFor(repo.FullName); var dir = SourceApps.Dir(_deps.ToolsRoot, id); var old = dir + ".alt";
-        _core.Audit.Append(Principal.LocalOwner.Name, "source.install.start", $"{repo.FullName} {repo.LicenseId}{(pkg is { } pp ? $" {pp.Registry}:{pp.Package}" : "")}");
         BeginSetupOverlay($"{name} wird eingerichtet");
         string? zip = null; var log = new List<string>();
         try
@@ -264,7 +267,7 @@ public partial class MainWindow
             }
             if (plan.Start is { } st && !st.Exe.StartsWith('{') && !File.Exists(Path.Combine(dir, SourceApps.Fill(st.Exe, values))) && SourceRunOverride is null)
                 throw new InvalidOperationException($"Eingerichtet, aber die Startdatei „{st.Exe}“ fehlt. Das Projekt braucht wohl eine andere Startweise – „Quellcode holen“ und die Anleitung (README) helfen weiter.");
-            var entry = SourceApps.Register(_deps.ToolsRoot, repo.FullName, sha, plan, repo.LicenseId, repo.Description, _core.Audit);
+            var entry = SourceApps.Register(CurrentPrincipal, _deps.ToolsRoot, repo.FullName, sha, plan, repo.LicenseId, repo.Description, _core.Audit);
             if (Directory.Exists(old)) try { Directory.Delete(old, true); } catch (IOException) { }
             SetupOverlayProgress(4, 4, "Fertig ✓");
             var msg = $"„{name}“ ist aus dem Quellcode eingerichtet{(start ? " und startet gerade" : "")}. Du findest es unter „Programme“ › „Aus Quellcode eingerichtet“.";
@@ -293,6 +296,7 @@ public partial class MainWindow
     /// <summary>Starten: Web-Seite über Trendos lokalen Server, Web-Programm unsichtbar + Browser, sonst in einem Fenster mit Ausgabe (bleibt nach dem Ende offen).</summary>
     public async Task SourceStart(SourceApps.Installed e)
     {
+        if (!DarfAusfuehren("quellcode.start " + e.Id, out var nein)) { Say(nein, CurrentView); return; } // T-0764 (6. Prüfrunde B): startet Code aus dem Quellcode-Ordner
         var dir = SourceApps.Dir(_deps.ToolsRoot, e.Id);
         try
         {
@@ -334,7 +338,7 @@ public partial class MainWindow
             foreach (var (k, v) in env) lines.Add($"set \"{k}={v.Replace("\"", "")}\"");
             lines.Add($"\"{exe}\" {args}"); lines.Add("echo."); lines.Add("echo (Programm beendet - eine Taste schliesst das Fenster)"); lines.Add("pause >nul");
             await File.WriteAllLinesAsync(cmd, lines, new System.Text.UTF8Encoding(false));
-            _core.Integrations.LaunchArgs(Principal.LocalOwner, Path.Combine(Environment.SystemDirectory, "cmd.exe"), _core.Audit, ["/c", cmd]);
+            LaunchArgsAs(Path.Combine(Environment.SystemDirectory, "cmd.exe"), ["/c", cmd]);
             _core.Audit.Append(Principal.LocalOwner.Name, "source.start", e.Repo);
         }
         catch (Exception ex) when (ex is InvalidOperationException or IOException or System.ComponentModel.Win32Exception or UnauthorizedAccessException)
@@ -371,7 +375,8 @@ public partial class MainWindow
             Add(RemoveButton("src:" + e.Id, "btn-src-remove-" + e.Id, () =>
             {
                 SourceStop(e.Id);
-                try { SourceApps.Remove(_deps.ToolsRoot, e.Id, _core.Audit); _depLog.Text = $"{e.Repo} wurde entfernt."; }
+                try { SourceApps.Remove(CurrentPrincipal, _deps.ToolsRoot, e.Id, _core.Audit); _depLog.Text = $"{e.Repo} wurde entfernt."; }
+                catch (UnauthorizedAccessException ex) when (!CanManageSoftware) { _depLog.Text = ex.Message; } // T-0764: Kern lehnt ab (Kinderprofil)
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _depLog.Text = $"{e.Repo} läuft noch oder ist gesperrt: bitte schließen und erneut versuchen. ({ex.Message})"; }
             }));
             sp.Children.Add(Card(Row(new StackPanel { Children = {

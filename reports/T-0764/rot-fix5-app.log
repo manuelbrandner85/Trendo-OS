@@ -1,0 +1,61 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    ROT M2: neue oder ausgetauschte Dateien im Programmordner (auch Unterordner) führen zur Ablehnung(rel: "scripts\\startup\\boese.py", replace: False) [FAIL]
+      Assert.ThrowsAny() Failure: No exception was thrown
+      Expected: typeof(System.UnauthorizedAccessException)
+      Stack Trace:
+        tests\Trendo.App.Tests\RotFix5.cs(73,0): at Trendo.App.Tests.RotFix5.M2(String rel, Boolean replace)
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+    ROT M2: neue oder ausgetauschte Dateien im Programmordner (auch Unterordner) führen zur Ablehnung(rel: "resources\\app.asar", replace: True) [FAIL]
+      Assert.ThrowsAny() Failure: No exception was thrown
+      Expected: typeof(System.UnauthorizedAccessException)
+      Stack Trace:
+        tests\Trendo.App.Tests\RotFix5.cs(73,0): at Trendo.App.Tests.RotFix5.M2(String rel, Boolean replace)
+           at InvokeStub_RotFix5.M2(Object, Span`1)
+           at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+    ROT M1: Übernahme alter Kennungen macht eine gefälschte Kennung vertrauenswürdig [FAIL]
+      Assert.ThrowsAny() Failure: No exception was thrown
+      Expected: typeof(System.UnauthorizedAccessException)
+      Stack Trace:
+        tests\Trendo.App.Tests\RotFix5.cs(62,0): at Trendo.App.Tests.RotFix5.M1()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    ROT H3/N3: Kind – Code mit KI startet keine Tests (Rollenprüfung im Protokoll); Papierkorb-Knopf für Kinder ausgeblendet [FAIL]
+      Assert.Contains() Failure: Filter not matched in collection
+      Collection: [AuditEntry { Seq = 1, At = 24.11.2026 19:24:06 +01:00, Actor = core, Action = core.start, Detail = v0.2.0-p1 secrets=InMemory (Test-Fallback, nicht persistent) offline=False protokoll=hash-kette, PrevHash = GENESIS, Hash = 27A2C644B5D01E401B99C509A7E6D9AC94458E8933275DDF8E62C41D5A83E29E, Mac = , Kid =  }, AuditEntry { Seq = 2, At = 24.11.2026 19:24:07 +01:00, Actor = app, Action = app.first_start, Detail = Standardkonfiguration angelegt, PrevHash = 27A2C644B5D01E401B99C509A7E6D9AC94458E8933275DDF8E62C41D5A83E29E, Hash = C3BAE3385C8D9C5946DB0732181DE6D3AEB823D77AE7866745254322BB588BB2, Mac = , Kid =  }, AuditEntry { Seq = 3, At = 24.11.2026 19:24:07 +01:00, Actor = lokaler-besitzer, Action = research.session.end, Detail = , PrevHash = C3BAE3385C8D9C5946DB0732181DE6D3AEB823D77AE7866745254322BB588BB2, Hash = 9B2B7A670C2288667B245D81F4C7B8E761C219CCC6194FF261A1283561CFE20D, Mac = , Kid =  }, AuditEntry { Seq = 4, At = 24.11.2026 19:24:07 +01:00, Actor = selbstheilung, Action = heal.repair, Detail = folders=Repaired, json=Ok, tmp=Ok, disk=Ok, audit=Ok, PrevHash = 9B2B7A670C2288667B245D81F4C7B8E761C219CCC6194FF261A1283561CFE20D, Hash = C87FF0BB331D9A435D506F81BB798FDC66B9EB18A977CF21D867E14144229FFE, Mac = , Kid =  }]
+      Stack Trace:
+        tests\Trendo.App.Tests\RotFix5.cs(90,0): at Trendo.App.Tests.RotFix5.H3_N3()
+        --- End of stack trace from previous location ---
+    ROT H2: eine kopierte cmd.exe namens Code.exe zählt nicht als von Microsoft für VS Code signiert (nur Katalog-Signatur) [FAIL]
+      Gueltig Microsoft Corporation Katalog=True
+      Stack Trace:
+        tests\Trendo.App.Tests\RotFix5.cs(50,0): at Trendo.App.Tests.RotFix5.H2()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    ROT H1: Kind startet VS Code, Blender-Oberfläche, Unreal-Editor auch bei festen Aufrufen nicht(rel: "Microsoft VS Code\\Code.exe") [FAIL]
+      Assert.ThrowsAny() Failure: No exception was thrown
+      Expected: typeof(System.UnauthorizedAccessException)
+      Stack Trace:
+        tests\Trendo.App.Tests\RotFix5.cs(40,0): at Trendo.App.Tests.RotFix5.H1(String rel)
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+    ROT H1: Kind startet VS Code, Blender-Oberfläche, Unreal-Editor auch bei festen Aufrufen nicht(rel: "Blender Foundation\\Blender 4.2\\blender.exe") [FAIL]
+      Assert.ThrowsAny() Failure: No exception was thrown
+      Expected: typeof(System.UnauthorizedAccessException)
+      Stack Trace:
+        tests\Trendo.App.Tests\RotFix5.cs(40,0): at Trendo.App.Tests.RotFix5.H1(String rel)
+           at InvokeStub_RotFix5.H1(Object, Span`1)
+           at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+    ROT H1: Kind startet VS Code, Blender-Oberfläche, Unreal-Editor auch bei festen Aufrufen nicht(rel: "Epic Games\\UE_5.4\\Engine\\Binaries\\Win64\\Unrea"···) [FAIL]
+      Assert.ThrowsAny() Failure: No exception was thrown
+      Expected: typeof(System.UnauthorizedAccessException)
+      Stack Trace:
+        tests\Trendo.App.Tests\RotFix5.cs(40,0): at Trendo.App.Tests.RotFix5.H1(String rel)
+           at InvokeStub_RotFix5.H1(Object, Span`1)
+           at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Finished:    Trendo.App.Tests (ID = '7d261b75ce1eeca6a71aef00a582c5c800bc946a5569832b92c23fcd0aec95a0')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 8, Errors: 0, Failed: 8, Skipped: 0, Not Run: 0, Time: 4,236s

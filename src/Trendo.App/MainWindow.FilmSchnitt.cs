@@ -60,7 +60,7 @@ public partial class MainWindow
     async Task<string[]> FilmPick(string field, string title, bool multiple, string[] ext)
     {
         if (PickOverride is { } fake) return await fake(new PickRequest(field, false, multiple, ext)) ?? [];
-        var got = await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = title, AllowMultiple = multiple,
+        var got = await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = title, AllowMultiple = multiple,
             FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType(title) { Patterns = [.. ext.Select(e => "*." + e)] }] });
         return [.. got.Select(f => f.TryGetLocalPath()).OfType<string>()];
     }

@@ -1,0 +1,6 @@
+Stand 4cdd1c7e6 – Familien-PC: Hauptprofil erwachsen, Person „Kind“ angelegt, Aufruf ohne --pin:
+TrendoOS.exe --data-root <tmp>/daten --install-deps vollpaket --vollpaket <tmp>/vollpaket --werkzeuge <tmp>/werkzeuge --offline
+Ausgabe (nur PASS/FAIL-Zeilen):
+exit 0
+PASS  1 Pakete eingerichtet
+Danach vorhanden: testtool 

@@ -75,6 +75,7 @@ public partial class MainWindow
     /// <summary>Speichert die Präsentation. Liefert false, wenn das Speichern aufgehalten wurde, weil es eine fremde Datei mit nicht übernommenen Inhalten überschriebe (T-0682).</summary>
     public bool DeckSaveAs(string path)
     {
+        UserFile(path); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
         if (ImportGuardStops("praesentation", path)) { _dkMsg = ImportStopMessage("praesentation"); return false; }
         SlideFiles.Save(Deck, path);
         if (path.EndsWith(".pptx", StringComparison.OrdinalIgnoreCase)) { DeckPath = path; DeckDirty = false; RememberDeckRecent(path); OfficeSaved("praesentation"); ImportGuardClear("praesentation"); }
@@ -215,11 +216,11 @@ public partial class MainWindow
         if (PickOverride is { } fake) return (await fake(req)) is [var f, ..] ? f : null;
         if (save)
         {
-            var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions { Title = "Speichern unter", SuggestedFileName = Path.GetFileName(DefaultDeckName(".pptx")), DefaultExtension = "pptx",
+            var file = await PickSaveFile(new FilePickerSaveOptions { Title = "Speichern unter", SuggestedFileName = Path.GetFileName(DefaultDeckName(".pptx")), DefaultExtension = "pptx",
                 FileTypeChoices = [new FilePickerFileType("PowerPoint-Präsentation") { Patterns = ["*.pptx"] }, new FilePickerFileType("PDF") { Patterns = ["*.pdf"] }] });
             return file?.TryGetLocalPath();
         }
-        var got = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Präsentation öffnen", FileTypeFilter = [new FilePickerFileType("Präsentationen") { Patterns = ["*.pptx", "*.odp"] }] });
+        var got = await PickOpenFiles(new FilePickerOpenOptions { Title = "Präsentation öffnen", FileTypeFilter = [new FilePickerFileType("Präsentationen") { Patterns = ["*.pptx", "*.odp"] }] });
         return got.Select(f => f.TryGetLocalPath()).OfType<string>().FirstOrDefault();
     }
 
@@ -227,7 +228,7 @@ public partial class MainWindow
     {
         var req = new PickRequest(field, false, false, patterns.Select(p => p.TrimStart('*')).ToList());
         if (PickOverride is { } fake) return (await fake(req)) is [var f, ..] ? f : null;
-        var got = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = title, FileTypeFilter = [new FilePickerFileType(title) { Patterns = patterns }] });
+        var got = await PickOpenFiles(new FilePickerOpenOptions { Title = title, FileTypeFilter = [new FilePickerFileType(title) { Patterns = patterns }] });
         return got.Select(f => f.TryGetLocalPath()).OfType<string>().FirstOrDefault();
     }
 
@@ -259,6 +260,7 @@ public partial class MainWindow
     /// <summary>P6: jede Folie als PNG (1920 × 1080) in einen Ordner neben den Präsentationen.</summary>
     public string DeckExportImages(string? folder = null)
     {
+        if (folder is not null) UserDirFixedNames(folder); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
         var dir = folder ?? DefaultDeckName(" – Bilder"); Directory.CreateDirectory(dir);
         for (var i = 0; i < Deck.Slides.Count; i++) RenderSlidePng(Deck.Slides[i], Path.Combine(dir, $"Folie-{i + 1:00}.png"));
         _dkMsg = $"{Deck.Slides.Count} Bilder gespeichert: {Path.GetFileName(dir)}";

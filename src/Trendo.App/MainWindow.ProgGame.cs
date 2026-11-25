@@ -76,8 +76,9 @@ public partial class MainWindow
         var proj = Directory.GetFiles(built, "*.uproject").FirstOrDefault() ?? throw new InvalidOperationException("Im Ordner liegt kein Spiel.");
         var engine = _opt.Isolated ? null : GameStudio.FindEngines().FirstOrDefault();
         if (engine is null) { Launch(built); _progMsg[GK] = "Unreal Engine 5 ist nicht installiert – der Projektordner wurde geöffnet."; return; }
-        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(GameStudio.EditorExe(engine)) { ArgumentList = { proj }, UseShellExecute = false });
-        _core.Audit.Append(Principal.LocalOwner.Name, "game.open.unreal", Path.GetFileName(proj));
+        // T-0764 (5. Prüfrunde H1): über die zentrale Prüfung – der Unreal-Editor öffnet im Kinderprofil nie
+        if (!LaunchArgsAs(GameStudio.EditorExe(engine), [proj])) { _progMsg[GK] = LastLaunchRefused; return; }
+        _core.Audit.Append(CurrentPrincipal.Name, "game.open.unreal", Path.GetFileName(proj));
     }
 
     private Control GameWorkspace(ProgramDocument d)
@@ -367,7 +368,7 @@ public partial class MainWindow
             var pick = Act($"game-anim-pick-{id}", o is null ? "Bild…" : "✓ " + Path.GetFileName(o["file"].AsText() ?? ""), async () =>
             {
                 var got = PickOverride is { } fake ? await fake(new PickRequest($"game-anim-{st}", false, false, ["png", "jpg", "webp", "gif"]))
-                    : (await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Bildstreifen für „" + label + "“", FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Bilder") { Patterns = ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.gif"] }] }))
+                    : (await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Bildstreifen für „" + label + "“", FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Bilder") { Patterns = ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.gif"] }] }))
                         .Select(f => Avalonia.Platform.Storage.StorageProviderExtensions.TryGetLocalPath(f)).OfType<string>().ToArray();
                 if (got is { Length: > 0 }) ProgramRun(GK, () => GameSetAnim(d, st, got[0], int.TryParse(frames.Text, out var a) ? a : 1, int.TryParse(fps.Text, out var b) ? b : 8));
             });

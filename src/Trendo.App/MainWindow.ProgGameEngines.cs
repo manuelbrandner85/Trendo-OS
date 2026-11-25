@@ -43,6 +43,7 @@ public partial class MainWindow
 
     (int Exit, string Output) EngineRun(string exe, IReadOnlyList<string> args, string cwd, int timeoutMs)
     {
+        if (!DarfAusfuehrenStill("spiel.engine " + Path.GetFileName(exe), out var nein)) return (-1, nein); // T-0764 (6. Prüfrunde B): Rolle zuerst, auch vor dem Testersatz
         if (EngineRunOverride is { } o) return o(exe, args);
         if (_opt.Isolated) return (-1, "Testmodus: keine Engine gestartet.");
         var r = Cli.Run(exe, args, cwd, timeoutMs);
@@ -70,6 +71,7 @@ public partial class MainWindow
     /// <summary>Tests der Engine über die offizielle Kommandozeile – nur wenn die Engine installiert ist; Ergebnis mit Exitcode und Protokoll im Projektordner.</summary>
     public void GameEngineTest(ProgramDocument d, string engine)
     {
+        if (!DarfAusfuehrenStill("spiel.engine.test " + engine, out _)) { GameEngineSay(NurErwachseneEngine); return; } // T-0764 (6. Prüfrunde B): Engine führt Projektcode aus; ohne Hinweisfenster, da auch im Hintergrund aufgerufen (Stufe 3)
         var dir = d.Text(engine + "Project");
         if (dir.Length == 0 || !Directory.Exists(dir)) throw new InvalidOperationException("Zuerst das Projekt anlegen.");
         var e = EngineCheck().FirstOrDefault(x => x.Id == engine);

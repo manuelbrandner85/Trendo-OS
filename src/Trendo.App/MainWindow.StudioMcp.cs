@@ -25,7 +25,7 @@ public partial class MainWindow
         var exe = _opt.Isolated && StudioLaunchOverride is null ? null : EngineDetect().FirstOrDefault(e => e.Id.Equals(program, StringComparison.OrdinalIgnoreCase) && e.Installed && e.Exe is not null)?.Exe;
         if (StudioLaunchOverride is { } fake) { fake(exe ?? program, StudioMcp.LaunchArgs(program, projectDir)); return null; }
         if (exe is null) return $"{program} ist auf diesem PC nicht installiert.";
-        _core.Integrations.LaunchArgs(Principal.LocalOwner, exe, _core.Audit, StudioMcp.LaunchArgs(program, projectDir));
+        LaunchArgsAs(exe, StudioMcp.LaunchArgs(program, projectDir));
         return null;
     }
 }

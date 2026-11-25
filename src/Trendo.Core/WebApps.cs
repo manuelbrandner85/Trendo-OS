@@ -40,8 +40,11 @@ public static class WebApps
         File.WriteAllText(ListFile(dataRoot), JsonSerializer.Serialize(ids.Distinct().ToList()));
     }
 
-    public static void Install(string dataRoot, string id, AuditLog audit, string actor)
+    /// <param name="by">T-0764: angemeldete Person – ein Kinderprofil installiert keine App.</param>
+    public static void Install(string dataRoot, string id, AuditLog audit, Principal by)
     {
+        Rbac.DemandSoftware(by, "app.install " + id, audit);
+        var actor = by.Name;
         if (Get(id) is null) throw new ArgumentException("Unbekannte App: " + id);
         Save(dataRoot, Installed(dataRoot).Append(id));
         Directory.CreateDirectory(ProfileDir(dataRoot, id));
@@ -49,8 +52,10 @@ public static class WebApps
     }
 
     /// <summary>Entfernen: aus der Liste nehmen und den eigenen Anmeldespeicher löschen (abgemeldet, keine Reste).</summary>
-    public static void Uninstall(string dataRoot, string id, AuditLog audit, string actor)
+    public static void Uninstall(string dataRoot, string id, AuditLog audit, Principal by)
     {
+        Rbac.DemandSoftware(by, "app.uninstall " + id, audit); // T-0764
+        var actor = by.Name;
         Save(dataRoot, Installed(dataRoot).Where(x => x != id));
         var dir = ProfileDir(dataRoot, id);
         try { if (Directory.Exists(dir)) Directory.Delete(dir, true); }

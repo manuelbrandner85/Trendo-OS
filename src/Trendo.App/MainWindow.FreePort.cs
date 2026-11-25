@@ -192,6 +192,7 @@ public partial class MainWindow
     public IReadOnlyList<string> FreePortCleanOld(ProgramDocument d)
     {
         _fpAskClean = false;
+        try { UserDirFixedNames(d.Text("fp_recomp")); } catch (UnauthorizedAccessException e) { _progMsg[ConsoleKey] = e.Message; FpRefresh(); return []; } // T-0764 (13. Prüfrunde): Ort aus dem Dokument – Kinder nur Freigabe
         IReadOnlyList<string> removed = [];
         try
         {
@@ -224,6 +225,8 @@ public partial class MainWindow
     public async Task<FreePort.Outcome?> FreePortStart(ProgramDocument d)
     {
         if (_fpCts is not null) return null;
+        // T-0764 (13. Prüfrunde, Nebenbefund): Portieren startet die PS2Recomp-Werkzeuge im gewählten Ordner – Programme starten nur Erwachsene (wie Engines)
+        if (!DarfAusfuehrenStill("konsole.frei", out var nein)) { _progMsg[ConsoleKey] = nein; FpRefresh(); return null; }
         var job = FpJob(d);
         lock (_fpLines) _fpLines.Clear();
         _fpCts = new CancellationTokenSource(); _fpStep = 0; FreePortLast = null; FreePortLastTrial = null;
@@ -249,6 +252,7 @@ public partial class MainWindow
     {
         var result = Path.Combine(FpWorkDir(d), "ergebnis.json");
         if (!File.Exists(result) || _fpCts is not null) return null;
+        if (!DarfAusfuehrenStill("konsole.frei.probelauf", out var nein)) { _progMsg[ConsoleKey] = nein; FpRefresh(); return null; } // T-0764 (13. Prüfrunde): startet das fertige Programm
         var target = FreePort.ResolveTrial(result, d.Text("fp_recomp"));
         if (target.Error is { } err) { _progMsg[ConsoleKey] = err; FpRefresh(); return null; }
         _fpCts = new CancellationTokenSource();

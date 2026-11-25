@@ -247,6 +247,7 @@ public partial class MainWindow
 
     bool LibStart(string exe, IReadOnlyList<string> args, string cwd)
     {
+        if (!DarfAusfuehrenStill("spiel.bibliothek " + Path.GetFileName(exe), out _)) return false; // T-0764 (6. Prüfrunde B): Godot führt Projektcode aus, mGBA hat Lua-Skripte
         if (LibStartOverride is { } fake) return fake(exe, args);
         try
         {
@@ -261,6 +262,7 @@ public partial class MainWindow
     /// <summary>Startet ein Godot-Projekt in einem eigenen Fenster.</summary>
     public bool LibPlayGodot(string project)
     {
+        if (!DarfAusfuehren("spiel.bibliothek.godot", out _)) { _progMsg[ConsoleKey] = NurErwachseneEngine; Show(ConsoleKey); return false; } // T-0764 (6. Prüfrunde B)
         if (LibGodot() is not { } godot) { _progMsg[ConsoleKey] = "Zum Spielen fehlt Godot 4. Wähle es mit „Godot wählen“ oder richte es unter Programme ein."; Show(ConsoleKey); return false; }
         _core.Audit.Append(Principal.LocalOwner.Name, "bibliothek.start", Path.GetFileName(project));
         if (LibStart(godot, GameLibrary.PlayArgs(project), project)) return true;

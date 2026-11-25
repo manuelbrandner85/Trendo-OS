@@ -47,6 +47,13 @@ public partial class MainWindow
     }
 
     /// <summary>Nach Rückgängig/Wiederholen: Schritte, die nicht mehr im Dokument stehen, auf der Platte zurücknehmen; wieder aufgenommene erneut anwenden.</summary>
+    /// <summary>T-0764 (13. Prüfrunde): Rückgängig/Wiederholen eines KI-Schritts mit der Rolle (Kern prüft die Freigabe); abgelehnt = alle Dateien bleiben, wie sie sind.</summary>
+    IReadOnlyList<string> CkWrite(CodeKiChange.Step step, string r, bool back)
+    {
+        try { return CodeKiChange.Write(CurrentPrincipal, _core.Audit, step.Files, r, back); }
+        catch (UnauthorizedAccessException) { return step.Files.Select(f => f.Path).ToList(); }
+    }
+
     void CkSync(ProgramDocument d)
     {
         if (CaRoot(d) is not { } r || !_ckApplied.TryGetValue(d, out var applied)) return;
@@ -55,7 +62,7 @@ public partial class MainWindow
         foreach (var id in applied.AsEnumerable().Reverse().Where(id => !want.Contains(id)).ToList())
         {
             if (CodeKiChange.Load(CkStepFile(r, id)) is not { } step) { notes.Add("Ein KI-Schritt ist nicht mehr im Verlauf – seine Dateien bleiben."); applied.Remove(id); continue; }
-            var skipped = CodeKiChange.Write(step.Files, r, back: true);
+            var skipped = CkWrite(step, r, back: true);
             applied.Remove(id);
             _core.Audit.Append(Principal.LocalOwner.Name, "code-ki.ki.rueckgaengig", $"{id} dateien={step.Files.Count} uebersprungen={skipped.Count}");
             notes.Add(skipped.Count == 0 ? $"Rückgängig: {step.Files.Count} Datei(en) sind wieder wie vor der KI." : $"Rückgängig, aber nicht bei {string.Join(", ", skipped)} – die Datei wurde danach geändert und bleibt.");
@@ -64,7 +71,7 @@ public partial class MainWindow
         foreach (var id in want.Where(id => !applied.Contains(id)).ToList())
         {
             if (CodeKiChange.Load(CkStepFile(r, id)) is not { } step) continue;
-            var skipped = CodeKiChange.Write(step.Files, r, back: false);
+            var skipped = CkWrite(step, r, back: false);
             applied.Add(id);
             _core.Audit.Append(Principal.LocalOwner.Name, "code-ki.ki.wiederholt", $"{id} dateien={step.Files.Count} uebersprungen={skipped.Count}");
             notes.Add(skipped.Count == 0 ? $"Wiederholt: die KI-Änderung an {step.Files.Count} Datei(en) gilt wieder." : $"Wiederholt, aber nicht bei {string.Join(", ", skipped)} – die Datei wurde inzwischen geändert.");
@@ -118,7 +125,7 @@ public partial class MainWindow
         }
         _ckModel = $"{ki.Backend}{(ki.Model is { Length: > 0 } m ? ", " + m : "")}";
         CodeKiChange.Preview preview;
-        try { preview = CodeKiChange.Build(r, proposal); }
+        try { preview = CodeKiChange.Build(CurrentPrincipal, r, proposal); } // T-0764 (13. Prüfrunde): Ort/Name aus einem Feld – Kinder nur Freigabe, keine ausführbare Endung
         catch (Exception e) when (e is IOException or InvalidOperationException or UnauthorizedAccessException) { return Stop("Die Vorschau ging nicht: " + e.Message); }
         _core.Audit.Append(Principal.LocalOwner.Name, "code-ki.ki.plan", $"modell={_ckModel} dateien={preview.Files.Count} abgelehnt={preview.Rejected.Count}");
         if (preview.Files.Count == 0)
@@ -158,7 +165,9 @@ public partial class MainWindow
         if (CaRoot(d) is not { } r) return;
         if (AssistChain.RightsBlock(CurrentPrincipal, _core.Approvals) is { } denied) { _ckMsg = denied; _progMsg[CodeAiKey] = denied; Show(CodeAiKey); return; }
         CodeKiChange.Step? step;
-        try { step = CodeKiChange.Apply(r, preview, _ckAccept.ToDictionary(k => k.Key, k => (IReadOnlySet<int>)k.Value, StringComparer.OrdinalIgnoreCase), _ckWish, _ckModel); }
+        try { UserDirFixedNames(r); foreach (var pf in preview.Files) UserFile(Path.Combine(r, pf.Path.Replace('/', Path.DirectorySeparatorChar))); } // T-0764 (13. Prüfrunde): Ort/Name aus einem Feld – Kinder nur Freigabe, keine ausführbare Endung
+        catch (UnauthorizedAccessException e) { _ckPhase = "fehler"; _ckMsg = e.Message; _progMsg[CodeAiKey] = e.Message; Show(CodeAiKey); return; }
+        try { step = CodeKiChange.Apply(CurrentPrincipal, _core.Audit, r, preview, _ckAccept.ToDictionary(k => k.Key, k => (IReadOnlySet<int>)k.Value, StringComparer.OrdinalIgnoreCase), _ckWish, _ckModel); }
         catch (Exception e) when (e is InvalidOperationException or IOException or UnauthorizedAccessException) { _ckPhase = "fehler"; _ckMsg = e.Message; _progMsg[CodeAiKey] = e.Message; Show(CodeAiKey); return; }
         if (step is null) { CodeAiKiDiscard(); _ckMsg = "Du hast keine Änderung angenommen – es wurde nichts geändert."; _progMsg[CodeAiKey] = _ckMsg; Show(CodeAiKey); return; }
         CodeKiChange.Save(CkStepFile(r, step.Id), step);
@@ -189,6 +198,7 @@ public partial class MainWindow
         var results = Path.Combine(_core.DataRoot, "code-ki", "testlaeufe", Guid.NewGuid().ToString("N")[..12]);
         var plan = DevBuild.Test(p, results);
         if (plan.Cmd is not { } cmd) { _ckMsg += " " + (plan.Blocked ?? plan.Note ?? "Für dieses Projekt kennt Trendo keinen Test."); _progMsg[CodeAiKey] = _ckMsg; Show(CodeAiKey); return; }
+        if (!DarfAusfuehren("codeai.ki.test", out var nein)) { _ckOut = nein; Show(CodeAiKey); return; } // T-0764 (5. Prüfrunde H3)
         if (_opt.Isolated && CodeAiRunOverride is null && !CodeRealToolsInTests) { _ckOut = "Testmodus: Trendo startet keine Programme."; Show(CodeAiKey); return; }
         var limit = int.TryParse(d.Text("timeout"), out var t) ? Math.Clamp(t, 10, 3600) : 300;
         var name = Path.GetFileName(r.TrimEnd(Path.DirectorySeparatorChar));

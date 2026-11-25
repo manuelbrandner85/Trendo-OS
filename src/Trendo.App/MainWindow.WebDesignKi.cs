@@ -451,7 +451,7 @@ public partial class MainWindow
         sp.Children.Add(wish);
         sp.Children.Add(new WrapPanel { Children = { image, new Border { Width = 8 }, Act("web-ki-pick", "Bild wählen …", async () =>
         {
-            var got = await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Bild als Vorlage", FileTypeFilter = [new("Bilder") { Patterns = ["*.png", "*.jpg", "*.jpeg", "*.webp"] }] });
+            var got = await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Bild als Vorlage", FileTypeFilter = [new("Bilder") { Patterns = ["*.png", "*.jpg", "*.jpeg", "*.webp"] }] });
             if (got.Select(f => Avalonia.Platform.Storage.StorageProviderExtensions.TryGetLocalPath(f)).OfType<string>().FirstOrDefault() is { } path) image.Text = path;
         }) } });
         var btnNew = Act("web-ki-new", _wdAiBusy ? "KI arbeitet …" : "Neue Seite daraus", () => WebDesignAiDirections(wish.Text ?? "", image.Text), _wdSelection.Count == 0);

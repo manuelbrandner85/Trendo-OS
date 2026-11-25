@@ -255,7 +255,7 @@ public sealed class FachprogrammAdapter
             return Neu(p, FachprogrammStand.NichtGefunden, "Offline. Es wird nichts heruntergeladen.", null, null, false);
         if (!_deps.HasConsent)
             return Neu(p, FachprogrammStand.FreigabeNoetig, "Die Zustimmung fehlt. Es wurde nichts installiert.", null, null, false);
-        Rbac.Demand(by, Permission.ApproveAction, _audit);
+        Rbac.DemandSoftware(by, "fachprogramm.install " + id, _audit); // T-0764
         try
         {
             var warOffline = _deps.Offline; _deps.Offline |= _offline; // offline: Mitgeliefertes nur aus dem Vollpaket

@@ -97,6 +97,7 @@ public partial class MainWindow
     public void EditorSave(string? path = null)
     {
         var d = EdCur; var target = path ?? d.Path ?? throw new ArgumentException("Bitte oben einen Dateinamen eintragen, z. B. C:\\Texte\\notiz.txt.");
+        UserFile(target); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(target))!);
         TextFileCodec.Save(target, d.Text, d.Info); d.Path = target; d.Dirty = false;
         _core.Audit.Append("app", "editor.save", Path.GetFileName(target));

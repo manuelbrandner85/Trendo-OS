@@ -181,6 +181,7 @@ public partial class MainWindow
     /// <summary>Alle Regeln als Datei speichern (Arbeitsordner „Anlagen-Monitor“).</summary>
     public string TwinExportRules(string? path = null)
     {
+        if (path is not null) UserFile(path); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
         if (Twin.Model.Rules.Count == 0) throw new InvalidOperationException("Es gibt noch keine Alarmregel.");
         path ??= Path.Combine(WorkFolder("Anlagen-Monitor"), "alarmregeln.json");
         AtomicFile.WriteAllText(path, TwinRules.ExportJson(Twin.Model.Rules));

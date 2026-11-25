@@ -116,6 +116,16 @@ public partial class MainWindow
         finally { _updateBusy = false; if (CurrentView == "updates") Show("updates"); }
     }
 
+    /// <summary>T-0764 (2. Prüfrunde N-E): zur gesicherten Version zurück – nur Erwachsene (eine ältere Version könnte Sperren nicht kennen).
+    /// Liefert false, wenn abgelehnt oder die Version fehlt.</summary>
+    public bool RollbackNow(string version)
+    {
+        if (!DarfSoftware("trendo.rollback " + version, "updates")) { _updateMsg = Rbac.NurErwachseneSoftware; return false; }
+        _core.Audit.Append(CurrentPrincipal.Name, "update.rollback", version);
+        if (Updater.RollbackTo(Boot.BackupDir, version)) return true;
+        _updateMsg = "Die vorherige Version ist nicht mehr da."; Show("updates"); return false;
+    }
+
     /// <summary>U2 + U5: Sicherung der laufenden Version, Fenster merken, Einrichtungsbildschirm zeigen, installieren, neu starten.</summary>
     public void InstallUpdateNow()
     {
@@ -143,15 +153,15 @@ public partial class MainWindow
         var sp = new StackPanel { Spacing = 10 };
         sp.Children.Add(P($"Du hast Trendo OS {Updater.Current}. Trendo sucht selbst nach neuen Versionen, lädt sie leise im Hintergrund und installiert sie, wann du willst. Updates kommen nur aus den offiziellen, geprüften Veröffentlichungen.", Text, 13));
         if (_updateMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "upd-msg", Text = _updateMsg, Foreground = Text, FontSize = 13, TextWrapping = TextWrapping.Wrap });
-        var auto = new CheckBox { Name = "upd-auto", Content = "Automatisch nach Updates suchen und laden", IsChecked = _settings.AutoUpdate, Foreground = Text };
-        auto.IsCheckedChanged += (_, _) => { _settings.AutoUpdate = auto.IsChecked == true; SaveSettings(); };
+        var auto = new CheckBox { Name = "upd-auto", Content = "Automatisch nach Updates suchen und laden", IsChecked = _settings.AutoUpdate, Foreground = Text, IsEnabled = !_roleChild }; // T-0764 (14.): Updates stellt ein Erwachsener ein
+        auto.IsCheckedChanged += (_, _) => { if (_roleChild) return; _settings.AutoUpdate = auto.IsChecked == true; SaveSettings(); };
         sp.Children.Add(auto);
         var when = new StackPanel { Name = "upd-when", Spacing = 4 };
         when.Children.Add(H("Wann installieren?", 14));
         foreach (var (id, label) in UpdateSchedule.Modes)
         {
             var rb = new RadioButton { Name = "upd-when-" + id, GroupName = "upd-when", Content = id == "nacht" ? $"Nachts um {_settings.UpdateHour} Uhr (wenn du nicht am PC bist)" : label, IsChecked = _settings.UpdateWhen == id, Foreground = Text };
-            var m = id; rb.IsCheckedChanged += (_, _) => { if (rb.IsChecked == true && _settings.UpdateWhen != m) { _settings.UpdateWhen = m; SaveSettings(); } };
+            var m = id; rb.IsEnabled = !_roleChild; rb.IsCheckedChanged += (_, _) => { if (!_roleChild && rb.IsChecked == true && _settings.UpdateWhen != m) { _settings.UpdateWhen = m; SaveSettings(); } };
             when.Children.Add(rb);
         }
         when.Children.Add(P("Beim Installieren zeigt Trendo kurz einen Bildschirm „Trendo wird aktualisiert“. Danach startet es neu und deine Fenster sind wieder da.", null, 11.5));
@@ -162,8 +172,8 @@ public partial class MainWindow
         row.Children.Add(Sp(check));
         if (_updateReady is { } v)
         {
-            var now = new Button { Name = "upd-install", Content = $"Version {v} jetzt installieren" };
-            now.Click += (_, _) => InstallUpdateNow();
+            var now = new Button { Name = "upd-install", Content = $"Version {v} jetzt installieren", IsEnabled = CanManageSoftware };
+            now.Click += (_, _) => { if (DarfSoftware("trendo.update " + v, "updates")) InstallUpdateNow(); }; // T-0764: von Hand nur Erwachsene (automatische Updates laut Einstellung bleiben)
             row.Children.Add(Sp(now));
         }
         var news = new Button { Name = "upd-news", Content = "Was ist neu?" }; news.Click += (_, _) => Show("neu");
@@ -177,8 +187,9 @@ public partial class MainWindow
         var hasBackup = Directory.Exists(Boot.BackupDir) && Directory.GetFiles(Boot.BackupDir, "*.nupkg").Length > 0;
         if (hasBackup && good is not null && good != Updater.Current)
         {
-            var rb = new Button { Name = "upd-rollback", Content = $"Zurück zu Version {good}" };
-            rb.Click += (_, _) => { _core.Audit.Append(Principal.LocalOwner.Name, "update.rollback", good); if (!Updater.RollbackTo(Boot.BackupDir, good)) { _updateMsg = "Die vorherige Version ist nicht mehr da."; Show("updates"); } };
+            var rb = new Button { Name = "upd-rollback", Content = $"Zurück zu Version {good}", IsEnabled = CanManageSoftware };
+            if (!CanManageSoftware) ToolTip.SetTip(rb, Rbac.NurErwachseneSoftware);
+            rb.Click += (_, _) => RollbackNow(good);
             back.Children.Add(rb);
         }
         sp.Children.Add(WCard(back));

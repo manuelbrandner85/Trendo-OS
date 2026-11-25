@@ -89,9 +89,33 @@ public sealed partial class MainWindow : Window
         _deps.OllamaUp = opt.Isolated ? () => Task.FromResult(false) : _ollama.IsUpAsync;
         if (opt.Isolated) _deps.ToolsRoot = Path.Combine(core.DataRoot, "werkzeuge"); // Tests richten nie etwas im echten Werkzeugordner ein
         else _deps.LocateVollpaket = VollpaketStart.Find;
+        // T-0764 (2. Prüfrunde N-C/N-D): .exe in Trendos eigenen Ordnern (Werkzeuge, Programm, Portable) gelten als vertrauenswürdig – andere startet nur ein Erwachsenen-Profil
+        // T-0764 (P3-1): Vertrauen nach Herkunft – Kennungsdatei mit SHA-256 im Programmordner (Werkzeug- und Portable-Ordner) und Trendo selbst; kein reiner Pfadvergleich
+        // T-0764 (4. Prüfrunde M1): Vertrauensliste mit HMAC in Trendos Datenbereich („sicherheit“ im Hauptordner – gilt für alle Personen)
+        var trustDir = Path.Combine(PersonStore.BaseOf(core.DataRoot), "sicherheit");
+        Trendo.Core.Sys.ProgramTrust.RegisterStore(_deps.ToolsRoot, trustDir);
+        Trendo.Core.Sys.ProgramTrust.RegisterStore(Path.Combine(core.DataRoot, "werkzeuge"), trustDir);
+        // T-0764 (5. Prüfrunde M1): keine Übernahme alter Kennungen mehr – ältere Stände richtet ein Erwachsener einmal neu ein
+        core.Integrations.TrustedProgramPath = p => string.Equals(p, Environment.ProcessPath, StringComparison.OrdinalIgnoreCase)
+            || Trendo.Core.Sys.ProgramTrust.Verified(p, [_deps.ToolsRoot, Path.Combine(core.DataRoot, "werkzeuge")]);
+        // T-0764 (10. Prüfrunde): Trendos eigene Ordner – das Kinderprofil schreibt dort nie (Dateimanager, Auswahl, Entpacken). Eigene Projekte bleiben frei.
+        Trendo.Core.Sys.ProtectedFolders.Protect(PersonStore.BaseOf(core.DataRoot)); Trendo.Core.Sys.ProtectedFolders.Protect(core.DataRoot);
+        Trendo.Core.Sys.ProtectedFolders.Protect(_deps.ToolsRoot); Trendo.Core.Sys.ProtectedFolders.Protect(AppContext.BaseDirectory);
+        Trendo.Core.Sys.ProtectedFolders.Protect(_deps.VollpaketDir); Trendo.Core.Sys.ProtectedFolders.Protect(Path.GetDirectoryName(Environment.ProcessPath));
+        Trendo.Core.Sys.ProtectedFolders.Allow(Path.Combine(core.DataRoot, "projekte"));
+        if (_opt.Isolated) Trendo.Core.Sys.ProtectedFolders.Allow(Path.Combine(core.DataRoot, "dateien-test")); // Testordner des Dateimanagers
+        // T-0764 (11. Prüfrunde): Freigabeliste für Kinder – bekannte Ordner des Kontos (im Kern) und Trendos eigene Projekte; im Testmodus Test- und Download-Ordner
+        if (!_opt.Isolated) Trendo.Core.Sys.ChildWrite.AllowInside(Path.Combine(core.DataRoot, "projekte"));
+        else
+        {   // 12. Prüfrunde: im Testmodus nur für die Lebensdauer dieses Fensters (kein bleibender globaler Zustand)
+            var scopes = new[] { "projekte", "dateien-test", "test-downloads" }.Select(n => Trendo.Core.Sys.ChildWrite.TestScope(Path.Combine(core.DataRoot, n))).ToList();
+            Closed += (_, _) => { foreach (var sc in scopes) sc.Dispose(); };
+            Trendo.Core.Sys.ProtectedFolders.Allow(Path.Combine(core.DataRoot, "test-downloads"));
+        }
+        Trendo.Core.MpvSafe.CleanupStale(); // alte mpv-Ordner beendeter Trendo-Läufe
         InitVollpaketOnline(); // ohne Vollpaket: dieselben Pakete vom GitHub-Release
         StartupTrace.Mark("ctor.deps");
-        _settings = UserSettings.Load(core.DataRoot);
+        UseSettings(UserSettings.Load(core.DataRoot)); // T-0764 (14. Prüfrunde): Rolle aus der geschützten Quelle
         SimpleWords.AnySimple = ProgramLevel == Trendo.Core.Programs.UserLevel.Einfach; // V3: schneller Ausstieg, wenn „Einfach“ nicht gilt
         if (_settings.LookVersion < 2) { if (_settings.Accent == "#2F86F6") _settings.Accent = "#C9A227"; _settings.LookVersion = 2; } // Dunkel-Gold-Look (02.11.2026): alte Blau-Vorgabe wird Gold
         ApplyTheme(_settings);
@@ -611,10 +635,10 @@ public sealed partial class MainWindow : Window
                     case "code": await OpenStudio("CORE-07", "Webseite bauen"); break;
                     case "office": Show("office"); break;
                     case "security": await OpenStudio("CORE-11", "Daten schützen"); break;
-                    case "blender": if (a.Target() is { } bl) _core.Integrations.LaunchDirect(Principal.LocalOwner, bl, _core.Audit); break;
-                    case "unreal": if (a.Target() is { } ue) _core.Integrations.LaunchDirect(Principal.LocalOwner, ue, _core.Audit); break;
+                    case "blender": if (a.Target() is { } bl) LaunchAs(bl); break;
+                    case "unreal": if (a.Target() is { } ue) LaunchAs(ue); break;
                     default:
-                        if (a.Target() is { } t) _core.Integrations.LaunchDirect(Principal.LocalOwner, t, _core.Audit);
+                        if (a.Target() is { } t) LaunchAs(t);
                         break;
                 }
             };
@@ -629,7 +653,8 @@ public sealed partial class MainWindow : Window
         DockLift(trash); _dockButtons["trash"] = trash;
         ToolTip.SetTip(trash, "Papierkorb"); Avalonia.Automation.AutomationProperties.SetName(trash, "Papierkorb");
         ToolTip.SetPlacement(trash, Avalonia.Controls.PlacementMode.Top); ToolTip.SetVerticalOffset(trash, -6);
-        trash.Click += (_, _) => _core.Integrations.LaunchDirect(Principal.LocalOwner, OperatingSystem.IsWindows() ? "shell:RecycleBinFolder" : "trash://", _core.Audit);
+        trash.Click += (_, _) => LaunchAs(OperatingSystem.IsWindows() ? "shell:RecycleBinFolder" : "trash://");
+        trash.IsVisible = CanManageSoftware; // T-0764 (5. Prüfrunde N3): Papierkorb im Windows-Explorer – im Kinderprofil ausgeblendet (gelöschte Dateien zeigt Trendos Dateimanager)
         Border Sep() => new() { Width = 1, Height = 32, VerticalAlignment = VerticalAlignment.Center, Background = Brush.Parse(C("#26FFFFFF", "#1F000000")) };
         var webSep = Sep(); webSep.Bind(IsVisibleProperty, _dockWeb.GetObservable(IsVisibleProperty));
         var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { DockWord(StartButton(), "Start"), Sep(), bar, webSep, _dockWeb, Sep(), trash } };
@@ -1153,7 +1178,7 @@ public sealed partial class MainWindow : Window
                 else if (c.Mode == DeliveryMode.Guided)
                 {
                     var b = new Button { Name = "btn-guide-" + c.Id, Content = "Installieren (offiziell)", IsEnabled = !_core.Offline && c.OfficialUrl is not null };
-                    b.Click += (_, _) => { _core.Integrations.LaunchDirect(Principal.LocalOwner, c.OfficialUrl!, _core.Audit); _depLog.Text = $"{c.Name}: offizielle Seite geöffnet. Nach der Installation hier neu prüfen."; };
+                    b.Click += (_, _) => { LaunchAs(c.OfficialUrl!); _depLog.Text = $"{c.Name}: offizielle Seite geöffnet. Nach der Installation hier neu prüfen."; };
                     right = b;
                 }
                 else
@@ -1291,11 +1316,14 @@ public sealed partial class MainWindow : Window
             var row = new StackPanel { Spacing = 6 };
             row.Children.Add(new TextBlock { Name = "ask-" + comp.Id, Text = comp.Mode == DeliveryMode.Included ? $"{_depStudioTitle} braucht {comp.Name}. {(VollpaketHere || _deps.Offline ? "Es liegt im Trendo-Vollpaket" : "Trendo lädt es aus der offiziellen Quelle")} – jetzt einrichten?" : $"{_depStudioTitle} braucht {comp.Name}. Jetzt installieren?", Foreground = Text, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
             row.Children.Add(P($"Lizenz: {comp.License} · {comp.Reason}{(comp.ApproxMb > 0 ? $" · ca. {comp.ApproxMb} MB" : "")}", null, 11));
+            // T-0764: Das „Ja“ für das KI-Modell richtet auch Ollama ein, wenn es fehlt – dann steht das sichtbar auf derselben Rückfrage
+            if (comp.Id == "model" && DependencyCatalog.Get("ollama") is var olc && !_deps.IsInstalled(olc))
+                row.Children.Add(new TextBlock { Name = "ask-model-ollama", Text = $"Dazu richtet Trendo zuerst {olc.Name} ein (Lizenz {olc.License}{(olc.ApproxMb > 0 ? $", ca. {olc.ApproxMb} MB" : "")}). „Ja“ gilt für beides.", Foreground = Text, FontSize = 11, TextWrapping = TextWrapping.Wrap });
             var btns = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
             if (comp.Mode == DeliveryMode.Guided)
             {
                 var g = new Button { Name = "btn-guide-" + comp.Id, Content = "Offiziellen Installer öffnen", IsEnabled = !_core.Offline };
-                g.Click += (_, _) => { _core.Integrations.LaunchDirect(Principal.LocalOwner, comp.OfficialUrl!, _core.Audit); _depLog.Text = $"{comp.Name}: Herstellerseite geöffnet. Nach der Installation das Studio erneut öffnen – der Pfad wird dann automatisch übernommen."; };
+                g.Click += (_, _) => { LaunchAs(comp.OfficialUrl!); _depLog.Text = $"{comp.Name}: Herstellerseite geöffnet. Nach der Installation das Studio erneut öffnen – der Pfad wird dann automatisch übernommen."; };
                 btns.Children.Add(g);
             }
             else
@@ -1341,7 +1369,7 @@ public sealed partial class MainWindow : Window
             var box = new TextBox { Name = "txt-key-" + k.Id, PasswordChar = '•', PlaceholderText = "Schlüssel hier einfügen", Width = 320 };
             var res = new TextBlock { Name = "key-state-" + k.Id, Text = has ? "gespeichert" : "kein Schlüssel", Foreground = Muted, FontSize = 11 };
             var get = new Button { Name = "btn-getkey-" + k.Id, Content = "Schlüssel holen", IsEnabled = !_core.Offline };
-            get.Click += (_, _) => _core.Integrations.LaunchDirect(Principal.LocalOwner, k.KeyUrl, _core.Audit);
+            get.Click += (_, _) => LaunchAs(k.KeyUrl);
             var save = new Button { Name = "btn-savekey-" + k.Id, Content = "Prüfen & speichern", IsEnabled = !_core.Offline };
             save.Click += async (_, _) =>
             {
@@ -1368,7 +1396,7 @@ public sealed partial class MainWindow : Window
             var res = new TextBlock { Name = "ki-key-state-" + c.Id, Text = has ? "gespeichert" : "kein Schlüssel", Foreground = Muted, FontSize = 11 };
             var get = new Button { Name = "btn-ki-getkey-" + c.Id, Content = "Schlüssel holen", IsEnabled = !_core.Offline };
             ToolTip.SetTip(get, "Öffnet die offizielle Seite: " + c.KeyUrl);
-            get.Click += (_, _) => _core.Integrations.LaunchDirect(Principal.LocalOwner, c.KeyUrl, _core.Audit);
+            get.Click += (_, _) => LaunchAs(c.KeyUrl);
             var save = new Button { Name = "btn-ki-savekey-" + c.Id, Content = "Prüfen & speichern", IsEnabled = !_core.Offline };
             var use = new CheckBox { Name = "ki-cloud-use-" + c.Id, Content = $"Als Ersatz-KI nutzen (Fragen gehen dann an {c.Name})", IsChecked = on, IsEnabled = has, Foreground = Text };
             var reverting = false;
@@ -1452,7 +1480,7 @@ public sealed partial class MainWindow : Window
         try
         {
             var ct = SetupToken;
-            r = await Task.Run(() => Vollpaket.InstallEach(dir, _deps.ToolsRoot, _core.Audit, line => _ui.Post(() => { _depLog.Text = line; SetupOverlayProgress(++step, total, line); }), ct, only));
+            r = await Task.Run(() => Vollpaket.InstallEach(CurrentPrincipal, dir, _deps.ToolsRoot, _core.Audit, line => _ui.Post(() => { _depLog.Text = line; SetupOverlayProgress(++step, total, line); }), ct, only));
             if (r.Canceled) { _depLog.Text = $"Abgebrochen – {r.Installed + r.Present} von {r.Total} Programmen sind eingerichtet."; return r; }
             var ok = r.Installed + r.Present;
             _depLog.Text = r.Failed.Count == 0 ? $"Alle {r.Total} mitgelieferten Programme sind eingerichtet" : $"{ok} von {r.Total} Programmen eingerichtet, {r.Failed.Count} nicht.";

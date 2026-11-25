@@ -28,7 +28,8 @@ public sealed class MpvView : NativeControlHost
     public bool Muted { get; set; }
     Process? _proc;
     IntPtr _hwnd;
-    string Pipe => $"trendo-tv-{Slot}-{Environment.ProcessId}";
+    readonly string _pipeId = Guid.NewGuid().ToString("N"); // 11. Prüfrunde: zufälliger Name der Steuerleitung
+    string Pipe => $"trendo-tv-{Slot}-{_pipeId}";
 
     public MpvView(string slot) { Slot = slot; }
     /// <summary>Zusätzliche Einstellungen für jeden Start (Sprache für Ton und Untertitel, 02.11.2026).</summary>
@@ -51,6 +52,7 @@ public sealed class MpvView : NativeControlHost
 
     public void Play(string url)
     {
+        if (!Trendo.Core.MpvSafe.TargetAllowed(url)) return; // T-0764 (9. Prüfrunde): nur http(s), rtmp(s), rtsp oder eigene lokale Datei
         Url = url;
         if (_proc is { HasExited: false } && Send("loadfile", url)) return; // schnelles Umschalten ohne Neustart
         Start(url);
@@ -60,19 +62,24 @@ public sealed class MpvView : NativeControlHost
     {
         Kill();
         if (_hwnd == IntPtr.Zero || MpvPath is null || !File.Exists(MpvPath)) return;
-        var psi = new ProcessStartInfo(MpvPath) { UseShellExecute = false, CreateNoWindow = true };
-        foreach (var a in Args(_hwnd.ToString(), Pipe, Muted, url)) psi.ArgumentList.Add(a);
+        var work = Trendo.Core.MpvSafe.WorkDir();
+        var psi = new ProcessStartInfo(MpvPath) { UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = work }; // 10./11. Prüfrunde: frischer leerer Arbeitsordner, MpvSafe.WorkDir()
+        var args = Args(_hwnd.ToString(), Pipe, Muted, url);
+        foreach (var a in args) psi.ArgumentList.Add(a);
         try { _proc = Process.Start(psi); } catch (System.ComponentModel.Win32Exception) { _proc = null; }
+        Trendo.Core.MpvSafe.HoldUntilExit(args, _proc, work); // 9./11. Prüfrunde: Tastendatei gesperrt und Arbeitsordner, bis mpv endet
     }
 
     /// <summary>T-0746: Aufruf von mpv für eine Adresse – an einer Stelle, damit der Echtlauf genau diese Einstellungen mit dem echten mpv prüft.
     /// <paramref name="wid"/> = Fenster, in das mpv zeichnet (null: kein eingebettetes Fenster).</summary>
     public static List<string> Args(string? wid, string pipe, bool muted, string url)
     {
-        var a = new List<string>(ExtraArgs);
+        if (!Trendo.Core.MpvSafe.TargetAllowed(url)) throw new ArgumentException("Diese Adresse spielt Trendo nicht ab (nur http, https, rtmp, rtmps, rtsp oder eine eigene Datei).");
+        var a = new List<string>(Trendo.Core.MpvSafe.Args()); // T-0764 (8. Prüfrunde): nichts aus %APPDATA%\mpv – keine Einstellungen, Skripte, Standardtasten
+        a.AddRange(ExtraArgs);
         if (wid is not null) a.Add($"--wid={wid}");
         a.AddRange(["--no-terminal", "--force-window=yes", "--keep-open=yes", "--idle=yes", "--osc=yes", "--input-vo-keyboard=no", $"--user-agent={Xtream.UserAgent}", "--cache=yes",
-            "--demuxer-max-back-bytes=1GiB", "--demuxer-max-bytes=150MiB", "--hwdec=auto-safe", $"--input-ipc-server=\\\\.\\pipe\\{pipe}", muted ? "--mute=yes" : "--mute=no", url]);
+            "--demuxer-max-back-bytes=1GiB", "--demuxer-max-bytes=150MiB", "--hwdec=auto-safe", $"--input-ipc-server=\\\\.\\pipe\\{pipe}", muted ? "--mute=yes" : "--mute=no", "--", url]); // 9. Prüfrunde: „--“ – die Adresse ist nie eine Option
         return a;
     }
 
@@ -238,6 +245,9 @@ public partial class MainWindow
     /// <summary>Quelle hinzufügen und gleich laden: M3U-Adresse, M3U-Datei oder Xtream-Zugang.</summary>
     public async Task<int> TvAddSource(string name, string kind, string urlOrFile, string? epg = null, string? user = null, string? pass = null)
     {
+        // T-0764 (10. Prüfrunde): eigene Fernseh-Quellen (M3U, Xtream) richtet nur ein Erwachsener ein – Kinder nutzen die eingerichteten Sender
+        try { Rbac.DemandSoftware(CurrentPrincipal, "tv.quelle " + kind, _core.Audit, Rbac.NurErwachseneTvQuelle); }
+        catch (UnauthorizedAccessException e) { _tvMsg = e.Message; return 0; }
         if (_core.Offline && kind != "datei") { _tvMsg = "Trendo ist offline – zum Laden braucht es Internet."; return 0; }
         // Eine eingefügte get.php-Adresse ist ein Xtream-Zugang: dann Sender, Filme, Serien und Programmführer über die Schnittstelle des Anbieters
         if (kind == "url" && Xtream.FromPlaylistUrl(urlOrFile.Trim()) is { } xt) { kind = "xtream"; urlOrFile = xt.Server; user = xt.User; pass = xt.Pass; if (string.IsNullOrWhiteSpace(name)) name = new Uri(xt.Server).Host; }
@@ -348,6 +358,7 @@ public partial class MainWindow
         url = real;
         TvApplyLanguage();
         if (TvPlayOverride is { } o) { o(slot, url); TvUpdateNow(); return true; }
+        if (!Trendo.Core.MpvSafe.TargetAllowed(url)) { _tvMsg = "✗ Diese Adresse spielt Trendo nicht ab – erlaubt sind http, https, rtmp, rtmps, rtsp und eigene Aufnahmen."; return false; } // T-0764 (9. Prüfrunde)
         if (MpvExe is null) { _tvMsg = "Zum Abspielen braucht Trendo den freien Player mpv – einmal „Player jetzt einrichten“ klicken."; return false; }
         var view = slot == "main" ? _tvPlayer : _tvMulti[int.Parse(slot[1..])];
         if (view is null) return false;
@@ -792,7 +803,7 @@ public partial class MainWindow
         var file = TvButton("tv-src-file", "M3U-Datei wählen …", async () =>
         {
             var req = new PickRequest("tv-src-file", false, false, ["m3u", "m3u8"]);
-            string[]? got = PickOverride is { } f ? await f(req) : (await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Senderliste wählen", FileTypeFilter = [new FilePickerFileType("Senderliste") { Patterns = ["*.m3u", "*.m3u8"] }] })).Select(x => x.TryGetLocalPath()).OfType<string>().ToArray();
+            string[]? got = PickOverride is { } f ? await f(req) : (await PickOpenFiles(new FilePickerOpenOptions { Title = "Senderliste wählen", FileTypeFilter = [new FilePickerFileType("Senderliste") { Patterns = ["*.m3u", "*.m3u8"] }] })).Select(x => x.TryGetLocalPath()).OfType<string>().ToArray();
             if (got is { Length: > 0 }) { await TvAddSource(name.Text is { Length: > 0 } n ? n : Path.GetFileNameWithoutExtension(got[0]), "datei", got[0], epg.Text); Show("tv"); }
         });
         // Adressen kann man eintippen oder aus der Zwischenablage einfügen (Wunsch 27.10.2026) – „Datei wählen“ ist nur der zusätzliche Weg

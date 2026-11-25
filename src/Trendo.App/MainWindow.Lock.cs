@@ -205,6 +205,18 @@ public partial class MainWindow
     string _personMsg = "", _personName = "";
     bool _personChild;
 
+    /// <summary>T-0764 (4. Prüfrunde M1): ehrlicher Hinweis in Alltagssprache, sobald es ein Kinderprofil gibt (oder man selbst eines ist):
+    /// Trendos Kinderschutz ersetzt kein eigenes Windows-Konto.</summary>
+    internal Control? KinderschutzHinweis()
+    {
+        var hasChild = _roleChild || Persons.All().Any(p => p.Child) || ProfileRole.IsChild(PersonStore.BaseOf(_core.DataRoot)); // T-0764 (14.): geschützte Quelle
+        if (!hasChild) return null;
+        return WCard(new StackPanel { Spacing = 4, Children = {
+            new TextBlock { Text = "Gut zu wissen: Grenzen des Kinderschutzes", Foreground = Text, FontWeight = FontWeight.SemiBold },
+            new TextBlock { Name = "kinderschutz-hinweis", TextWrapping = TextWrapping.Wrap, Foreground = Muted, FontSize = 12,
+                Text = "Im Kinderprofil installiert Trendo nichts, startet keine fremden Programme und führt keine Skripte aus. Trendo läuft aber im selben Windows-Konto wie die Erwachsenen. Wer sich gut auskennt, kann Trendos Sperren dort umgehen. Wirklich sicher ist es nur, wenn das Kind ein eigenes Windows-Konto ohne Administratorrechte bekommt (Windows-Einstellungen → Konten → Familie)." } } });
+    }
+
     /// <summary>T-0713: Hinweis-Karte, wenn neben einem Kinderprofil ein Erwachsenen-Profil ohne PIN besteht (dann kann ein Kind über „Wechseln“
     /// dort freigeben). Nur Hinweis mit „PIN festlegen“, nichts wird erzwungen. Im Kinderprofil nicht sichtbar. null = kein Hinweis nötig.</summary>
     internal Control? PinHinweisKarte()
@@ -238,6 +250,7 @@ public partial class MainWindow
         sp.Children.Add(P("Jede Person am PC hat ihr eigenes Trendo: eigene Projekte, Einstellungen und Anmeldung. Beim Start wählt sich jede Person selbst.", Text, 13));
         if (_personMsg.Length > 0) sp.Children.Add(P(_personMsg, _personMsg.StartsWith('✓') ? Brush.Parse("#4ADE80") : Brush.Parse("#FACC15"), 12.5));
         if (PinHinweisKarte() is { } pinHint) sp.Children.Add(pinHint); // T-0713
+        if (KinderschutzHinweis() is { } kh) sp.Children.Add(kh); // T-0764 (4. Prüfrunde M1)
         // eigene Anmeldung
         var mine = new StackPanel { Spacing = 6 };
         mine.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { AvatarView(48), new TextBlock { Text = (string.IsNullOrEmpty(_settings.Name) ? "Du" : _settings.Name) + (_settings.Child ? " (Kind)" : ""), Foreground = Text, FontSize = 16, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center } } });

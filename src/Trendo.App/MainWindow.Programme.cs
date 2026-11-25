@@ -52,7 +52,9 @@ public partial class MainWindow
         b.Click += async (_, _) =>
         {
             if (!_confirmRemove.Remove(key)) { _confirmRemove.Add(key); Show(page); return; }
-            await remove(); Show(page);
+            try { await remove(); }
+            catch (UnauthorizedAccessException ex) when (!CanManageSoftware) { Toast(ex.Message); } // T-0764: Kern lehnt ab (Kinderprofil) – kein Absturz im Klick
+            Show(page);
         };
         return b;
     }
@@ -66,7 +68,9 @@ public partial class MainWindow
         {
             var page = CurrentView is { Length: > 0 } cv ? cv : "components"; // auf der Seite bleiben, auf der der Knopf steht (Chat, Skills, Programme …)
             if (!_confirmRemove.Remove(key)) { _confirmRemove.Add(key); Show(page); return; }
-            remove(); ReloadStudios(); Show(page);
+            try { remove(); }
+            catch (UnauthorizedAccessException ex) when (!CanManageSoftware) { Toast(ex.Message); } // T-0764
+            ReloadStudios(); Show(page);
         };
         return b;
     }
@@ -87,7 +91,8 @@ public partial class MainWindow
             }
             row.Children.Add(RemoveButton("inc:" + inc.Package, "btn-remove-" + c.Id, () =>
             {
-                try { _depLog.Text = Vollpaket.Uninstall(_deps.ToolsRoot, inc.Package, _core.Audit) ? $"{g.Name} wurde entfernt. Über das Vollpaket kannst du es jederzeit wieder einrichten." : $"{g.Name} war nicht eingerichtet."; }
+                try { _depLog.Text = Vollpaket.Uninstall(CurrentPrincipal, _deps.ToolsRoot, inc.Package, _core.Audit) ? $"{g.Name} wurde entfernt. Über das Vollpaket kannst du es jederzeit wieder einrichten." : $"{g.Name} war nicht eingerichtet."; }
+                catch (UnauthorizedAccessException ex) when (!CanManageSoftware) { _depLog.Text = ex.Message; } // T-0764: Kern lehnt ab (Kinderprofil)
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _depLog.Text = $"{g.Name} läuft noch oder ist gesperrt: bitte schließen und erneut versuchen. ({ex.Message})"; }
             }));
             sp.Children.Add(row);
@@ -111,7 +116,8 @@ public partial class MainWindow
             var upd = _ghUpdates.TryGetValue(e.Id, out var newTag) ? Act("btn-gh-update-" + e.Id, $"Auf {newTag} aktualisieren", () => _ = GitHubUpdate(e), true) : null;
             var remove = RemoveButton("gh:" + e.Id, "btn-gh-remove-" + e.Id, () =>
             {
-                try { GitHubReleaseStart(e.Id); if (Path.IsPathRooted(e.Exe) && File.Exists(e.Exe)) GitHubRunUninstaller(e.Exe); _depLog.Text = GitHubApps.Uninstall(_deps.ToolsRoot, e.Id, _core.Audit) ? $"{e.Repo} wurde entfernt." : $"{e.Repo} war nicht installiert."; }
+                try { Rbac.DemandSoftware(CurrentPrincipal, "github.uninstall " + e.Id, _core.Audit); GitHubReleaseStart(e.Id); if (Path.IsPathRooted(e.Exe) && File.Exists(e.Exe)) GitHubRunUninstaller(CurrentPrincipal, e.Exe); _depLog.Text = GitHubApps.Uninstall(CurrentPrincipal, _deps.ToolsRoot, e.Id, _core.Audit) ? $"{e.Repo} wurde entfernt." : $"{e.Repo} war nicht installiert."; }
+                catch (UnauthorizedAccessException ex) when (!CanManageSoftware) { _depLog.Text = ex.Message; } // T-0764: Kern lehnt ab (Kinderprofil)
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _depLog.Text = $"{e.Repo} läuft noch oder ist gesperrt: bitte schließen und erneut versuchen. ({ex.Message})"; }
             });
             sp.Children.Add(Card(new StackPanel { Spacing = 4, Children = {
@@ -139,9 +145,10 @@ public partial class MainWindow
     {
         if (_core.Offline) { Say("Trendo ist offline. Das Installieren braucht Internet.", "oss"); return null; }
         if (_depBusy) return null;
+        if (!DarfSoftware("github.install " + repo.FullName, "oss")) return null; // T-0764: Rolle im Kern prüfen, bevor etwas geladen wird
         _depBusy = true;
         if (GitHubApps.ValidRepo(repo.FullName)) GitHubReleaseStart(GitHubApps.IdFor(repo.FullName)); // T-0762: wartender Erststart gibt die Programmdatei frei (Neuinstallation ersetzt sie)
-        _core.Audit.Append(Principal.LocalOwner.Name, "github.install.start", $"{repo.FullName} {repo.LicenseId}");
+        _core.Audit.Append(CurrentPrincipal.Name, "github.install.start", $"{repo.FullName} {repo.LicenseId}");
         BeginSetupOverlay($"{repo.FullName.Split('/')[1]} wird eingerichtet");
         string? file = null; string? exe = null;
         try
@@ -178,7 +185,7 @@ public partial class MainWindow
             SetupOverlayFraction(0.82, "Prüfen und einrichten …");
             try
             {
-                var entry = await Task.Run(() => GitHubApps.Install(_deps.ToolsRoot, repo.FullName, rel, asset, file, repo.LicenseId, repo.Description, _core.Audit,
+                var entry = await Task.Run(() => GitHubApps.Install(CurrentPrincipal, _deps.ToolsRoot, repo.FullName, rel, asset, file, repo.LicenseId, repo.Description, _core.Audit,
                 Has7z ? Extract7z : asset.Name.EndsWith(".7z", StringComparison.OrdinalIgnoreCase) ? (a, t) => Archive7z.Extract(a, t) : null, Arm64)); // .7z selbst; Installer (NSIS) ohne 7-Zip normal ausführen
                 exe = GitHubApps.ExePath(_deps.ToolsRoot, entry);
             }
@@ -245,13 +252,15 @@ public partial class MainWindow
                 .Select(d => GitHubApps.MainExe(d, repo.FullName)).FirstOrDefault(e => e is not null))
             ?? throw new InvalidOperationException("Der Installer ist durchgelaufen, aber Trendo findet das Programm nicht. Schau im Startmenü von Windows nach.");
         var sha = Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(io.File)));
-        GitHubApps.Register(_deps.ToolsRoot, repo.FullName, rel, asset, exe, sha, repo.LicenseId, repo.Description, _core.Audit);
+        GitHubApps.Register(CurrentPrincipal, _deps.ToolsRoot, repo.FullName, rel, asset, exe, sha, repo.LicenseId, repo.Description, _core.Audit);
         return exe;
     }
 
-    /// <summary>Per Installer eingerichtet: dessen Deinstaller still ausführen (NSIS, Inno, Squirrel).</summary>
-    void GitHubRunUninstaller(string exe)
+    /// <summary>Per Installer eingerichtet: dessen Deinstaller still ausführen (NSIS, Inno, Squirrel).
+    /// T-0764 (Gegenprüfung H2): Rolle als erste Zeile – ein Kinderprofil startet keinen Deinstaller.</summary>
+    internal void GitHubRunUninstaller(Principal by, string exe)
     {
+        Rbac.DemandSoftware(by, "github.uninstall.installer " + Path.GetFileName(exe), _core.Audit);
         var dir = Path.GetDirectoryName(exe)!;
         var (un, args) = Directory.EnumerateFiles(dir, "Uninstall*.exe").FirstOrDefault() is { } n ? (n, new[] { "/S" })
             : Directory.EnumerateFiles(dir, "unins*.exe").FirstOrDefault() is { } i ? (i, new[] { "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART" })
@@ -259,7 +268,7 @@ public partial class MainWindow
         if (un is null) return;
         var psi = new System.Diagnostics.ProcessStartInfo(un) { UseShellExecute = false }; foreach (var a in args) psi.ArgumentList.Add(a);
         System.Diagnostics.Process.Start(psi)?.WaitForExit(120_000);
-        _core.Audit.Append(Principal.LocalOwner.Name, "github.uninstall.installer", Path.GetFileName(un));
+        _core.Audit.Append(by.Name, "github.uninstall.installer", Path.GetFileName(un));
     }
 
     static async Task<GitHubApps.Release> GitHubLatestOrEmpty(string fullName, CancellationToken ct, bool fresh = false)

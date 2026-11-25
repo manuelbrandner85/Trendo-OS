@@ -1,0 +1,37 @@
+T-0764 fix6 – ROT auf f99bd3045 (App: RechteKernFix6Ui und die verschärfte Kreatur_Ui, vor dem Fix)
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0764 B: Kind – Unreal kompilieren/prüfen und „Spielen (Unreal)“ starten nichts (Build.bat, UnrealEditor-Cmd, Editor) [FAIL]
+      Assert.Empty() Failure: Collection was not empty
+      Collection: ["Build.bat", "UnrealEditor-Cmd.exe", "UnrealEditor-Cmd.exe", "UnrealEditor.exe", "UnrealEditor.exe"]
+      Stack Trace:
+        tests\Trendo.App.Tests\RechteKernFix6UiTests.cs(72,0): at Trendo.App.Tests.RechteKernFix6Ui.Unreal_Kind()
+        --- End of stack trace from previous location ---
+    3D-Studio: Kreatur-Karte – Drache in Bronze/Grün, „Vorschaubild rendern“ startet Blender im Hintergrund, „sichtbar“ ohne -b; Ergebnis mit Vorschau [FAIL]
+      Assert.DoesNotContain() Failure: Item found in collection
+                                              ↓ (pos 2)
+      Collection: ["-b", "--factory-startup", "--python", "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-tes"···, "--", ···]
+      Found:      "--python"
+      Stack Trace:
+        tests\Trendo.App.Tests\KreaturUiTests.cs(35,0): at Trendo.App.Tests.Kreatur_Ui.Build_dragon()
+        --- End of stack trace from previous location ---
+    T-0764 B: Kind – Spiele-Bibliothek startet weder Godot noch den Emulator; Kittl über Claude fragt und öffnet nichts [FAIL]
+      Assert.False() Failure
+      Expected: False
+      Actual:   True
+      Stack Trace:
+        tests\Trendo.App.Tests\RechteKernFix6UiTests.cs(87,0): at Trendo.App.Tests.RechteKernFix6Ui.Bibliothek_und_Kittl_Kind()
+        --- End of stack trace from previous location ---
+    T-0764 B: Kind – Godot- und Unity-Prüfung starten keine Engine (Rolle zuerst); Erwachsene: Engine-Lauf wie bisher [FAIL]
+      Assert.Empty() Failure: Collection was not empty
+      Collection: ["G.exe", "G.exe", "G.exe", "G.exe", "G.exe", ···]
+      Stack Trace:
+        tests\Trendo.App.Tests\RechteKernFix6UiTests.cs(49,0): at Trendo.App.Tests.RechteKernFix6Ui.Engines_Kind()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Finished:    Trendo.App.Tests (ID = '618de29a74084e46f5eb0238dced2fd4e5efdeb97e47c7fcd15909a5e96b72b0')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 4, Errors: 0, Failed: 4, Skipped: 0, Not Run: 0, Time: 10,673s
+exit 1

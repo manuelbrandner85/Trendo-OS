@@ -136,7 +136,7 @@ public class FreigabenKernUi
         Assert.Empty(Hits(@"\bApprovals\.Approve\(", approveOk));
         Assert.Empty(Hits(@"=\s*_?core\.Approvals\s*;")); // kein Umweg über eine zweite Variable
         // FreigabeAusRueckfrage / ExtApprove nur aus dem Ja-Knopf einer sichtbaren Rückfrage-Karte
-        Assert.Empty(Hits(@"FreigabeAusRueckfrage\(", "MainWindow.Freigabe.cs", "MainWindow.AddHub.cs", "MainWindow.axaml.cs", "MainWindow.Live.cs", "MainWindow.Phone.cs", "MainWindow.Programs.cs", "MainWindow.W5Ext.cs", "MainWindow.WebApps.cs", "MainWindow.ClaudeBridge.cs")); // ClaudeBridge: Ja-Knopf der Zustimmungskarte im Claude-Bereich
+        Assert.Empty(Hits(@"FreigabeAusRueckfrage\(", "MainWindow.Freigabe.cs", "MainWindow.AddHub.cs", "MainWindow.axaml.cs", "MainWindow.Live.cs", "MainWindow.Phone.cs", "MainWindow.Programs.cs", "MainWindow.W5Ext.cs", "MainWindow.WebApps.cs", "MainWindow.ClaudeBridge.cs", "MainWindow.KiSourceSetup.cs")); // T-0764: KiSourceInstall(karte: true) nur aus „Ja, laden“ (src-install-yes) bzw. hub-yes // ClaudeBridge: Ja-Knopf der Zustimmungskarte im Claude-Bereich
         Assert.Empty(Hits(@"\bExtApprove\(", "MainWindow.W5Ext.cs", "MainWindow.W5ExtCat.cs"));
         // Installieren nur über den Kern mit Freigabe – T-0713: ohne Ausnahme (Ersteinrichtung, „alle fehlenden“ und „Reparieren“ über die Sammel-Rückfrage)
         Assert.Empty(Hits(@"_deps\.InstallAsync\("));

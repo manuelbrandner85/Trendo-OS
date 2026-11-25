@@ -303,7 +303,7 @@ public partial class MainWindow
         if (PickOverride is { } fake) f = (await fake(req))?.FirstOrDefault();
         else
         {
-            var got = await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Bild für den Stoffdruck", FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Bilder") { Patterns = ["*.png", "*.jpg", "*.jpeg"] }] });
+            var got = await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Bild für den Stoffdruck", FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Bilder") { Patterns = ["*.png", "*.jpg", "*.jpeg"] }] });
             f = got.Count > 0 ? got[0].TryGetLocalPath() : null;
         }
         if (f is not null) ProgramRun(ModeKey, () => d.Set("gPatternImage", f, "Stoffdruck wählen"));
@@ -369,9 +369,12 @@ public partial class MainWindow
             if (GarmentRunOverride is { } fake) problem = await fake(jobFile);
             else
             {
+                // T-0764 (5. Prüfrunde H1): diese Anprobe startet Blender mit Oberfläche (ohne -b) – im Kinderprofil nicht
+                if (!CanManageSoftware) { GarmentMessage = Rbac.NurErwachseneKonsole; _core.Audit.Append(CurrentPrincipal.Name, "rbac.denied", "User fehlt ManageSoftware: start blender (Anprobe)"); return; }
                 var script = Path.Combine(dir, "trendo_anprobe.py");
-                using (var s = AssetLoader.Open(new Uri("avares://TrendoOS/Assets/ki/trendo_anprobe.py"))) using (var t = File.Create(script)) await s.CopyToAsync(t);
-                var r = await Task.Run(() => Cli.Run(blender!, ["--python", script, "--", jobFile], dir, 1_800_000));
+                byte[] bytes; using (var s = AssetLoader.Open(new Uri("avares://TrendoOS/Assets/ki/trendo_anprobe.py"))) using (var m = new MemoryStream()) { await s.CopyToAsync(m); bytes = m.ToArray(); }
+                await File.WriteAllBytesAsync(script, bytes);
+                var r = await Task.Run(() => Cli.Run(blender!, ["--factory-startup", "--python-expr", Trendo.Core.BlenderScript.Expr(script, Trendo.Core.BlenderScript.Sha(bytes)), "--", jobFile], dir, 1_800_000)); // T-0764 (7. Prüfrunde): geprüfter Startausdruck
                 problem = r.Ok && r.Out.Contains("TRENDO_FERTIG") ? null : (r.Err.Length > 0 ? r.Err : r.Out).Trim().Split('\n').LastOrDefault(l => l.Trim().Length > 0) ?? "Blender hat abgebrochen.";
             }
             GarmentImages = new[] { "nah", "vorn", "schraeg", "hinten" }.Select(v => Path.Combine(dir, $"bild-{v}.png")).Where(File.Exists).ToList();

@@ -1,0 +1,133 @@
+T-0764 fix11 – ROT auf 7911e2d4e (Core: Rot-Beleg RechteKernFix11Rot – Kind-Schreibentscheidung des alten Stands; nicht eingecheckt)
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix11\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:18.53]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:19.13]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:19.16]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:00:19.25]     ROT M1: Kind-Schreibprüfung des alten Stands lässt Autostart, AppData, Startmenü, SendTo, ProgramData, Temp zu(path: "C:\\Users\\<user>\\AppData\\Roaming\\x.txt") [FAIL]
+[xUnit.net 00:00:19.25]       Assert.NotNull() Failure: Value is null
+[xUnit.net 00:00:19.25]       Stack Trace:
+[xUnit.net 00:00:19.25]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix11\tests\Trendo.Core.Tests\RechteKernFix11Rot.cs(26,0): at Trendo.Core.Tests.RechteKernFix11Rot.Systemorte_gesperrt(String path)
+[xUnit.net 00:00:19.25]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:19.25]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:19.26]     ROT M1: Kind-Schreibprüfung des alten Stands lässt Autostart, AppData, Startmenü, SendTo, ProgramData, Temp zu(path: "C:\\Users\\<user>\\AppData\\Roaming\\Microsoft\\Win"···) [FAIL]
+[xUnit.net 00:00:19.26]       Assert.NotNull() Failure: Value is null
+[xUnit.net 00:00:19.26]       Stack Trace:
+[xUnit.net 00:00:19.26]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix11\tests\Trendo.Core.Tests\RechteKernFix11Rot.cs(26,0): at Trendo.Core.Tests.RechteKernFix11Rot.Systemorte_gesperrt(String path)
+[xUnit.net 00:00:19.26]            at InvokeStub_RechteKernFix11Rot.Systemorte_gesperrt(Object, Span`1)
+[xUnit.net 00:00:19.27]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:19.27]     ROT M1: Kind-Schreibprüfung des alten Stands lässt Autostart, AppData, Startmenü, SendTo, ProgramData, Temp zu(path: "C:\\Users\\<user>\\AppData\\Roaming\\Microsoft\\Win"···) [FAIL]
+[xUnit.net 00:00:19.27]       Assert.NotNull() Failure: Value is null
+[xUnit.net 00:00:19.27]       Stack Trace:
+[xUnit.net 00:00:19.27]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix11\tests\Trendo.Core.Tests\RechteKernFix11Rot.cs(26,0): at Trendo.Core.Tests.RechteKernFix11Rot.Systemorte_gesperrt(String path)
+[xUnit.net 00:00:19.27]            at InvokeStub_RechteKernFix11Rot.Systemorte_gesperrt(Object, Span`1)
+[xUnit.net 00:00:19.27]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:19.27]     ROT M1: Kind-Schreibprüfung des alten Stands lässt Autostart, AppData, Startmenü, SendTo, ProgramData, Temp zu(path: "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-tes"···) [FAIL]
+[xUnit.net 00:00:19.27]       Assert.NotNull() Failure: Value is null
+[xUnit.net 00:00:19.27]       Stack Trace:
+[xUnit.net 00:00:19.27]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix11\tests\Trendo.Core.Tests\RechteKernFix11Rot.cs(26,0): at Trendo.Core.Tests.RechteKernFix11Rot.Systemorte_gesperrt(String path)
+[xUnit.net 00:00:19.27]            at InvokeStub_RechteKernFix11Rot.Systemorte_gesperrt(Object, Span`1)
+[xUnit.net 00:00:19.27]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:19.27]     ROT M1: Kind-Schreibprüfung des alten Stands lässt Autostart, AppData, Startmenü, SendTo, ProgramData, Temp zu(path: "C:\\Users\\<user>\\AppData\\Roaming\\Microsoft\\Win"···) [FAIL]
+[xUnit.net 00:00:19.27]       Assert.NotNull() Failure: Value is null
+[xUnit.net 00:00:19.27]       Stack Trace:
+[xUnit.net 00:00:19.27]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix11\tests\Trendo.Core.Tests\RechteKernFix11Rot.cs(26,0): at Trendo.Core.Tests.RechteKernFix11Rot.Systemorte_gesperrt(String path)
+[xUnit.net 00:00:19.27]            at InvokeStub_RechteKernFix11Rot.Systemorte_gesperrt(Object, Span`1)
+[xUnit.net 00:00:19.27]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:19.27]     ROT M1: Kind-Schreibprüfung des alten Stands lässt Autostart, AppData, Startmenü, SendTo, ProgramData, Temp zu(path: "C:\\ProgramData\\x.txt") [FAIL]
+[xUnit.net 00:00:19.27]       Assert.NotNull() Failure: Value is null
+[xUnit.net 00:00:19.27]       Stack Trace:
+[xUnit.net 00:00:19.27]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix11\tests\Trendo.Core.Tests\RechteKernFix11Rot.cs(26,0): at Trendo.Core.Tests.RechteKernFix11Rot.Systemorte_gesperrt(String path)
+[xUnit.net 00:00:19.27]            at InvokeStub_RechteKernFix11Rot.Systemorte_gesperrt(Object, Span`1)
+[xUnit.net 00:00:19.27]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:19.27]     ROT M1: Kind-Schreibprüfung des alten Stands lässt Autostart, AppData, Startmenü, SendTo, ProgramData, Temp zu(path: "C:\\Users\\<user>\\AppData\\Roaming\\Microsoft\\Win"···) [FAIL]
+[xUnit.net 00:00:19.27]       Assert.NotNull() Failure: Value is null
+[xUnit.net 00:00:19.27]       Stack Trace:
+[xUnit.net 00:00:19.27]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix11\tests\Trendo.Core.Tests\RechteKernFix11Rot.cs(26,0): at Trendo.Core.Tests.RechteKernFix11Rot.Systemorte_gesperrt(String path)
+[xUnit.net 00:00:19.27]            at InvokeStub_RechteKernFix11Rot.Systemorte_gesperrt(Object, Span`1)
+[xUnit.net 00:00:19.27]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:19.27]     ROT M1: Kind-Schreibprüfung des alten Stands lässt Autostart, AppData, Startmenü, SendTo, ProgramData, Temp zu(path: "C:\\Users\\<user>\\AppData\\Roaming\\Microsoft\\Win"···) [FAIL]
+[xUnit.net 00:00:19.27]       Assert.NotNull() Failure: Value is null
+[xUnit.net 00:00:19.27]       Stack Trace:
+[xUnit.net 00:00:19.27]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix11\tests\Trendo.Core.Tests\RechteKernFix11Rot.cs(26,0): at Trendo.Core.Tests.RechteKernFix11Rot.Systemorte_gesperrt(String path)
+[xUnit.net 00:00:19.27]            at InvokeStub_RechteKernFix11Rot.Systemorte_gesperrt(Object, Span`1)
+[xUnit.net 00:00:19.27]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:19.28]     ROT M2: Dateimanager des alten Stands (Kind) – Umbenennen in .exe und Kopieren einer .lnk gehen durch [FAIL]
+[xUnit.net 00:00:19.28]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:19.28]       Expected: typeof(System.UnauthorizedAccessException)
+[xUnit.net 00:00:19.28]       Stack Trace:
+[xUnit.net 00:00:19.28]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix11\tests\Trendo.Core.Tests\RechteKernFix11Rot.cs(37,0): at Trendo.Core.Tests.RechteKernFix11Rot.Endungen()
+[xUnit.net 00:00:19.28]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:19.28]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:19.28]   Finished:    Trendo.Core.Tests
+  Fehler ROT M1: Kind-Schreibprüfung des alten Stands lässt Autostart, AppData, Startmenü, SendTo, ProgramData, Temp zu(path: "C:\\Users\\<user>\\AppData\\Roaming\\x.txt") [51 ms]
+  Fehlermeldung:
+   Assert.NotNull() Failure: Value is null
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix11Rot.Systemorte_gesperrt(String path) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix11\tests\Trendo.Core.Tests\RechteKernFix11Rot.cs:line 26
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Fehler ROT M1: Kind-Schreibprüfung des alten Stands lässt Autostart, AppData, Startmenü, SendTo, ProgramData, Temp zu(path: "C:\\Users\\<user>\\AppData\\Roaming\\Microsoft\\Win"···) [3 ms]
+  Fehlermeldung:
+   Assert.NotNull() Failure: Value is null
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix11Rot.Systemorte_gesperrt(String path) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix11\tests\Trendo.Core.Tests\RechteKernFix11Rot.cs:line 26
+   at InvokeStub_RechteKernFix11Rot.Systemorte_gesperrt(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler ROT M1: Kind-Schreibprüfung des alten Stands lässt Autostart, AppData, Startmenü, SendTo, ProgramData, Temp zu(path: "C:\\Users\\<user>\\AppData\\Roaming\\Microsoft\\Win"···) [3 ms]
+  Fehlermeldung:
+   Assert.NotNull() Failure: Value is null
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix11Rot.Systemorte_gesperrt(String path) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix11\tests\Trendo.Core.Tests\RechteKernFix11Rot.cs:line 26
+   at InvokeStub_RechteKernFix11Rot.Systemorte_gesperrt(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler ROT M1: Kind-Schreibprüfung des alten Stands lässt Autostart, AppData, Startmenü, SendTo, ProgramData, Temp zu(path: "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-tes"···) [3 ms]
+  Fehlermeldung:
+   Assert.NotNull() Failure: Value is null
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix11Rot.Systemorte_gesperrt(String path) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix11\tests\Trendo.Core.Tests\RechteKernFix11Rot.cs:line 26
+   at InvokeStub_RechteKernFix11Rot.Systemorte_gesperrt(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler ROT M1: Kind-Schreibprüfung des alten Stands lässt Autostart, AppData, Startmenü, SendTo, ProgramData, Temp zu(path: "C:\\Users\\<user>\\AppData\\Roaming\\Microsoft\\Win"···) [3 ms]
+  Fehlermeldung:
+   Assert.NotNull() Failure: Value is null
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix11Rot.Systemorte_gesperrt(String path) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix11\tests\Trendo.Core.Tests\RechteKernFix11Rot.cs:line 26
+   at InvokeStub_RechteKernFix11Rot.Systemorte_gesperrt(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler ROT M1: Kind-Schreibprüfung des alten Stands lässt Autostart, AppData, Startmenü, SendTo, ProgramData, Temp zu(path: "C:\\ProgramData\\x.txt") [3 ms]
+  Fehlermeldung:
+   Assert.NotNull() Failure: Value is null
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix11Rot.Systemorte_gesperrt(String path) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix11\tests\Trendo.Core.Tests\RechteKernFix11Rot.cs:line 26
+   at InvokeStub_RechteKernFix11Rot.Systemorte_gesperrt(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler ROT M1: Kind-Schreibprüfung des alten Stands lässt Autostart, AppData, Startmenü, SendTo, ProgramData, Temp zu(path: "C:\\Users\\<user>\\AppData\\Roaming\\Microsoft\\Win"···) [2 ms]
+  Fehlermeldung:
+   Assert.NotNull() Failure: Value is null
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix11Rot.Systemorte_gesperrt(String path) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix11\tests\Trendo.Core.Tests\RechteKernFix11Rot.cs:line 26
+   at InvokeStub_RechteKernFix11Rot.Systemorte_gesperrt(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler ROT M1: Kind-Schreibprüfung des alten Stands lässt Autostart, AppData, Startmenü, SendTo, ProgramData, Temp zu(path: "C:\\Users\\<user>\\AppData\\Roaming\\Microsoft\\Win"···) [2 ms]
+  Fehlermeldung:
+   Assert.NotNull() Failure: Value is null
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix11Rot.Systemorte_gesperrt(String path) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix11\tests\Trendo.Core.Tests\RechteKernFix11Rot.cs:line 26
+   at InvokeStub_RechteKernFix11Rot.Systemorte_gesperrt(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler ROT M2: Dateimanager des alten Stands (Kind) – Umbenennen in .exe und Kopieren einer .lnk gehen durch [6 ms]
+  Fehlermeldung:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix11Rot.Endungen() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix11\tests\Trendo.Core.Tests\RechteKernFix11Rot.cs:line 37
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 9
+     Nicht bestanden: 9
+ Gesamtzeit: 20,6544 Sekunden
+exit 1

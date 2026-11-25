@@ -18,11 +18,11 @@ public class PluginHostTests
         {
             var ap = new PluginHost.Approvals(root); var a = Fake(new string('a', 64));
             Assert.Contains("Noch nicht freigegeben", PluginHost.Refuse(a, ap));
-            Assert.Contains("woher", Assert.Throws<InvalidOperationException>(() => ap.Approve(a, "?")).Message);
-            ap.Approve(a, "offizielle Seite des Herstellers");
+            Assert.Contains("woher", Assert.Throws<InvalidOperationException>(() => ap.Approve(a, "?", Principal.LocalOwner)).Message);
+            ap.Approve(a, "offizielle Seite des Herstellers", Principal.LocalOwner);
             Assert.Null(PluginHost.Refuse(a, ap));
             Assert.Contains("Noch nicht freigegeben", PluginHost.Refuse(a with { Sha256 = new string('b', 64) }, ap)); // Datei verändert → Freigabe gilt nicht
-            Assert.Throws<InvalidOperationException>(() => ap.Approve(Fake(new string('c', 64), "Architektur x86"), "Herstellerseite"));
+            Assert.Throws<InvalidOperationException>(() => ap.Approve(Fake(new string('c', 64), "Architektur x86"), "Herstellerseite", Principal.LocalOwner));
             Assert.Contains("CLAP", PluginHost.Refuse(Fake(new string('a', 64), format: "CLAP") with { Path = "x.clap" }, ap));
             Assert.Equal("x86", PluginHost.Refuse(Fake(new string('d', 64), "x86"), ap));
             Assert.True(ap.Revoke(a.Sha256)); Assert.Contains("Noch nicht freigegeben", PluginHost.Refuse(a, ap));
@@ -75,7 +75,7 @@ public class PluginHostTests
             var report = PluginHost.CrashReport(c, cr, "Selbsttest Absturz");
             if (keep is not null) { Directory.CreateDirectory(keep); File.WriteAllText(Path.Combine(keep, "absturzbericht.md"), report); }
             // Echtes abstürzendes Plugin: die Testdatei meldet eine VST3-Fabrik, deren erster Aufruf auf Adresse 0 schreibt → Absturz im Host, isoliert
-            ap.Approve(c, "selbst gebaute Testdatei (Absturztest)");
+            ap.Approve(c, "selbst gebaute Testdatei (Absturztest)", Principal.LocalOwner);
             var tr = Host(c, "render", Path.Combine(root, "box-testdatei"));
             log.Add($"Abstürzendes Plugin geladen (abgeschottet): {tr.Text} (Code 0x{unchecked((uint)tr.Exit):X8}, {tr.Seconds:0.0} s)");
             Assert.True(tr.Crashed, tr.Text + " | " + tr.Err); Assert.False(File.Exists(Path.Combine(root, "box-testdatei", "aus.wav")));
@@ -83,7 +83,7 @@ public class PluginHostTests
             // gutes Plugin (nur wenn ausdrücklich angegeben)
             if (Environment.GetEnvironmentVariable("TRENDO_PLUGIN_GOOD") is { Length: > 0 } good)
             {
-                var g = PluginInspect.Inspect(good); Assert.True(g.Loadable, g.Problem); ap.Approve(g, "offizielles GitHub-Release des Herstellers");
+                var g = PluginInspect.Inspect(good); Assert.True(g.Loadable, g.Problem); ap.Approve(g, "offizielles GitHub-Release des Herstellers", Principal.LocalOwner);
                 var info = Host(g, "info", Path.Combine(root, "box-info"));
                 var io = PluginHost.Parse(File.ReadAllText(Path.Combine(root, "box-info", "ergebnis.json")));
                 log.Add($"Info: {info.Text}, Name {io.Name}, {io.Kind}, {io.Params.Count} Parameter: " + string.Join(", ", io.Params.Take(8).Select(p => $"{p.Name}={p.Value}")));

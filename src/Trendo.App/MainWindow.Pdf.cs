@@ -92,7 +92,7 @@ public partial class MainWindow
     {
         var req = new PickRequest(field, false, multiple, ["pdf"]);
         if (PickOverride is { } fake) return await fake(req);
-        var got = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "PDF wählen", AllowMultiple = multiple,
+        var got = await PickOpenFiles(new FilePickerOpenOptions { Title = "PDF wählen", AllowMultiple = multiple,
             FileTypeFilter = [new FilePickerFileType("PDF") { Patterns = ["*.pdf"] }] });
         return got.Select(f => f.TryGetLocalPath()).OfType<string>().ToArray();
     }

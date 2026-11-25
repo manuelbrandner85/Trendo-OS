@@ -38,8 +38,8 @@ public partial class MainWindow
     public void AuPluginApprove(string note)
     {
         var r = AuPluginChecked ?? throw new InvalidOperationException("Erst „Prüfen“.");
-        var a = PluginApprovals.Approve(r, note);
-        _core.Audit.Append(Principal.LocalOwner.Name, "audio.plugin.freigabe", $"{a.Name} sha256={a.Sha256} herkunft={a.Note}");
+        var a = PluginApprovals.Approve(r, note, CurrentPrincipal);
+        _core.Audit.Append(CurrentPrincipal.Name, "audio.plugin.freigabe", $"{a.Name} sha256={a.Sha256} herkunft={a.Note}");
         _progMsg[AUK] = $"„{a.Name}“ freigegeben (nur genau diese Datei, SHA-256 {a.Sha256[..12]}…). Ändert sich die Datei, muss neu freigegeben werden.";
     }
 

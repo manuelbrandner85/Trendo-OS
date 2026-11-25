@@ -434,25 +434,34 @@ public static partial class SourceApps
 
     static readonly JsonSerializerOptions J = new() { WriteIndented = true, Converters = { new JsonStringEnumConverter() } };
 
-    public static Installed Register(string toolsRoot, string repo, string sha, Plan plan, string license, string description, AuditLog? audit = null)
+    /// <summary>T-0764: Beginn einer Einrichtung aus dem Quellcode – Rechteprüfung im Kern, bevor etwas geladen oder entpackt wird.</summary>
+    public static void BeginInstall(Principal by, string repo, string detail, AuditLog audit)
     {
+        Rbac.DemandSoftware(by, "source.install " + repo, audit);
+        audit.Append(by.Name, "source.install.start", detail);
+    }
+
+    public static Installed Register(Principal by, string toolsRoot, string repo, string sha, Plan plan, string license, string description, AuditLog? audit = null)
+    {
+        Rbac.DemandSoftware(by, "source.install " + repo, audit); // T-0764
         var e = new Installed(IdFor(repo), repo, sha, plan.Kind, plan.Runtime, plan.Start, plan.Web, plan.StaticRoot, new(plan.Env), license, description, DateTimeOffset.Now);
         var l = List(toolsRoot).Where(x => x.Id != e.Id).Append(e).OrderBy(x => x.Repo, StringComparer.OrdinalIgnoreCase).ToList();
         Directory.CreateDirectory(toolsRoot);
         File.WriteAllText(Path.Combine(toolsRoot, ListName), JsonSerializer.Serialize(l, J));
-        audit?.Append("app", "source.install", $"{repo} {plan.Kind} {sha[..Math.Min(12, sha.Length)]}");
+        audit?.Append(by.Name, "source.install", $"{repo} {plan.Kind} {sha[..Math.Min(12, sha.Length)]}");
         return e;
     }
 
     /// <summary>Entfernt genau den Projektordner und den Eintrag. Laufzeiten bleiben (andere Projekte nutzen sie), siehe <see cref="UnusedRuntimes"/>.</summary>
-    public static void Remove(string toolsRoot, string id, AuditLog? audit = null)
+    public static void Remove(Principal by, string toolsRoot, string id, AuditLog? audit = null)
     {
+        Rbac.DemandSoftware(by, "source.remove " + id, audit); // T-0764
         if (!id.StartsWith(Prefix, StringComparison.Ordinal) || id.Contains("..") || id.Contains('/') || id.Contains('\\')) throw new ArgumentException("Ungültiger Eintrag.");
         var d = Dir(toolsRoot, id);
         if (Directory.Exists(d)) { foreach (var f in Directory.EnumerateFiles(d, "*", SearchOption.AllDirectories)) try { File.SetAttributes(f, FileAttributes.Normal); } catch (IOException) { } Directory.Delete(d, true); }
         var l = List(toolsRoot).Where(x => x.Id != id).ToList();
         File.WriteAllText(Path.Combine(toolsRoot, ListName), JsonSerializer.Serialize(l, J));
-        audit?.Append("app", "source.remove", id);
+        audit?.Append(by.Name, "source.remove", id);
     }
 
     /// <summary>Eingerichtete Laufzeiten, die kein Projekt mehr braucht (zum Aufräumen).</summary>

@@ -173,7 +173,7 @@ public class SourceAppsTests
             var audit = new AuditLog(Path.Combine(tools, "audit"));
             var plan = SourceApps.MakePlan("erika/zeit", ["go.mod", "main.go"], f => f == "main.go" ? "package main" : "");
             Directory.CreateDirectory(SourceApps.Dir(tools, SourceApps.IdFor("erika/zeit")));
-            var e = SourceApps.Register(tools, "erika/zeit", "abc", plan, "MIT", "Zeiterfassung", audit);
+            var e = SourceApps.Register(Principal.LocalOwner, tools, "erika/zeit", "abc", plan, "MIT", "Zeiterfassung", audit);
             Assert.Equal("src-erika-zeit", e.Id);
             var back = Assert.Single(SourceApps.List(tools));
             Assert.Equal((K.Go, "go", "trendo-bin/zeit.exe", "0"), (back.Kind, back.Runtime, back.Start!.Exe, back.Env["CGO_ENABLED"]));
@@ -182,9 +182,9 @@ public class SourceAppsTests
             Directory.CreateDirectory(SourceApps.RuntimeDir(tools, rtUv)); Directory.CreateDirectory(Path.Combine(tools, "laufzeiten", "uv-cache"));
             Assert.EndsWith(Path.Combine("go", "bin", "go.exe"), SourceApps.RuntimeExe(tools, rt));
             Assert.Equal(["uv-0.13.6"], SourceApps.UnusedRuntimes(tools).Select(Path.GetFileName));
-            Assert.Throws<ArgumentException>(() => SourceApps.Remove(tools, "..\\x"));
-            Assert.Throws<ArgumentException>(() => SourceApps.Remove(tools, "gh-erika-zeit"));
-            SourceApps.Remove(tools, e.Id, audit);
+            Assert.Throws<ArgumentException>(() => SourceApps.Remove(Principal.LocalOwner, tools, "..\\x"));
+            Assert.Throws<ArgumentException>(() => SourceApps.Remove(Principal.LocalOwner, tools, "gh-erika-zeit"));
+            SourceApps.Remove(Principal.LocalOwner, tools, e.Id, audit);
             Assert.Empty(SourceApps.List(tools)); Assert.False(Directory.Exists(SourceApps.Dir(tools, e.Id)));
             Assert.Equal(2, SourceApps.UnusedRuntimes(tools).Count);
             Assert.Equal("run -p 8080 {unbekannt}", SourceApps.Fill("run -p {port} {unbekannt}", new Dictionary<string, string> { ["port"] = "8080" }));

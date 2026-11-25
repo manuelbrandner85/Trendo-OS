@@ -169,7 +169,7 @@ public partial class MainWindow
         var file0 = _webEditFile;
         sp.Children.Add(new WrapPanel { Children = {
             Act("web-save", "Speichern", async () => { File.WriteAllText(file0, editor.Text ?? ""); _core.Audit.Append(Principal.LocalOwner.Name, "web.edit", Path.GetFileName(file0)); await RefreshPreview(); Say("Gespeichert: " + Path.GetFileName(file0) + " – Vorschau neu aufgebaut.", "dev"); }, true),
-            Act("web-vscode", "In VS Code öffnen", () => { if (VsCodePath() is { } code) { _core.Integrations.LaunchDirect(Principal.LocalOwner, code, _core.Audit, _webDir!); Say("VS Code öffnet den Ordner der Seite.", "dev"); } else Say("VS Code ist nicht installiert. Du kannst hier im Editor weiterarbeiten.", "dev"); }),
+            Act("web-vscode", "In VS Code öffnen", () => { if (VsCodePath() is { } code) { LaunchAs(code, _webDir!); Say("VS Code öffnet den Ordner der Seite.", "dev"); } else Say("VS Code ist nicht installiert. Du kannst hier im Editor weiterarbeiten.", "dev"); }),
         } });
         return sp;
     }
@@ -316,7 +316,7 @@ public partial class MainWindow
     private void AskPack()
     {
         if (!Ready()) return;
-        var req = WebsiteStudio.RequestPack(_core.Approvals, Principal.LocalOwner, _webDir!);
+        var req = WebsiteStudio.RequestPack(_core.Approvals, CurrentPrincipal, _webDir!);
         _webApproval = req.Id;
         _webArmed = true;
         Say("Das Paket bleibt auf diesem PC. Es wird nichts hochgeladen. Bitte noch einmal bestätigen.", "dev");

@@ -244,7 +244,7 @@ public partial class MainWindow
     async Task MixamoPickFigure(ProgramDocument d)
     {
         var got = PickOverride is { } fake ? await fake(new PickRequest("game-mixamo-rigger", false, false, ["glb", "gltf", "obj", "fbx", "blend"]))
-            : (await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Eigene Figur (ohne Skelett) für Mixamo", FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("3D-Figur") { Patterns = ["*.glb", "*.gltf", "*.obj", "*.fbx", "*.blend"] }] }))
+            : (await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Eigene Figur (ohne Skelett) für Mixamo", FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("3D-Figur") { Patterns = ["*.glb", "*.gltf", "*.obj", "*.fbx", "*.blend"] }] }))
                 .Select(f => Avalonia.Platform.Storage.StorageProviderExtensions.TryGetLocalPath(f)).OfType<string>().ToArray();
         if (got is { Length: > 0 }) await MixamoRigger(d, got[0]);
     }
@@ -277,6 +277,7 @@ public partial class MainWindow
 
     public async Task MixamoToUnreal(ProgramDocument d)
     {
+        if (!DarfAusfuehren("spiel.mixamo.unreal", out _)) { _mxMsg = NurErwachseneEngine; GameRefresh(); return; } // T-0764 (6. Prüfrunde B): UnrealEditor-Cmd
         var built = d.Text("built");
         var uproject = built.Length > 0 && Directory.Exists(built) ? Directory.GetFiles(built, "*.uproject").FirstOrDefault() : null;
         if (uproject is null) { _mxMsg = "⚠ Erst „Bauen“ – dann holt Trendo die Animationen ins Unreal-Projekt."; GameRefresh(); return; }
@@ -304,7 +305,7 @@ public partial class MainWindow
         var glb = d.Data["mixamoPrepared"]?["glb"]?.GetValue<string>() ?? "";
         if (dir.Length == 0 || !Directory.Exists(dir)) throw new InvalidOperationException("Erst „Als Godot-Projekt“ unter „Bauen“.");
         if (!File.Exists(glb)) throw new InvalidOperationException("Erst „Mit Blender aufbereiten“.");
-        var target = Path.Combine(dir, "assets", "mixamo"); Directory.CreateDirectory(target);
+        var target = Path.Combine(UserDirFixedNames(dir), "assets", "mixamo"); Directory.CreateDirectory(target); // T-0764 (13. Prüfrunde): Ordner/Datei aus der Projektdatei – Kinder nur Freigabe, keine neue ausführbare Endung
         File.Copy(glb, Path.Combine(target, "mixamo.glb"), true);
         // Godot braucht die Datei im Projekt; damit sie nicht über Git weitergegeben wird, schließt eine .gitignore sie aus
         File.WriteAllText(Path.Combine(target, ".gitignore"), "# Mixamo-Dateien nur im fertigen Spiel, nicht weitergeben (Mixamo-Bedingungen)\n*.glb\n*.fbx\n");

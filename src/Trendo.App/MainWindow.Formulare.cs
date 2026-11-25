@@ -136,7 +136,7 @@ public partial class MainWindow
         var req = new PickRequest("fo-open", false, false, ["pdf"]);
         string[]? got;
         if (PickOverride is { } fake) got = await fake(req);
-        else got = (await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Formular öffnen", FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("PDF") { Patterns = ["*.pdf"] }] }))
+        else got = (await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Formular öffnen", FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("PDF") { Patterns = ["*.pdf"] }] }))
             .Select(f => f.TryGetLocalPath()).OfType<string>().ToArray();
         if (got is [var f, ..]) ProgramRun(FoKey, () => FoOpen(d, f));
     }
@@ -210,6 +210,7 @@ public partial class MainWindow
     /// <summary>Ausgefüllte PDF schreiben: Platzhalter aus „Meine Angaben“ werden erst hier eingesetzt. Meldet leere Pflichtfelder.</summary>
     public string FoExport(ProgramDocument d, string target, bool flatten)
     {
+        UserFile(target); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
         var f = d.Text("file"); if (f.Length == 0 || !File.Exists(f)) throw new InvalidOperationException("Bitte zuerst ein Formular öffnen.");
         var values = FoProfile().Resolve(FoValues(d));
         var r = PdfFormular.Fill(f, target, values, FoOverlays(d), flatten, _core.Audit);

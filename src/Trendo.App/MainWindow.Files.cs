@@ -181,14 +181,14 @@ public partial class MainWindow
         if (PickOverride is { } fake) got = await fake(req);
         else
         {
-            var sp = StorageProvider;
-            if (folder) got = (await sp.OpenFolderPickerAsync(new FolderPickerOpenOptions { Title = "Ordner wählen", AllowMultiple = false })).Select(f => f.TryGetLocalPath()).OfType<string>().ToArray();
+            // T-0764 (9. Prüfrunde): über den zentralen Helfer – Kinder bekommen Trendos eigene Auswahl, nie den Windows-Dialog
+            if (folder) got = (await PickFolders(new FolderPickerOpenOptions { Title = "Ordner wählen", AllowMultiple = false })).Select(f => f.TryGetLocalPath()).OfType<string>().ToArray();
             else
             {
                 var filters = new List<FilePickerFileType>();
                 if (info.Ext.Count > 0) filters.Add(new FilePickerFileType(string.Join(", ", info.Ext.Select(e => e.ToUpperInvariant()))) { Patterns = info.Ext.Select(e => "*." + e).ToList() });
                 filters.Add(new FilePickerFileType("Alle Dateien") { Patterns = ["*"] });
-                got = (await sp.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Datei wählen", AllowMultiple = req.Multiple, FileTypeFilter = filters })).Select(f => f.TryGetLocalPath()).OfType<string>().ToArray();
+                got = (await PickOpenFiles(new FilePickerOpenOptions { Title = "Datei wählen", AllowMultiple = req.Multiple, FileTypeFilter = filters })).Select(f => f.TryGetLocalPath()).OfType<string>().ToArray();
             }
         }
         if (got is { Length: > 0 }) Fill(tb, got);

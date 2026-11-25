@@ -18,6 +18,7 @@ public partial class MainWindow
         RegisterTab(ProgTabs, "prog-start", "Starten", "SYS-11", ProgStartView, "verknüpfung", "parameter", "autostart", "dateizuordnung", "öffnen mit");
         RegisterTab(ProgTabs, "prog-pruefen", "Prüfen", "SYS-11", ProgCheckView, "systemvoraussetzungen", "kompatibel", "integrationstest", "speicherplatz", "softwareliste", "csv", "wiederherstellen", "winget import", "selbsttest");
         RegisterTab(ProgTabs, "prog-extern", "Externe Programme", "SYS-11", ProgExternView, "blender", "unreal", "vs code", "vscode", "libreoffice", "obs", "externe programme", "öffnen in");
+        _showMap[ProgDetail] = ProgDetailView; PageModules[ProgDetail] = "SYS-11"; // T-0764: eine Seite je Programm (Starten, Aktualisieren, Entfernen); 14. Prüfrunde: Modul zugeordnet (SYS-13-P13)
     }
     private Control ProgPage(string title, Control body) => W45Page(title, ProgTabs, "prog", body);
     private string ProgFolder => WorkFolder("Programme");
@@ -41,7 +42,7 @@ public partial class MainWindow
         var pz = Field("portable-zip", "ZIP-Datei des Programms"); var ps = Field("portable-sha", "Prüfsumme (SHA-256) vom Hersteller", 300); var pn = Field("portable-name", "Name, z. B. ffmpeg", 140);
         sp.Children.Add(Card(Section("Portable Programme", "Entpackt ein Programm ohne Installation in deinen Werkzeuge-Ordner – nur wenn die Prüfsumme stimmt.",
             Line(pz, ps, pn, Act("portable-run", "Prüfen und entpacken", () => Try(V, () =>
-            { var d = Software.InstallPortable(Clean(pz), Clean(ps), Path.Combine(_core.DataRoot, "werkzeuge"), Clean(pn), _core.Audit); Say("Entpackt nach " + d, V); }))))));
+            { var d = Software.InstallPortable(CurrentPrincipal, Clean(pz), Clean(ps), Path.Combine(_core.DataRoot, "werkzeuge"), Clean(pn), _core.Audit); Say("Entpackt nach " + d, V); }))))));
 
         var of = Field("offline-folder", "Ordner mit Installationsdateien");
         var ol = new StackPanel { Name = "offline-list", Spacing = 4 };
@@ -59,16 +60,19 @@ public partial class MainWindow
                 if (ol.Children.Count == 0) ol.Children.Add(P("Keine Installer (.exe, .msi, .msix, .zip) gefunden."));
             }))), ol)));
         if (_offAsk.Ask) sp.Children.Add(Card(Line(P($"„{Path.GetFileName(_offAsk.File)}“ jetzt starten? Der Installer fragt dann selbst weiter."),
-            Act("offline-yes", "Ja, starten", () => { var f = _offAsk.File; _offAsk = default; _core.Integrations.LaunchDirect(Principal.LocalOwner, f, _core.Audit); Say("Gestartet.", V); }, true),
+            Act("offline-yes", "Ja, starten", () => { var f = _offAsk.File; _offAsk = default; Try(V, () => { Software.StartOfflineInstaller(CurrentPrincipal, f, _core.Integrations, _core.Audit); Say("Gestartet.", V); }); }, true), // T-0764: Rolle und Prüfsumme im Kern
             Act("offline-no", "Abbrechen", () => { _offAsk = default; Say("Nicht gestartet.", V); }))));
 
+        sp.Children.Add(TrendoProgrammeCard()); // T-0764: Programme, die Trendo selbst eingerichtet hat – Entfernen ohne Windows-Einstellungen
+
         var steps = new StackPanel(); foreach (var (s, i) in Software.UninstallSteps.Select((s, i) => (s, i))) steps.Children.Add(P($"{i + 1}. {s}"));
-        sp.Children.Add(Card(Section("Programm entfernen", "Trendo entfernt nichts heimlich. So geht's in Windows:", steps,
+        sp.Children.Add(Card(Section("Andere Programme entfernen", "Programme, die nicht Trendo eingerichtet hat, entfernt Windows selbst – Trendo entfernt nichts heimlich. Über winget installierte Programme gehen auch unter „Programme verwalten“. So geht's in Windows:", steps,
             Line(Act("uninstall-open", "Windows-Einstellungen öffnen", () => Try(V, () =>
-            { if (!OperatingSystem.IsWindows()) throw new InvalidOperationException("Das geht nur unter Windows."); Launch(Software.UninstallSettings); }))))));
+            { if (!OperatingSystem.IsWindows()) throw new InvalidOperationException("Das geht nur unter Windows."); Launch(Software.UninstallSettings); })),
+                Act("uninstall-appcenter", "Programme verwalten (winget)", () => Show("appcenter"))))));
 
         sp.Children.Add(Card(Section("Trendo-Einstellungen zurücksetzen", "Vorher wird automatisch eine Sicherung angelegt – du kannst sie wiederherstellen.",
-            _resetAsk ? Line(P("Wirklich alle Einstellungen zurücksetzen?"), Act("reset-yes", "Ja, zurücksetzen", () => Try(V, () => { _resetAsk = false; var b = Software.ResetSettings(_core.DataRoot, _core.Audit); _settings = new(); Say("Zurückgesetzt. Sicherung: " + Path.GetFileName(b), V); }), true), Act("reset-no", "Abbrechen", () => { _resetAsk = false; Say("Nichts geändert.", V); }))
+            _resetAsk ? Line(P("Wirklich alle Einstellungen zurücksetzen?"), Act("reset-yes", "Ja, zurücksetzen", () => Try(V, () => { _resetAsk = false; Rbac.DemandSoftware(CurrentPrincipal, "einstellungen.zuruecksetzen", _core.Audit, Rbac.NurErwachseneEinstellungen); /* T-0764 (14. Prüfrunde, H2) */ var b = Software.ResetSettings(_core.DataRoot, _core.Audit); UseSettings(UserSettings.Load(_core.DataRoot)); /* Rolle bleibt (geschützte Quelle) */ Say("Zurückgesetzt. Sicherung: " + Path.GetFileName(b), V); }), true), Act("reset-no", "Abbrechen", () => { _resetAsk = false; Say("Nichts geändert.", V); }))
                       : Line(Act("reset-ask", "Zurücksetzen …", () => { _resetAsk = true; Show(V); })))));
         if (_progOut.Length > 0) sp.Children.Add(Card(Out("prog-out")));
         return ProgPage("Programme pflegen", sp);
@@ -82,10 +86,10 @@ public partial class MainWindow
         var list = new StackPanel { Spacing = 4 };
         foreach (var (s, i) in Software.Shortcuts(_core.DataRoot).Select((s, i) => (s, i)))
             list.Children.Add(Line(P($"{s.Name}: {Path.GetFileName(s.Exe)} {string.Join(' ', s.Args)}"),
-                Act($"sc-run-{i}", "Starten", () => Try(V, () => { _core.Integrations.LaunchDirect(Principal.LocalOwner, s.Exe, _core.Audit, string.Join(' ', s.Args.Select(a => a.Contains(' ') ? $"\"{a}\"" : a))); Say(s.Name + " gestartet.", V); })),
+                Act($"sc-run-{i}", "Starten", () => Try(V, () => { Say(LaunchAs(s.Exe, string.Join(' ', s.Args.Select(a => a.Contains(' ') ? $"\"{a}\"" : a)), userExe: true) ? s.Name + " gestartet." : LastLaunchRefused, V); })),
                 Act($"sc-del-{i}", "Entfernen", () => { Software.RemoveShortcut(_core.DataRoot, s.Name); Say("Entfernt.", V); })));
         sp.Children.Add(Card(Section("Eigene Verknüpfungen", "Ein Programm mit festen Einstellungen starten – z. B. einen Ordner direkt öffnen.",
-            Line(sn, se, sa, Act("sc-add", "Anlegen", () => Try(V, () => { Software.AddShortcut(_core.DataRoot, Clean(sn), Clean(se), sa.Text ?? ""); Say("Verknüpfung angelegt.", V); }), true)), list)));
+            Line(sn, se, sa, Act("sc-add", "Anlegen", () => Try(V, () => { if (!CanManageSoftware && ((sa.Text ?? "").Trim().Length > 0 || Software.NeedsSoftwareRight(Clean(se), _core.Integrations.TrustedProgramPath))) { Rbac.DemandSoftware(CurrentPrincipal, "verknuepfung " + Path.GetFileName(Clean(se)), _core.Audit, Rbac.NurErwachseneStart); } Software.AddShortcut(_core.DataRoot, Clean(sn), Clean(se), sa.Text ?? ""); Say("Verknüpfung angelegt.", V); }), true) /* T-0764 (P3-2): eigene Parameter und fremde Programme nur Erwachsene */), list)));
 
         var al = new StackPanel { Spacing = 4 };
         foreach (var (a, i) in Software.StartupFolder(StartupDir, StartupOff).Select((a, i) => (a, i)))

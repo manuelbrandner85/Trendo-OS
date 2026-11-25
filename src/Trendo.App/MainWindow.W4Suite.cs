@@ -45,6 +45,7 @@ public partial class MainWindow
     /// <summary>T-0725: Export in die Mappe des Vorhabens (atomar, überschreibt den eigenen letzten Export). Liefert den Pfad.</summary>
     public string SuiteExport(string dir, string kind)
     {
+        UserDirFixedNames(dir); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
         var name = Path.GetFileName(Path.TrimEndingDirectorySeparator(dir));
         var (file, text, enc) = kind == "csv"
             ? (Path.Combine(dir, name + " – Schritte.csv"), CreationSuite.ExportCsv(dir), (System.Text.Encoding)new System.Text.UTF8Encoding(true))

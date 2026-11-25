@@ -201,7 +201,7 @@ public partial class MainWindow
             var pick = Act($"game-sound-pick-{id}", file is { Length: > 0 } ? "✓ " + Path.GetFileName(file) : "Ton…", async () =>
             {
                 var got = PickOverride is { } fake ? await fake(new PickRequest($"game-sound-{ev}", false, false, ["mp3", "ogg", "wav", "m4a"]))
-                    : (await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Ton für „" + label + "“", FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Töne") { Patterns = ["*.mp3", "*.ogg", "*.wav", "*.m4a"] }] }))
+                    : (await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Ton für „" + label + "“", FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Töne") { Patterns = ["*.mp3", "*.ogg", "*.wav", "*.m4a"] }] }))
                         .Select(f => Avalonia.Platform.Storage.StorageProviderExtensions.TryGetLocalPath(f)).OfType<string>().ToArray();
                 if (got is { Length: > 0 }) ProgramRun(GK, () => GameSetSound(d, ev, got[0]));
             });

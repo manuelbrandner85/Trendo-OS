@@ -377,6 +377,7 @@ public partial class MainWindow
         if (target is null) target = ProgramNewTarget(spec, d);
         else if (!Path.IsPathRooted(target)) // nur ein Name: neben das Dokument, sonst in den Ordner des Programms, nie ins Arbeitsverzeichnis des Prozesses
             target = Path.Combine(d.Path is { } current && Path.IsPathRooted(current) ? Path.GetDirectoryName(current)! : WorkFolder(spec.Folder), target);
+        if (path is not null) UserFile(target); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
         DocSave(d, target); ProgRecent.Add(spec.Studio, d.Path!); RememberLastDoc(key, d.Path!); DropBackup(d);
         if (path is not null) _progAutoNamed.Remove(d.Id); // selbst benannt: nicht mehr umbenennen
         _core.Audit.Append(Principal.LocalOwner.Name, "program.save", $"{spec.Studio} {Path.GetFileName(d.Path)}");
@@ -792,7 +793,7 @@ public partial class MainWindow
                 var filters = new List<FilePickerFileType>();
                 if (extensions.Count > 0) filters.Add(new FilePickerFileType(title) { Patterns = extensions.Select(e => "*." + e.TrimStart('.')).ToList() });
                 filters.Add(new FilePickerFileType("Alle Dateien") { Patterns = ["*"] });
-                got = (await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = title, AllowMultiple = multiple, FileTypeFilter = filters })).Select(f => f.TryGetLocalPath()).OfType<string>().ToArray();
+                got = (await PickOpenFiles(new FilePickerOpenOptions { Title = title, AllowMultiple = multiple, FileTypeFilter = filters })).Select(f => f.TryGetLocalPath()).OfType<string>().ToArray();
             }
         }
         catch (Exception e) when (e is not OutOfMemoryException) { ProgramRun(key, () => throw new IOException(FriendlyError.Say(e), e)); return; }
@@ -838,10 +839,10 @@ public partial class MainWindow
         var type = new Avalonia.Platform.Storage.FilePickerFileType("Trendo-Dokument") { Patterns = ["*" + ProgramDocument.Extension] };
         if (save)
         {
-            var file = await StorageProvider.SaveFilePickerAsync(new Avalonia.Platform.Storage.FilePickerSaveOptions { Title = "Speichern unter", SuggestedFileName = suggested, DefaultExtension = ProgramDocument.Extension.TrimStart('.'), FileTypeChoices = [type] });
+            var file = await PickSaveFile(new Avalonia.Platform.Storage.FilePickerSaveOptions { Title = "Speichern unter", SuggestedFileName = suggested, DefaultExtension = ProgramDocument.Extension.TrimStart('.'), FileTypeChoices = [type] });
             return file?.TryGetLocalPath();
         }
-        var got = await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Dokument öffnen", AllowMultiple = false, FileTypeFilter = [type] });
+        var got = await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Dokument öffnen", AllowMultiple = false, FileTypeFilter = [type] });
         return got.Select(f => f.TryGetLocalPath()).OfType<string>().FirstOrDefault();
     }
 

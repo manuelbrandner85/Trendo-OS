@@ -78,6 +78,7 @@ public partial class MainWindow
     /// <summary>Entwurf als PNG mit Transparenz in Druckgröße (300 DPI).</summary>
     public string PodExportPng(ProgramDocument d, string file)
     {
+        UserFile(file); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
         var (w, h) = PodBoardSize(d);
         var items = PodDesign.Items(d.Data);
         if (items.All(i => i.Hidden)) throw new InvalidOperationException("Der Entwurf ist leer.");
@@ -432,6 +433,7 @@ public partial class MainWindow
 
     async Task<Cli.Result?> KittlCli(IReadOnlyList<string> args)
     {
+        if (!DarfAusfuehrenStill("kittl.claude", out _)) return null; // T-0764 (6. Prüfrunde B): Claude Code ist ein Programmier-Agent
         if (KittlCliOverride is { } fake) return fake(args);
         if (_opt.Isolated || ClaudeExe() is not { } exe) return null;
         Directory.CreateDirectory(PodKittlDir);
@@ -472,6 +474,7 @@ public partial class MainWindow
     /// <summary>Anmeldung am eigenen Kittl-Konto. Der Hinweis nennt den Grund, wenn es nicht geklappt hat.</summary>
     public async Task<bool> PodKittlLogin()
     {
+        if (!DarfAusfuehren("kittl.anmelden", out var nein)) { _progMsg[PodKey] = nein; Show(PodKey); return false; } // T-0764 (6. Prüfrunde B): öffnet Claude Code in einer Konsole
         var exe = ClaudeExe();
         if (KittlConsoleOverride is null && (_opt.Isolated || exe is null)) { _progMsg[PodKey] = "Dafür muss Claude Code installiert sein. Das richtest du unter „Mit Claude verbinden“ ein."; Show(PodKey); return false; }
         Directory.CreateDirectory(PodKittlDir);

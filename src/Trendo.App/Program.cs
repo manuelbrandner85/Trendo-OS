@@ -12,6 +12,36 @@ class Program
     public static event Action<Exception>? UiErrorCaught;
     internal static void RaiseUiError(Exception e) => UiErrorCaught?.Invoke(e);
 
+    /// <summary>T-0764: Person der Kommandozeile = Rolle aus dem Profil des Datenordners (Kinderprofil → Rolle Benutzer).</summary>
+    internal static Principal CliPrincipal(TrendoCore core) => Principal.ForProfile(ProfileRole.IsChild(core.DataRoot)); // T-0764 (14.): geschützte Quelle
+
+    /// <summary>T-0764: Kommandozeilen-Installation im Kinderprofil abweisen – verständliche Meldung, Protokoll „rbac.denied“, Rückgabewert 4. Sonst null.</summary>
+    /// <remarks>T-0764 (2. Prüfrunde N-B): Gibt es auf diesem PC weitere Personen oder ist für dieses Profil eine Anmeldung eingerichtet, braucht die
+    /// Kommandozeile die PIN/das Passwort dieses (Erwachsenen-)Profils (<c>--pin</c>), geprüft mit <see cref="ProfileLock.Verify"/>. Sonst könnte ein Kind
+    /// ohne <c>--data-root</c> als Hauptprofil installieren. Die PIN wird nie protokolliert oder ausgegeben. Ohne Personen und ohne Sperre bleibt alles wie bisher.</remarks>
+    internal static int? CliSoftwareRefused(TrendoCore core, Principal cli, string what, TextWriter o, string? pin = null)
+    {
+        try { Rbac.DemandSoftware(cli, "cli.install-deps " + what, core.Audit); }
+        catch (UnauthorizedAccessException e) { o.WriteLine("FAIL  " + e.Message + " (Datenordner gehört zu einem Kinderprofil)"); return 4; }
+        var persons = new PersonStore(PersonStore.BaseOf(core.DataRoot)).All().Count > 0;
+        var lk = new ProfileLock(core.DataRoot);
+        if (!persons && !lk.Enabled) return null;
+        if (!lk.Enabled)
+        {
+            core.Audit.Append(cli.Name, "rbac.denied", "cli.install-deps ohne Anmeldung (Personen angelegt)");
+            o.WriteLine("FAIL  Auf diesem PC gibt es mehrere Personen. Installieren über die Kommandozeile geht erst, wenn dieses Profil eine PIN oder ein Passwort hat (Einstellungen → Personen & Konten) – dann mit --pin aufrufen.");
+            return 4;
+        }
+        if (pin is null || !lk.Verify(pin))
+        {
+            core.Audit.Append(cli.Name, "rbac.denied", "cli.install-deps PIN fehlt oder falsch");
+            o.WriteLine("FAIL  Bitte die PIN bzw. das Passwort dieses Profils mit --pin angeben. Es wurde nichts installiert.");
+            return 4;
+        }
+        core.Audit.Append(cli.Name, "cli.anmeldung.ok", "install-deps");
+        return null;
+    }
+
     [STAThread]
     public static int Main(string[] args)
     {
@@ -70,12 +100,15 @@ class Program
             if (Arg("--vollpaket") is { } vp) dm.VollpaketDir = Vollpaket.Locate([vp]) ?? throw new InvalidOperationException("Kein gültiges Vollpaket in " + vp);
             else dm.LocateVollpaket = VollpaketStart.Find;
             var rc = 0;
+            // T-0764 (Gegenprüfung M2): Rolle aus dem Profil dieses Datenordners – ein Kinderprofil installiert auch über die Kommandozeile nichts
+            var cli = CliPrincipal(core);
+            if (Arg("--install-deps") is { } wanted && CliSoftwareRefused(core, cli, wanted, Console.Out, Arg("--pin")) is { } refusedRc) return refusedRc; Trendo.Core.Sys.ProgramTrust.RegisterStore(dm.ToolsRoot, Path.Combine(PersonStore.BaseOf(core.DataRoot), "sicherheit")); // T-0764 (M1): Vertrauensliste
             if (Arg("--install-deps") == "vollpaket")
             {
                 // genau der Weg nach dem Setup (SetupVollpaket): eigene, geprüfte Kopien im Werkzeugordner, schon installierte Programme zählen nicht
                 if (dm.VollpaketDir is null && dm.LocateVollpaket?.Invoke() is { } found) dm.VollpaketDir = found;
                 if (dm.VollpaketDir is null) { Console.WriteLine("FAIL  kein Vollpaket gefunden"); return 1; }
-                try { Console.WriteLine($"PASS  {Vollpaket.InstallMissing(dm.VollpaketDir, dm.ToolsRoot, core.Audit, Console.WriteLine)} Pakete eingerichtet"); }
+                try { Console.WriteLine($"PASS  {Vollpaket.InstallMissing(cli, dm.VollpaketDir, dm.ToolsRoot, core.Audit, Console.WriteLine)} Pakete eingerichtet"); }
                 catch (InvalidOperationException e) { Console.WriteLine("FAIL  " + e.Message); rc = 1; }
             }
             else if (Arg("--install-deps") is { } ids)
@@ -83,16 +116,16 @@ class Program
                 if (!dm.HasConsent)
                 {
                     if (!uiArgs.Contains("--accept-licenses")) { Console.WriteLine("Lizenz-Zustimmung fehlt (--accept-licenses)"); return 3; }
-                    dm.GiveConsent(Principal.LocalOwner);
+                    dm.GiveConsent(cli);
                 }
                 var list = ids == "auto" ? DependencyCatalog.All.Where(c => c.Mode is DeliveryMode.AutoUser or DeliveryMode.Included).ToList()
                     : ids == "vollpaket" ? DependencyCatalog.All.Where(c => c.Mode == DeliveryMode.Included).ToList() : ids.Split(',').Select(DependencyCatalog.Get).ToList();
                 foreach (var c in list)
                 {
-                    var req = core.Approvals.Request(Principal.LocalOwner, "deps.install", $"{c.Name} installieren", c.Id);
-                    core.Approvals.Approve(req.Id, new Principal(Arg("--approver") ?? "operator-cli", Role.Owner));
+                    var req = core.Approvals.Request(cli, "deps.install", $"{c.Name} installieren", c.Id);
+                    core.Approvals.Approve(req.Id, new Principal(Arg("--approver") ?? "operator-cli", cli.Role));
                     Console.WriteLine($"Freigabe {req.Id[..8]} erteilt für {c.Id}");
-                    var ok = dm.InstallAsync(Principal.LocalOwner, c, l => { if (l.Trim().Length > 0 && !l.Contains('\r') && l.Length < 200) Console.WriteLine($"  {c.Id}: {l.Trim()}"); }).GetAwaiter().GetResult();
+                    var ok = dm.InstallAsync(cli, c, l => { if (l.Trim().Length > 0 && !l.Contains('\r') && l.Length < 200) Console.WriteLine($"  {c.Id}: {l.Trim()}"); }).GetAwaiter().GetResult();
                     Console.WriteLine($"{(ok ? "PASS" : "FAIL")}  Installation {c.Name}"); if (!ok) rc = 1;
                 }
             }

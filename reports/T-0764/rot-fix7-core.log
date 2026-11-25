@@ -1,0 +1,360 @@
+T-0764 fix7 – ROT auf 6de0e9798 (Core: RechteKernFix7 in der Fassung ohne neue Schnittstellen, vor dem Fix)
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:12.82]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:13.60]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:13.66]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:00:14.21]     T-0764 M: SumatraPDF nicht mehr in der Erlaubnisliste – auch eingerichtet und geprüft startet es im Kinderprofil nicht; Liste leer [FAIL]
+[xUnit.net 00:00:14.21]       Assert.Empty() Failure: Collection was not empty
+[xUnit.net 00:00:14.21]       Collection: [Tuple ("sumatra", "SumatraPDF.exe")]
+[xUnit.net 00:00:14.21]       Stack Trace:
+[xUnit.net 00:00:14.21]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs(55,0): at Trendo.Core.Tests.RechteKernFix7.Sumatra_raus()
+[xUnit.net 00:00:14.21]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:14.21]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:14.23]     T-0764 H: Kinderprofil übergibt keine Datei an Windows (Standardprogramm) – Dokumente, Archive, Abbilder, Skripte, file:-Adressen; Adressen ja; Erwachsene wie bisher(name: "platte.vhdx") [FAIL]
+[xUnit.net 00:00:14.23]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:14.23]       Expected: typeof(System.UnauthorizedAccessException)
+[xUnit.net 00:00:14.23]       Stack Trace:
+[xUnit.net 00:00:14.23]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs(38,0): at Trendo.Core.Tests.RechteKernFix7.Kind_nie_Standardprogramm(String name)
+[xUnit.net 00:00:14.23]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:14.23]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:14.25]     T-0764 H: Kinderprofil übergibt keine Datei an Windows (Standardprogramm) – Dokumente, Archive, Abbilder, Skripte, file:-Adressen; Adressen ja; Erwachsene wie bisher(name: "brief.pdf") [FAIL]
+[xUnit.net 00:00:14.25]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:14.25]       Expected: typeof(System.UnauthorizedAccessException)
+[xUnit.net 00:00:14.25]       Stack Trace:
+[xUnit.net 00:00:14.25]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs(38,0): at Trendo.Core.Tests.RechteKernFix7.Kind_nie_Standardprogramm(String name)
+[xUnit.net 00:00:14.25]            at InvokeStub_RechteKernFix7.Kind_nie_Standardprogramm(Object, Span`1)
+[xUnit.net 00:00:14.26]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:14.27]     T-0764 H: Kinderprofil übergibt keine Datei an Windows (Standardprogramm) – Dokumente, Archive, Abbilder, Skripte, file:-Adressen; Adressen ja; Erwachsene wie bisher(name: "bild.kra") [FAIL]
+[xUnit.net 00:00:14.27]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:14.27]       Expected: typeof(System.UnauthorizedAccessException)
+[xUnit.net 00:00:14.27]       Stack Trace:
+[xUnit.net 00:00:14.27]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs(38,0): at Trendo.Core.Tests.RechteKernFix7.Kind_nie_Standardprogramm(String name)
+[xUnit.net 00:00:14.27]            at InvokeStub_RechteKernFix7.Kind_nie_Standardprogramm(Object, Span`1)
+[xUnit.net 00:00:14.27]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:14.28]     T-0764 H: Kinderprofil übergibt keine Datei an Windows (Standardprogramm) – Dokumente, Archive, Abbilder, Skripte, file:-Adressen; Adressen ja; Erwachsene wie bisher(name: "spiel.zip") [FAIL]
+[xUnit.net 00:00:14.28]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:14.28]       Expected: typeof(System.UnauthorizedAccessException)
+[xUnit.net 00:00:14.28]       Stack Trace:
+[xUnit.net 00:00:14.28]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs(38,0): at Trendo.Core.Tests.RechteKernFix7.Kind_nie_Standardprogramm(String name)
+[xUnit.net 00:00:14.28]            at InvokeStub_RechteKernFix7.Kind_nie_Standardprogramm(Object, Span`1)
+[xUnit.net 00:00:14.28]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:14.30]     T-0764 H: Kinderprofil übergibt keine Datei an Windows (Standardprogramm) – Dokumente, Archive, Abbilder, Skripte, file:-Adressen; Adressen ja; Erwachsene wie bisher(name: "paket.cab") [FAIL]
+[xUnit.net 00:00:14.30]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:14.30]       Expected: typeof(System.UnauthorizedAccessException)
+[xUnit.net 00:00:14.30]       Stack Trace:
+[xUnit.net 00:00:14.30]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs(38,0): at Trendo.Core.Tests.RechteKernFix7.Kind_nie_Standardprogramm(String name)
+[xUnit.net 00:00:14.30]            at InvokeStub_RechteKernFix7.Kind_nie_Standardprogramm(Object, Span`1)
+[xUnit.net 00:00:14.30]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:14.32]     T-0764 H: Kinderprofil übergibt keine Datei an Windows (Standardprogramm) – Dokumente, Archive, Abbilder, Skripte, file:-Adressen; Adressen ja; Erwachsene wie bisher(name: "skript.py") [FAIL]
+[xUnit.net 00:00:14.32]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:14.32]       Expected: typeof(System.UnauthorizedAccessException)
+[xUnit.net 00:00:14.32]       Stack Trace:
+[xUnit.net 00:00:14.32]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs(38,0): at Trendo.Core.Tests.RechteKernFix7.Kind_nie_Standardprogramm(String name)
+[xUnit.net 00:00:14.32]            at InvokeStub_RechteKernFix7.Kind_nie_Standardprogramm(Object, Span`1)
+[xUnit.net 00:00:14.32]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:14.33]     T-0764 H: Kinderprofil übergibt keine Datei an Windows (Standardprogramm) – Dokumente, Archive, Abbilder, Skripte, file:-Adressen; Adressen ja; Erwachsene wie bisher(name: "archiv.7z") [FAIL]
+[xUnit.net 00:00:14.33]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:14.33]       Expected: typeof(System.UnauthorizedAccessException)
+[xUnit.net 00:00:14.33]       Stack Trace:
+[xUnit.net 00:00:14.33]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs(38,0): at Trendo.Core.Tests.RechteKernFix7.Kind_nie_Standardprogramm(String name)
+[xUnit.net 00:00:14.33]            at InvokeStub_RechteKernFix7.Kind_nie_Standardprogramm(Object, Span`1)
+[xUnit.net 00:00:14.33]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:14.35]     T-0764 H: Kinderprofil übergibt keine Datei an Windows (Standardprogramm) – Dokumente, Archive, Abbilder, Skripte, file:-Adressen; Adressen ja; Erwachsene wie bisher(name: "notiz.txt") [FAIL]
+[xUnit.net 00:00:14.35]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:14.35]       Expected: typeof(System.UnauthorizedAccessException)
+[xUnit.net 00:00:14.35]       Stack Trace:
+[xUnit.net 00:00:14.35]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs(38,0): at Trendo.Core.Tests.RechteKernFix7.Kind_nie_Standardprogramm(String name)
+[xUnit.net 00:00:14.35]            at InvokeStub_RechteKernFix7.Kind_nie_Standardprogramm(Object, Span`1)
+[xUnit.net 00:00:14.35]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 M: SumatraPDF nicht mehr in der Erlaubnisliste – auch eingerichtet und geprüft startet es im Kinderprofil nicht; Liste leer [492 ms]
+  Fehlermeldung:
+   Assert.Empty() Failure: Collection was not empty
+Collection: [Tuple ("sumatra", "SumatraPDF.exe")]
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix7.Sumatra_raus() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs:line 55
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0764 H: Kinderprofil übergibt keine Datei an Windows (Standardprogramm) – Dokumente, Archive, Abbilder, Skripte, file:-Adressen; Adressen ja; Erwachsene wie bisher(name: "platte.vhdx") [27 ms]
+  Fehlermeldung:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix7.Kind_nie_Standardprogramm(String name) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs:line 38
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Fehler T-0764 H: Kinderprofil übergibt keine Datei an Windows (Standardprogramm) – Dokumente, Archive, Abbilder, Skripte, file:-Adressen; Adressen ja; Erwachsene wie bisher(name: "brief.pdf") [21 ms]
+  Fehlermeldung:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix7.Kind_nie_Standardprogramm(String name) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs:line 38
+   at InvokeStub_RechteKernFix7.Kind_nie_Standardprogramm(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 H: Kinderprofil übergibt keine Datei an Windows (Standardprogramm) – Dokumente, Archive, Abbilder, Skripte, file:-Adressen; Adressen ja; Erwachsene wie bisher(name: "bild.kra") [11 ms]
+  Fehlermeldung:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix7.Kind_nie_Standardprogramm(String name) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs:line 38
+   at InvokeStub_RechteKernFix7.Kind_nie_Standardprogramm(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 H: Kinderprofil übergibt keine Datei an Windows (Standardprogramm) – Dokumente, Archive, Abbilder, Skripte, file:-Adressen; Adressen ja; Erwachsene wie bisher(name: "spiel.zip") [14 ms]
+  Fehlermeldung:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix7.Kind_nie_Standardprogramm(String name) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs:line 38
+   at InvokeStub_RechteKernFix7.Kind_nie_Standardprogramm(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 H: Kinderprofil übergibt keine Datei an Windows (Standardprogramm) – Dokumente, Archive, Abbilder, Skripte, file:-Adressen; Adressen ja; Erwachsene wie bisher(name: "paket.cab") [16 ms]
+  Fehlermeldung:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix7.Kind_nie_Standardprogramm(String name) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs:line 38
+   at InvokeStub_RechteKernFix7.Kind_nie_Standardprogramm(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 H: Kinderprofil übergibt keine Datei an Windows (Standardprogramm) – Dokumente, Archive, Abbilder, Skripte, file:-Adressen; Adressen ja; Erwachsene wie bisher(name: "skript.py") [17 ms]
+  Fehlermeldung:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix7.Kind_nie_Standardprogramm(String name) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs:line 38
+   at InvokeStub_RechteKernFix7.Kind_nie_Standardprogramm(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 H: Kinderprofil übergibt keine Datei an Windows (Standardprogramm) – Dokumente, Archive, Abbilder, Skripte, file:-Adressen; Adressen ja; Erwachsene wie bisher(name: "archiv.7z") [12 ms]
+  Fehlermeldung:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix7.Kind_nie_Standardprogramm(String name) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs:line 38
+   at InvokeStub_RechteKernFix7.Kind_nie_Standardprogramm(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 H: Kinderprofil übergibt keine Datei an Windows (Standardprogramm) – Dokumente, Archive, Abbilder, Skripte, file:-Adressen; Adressen ja; Erwachsene wie bisher(name: "notiz.txt") [16 ms]
+  Fehlermeldung:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix7.Kind_nie_Standardprogramm(String name) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs:line 38
+   at InvokeStub_RechteKernFix7.Kind_nie_Standardprogramm(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:14.36]     T-0764 H: Kinderprofil übergibt keine Datei an Windows (Standardprogramm) – Dokumente, Archive, Abbilder, Skripte, file:-Adressen; Adressen ja; Erwachsene wie bisher(name: "bild.png") [FAIL]
+[xUnit.net 00:00:14.36]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:14.36]       Expected: typeof(System.UnauthorizedAccessException)
+[xUnit.net 00:00:14.36]       Stack Trace:
+[xUnit.net 00:00:14.36]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs(38,0): at Trendo.Core.Tests.RechteKernFix7.Kind_nie_Standardprogramm(String name)
+[xUnit.net 00:00:14.36]            at InvokeStub_RechteKernFix7.Kind_nie_Standardprogramm(Object, Span`1)
+[xUnit.net 00:00:14.36]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:14.38]     T-0764 H: Kinderprofil übergibt keine Datei an Windows (Standardprogramm) – Dokumente, Archive, Abbilder, Skripte, file:-Adressen; Adressen ja; Erwachsene wie bisher(name: "szene.blend") [FAIL]
+[xUnit.net 00:00:14.38]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:14.38]       Expected: typeof(System.UnauthorizedAccessException)
+[xUnit.net 00:00:14.38]       Stack Trace:
+[xUnit.net 00:00:14.38]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs(38,0): at Trendo.Core.Tests.RechteKernFix7.Kind_nie_Standardprogramm(String name)
+[xUnit.net 00:00:14.38]            at InvokeStub_RechteKernFix7.Kind_nie_Standardprogramm(Object, Span`1)
+[xUnit.net 00:00:14.38]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:14.40]     T-0764 H: Kinderprofil übergibt keine Datei an Windows (Standardprogramm) – Dokumente, Archive, Abbilder, Skripte, file:-Adressen; Adressen ja; Erwachsene wie bisher(name: "abbild.iso") [FAIL]
+[xUnit.net 00:00:14.40]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:14.40]       Expected: typeof(System.UnauthorizedAccessException)
+[xUnit.net 00:00:14.40]       Stack Trace:
+[xUnit.net 00:00:14.40]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs(38,0): at Trendo.Core.Tests.RechteKernFix7.Kind_nie_Standardprogramm(String name)
+[xUnit.net 00:00:14.40]            at InvokeStub_RechteKernFix7.Kind_nie_Standardprogramm(Object, Span`1)
+[xUnit.net 00:00:14.40]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:14.41]     T-0764 N: .pth ist Code; in cache\/logs\ nur *.log und reine Daten (Bilder, .tmp) ausgenommen – .json, .ini, .txt, .bin nicht mehr(rel: "cache\\x.tmp", ignored: True) [FAIL]
+[xUnit.net 00:00:14.41]       Assert.Contains() Failure: Item not found in set
+[xUnit.net 00:00:14.41]       Set:       [".exe", ".dll", ".pyd", ".py", ".pyc", ···]
+[xUnit.net 00:00:14.41]       Not found: ".pth"
+[xUnit.net 00:00:14.41]       Stack Trace:
+[xUnit.net 00:00:14.41]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs(77,0): at Trendo.Core.Tests.RechteKernFix7.Daten_und_pth(String rel, Boolean ignored)
+[xUnit.net 00:00:14.41]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:14.41]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:14.41]     T-0764 N: .pth ist Code; in cache\/logs\ nur *.log und reine Daten (Bilder, .tmp) ausgenommen – .json, .ini, .txt, .bin nicht mehr(rel: "logs\\konfig.ini", ignored: False) [FAIL]
+[xUnit.net 00:00:14.41]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:14.41]       Expected: False
+[xUnit.net 00:00:14.41]       Actual:   True
+[xUnit.net 00:00:14.41]       Stack Trace:
+[xUnit.net 00:00:14.41]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs(76,0): at Trendo.Core.Tests.RechteKernFix7.Daten_und_pth(String rel, Boolean ignored)
+[xUnit.net 00:00:14.41]            at InvokeStub_RechteKernFix7.Daten_und_pth(Object, Span`1)
+[xUnit.net 00:00:14.41]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:14.41]     T-0764 N: .pth ist Code; in cache\/logs\ nur *.log und reine Daten (Bilder, .tmp) ausgenommen – .json, .ini, .txt, .bin nicht mehr(rel: "lib\\site-packages\\boese.pth", ignored: False) [FAIL]
+[xUnit.net 00:00:14.41]       Assert.Contains() Failure: Item not found in set
+[xUnit.net 00:00:14.41]       Set:       [".exe", ".dll", ".pyd", ".py", ".pyc", ···]
+[xUnit.net 00:00:14.41]       Not found: ".pth"
+[xUnit.net 00:00:14.41]       Stack Trace:
+[xUnit.net 00:00:14.41]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs(77,0): at Trendo.Core.Tests.RechteKernFix7.Daten_und_pth(String rel, Boolean ignored)
+[xUnit.net 00:00:14.41]            at InvokeStub_RechteKernFix7.Daten_und_pth(Object, Span`1)
+[xUnit.net 00:00:14.41]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:14.41]     T-0764 N: .pth ist Code; in cache\/logs\ nur *.log und reine Daten (Bilder, .tmp) ausgenommen – .json, .ini, .txt, .bin nicht mehr(rel: "cache\\site.pth", ignored: False) [FAIL]
+[xUnit.net 00:00:14.41]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:14.41]       Expected: False
+[xUnit.net 00:00:14.41]       Actual:   True
+[xUnit.net 00:00:14.41]       Stack Trace:
+[xUnit.net 00:00:14.41]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs(76,0): at Trendo.Core.Tests.RechteKernFix7.Daten_und_pth(String rel, Boolean ignored)
+[xUnit.net 00:00:14.41]            at InvokeStub_RechteKernFix7.Daten_und_pth(Object, Span`1)
+[xUnit.net 00:00:14.41]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:14.41]     T-0764 N: .pth ist Code; in cache\/logs\ nur *.log und reine Daten (Bilder, .tmp) ausgenommen – .json, .ini, .txt, .bin nicht mehr(rel: "cache\\einstellungen.json", ignored: False) [FAIL]
+[xUnit.net 00:00:14.41]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:14.41]       Expected: False
+[xUnit.net 00:00:14.41]       Actual:   True
+[xUnit.net 00:00:14.41]       Stack Trace:
+[xUnit.net 00:00:14.41]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs(76,0): at Trendo.Core.Tests.RechteKernFix7.Daten_und_pth(String rel, Boolean ignored)
+[xUnit.net 00:00:14.41]            at InvokeStub_RechteKernFix7.Daten_und_pth(Object, Span`1)
+[xUnit.net 00:00:14.41]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:14.41]     T-0764 N: .pth ist Code; in cache\/logs\ nur *.log und reine Daten (Bilder, .tmp) ausgenommen – .json, .ini, .txt, .bin nicht mehr(rel: "cache\\thumb.png", ignored: True) [FAIL]
+[xUnit.net 00:00:14.41]       Assert.Contains() Failure: Item not found in set
+[xUnit.net 00:00:14.41]       Set:       [".exe", ".dll", ".pyd", ".py", ".pyc", ···]
+[xUnit.net 00:00:14.42]       Not found: ".pth"
+[xUnit.net 00:00:14.42]       Stack Trace:
+[xUnit.net 00:00:14.42]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs(77,0): at Trendo.Core.Tests.RechteKernFix7.Daten_und_pth(String rel, Boolean ignored)
+[xUnit.net 00:00:14.42]            at InvokeStub_RechteKernFix7.Daten_und_pth(Object, Span`1)
+[xUnit.net 00:00:14.42]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 H: Kinderprofil übergibt keine Datei an Windows (Standardprogramm) – Dokumente, Archive, Abbilder, Skripte, file:-Adressen; Adressen ja; Erwachsene wie bisher(name: "bild.png") [13 ms]
+  Fehlermeldung:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix7.Kind_nie_Standardprogramm(String name) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs:line 38
+   at InvokeStub_RechteKernFix7.Kind_nie_Standardprogramm(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 H: Kinderprofil übergibt keine Datei an Windows (Standardprogramm) – Dokumente, Archive, Abbilder, Skripte, file:-Adressen; Adressen ja; Erwachsene wie bisher(name: "szene.blend") [19 ms]
+  Fehlermeldung:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix7.Kind_nie_Standardprogramm(String name) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs:line 38
+   at InvokeStub_RechteKernFix7.Kind_nie_Standardprogramm(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 H: Kinderprofil übergibt keine Datei an Windows (Standardprogramm) – Dokumente, Archive, Abbilder, Skripte, file:-Adressen; Adressen ja; Erwachsene wie bisher(name: "abbild.iso") [16 ms]
+  Fehlermeldung:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix7.Kind_nie_Standardprogramm(String name) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs:line 38
+   at InvokeStub_RechteKernFix7.Kind_nie_Standardprogramm(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 N: .pth ist Code; in cache\/logs\ nur *.log und reine Daten (Bilder, .tmp) ausgenommen – .json, .ini, .txt, .bin nicht mehr(rel: "cache\\x.tmp", ignored: True) [13 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Item not found in set
+Set:       [".exe", ".dll", ".pyd", ".py", ".pyc", ···]
+Not found: ".pth"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix7.Daten_und_pth(String rel, Boolean ignored) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs:line 77
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Fehler T-0764 N: .pth ist Code; in cache\/logs\ nur *.log und reine Daten (Bilder, .tmp) ausgenommen – .json, .ini, .txt, .bin nicht mehr(rel: "logs\\konfig.ini", ignored: False) [< 1 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: False
+Actual:   True
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix7.Daten_und_pth(String rel, Boolean ignored) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs:line 76
+   at InvokeStub_RechteKernFix7.Daten_und_pth(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 N: .pth ist Code; in cache\/logs\ nur *.log und reine Daten (Bilder, .tmp) ausgenommen – .json, .ini, .txt, .bin nicht mehr(rel: "lib\\site-packages\\boese.pth", ignored: False) [< 1 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Item not found in set
+Set:       [".exe", ".dll", ".pyd", ".py", ".pyc", ···]
+Not found: ".pth"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix7.Daten_und_pth(String rel, Boolean ignored) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs:line 77
+   at InvokeStub_RechteKernFix7.Daten_und_pth(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 N: .pth ist Code; in cache\/logs\ nur *.log und reine Daten (Bilder, .tmp) ausgenommen – .json, .ini, .txt, .bin nicht mehr(rel: "cache\\site.pth", ignored: False) [< 1 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: False
+Actual:   True
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix7.Daten_und_pth(String rel, Boolean ignored) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs:line 76
+   at InvokeStub_RechteKernFix7.Daten_und_pth(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 N: .pth ist Code; in cache\/logs\ nur *.log und reine Daten (Bilder, .tmp) ausgenommen – .json, .ini, .txt, .bin nicht mehr(rel: "cache\\einstellungen.json", ignored: False) [< 1 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: False
+Actual:   True
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix7.Daten_und_pth(String rel, Boolean ignored) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs:line 76
+   at InvokeStub_RechteKernFix7.Daten_und_pth(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 N: .pth ist Code; in cache\/logs\ nur *.log und reine Daten (Bilder, .tmp) ausgenommen – .json, .ini, .txt, .bin nicht mehr(rel: "cache\\thumb.png", ignored: True) [< 1 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Item not found in set
+Set:       [".exe", ".dll", ".pyd", ".py", ".pyc", ···]
+Not found: ".pth"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix7.Daten_und_pth(String rel, Boolean ignored) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs:line 77
+   at InvokeStub_RechteKernFix7.Daten_und_pth(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:14.42]     T-0764 N: .pth ist Code; in cache\/logs\ nur *.log und reine Daten (Bilder, .tmp) ausgenommen – .json, .ini, .txt, .bin nicht mehr(rel: "logs\\start.txt", ignored: False) [FAIL]
+[xUnit.net 00:00:14.42]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:14.42]       Expected: False
+[xUnit.net 00:00:14.42]       Actual:   True
+[xUnit.net 00:00:14.42]       Stack Trace:
+[xUnit.net 00:00:14.42]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs(76,0): at Trendo.Core.Tests.RechteKernFix7.Daten_und_pth(String rel, Boolean ignored)
+[xUnit.net 00:00:14.42]            at InvokeStub_RechteKernFix7.Daten_und_pth(Object, Span`1)
+[xUnit.net 00:00:14.42]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:14.42]     T-0764 N: .pth ist Code; in cache\/logs\ nur *.log und reine Daten (Bilder, .tmp) ausgenommen – .json, .ini, .txt, .bin nicht mehr(rel: "cache\\snapshot_blob.bin", ignored: False) [FAIL]
+[xUnit.net 00:00:14.42]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:14.42]       Expected: False
+[xUnit.net 00:00:14.42]       Actual:   True
+[xUnit.net 00:00:14.42]       Stack Trace:
+[xUnit.net 00:00:14.42]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs(76,0): at Trendo.Core.Tests.RechteKernFix7.Daten_und_pth(String rel, Boolean ignored)
+[xUnit.net 00:00:14.42]            at InvokeStub_RechteKernFix7.Daten_und_pth(Object, Span`1)
+[xUnit.net 00:00:14.42]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:14.42]     T-0764 N: .pth ist Code; in cache\/logs\ nur *.log und reine Daten (Bilder, .tmp) ausgenommen – .json, .ini, .txt, .bin nicht mehr(rel: "logs\\start.log", ignored: True) [FAIL]
+[xUnit.net 00:00:14.42]       Assert.Contains() Failure: Item not found in set
+[xUnit.net 00:00:14.42]       Set:       [".exe", ".dll", ".pyd", ".py", ".pyc", ···]
+[xUnit.net 00:00:14.42]       Not found: ".pth"
+[xUnit.net 00:00:14.42]       Stack Trace:
+[xUnit.net 00:00:14.42]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs(77,0): at Trendo.Core.Tests.RechteKernFix7.Daten_und_pth(String rel, Boolean ignored)
+[xUnit.net 00:00:14.42]            at InvokeStub_RechteKernFix7.Daten_und_pth(Object, Span`1)
+[xUnit.net 00:00:14.42]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:14.68]     T-0764 N: kein Blender-Lauf mit Skriptpfad – jeder Aufruf mit „--factory-startup“ nutzt den geprüften Startausdruck (Quelltext durchsucht) [FAIL]
+[xUnit.net 00:00:14.68]       MainWindow.ProgModeGarment.cs:376, Studio3D.cs:91, Studio3D.cs:391, Studio3DEngines.cs:90, Studio3DPro.cs:96, PlanPhoto.cs:75, ModelConverter.cs:78, MixamoBlender.cs:17
+[xUnit.net 00:00:14.68]       Stack Trace:
+[xUnit.net 00:00:14.68]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs(91,0): at Trendo.Core.Tests.RechteKernFix7.Blender_nur_geprueft()
+[xUnit.net 00:00:14.68]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:14.68]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:14.69]   Finished:    Trendo.Core.Tests
+  Fehler T-0764 N: .pth ist Code; in cache\/logs\ nur *.log und reine Daten (Bilder, .tmp) ausgenommen – .json, .ini, .txt, .bin nicht mehr(rel: "logs\\start.txt", ignored: False) [< 1 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: False
+Actual:   True
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix7.Daten_und_pth(String rel, Boolean ignored) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs:line 76
+   at InvokeStub_RechteKernFix7.Daten_und_pth(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 N: .pth ist Code; in cache\/logs\ nur *.log und reine Daten (Bilder, .tmp) ausgenommen – .json, .ini, .txt, .bin nicht mehr(rel: "cache\\snapshot_blob.bin", ignored: False) [< 1 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: False
+Actual:   True
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix7.Daten_und_pth(String rel, Boolean ignored) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs:line 76
+   at InvokeStub_RechteKernFix7.Daten_und_pth(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 N: .pth ist Code; in cache\/logs\ nur *.log und reine Daten (Bilder, .tmp) ausgenommen – .json, .ini, .txt, .bin nicht mehr(rel: "logs\\start.log", ignored: True) [< 1 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Item not found in set
+Set:       [".exe", ".dll", ".pyd", ".py", ".pyc", ···]
+Not found: ".pth"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix7.Daten_und_pth(String rel, Boolean ignored) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs:line 77
+   at InvokeStub_RechteKernFix7.Daten_und_pth(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 N: kein Blender-Lauf mit Skriptpfad – jeder Aufruf mit „--factory-startup“ nutzt den geprüften Startausdruck (Quelltext durchsucht) [271 ms]
+  Fehlermeldung:
+   MainWindow.ProgModeGarment.cs:376, Studio3D.cs:91, Studio3D.cs:391, Studio3DEngines.cs:90, Studio3DPro.cs:96, PlanPhoto.cs:75, ModelConverter.cs:78, MixamoBlender.cs:17
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix7.Blender_nur_geprueft() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix7\tests\Trendo.Core.Tests\RechteKernFix7Tests.cs:line 91
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 22
+     Nicht bestanden: 22
+ Gesamtzeit: 17,0399 Sekunden
+exit 1

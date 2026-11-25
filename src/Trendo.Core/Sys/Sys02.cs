@@ -95,8 +95,10 @@ public static class MediaLibrary
         return res;
     }
     /// <summary>Spieler wählen: mpv, sonst VLC, sonst Standardprogramm (null).</summary>
-    public static (string Exe, string[] Args)? Player(string file, string? mpv, string? vlc) =>
-        mpv is not null ? (mpv, ["--force-window=yes", file]) : vlc is not null ? (vlc, ["--play-and-exit", file]) : null;
+    /// <remarks>T-0764 (8. Prüfrunde): mpv ohne Einstellungen und Skripte aus %APPDATA%\mpv, mit Trendos fester, sicherer Tastenbelegung;
+    /// VLC ohne Lua-Erweiterungen.</remarks>
+    public static (string Exe, string[] Args)? Player(string file, string? mpv, string? vlc, string? screenshotDir = null) =>
+        mpv is not null ? (mpv, [.. MpvSafe.Args(keys: true, screenshotDir: screenshotDir), "--force-window=yes", "--", file]) : vlc is not null ? (vlc, ["--no-lua", "--play-and-exit", "--", file]) : null; // 9. Prüfrunde: „--“
 }
 
 // P11 Batch-Umbenennen (mit Rückgängig), P22 Fotos ordnen
@@ -120,9 +122,11 @@ public static class Renamer
         if (dup is not null) throw new ArgumentException("Zwei Dateien bekämen denselben Namen: " + Path.GetFileName(dup.Key));
         return res;
     }
-    /// <summary>Führt aus (über Zwischennamen, damit Tausch-Umbenennungen klappen) und schreibt eine Rückgängig-Datei.</summary>
-    public static string Apply(List<Move> moves, string undoDir)
+    /// <summary>Führt aus (über Zwischennamen, damit Tausch-Umbenennungen klappen) und schreibt eine Rückgängig-Datei.
+    /// T-0764 (13. Prüfrunde): <paramref name="by"/> – im Kinderprofil nur in der Freigabe und ohne neue ausführbare Endung (<see cref="ChildWrite.DemandMove"/>), geprüft vor dem ersten Schritt.</summary>
+    public static string Apply(Principal by, AuditLog audit, List<Move> moves, string undoDir)
     {
+        foreach (var m in moves) ChildWrite.DemandMove(by, m.From, m.To, audit);
         var targets = moves.Select(m => m.To).ToHashSet(StringComparer.OrdinalIgnoreCase); var sources = moves.Select(m => m.From).ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (var t in targets) if (File.Exists(t) && !sources.Contains(t)) throw new IOException("Gibt es schon: " + Path.GetFileName(t));
         var tmp = moves.Select(m => (m, T: m.From + ".trendo-" + Guid.NewGuid().ToString("N")[..8])).ToList();
@@ -131,9 +135,10 @@ public static class Renamer
         Directory.CreateDirectory(undoDir);
         var u = Path.Combine(undoDir, $"rueckgaengig-{DateTime.Now:yyyyMMdd-HHmmssfff}.json"); J.Save(u, moves); return u;
     }
-    public static void Undo(string undoFile)
+    public static void Undo(Principal by, AuditLog audit, string undoFile)
     {
         var back = J.Load<Move>(undoFile).Select(m => new Move(m.To, m.From)).ToList();
+        foreach (var m in back) ChildWrite.DemandMove(by, m.From, m.To, audit); // T-0764 (13. Prüfrunde): auch zurück nur in der Freigabe
         foreach (var m in back) if (!File.Exists(m.From)) throw new IOException("Datei fehlt inzwischen: " + Path.GetFileName(m.From));
         var tmp = back.Select(m => (m, T: m.From + ".trendo-" + Guid.NewGuid().ToString("N")[..8])).ToList();
         foreach (var (m, t) in tmp) File.Move(m.From, t);
@@ -257,6 +262,59 @@ public static class Archives
         using var z = ZipFile.OpenRead(zip);
         return z.Entries.Where(e => !e.FullName.EndsWith('/') && File.Exists(Path.Combine(dest, e.FullName))).Select(e => e.FullName).Take(max).ToList();
     }
+    /// <summary>T-0764 (7. Prüfrunde): Einträge mit ausführbarem Inhalt (Programme, Skripte, Installer, Verknüpfungen, Dateien ohne Endung).</summary>
+    public static List<string> ExecutableEntries(string zip)
+    {
+        using var z = ZipFile.OpenRead(zip);
+        return z.Entries.Where(e => !e.FullName.EndsWith('/') && (UnsafeEntryName(e.FullName) || ChildWrite.BlockedName(Path.GetFileName(e.FullName.Replace('\\', '/'))))).Select(e => e.FullName).ToList(); // 11. Prüfrunde: auch .lnk, .url, .scf …
+    }
+
+    static readonly System.Text.RegularExpressions.Regex DeviceName = new(@"^(CON|PRN|AUX|NUL|CONIN\$|CONOUT\$|COM[0-9¹²³]|LPT[0-9¹²³])(\..*)?$", System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
+    /// <summary>T-0764 (7./8. Prüfrunde): Eintrag ist ausführbar oder unsicher? Jeder Pfadteil wird wie unter Windows normalisiert (Leerzeichen und Punkte
+    /// am Ende fallen weg: „spiel.exe.“ ist „spiel.exe“). Unsicher sind auch alternative Datenströme („:“), Gerätenamen (CON, NUL, COM1 …, auch mit
+    /// Endung) und Steuerzeichen; ausführbar: Code-Endungen, Installer, Verknüpfungen, Abbilder, Dateien ohne Endung.</summary>
+    public static bool UnsafeEntryName(string fullName)
+    {
+        var parts = fullName.Replace('\\', '/').Split('/', StringSplitOptions.RemoveEmptyEntries).Select(p => p.TrimEnd(' ', '.')).ToList();
+        if (parts.Count == 0) return true;
+        foreach (var p in parts)
+            if (p.Length == 0 || p.Contains(':') || p.Any(char.IsControl) || DeviceName.IsMatch(p) || DeviceName.IsMatch(p.Split('.')[0])) return true;
+        var name = parts[^1]; var ext = Path.GetExtension(name);
+        return ext.Length == 0 || ProgramTrust.CodeExtensions.Contains(ext) || Software.IsInstallerLike(name) || Software.MountLike(name);
+    }
+
+    /// <summary>T-0764 (8. Prüfrunde): Obergrenzen beim Entpacken im Kinderprofil (vorab aus dem Inhaltsverzeichnis): Gesamtgröße, Anzahl, Packverhältnis.</summary>
+    public const long MaxChildUnpackBytes = 2L * 1024 * 1024 * 1024;
+    public const int MaxChildUnpackEntries = 10_000;
+    public const double MaxChildRatio = 100; // mehr als 100:1 bei über 10 MB gilt als verdächtig („ZIP-Bombe“)
+
+    /// <summary>Grund, warum ein Archiv für Kinder zu groß oder verdächtig ist – sonst null.</summary>
+    public static string? ChildLimits(string zip)
+    {
+        using var z = ZipFile.OpenRead(zip);
+        if (z.Entries.Count > MaxChildUnpackEntries) return $"mehr als {MaxChildUnpackEntries} Einträge";
+        long total = 0, packed = 0;
+        foreach (var e in z.Entries) { total += e.Length; packed += e.CompressedLength; if (total > MaxChildUnpackBytes) return "größer als 2 GB"; }
+        if (total > 10L * 1024 * 1024 && total > MaxChildRatio * Math.Max(1, packed)) return "verdächtiges Packverhältnis";
+        return null;
+    }
+
+    /// <summary>T-0764 (7. Prüfrunde): Entpacken als <paramref name="by"/> – das Kinderprofil nur ZIP-Archive ohne ausführbaren Inhalt (sonst „rbac.denied“
+    /// und Hinweis); Erwachsene wie bisher.</summary>
+    public static int UnpackAs(Principal by, string zip, string dest, AuditLog audit, ArchiveConflict mode = ArchiveConflict.Ask)
+    {
+        ProtectedFolders.DemandWrite(by, dest, audit); // 10. Prüfrunde: nie in Trendos eigene Ordner
+        ChildWrite.Demand(by, dest, audit, checkName: false); // 11. Prüfrunde: nur in freigegebene Orte
+        if (!Rbac.Has(by, Permission.ManageSoftware))
+        {
+            if (!Path.GetExtension(zip).Equals(".zip", StringComparison.OrdinalIgnoreCase)) Rbac.DemandSoftware(by, "entpacken " + Path.GetFileName(zip), audit, Rbac.NurErwachseneArchiv);
+            if (ExecutableEntries(zip) is { Count: > 0 } x) Rbac.DemandSoftware(by, $"entpacken {Path.GetFileName(zip)} ({x.Count} ausführbar, z. B. {Path.GetFileName(x[0])})", audit, Rbac.NurErwachseneArchiv);
+            if (ChildLimits(zip) is { } why) Rbac.DemandSoftware(by, $"entpacken {Path.GetFileName(zip)} ({why})", audit, Rbac.NurErwachseneArchiv); // 8. Prüfrunde
+        }
+        return Unpack(zip, dest, mode);
+    }
+
     /// <summary>Entpackt; Einträge, die aus dem Zielordner ausbrechen (Zip-Slip), werden abgewiesen – dann wird gar nichts entpackt.
     /// Vorhandene Dateien: <see cref="ArchiveConflict.Ask"/> (Standard) bricht vorher ab und nennt sie; Skip lässt sie stehen,
     /// KeepBoth legt „Name (2).ext“ daneben, Overwrite ersetzt sie (nur nach ausdrücklicher Wahl).</summary>

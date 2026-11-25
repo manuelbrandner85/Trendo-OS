@@ -78,7 +78,7 @@ public partial class MainWindow
         var req = new PickRequest("book-open", false, false, BookKit.ImportExtensions);
         string[]? got;
         if (PickOverride is { } fake) got = await fake(req);
-        else got = (await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Manuskript öffnen",
+        else got = (await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Manuskript öffnen",
             FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Manuskript") { Patterns = ["*.docx", "*.odt", "*.txt", "*.md"] }] }))
             .Select(f => f.TryGetLocalPath()).OfType<string>().ToArray();
         if (got is [var f, ..]) ProgramRun(BookKey, () => BookOpenFile(d, f));
@@ -635,7 +635,7 @@ public partial class MainWindow
     async Task<string?> PickFolderPath(string title)
     {
         if (FolderPickOverride is { } o) return o(title);
-        var r = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions { Title = title, AllowMultiple = false });
+        var r = await PickFolders(new FolderPickerOpenOptions { Title = title, AllowMultiple = false });
         return r.Select(x => x.TryGetLocalPath()).OfType<string>().FirstOrDefault();
     }
     /// <summary>Tests: Ordnerwahl ohne Dialog.</summary>
@@ -654,7 +654,8 @@ public partial class MainWindow
             _photosDups = await Task.Run(() => Trendo.Core.Sys.PhotoAlbum.Duplicates(scanned.OrderBy(p => p.Taken).ThenBy(p => p.Path, StringComparer.OrdinalIgnoreCase)).SelectMany(g => g.Skip(1)).Select(p => p.Path).ToHashSet(StringComparer.OrdinalIgnoreCase));
             var target = d.Text("target");
             _photosPlan = KreativSafe.LocalPath(target)
-                ? await Task.Run(() => PhotoOrganizer.Plan(_photosScan, target, d.Text("scheme"), d.Text("rename") == "ja")) : null;
+                ? await Task.Run(() => PhotoOrganizer.Plan(_photosScan, UserDirFixedNames(target), d.Text("scheme"), d.Text("rename") == "ja")) : null; // T-0764 (13. Prüfrunde): Ordner/Datei frei getippt – Kinder nur Freigabe, keine neue ausführbare Endung (schon im Probelauf)
+            if (_photosPlan is not null) UserMoves(_photosPlan.Select(m => new Move(m.From, m.To)));
             _photosAsk = false;
             _progMsg[PhotosKey] = _photosPlan is null ? $"{_photosScan.Count} Fotos gefunden. Wähle noch den Zielordner." : $"Probelauf: {_photosPlan.Count} Fotos würden einsortiert. Es wurde noch nichts verändert.";
         }
@@ -667,7 +668,8 @@ public partial class MainWindow
         if (_photosPlan is not { Count: > 0 } plan) throw new InvalidOperationException("Starte zuerst den Probelauf.");
         var copy = d.Text("mode") != "verschieben";
         string? log = null;
-        try { log = PhotoOrganizer.Run(plan, PhotosUndoDir, copy); }
+        UserDirFixedNames(d.Text("target")); // T-0764 (13. Prüfrunde): Ordner/Datei frei getippt – Kinder nur Freigabe, keine neue ausführbare Endung
+        try { log = PhotoOrganizer.Run(CurrentPrincipal, _core.Audit, plan, PhotosUndoDir, copy); }
         finally
         {
             // auch nach einem Abbruch: das Protokoll gibt es, „Rückgängig“ bleibt möglich
@@ -688,7 +690,7 @@ public partial class MainWindow
         // nur eigene Protokolle: eine fremde Projektdatei darf auf keine andere Datei zeigen
         var inOwn = KreativSafe.LocalFile(log) && Path.GetDirectoryName(Path.GetFullPath(log))!.Equals(Path.GetFullPath(PhotosUndoDir), StringComparison.OrdinalIgnoreCase);
         if (!inOwn) throw new InvalidOperationException("Es gibt nichts rückgängig zu machen.");
-        var (ok, skip) = PhotoOrganizer.Undo(log);
+        var (ok, skip) = PhotoOrganizer.Undo(CurrentPrincipal, _core.Audit, log);
         var copy = d.Text("lastKind") == "kopieren";
         _progMsg[PhotosKey] = (copy ? $"{ok} Kopien entfernt. Die Originale sind unverändert." : $"{ok} Fotos liegen wieder am alten Platz.") + (skip > 0 ? $" {skip} wurden inzwischen geändert oder ersetzt und bleiben, wo sie sind." : "");
         d.Edit("Rückgängig", x => { x["lastLog"] = ""; x["lastKind"] = ""; });

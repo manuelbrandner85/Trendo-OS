@@ -1,0 +1,44 @@
+T-0764 fix13 ROT-BELEG auf 5560ddcbc (src unverändert; nur der neue Wächter + Reflexionstest, Verhaltenstests brauchen die neue Kern-Schnittstelle)
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix13\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:11.14]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:11.72]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:11.74]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:00:12.07]     T-0764 M (Wächter 2, Heuristik): jede Lesung eines Pfades aus einem Feld/Dokument (Field, d.Text, liefernde Methoden) geht in ihrer Einheit an ChildWrite – oder ist begründet ausgenommen [FAIL]
+[xUnit.net 00:00:12.07]       Pfad aus Feld ohne ChildWrite: DocScan.ScanSavePdf:ScanFolder() (Zeile 279), DocScan.ScanSearchablePdf:ScanFolder() (Zeile 307), FreePort.FreePortCleanOld:fp_recomp (Zeile 198), KreativStudios2.PhotosScan:source (Zeile 646), KreativStudios2.PhotosScan:target (Zeile 655), KreativStudios2.PhotosUndo:lastLog (Zeile 687), PodcastStudio.PodcLoudness:intro (Zeile 368), PodcastStudio.PodcLoudness:outro (Zeile 368), ProgGameMixamo.MixamoToGodot:godotProject (Zeile 304), Sys02.AlltagFilesView:photo-folder (Zeile 137), Sys02.AlltagFilesView:ren-folder (Zeile 79), Sys02.AlltagMediaView:audio-file (Zeile 225), Sys02.AlltagMediaView:img-file (Zeile 180), Sys02.AlltagMediaView:img-size (Zeile 182), Sys02.AlltagMediaView:shot-file (Zeile 206), Sys03.NetLoadView:dlsort-folder (Zeile 96), Sys10.DokuWriteView:sig-doc (Zeile 184), Sys10.DokuWriteView:sig-img (Zeile 183), VideoExportSettings.EditSubsLanguage:subs (Zeile 100)
+[xUnit.net 00:00:12.07]       Stack Trace:
+[xUnit.net 00:00:12.07]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix13\tests\Trendo.Core.Tests\RechteKernFix13Tests.cs(294,0): at Trendo.Core.Tests.RechteKernFix13.Feldfluesse_geprueft()
+[xUnit.net 00:00:12.08]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:12.08]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:12.08]     T-0764 (13. Prüfrunde): Kern-Helfer für Ordner-Werkzeuge verlangen die Rolle (Principal als erster Parameter, Reflexion) [FAIL]
+[xUnit.net 00:00:12.08]       Assert.All() Failure: 1 out of 1 items in the collection did not pass.
+[xUnit.net 00:00:12.08]       [0]: Item:  System.String Apply(System.Collections.Generic.List`1[Trendo.Core.Sys.Move], System.String)
+[xUnit.net 00:00:12.08]            Error: Renamer.Apply ohne Principal
+[xUnit.net 00:00:12.08]       Stack Trace:
+[xUnit.net 00:00:12.08]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix13\tests\Trendo.Core.Tests\RechteKernFix13Tests.cs(57,0): at Trendo.Core.Tests.RechteKernFix13.Kern_mit_Rolle()
+[xUnit.net 00:00:12.08]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:12.08]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:12.09]   Finished:    Trendo.Core.Tests
+  Fehler T-0764 M (Wächter 2, Heuristik): jede Lesung eines Pfades aus einem Feld/Dokument (Field, d.Text, liefernde Methoden) geht in ihrer Einheit an ChildWrite – oder ist begründet ausgenommen [297 ms]
+  Fehlermeldung:
+   Pfad aus Feld ohne ChildWrite: DocScan.ScanSavePdf:ScanFolder() (Zeile 279), DocScan.ScanSearchablePdf:ScanFolder() (Zeile 307), FreePort.FreePortCleanOld:fp_recomp (Zeile 198), KreativStudios2.PhotosScan:source (Zeile 646), KreativStudios2.PhotosScan:target (Zeile 655), KreativStudios2.PhotosUndo:lastLog (Zeile 687), PodcastStudio.PodcLoudness:intro (Zeile 368), PodcastStudio.PodcLoudness:outro (Zeile 368), ProgGameMixamo.MixamoToGodot:godotProject (Zeile 304), Sys02.AlltagFilesView:photo-folder (Zeile 137), Sys02.AlltagFilesView:ren-folder (Zeile 79), Sys02.AlltagMediaView:audio-file (Zeile 225), Sys02.AlltagMediaView:img-file (Zeile 180), Sys02.AlltagMediaView:img-size (Zeile 182), Sys02.AlltagMediaView:shot-file (Zeile 206), Sys03.NetLoadView:dlsort-folder (Zeile 96), Sys10.DokuWriteView:sig-doc (Zeile 184), Sys10.DokuWriteView:sig-img (Zeile 183), VideoExportSettings.EditSubsLanguage:subs (Zeile 100)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix13.Feldfluesse_geprueft() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix13\tests\Trendo.Core.Tests\RechteKernFix13Tests.cs:line 294
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0764 (13. Prüfrunde): Kern-Helfer für Ordner-Werkzeuge verlangen die Rolle (Principal als erster Parameter, Reflexion) [3 ms]
+  Fehlermeldung:
+   Assert.All() Failure: 1 out of 1 items in the collection did not pass.
+[0]: Item:  System.String Apply(System.Collections.Generic.List`1[Trendo.Core.Sys.Move], System.String)
+     Error: Renamer.Apply ohne Principal
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix13.Kern_mit_Rolle() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix13\tests\Trendo.Core.Tests\RechteKernFix13Tests.cs:line 57
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 2
+     Nicht bestanden: 2
+ Gesamtzeit: 21,5384 Sekunden
+exit 1

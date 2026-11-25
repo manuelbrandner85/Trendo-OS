@@ -87,7 +87,7 @@ print("TRENDO_ENGINE_EXPORT ok")
 
     /// <summary>Blender-Argumente (ohne Fenster, Werkseinstellungen, Fehler im Skript ergibt Exitcode 1).</summary>
     public static List<string> Args(string script, string src, string target, string output, string report) =>
-        ["--background", "--factory-startup", "--python-exit-code", "1", "--python", script, "--", src, target, output, report];
+        ["--background", "--factory-startup", "--python-exit-code", "1", "--python-expr", BlenderScript.Expr(script, BlenderScript.Sha(Script)), "--", src, target, output, report]; // T-0764 (7. Prüfrunde): geprüft, Run schreibt genau Script
 
     public static EngineExportReport Run(string blender, string source, string target, string outDir, int timeoutMs = 900_000)
     {

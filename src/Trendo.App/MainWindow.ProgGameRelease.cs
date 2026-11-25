@@ -107,6 +107,8 @@ public partial class MainWindow
     /// <summary>Vorschlag 12: fertiges Windows-Spiel aus dem Unreal-Projekt – Unreals Paketierer (BuildCookRun, Shipping) und ein ZIP zum Weitergeben.</summary>
     public async Task GameUnrealPackage(ProgramDocument d, string outDir)
     {
+        UserDirFixedNames(outDir); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
+        if (!DarfAusfuehren("spiel.unreal.paket", out _)) { _progMsg[GK] = NurErwachseneEngine; Show(GK); return; } // T-0764 (6. Prüfrunde B): RunUAT
         var built = d.Text("built");
         var uproject = built.Length > 0 && Directory.Exists(built) ? Directory.GetFiles(built, "*.uproject").FirstOrDefault() : null;
         if (uproject is null) { _progMsg[GK] = "Zuerst „Bauen“ – dann packt Trendo das Unreal-Spiel."; Show(GK); return; }
@@ -141,6 +143,7 @@ public partial class MainWindow
     void GameReleaseUpload(ProgramDocument d, string target)
     {
         _gameUploadAsk = null;
+        if (!DarfAusfuehren("game.upload", out var nein)) { _progMsg[GK] = nein; Show(GK); return; } // T-0764 (H): startet cmd.exe mit butler/SteamCMD
         var package = target == "steam" ? _gamePackages.FirstOrDefault(Directory.Exists) : _gamePackages.FirstOrDefault(f => f.EndsWith("-web.zip", StringComparison.OrdinalIgnoreCase));
         if (package is null) { _progMsg[GK] = "Zuerst „Pakete bauen“."; Show(GK); return; }
         if (GameRelease.Upload(d.Data, target, package) is not { } cmd) { _progMsg[GK] = target == "steam" ? "Bitte zuerst deine Steam App-ID und deinen Anmeldenamen eintragen." : "Bitte zuerst deine itch.io-Seite eintragen (dein-name/dein-spiel)."; Show(GK); return; }

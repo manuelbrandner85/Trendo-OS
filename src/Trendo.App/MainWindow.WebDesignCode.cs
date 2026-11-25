@@ -207,7 +207,7 @@ public partial class MainWindow
         var path = new TextBox { Name = "web-import-pfad", PlaceholderText = "Eigene HTML-Datei auf diesem PC (keine Internet-Adresse)", Width = 420 };
         var pick = Act("web-import-waehlen", "Datei wählen …", async () =>
         {
-            var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "HTML-Seite wählen", AllowMultiple = false, FileTypeFilter = [new FilePickerFileType("HTML-Seite") { Patterns = ["*.html", "*.htm"] }] });
+            var files = await PickOpenFiles(new FilePickerOpenOptions { Title = "HTML-Seite wählen", AllowMultiple = false, FileTypeFilter = [new FilePickerFileType("HTML-Seite") { Patterns = ["*.html", "*.htm"] }] });
             if (files.Count > 0 && files[0].TryGetLocalPath() is { } lp) path.Text = lp;
         });
         var imp = Act("web-import-start", _wdImportBusy ? "Liest …" : "Als neue Seite importieren", () => { _ = WebDesignImportHtml(path.Text ?? ""); });

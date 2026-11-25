@@ -1,0 +1,27 @@
+T-0764 fix12 – ROT auf 1e25eef30 (Core: Quelltext-Wächter RechteKernFix12 ohne den Test mit neuer Schnittstelle, vor dem Fix)
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix12\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:11.66]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:12.16]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:12.18]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:00:12.33]     T-0764 M (Wächter, Heuristik): jede App-Methode mit Pfad-/Datei-/Ordner-Parameter, die schreibt, ruft UserFile/UserDir/ChildWrite – oder ist begründet ausgenommen [FAIL]
+[xUnit.net 00:00:12.33]       ohne ChildWrite: MainWindow.CodeEditor.CodeNewFile (MainWindow.CodeEditor.cs:78), MainWindow.Formulare.FoExport (MainWindow.Formulare.cs:211), MainWindow.Helfer.EditorSave (MainWindow.Helfer.cs:97), MainWindow.MusikProfi.MsMaster (MainWindow.MusikProfi.cs:25), MainWindow.PodDesigner.PodExportPng (MainWindow.PodDesigner.cs:79), MainWindow.Praesentation.DeckSaveAs (MainWindow.Praesentation.cs:76), MainWindow.Praesentation.DeckExportImages (MainWindow.Praesentation.cs:260), MainWindow.ProgGameRelease.GameUnrealPackage (MainWindow.ProgGameRelease.cs:108), MainWindow.PromptFiles.PromptExportFile (MainWindow.PromptFiles.cs:89), MainWindow.Spec10Alarm.TwinExportRules (MainWindow.Spec10Alarm.cs:182), MainWindow.Tabelle.SheetSaveAs (MainWindow.Tabelle.cs:61), MainWindow.Tabelle.SheetExportPdf (MainWindow.Tabelle.cs:195), MainWindow.Text.TextSaveAs (MainWindow.Text.cs:71), MainWindow.W4Suite.SuiteExport (MainWindow.W4Suite.cs:46)
+[xUnit.net 00:00:12.33]       Stack Trace:
+[xUnit.net 00:00:12.33]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix12\tests\Trendo.Core.Tests\RechteKernFix12Tests.cs(79,0): at Trendo.Core.Tests.RechteKernFix12.Schreibziele_geprueft()
+[xUnit.net 00:00:12.33]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:12.33]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:12.34]   Finished:    Trendo.Core.Tests
+  Fehler T-0764 M (Wächter, Heuristik): jede App-Methode mit Pfad-/Datei-/Ordner-Parameter, die schreibt, ruft UserFile/UserDir/ChildWrite – oder ist begründet ausgenommen [114 ms]
+  Fehlermeldung:
+   ohne ChildWrite: MainWindow.CodeEditor.CodeNewFile (MainWindow.CodeEditor.cs:78), MainWindow.Formulare.FoExport (MainWindow.Formulare.cs:211), MainWindow.Helfer.EditorSave (MainWindow.Helfer.cs:97), MainWindow.MusikProfi.MsMaster (MainWindow.MusikProfi.cs:25), MainWindow.PodDesigner.PodExportPng (MainWindow.PodDesigner.cs:79), MainWindow.Praesentation.DeckSaveAs (MainWindow.Praesentation.cs:76), MainWindow.Praesentation.DeckExportImages (MainWindow.Praesentation.cs:260), MainWindow.ProgGameRelease.GameUnrealPackage (MainWindow.ProgGameRelease.cs:108), MainWindow.PromptFiles.PromptExportFile (MainWindow.PromptFiles.cs:89), MainWindow.Spec10Alarm.TwinExportRules (MainWindow.Spec10Alarm.cs:182), MainWindow.Tabelle.SheetSaveAs (MainWindow.Tabelle.cs:61), MainWindow.Tabelle.SheetExportPdf (MainWindow.Tabelle.cs:195), MainWindow.Text.TextSaveAs (MainWindow.Text.cs:71), MainWindow.W4Suite.SuiteExport (MainWindow.W4Suite.cs:46)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix12.Schreibziele_geprueft() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix12\tests\Trendo.Core.Tests\RechteKernFix12Tests.cs:line 79
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 1
+     Nicht bestanden: 1
+ Gesamtzeit: 13,8664 Sekunden
+exit 1

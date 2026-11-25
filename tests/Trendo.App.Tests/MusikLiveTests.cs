@@ -27,7 +27,7 @@ public class MusikLiveTests
         if (!store.RuntimeReady(KiRuntime.AceStep))
         {
             Say("Prüfen und entpacken …");
-            store.InstallRuntime(KiRuntime.AceStep, archive, audit, (a, t) =>
+            store.InstallRuntime(Principal.LocalOwner, KiRuntime.AceStep, archive, audit, (a, t) =>
             {
                 var r = Cli.Run(seven, ["x", a, "-o" + t, "-y", "-bso0", "-bsp0", "-snl-"], timeoutMs: 3_600_000);
                 Assert.True(r.Ok, r.Err);

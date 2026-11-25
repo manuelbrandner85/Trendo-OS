@@ -1,0 +1,8 @@
+Befehl: TrendoOS.exe --data-root <tmp>/daten --install-deps vollpaket --vollpaket <tmp>/vollpaket --werkzeuge <tmp>/werkzeuge --offline  (Datenordner mit Kinderprofil, Stand fbbed41b9)
+Testwerkzeug 1 wird eingerichtet …
+PASS  1 Pakete eingerichtet
+dotnet       Bundled      Bundled                                             MIT
+avalonia     Bundled      Bundled                                             MIT / BSD-3-Clause
+inter        Bundled      Bundled                                             SIL OFL 1.1
+exit 0
+Danach vorhanden: testtool 

@@ -126,8 +126,9 @@ public static partial class GitHubApps
 
     /// <summary>Installiert eine heruntergeladene Datei: Prüfsumme prüfen (wenn GitHub eine nennt), ZIP sicher entpacken oder .exe ablegen,
     /// Hauptprogramm finden, in die Liste eintragen. Ein vorhandener Stand desselben Projekts wird ersetzt.</summary>
-    public static Installed Install(string toolsRoot, string repo, Release release, Asset asset, string downloadedFile, string license, string description, AuditLog? audit = null, Action<string, string>? extract7z = null, bool arm64 = false)
+    public static Installed Install(Principal by, string toolsRoot, string repo, Release release, Asset asset, string downloadedFile, string license, string description, AuditLog? audit = null, Action<string, string>? extract7z = null, bool arm64 = false)
     {
+        Rbac.DemandSoftware(by, "github.install " + repo, audit); // T-0764
         if (!ValidRepo(repo)) throw new ArgumentException("Ungültiger Projektname.", nameof(repo));
         var sha = Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(downloadedFile)));
         if (asset.Sha256 is { } want && !string.Equals(want, sha, StringComparison.OrdinalIgnoreCase))
@@ -161,9 +162,10 @@ public static partial class GitHubApps
             var exe = MainExe(tmp, repo) ?? throw new InvalidOperationException("Im Paket ist kein Windows-Programm (.exe).");
             if (Directory.Exists(dir)) Directory.Delete(dir, true);
             SafeFile.MoveDirectory(tmp, dir);
+            Sys.ProgramTrust.WriteMarker(dir, repo, sha); // T-0764 (P3-1): Herkunft und Prüfsummen der Programmdateien
             var entry = new Installed(id, repo, release.Tag, Path.GetRelativePath(tmp, exe).Replace('\\', '/'), license, asset.Name, sha, description, DateTimeOffset.Now);
             Save(toolsRoot, List(toolsRoot).Where(i => i.Id != id).Append(entry));
-            audit?.Append("app", "github.install", $"{repo} {release.Tag} {asset.Name} sha256={sha}");
+            audit?.Append(by.Name, "github.install", $"{repo} {release.Tag} {asset.Name} sha256={sha}");
             return entry;
         }
         finally { if (Directory.Exists(tmp)) Directory.Delete(tmp, true); }
@@ -216,9 +218,16 @@ public static partial class GitHubApps
             .OrderByDescending(Fits).ThenByDescending(d => !before.ContainsKey(d)).ToList();
     }
 
+    /// <summary>T-0764: Eintrag aus der Liste nehmen (der Ordner liegt dann schon in der Sicherung, <see cref="Sys.TrendoPrograms.Remove"/>).</summary>
+    internal static void Forget(string toolsRoot, string id) => Save(toolsRoot, List(toolsRoot).Where(i => i.Id != id));
+
+    /// <summary>T-0764: Eintrag nach dem Wiederherstellen aus der Sicherung wieder aufnehmen.</summary>
+    internal static void Remember(string toolsRoot, Installed e) => Save(toolsRoot, List(toolsRoot).Where(i => i.Id != e.Id).Append(e));
+
     /// <summary>Entfernt ein Programm von GitHub: nur Ordner „gh-…“ direkt im Werkzeugordner, die in der Liste stehen.</summary>
-    public static bool Uninstall(string toolsRoot, string id, AuditLog? audit = null)
+    public static bool Uninstall(Principal by, string toolsRoot, string id, AuditLog? audit = null)
     {
+        Rbac.DemandSoftware(by, "github.uninstall " + id, audit); // T-0764
         var list = List(toolsRoot);
         if (list.FirstOrDefault(i => i.Id == id) is not { } entry || !id.StartsWith(Prefix, StringComparison.Ordinal) || id.IndexOfAny(['/', '\\', '.']) >= 0) return false;
         var dir = Path.Combine(toolsRoot, id);
@@ -228,7 +237,7 @@ public static partial class GitHubApps
             if (info.Attributes.HasFlag(FileAttributes.ReparsePoint)) info.Delete(); else info.Delete(true);
         }
         Save(toolsRoot, list.Where(i => i.Id != id));
-        audit?.Append("app", "github.uninstall", $"{entry.Repo} {entry.Version}");
+        audit?.Append(by.Name, "github.uninstall", $"{entry.Repo} {entry.Version}");
         return true;
     }
 }

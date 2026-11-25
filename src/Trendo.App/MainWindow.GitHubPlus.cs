@@ -76,7 +76,7 @@ public partial class MainWindow
     public async Task<string?> GitHubUpdate(GitHubApps.Installed e)
     {
         var exe = await GitHubInstall(new OssRepo(e.Repo, e.Description, "https://github.com/" + e.Repo, "https://github.com/" + e.Repo + ".git", 0, e.License, "", DateTimeOffset.Now), start: false);
-        if (exe is not null) { _ghUpdates.Remove(e.Id); _core.Audit.Append(Principal.LocalOwner.Name, "github.update", $"{e.Repo} {e.Version} → {GitHubApps.List(_deps.ToolsRoot).FirstOrDefault(x => x.Id == e.Id)?.Version}"); }
+        if (exe is not null) { _ghUpdates.Remove(e.Id); _core.Audit.Append(CurrentPrincipal.Name, "github.update", $"{e.Repo} {e.Version} → {GitHubApps.List(_deps.ToolsRoot).FirstOrDefault(x => x.Id == e.Id)?.Version}"); }
         if (CurrentView == "components") Show("components");
         return exe;
     }

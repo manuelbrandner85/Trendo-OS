@@ -191,7 +191,7 @@ public partial class MainWindow
         var own = Act("ms-video-own", "Eigene Videoclips …", async () =>
         {
             var got = PickOverride is { } fake ? await fake(new PickRequest("ms-video-own", false, true, ["mp4", "mov", "mkv", "webm"]))
-                : (await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Videoclips wählen", AllowMultiple = true,
+                : (await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Videoclips wählen", AllowMultiple = true,
                     FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Videos") { Patterns = ["*.mp4", "*.mov", "*.mkv", "*.webm"] }] })).Select(f => f.TryGetLocalPath()).OfType<string>().ToArray();
             foreach (var f in got ?? []) if (!_mvClips.Contains(f)) _mvClips.Add(f);
             Show(MS);

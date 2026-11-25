@@ -159,8 +159,10 @@ public static partial class Web
     public sealed record QItem(string Id, string Original, string Stored, DateTime At, string Sha256);
     public static string QDir(string dataRoot) => Path.Combine(dataRoot, "quarantaene");
     /// <summary>Verschiebt in den Quarantäne-Ordner mit Endung „.gesperrt“ – so startet Windows die Datei nicht per Doppelklick.</summary>
-    public static QItem Quarantine(string dataRoot, string file, AuditLog? audit = null)
+    /// T-0764 (13. Prüfrunde): <paramref name="by"/> – Kinder nehmen nur Dateien aus der Freigabe weg (sonst könnte „In Quarantäne“ Dateien aus Systemorten oder Trendo-Ordnern entfernen).
+    public static QItem Quarantine(Principal by, string dataRoot, string file, AuditLog audit)
     {
+        ChildWrite.Demand(by, file, audit, checkName: false);
         var d = QDir(dataRoot); Directory.CreateDirectory(d);
         var id = Guid.NewGuid().ToString("N")[..10]; var stored = Path.Combine(d, id + "-" + Path.GetFileName(file) + ".gesperrt");
         var sha = J.Sha(file); File.Move(file, stored);
@@ -169,9 +171,10 @@ public static partial class Web
         audit?.Append("app", "quarantine.add", $"{Path.GetFileName(file)} sha256={sha}"); return q;
     }
     public static List<QItem> QuarantineList(string dataRoot) => J.Load<QItem>(Path.Combine(QDir(dataRoot), "liste.json"));
-    public static void Restore(string dataRoot, string id)
+    public static void Restore(Principal by, string dataRoot, string id, AuditLog audit)
     {
         var f = Path.Combine(QDir(dataRoot), "liste.json"); var l = J.Load<QItem>(f); var q = l.Single(x => x.Id == id);
+        ChildWrite.DemandMove(by, q.Stored, q.Original, audit, fromReadOnly: true); // T-0764 (13. Prüfrunde): zurück nur in die Freigabe (der Ort steht in Trendos Liste)
         if (File.Exists(q.Original)) throw new IOException("Am alten Ort liegt schon eine Datei mit dem Namen.");
         File.Move(q.Stored, q.Original); l.Remove(q); J.Save(f, l);
     }

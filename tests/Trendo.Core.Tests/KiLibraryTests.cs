@@ -50,13 +50,13 @@ public class KiLibraryTests
             var m = KiLibrary.Models.First(x => x.Id == "piper-eva");
             var f = m.Files[1] with { Sha256 = null, ShaSource = null }; // die kleine JSON-Datei – hier ohne feste Katalog-Summe (Weg „Summe vom Server“, T-0739)
             var wrong = Path.Combine(d, "x"); File.WriteAllBytes(wrong, new byte[10]);
-            Assert.Throws<InvalidOperationException>(() => store.InstallModelFile(m, f, wrong, null));
+            Assert.Throws<InvalidOperationException>(() => store.InstallModelFile(Principal.LocalOwner, m, f, wrong, null));
             var ok = Path.Combine(d, "y"); File.WriteAllBytes(ok, new byte[f.Bytes]);
-            Assert.Throws<InvalidOperationException>(() => store.InstallModelFile(m, f, ok, new string('a', 64)));
+            Assert.Throws<InvalidOperationException>(() => store.InstallModelFile(Principal.LocalOwner, m, f, ok, new string('a', 64)));
             Assert.False(File.Exists(ok)); // T-0739: abgelehnte Datei wird verworfen
             File.WriteAllBytes(ok, new byte[f.Bytes]);
             var sha = Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(ok)));
-            store.InstallModelFile(m, f, ok, sha);
+            store.InstallModelFile(Principal.LocalOwner, m, f, ok, sha);
             Assert.True(File.Exists(store.ModelFile(m, f)));
             Assert.False(store.ModelReady(m)); // .onnx fehlt noch
             Directory.CreateDirectory(Path.Combine(d, "anderes")); File.WriteAllText(Path.Combine(d, "anderes", "bleibt.txt"), "x");
@@ -105,19 +105,19 @@ public class KiLibraryTests
             var f = m.Files[1] with { Bytes = bytes.Length, Sha256 = sha, ShaSource = "Test" };
             // 1. veränderte Bytes, gleiche Größe: verworfen, Datei gelöscht, nichts installiert – auch wenn der Server die falsche Summe mitschickt
             var bad = Path.Combine(d, "bad"); var b2 = (byte[])bytes.Clone(); b2[5] ^= 0x01; File.WriteAllBytes(bad, b2);
-            var ex = Assert.Throws<InvalidOperationException>(() => store.InstallModelFile(m, f, bad, null, audit));
+            var ex = Assert.Throws<InvalidOperationException>(() => store.InstallModelFile(Principal.LocalOwner, m, f, bad, null, audit));
             Assert.Contains("Prüfsumme passt nicht", ex.Message); Assert.Contains("verworfen, nichts installiert", ex.Message);
             Assert.False(File.Exists(bad)); Assert.False(File.Exists(store.ModelFile(m, f)));
             File.WriteAllBytes(bad, b2);
-            Assert.Throws<InvalidOperationException>(() => store.InstallModelFile(m, f, bad, Convert.ToHexStringLower(SHA256.HashData(b2)), audit));
+            Assert.Throws<InvalidOperationException>(() => store.InstallModelFile(Principal.LocalOwner, m, f, bad, Convert.ToHexStringLower(SHA256.HashData(b2)), audit));
             Assert.False(File.Exists(bad)); Assert.False(File.Exists(store.ModelFile(m, f)));
             // 2. richtige Datei, Server nennt eine andere Summe: Widerspruch → verworfen
             var good = Path.Combine(d, "good"); File.WriteAllBytes(good, bytes);
-            Assert.Contains("weicht vom Katalog ab", Assert.Throws<InvalidOperationException>(() => store.InstallModelFile(m, f, good, new string('b', 64), audit)).Message);
+            Assert.Contains("weicht vom Katalog ab", Assert.Throws<InvalidOperationException>(() => store.InstallModelFile(Principal.LocalOwner, m, f, good, new string('b', 64), audit)).Message);
             Assert.False(File.Exists(good));
             // 3. richtige Datei: installiert, Audit nennt Summe und Quelle
             File.WriteAllBytes(good, bytes);
-            store.InstallModelFile(m, f, good, null, audit);
+            store.InstallModelFile(Principal.LocalOwner, m, f, good, null, audit);
             Assert.Equal(bytes, File.ReadAllBytes(store.ModelFile(m, f)));
             Assert.True(store.ModelFileOk(m, f));
             // 4. installierte Datei nachträglich verändert (gleiche Größe): gilt nicht mehr als vorhanden – wird beim nächsten Laden neu geholt
@@ -159,9 +159,9 @@ public class KiLibraryTests
             var zip = Path.Combine(d, "rt.zip");
             using (var z = ZipFile.Open(zip, ZipArchiveMode.Create)) using (var s = new StreamWriter(z.CreateEntry("piper/piper.exe").Open())) s.Write("MZ");
             var store = new KiLibraryStore(d);
-            Assert.Throws<InvalidOperationException>(() => store.InstallRuntime(KiRuntime.Piper, zip));
+            Assert.Throws<InvalidOperationException>(() => store.InstallRuntime(Principal.LocalOwner, KiRuntime.Piper, zip));
             Assert.False(store.RuntimeReady(KiRuntime.Piper));
-            Assert.Throws<InvalidOperationException>(() => store.InstallRuntime(KiRuntime.Ollama, zip));
+            Assert.Throws<InvalidOperationException>(() => store.InstallRuntime(Principal.LocalOwner, KiRuntime.Ollama, zip));
         }
         finally { Directory.Delete(d, true); }
     }

@@ -30,7 +30,7 @@ public sealed class MpvAudio(string mpvPath) : IAudioOut
 
     /// <summary>Startargumente: unsichtbar, nur Ton, Steuerung über eine benannte Pipe.</summary>
     public static string[] StartArgs(string pipe) =>
-        ["--force-window=no", "--vo=null", "--no-video", "--idle=yes", "--no-terminal", "--really-quiet", "--audio-display=no", $"--input-ipc-server=\\\\.\\pipe\\{pipe}"];
+        [.. Trendo.Core.MpvSafe.Args(), "--force-window=no", "--vo=null", "--no-video", "--idle=yes", "--no-terminal", "--really-quiet", "--audio-display=no", $"--input-ipc-server=\\\\.\\pipe\\{pipe}"];
 
     /// <summary>Prozess des Players (für Tests: hat er ein Fenster?).</summary>
     public Process? ProcessForTests => _proc;
@@ -39,10 +39,14 @@ public sealed class MpvAudio(string mpvPath) : IAudioOut
     {
         if (_proc is { HasExited: false } && _pipe is { IsConnected: true }) return;
         Close();
-        var psi = new ProcessStartInfo(mpvPath) { UseShellExecute = false, CreateNoWindow = true };
+        var work = Trendo.Core.MpvSafe.WorkDir();
+        var psi = new ProcessStartInfo(mpvPath) { UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = work }; // 10./11. Prüfrunde: frischer leerer Arbeitsordner, MpvSafe.WorkDir()
         // „--force-window=no“ und „--vo=null“: neuere mpv-Fassungen öffneten sonst trotz „--no-video“ ein eigenes Fenster (Fehler 07.11.2026 – Trendo Musik soll selbst abspielen)
-        foreach (var a in StartArgs(_name)) psi.ArgumentList.Add(a);
-        _proc = Process.Start(psi) ?? throw new InvalidOperationException("Der Player ließ sich nicht starten.");
+        var args = StartArgs(_name);
+        foreach (var a in args) psi.ArgumentList.Add(a);
+        try { _proc = Process.Start(psi) ?? throw new InvalidOperationException("Der Player ließ sich nicht starten."); }
+        catch { Trendo.Core.MpvSafe.Release(args); Trendo.Core.MpvSafe.SafeDelete(work); throw; }
+        Trendo.Core.MpvSafe.HoldUntilExit(args, _proc, work); // 9. Prüfrunde: Tastendatei gesperrt, bis mpv endet
         var pipe = new NamedPipeClientStream(".", _name, PipeDirection.InOut, PipeOptions.Asynchronous);
         for (var i = 0; ; i++) { try { pipe.Connect(250); break; } catch (TimeoutException) when (i < 20) { } }
         _pipe = pipe; _w = new StreamWriter(pipe, new UTF8Encoding(false)) { AutoFlush = true, NewLine = "\n" };
@@ -78,7 +82,7 @@ public sealed class MpvAudio(string mpvPath) : IAudioOut
         lock (_lock) { try { _w?.WriteLine(JsonSerializer.Serialize(new { command })); } catch (Exception x) when (x is IOException or ObjectDisposedException) { } }
     }
 
-    public void Load(string file) { Ensure(); Send("loadfile", file, "replace"); Send("set_property", "pause", false); }
+    public void Load(string file) { if (!Trendo.Core.MpvSafe.TargetAllowed(file)) throw new ArgumentException("Diese Datei spielt Trendo nicht ab."); Ensure(); /* 9. Prüfrunde */ Send("loadfile", file, "replace"); Send("set_property", "pause", false); }
     public void SetPause(bool pause) => Send("set_property", "pause", pause);
     public void Seek(double seconds) => Send("seek", seconds, "absolute");
     public void SetVolume(int percent) => Send("set_property", "volume", Math.Clamp(percent, 0, 130));

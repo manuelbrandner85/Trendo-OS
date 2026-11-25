@@ -742,7 +742,7 @@ public partial class MainWindow
     {
         string[]? got;
         if (PickOverride is { } fake) got = await fake(new PickRequest("claude-chat-attach", false, true, []));
-        else got = (await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Für Claude anhängen", AllowMultiple = true })).Select(f => f.TryGetLocalPath()).OfType<string>().ToArray();
+        else got = (await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Für Claude anhängen", AllowMultiple = true })).Select(f => f.TryGetLocalPath()).OfType<string>().ToArray();
         if (got is { Length: > 0 }) ClaudeChatAttach(dock, got);
     }
 

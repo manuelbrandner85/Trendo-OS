@@ -7,6 +7,7 @@ namespace Trendo.Core.Tests;
 
 public class Sys02_Alltag
 {
+    static AuditLog Au13(string d) => new(d.TrimEnd(Path.DirectorySeparatorChar) + "-audit13.jsonl"); // T-0764 (13. Prüfrunde): Kern verlangt die Rolle – hier Erwachsene (unverändert)
     static string Tmp() { var d = Path.Combine(Path.GetTempPath(), "trendo-s02-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(d); return d; }
 
     [Fact(DisplayName = "SYS-02-P05: Zwischenablage max. 50, keine Passwörter/Schlüssel, löschbar")]
@@ -65,14 +66,14 @@ public class Sys02_Alltag
     {
         var d = Tmp(); foreach (var n in new[] { "b.txt", "a.txt", "c.txt" }) File.WriteAllText(Path.Combine(d, n), n);
         var plan = Renamer.Plan(Directory.GetFiles(d), "Datei_{n:000}");
-        var u = Renamer.Apply(plan, Path.Combine(d, "undo"));
+        var u = Renamer.Apply(Principal.LocalOwner, Au13(d), plan, Path.Combine(d, "undo"));
         Assert.Equal(plan.Select(m => Path.GetFileName(m.To)).OrderBy(x => x), Directory.GetFiles(d).Select(Path.GetFileName).OrderBy(x => x));
         Assert.Equal("a.txt", File.ReadAllText(Path.Combine(d, "Datei_001.txt")));
-        Renamer.Undo(u); Assert.True(File.Exists(Path.Combine(d, "b.txt"))); Assert.False(File.Exists(u));
+        Renamer.Undo(Principal.LocalOwner, Au13(d), u); Assert.True(File.Exists(Path.Combine(d, "b.txt"))); Assert.False(File.Exists(u));
         Assert.Throws<ArgumentException>(() => Renamer.Plan(Directory.GetFiles(d), "gleich"));
         Assert.Throws<ArgumentException>(() => Renamer.Plan(Directory.GetFiles(d), "a/b{n}"));
         var swap = new List<Move> { new(Path.Combine(d, "a.txt"), Path.Combine(d, "b.txt")), new(Path.Combine(d, "b.txt"), Path.Combine(d, "a.txt")) };
-        Renamer.Apply(swap, Path.Combine(d, "undo")); Assert.Equal("b.txt", File.ReadAllText(Path.Combine(d, "a.txt")));
+        Renamer.Apply(Principal.LocalOwner, Au13(d), swap, Path.Combine(d, "undo")); Assert.Equal("b.txt", File.ReadAllText(Path.Combine(d, "a.txt")));
     }
 
     [Fact(DisplayName = "SYS-02-P12/P13: Doppelte per SHA-256 (nichts gelöscht), Speicherplatz-Summen stimmen")]
@@ -192,8 +193,8 @@ public class Sys02_Alltag
         Assert.Equal(new DateTime(2024, 7, 15, 18, 30, 0), PhotoSorter.ExifDate(Path.Combine(d, "urlaub.jpg")));
         var p = PhotoSorter.Plan(d); Assert.Equal(2, Directory.GetFiles(d).Length);
         Assert.Contains(p, m => m.To.EndsWith(Path.Combine("2024", "2024-07", "urlaub.jpg"))); Assert.Contains(p, m => m.To.EndsWith(Path.Combine("2025", "2025-03", "ohne.png")));
-        var u = Renamer.Apply(p, Path.Combine(d, "..", Path.GetFileName(d) + "-undo")); Assert.Empty(Directory.GetFiles(d));
-        Renamer.Undo(u); Assert.Equal(2, Directory.GetFiles(d).Length);
+        var u = Renamer.Apply(Principal.LocalOwner, Au13(d), p, Path.Combine(d, "..", Path.GetFileName(d) + "-undo")); Assert.Empty(Directory.GetFiles(d));
+        Renamer.Undo(Principal.LocalOwner, Au13(d), u); Assert.Equal(2, Directory.GetFiles(d).Length);
     }
 
     [Fact(DisplayName = "SYS-02-P24/P25: Wetter offline ohne Fehler (nur Auswertung), Warnung bei RAM > 90 % / < 5 GB frei")]

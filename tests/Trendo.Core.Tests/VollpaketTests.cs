@@ -28,9 +28,9 @@ public class T0222_Vollpaket
         {
             var prog = Medium(root);
             var audit = new AuditLog(Path.Combine(root, "audit.jsonl"));
-            Assert.Equal(1, Vollpaket.InstallMissing(prog, tools, audit));
+            Assert.Equal(1, Vollpaket.InstallMissing(Principal.LocalOwner, prog, tools, audit));
             Assert.Equal("qpdf", File.ReadAllText(Path.Combine(tools, "qpdf", "bin", "qpdf.exe")));
-            Assert.Equal(0, Vollpaket.InstallMissing(prog, tools, audit));
+            Assert.Equal(0, Vollpaket.InstallMissing(Principal.LocalOwner, prog, tools, audit));
             Assert.Contains("vollpaket.install", File.ReadAllText(Path.Combine(root, "audit.jsonl")));
         }
         finally { Directory.Delete(root, true); }
@@ -51,14 +51,14 @@ public class T0222_Vollpaket
             list.Insert(0, new System.Text.Json.Nodes.JsonObject { ["id"] = "mpv", ["name"] = "mpv", ["version"] = "1", ["license"] = "GPL-2.0", ["file"] = "mpv.zip", ["sha256"] = new string('0', 64), ["bytes"] = new FileInfo(zip).Length, ["exe"] = "mpv.exe", ["source_url"] = "https://github.com/mpv-player/mpv" });
             File.WriteAllText(Path.Combine(prog, Vollpaket.ManifestName), doc.ToJsonString());
             var lines = new List<string>();
-            var r = Vollpaket.InstallEach(prog, tools, null, lines.Add);
+            var r = Vollpaket.InstallEach(Principal.LocalOwner, prog, tools, null, lines.Add);
             Assert.Equal((1, 0, 2), (r.Installed, r.Present, r.Total));
             Assert.Equal("mpv", Assert.Single(r.Failed).Name);
             Assert.True(File.Exists(Path.Combine(tools, "qpdf", "bin", "qpdf.exe")));
             Assert.Contains(lines, l => l.StartsWith("mpv: nicht eingerichtet"));
-            Assert.Equal(0, Vollpaket.InstallMissing(prog, tools)); // qpdf da, mpv weiter kaputt: kein Abbruch
+            Assert.Equal(0, Vollpaket.InstallMissing(Principal.LocalOwner, prog, tools)); // qpdf da, mpv weiter kaputt: kein Abbruch
             using var cts = new CancellationTokenSource(); cts.Cancel();
-            var c = Vollpaket.InstallEach(prog, Path.Combine(root, "leer"), null, null, cts.Token);
+            var c = Vollpaket.InstallEach(Principal.LocalOwner, prog, Path.Combine(root, "leer"), null, null, cts.Token);
             Assert.True(c.Canceled); Assert.Equal(0, c.Installed);
         }
         finally { Directory.Delete(root, true); }
@@ -71,7 +71,7 @@ public class T0222_Vollpaket
         try
         {
             var prog = Medium(root, sha: new string('0', 64));
-            Assert.Throws<InvalidOperationException>(() => Vollpaket.InstallMissing(prog, tools));
+            Assert.Throws<InvalidOperationException>(() => Vollpaket.InstallMissing(Principal.LocalOwner, prog, tools));
             Assert.False(Directory.Exists(Path.Combine(tools, "qpdf")));
             var bad = Medium(Tmp("trendo-vp-"), file: "../qpdf.zip");
             Assert.Null(Vollpaket.Load(bad));

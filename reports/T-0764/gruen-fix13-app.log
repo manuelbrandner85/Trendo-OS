@@ -1,0 +1,76 @@
+T-0764 fix13 – App gezielt (Endstand): 270 betroffene Klassen in 5 Teilen + EveryButton_Alltag einzeln (ohne MpvWindowTests/Echtlauf/Echt/Live/Browser/Fake/Probe/Stub/Handler)
+=== Teil 00 (54 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+T-0727 B6 echt: 9 Modelle von Ollama, Grafikspeicher 11,9 GB → Standard qwen3:14b
+  Finished:    Trendo.App.Tests (ID = '9dd141d3cadca898ff3483d835fd2ceb7cc793b0564b57b24048b5129661bb0b')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 203, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 950,730s
+Waiting 10 seconds for foreground threads to exit...
+Teil 00 exit=0 Total: 203, Errors: 0, Failed: 0, Skipped: 0 956s
+=== Teil 01 (54 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0729: Ablauf im Kindprozess (Fenster, Chrome-Vorschau, LibreOffice-Export) [SKIP]
+      Läuft nur als Kindprozess von „Typischer Ablauf im Kindprozess“.
+    CORE-04 UI: mit echtem Begleiter koppeln (Code vom Gerät), Details holen, Erreichbarkeit, Aufgabe zuordnen, entfernen [SKIP]
+      Übersprungen – nur unter Linux prüfbar.
+    T-0699 Echtlauf Bilder erkennen: echtes YOLOX-S erkennt Hund und Fahrrad, echtes Tesseract liest gedruckten Text; Suche findet beide Fotos, Seitendatei geschrieben [SKIP]
+      Übersprungen – YOLOX-Prüfumgebung fehlt (%TEMP%/trendo-tools-b/yolox).
+    T-0699 Echtlauf Videos mit KI: echte Bild-KI malt 2 Schlüsselbilder, echte Stimme spricht, FFmpeg rendert MP4 mit Ton und Untertitel; ffprobe prüft, Standbilder einer Szene unterscheiden sich [SKIP]
+      Übersprungen – Echtlauf mit Bild-KI nur mit TRENDO_ECHT_VIDEO=1.
+  Finished:    Trendo.App.Tests (ID = '9dd141d3cadca898ff3483d835fd2ceb7cc793b0564b57b24048b5129661bb0b')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 245, Errors: 0, Failed: 0, Skipped: 4, Not Run: 0, Time: 343,980s
+Waiting 10 seconds for foreground threads to exit...
+Teil 01 exit=0 Total: 245, Errors: 0, Failed: 0, Skipped: 4 347s
+=== Teil 02 (54 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = '9dd141d3cadca898ff3483d835fd2ceb7cc793b0564b57b24048b5129661bb0b')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 177, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 499,743s
+Waiting 10 seconds for foreground threads to exit...
+Teil 02 exit=0 Total: 177, Errors: 0, Failed: 0, Skipped: 0 506s
+=== Teil 03 (54 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    SYS-03-P14: Seite als PDF – A4, Prüfsumme im Protokoll (nur wenn Chrome/Edge da) [SKIP]
+      Übersprungen: pdfinfo ist nicht installiert.
+    Geräte: namenloses PCI-Gerät erscheint mit Kennung und Angebot; „Namen nachschlagen“ lädt die Liste (Prüfsumme) und zeigt Hersteller und Modell; danach kein Angebot mehr [SKIP]
+      Übersprungen – braucht Windows und pci.ids im Prüfordner.
+  Finished:    Trendo.App.Tests (ID = '9dd141d3cadca898ff3483d835fd2ceb7cc793b0564b57b24048b5129661bb0b')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 294, Errors: 0, Failed: 0, Skipped: 2, Not Run: 0, Time: 263,558s
+Waiting 10 seconds for foreground threads to exit...
+Teil 03 exit=0 Total: 294, Errors: 0, Failed: 0, Skipped: 2 269s
+=== Teil 04 (54 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0731: Bildschirmfoto ohne ffmpeg (echt, GDI) – nimmt ein fremdes Fenster eines anderen Prozesses auf, PNG enthält dessen Pixel [SKIP]
+      Übersprungen – das Testfenster ist von einem anderen Fenster verdeckt (oben liegt 0x3BB0582); der Bildschirm zeigt gerade etwas anderes.
+T-0747-fix: Klick bis Oberfläche wieder frei 94 ms, fertig nach 4949 ms, 180 Wände
+  Finished:    Trendo.App.Tests (ID = '9dd141d3cadca898ff3483d835fd2ceb7cc793b0564b57b24048b5129661bb0b')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 194, Errors: 0, Failed: 0, Skipped: 1, Not Run: 0, Time: 181,108s
+Waiting 10 seconds for foreground threads to exit...
+Teil 04 exit=0 Total: 194, Errors: 0, Failed: 0, Skipped: 1 184s
+=== Teil EB (1 Klassen, Zeitlimit 3600 s) ===
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = '9dd141d3cadca898ff3483d835fd2ceb7cc793b0564b57b24048b5129661bb0b')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 164,995s
+Teil EB exit=0 Total: 1, Errors: 0, Failed: 0, Skipped: 0 166s

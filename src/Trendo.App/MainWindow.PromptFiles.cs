@@ -88,6 +88,7 @@ public partial class MainWindow
     /// <summary>Vorlage(n) in eine Datei schreiben: .md = genau diese Vorlage mit Kopfzeilen, .json = <paramref name="all"/> oder diese.</summary>
     public string PromptExportFile(string file, PromptTemplate? one, bool all)
     {
+        UserFile(file); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
         var json = Path.GetExtension(file).Equals(".json", StringComparison.OrdinalIgnoreCase);
         if (!json && one is null) throw new InvalidOperationException("Für Markdown bitte eine Vorlage wählen.");
         var text = json ? PromptLibrary.ToJson(all || one is null ? Prompts.All() : [one]) : PromptLibrary.ToMarkdown(one!);
@@ -101,7 +102,7 @@ public partial class MainWindow
         var name = all || one is null ? "ki-anweisungen.json" : PromptFileName(one.Name) + ".md";
         string? f;
         if (PickOverride is { } fake) f = (await fake(new PickRequest(all ? "prompt-export-all" : "prompt-export", false, true, [Path.GetExtension(name)]))) is [var x, ..] ? x : null;
-        else f = (await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions { Title = all ? "Alle KI-Anweisungen speichern" : "KI-Anweisung speichern", SuggestedFileName = name,
+        else f = (await PickSaveFile(new FilePickerSaveOptions { Title = all ? "Alle KI-Anweisungen speichern" : "KI-Anweisung speichern", SuggestedFileName = name,
             DefaultExtension = Path.GetExtension(name).TrimStart('.'),
             FileTypeChoices = all ? [new FilePickerFileType("Sammlung (.json)") { Patterns = ["*.json"] }]
                 : [new FilePickerFileType("Markdown mit Kopfzeilen (.md)") { Patterns = ["*.md"] }, new FilePickerFileType("JSON (.json)") { Patterns = ["*.json"] }] }))?.TryGetLocalPath();

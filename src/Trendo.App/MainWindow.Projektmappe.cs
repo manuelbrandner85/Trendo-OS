@@ -91,7 +91,7 @@ public partial class MainWindow
             {
                 string[]? got;
                 if (PickOverride is { } fake) got = await fake(new PickRequest("proj-add", false, true, []));
-                else got = (await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Dateien ins Projekt holen", AllowMultiple = true })).Select(f => f.TryGetLocalPath()).OfType<string>().ToArray();
+                else got = (await PickOpenFiles(new FilePickerOpenOptions { Title = "Dateien ins Projekt holen", AllowMultiple = true })).Select(f => f.TryGetLocalPath()).OfType<string>().ToArray();
                 if (got is null || got.Length == 0) return;
                 Try(V, () => { foreach (var f in got) ProjectAddFile(f); _projMsg = got.Length == 1 ? _projMsg : $"{got.Length} Dateien sind jetzt im Projekt."; Show(V); });
             };

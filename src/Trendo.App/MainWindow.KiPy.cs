@@ -26,9 +26,27 @@ public partial class MainWindow
         return Task.Run(() => Cli.Run(exe, args, cwd, timeoutMs, env.ToDictionary(), System.Text.Encoding.UTF8)); // PYTHONIOENCODING=utf-8 (UvEnv) – sonst Umlaute verstümmelt
     }
 
-    /// <summary>Python-KI einrichten: uv (falls nötig) laden und prüfen, Quellcode auf festem Stand holen und prüfen, Umgebung und Pakete anlegen.</summary>
-    async Task KiPyInstall(KiLibraryModel m, KiPyApp app)
+    /// <summary>T-0764 (2. Prüfrunde N-A): Python-KI aus einem Studio einrichten – Rolle zuerst, dann eigene Rückfrage, Ausführung nur im Freigabe-Tor.
+    /// Fehler kommen als <see cref="InvalidOperationException"/> mit verständlichem Satz zurück (alle Studio-Aufrufer fangen diese ab).</summary>
+    internal async Task KiPyInstall(KiLibraryModel m, KiPyApp app)
     {
+        try { Rbac.DemandSoftware(CurrentPrincipal, "ki.pyapp " + m.Id, _core.Audit); }
+        catch (UnauthorizedAccessException e) { throw new InvalidOperationException(e.Message); }
+        var w = new Wirkung(KiPyAction, m.Id, $"„{m.Name}“ einrichten?",
+            $"KI-Werkzeug: {m.Name}\nLizenz: {m.License}\nWoher: Quellcode {app.Repo} auf geprüftem Stand, Pakete aus der offiziellen Python-Paketquelle\n\nTrendo lädt das Werkzeug und richtet es im Trendo-Werkzeugordner ein (ohne Administratorrechte).", "Einrichten");
+        if (await FreigabeAsync(w) is not { } id) throw new InvalidOperationException($"{m.Name}: nicht freigegeben – es wurde nichts eingerichtet.");
+        try { await _core.Approvals.Execute(id, KiPyAction, m.Id, async () => { await KiPyInstallCore(m, app); return true; }); }
+        catch (ApprovalException e) { throw new InvalidOperationException(e.Message); }
+    }
+
+    /// <summary>Aktionsname im Freigabe-Tor für „Python-KI einrichten“.</summary>
+    public const string KiPyAction = "ki.pyapp";
+
+    /// <summary>Python-KI einrichten: uv (falls nötig) laden und prüfen, Quellcode auf festem Stand holen und prüfen, Umgebung und Pakete anlegen.
+    /// Nur innerhalb einer Freigabe aufrufen (KI-Bibliothek oder <see cref="KiPyInstall"/>). T-0764: Rolle als erste Zeile.</summary>
+    internal async Task KiPyInstallCore(KiLibraryModel m, KiPyApp app)
+    {
+        Rbac.DemandSoftware(CurrentPrincipal, "ki.pyapp " + m.Id, _core.Audit);
         var store = KiStore; var p = store.PyPaths(m.Runtime); var nvidia = HasNvidia();
         var steps = KiPyApps.Steps(app, p, nvidia);
         var total = steps.Count + 2; var step = 0;
@@ -37,13 +55,13 @@ public partial class MainWindow
             var uv = KiLibrary.RuntimeInfo(KiRuntime.Uv);
             SetupOverlayProgress(step, total, $"{uv.Name} wird geladen …");
             var (zip, _) = await KiDownload(uv.DownloadUrl, uv.Asset, uv.Bytes, step, total);
-            try { await Task.Run(() => store.InstallRuntime(KiRuntime.Uv, zip, _core.Audit, Extract7z)); } finally { TryDelete(zip); }
+            try { await Task.Run(() => store.InstallRuntime(CurrentPrincipal, KiRuntime.Uv, zip, _core.Audit, Extract7z)); } finally { TryDelete(zip); }
         }
         step++;
         if (KiStepOverride is null && !app.PackagesOnly && !File.Exists(p.Git)) throw new InvalidOperationException("Git fehlt – bitte unter „Programme“ aus dem Vollpaket einrichten.");
         Directory.CreateDirectory(p.Dir);
         var env = KiPyApps.UvEnv(p.UvHome);
-        _core.Audit.Append(Principal.LocalOwner.Name, "ki.pyapp.start", $"{app.Repo}@{app.Commit} torch={KiPyApps.TorchIndex(nvidia)}");
+        _core.Audit.Append(CurrentPrincipal.Name, "ki.pyapp.start", $"{app.Repo}@{app.Commit} torch={KiPyApps.TorchIndex(nvidia)}");
         foreach (var s in steps)
         {
             SetupToken.ThrowIfCancellationRequested();
@@ -56,7 +74,7 @@ public partial class MainWindow
         if (!KiPyApps.CommitOk(app, head.Out)) throw new InvalidOperationException("Der geladene Quellcode hat nicht den geprüften Stand – nicht eingerichtet.");
         CopyKiScript(app, p);
         File.WriteAllText(p.Marker, app.Commit);
-        _core.Audit.Append(Principal.LocalOwner.Name, "ki.pyapp.fertig", $"{app.Repo}@{app.Commit}");
+        _core.Audit.Append(CurrentPrincipal.Name, "ki.pyapp.fertig", $"{app.Repo}@{app.Commit}");
         SetupOverlayProgress(total, total, "Fertig ✓");
     }
 

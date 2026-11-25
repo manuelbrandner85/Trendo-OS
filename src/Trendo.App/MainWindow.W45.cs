@@ -111,7 +111,7 @@ public partial class MainWindow
 
     private string WorkFolder(string sub)
     {
-        var root = string.IsNullOrEmpty(_settings.ProjectsFolder) || !Path.IsPathRooted(_settings.ProjectsFolder) ? Path.Combine(_core.DataRoot, "projekte") : _settings.ProjectsFolder;
+        var root = ProjectsBase(Path.Combine(_core.DataRoot, "projekte")); // T-0764 (14. Prüfrunde, M): Kinder nur in der Freigabe
         var d = Path.Combine(root, sub); Directory.CreateDirectory(d); return d;
     }
 

@@ -1,0 +1,630 @@
+T-0764 fix8 – ROT auf 0f9633f90 (Core: RechteKernFix8 ohne Tests mit neuen Schnittstellen, vor dem Fix)
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix8\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:03.76]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:04.73]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:04.79]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:00:05.09]     T-0764 N: Entpacken im Kinderprofil – Punkte/Leerzeichen am Ende, Datenströme und Gerätenamen gelten als unsicher(entry: "aux.png") [FAIL]
+[xUnit.net 00:00:05.09]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:05.09]       Expected: typeof(System.UnauthorizedAccessException)
+[xUnit.net 00:00:05.09]       Stack Trace:
+[xUnit.net 00:00:05.09]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix8\tests\Trendo.Core.Tests\RechteKernFix8Tests.cs(84,0): at Trendo.Core.Tests.RechteKernFix8.Entpacken_Namen(String entry)
+[xUnit.net 00:00:05.09]            at InvokeStub_RechteKernFix8.Entpacken_Namen(Object, Span`1)
+[xUnit.net 00:00:05.09]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:05.10]     T-0764 N: Entpacken im Kinderprofil – Punkte/Leerzeichen am Ende, Datenströme und Gerätenamen gelten als unsicher(entry: "CON.txt") [FAIL]
+[xUnit.net 00:00:05.10]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:05.10]       Expected: typeof(System.UnauthorizedAccessException)
+[xUnit.net 00:00:05.10]       Stack Trace:
+[xUnit.net 00:00:05.10]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix8\tests\Trendo.Core.Tests\RechteKernFix8Tests.cs(84,0): at Trendo.Core.Tests.RechteKernFix8.Entpacken_Namen(String entry)
+[xUnit.net 00:00:05.10]            at InvokeStub_RechteKernFix8.Entpacken_Namen(Object, Span`1)
+[xUnit.net 00:00:05.10]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:05.17]     T-0764 N: Entpacken im Kinderprofil – Punkte/Leerzeichen am Ende, Datenströme und Gerätenamen gelten als unsicher(entry: "COM1.jpg") [FAIL]
+[xUnit.net 00:00:05.17]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:05.18]       Expected: typeof(System.UnauthorizedAccessException)
+[xUnit.net 00:00:05.18]       Stack Trace:
+[xUnit.net 00:00:05.18]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix8\tests\Trendo.Core.Tests\RechteKernFix8Tests.cs(84,0): at Trendo.Core.Tests.RechteKernFix8.Entpacken_Namen(String entry)
+[xUnit.net 00:00:05.18]            at InvokeStub_RechteKernFix8.Entpacken_Namen(Object, Span`1)
+[xUnit.net 00:00:05.18]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Bestanden T-0764 N: Entpacken im Kinderprofil – Punkte/Leerzeichen am Ende, Datenströme und Gerätenamen gelten als unsicher(entry: "ordner/nul") [125 ms]
+  Bestanden T-0764 N: Entpacken im Kinderprofil – Punkte/Leerzeichen am Ende, Datenströme und Gerätenamen gelten als unsicher(entry: "lpt9") [24 ms]
+  Bestanden T-0764 N: Entpacken im Kinderprofil – Punkte/Leerzeichen am Ende, Datenströme und Gerätenamen gelten als unsicher(entry: "spiel.exe.") [22 ms]
+  Bestanden T-0764 N: Entpacken im Kinderprofil – Punkte/Leerzeichen am Ende, Datenströme und Gerätenamen gelten als unsicher(entry: "bild.png:boese.exe") [25 ms]
+  Fehler T-0764 N: Entpacken im Kinderprofil – Punkte/Leerzeichen am Ende, Datenströme und Gerätenamen gelten als unsicher(entry: "aux.png") [24 ms]
+  Fehlermeldung:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix8.Entpacken_Namen(String entry) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix8\tests\Trendo.Core.Tests\RechteKernFix8Tests.cs:line 84
+   at InvokeStub_RechteKernFix8.Entpacken_Namen(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 N: Entpacken im Kinderprofil – Punkte/Leerzeichen am Ende, Datenströme und Gerätenamen gelten als unsicher(entry: "CON.txt") [18 ms]
+  Fehlermeldung:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix8.Entpacken_Namen(String entry) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix8\tests\Trendo.Core.Tests\RechteKernFix8Tests.cs:line 84
+   at InvokeStub_RechteKernFix8.Entpacken_Namen(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Bestanden T-0764 N: Entpacken im Kinderprofil – Punkte/Leerzeichen am Ende, Datenströme und Gerätenamen gelten als unsicher(entry: "spiel.exe. .") [25 ms]
+  Bestanden T-0764 N: Entpacken im Kinderprofil – Punkte/Leerzeichen am Ende, Datenströme und Gerätenamen gelten als unsicher(entry: "ordner./bild.png:x") [29 ms]
+  Fehler T-0764 N: Entpacken im Kinderprofil – Punkte/Leerzeichen am Ende, Datenströme und Gerätenamen gelten als unsicher(entry: "COM1.jpg") [17 ms]
+  Fehlermeldung:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix8.Entpacken_Namen(String entry) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix8\tests\Trendo.Core.Tests\RechteKernFix8Tests.cs:line 84
+   at InvokeStub_RechteKernFix8.Entpacken_Namen(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:05.19]     T-0764 N: Entpacken im Kinderprofil – Punkte/Leerzeichen am Ende, Datenströme und Gerätenamen gelten als unsicher(entry: "spiel.exe ") [FAIL]
+[xUnit.net 00:00:05.19]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:05.19]       Expected: typeof(System.UnauthorizedAccessException)
+[xUnit.net 00:00:05.19]       Stack Trace:
+[xUnit.net 00:00:05.19]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix8\tests\Trendo.Core.Tests\RechteKernFix8Tests.cs(84,0): at Trendo.Core.Tests.RechteKernFix8.Entpacken_Namen(String entry)
+[xUnit.net 00:00:05.19]            at InvokeStub_RechteKernFix8.Entpacken_Namen(Object, Span`1)
+[xUnit.net 00:00:05.19]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:05.60]     T-0764 M1: Datei- und Ordner-Dialoge des Systems (StorageProvider) nur noch im zentralen Helfer – Kinder bekommen Trendos Auswahl [FAIL]
+[xUnit.net 00:00:05.60]       Assert.All() Failure: 59 out of 59 items in the collection did not pass.
+[xUnit.net 00:00:05.60]       [0]:  Item:  "MainWindow.Cad.cs:143"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.Cad.cs:143"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [1]:  Item:  "MainWindow.CadImport.cs:73"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.CadImport.cs:73"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [2]:  Item:  "MainWindow.ChatWindow.cs:66"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.ChatWindow.cs:66"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [3]:  Item:  "MainWindow.ClaudeChat.cs:745"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.ClaudeChat.cs:745"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [4]:  Item:  "MainWindow.ClaudeFallback.cs:228"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.ClaudeFallback.cs:228"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [5]:  Item:  "MainWindow.CodeEditor.cs:468"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.CodeEditor.cs:468"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [6]:  Item:  "MainWindow.DeckDesign.cs:230"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.DeckDesign.cs:230"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [7]:  Item:  "MainWindow.DocScan.cs:351"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.DocScan.cs:351"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [8]:  Item:  "MainWindow.FilmSchnitt.cs:63"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.FilmSchnitt.cs:63"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [9]:  Item:  "MainWindow.Formulare.cs:139"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.Formulare.cs:139"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [10]: Item:  "MainWindow.GeldProgramm.cs:211"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.GeldProgramm.cs:211"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [11]: Item:  "MainWindow.KiLibrary.cs:496"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.KiLibrary.cs:496"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [12]: Item:  "MainWindow.KreativStudios.cs:131"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.KreativStudios.cs:131"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [13]: Item:  "MainWindow.KreativStudios2.cs:81"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.KreativStudios2.cs:81"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [14]: Item:  "MainWindow.KreativStudios2.cs:638"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.KreativStudios2.cs:638"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [15]: Item:  "MainWindow.MailProgramView.cs:494"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.MailProgramView.cs:494"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [16]: Item:  "MainWindow.MediaBatch.cs:126"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.MediaBatch.cs:126"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [17]: Item:  "MainWindow.MediaBatch.cs:135"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.MediaBatch.cs:135"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [18]: Item:  "MainWindow.MusikTools.cs:96"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.MusikTools.cs:96"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [19]: Item:  "MainWindow.MusikVideo.cs:194"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.MusikVideo.cs:194"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [20]: Item:  "MainWindow.OpenRouter.cs:219"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.OpenRouter.cs:219"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [21]: Item:  "MainWindow.Pdf.cs:95"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.Pdf.cs:95"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [22]: Item:  "MainWindow.PdfWerkstatt.cs:165"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.PdfWerkstatt.cs:165"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [23]: Item:  "MainWindow.Praesentation.cs:218"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.Praesentation.cs:218"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [24]: Item:  "MainWindow.Praesentation.cs:222"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.Praesentation.cs:222"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [25]: Item:  "MainWindow.Praesentation.cs:230"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.Praesentation.cs:230"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [26]: Item:  "MainWindow.Print3D.cs:147"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.Print3D.cs:147"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [27]: Item:  "MainWindow.ProgGame.cs:371"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.ProgGame.cs:371"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [28]: Item:  "MainWindow.ProgGameDesign.cs:279"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.ProgGameDesign.cs:279"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [29]: Item:  "MainWindow.ProgGameFree.cs:69"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.ProgGameFree.cs:69"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [30]: Item:  "MainWindow.ProgGameMixamo.cs:247"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.ProgGameMixamo.cs:247"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [31]: Item:  "MainWindow.ProgGamePro.cs:204"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.ProgGamePro.cs:204"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [32]: Item:  "MainWindow.ProgModeGarment.cs:306"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.ProgModeGarment.cs:306"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [33]: Item:  "MainWindow.ProgramShell.cs:795"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.ProgramShell.cs:795"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [34]: Item:  "MainWindow.ProgramShell.cs:841"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.ProgramShell.cs:841"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [35]: Item:  "MainWindow.ProgramShell.cs:844"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.ProgramShell.cs:844"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [36]: Item:  "MainWindow.Projektmappe.cs:94"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.Projektmappe.cs:94"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [37]: Item:  "MainWindow.PromptFiles.cs:104"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.PromptFiles.cs:104"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [38]: Item:  "MainWindow.Setup.cs:67"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.Setup.cs:67"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [39]: Item:  "MainWindow.Spec05.cs:128"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.Spec05.cs:128"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [40]: Item:  "MainWindow.Spec06.cs:245"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.Spec06.cs:245"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [41]: Item:  "MainWindow.Tabelle.cs:398"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.Tabelle.cs:398"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [42]: Item:  "MainWindow.Tabelle.cs:402"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.Tabelle.cs:402"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [43]: Item:  "MainWindow.Text.cs:170"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.Text.cs:170"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [44]: Item:  "MainWindow.Text.cs:174"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.Text.cs:174"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [45]: Item:  "MainWindow.Text.cs:358"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.Text.cs:358"
+[xUnit.net 00:00:05.60]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.60]       [46]: Item:  "MainWindow.TextPro.cs:412"
+[xUnit.net 00:00:05.60]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.60]                    String:         "MainWindow.TextPro.cs:412"
+[xUnit.net 00:00:05.61]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.61]       [47]: Item:  "MainWindow.TrainBatch.cs:144"
+[xUnit.net 00:00:05.61]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.61]                    String:         "MainWindow.TrainBatch.cs:144"
+[xUnit.net 00:00:05.61]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.61]       [48]: Item:  "MainWindow.Tv.cs:795"
+[xUnit.net 00:00:05.61]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.61]                    String:         "MainWindow.Tv.cs:795"
+[xUnit.net 00:00:05.61]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.61]       [49]: Item:  "MainWindow.VideoSchnitt.cs:482"
+[xUnit.net 00:00:05.61]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.61]                    String:         "MainWindow.VideoSchnitt.cs:482"
+[xUnit.net 00:00:05.61]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.61]       [50]: Item:  "MainWindow.W1Letter.cs:153"
+[xUnit.net 00:00:05.61]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.61]                    String:         "MainWindow.W1Letter.cs:153"
+[xUnit.net 00:00:05.61]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.61]       [51]: Item:  "MainWindow.W1Letter.cs:183"
+[xUnit.net 00:00:05.61]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.61]                    String:         "MainWindow.W1Letter.cs:183"
+[xUnit.net 00:00:05.61]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.61]       [52]: Item:  "MainWindow.W1Office.cs:84"
+[xUnit.net 00:00:05.61]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.61]                    String:         "MainWindow.W1Office.cs:84"
+[xUnit.net 00:00:05.61]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.61]       [53]: Item:  "MainWindow.W1Office.cs:145"
+[xUnit.net 00:00:05.61]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.61]                    String:         "MainWindow.W1Office.cs:145"
+[xUnit.net 00:00:05.61]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.61]       [54]: Item:  "MainWindow.W4Studio3D.cs:547"
+[xUnit.net 00:00:05.61]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.61]                    String:         "MainWindow.W4Studio3D.cs:547"
+[xUnit.net 00:00:05.61]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.61]       [55]: Item:  "MainWindow.WebDesignAssets.cs:136"
+[xUnit.net 00:00:05.61]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.61]                    String:         "MainWindow.WebDesignAssets.cs:136"
+[xUnit.net 00:00:05.61]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.61]       [56]: Item:  "MainWindow.WebDesignCode.cs:210"
+[xUnit.net 00:00:05.61]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.61]                    String:         "MainWindow.WebDesignCode.cs:210"
+[xUnit.net 00:00:05.61]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.61]       [57]: Item:  "MainWindow.WebDesignKi.cs:454"
+[xUnit.net 00:00:05.61]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.61]                    String:         "MainWindow.WebDesignKi.cs:454"
+[xUnit.net 00:00:05.61]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.61]       [58]: Item:  "MainWindow.WebDesignMods.cs:71"
+[xUnit.net 00:00:05.61]             Error: Assert.StartsWith() Failure: String start does not match
+[xUnit.net 00:00:05.61]                    String:         "MainWindow.WebDesignMods.cs:71"
+[xUnit.net 00:00:05.61]                    Expected start: "MainWindow.KidPicker.cs:"
+[xUnit.net 00:00:05.61]       Stack Trace:
+[xUnit.net 00:00:05.61]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix8\tests\Trendo.Core.Tests\RechteKernFix8Tests.cs(57,0): at Trendo.Core.Tests.RechteKernFix8.Dialoge_nur_im_Helfer()
+[xUnit.net 00:00:05.61]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.61]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:05.82]     T-0764 H: jeder mpv-Start im Quelltext nutzt die festen Argumente (MpvSafe, „--no-config“) [FAIL]
+[xUnit.net 00:00:05.82]       MainWindow.Tv.cs, MpvAudio.cs, Sys02.cs
+[xUnit.net 00:00:05.82]       Stack Trace:
+[xUnit.net 00:00:05.82]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix8\tests\Trendo.Core.Tests\RechteKernFix8Tests.cs(48,0): at Trendo.Core.Tests.RechteKernFix8.Mpv_ueberall()
+[xUnit.net 00:00:05.82]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.82]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:05.84]     T-0764 M2: Blender – kein sys.path-Trick in Trendos Skripten; der Startausdruck entfernt Skriptordner, Temp und %APPDATA% aus sys.path [FAIL]
+[xUnit.net 00:00:05.84]       Assert.DoesNotMatch() Failure: Match found
+[xUnit.net 00:00:05.84]                                           ↓ (pos 597)
+[xUnit.net 00:00:05.84]       String: ···"ls import Vector\r\n\r\nsys.path.insert(0, os"···
+[xUnit.net 00:00:05.84]       RegEx:  "sys\\.path\\.(insert|append)|importlib|__im"···
+[xUnit.net 00:00:05.84]       Stack Trace:
+[xUnit.net 00:00:05.84]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix8\tests\Trendo.Core.Tests\RechteKernFix8Tests.cs(66,0): at Trendo.Core.Tests.RechteKernFix8.Blender_sys_path()
+[xUnit.net 00:00:05.84]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.84]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:05.85]     T-0764 H: mpv im eigenen Player-Fenster ohne Einstellungen, Skripte und Standardtasten, mit Trendos sicherer Tastenbelegung; VLC ohne Lua; Versionsprüfung ohne Einstellungen [FAIL]
+[xUnit.net 00:00:05.85]       Assert.Contains() Failure: Item not found in collection
+[xUnit.net 00:00:05.85]       Collection: ["--force-window=yes", "a.mp3"]
+[xUnit.net 00:00:05.85]       Not found:  "--no-config"
+[xUnit.net 00:00:05.85]       Stack Trace:
+[xUnit.net 00:00:05.85]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix8\tests\Trendo.Core.Tests\RechteKernFix8Tests.cs(27,0): at Trendo.Core.Tests.RechteKernFix8.Mpv_Argumente()
+[xUnit.net 00:00:05.85]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.85]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:05.91]     T-0764 N: Entpacken im Kinderprofil – verdächtiges Packverhältnis und mehr als 10 000 Einträge abgelehnt (vorab, ohne zu entpacken) [FAIL]
+[xUnit.net 00:00:05.91]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:05.91]       Expected: typeof(System.UnauthorizedAccessException)
+[xUnit.net 00:00:05.91]       Stack Trace:
+[xUnit.net 00:00:05.91]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix8\tests\Trendo.Core.Tests\RechteKernFix8Tests.cs(95,0): at Trendo.Core.Tests.RechteKernFix8.Entpacken_Grenzen()
+[xUnit.net 00:00:05.91]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.91]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:05.92]   Finished:    Trendo.Core.Tests
+  Fehler T-0764 N: Entpacken im Kinderprofil – Punkte/Leerzeichen am Ende, Datenströme und Gerätenamen gelten als unsicher(entry: "spiel.exe ") [17 ms]
+  Fehlermeldung:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix8.Entpacken_Namen(String entry) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix8\tests\Trendo.Core.Tests\RechteKernFix8Tests.cs:line 84
+   at InvokeStub_RechteKernFix8.Entpacken_Namen(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 M1: Datei- und Ordner-Dialoge des Systems (StorageProvider) nur noch im zentralen Helfer – Kinder bekommen Trendos Auswahl [403 ms]
+  Fehlermeldung:
+   Assert.All() Failure: 59 out of 59 items in the collection did not pass.
+[0]:  Item:  "MainWindow.Cad.cs:143"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.Cad.cs:143"
+             Expected start: "MainWindow.KidPicker.cs:"
+[1]:  Item:  "MainWindow.CadImport.cs:73"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.CadImport.cs:73"
+             Expected start: "MainWindow.KidPicker.cs:"
+[2]:  Item:  "MainWindow.ChatWindow.cs:66"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.ChatWindow.cs:66"
+             Expected start: "MainWindow.KidPicker.cs:"
+[3]:  Item:  "MainWindow.ClaudeChat.cs:745"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.ClaudeChat.cs:745"
+             Expected start: "MainWindow.KidPicker.cs:"
+[4]:  Item:  "MainWindow.ClaudeFallback.cs:228"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.ClaudeFallback.cs:228"
+             Expected start: "MainWindow.KidPicker.cs:"
+[5]:  Item:  "MainWindow.CodeEditor.cs:468"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.CodeEditor.cs:468"
+             Expected start: "MainWindow.KidPicker.cs:"
+[6]:  Item:  "MainWindow.DeckDesign.cs:230"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.DeckDesign.cs:230"
+             Expected start: "MainWindow.KidPicker.cs:"
+[7]:  Item:  "MainWindow.DocScan.cs:351"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.DocScan.cs:351"
+             Expected start: "MainWindow.KidPicker.cs:"
+[8]:  Item:  "MainWindow.FilmSchnitt.cs:63"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.FilmSchnitt.cs:63"
+             Expected start: "MainWindow.KidPicker.cs:"
+[9]:  Item:  "MainWindow.Formulare.cs:139"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.Formulare.cs:139"
+             Expected start: "MainWindow.KidPicker.cs:"
+[10]: Item:  "MainWindow.GeldProgramm.cs:211"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.GeldProgramm.cs:211"
+             Expected start: "MainWindow.KidPicker.cs:"
+[11]: Item:  "MainWindow.KiLibrary.cs:496"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.KiLibrary.cs:496"
+             Expected start: "MainWindow.KidPicker.cs:"
+[12]: Item:  "MainWindow.KreativStudios.cs:131"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.KreativStudios.cs:131"
+             Expected start: "MainWindow.KidPicker.cs:"
+[13]: Item:  "MainWindow.KreativStudios2.cs:81"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.KreativStudios2.cs:81"
+             Expected start: "MainWindow.KidPicker.cs:"
+[14]: Item:  "MainWindow.KreativStudios2.cs:638"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.KreativStudios2.cs:638"
+             Expected start: "MainWindow.KidPicker.cs:"
+[15]: Item:  "MainWindow.MailProgramView.cs:494"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.MailProgramView.cs:494"
+             Expected start: "MainWindow.KidPicker.cs:"
+[16]: Item:  "MainWindow.MediaBatch.cs:126"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.MediaBatch.cs:126"
+             Expected start: "MainWindow.KidPicker.cs:"
+[17]: Item:  "MainWindow.MediaBatch.cs:135"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.MediaBatch.cs:135"
+             Expected start: "MainWindow.KidPicker.cs:"
+[18]: Item:  "MainWindow.MusikTools.cs:96"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.MusikTools.cs:96"
+             Expected start: "MainWindow.KidPicker.cs:"
+[19]: Item:  "MainWindow.MusikVideo.cs:194"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.MusikVideo.cs:194"
+             Expected start: "MainWindow.KidPicker.cs:"
+[20]: Item:  "MainWindow.OpenRouter.cs:219"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.OpenRouter.cs:219"
+             Expected start: "MainWindow.KidPicker.cs:"
+[21]: Item:  "MainWindow.Pdf.cs:95"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.Pdf.cs:95"
+             Expected start: "MainWindow.KidPicker.cs:"
+[22]: Item:  "MainWindow.PdfWerkstatt.cs:165"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.PdfWerkstatt.cs:165"
+             Expected start: "MainWindow.KidPicker.cs:"
+[23]: Item:  "MainWindow.Praesentation.cs:218"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.Praesentation.cs:218"
+             Expected start: "MainWindow.KidPicker.cs:"
+[24]: Item:  "MainWindow.Praesentation.cs:222"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.Praesentation.cs:222"
+             Expected start: "MainWindow.KidPicker.cs:"
+[25]: Item:  "MainWindow.Praesentation.cs:230"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.Praesentation.cs:230"
+             Expected start: "MainWindow.KidPicker.cs:"
+[26]: Item:  "MainWindow.Print3D.cs:147"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.Print3D.cs:147"
+             Expected start: "MainWindow.KidPicker.cs:"
+[27]: Item:  "MainWindow.ProgGame.cs:371"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.ProgGame.cs:371"
+             Expected start: "MainWindow.KidPicker.cs:"
+[28]: Item:  "MainWindow.ProgGameDesign.cs:279"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.ProgGameDesign.cs:279"
+             Expected start: "MainWindow.KidPicker.cs:"
+[29]: Item:  "MainWindow.ProgGameFree.cs:69"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.ProgGameFree.cs:69"
+             Expected start: "MainWindow.KidPicker.cs:"
+[30]: Item:  "MainWindow.ProgGameMixamo.cs:247"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.ProgGameMixamo.cs:247"
+             Expected start: "MainWindow.KidPicker.cs:"
+[31]: Item:  "MainWindow.ProgGamePro.cs:204"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.ProgGamePro.cs:204"
+             Expected start: "MainWindow.KidPicker.cs:"
+[32]: Item:  "MainWindow.ProgModeGarment.cs:306"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.ProgModeGarment.cs:306"
+             Expected start: "MainWindow.KidPicker.cs:"
+[33]: Item:  "MainWindow.ProgramShell.cs:795"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.ProgramShell.cs:795"
+             Expected start: "MainWindow.KidPicker.cs:"
+[34]: Item:  "MainWindow.ProgramShell.cs:841"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.ProgramShell.cs:841"
+             Expected start: "MainWindow.KidPicker.cs:"
+[35]: Item:  "MainWindow.ProgramShell.cs:844"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.ProgramShell.cs:844"
+             Expected start: "MainWindow.KidPicker.cs:"
+[36]: Item:  "MainWindow.Projektmappe.cs:94"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.Projektmappe.cs:94"
+             Expected start: "MainWindow.KidPicker.cs:"
+[37]: Item:  "MainWindow.PromptFiles.cs:104"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.PromptFiles.cs:104"
+             Expected start: "MainWindow.KidPicker.cs:"
+[38]: Item:  "MainWindow.Setup.cs:67"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.Setup.cs:67"
+             Expected start: "MainWindow.KidPicker.cs:"
+[39]: Item:  "MainWindow.Spec05.cs:128"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.Spec05.cs:128"
+             Expected start: "MainWindow.KidPicker.cs:"
+[40]: Item:  "MainWindow.Spec06.cs:245"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.Spec06.cs:245"
+             Expected start: "MainWindow.KidPicker.cs:"
+[41]: Item:  "MainWindow.Tabelle.cs:398"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.Tabelle.cs:398"
+             Expected start: "MainWindow.KidPicker.cs:"
+[42]: Item:  "MainWindow.Tabelle.cs:402"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.Tabelle.cs:402"
+             Expected start: "MainWindow.KidPicker.cs:"
+[43]: Item:  "MainWindow.Text.cs:170"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.Text.cs:170"
+             Expected start: "MainWindow.KidPicker.cs:"
+[44]: Item:  "MainWindow.Text.cs:174"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.Text.cs:174"
+             Expected start: "MainWindow.KidPicker.cs:"
+[45]: Item:  "MainWindow.Text.cs:358"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.Text.cs:358"
+             Expected start: "MainWindow.KidPicker.cs:"
+[46]: Item:  "MainWindow.TextPro.cs:412"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.TextPro.cs:412"
+             Expected start: "MainWindow.KidPicker.cs:"
+[47]: Item:  "MainWindow.TrainBatch.cs:144"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.TrainBatch.cs:144"
+             Expected start: "MainWindow.KidPicker.cs:"
+[48]: Item:  "MainWindow.Tv.cs:795"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.Tv.cs:795"
+             Expected start: "MainWindow.KidPicker.cs:"
+[49]: Item:  "MainWindow.VideoSchnitt.cs:482"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.VideoSchnitt.cs:482"
+             Expected start: "MainWindow.KidPicker.cs:"
+[50]: Item:  "MainWindow.W1Letter.cs:153"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.W1Letter.cs:153"
+             Expected start: "MainWindow.KidPicker.cs:"
+[51]: Item:  "MainWindow.W1Letter.cs:183"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.W1Letter.cs:183"
+             Expected start: "MainWindow.KidPicker.cs:"
+[52]: Item:  "MainWindow.W1Office.cs:84"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.W1Office.cs:84"
+             Expected start: "MainWindow.KidPicker.cs:"
+[53]: Item:  "MainWindow.W1Office.cs:145"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.W1Office.cs:145"
+             Expected start: "MainWindow.KidPicker.cs:"
+[54]: Item:  "MainWindow.W4Studio3D.cs:547"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.W4Studio3D.cs:547"
+             Expected start: "MainWindow.KidPicker.cs:"
+[55]: Item:  "MainWindow.WebDesignAssets.cs:136"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.WebDesignAssets.cs:136"
+             Expected start: "MainWindow.KidPicker.cs:"
+[56]: Item:  "MainWindow.WebDesignCode.cs:210"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.WebDesignCode.cs:210"
+             Expected start: "MainWindow.KidPicker.cs:"
+[57]: Item:  "MainWindow.WebDesignKi.cs:454"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.WebDesignKi.cs:454"
+             Expected start: "MainWindow.KidPicker.cs:"
+[58]: Item:  "MainWindow.WebDesignMods.cs:71"
+      Error: Assert.StartsWith() Failure: String start does not match
+             String:         "MainWindow.WebDesignMods.cs:71"
+             Expected start: "MainWindow.KidPicker.cs:"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix8.Dialoge_nur_im_Helfer() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix8\tests\Trendo.Core.Tests\RechteKernFix8Tests.cs:line 57
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 H: jeder mpv-Start im Quelltext nutzt die festen Argumente (MpvSafe, „--no-config“) [224 ms]
+  Fehlermeldung:
+   MainWindow.Tv.cs, MpvAudio.cs, Sys02.cs
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix8.Mpv_ueberall() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix8\tests\Trendo.Core.Tests\RechteKernFix8Tests.cs:line 48
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 M2: Blender – kein sys.path-Trick in Trendos Skripten; der Startausdruck entfernt Skriptordner, Temp und %APPDATA% aus sys.path [17 ms]
+  Fehlermeldung:
+   Assert.DoesNotMatch() Failure: Match found
+                                    ↓ (pos 597)
+String: ···"ls import Vector\r\n\r\nsys.path.insert(0, os"···
+RegEx:  "sys\\.path\\.(insert|append)|importlib|__im"···
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix8.Blender_sys_path() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix8\tests\Trendo.Core.Tests\RechteKernFix8Tests.cs:line 66
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 H: mpv im eigenen Player-Fenster ohne Einstellungen, Skripte und Standardtasten, mit Trendos sicherer Tastenbelegung; VLC ohne Lua; Versionsprüfung ohne Einstellungen [8 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Item not found in collection
+Collection: ["--force-window=yes", "a.mp3"]
+Not found:  "--no-config"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix8.Mpv_Argumente() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix8\tests\Trendo.Core.Tests\RechteKernFix8Tests.cs:line 27
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 N: Entpacken im Kinderprofil – verdächtiges Packverhältnis und mehr als 10 000 Einträge abgelehnt (vorab, ohne zu entpacken) [63 ms]
+  Fehlermeldung:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix8.Entpacken_Grenzen() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix8\tests\Trendo.Core.Tests\RechteKernFix8Tests.cs:line 95
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 15
+     Bestanden: 6
+     Nicht bestanden: 9
+ Gesamtzeit: 8,6992 Sekunden
+exit 1

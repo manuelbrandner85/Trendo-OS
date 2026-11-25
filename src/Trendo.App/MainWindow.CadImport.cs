@@ -70,7 +70,7 @@ public partial class MainWindow
     {
         var req = new PickRequest("cad-import", false, false, ["dxf", "stl", "step", "stp"]);
         var f = PickOverride is { } fake ? (await fake(req))?.FirstOrDefault()
-            : (await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Zeichnung oder Körper einlesen", FileTypeFilter = [new FilePickerFileType("DXF, STL, STEP") { Patterns = CadImportPatterns }] })).Select(x => x.TryGetLocalPath()).OfType<string>().FirstOrDefault();
+            : (await PickOpenFiles(new FilePickerOpenOptions { Title = "Zeichnung oder Körper einlesen", FileTypeFilter = [new FilePickerFileType("DXF, STL, STEP") { Patterns = CadImportPatterns }] })).Select(x => x.TryGetLocalPath()).OfType<string>().FirstOrDefault();
         if (f is null) return;
         CadImportSafe(f);
         Show("cad");

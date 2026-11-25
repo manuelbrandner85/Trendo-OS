@@ -27,8 +27,9 @@ public partial class MainWindow
 
     /// <summary>Nur Stick/SSD gewählt: Abbild-Zwischenablage löschen, Daten zum Löschen markieren und Trendo still deinstallieren.
     /// Die Deinstallation (Velopack) entfernt Programm und Werkzeuge; der Merker sorgt dafür, dass auch die Daten dieser Einrichtung gehen.</summary>
-    void StickOnlyFinish()
+    internal void StickOnlyFinish()
     {
+        if (!DarfSoftware("trendo.uninstall", "einrichtung-abbild")) { _imgStatus = Rbac.NurErwachseneSoftware; Show("einrichtung-abbild"); return; } // T-0764: Trendo vom PC entfernen nur Erwachsene
         try { if (Directory.Exists(ImageDir)) Directory.Delete(ImageDir, true); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
         _core.Audit.Append(Principal.LocalOwner.Name, "setup.nur-stick", "Trendo wird vom PC entfernt");
         if (UninstallPcOverride is { } o) { o(); return; }

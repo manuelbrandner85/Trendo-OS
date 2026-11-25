@@ -162,7 +162,7 @@ public partial class MainWindow
             _appMsg = $"{p.Name}: läuft …";
             if (CurrentView == "appcenter") Show("appcenter");
             AppCenter.RunResult res;
-            try { res = await AppCenter.RunAsync(r, AppRunLogFolder, l => AppRunLine(run, l), run.Cts.Token, action == "upgrade" ? p.Available : null); }
+            try { res = await AppCenter.RunAsync(r, CurrentPrincipal, AppRunLogFolder, l => AppRunLine(run, l), run.Cts.Token, action == "upgrade" ? p.Available : null); }
             finally { run.Running = false; }
             run.Result = res;
             _appMsg = AppRunText(p, res);

@@ -5,6 +5,7 @@ namespace Trendo.Core.Tests;
 
 public class Sys03_Netz
 {
+    static AuditLog Au13(string d) => new(d.TrimEnd(Path.DirectorySeparatorChar) + "-audit13.jsonl"); // T-0764 (13. Prüfrunde): Kern verlangt die Rolle – hier Erwachsene (unverändert)
     static string Tmp() { var d = Path.Combine(Path.GetTempPath(), "trendo-s03-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(d); return d; }
 
     [Fact(DisplayName = "SYS-03-P06: Prüfsumme – Algorithmus erkannt, Abweichung gemeldet")]
@@ -110,12 +111,12 @@ public class Sys03_Netz
     {
         var d = Tmp(); foreach (var n in new[] { "a.pdf", "b.jpg", "c.exe", "d.part", "e.xyz" }) File.WriteAllText(Path.Combine(d, n), n);
         var p = Web.SortPlan(d); Assert.Equal(4, p.Count); Assert.DoesNotContain(p, m => m.From.EndsWith(".part"));
-        var u = Renamer.Apply(p, Path.Combine(d, "..", Path.GetFileName(d) + "-u"));
+        var u = Renamer.Apply(Principal.LocalOwner, Au13(d), p, Path.Combine(d, "..", Path.GetFileName(d) + "-u"));
         Assert.True(File.Exists(Path.Combine(d, "Programme", "c.exe"))); Assert.True(File.Exists(Path.Combine(d, "Sonstiges", "e.xyz")));
-        Renamer.Undo(u); Assert.True(File.Exists(Path.Combine(d, "c.exe")));
-        var root = Tmp(); var q = Web.Quarantine(root, Path.Combine(d, "c.exe"));
+        Renamer.Undo(Principal.LocalOwner, Au13(d), u); Assert.True(File.Exists(Path.Combine(d, "c.exe")));
+        var root = Tmp(); var q = Web.Quarantine(Principal.LocalOwner, root, Path.Combine(d, "c.exe"), Au13(d));
         Assert.False(File.Exists(Path.Combine(d, "c.exe"))); Assert.EndsWith(".gesperrt", q.Stored); Assert.Equal(64, q.Sha256.Length);
-        Web.Restore(root, q.Id); Assert.True(File.Exists(Path.Combine(d, "c.exe"))); Assert.Empty(Web.QuarantineList(root));
+        Web.Restore(Principal.LocalOwner, root, q.Id, Au13(d)); Assert.True(File.Exists(Path.Combine(d, "c.exe"))); Assert.Empty(Web.QuarantineList(root));
         Assert.Contains("-DisableRemediation", Web.DefenderArgs("x")); Assert.StartsWith("Keine", Web.DefenderResult(0, "")); Assert.Contains("Bedrohung gefunden", Web.DefenderResult(2, ""));
         Assert.StartsWith("🔗 https://a.de/", Web.WebNote(new Uri("https://a.de/"), " Merken "));
         Assert.StartsWith("Kein Proxy", Web.ProxyInfo(false, "x:1", null, null)); Assert.Contains("proxy:8080", Web.ProxyInfo(true, "proxy:8080", null, null));

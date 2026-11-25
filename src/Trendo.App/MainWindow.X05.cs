@@ -158,8 +158,9 @@ public partial class MainWindow
                 var tag = m.Tag;
                 right = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { b, ConfirmRemoveButton("ollama:" + tag, "model-remove-" + tag.Replace(':', '-').Replace('.', '-'), "ki-quellen", async () =>
                 {
+                    if (!DarfSoftware("ki.delete " + tag, "ki-quellen")) { _srcMsg = Rbac.NurErwachseneSoftware; return; } // T-0764: Kinderprofil entfernt keine KI
                     var ok = await new OllamaBackend().DeleteAsync(tag);
-                    _core.Audit.Append(Principal.LocalOwner.Name, ok ? "ki.model.remove" : "ki.model.remove.failed", tag);
+                    _core.Audit.Append(CurrentPrincipal.Name, ok ? "ki.model.remove" : "ki.model.remove.failed", tag);
                     _srcMsg = ok ? $"{m.Name} wurde entfernt – der Speicherplatz ist frei." : $"{m.Name} ließ sich nicht entfernen (läuft Ollama?).";
                     await ScanSourcesAsync();
                 }) } };

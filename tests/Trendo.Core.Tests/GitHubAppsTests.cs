@@ -61,16 +61,16 @@ public class GitHubAppsTests
             var rel = new GitHubApps.Release("v1.2.0", "", []);
             var asset = new GitHubApps.Asset("tool-windows-x64.zip", "https://github.com/o/tool/x", new FileInfo(zip).Length, sha);
             var audit = new AuditLog(Path.Combine(d, "audit.jsonl"));
-            var e = GitHubApps.Install(tools, "o/tool", rel, asset, zip, "MIT", "Ein Werkzeug", audit);
+            var e = GitHubApps.Install(Principal.LocalOwner, tools, "o/tool", rel, asset, zip, "MIT", "Ein Werkzeug", audit);
             Assert.Equal("gh-o-tool", e.Id);
             Assert.Equal("tool/tool.exe", e.Exe);
             Assert.True(File.Exists(Path.Combine(tools, "gh-o-tool", "tool", "tool.exe")));
             Assert.Single(GitHubApps.List(tools));
             Assert.Contains("github.install", File.ReadAllText(Path.Combine(d, "audit.jsonl")));
-            Assert.True(GitHubApps.Uninstall(tools, "gh-o-tool", audit));
+            Assert.True(GitHubApps.Uninstall(Principal.LocalOwner, tools, "gh-o-tool", audit));
             Assert.False(Directory.Exists(Path.Combine(tools, "gh-o-tool")));
             Assert.Empty(GitHubApps.List(tools));
-            Assert.False(GitHubApps.Uninstall(tools, "../x"));
+            Assert.False(GitHubApps.Uninstall(Principal.LocalOwner, tools, "../x"));
         }
         finally { Directory.Delete(d, true); }
     }
@@ -83,12 +83,12 @@ public class GitHubAppsTests
         {
             var zip = MakeZip(d, ("tool.exe", "MZ"));
             var bad = new GitHubApps.Asset("tool-windows.zip", "https://github.com/o/t/x", 1, new string('0', 64));
-            Assert.Throws<InvalidOperationException>(() => GitHubApps.Install(tools, "o/tool", new("v1", "", []), bad, zip, "MIT", ""));
+            Assert.Throws<InvalidOperationException>(() => GitHubApps.Install(Principal.LocalOwner, tools, "o/tool", new("v1", "", []), bad, zip, "MIT", ""));
             Assert.False(Directory.Exists(Path.Combine(tools, "gh-o-tool")));
             var slip = Path.Combine(d, "slip.zip");
             using (var z = ZipFile.Open(slip, ZipArchiveMode.Create)) using (var w = new StreamWriter(z.CreateEntry("../../boese.exe").Open())) w.Write("MZ");
             var ok = new GitHubApps.Asset("tool-windows.zip", "https://github.com/o/t/x", 1, null);
-            Assert.Throws<InvalidOperationException>(() => GitHubApps.Install(tools, "o/tool", new("v1", "", []), ok, slip, "MIT", ""));
+            Assert.Throws<InvalidOperationException>(() => GitHubApps.Install(Principal.LocalOwner, tools, "o/tool", new("v1", "", []), ok, slip, "MIT", ""));
             Assert.False(File.Exists(Path.Combine(d, "boese.exe")));
             Assert.Empty(GitHubApps.List(tools));
         }
@@ -104,10 +104,10 @@ public class GitHubAppsTests
             Directory.CreateDirectory(Path.Combine(d, "krita", "bin")); File.WriteAllText(Path.Combine(d, "krita", "bin", "krita.exe"), "MZ");
             File.SetAttributes(Path.Combine(d, "krita", "bin", "krita.exe"), FileAttributes.ReadOnly);
             Directory.CreateDirectory(Path.Combine(d, "fremd"));
-            Assert.True(Vollpaket.Uninstall(d, "krita"));
+            Assert.True(Vollpaket.Uninstall(Principal.LocalOwner, d, "krita"));
             Assert.False(Directory.Exists(Path.Combine(d, "krita")));
-            Assert.False(Vollpaket.Uninstall(d, "fremd"));
-            Assert.False(Vollpaket.Uninstall(d, ".."));
+            Assert.False(Vollpaket.Uninstall(Principal.LocalOwner, d, "fremd"));
+            Assert.False(Vollpaket.Uninstall(Principal.LocalOwner, d, ".."));
             Assert.True(Directory.Exists(Path.Combine(d, "fremd")));
         }
         finally { Directory.Delete(d, true); }

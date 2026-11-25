@@ -40,6 +40,7 @@ public partial class MainWindow
     public void CodeOpenFolder(string dir)
     {
         if (!Directory.Exists(dir)) throw new DirectoryNotFoundException("Ordner nicht gefunden: " + dir);
+        UserDirFixedNames(dir); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
         _ceRoot = Path.GetFullPath(dir); _ceCollapsed.Clear();
         // Unterordner beim Öffnen zugeklappt – übersichtlich auch bei großen Projekten
         foreach (var d in CodeProject.Tree(_ceRoot).Where(e => e.IsDir && e.Depth >= 0)) _ceCollapsed.Add(d.Path);
@@ -62,6 +63,7 @@ public partial class MainWindow
         foreach (var f in all ? _ceFiles : _ceFiles.Skip(Math.Max(0, _ceActive)).Take(_ceActive >= 0 ? 1 : 0))
         {
             if (!f.Dirty) continue;
+            UserFile(f.Path); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
             CodeProject.WriteText(f.Path, f.Doc.Text); f.Saved = f.Doc.Text; CodeDrafts.Delete(_core.DataRoot, f.Path, ProgLocks);
             _core.Audit.Append(Principal.LocalOwner.Name, "code.save", Path.GetFileName(f.Path));
         }
@@ -80,6 +82,7 @@ public partial class MainWindow
         var root = _ceRoot ?? throw new InvalidOperationException("Erst einen Projektordner öffnen.");
         var full = CodeProject.Inside(root, relative);
         if (File.Exists(full)) throw new InvalidOperationException($"„{relative}“ gibt es schon.");
+        UserFile(full); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung (z. B. start.bat auf dem Desktop)
         Directory.CreateDirectory(Path.GetDirectoryName(full)!); File.WriteAllText(full, "");
         _ceCollapsed.Remove(Path.GetDirectoryName(full)!);
         CodeOpenFile(full); _ceOut = $"„{relative}“ angelegt.";
@@ -112,6 +115,7 @@ public partial class MainWindow
     bool CodeMayStart(out string why, string? label = null, Action? retry = null)
     {
         why = "";
+        if (!DarfAusfuehren("ausfuehren", out why)) return false; // T-0764 (H): Ausführen, Testen, Bauen, Paket – im Kinderprofil nie (vor dem Testmodus geprüft)
         if (_ceRunCts is not null) throw new InvalidOperationException("Es läuft schon ein Programm. Warte, bis es fertig ist – oder klick auf „Abbrechen“.");
         // T-0762 N3a: Projekt aus „Open Source“ ohne Freigabe – Ausführen/Bauen/Testen/Paket fragen wie die Bauanleitung zuerst nach
         if (label is not null && retry is not null && CodeNeedsOssConsent(label, retry)) { why = $"Erst bestätigen: „{label}“ führt Code aus diesem fremden Projekt mit deinen Rechten aus."; return false; }
@@ -210,10 +214,11 @@ public partial class MainWindow
         command = command.Trim();
         if (command.Length == 0) return;
         _ceTab = "terminal";
+        if (!DarfAusfuehren("terminal", out var notAllowed)) { _ceTerm += notAllowed + "\n"; return; } // T-0764 (H)
         if (_ceRunCts is not null) throw new InvalidOperationException("Es läuft schon ein Programm. Warte, bis es fertig ist – oder klick auf „Abbrechen“.");
         _ceTerm += $"{Path.GetFileName(root)}> {command}\n";
         if (_opt.Isolated && !CodeRealToolsInTests) { _ceTerm += "Testmodus: Trendo startet keine Programme.\n"; return; }
-        _core.Audit.Append(Principal.LocalOwner.Name, "code.terminal", $"{Path.GetFileName(root)}: {(command.Length > 200 ? command[..200] + " …" : command)}");
+        _core.Audit.Append(CurrentPrincipal.Name, "code.terminal", $"{Path.GetFileName(root)}: {(command.Length > 200 ? command[..200] + " …" : command)}");
         DevBuild.Cmd cmd;
         if (OperatingSystem.IsWindows())
         {
@@ -362,6 +367,8 @@ public partial class MainWindow
         foreach (var d in CodePendingDrafts())
         {
             if (!Directory.Exists(d.Root)) continue;
+            // T-0764 (13. Prüfrunde, N): Entwürfe stehen in Trendos Datenordner; für Kinder nur Projekte in der Freigabe und keine leere Datei mit gesperrter Endung
+            if (Trendo.Core.Sys.ChildWrite.Problem(CurrentPrincipal, d.Root, checkName: false) is not null || !File.Exists(d.File) && Trendo.Core.Sys.ChildWrite.Problem(CurrentPrincipal, d.File) is not null) continue;
             if (_ceRoot is null || !string.Equals(_ceRoot, d.Root, StringComparison.OrdinalIgnoreCase)) { if (_ceRoot is not null) continue; CodeOpenFolder(d.Root); }
             if (!File.Exists(d.File)) { Directory.CreateDirectory(Path.GetDirectoryName(d.File)!); File.WriteAllText(d.File, ""); }
             CodeOpenFile(d.File);
@@ -465,7 +472,7 @@ public partial class MainWindow
         {
             string? dir;
             if (PickOverride is { } fake) dir = (await fake(new PickRequest("code-folder", true, false, []))) is [var f, ..] ? f : null;
-            else dir = (await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions { Title = "Projektordner öffnen" })).Select(x => x.TryGetLocalPath()).OfType<string>().FirstOrDefault();
+            else dir = (await PickFolders(new FolderPickerOpenOptions { Title = "Projektordner öffnen" })).Select(x => x.TryGetLocalPath()).OfType<string>().FirstOrDefault();
             if (dir is not null) Try(CEK, () => { CodeOpenFolder(dir); Show(CEK); });
         };
         bar.Children.Add(folderBtn);

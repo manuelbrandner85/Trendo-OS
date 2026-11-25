@@ -15,18 +15,18 @@ public class WebAppsTests
         try
         {
             var audit = new AuditLog(Path.Combine(root, "audit", "audit.jsonl"));
-            WebApps.Install(root, "telegram", audit, "test");
-            WebApps.Install(root, "telegram", audit, "test");
+            WebApps.Install(root, "telegram", audit, Principal.LocalOwner);
+            WebApps.Install(root, "telegram", audit, Principal.LocalOwner);
             Assert.Equal(["telegram"], WebApps.Installed(root));
             File.WriteAllText(Path.Combine(WebApps.ProfileDir(root, "telegram"), "Cookies"), "x");
             var args = WebApps.LaunchArgs(root, WebApps.Get("telegram")!);
             Assert.Equal("--app=https://web.telegram.org/a/", args[0]);
             Assert.Contains("--user-data-dir=" + WebApps.ProfileDir(root, "telegram"), args);
-            WebApps.Uninstall(root, "telegram", audit, "test");
+            WebApps.Uninstall(root, "telegram", audit, Principal.LocalOwner);
             Assert.Empty(WebApps.Installed(root));
             Assert.False(Directory.Exists(WebApps.ProfileDir(root, "telegram")));
             Assert.Contains(audit.ReadAll(), e => e.Action == "app.uninstall");
-            Assert.Throws<ArgumentException>(() => WebApps.Install(root, "unbekannt", audit, "test"));
+            Assert.Throws<ArgumentException>(() => WebApps.Install(root, "unbekannt", audit, Principal.LocalOwner));
         }
         finally { try { Directory.Delete(root, true); } catch (IOException) { } }
         Assert.Equal("chrome", WebApps.Browser([new("firefox", "Firefox", "f.exe"), new("chrome", "Chrome", "c.exe")])!.Id);

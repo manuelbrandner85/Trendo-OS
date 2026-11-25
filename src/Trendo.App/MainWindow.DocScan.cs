@@ -276,8 +276,9 @@ public partial class MainWindow
     /// <summary>Als PDF ablegen: Name aus Datum und Titel, Ordner nach Art – vorhandene Dateien werden nie überschrieben.</summary>
     public string ScanSavePdf(ProgramDocument d)
     {
-        var dir = ScanFolder(d); Directory.CreateDirectory(dir);
-        var f = DocScan.Unique(dir, DocScan.FileName(ScanDate(d), d.Text("title")));
+        var dir = UserDirFixedNames(ScanFolder(d)); // T-0764 (13. Prüfrunde): Ordner/Datei frei getippt – Kinder nur Freigabe, keine neue ausführbare Endung
+        Directory.CreateDirectory(dir);
+        var f = UserFile(DocScan.Unique(dir, DocScan.FileName(ScanDate(d), d.Text("title"))));
         ScanWritePdf(d, f); NotifyFileResult(_progMsg[ScanKey]);
         return f;
     }
@@ -304,8 +305,9 @@ public partial class MainWindow
             var run = ScanOcrRunner ?? new RealProcessRunner(); string? data = null; var lang = "eng";
             if (Ocr.HasUserGerman(_core.DataRoot)) { data = Ocr.UserTessdata(_core.DataRoot); lang = "deu"; }
             else if ((await Ocr.LanguagesAsync(run, tess)).Contains("deu")) lang = "deu";
-            var dir = ScanFolder(d); Directory.CreateDirectory(dir);
-            var target = DocScan.Unique(dir, DocScan.FileName(ScanDate(d), d.Text("title")));
+            var dir = UserDirFixedNames(ScanFolder(d)); // T-0764 (13. Prüfrunde): Ordner/Datei frei getippt – Kinder nur Freigabe, keine neue ausführbare Endung
+            Directory.CreateDirectory(dir);
+            var target = UserFile(DocScan.Unique(dir, DocScan.FileName(ScanDate(d), d.Text("title"))));
             var (n, err) = await PdfTools.OcrSearchableAsync(run, tess, imgs, target, data, lang, Math.Clamp(dpi, 72, 600), i => _ui.Post(() => { _progMsg[ScanKey] = $"Texterkennung: Seite {i + 1} von {imgs.Count} …"; }), _core.Audit);
             if (err is not null) { _progMsg[ScanKey] = err; return null; }
             d.Data["last"] = target; d.EditMeta(_ => { });
@@ -348,7 +350,7 @@ public partial class MainWindow
         if (PickOverride is { } fake) files = await fake(req);
         else
         {
-            var got = await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Fotos von Dokumenten", AllowMultiple = true,
+            var got = await PickOpenFiles(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Fotos von Dokumenten", AllowMultiple = true,
                 FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Bilder") { Patterns = [.. ScanExt.Select(e => "*" + e)] }] });
             files = [.. got.Select(f => f.TryGetLocalPath()).OfType<string>()];
         }

@@ -140,13 +140,21 @@ public sealed class PersonStore(string baseRoot)
 
     void Save(List<Person> all) { Directory.CreateDirectory(baseRoot); File.WriteAllText(FileOf, JsonSerializer.Serialize(all)); }
 
+    /// <summary>T-0764 (14. Prüfrunde): Rolle einer Person ändern – nur über <see cref="ProfileRole.Set"/> (Erwachsenen-Weg).</summary>
+    internal void SetChild(string id, bool child)
+    {
+        var all = All(); var i = all.FindIndex(p => p.Id == id);
+        if (i < 0) throw new InvalidOperationException("Diese Person gibt es nicht.");
+        all[i] = all[i] with { Child = child }; Save(all);
+    }
+
     /// <summary>T-0713: Erwachsenen-Profile ohne PIN oder Passwort – nur, solange es auch ein Kinderprofil gibt. Dann kann ein Kind über „Wechseln“
     /// in ein solches Profil gehen und dort freigeben; die Rollentrennung wirkt nicht. Die Hauptperson hat die Kennung „haupt“. Nur ein Hinweis, nichts wird erzwungen.</summary>
     public IReadOnlyList<(string Id, string Name)> AdultsWithoutLockBesideChild()
     {
         var main = UserSettings.Load(baseRoot);
-        var profiles = new List<(string Id, string Name, bool Child)> { ("haupt", main.Name, main.Child) };
-        foreach (var p in All()) profiles.Add((p.Id, p.Name, p.Child || UserSettings.Load(RootOf(p.Id)).Child));
+        var profiles = new List<(string Id, string Name, bool Child)> { ("haupt", main.Name, ProfileRole.IsChild(baseRoot)) }; // T-0764 (14.): Rolle aus der geschützten Quelle
+        foreach (var p in All()) profiles.Add((p.Id, p.Name, p.Child || ProfileRole.IsChild(RootOf(p.Id))));
         if (!profiles.Any(p => p.Child)) return [];
         return profiles.Where(p => !p.Child && !new ProfileLock(RootOf(p.Id)).Enabled).Select(p => (p.Id, p.Name)).ToList();
     }
@@ -203,5 +211,69 @@ public static class BrowserImport
         var neu = found.Where(b => urls.Add(b.Url)).ToList();
         if (neu.Count > 0) Bookmarks.Save(dataRoot, [.. have, .. neu]);
         return neu.Count;
+    }
+}
+
+/// <summary>T-0764 (14. Prüfrunde, H1/H2): Rolle eines Profils aus einer GESCHÜTZTEN Quelle – nicht aus settings.json, die das Profil selbst schreiben,
+/// ersetzen, einlesen oder zurücksetzen kann. Weitere Personen: Eintrag in <c>personen.json</c> des Hauptordners (<see cref="PersonStore"/>).
+/// Hauptprofil: <c>profil/rolle.json</c> im Hauptordner. Beide liegen außerhalb der Kinder-Freigabe (<see cref="ChildWrite"/>: nur Dokumente, Bilder …
+/// und „projekte“) und werden nur über den Erwachsenen-Weg geschrieben (Person anlegen, <see cref="Set"/>).
+/// Fail-closed: Person ohne Eintrag, unlesbare Quelle oder Widerspruch → Kinderprofil. settings.json ist nur noch Spiegel und kann die Rolle nur
+/// verschärfen (Child=true), nie lockern. Einzige Ausnahme ohne Eintrag: das Hauptprofil beim ersten Start – echte Ersteinrichtung (gar nichts da)
+/// gilt als Besitzer; ein vorhandener Stand vor diesem Umbau wird einmalig aus settings.json übernommen (danach zählt nur noch rolle.json).</summary>
+public static class ProfileRole
+{
+    public static string FileOf(string baseRoot) => Path.Combine(baseRoot, "profil", "rolle.json");
+    sealed record Stored(bool Child, DateTime AtUtc);
+
+    /// <summary>Kinderprofil? true auch, wenn die Quelle fehlt, unlesbar ist oder widerspricht (außer Ersteinrichtung des Hauptprofils).</summary>
+    public static bool IsChild(string dataRoot)
+    {
+        try
+        {
+            var baseRoot = PersonStore.BaseOf(dataRoot);
+            var mirror = MirrorChild(dataRoot);
+            if (PersonStore.IdOf(dataRoot) is { } id)
+            {
+                var p = new PersonStore(baseRoot).All().FirstOrDefault(x => x.Id == id);
+                return p is null || p.Child || mirror; // ohne Eintrag: Kind
+            }
+            var f = FileOf(baseRoot);
+            if (File.Exists(f)) return JsonSerializer.Deserialize<Stored>(File.ReadAllText(f)) is not { } s || s.Child || mirror;
+            // kein Eintrag: Ersteinrichtung (nichts da) → Besitzer; Stand vor dem Umbau → einmalig aus settings.json; sonst (Personen da, settings.json fehlt) → Kind
+            var hasSettings = File.Exists(UserSettings.PathIn(dataRoot));
+            var hasPersons = File.Exists(Path.Combine(baseRoot, "personen.json"));
+            var child = hasSettings ? mirror : hasPersons;
+            Write(baseRoot, child);
+            return child;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or JsonException or ArgumentException or NotSupportedException) { return true; }
+    }
+
+    /// <summary>Child aus settings.json (nur Spiegel). Unlesbar → false (verschärft dann nicht; die Rolle kommt aus der geschützten Quelle).</summary>
+    static bool MirrorChild(string dataRoot)
+    {
+        var f = UserSettings.PathIn(dataRoot);
+        if (!File.Exists(f)) return false;
+        try { using var doc = JsonDocument.Parse(File.ReadAllText(f)); return doc.RootElement.ValueKind == JsonValueKind.Object && doc.RootElement.TryGetProperty("Child", out var c) && c.ValueKind == JsonValueKind.True; }
+        catch (JsonException) { return false; }
+    }
+
+    static void Write(string baseRoot, bool child)
+    {
+        var f = FileOf(baseRoot); Directory.CreateDirectory(Path.GetDirectoryName(f)!);
+        AtomicFile.WriteAllText(f, JsonSerializer.Serialize(new Stored(child, DateTime.UtcNow)));
+    }
+
+    /// <summary>Der Erwachsenen-Weg: Rolle eines Profils festlegen (Hauptprofil: rolle.json, Person: personen.json) – nur durch ein Erwachsenen-Profil
+    /// (<see cref="Rbac.DemandSoftware"/>). settings.json wird als Spiegel nachgezogen.</summary>
+    public static void Set(Principal by, string dataRoot, bool child, AuditLog audit)
+    {
+        Rbac.DemandSoftware(by, "profil.rolle", audit, Rbac.NurErwachseneProfil);
+        var baseRoot = PersonStore.BaseOf(dataRoot);
+        if (PersonStore.IdOf(dataRoot) is { } id) new PersonStore(baseRoot).SetChild(id, child);
+        else Write(baseRoot, child);
+        var s = UserSettings.Load(dataRoot); s.Child = child; s.Save(dataRoot);
+        audit.Append(by.Name, "profil.rolle", (child ? "Kind " : "Erwachsen ") + (PersonStore.IdOf(dataRoot) ?? "haupt"));
     }
 }

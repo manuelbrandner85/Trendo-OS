@@ -1,0 +1,28 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    Musik-KI live: Paket prüfen, entpacken, Server starten, 30 s Lied erzeugen [SKIP]
+      Echter Lauf: TRENDO_ACE_LIVE und TRENDO_7Z setzen
+    Z3 PC-Lauf: echtes Modell (Poly Haven, CC0) über Blender nach GLB, HDR-Licht, Grafikkarte, Bilder und gemessene Bildrate unter reports/ (nur mit TRENDO_PC_LAUF=1) [SKIP]
+      Übersprungen – nur mit TRENDO_PC_LAUF=1 (echte Grafikkarte, Blender, Quellen unter %TEMP%\trendo-z3-quellen).
+    T-0209: Jeder sichtbare Knopf auf Helfer, Brief, PDF, Medien, Laden, Produktion und KI-Quellen wirkt [FAIL]
+      Test execution timed out after 300000 milliseconds
+      Stack Trace:
+        --- End of stack trace from previous location ---
+    T-0202: Kein Klick auf irgendeiner Seite stürzt ab (Klick-Audit, Bericht der stummen Knöpfe) [SKIP]
+      Langer Klick-Audit über alle Seiten: TRENDO_ALL_BUTTONS=1 setzen
+T-0747-fix: Klick bis Oberfläche wieder frei 89 ms, fertig nach 3230 ms, 180 Wände
+    T-0699 Echtlauf Bilder erkennen: echtes YOLOX-S erkennt Hund und Fahrrad, echtes Tesseract liest gedruckten Text; Suche findet beide Fotos, Seitendatei geschrieben [SKIP]
+      Übersprungen – YOLOX-Prüfumgebung fehlt (%TEMP%/trendo-tools-b/yolox).
+    T-0699 Echtlauf Videos mit KI: echte Bild-KI malt 2 Schlüsselbilder, echte Stimme spricht, FFmpeg rendert MP4 mit Ton und Untertitel; ffprobe prüft, Standbilder einer Szene unterscheiden sich [SKIP]
+      Übersprungen – Echtlauf mit Bild-KI nur mit TRENDO_ECHT_VIDEO=1.
+    T-0731: Bildschirmfoto ohne ffmpeg (echt, GDI) – nimmt ein fremdes Fenster eines anderen Prozesses auf, PNG enthält dessen Pixel [SKIP]
+      Übersprungen – das Testfenster ist von einem anderen Fenster verdeckt (oben liegt 0x14E05E2); der Bildschirm zeigt gerade etwas anderes.
+T-0727 B6 echt: 9 Modelle von Ollama, Grafikspeicher 11,9 GB → Standard qwen3:14b
+  Finished:    Trendo.App.Tests (ID = '7d261b75ce1eeca6a71aef00a582c5c800bc946a5569832b92c23fcd0aec95a0')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 1158, Errors: 0, Failed: 1, Skipped: 6, Not Run: 0, Time: 4994,787s
+Waiting 10 seconds for foreground threads to exit...
+[FATAL ERROR] Foreground threads were left running, forcing process exit
+exit 1

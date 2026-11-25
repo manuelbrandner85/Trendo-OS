@@ -1,0 +1,78 @@
+T-0764 fix10 – ROT auf b0fddd56b (Core: RechteKernFix10 ohne Tests mit neuen Schnittstellen, vor dem Fix)
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix10\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:02.52]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:03.03]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:03.05]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:00:03.25]     T-0764 M b: jeder mpv-/VLC-Start im Quelltext setzt den leeren, Trendo-eigenen Arbeitsordner (MpvSafe.WorkDir) [FAIL]
+[xUnit.net 00:00:03.25]       MainWindow.Sys02.cs:326, MainWindow.Tv.cs:64, MpvAudio.cs:42
+[xUnit.net 00:00:03.25]       Stack Trace:
+[xUnit.net 00:00:03.25]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix10\tests\Trendo.Core.Tests\RechteKernFix10Tests.cs(46,0): at Trendo.Core.Tests.RechteKernFix10.Arbeitsordner()
+[xUnit.net 00:00:03.25]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:03.25]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:03.26]     T-0764 N2: IPTV-Multicast – udp:// und rtp:// erlaubt(url: "udp://239.0.0.1:1234") [FAIL]
+[xUnit.net 00:00:03.26]       Assert.True() Failure
+[xUnit.net 00:00:03.26]       Expected: True
+[xUnit.net 00:00:03.26]       Actual:   False
+[xUnit.net 00:00:03.26]       Stack Trace:
+[xUnit.net 00:00:03.26]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix10\tests\Trendo.Core.Tests\RechteKernFix10Tests.cs(51,0): at Trendo.Core.Tests.RechteKernFix10.Multicast(String url)
+[xUnit.net 00:00:03.26]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:03.26]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:03.26]     T-0764 N2: IPTV-Multicast – udp:// und rtp:// erlaubt(url: "rtp://239.1.1.1:5004") [FAIL]
+[xUnit.net 00:00:03.26]       Assert.True() Failure
+[xUnit.net 00:00:03.26]       Expected: True
+[xUnit.net 00:00:03.26]       Actual:   False
+[xUnit.net 00:00:03.26]       Stack Trace:
+[xUnit.net 00:00:03.26]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix10\tests\Trendo.Core.Tests\RechteKernFix10Tests.cs(51,0): at Trendo.Core.Tests.RechteKernFix10.Multicast(String url)
+[xUnit.net 00:00:03.26]            at InvokeStub_RechteKernFix10.Multicast(Object, Span`1)
+[xUnit.net 00:00:03.26]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:03.26]     T-0764 M a: jeder mpv-Start ohne yt-dlp-Hook („--ytdl=no“) – feste Argumente und eigenes Player-Fenster [FAIL]
+[xUnit.net 00:00:03.26]       Assert.Contains() Failure: Item not found in collection
+[xUnit.net 00:00:03.26]       Collection: ["--no-config", "--load-scripts=no", "--input-default-bindings=no", "--input-conf=C:\\Users\\<user>\\AppData\\Local\\Tem"···]
+[xUnit.net 00:00:03.26]       Not found:  "--ytdl=no"
+[xUnit.net 00:00:03.26]       Stack Trace:
+[xUnit.net 00:00:03.26]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix10\tests\Trendo.Core.Tests\RechteKernFix10Tests.cs(26,0): at Trendo.Core.Tests.RechteKernFix10.Kein_ytdl()
+[xUnit.net 00:00:03.26]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:03.26]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:03.27]   Finished:    Trendo.Core.Tests
+  Fehler T-0764 M b: jeder mpv-/VLC-Start im Quelltext setzt den leeren, Trendo-eigenen Arbeitsordner (MpvSafe.WorkDir) [164 ms]
+  Fehlermeldung:
+   MainWindow.Sys02.cs:326, MainWindow.Tv.cs:64, MpvAudio.cs:42
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix10.Arbeitsordner() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix10\tests\Trendo.Core.Tests\RechteKernFix10Tests.cs:line 46
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0764 N2: IPTV-Multicast – udp:// und rtp:// erlaubt(url: "udp://239.0.0.1:1234") [< 1 ms]
+  Fehlermeldung:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix10.Multicast(String url) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix10\tests\Trendo.Core.Tests\RechteKernFix10Tests.cs:line 51
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Fehler T-0764 N2: IPTV-Multicast – udp:// und rtp:// erlaubt(url: "rtp://239.1.1.1:5004") [< 1 ms]
+  Fehlermeldung:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix10.Multicast(String url) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix10\tests\Trendo.Core.Tests\RechteKernFix10Tests.cs:line 51
+   at InvokeStub_RechteKernFix10.Multicast(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 M a: jeder mpv-Start ohne yt-dlp-Hook („--ytdl=no“) – feste Argumente und eigenes Player-Fenster [7 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Item not found in collection
+Collection: ["--no-config", "--load-scripts=no", "--input-default-bindings=no", "--input-conf=C:\\Users\\<user>\\AppData\\Local\\Tem"···]
+Not found:  "--ytdl=no"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix10.Kein_ytdl() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T0764-fix10\tests\Trendo.Core.Tests\RechteKernFix10Tests.cs:line 26
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 4
+     Nicht bestanden: 4
+ Gesamtzeit: 4,2936 Sekunden
+exit 1

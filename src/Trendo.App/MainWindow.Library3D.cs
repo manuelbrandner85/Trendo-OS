@@ -53,6 +53,8 @@ public partial class MainWindow
         if (!BibOnline) throw new InvalidOperationException("Offline – Laden geht erst mit Internetverbindung.");
         var item = hit.Source is AssetLibrary.PolyHaven or AssetLibrary.AmbientCg ? await Bib.Download(hit) : await BibFree.Download(Bib, hit, BibKey(hit.Source));
         _core.Audit.Append(Trendo.Core.Principal.LocalOwner.Name, "bibliothek3d.download", $"{hit.Source}/{hit.Id} ({hit.License})");
+        if (!CanManageSoftware && Path.GetDirectoryName(item.File) is { } got && Directory.Exists(got)) // 11. Prüfrunde: nichts Ausführbares aus einem Kind-Download behalten
+            foreach (var f in Directory.EnumerateFiles(got, "*", SearchOption.AllDirectories).Where(f => Trendo.Core.Sys.ChildWrite.BlockedName(f)).ToList()) File.Delete(f);
         return $"✓ „{item.Name}“ liegt in deiner Bibliothek ({item.License}, {item.Source}).";
     });
 

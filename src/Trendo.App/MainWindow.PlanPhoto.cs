@@ -35,15 +35,18 @@ public partial class MainWindow
     public void ArchPhotoToggle() { _archPhoto = !_archPhoto; Show(AK); }
 
     /// <summary>Blender-Skripte aus dem Programm in den Datenordner legen (jedes Mal, damit sie zur Programmversion passen).</summary>
-    string PhotoScripts()
+    /// <remarks>T-0764 (7. Prüfrunde): liefert auch die SHA-256 der eingebauten Skripte – Blender prüft die Dateien vor dem Ausführen.</remarks>
+    (string Dir, Dictionary<string, string> Sha) PhotoScripts()
     {
         var dir = Path.Combine(_core.DataRoot, "cache", "blender"); Directory.CreateDirectory(dir);
+        var sha = new Dictionary<string, string>();
         foreach (var f in new[] { "trendo_foto.py", "trendo_moebel.py" })
         {
             using var s = AssetLoader.Open(new Uri($"avares://TrendoOS/Assets/blender/{f}"));
-            using var o = File.Create(Path.Combine(dir, f)); s.CopyTo(o);
+            using var m = new MemoryStream(); s.CopyTo(m); var bytes = m.ToArray();
+            File.WriteAllBytes(Path.Combine(dir, f), bytes); sha[f] = Trendo.Core.BlenderScript.Sha(bytes);
         }
-        return dir;
+        return (dir, sha);
     }
 
     /// <summary>Foto rechnen: Vorschau 960 × 600 / 64 Samples (Sekunden), fertig 1600 × 1000 / 256 Samples.</summary>
@@ -64,7 +67,8 @@ public partial class MainWindow
             {
                 if (_opt.Isolated) throw new InvalidOperationException("Im abgeschotteten Testmodus startet Trendo kein Blender.");
                 var blender = ModelConverter.FindBlender() ?? throw new InvalidOperationException("Blender wurde nicht gefunden – die Foto-Ansicht braucht Blender (unter Programme einrichten).");
-                file = await PlanPhoto.Render(scene, PhotoScripts(), outFile, blender, progress, ct: _archPhotoCts.Token);
+                var (scriptDir, scriptSha) = PhotoScripts();
+                file = await PlanPhoto.Render(scene, scriptDir, outFile, blender, progress, ct: _archPhotoCts.Token, scriptSha256: scriptSha);
             }
             if (ArchPhotoFile is { } old && old != file && old.StartsWith(Path.Combine(_core.DataRoot, "cache", "foto"))) try { File.Delete(old); } catch (IOException) { }
             ArchPhotoFile = file;

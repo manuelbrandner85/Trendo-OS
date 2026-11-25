@@ -70,6 +70,7 @@ public partial class MainWindow
     /// <summary>Speichert das Dokument. Liefert false, wenn das Speichern aufgehalten wurde, weil es eine fremde Datei mit nicht übernommenen Inhalten überschriebe (T-0682).</summary>
     public bool TextSaveAs(string path)
     {
+        UserFile(path); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
         if (ImportGuardStops("text", path)) { _txMsg = ImportStopMessage("text"); return false; }
         TextFiles.Save(TextDocument, path);
         if (!path.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase)) { TextPath = path; TextDirty = false; RememberRecent(path); OfficeSaved("text"); ImportGuardClear("text"); }
@@ -167,11 +168,11 @@ public partial class MainWindow
         if (PickOverride is { } fake) return (await fake(req)) is [var f, ..] ? f : null;
         if (save)
         {
-            var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions { Title = "Speichern unter", SuggestedFileName = suggested, DefaultExtension = "docx",
+            var file = await PickSaveFile(new FilePickerSaveOptions { Title = "Speichern unter", SuggestedFileName = suggested, DefaultExtension = "docx",
                 FileTypeChoices = [new FilePickerFileType("Word-Dokument") { Patterns = ["*.docx"] }, new FilePickerFileType("LibreOffice-Dokument") { Patterns = ["*.odt"] }, new FilePickerFileType("Reiner Text") { Patterns = ["*.txt"] }, new FilePickerFileType("PDF") { Patterns = ["*.pdf"] }] });
             return file?.TryGetLocalPath();
         }
-        var got = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Dokument öffnen", FileTypeFilter = [new FilePickerFileType("Dokumente") { Patterns = ["*.docx", "*.odt", "*.txt"] }] });
+        var got = await PickOpenFiles(new FilePickerOpenOptions { Title = "Dokument öffnen", FileTypeFilter = [new FilePickerFileType("Dokumente") { Patterns = ["*.docx", "*.odt", "*.txt"] }] });
         return got.Select(f => f.TryGetLocalPath()).OfType<string>().FirstOrDefault();
     }
 
@@ -355,7 +356,7 @@ public partial class MainWindow
         img.Click += async (_, _) =>
         {
             var req = new PickRequest("text-image", false, false, ["png", "jpg", "jpeg", "gif"]);
-            var f = PickOverride is { } fake ? (await fake(req))?.FirstOrDefault() : (await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Bild wählen", FileTypeFilter = [new FilePickerFileType("Bilder") { Patterns = ["*.png", "*.jpg", "*.jpeg", "*.gif"] }] })).Select(x => x.TryGetLocalPath()).OfType<string>().FirstOrDefault();
+            var f = PickOverride is { } fake ? (await fake(req))?.FirstOrDefault() : (await PickOpenFiles(new FilePickerOpenOptions { Title = "Bild wählen", FileTypeFilter = [new FilePickerFileType("Bilder") { Patterns = ["*.png", "*.jpg", "*.jpeg", "*.gif"] }] })).Select(x => x.TryGetLocalPath()).OfType<string>().FirstOrDefault();
             if (f is not null) TextInsertImage(f);
             Show("text");
         };
@@ -390,6 +391,7 @@ public partial class MainWindow
             var f = Path.Combine(Path.GetTempPath(), $"trendo-druck-{DateTime.Now:yyyyMMdd-HHmmss}.pdf");
             TextPdf.Export(TextDocument, f);
             var sumatra = ToolPath("sumatra");
+            if (!CanManageSoftware) { OpenPdf(f); Show("pdf"); _txMsg = NurErwachseneDrucken; _core.Audit.Append(CurrentPrincipal.Name, "rbac.denied", "User fehlt ManageSoftware: drucken " + Path.GetFileName(f)); return; } // T-0764 (7. Prüfrunde): nie über Windows
             if (sumatra is not null && !_opt.Isolated) System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(sumatra, $"-print-dialog \"{f}\"") { UseShellExecute = false });
             else Launch(f);
             _txMsg = "Druckansicht geöffnet – dort Drucker wählen.";

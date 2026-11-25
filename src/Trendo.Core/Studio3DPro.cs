@@ -92,8 +92,8 @@ public static class Studio3DPro
     {
         var blend = Path.ChangeExtension(outPng, ".blend");
         var script = Path.Combine(Path.GetTempPath(), "trendo-3d-render-" + Environment.ProcessId + ".py");
-        File.WriteAllText(script, Studio3D.SceneScript + RenderTail, new System.Text.UTF8Encoding(false));
-        var r = Cli.Run(blender, ["--background", "--factory-startup", "--python-exit-code", "1", "--python", script, "--", specPath, blend, "", outPng, samples.ToString(CultureInfo.InvariantCulture)], null, 1800000);
+        var r = Cli.Run(blender, ["--background", "--factory-startup", "--python-exit-code", "1", .. BlenderScript.Args(script, Studio3D.SceneScript + RenderTail), "--", // T-0764 (7. Prüfrunde): geprüfter Startausdruck
+            specPath, blend, "", outPng, samples.ToString(CultureInfo.InvariantCulture)], null, 1800000);
         return (r, outPng);
     }
 

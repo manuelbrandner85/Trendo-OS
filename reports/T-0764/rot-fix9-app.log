@@ -1,0 +1,23 @@
+T-0764 fix9 – ROT auf d73089760 (App: RechteKernFix9Ui, vor dem Fix)
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0764 M: Kind – „Datei wählen …“ an einem Pfad-Feld öffnet Trendos eigene Auswahl, nicht den Windows-Dialog [FAIL]
+      Assert.NotNull() Failure: Value is null
+      Stack Trace:
+        tests\Trendo.App.Tests\RechteKernFix9UiTests.cs(30,0): at Trendo.App.Tests.RechteKernFix9Ui.Pfadfeld_Kind()
+        --- End of stack trace from previous location ---
+    T-0764 N2: Fernseh-Player – Adresse hinter „--“; andere Schemata (memory:, file:, lavfi) abgelehnt [FAIL]
+      Assert.Equal() Failure: Collections differ at index 0
+      Expected: "--"
+      Actual:   "--mute=no"
+                   ↑ (pos 2)
+      Stack Trace:
+        tests\Trendo.App.Tests\RechteKernFix9UiTests.cs(42,0): at Trendo.App.Tests.RechteKernFix9Ui.Tv_Adresse()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Finished:    Trendo.App.Tests (ID = '2ab3b599c4a26a7ec2a7ce9f50683ce9d0eee2ca0143d0a30ea05f496dd88545')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 2, Errors: 0, Failed: 2, Skipped: 0, Not Run: 0, Time: 5,431s
+exit 1

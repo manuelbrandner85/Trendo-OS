@@ -1,0 +1,13 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+T-0747-fix: Klick bis Oberfläche wieder frei 57 ms, fertig nach 3057 ms, 180 Wände
+T-0727 B6 echt: 9 Modelle von Ollama, Grafikspeicher 11,9 GB → Standard qwen3:14b
+    Z3 PC-Lauf: echtes Modell (Poly Haven, CC0) über Blender nach GLB, HDR-Licht, Grafikkarte, Bilder und gemessene Bildrate unter reports/ (nur mit TRENDO_PC_LAUF=1) [SKIP]
+      Übersprungen – nur mit TRENDO_PC_LAUF=1 (echte Grafikkarte, Blender, Quellen unter %TEMP%\trendo-z3-quellen).
+  Finished:    Trendo.App.Tests (ID = '4cb1e5372aa3395f239642f3eca1dd2136f59b83ef853105da24bdd2f528bf3e')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 550, Errors: 0, Failed: 0, Skipped: 1, Not Run: 0, Time: 1825,820s
+Waiting 10 seconds for foreground threads to exit...
+exit 0

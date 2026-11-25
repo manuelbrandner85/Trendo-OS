@@ -1,0 +1,122 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix4\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:12.10]     ROT N4: Ziele mit Steuerzeichen brauchen das Recht [FAIL]
+[xUnit.net 00:00:12.25]     ROT N3: weitere Interpreter (msbuild, hh, mmc …) sind nie frei wählbar, auch wenn eingerichtet(name: "blender") [FAIL]
+[xUnit.net 00:00:12.30]     ROT N3: weitere Interpreter (msbuild, hh, mmc …) sind nie frei wählbar, auch wenn eingerichtet(name: "wsl") [FAIL]
+[xUnit.net 00:00:12.33]     ROT N3: weitere Interpreter (msbuild, hh, mmc …) sind nie frei wählbar, auch wenn eingerichtet(name: "msbuild") [FAIL]
+[xUnit.net 00:00:12.37]     ROT N3: weitere Interpreter (msbuild, hh, mmc …) sind nie frei wählbar, auch wenn eingerichtet(name: "hh") [FAIL]
+[xUnit.net 00:00:12.40]     ROT N3: weitere Interpreter (msbuild, hh, mmc …) sind nie frei wählbar, auch wenn eingerichtet(name: "explorer") [FAIL]
+[xUnit.net 00:00:12.44]     ROT N3: weitere Interpreter (msbuild, hh, mmc …) sind nie frei wählbar, auch wenn eingerichtet(name: "mmc") [FAIL]
+[xUnit.net 00:00:12.48]     ROT N3: weitere Interpreter (msbuild, hh, mmc …) sind nie frei wählbar, auch wenn eingerichtet(name: "dotnet") [FAIL]
+[xUnit.net 00:00:12.50]     ROT M1: gefälschte Kennungsdatei (richtige SHA einer fremden exe) macht sie nicht vertrauenswürdig [FAIL]
+  Fehler ROT N4: Ziele mit Steuerzeichen brauchen das Recht [97 ms]
+  Fehlermeldung:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotFix4.N4() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix4\tests\Trendo.Core.Tests\RotFix4Core.cs:line 85
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler ROT N3: weitere Interpreter (msbuild, hh, mmc …) sind nie frei wählbar, auch wenn eingerichtet(name: "blender") [145 ms]
+  Fehlermeldung:
+   Assert.ThrowsAny() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotFix4.N3(String name) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix4\tests\Trendo.Core.Tests\RotFix4Core.cs:line 81
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Fehler ROT N3: weitere Interpreter (msbuild, hh, mmc …) sind nie frei wählbar, auch wenn eingerichtet(name: "wsl") [55 ms]
+  Fehlermeldung:
+   Assert.ThrowsAny() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotFix4.N3(String name) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix4\tests\Trendo.Core.Tests\RotFix4Core.cs:line 81
+   at InvokeStub_RotFix4.N3(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler ROT N3: weitere Interpreter (msbuild, hh, mmc …) sind nie frei wählbar, auch wenn eingerichtet(name: "msbuild") [33 ms]
+  Fehlermeldung:
+   Assert.ThrowsAny() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotFix4.N3(String name) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix4\tests\Trendo.Core.Tests\RotFix4Core.cs:line 81
+   at InvokeStub_RotFix4.N3(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler ROT N3: weitere Interpreter (msbuild, hh, mmc …) sind nie frei wählbar, auch wenn eingerichtet(name: "hh") [31 ms]
+  Fehlermeldung:
+   Assert.ThrowsAny() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotFix4.N3(String name) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix4\tests\Trendo.Core.Tests\RotFix4Core.cs:line 81
+   at InvokeStub_RotFix4.N3(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler ROT N3: weitere Interpreter (msbuild, hh, mmc …) sind nie frei wählbar, auch wenn eingerichtet(name: "explorer") [32 ms]
+  Fehlermeldung:
+   Assert.ThrowsAny() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotFix4.N3(String name) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix4\tests\Trendo.Core.Tests\RotFix4Core.cs:line 81
+   at InvokeStub_RotFix4.N3(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler ROT N3: weitere Interpreter (msbuild, hh, mmc …) sind nie frei wählbar, auch wenn eingerichtet(name: "mmc") [41 ms]
+  Fehlermeldung:
+   Assert.ThrowsAny() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotFix4.N3(String name) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix4\tests\Trendo.Core.Tests\RotFix4Core.cs:line 81
+   at InvokeStub_RotFix4.N3(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler ROT N3: weitere Interpreter (msbuild, hh, mmc …) sind nie frei wählbar, auch wenn eingerichtet(name: "dotnet") [37 ms]
+  Fehlermeldung:
+   Assert.ThrowsAny() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotFix4.N3(String name) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix4\tests\Trendo.Core.Tests\RotFix4Core.cs:line 81
+   at InvokeStub_RotFix4.N3(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler ROT M1: gefälschte Kennungsdatei (richtige SHA einer fremden exe) macht sie nicht vertrauenswürdig [21 ms]
+  Fehlermeldung:
+   Assert.ThrowsAny() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotFix4.M1() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix4\tests\Trendo.Core.Tests\RotFix4Core.cs:line 36
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:12.53]     ROT N2: hineingelegte DLL neben einem geprüften Programm wird erkannt [FAIL]
+[xUnit.net 00:00:12.54]     ROT M2: %LOCALAPPDATA%\Programs gilt für Kinder nicht ohne Liste/Signatur [FAIL]
+[xUnit.net 00:00:12.55]     ROT M3: Kind öffnet keinen Ordner im Windows-Explorer [FAIL]
+[xUnit.net 00:00:12.59]     ROT N1: gleich große, gleich datierte ausgetauschte exe wird erkannt [FAIL]
+  Fehler ROT N2: hineingelegte DLL neben einem geprüften Programm wird erkannt [30 ms]
+  Fehlermeldung:
+   Assert.ThrowsAny() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotFix4.N2() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix4\tests\Trendo.Core.Tests\RotFix4Core.cs:line 72
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler ROT M2: %LOCALAPPDATA%\Programs gilt für Kinder nicht ohne Liste/Signatur [10 ms]
+  Fehlermeldung:
+   Assert.ThrowsAny() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotFix4.M2() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix4\tests\Trendo.Core.Tests\RotFix4Core.cs:line 44
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler ROT M3: Kind öffnet keinen Ordner im Windows-Explorer [7 ms]
+  Fehlermeldung:
+   Assert.ThrowsAny() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotFix4.M3() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix4\tests\Trendo.Core.Tests\RotFix4Core.cs:line 51
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler ROT N1: gleich große, gleich datierte ausgetauschte exe wird erkannt [41 ms]
+  Fehlermeldung:
+   Assert.ThrowsAny() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotFix4.N1() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix4\tests\Trendo.Core.Tests\RotFix4Core.cs:line 63
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+Fehler!      : Fehler:    13, erfolgreich:     0, übersprungen:     0, gesamt:    13, Dauer: 588 ms - Trendo.Core.Tests.dll (net10.0)

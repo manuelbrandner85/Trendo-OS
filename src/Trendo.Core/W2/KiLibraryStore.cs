@@ -31,8 +31,9 @@ public sealed class KiLibraryStore(string toolsRoot)
         m.Runtime != KiRuntime.Ollama && (m.Files.Count == 0 ? RuntimeReady(m.Runtime) : m.Files.All(f => new FileInfo(ModelFile(m, f)) is { Exists: true } fi && fi.Length == f.Bytes));
 
     /// <summary>Heruntergeladenes Laufzeit-ZIP prüfen (Größe, SHA-256) und sicher entpacken.</summary>
-    public void InstallRuntime(KiRuntime r, string zip, AuditLog? audit = null, Action<string, string>? extract7z = null)
+    public void InstallRuntime(Principal by, KiRuntime r, string zip, AuditLog? audit = null, Action<string, string>? extract7z = null)
     {
+        Rbac.DemandSoftware(by, "ki.runtime.install " + r, audit); // T-0764
         var info = KiLibrary.RuntimeInfo(r);
         if (info.FromVollpaket) throw new InvalidOperationException($"{info.Name} kommt aus dem Vollpaket.");
         if (new FileInfo(zip).Length != info.Bytes) throw new InvalidOperationException($"{info.Asset}: Größe passt nicht – nicht installiert.");
@@ -64,7 +65,7 @@ public sealed class KiLibraryStore(string toolsRoot)
             if (Directory.Exists(dir)) Directory.Delete(dir, true);
             Directory.CreateDirectory(Path.GetDirectoryName(dir)!);
             Directory.Move(tmp, dir);
-            audit?.Append("app", "ki.runtime.install", $"{info.Name} {info.Tag} sha256={sha}");
+            audit?.Append(by.Name, "ki.runtime.install", $"{info.Name} {info.Tag} sha256={sha}");
         }
         finally { if (Directory.Exists(tmp)) Directory.Delete(tmp, true); }
     }
@@ -72,8 +73,9 @@ public sealed class KiLibraryStore(string toolsRoot)
     /// <summary>Heruntergeladene Modelldatei prüfen und an ihren Platz legen. Maßgeblich ist die feste SHA-256 aus dem Katalog (<see cref="KiFile.Sha256"/>);
     /// nur ohne sie zählt die Summe, die der Server im Kopf mitschickt (<paramref name="expectedSha256"/>). T-0739 (X-05): Passt Größe oder Summe nicht,
     /// wird die geladene Datei verworfen (gelöscht) und nichts installiert; widersprechen sich Katalog und Server, ebenso.</summary>
-    public void InstallModelFile(KiLibraryModel m, KiFile f, string downloaded, string? expectedSha256, AuditLog? audit = null)
+    public void InstallModelFile(Principal by, KiLibraryModel m, KiFile f, string downloaded, string? expectedSha256, AuditLog? audit = null)
     {
+        Rbac.DemandSoftware(by, "ki.model.file " + m.Id, audit); // T-0764: KI-Modelle zählen wie Programme
         void Reject(string why, string detail)
         {
             try { if (File.Exists(downloaded)) File.Delete(downloaded); } catch (IOException) { } catch (UnauthorizedAccessException) { }
@@ -94,7 +96,7 @@ public sealed class KiLibraryStore(string toolsRoot)
         }
         Directory.CreateDirectory(ModelDir(m));
         SafeFile.Move(downloaded, ModelFile(m, f));
-        audit?.Append("app", "ki.model.file", $"{m.Id} {f.FileName} {f.Bytes}{(sha is null ? " ohne-pruefsumme" : " sha256=" + sha + (f.HasSha ? " quelle=katalog" : " quelle=server"))}");
+        audit?.Append(by.Name, "ki.model.file", $"{m.Id} {f.FileName} {f.Bytes}{(sha is null ? " ohne-pruefsumme" : " sha256=" + sha + (f.HasSha ? " quelle=katalog" : " quelle=server"))}");
     }
 
     /// <summary>T-0739: Liegt die Modelldatei schon vollständig und unverändert da? Größe muss stimmen; mit fester Katalog-Summe wird zusätzlich

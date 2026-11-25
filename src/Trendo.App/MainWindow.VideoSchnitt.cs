@@ -479,7 +479,7 @@ public partial class MainWindow
             {
                 string? dir;
                 if (PickOverride is { } fake) dir = (await fake(new PickRequest("ve-relink", true, false, []))) is [var f0, ..] ? f0 : null;
-                else dir = (await StorageProvider.OpenFolderPickerAsync(new Avalonia.Platform.Storage.FolderPickerOpenOptions { Title = "Wo liegen die Dateien jetzt?" })).Select(x => Avalonia.Platform.Storage.StorageProviderExtensions.TryGetLocalPath(x)).OfType<string>().FirstOrDefault();
+                else dir = (await PickFolders(new Avalonia.Platform.Storage.FolderPickerOpenOptions { Title = "Wo liegen die Dateien jetzt?" })).Select(x => Avalonia.Platform.Storage.StorageProviderExtensions.TryGetLocalPath(x)).OfType<string>().FirstOrDefault();
                 if (dir is null) return;
                 var n = 0; d.Edit("Neu verknüpfen", x => n = VideoEdit.Relink(x, dir));
                 _thumbs.Clear(); _progMsg[VK] = n == 0 ? "In diesem Ordner wurden die fehlenden Dateien nicht gefunden." : $"{n} von {miss.Count} Dateien wieder verknüpft."; Show(VK);

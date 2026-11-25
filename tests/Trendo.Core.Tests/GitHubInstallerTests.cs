@@ -34,7 +34,7 @@ public class GitHubInstallerTests
             Assert.Contains("/CURRENTUSER", GitHubApps.SilentArgs(GitHubApps.InstallerKind.Inno));
             // Installer ohne 7-Zip: Install meldet „nur Installer“, damit die App ihn still ausführt
             var inst = F("YouTube-Music-3.12.0.exe", "Nullsoft.NSIS.exehead");
-            var ex = Assert.Throws<GitHubApps.InstallerOnlyException>(() => GitHubApps.Install(Path.Combine(d, "tools"), "pear-devs/pear-desktop", new("v3", "v3", []), A("YouTube-Music-3.12.0.exe"), inst, "MIT", ""));
+            var ex = Assert.Throws<GitHubApps.InstallerOnlyException>(() => GitHubApps.Install(Principal.LocalOwner, Path.Combine(d, "tools"), "pear-devs/pear-desktop", new("v3", "v3", []), A("YouTube-Music-3.12.0.exe"), inst, "MIT", ""));
             Assert.Equal(GitHubApps.InstallerKind.Nsis, ex.Kind);
             Assert.Empty(GitHubApps.List(Path.Combine(d, "tools")));
         }
@@ -54,14 +54,14 @@ public class GitHubInstallerTests
                 if (archive.EndsWith(".exe")) { Directory.CreateDirectory(Path.Combine(target, "$PLUGINSDIR")); File.WriteAllText(Path.Combine(target, "$PLUGINSDIR", "app-64.7z"), "paket"); File.WriteAllText(Path.Combine(target, "Uninstall App.exe"), "x"); }
                 else { File.WriteAllText(Path.Combine(target, "Mein Programm.exe"), new string('x', 500)); File.WriteAllText(Path.Combine(target, "elevate.exe"), "x"); }
             }
-            var e = GitHubApps.Install(Path.Combine(d, "tools"), "o/app", new("v1", "v1", []), A("App-1.0.exe"), inst, "MIT", "", null, Fake7z);
+            var e = GitHubApps.Install(Principal.LocalOwner, Path.Combine(d, "tools"), "o/app", new("v1", "v1", []), A("App-1.0.exe"), inst, "MIT", "", null, Fake7z);
             Assert.Equal("Mein Programm.exe", Path.GetFileName(GitHubApps.ExePath(Path.Combine(d, "tools"), e)));
             Assert.True(File.Exists(GitHubApps.ExePath(Path.Combine(d, "tools"), e)));
             // per Installer eingerichtet: absoluter Pfad, entfernbar
             var outside = Path.Combine(d, "Programs", "Tool", "Tool.exe"); Directory.CreateDirectory(Path.GetDirectoryName(outside)!); File.WriteAllText(outside, "x");
-            var r = GitHubApps.Register(Path.Combine(d, "tools"), "o/tool", new("v2", "v2", []), A("Tool-Setup.exe"), outside, "ab", "MIT", "");
+            var r = GitHubApps.Register(Principal.LocalOwner, Path.Combine(d, "tools"), "o/tool", new("v2", "v2", []), A("Tool-Setup.exe"), outside, "ab", "MIT", "");
             Assert.Equal(outside, GitHubApps.ExePath(Path.Combine(d, "tools"), r));
-            Assert.True(GitHubApps.Uninstall(Path.Combine(d, "tools"), r.Id));
+            Assert.True(GitHubApps.Uninstall(Principal.LocalOwner, Path.Combine(d, "tools"), r.Id));
             Assert.Single(GitHubApps.List(Path.Combine(d, "tools")));
         }
         finally { Directory.Delete(d, true); }

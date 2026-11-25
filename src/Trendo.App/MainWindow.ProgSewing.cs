@@ -33,18 +33,23 @@ public partial class MainWindow
         Show("mode-programm"); return SewingLastSvg;
     }
 
-    async Task SewingSetup()
+    internal async Task SewingSetup()
     {
+        if (!DarfSoftware("npm.install @freesewing", "mode-programm")) { _sewMsg = Rbac.NurErwachseneSoftware; Show("mode-programm"); return; } // T-0764
         var npm = Cli.Find("npm") ?? Cli.Find("npm.cmd");
         if (_opt.Isolated) _sewMsg = "Testmodus: nichts installiert.";
         else if (npm is null) _sewMsg = "⚠ Node.js mit npm fehlt – zuerst unter Programme „Node.js“ einrichten.";
         else
         {
+            // T-0764 (2. Prüfrunde N-G): eigene Rückfrage, Laden nur im Freigabe-Tor
+            var pkg = "@freesewing@" + Sewing.Version;
+            var w = new Wirkung("deps.npm", pkg, "FreeSewing einrichten?", $"Paket: {pkg} (npm, offizielle Quelle, feste Fassung, ohne Installationsskripte)\n\nTrendo lädt das Paket mit npm auf diesen PC.", "Einrichten");
+            if (await FreigabeAsync(w) is not { } approvalId) { _sewMsg = "FreeSewing: abgebrochen – es wurde nichts eingerichtet."; Show("mode-programm"); return; }
             _sewMsg = "FreeSewing wird aus der offiziellen npm-Quelle geladen (feste Fassung, ohne Installationsskripte) …"; Show("mode-programm");
             Directory.CreateDirectory(SewingDir);
-            var r = await Task.Run(() => Cli.Run(npm, Sewing.InstallArgs(SewingDir), SewingDir, 600_000));
+            var r = await _core.Approvals.Execute(approvalId, "deps.npm", pkg, () => Task.Run(() => Cli.Run(npm, Sewing.InstallArgs(SewingDir), SewingDir, 600_000)));
             var ok = r.Ok && Sewing.Ready(SewingDir);
-            _core.Audit.Append(Principal.LocalOwner.Name, "deps.npm", "@freesewing@" + Sewing.Version + (ok ? "" : " (fehlgeschlagen)"));
+            _core.Audit.Append(CurrentPrincipal.Name, "deps.npm", "@freesewing@" + Sewing.Version + (ok ? "" : " (fehlgeschlagen)"));
             _sewMsg = ok ? "✓ FreeSewing ist eingerichtet." : "⚠ Einrichten ging nicht: " + (r.Err.Length > 0 ? r.Err : r.Out).Trim().Split('\n')[0];
         }
         Show("mode-programm");

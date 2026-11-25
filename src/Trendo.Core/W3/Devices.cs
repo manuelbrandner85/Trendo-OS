@@ -2,10 +2,15 @@ using System.Text.Json;
 
 namespace Trendo.Core;
 
-public sealed record DeviceInfo(string Category, string Name, string Status, string Detail = "")
+/// <param name="Hint">T-0764: verständlicher nächster Schritt bei einem Problem (aus dem Windows-Problemcode).</param>
+/// <param name="EjectRoot">T-0764: Laufwerk („E:\“), wenn es ein Wechseldatenträger ist, der sich auswerfen lässt.</param>
+public sealed record DeviceInfo(string Category, string Name, string Status, string Detail = "", string Hint = "", string? EjectRoot = null)
 {
     public bool Problem => Status is not ("OK" or "");
 }
+
+/// <summary>T-0764: ein Laufwerk, wie Windows es gerade meldet (für die schnelle Erkennung neu eingesteckter Sticks ohne PowerShell).</summary>
+public sealed record DriveSnapshot(string Root, DriveType Type, string Label, long Total, long Free, string Format);
 
 /// <summary>SYS-07 Hardware & Device Recognition: erkennt Laufwerke, Geräte (Windows: PnP, Linux: /sys), ordnet sie verständlichen Gruppen zu,
 /// meldet Geräte mit Problemen und was seit dem letzten Mal neu dazugekommen oder verschwunden ist.</summary>
@@ -19,18 +24,44 @@ public sealed class DeviceScanner(IProcessRunner run, string dataRoot, string sy
         "bluetooth" => "Bluetooth", "processor" or "cpu" => "Prozessor", "battery" or "power_supply" => "Akku", _ => "Sonstiges",
     };
 
+    /// <summary>T-0764: Quelle der Laufwerke (Tests ersetzen sie; sonst <see cref="Drives"/>).</summary>
+    public Func<IReadOnlyList<DriveSnapshot>> DriveSource { get; init; } = Drives;
+
+    /// <summary>T-0764: alle bereiten Laufwerke (ohne RAM-Disks) – schnell, ohne PowerShell.</summary>
+    public static IReadOnlyList<DriveSnapshot> Drives()
+    {
+        var l = new List<DriveSnapshot>();
+        foreach (var d in DriveInfo.GetDrives())
+        {
+            try
+            {
+                if (!d.IsReady || d.TotalSize == 0 || d.DriveType == DriveType.Ram) continue;
+                l.Add(new(d.Name, d.DriveType, d.VolumeLabel ?? "", d.TotalSize, d.TotalFreeSpace, d.DriveFormat));
+            }
+            catch (IOException) { } catch (UnauthorizedAccessException) { }
+        }
+        return l;
+    }
+
+    /// <summary>T-0764: Laufwerke als Geräte-Einträge; Wechseldatenträger bekommen <see cref="DeviceInfo.EjectRoot"/> (Auswerfen).</summary>
+    public static IReadOnlyList<DeviceInfo> DriveEntries(IEnumerable<DriveSnapshot> drives) => drives
+        .Where(d => OperatingSystem.IsWindows() || d.Type is DriveType.Fixed or DriveType.Removable)
+        .Select(d => new DeviceInfo("Speicher", $"Laufwerk {d.Root}{(d.Label is { Length: > 0 } v && v != d.Root ? $" ({v})" : "")}", "OK",
+            $"{d.Type switch { DriveType.Removable => "Wechseldatenträger", DriveType.Network => "Netzlaufwerk", _ => "fest" }} · {d.Free / 1_000_000_000} von {d.Total / 1_000_000_000} GB frei · {d.Format}",
+            "", d.Type == DriveType.Removable ? d.Root : null))
+        .ToList();
+
+    /// <summary>T-0764: Wechseldatenträger als Menge (für die Erkennung „neu eingesteckt“/„abgezogen“ binnen Sekunden).</summary>
+    public static IReadOnlySet<string> RemovableRoots(IEnumerable<DriveSnapshot> drives) =>
+        drives.Where(d => d.Type == DriveType.Removable).Select(d => d.Root.ToUpperInvariant()).ToHashSet();
+
     public async Task<IReadOnlyList<DeviceInfo>> ScanAsync(CancellationToken ct = default)
     {
         var l = new List<DeviceInfo>();
-        foreach (var d in DriveInfo.GetDrives())
-        {
-            try { if (!d.IsReady || d.TotalSize == 0 || d.DriveType == DriveType.Ram) continue; if (!OperatingSystem.IsWindows() && d.DriveType != DriveType.Fixed && d.DriveType != DriveType.Removable) continue;
-                l.Add(new("Speicher", $"Laufwerk {d.Name}{(d.VolumeLabel is { Length: > 0 } v && v != d.Name ? $" ({v})" : "")}", "OK", $"{d.DriveType switch { DriveType.Removable => "Wechseldatenträger", DriveType.Network => "Netzlaufwerk", _ => "fest" }} · {d.TotalFreeSpace / 1_000_000_000} von {d.TotalSize / 1_000_000_000} GB frei · {d.DriveFormat}")); }
-            catch (IOException) { } catch (UnauthorizedAccessException) { }
-        }
+        l.AddRange(DriveEntries(DriveSource()));
         if (OperatingSystem.IsWindows() && sysRoot == "/sys") // eigener sysRoot = bewusst sysfs lesen (Tests, Linux-Abbild)
         {
-            var (e, o) = await run.RunAsync("powershell", "-NoProfile -Command \"Get-PnpDevice -PresentOnly | Select-Object Class,FriendlyName,Status,InstanceId | ConvertTo-Csv -NoTypeInformation\"", null, ct);
+            var (e, o) = await run.RunAsync("powershell", "-NoProfile -Command \"Get-PnpDevice -PresentOnly | Select-Object Class,FriendlyName,Status,InstanceId,Problem | ConvertTo-Csv -NoTypeInformation\"", null, ct); // T-0764: Problem = Windows-Problemcode
             var idsFile = PciIds.FileIn(dataRoot); // Alle Studios, Runde 9: Geräte ohne Namen benennen, wenn die Liste geladen ist
             if (e == 0) l.AddRange(ParsePnpCsv(o, File.Exists(idsFile) ? PciIds.Parse(await File.ReadAllTextAsync(idsFile, ct)) : null));
         }
@@ -58,7 +89,9 @@ public sealed class DeviceScanner(IProcessRunner run, string dataRoot, string sy
             }
             if (c[1] == "") continue;
             if (c[0] is "System" or "SoftwareDevice" or "SoftwareComponent" or "Computer" or "Volume" or "VolumeSnapshot" or "LegacyDriver" or "Firmware" or "SecurityDevices") continue;
-            res.Add(new(Group(c[0]), c[1], c[2] == "OK" ? "OK" : c[2] switch { "Error" => "Fehler", "Degraded" => "eingeschränkt", "Unknown" => "unbekannt", _ => c[2] }, detail));
+            var problem = c.Count > 4 ? c[4] : null; // T-0764: Spalte „Problem“ (CM_PROB_…), ältere Ausgaben haben sie nicht
+            var hint = c[2] == "OK" && problem is null or "" or "CM_PROB_NONE" ? "" : DeviceEject.NextStep(problem, c[2]);
+            res.Add(new(Group(c[0]), c[1], c[2] == "OK" && hint.Length == 0 ? "OK" : c[2] switch { "OK" => "Problem", "Error" => "Fehler", "Degraded" => "eingeschränkt", "Unknown" => "unbekannt", _ => c[2] }, detail, hint));
         }
         return res;
     }

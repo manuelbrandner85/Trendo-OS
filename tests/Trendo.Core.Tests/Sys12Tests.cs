@@ -66,10 +66,10 @@ public class Sys12_Barrierefreiheit
     {
         var d = Path.Combine(Path.GetTempPath(), "trendo-s12-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(d);
         var s = new UserSettings { Theme = "hell", FontMin = 14, EasyLanguage = true, NotifyStyle = "leise", TileOrder = ["SYS-10"], Accent = "#22C3A6", WindowRect = [1, 2, 800, 600] };
-        var f = Path.Combine(d, "s.json"); A11y.ExportSettings(s, f); var r = A11y.ImportSettings(f);
+        var f = Path.Combine(d, "s.json"); A11y.ExportSettings(s, f); var r = A11y.ImportSettings(f, new UserSettings()); // T-0764 (14.): Rolle/Person/Sperren bleiben wie bisher (hier: Standard)
         Assert.Equal(System.Text.Json.JsonSerializer.Serialize(s), System.Text.Json.JsonSerializer.Serialize(r));
-        File.WriteAllText(f, "kaputt"); Assert.Throws<InvalidDataException>(() => A11y.ImportSettings(f));
-        File.WriteAllText(f, "{\"Theme\":\"lila\"}"); Assert.Throws<InvalidDataException>(() => A11y.ImportSettings(f));
+        File.WriteAllText(f, "kaputt"); Assert.Throws<InvalidDataException>(() => A11y.ImportSettings(f, new UserSettings()));
+        File.WriteAllText(f, "{\"Theme\":\"lila\"}"); Assert.Throws<InvalidDataException>(() => A11y.ImportSettings(f, new UserSettings()));
     }
 
     [Fact(DisplayName = "SYS-12-P25: Bericht listet Befunde je Seite")]

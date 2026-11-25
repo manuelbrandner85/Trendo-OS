@@ -166,6 +166,7 @@ public partial class MainWindow
     void OpenMedia(string path)
     {
         if (!File.Exists(path)) { Toast($"Datei nicht gefunden: {Path.GetFileName(path)}"); return; }
+        if (!CanManageSoftware) { if (!OpenInOwnViewer(path)) RefuseChildFile(path); return; } // T-0764 (7. Prüfrunde): Kinder nie über Windows
         if (_opt.Isolated) return;
         try { Process.Start(new ProcessStartInfo(path) { UseShellExecute = true }); }
         catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException) { Toast("Abspielen ging nicht: " + Trendo.Core.FriendlyError.Say(e)); }

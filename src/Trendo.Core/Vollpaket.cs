@@ -114,20 +114,21 @@ public static class Vollpaket
     }
 
     /// <summary>Richtet ein Paket ein: Prüfsumme muss stimmen, entpackt wird nur nach „Werkzeugordner/&lt;Paket&gt;“.</summary>
-    public static string InstallPackage(string programmeDir, Entry e, string toolsRoot, AuditLog? audit = null)
+    public static string InstallPackage(Principal by, string programmeDir, Entry e, string toolsRoot, AuditLog? audit = null)
     {
+        Rbac.DemandSoftware(by, "vollpaket.install " + e.Id, audit); // T-0764
         var zip = Path.Combine(programmeDir, e.File);
         if (!File.Exists(zip)) throw new InvalidOperationException($"{e.Name}: Datei {e.File} fehlt im Vollpaket.");
         Directory.CreateDirectory(toolsRoot);
-        var dest = Sys.Software.InstallPortable(zip, e.Sha256, toolsRoot, e.Id, audit);
-        audit?.Append("app", "vollpaket.install", $"{e.Id} {e.Version}");
+        var dest = Sys.Software.InstallPortable(by, zip, e.Sha256, toolsRoot, e.Id, audit);
+        audit?.Append(by.Name, "vollpaket.install", $"{e.Id} {e.Version}");
         return dest;
     }
 
     /// <summary>Alle fehlenden Pakete einrichten (beim ersten Start nach dem Setup). Vorhandene bleiben unverändert. Liefert die Zahl der eingerichteten Pakete.</summary>
-    public static int InstallMissing(string programmeDir, string toolsRoot, AuditLog? audit = null, Action<string>? progress = null)
+    public static int InstallMissing(Principal by, string programmeDir, string toolsRoot, AuditLog? audit = null, Action<string>? progress = null)
     {
-        var r = InstallEach(programmeDir, toolsRoot, audit, progress);
+        var r = InstallEach(by, programmeDir, toolsRoot, audit, progress);
         if (r.Failed.Count > 0 && r.Installed == 0 && r.Present == 0) throw new InvalidOperationException(r.Failed[0].Reason);
         return r.Installed;
     }
@@ -136,8 +137,9 @@ public static class Vollpaket
     public sealed record InstallReport(int Installed, int Present, int Total, List<(string Name, string Reason)> Failed, bool Canceled = false);
 
     /// <summary>Jedes Paket einzeln einrichten – ein fehlerhaftes Paket hält die übrigen nicht auf (Befund 27.10.2026).</summary>
-    public static InstallReport InstallEach(string programmeDir, string toolsRoot, AuditLog? audit = null, Action<string>? progress = null, CancellationToken ct = default, Func<string, bool>? only = null)
+    public static InstallReport InstallEach(Principal by, string programmeDir, string toolsRoot, AuditLog? audit = null, Action<string>? progress = null, CancellationToken ct = default, Func<string, bool>? only = null)
     {
+        Rbac.DemandSoftware(by, "vollpaket.install alle", audit); // T-0764: vor jedem Paket – ein Kinderprofil richtet gar nichts ein
         var list = (Load(programmeDir) ?? throw new InvalidOperationException("Im Vollpaket fehlt ein gültiges manifest.json.")).Where(e => only is null || only(e.Id)).ToList();
         int n = 0, present = 0; var failed = new List<(string, string)>();
         foreach (var e in list)
@@ -146,7 +148,7 @@ public static class Vollpaket
             var exe = Path.Combine(toolsRoot, e.Id, e.Exe.Replace('/', Path.DirectorySeparatorChar));
             if (File.Exists(exe) || Directory.Exists(exe)) { progress?.Invoke($"{e.Name}: schon eingerichtet"); present++; continue; }
             progress?.Invoke($"{e.Name} {e.Version} wird eingerichtet …");
-            try { InstallPackage(programmeDir, e, toolsRoot, audit); n++; }
+            try { InstallPackage(by, programmeDir, e, toolsRoot, audit); n++; }
             catch (Exception ex) when (ex is IOException or InvalidOperationException or InvalidDataException or UnauthorizedAccessException or System.Security.Cryptography.CryptographicException)
             {
                 failed.Add((e.Name, ex.Message)); audit?.Append("app", "vollpaket.failed", $"{e.Id}: {ex.Message}");
@@ -158,8 +160,9 @@ public static class Vollpaket
 
     /// <summary>Ein mitgeliefertes Programm einzeln entfernen (Vorgabe 2026-10-26): löscht nur den Paketordner im Werkzeugordner.
     /// Über das Vollpaket lässt es sich jederzeit wieder einrichten. Unbekannte Namen werden abgelehnt.</summary>
-    public static bool Uninstall(string toolsRoot, string package, AuditLog? audit = null)
+    public static bool Uninstall(Principal by, string toolsRoot, string package, AuditLog? audit = null)
     {
+        Rbac.DemandSoftware(by, "vollpaket.uninstall " + package, audit); // T-0764
         if (!Included.Values.Any(i => i.Package == package)) return false;
         var dir = new DirectoryInfo(Path.Combine(toolsRoot, package));
         if (!dir.Exists) return false;
@@ -169,7 +172,7 @@ public static class Vollpaket
             foreach (var f in dir.EnumerateFiles("*", SearchOption.AllDirectories)) if (f.IsReadOnly) f.IsReadOnly = false;
             dir.Delete(true);
         }
-        audit?.Append("app", "vollpaket.uninstall", package);
+        audit?.Append(by.Name, "vollpaket.uninstall", package);
         return true;
     }
 

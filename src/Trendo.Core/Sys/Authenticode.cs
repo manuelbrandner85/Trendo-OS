@@ -117,7 +117,27 @@ public static class Authenticode
     [DllImport("wintrust.dll", ExactSpelling = true)] static extern bool CryptCATAdminReleaseCatalogContext(IntPtr hCatAdmin, IntPtr hCatInfo, uint flags);
     [DllImport("wintrust.dll", ExactSpelling = true)] static extern bool CryptCATAdminReleaseContext(IntPtr hCatAdmin, uint flags);
 
-    static uint Verify<T>(uint choice, T info) where T : struct
+    const uint WTD_REVOKE_WHOLECHAIN = 1, WTD_REVOCATION_CHECK_CHAIN = 0x40;
+
+    /// <summary>T-0764 (5. Prüfrunde H2, N1): nur die in der Datei eingebettete Signatur (keine Katalog-Signatur – eine kopierte Windows-Datei zählt
+    /// so nicht) und Sperrlistenprüfung der ganzen Kette. Sperrlisten nur aus dem Zwischenspeicher von Windows (kein Warten auf das Netz);
+    /// fehlt dort eine Auskunft, gilt die Signatur als nicht bestätigt (fail-closed).</summary>
+    public static SignatureInfo CheckEmbeddedStrict(string path)
+    {
+        if (!File.Exists(path)) return new(SigState.Fehlt, null, "Die Datei gibt es nicht.");
+        if (!OperatingSystem.IsWindows()) return new(SigState.NichtPruefbar, null, "Signaturen prüft Trendo nur unter Windows.");
+        try
+        {
+            var code = Verify(WTD_CHOICE_FILE, new WINTRUST_FILE_INFO { cbStruct = (uint)Marshal.SizeOf<WINTRUST_FILE_INFO>(), pcwszFilePath = path }, revoke: true);
+            if (code == 0) return new(SigState.Gueltig, Signer(path), "Gültig signiert (in der Datei, Sperrlisten geprüft).");
+            return code is TRUST_E_NOSIGNATURE or TRUST_E_SUBJECT_FORM_UNKNOWN or TRUST_E_PROVIDER_UNKNOWN
+                ? new(SigState.Unsigniert, null, "Keine eingebettete Signatur.") : new(SigState.Ungueltig, Signer(path), Explain(code));
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or DllNotFoundException or EntryPointNotFoundException or COMException)
+        { return new(SigState.NichtPruefbar, null, "Nicht prüfbar: " + e.Message); }
+    }
+
+    static uint Verify<T>(uint choice, T info, bool revoke = false) where T : struct
     {
         var p = Marshal.AllocHGlobal(Marshal.SizeOf<T>());
         try
@@ -125,8 +145,8 @@ public static class Authenticode
             Marshal.StructureToPtr(info, p, false);
             var d = new WINTRUST_DATA
             {
-                cbStruct = (uint)Marshal.SizeOf<WINTRUST_DATA>(), dwUIChoice = WTD_UI_NONE, fdwRevocationChecks = WTD_REVOKE_NONE, dwUnionChoice = choice, pUnion = p,
-                dwStateAction = WTD_STATEACTION_VERIFY, dwProvFlags = WTD_REVOCATION_CHECK_NONE | WTD_CACHE_ONLY_URL_RETRIEVAL,
+                cbStruct = (uint)Marshal.SizeOf<WINTRUST_DATA>(), dwUIChoice = WTD_UI_NONE, fdwRevocationChecks = revoke ? WTD_REVOKE_WHOLECHAIN : WTD_REVOKE_NONE, dwUnionChoice = choice, pUnion = p,
+                dwStateAction = WTD_STATEACTION_VERIFY, dwProvFlags = (revoke ? WTD_REVOCATION_CHECK_CHAIN : WTD_REVOCATION_CHECK_NONE) | WTD_CACHE_ONLY_URL_RETRIEVAL,
             };
             var g = GenericVerifyV2;
             var code = WinVerifyTrust(IntPtr.Zero, ref g, ref d);

@@ -151,6 +151,7 @@ public partial class MainWindow
             _progMsg[CodeAiKey] = $"⚠ „{Path.GetFileName(f)}“ wurde inzwischen geändert (z. B. von Claude). Nochmal speichern überschreibt diese Änderung – oder die Datei links neu öffnen.";
             return;
         }
+        UserFile(f); // T-0764 (12. Prüfrunde): Ort/Name bestimmt der Nutzer – Kinder nur Freigabe, keine ausführbare Endung
         CodeProject.WriteText(f, _caDoc.Text); _caSaved = _caDoc.Text; _caDiskSha = Sha(f); _caOverwrite = false;
         _core.Audit.Append(Principal.LocalOwner.Name, "code-ki.save", Path.GetFileName(f));
         _progMsg[CodeAiKey] = "Gespeichert: " + Path.GetFileName(f);
@@ -213,14 +214,18 @@ public partial class MainWindow
         var cmd = r is null || kind is null ? null : CodeAiKit.TestCommand(r, kind.Id);
         if (r is null || cmd is null) { _progMsg[CodeAiKey] = "Für dieses Projekt kennt Trendo keinen Testbefehl (.NET, npm, Python, Cargo oder Go)."; Show(CodeAiKey); return null; }
         _caAsk = false;
-        if (_opt.Isolated && CodeAiRunOverride is null) { _caOut = "Testmodus: Trendo startet keine Programme."; Show(CodeAiKey); return null; }
+        // T-0764 (5. Prüfrunde H3): Rolle zuerst (vor dem Testmodus), dann eigene Rückfrage; ausgeführt wird nur im Freigabe-Tor
+        if (!DarfAusfuehren("codeai.test", out var nein)) { _caOut = nein; _progMsg[CodeAiKey] = nein; Show(CodeAiKey); return null; }
         var limit = int.TryParse(d.Text("timeout"), out var t) ? Math.Clamp(t, 10, 3600) : 300;
+        var fw = new Wirkung("code-ki.test", r, "Tests ausführen", $"Trendo startet jetzt „{cmd.Display}“ im Projektordner (Zeitlimit {limit} s). Dabei läuft der Code des Projekts auf diesem PC.", "Tests starten");
+        if (await FreigabeAsync(fw) is not { } fid) { _progMsg[CodeAiKey] = "Tests nicht gestartet (keine Freigabe)."; Show(CodeAiKey); return null; }
+        if (_opt.Isolated && CodeAiRunOverride is null) { _caOut = "Testmodus: Trendo startet keine Programme."; Show(CodeAiKey); return null; }
         _caBusy = true; _caOut = $"Läuft: {cmd.Display} …"; _progMsg[CodeAiKey] = "Tests laufen …"; Show(CodeAiKey);
         try
         {
             var env = kind!.Id == "python" ? new Dictionary<string, string> { ["PYTHONIOENCODING"] = "utf-8" } : null;
-            var res = CodeAiRunOverride is { } o ? await Task.Run(() => o(cmd.Exe, cmd.Args, r, limit * 1000))
-                : await Task.Run(() => Cli.Run(cmd.Exe, cmd.Args, r, limit * 1000, env, kind.Id == "python" ? new UTF8Encoding(false) : null));
+            var res = await _core.Approvals.Execute(fid, "code-ki.test", r, () => CodeAiRunOverride is { } o ? Task.Run(() => o(cmd.Exe, cmd.Args, r, limit * 1000))
+                : Task.Run(() => Cli.Run(cmd.Exe, cmd.Args, r, limit * 1000, env, kind.Id == "python" ? new UTF8Encoding(false) : null)));
             var all = (res.Out + "\n" + res.Err).Trim();
             if (all.Length > 20000) all = "… (gekürzt)\n" + all[^20000..];
             var head = res.Ok ? "✓ Tests bestanden (Exit 0)" : res.Exit == -2 ? $"✕ Zeitlimit ({limit} s) überschritten – abgebrochen" : res.Exit == -1 ? "✕ Ließ sich nicht starten" : $"✕ Exit {res.Exit}";

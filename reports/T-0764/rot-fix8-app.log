@@ -1,0 +1,17 @@
+T-0764 fix8 – ROT auf 0f9633f90 (App: RechteKernFix8Ui.Mpv_eingebettet, vor dem Fix)
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0764 H: eingebettete Player (Ton, Fernsehen) starten mpv ohne Einstellungen, Skripte und Standardtasten [FAIL]
+      Assert.Contains() Failure: Item not found in collection
+      Collection: ["--force-window=no", "--vo=null", "--no-video", "--idle=yes", "--no-terminal", ···]
+      Not found:  "--no-config"
+      Stack Trace:
+        tests\Trendo.App.Tests\RechteKernFix8UiTests.cs(34,0): at Trendo.App.Tests.RechteKernFix8Ui.Mpv_eingebettet()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Finished:    Trendo.App.Tests (ID = 'c7806862b62353da8c45ebe5380b25c42066452fde749ce709e745c16ba1adf2')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 1, Skipped: 0, Not Run: 0, Time: 3,098s
+exit 1

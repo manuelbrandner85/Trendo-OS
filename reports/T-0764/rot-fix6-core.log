@@ -1,0 +1,210 @@
+T-0764 fix6 – ROT auf f99bd3045 (Core: RechteKernFix6, vor dem Fix)
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.50]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:01.42]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:01.52]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:00:02.07]     T-0764 C: Zwischenspeicher und Protokolle (cache\, logs\, *.log) sperren ein Programm nicht mehr; Ausführbares darin, .pyc und Dateien ohne Endung bleiben streng(rel: "daten\\cache\\a.png", allowed: True) [FAIL]
+[xUnit.net 00:00:02.07]       System.UnauthorizedAccessException : Programme starten und einrichten darf nur ein Erwachsenen-Profil. Dokumente, Bilder, Musik und Videos kannst du weiter öffnen.
+[xUnit.net 00:00:02.07]       Stack Trace:
+[xUnit.net 00:00:02.07]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Rbac.cs(54,0): at Trendo.Core.Rbac.DemandSoftware(Principal p, String what, AuditLog audit, String message)
+[xUnit.net 00:00:02.07]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Integrations.cs(112,0): at Trendo.Core.Integrations.<DemandLaunch>g__No|13_0(String what, <>c__DisplayClass13_0&)
+[xUnit.net 00:00:02.07]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Integrations.cs(124,0): at Trendo.Core.Integrations.DemandLaunch(Principal by, AuditLog audit, IEnumerable`1 userTargets, String exe, Boolean exeUserChosen, Boolean internalCall, IEnumerable`1 rawArgs)
+[xUnit.net 00:00:02.07]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Integrations.cs(142,0): at Trendo.Core.Integrations.LaunchDirect(Principal by, String target, AuditLog audit)
+[xUnit.net 00:00:02.07]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\tests\Trendo.Core.Tests\RechteKernFix6Tests.cs(86,0): at Trendo.Core.Tests.RechteKernFix6.Zwischenspeicher(String rel, Boolean allowed)
+[xUnit.net 00:00:02.07]            at InvokeStub_RechteKernFix6.Zwischenspeicher(Object, Span`1)
+[xUnit.net 00:00:02.07]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:02.14]     T-0764 C: Zwischenspeicher und Protokolle (cache\, logs\, *.log) sperren ein Programm nicht mehr; Ausführbares darin, .pyc und Dateien ohne Endung bleiben streng(rel: "logs\\start.txt", allowed: True) [FAIL]
+[xUnit.net 00:00:02.14]       System.UnauthorizedAccessException : Programme starten und einrichten darf nur ein Erwachsenen-Profil. Dokumente, Bilder, Musik und Videos kannst du weiter öffnen.
+[xUnit.net 00:00:02.14]       Stack Trace:
+[xUnit.net 00:00:02.14]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Rbac.cs(54,0): at Trendo.Core.Rbac.DemandSoftware(Principal p, String what, AuditLog audit, String message)
+[xUnit.net 00:00:02.14]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Integrations.cs(112,0): at Trendo.Core.Integrations.<DemandLaunch>g__No|13_0(String what, <>c__DisplayClass13_0&)
+[xUnit.net 00:00:02.14]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Integrations.cs(124,0): at Trendo.Core.Integrations.DemandLaunch(Principal by, AuditLog audit, IEnumerable`1 userTargets, String exe, Boolean exeUserChosen, Boolean internalCall, IEnumerable`1 rawArgs)
+[xUnit.net 00:00:02.14]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Integrations.cs(142,0): at Trendo.Core.Integrations.LaunchDirect(Principal by, String target, AuditLog audit)
+[xUnit.net 00:00:02.14]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\tests\Trendo.Core.Tests\RechteKernFix6Tests.cs(86,0): at Trendo.Core.Tests.RechteKernFix6.Zwischenspeicher(String rel, Boolean allowed)
+[xUnit.net 00:00:02.14]            at InvokeStub_RechteKernFix6.Zwischenspeicher(Object, Span`1)
+[xUnit.net 00:00:02.14]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:02.20]     T-0764 C: Zwischenspeicher und Protokolle (cache\, logs\, *.log) sperren ein Programm nicht mehr; Ausführbares darin, .pyc und Dateien ohne Endung bleiben streng(rel: "sumatra.log", allowed: True) [FAIL]
+[xUnit.net 00:00:02.20]       System.UnauthorizedAccessException : Programme starten und einrichten darf nur ein Erwachsenen-Profil. Dokumente, Bilder, Musik und Videos kannst du weiter öffnen.
+[xUnit.net 00:00:02.20]       Stack Trace:
+[xUnit.net 00:00:02.20]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Rbac.cs(54,0): at Trendo.Core.Rbac.DemandSoftware(Principal p, String what, AuditLog audit, String message)
+[xUnit.net 00:00:02.20]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Integrations.cs(112,0): at Trendo.Core.Integrations.<DemandLaunch>g__No|13_0(String what, <>c__DisplayClass13_0&)
+[xUnit.net 00:00:02.20]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Integrations.cs(124,0): at Trendo.Core.Integrations.DemandLaunch(Principal by, AuditLog audit, IEnumerable`1 userTargets, String exe, Boolean exeUserChosen, Boolean internalCall, IEnumerable`1 rawArgs)
+[xUnit.net 00:00:02.20]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Integrations.cs(142,0): at Trendo.Core.Integrations.LaunchDirect(Principal by, String target, AuditLog audit)
+[xUnit.net 00:00:02.20]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\tests\Trendo.Core.Tests\RechteKernFix6Tests.cs(86,0): at Trendo.Core.Tests.RechteKernFix6.Zwischenspeicher(String rel, Boolean allowed)
+[xUnit.net 00:00:02.20]            at InvokeStub_RechteKernFix6.Zwischenspeicher(Object, Span`1)
+[xUnit.net 00:00:02.20]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Bestanden T-0764 C: Zwischenspeicher und Protokolle (cache\, logs\, *.log) sperren ein Programm nicht mehr; Ausführbares darin, .pyc und Dateien ohne Endung bleiben streng(rel: "__pycache__\\plugin.cpython-313.pyc", allowed: False) [251 ms]
+  Bestanden T-0764 C: Zwischenspeicher und Protokolle (cache\, logs\, *.log) sperren ein Programm nicht mehr; Ausführbares darin, .pyc und Dateien ohne Endung bleiben streng(rel: "cache\\evil.dll", allowed: False) [52 ms]
+  Fehler T-0764 C: Zwischenspeicher und Protokolle (cache\, logs\, *.log) sperren ein Programm nicht mehr; Ausführbares darin, .pyc und Dateien ohne Endung bleiben streng(rel: "daten\\cache\\a.png", allowed: True) [141 ms]
+  Fehlermeldung:
+   System.UnauthorizedAccessException : Programme starten und einrichten darf nur ein Erwachsenen-Profil. Dokumente, Bilder, Musik und Videos kannst du weiter öffnen.
+  Stapelverfolgung:
+     at Trendo.Core.Rbac.DemandSoftware(Principal p, String what, AuditLog audit, String message) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Rbac.cs:line 54
+   at Trendo.Core.Integrations.<DemandLaunch>g__No|13_0(String what, <>c__DisplayClass13_0&) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Integrations.cs:line 112
+   at Trendo.Core.Integrations.DemandLaunch(Principal by, AuditLog audit, IEnumerable`1 userTargets, String exe, Boolean exeUserChosen, Boolean internalCall, IEnumerable`1 rawArgs) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Integrations.cs:line 124
+   at Trendo.Core.Integrations.LaunchDirect(Principal by, String target, AuditLog audit) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Integrations.cs:line 142
+   at Trendo.Core.Tests.RechteKernFix6.Zwischenspeicher(String rel, Boolean allowed) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\tests\Trendo.Core.Tests\RechteKernFix6Tests.cs:line 86
+   at InvokeStub_RechteKernFix6.Zwischenspeicher(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 C: Zwischenspeicher und Protokolle (cache\, logs\, *.log) sperren ein Programm nicht mehr; Ausführbares darin, .pyc und Dateien ohne Endung bleiben streng(rel: "logs\\start.txt", allowed: True) [80 ms]
+  Fehlermeldung:
+   System.UnauthorizedAccessException : Programme starten und einrichten darf nur ein Erwachsenen-Profil. Dokumente, Bilder, Musik und Videos kannst du weiter öffnen.
+  Stapelverfolgung:
+     at Trendo.Core.Rbac.DemandSoftware(Principal p, String what, AuditLog audit, String message) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Rbac.cs:line 54
+   at Trendo.Core.Integrations.<DemandLaunch>g__No|13_0(String what, <>c__DisplayClass13_0&) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Integrations.cs:line 112
+   at Trendo.Core.Integrations.DemandLaunch(Principal by, AuditLog audit, IEnumerable`1 userTargets, String exe, Boolean exeUserChosen, Boolean internalCall, IEnumerable`1 rawArgs) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Integrations.cs:line 124
+   at Trendo.Core.Integrations.LaunchDirect(Principal by, String target, AuditLog audit) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Integrations.cs:line 142
+   at Trendo.Core.Tests.RechteKernFix6.Zwischenspeicher(String rel, Boolean allowed) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\tests\Trendo.Core.Tests\RechteKernFix6Tests.cs:line 86
+   at InvokeStub_RechteKernFix6.Zwischenspeicher(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 C: Zwischenspeicher und Protokolle (cache\, logs\, *.log) sperren ein Programm nicht mehr; Ausführbares darin, .pyc und Dateien ohne Endung bleiben streng(rel: "sumatra.log", allowed: True) [52 ms]
+  Fehlermeldung:
+   System.UnauthorizedAccessException : Programme starten und einrichten darf nur ein Erwachsenen-Profil. Dokumente, Bilder, Musik und Videos kannst du weiter öffnen.
+  Stapelverfolgung:
+     at Trendo.Core.Rbac.DemandSoftware(Principal p, String what, AuditLog audit, String message) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Rbac.cs:line 54
+   at Trendo.Core.Integrations.<DemandLaunch>g__No|13_0(String what, <>c__DisplayClass13_0&) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Integrations.cs:line 112
+   at Trendo.Core.Integrations.DemandLaunch(Principal by, AuditLog audit, IEnumerable`1 userTargets, String exe, Boolean exeUserChosen, Boolean internalCall, IEnumerable`1 rawArgs) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Integrations.cs:line 124
+   at Trendo.Core.Integrations.LaunchDirect(Principal by, String target, AuditLog audit) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Integrations.cs:line 142
+   at Trendo.Core.Tests.RechteKernFix6.Zwischenspeicher(String rel, Boolean allowed) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\tests\Trendo.Core.Tests\RechteKernFix6Tests.cs:line 86
+   at InvokeStub_RechteKernFix6.Zwischenspeicher(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Bestanden T-0764 C: Zwischenspeicher und Protokolle (cache\, logs\, *.log) sperren ein Programm nicht mehr; Ausführbares darin, .pyc und Dateien ohne Endung bleiben streng(rel: "einstellungen.ini", allowed: False) [323 ms]
+  Bestanden T-0764 C: Zwischenspeicher und Protokolle (cache\, logs\, *.log) sperren ein Programm nicht mehr; Ausführbares darin, .pyc und Dateien ohne Endung bleiben streng(rel: "logs\\run.ps1", allowed: False) [174 ms]
+  Bestanden T-0764 C: Zwischenspeicher und Protokolle (cache\, logs\, *.log) sperren ein Programm nicht mehr; Ausführbares darin, .pyc und Dateien ohne Endung bleiben streng(rel: "cache\\x.js", allowed: False) [186 ms]
+  Bestanden T-0764 C: Zwischenspeicher und Protokolle (cache\, logs\, *.log) sperren ein Programm nicht mehr; Ausführbares darin, .pyc und Dateien ohne Endung bleiben streng(rel: "cache\\noext", allowed: False) [65 ms]
+[xUnit.net 00:00:03.12]     T-0764 C: Zwischenspeicher und Protokolle (cache\, logs\, *.log) sperren ein Programm nicht mehr; Ausführbares darin, .pyc und Dateien ohne Endung bleiben streng(rel: "cache\\thumb-0001.bin", allowed: True) [FAIL]
+[xUnit.net 00:00:03.12]       System.UnauthorizedAccessException : Programme starten und einrichten darf nur ein Erwachsenen-Profil. Dokumente, Bilder, Musik und Videos kannst du weiter öffnen.
+[xUnit.net 00:00:03.12]       Stack Trace:
+[xUnit.net 00:00:03.12]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Rbac.cs(54,0): at Trendo.Core.Rbac.DemandSoftware(Principal p, String what, AuditLog audit, String message)
+[xUnit.net 00:00:03.12]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Integrations.cs(112,0): at Trendo.Core.Integrations.<DemandLaunch>g__No|13_0(String what, <>c__DisplayClass13_0&)
+[xUnit.net 00:00:03.12]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Integrations.cs(124,0): at Trendo.Core.Integrations.DemandLaunch(Principal by, AuditLog audit, IEnumerable`1 userTargets, String exe, Boolean exeUserChosen, Boolean internalCall, IEnumerable`1 rawArgs)
+[xUnit.net 00:00:03.12]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Integrations.cs(142,0): at Trendo.Core.Integrations.LaunchDirect(Principal by, String target, AuditLog audit)
+[xUnit.net 00:00:03.12]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\tests\Trendo.Core.Tests\RechteKernFix6Tests.cs(86,0): at Trendo.Core.Tests.RechteKernFix6.Zwischenspeicher(String rel, Boolean allowed)
+[xUnit.net 00:00:03.12]            at InvokeStub_RechteKernFix6.Zwischenspeicher(Object, Span`1)
+[xUnit.net 00:00:03.12]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:03.31]     T-0764 A: Erlaubnisliste – eingerichtete, unveränderte Kreativ- und Fremdprogramme (Krita, OBS, Inkscape, Audacity, GIMP, eigenes Programm) startet das Kinderprofil nicht; Erwachsene wie bisher(name: "krita", rel: "bin\\krita.exe") [FAIL]
+[xUnit.net 00:00:03.31]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:03.31]       Expected: typeof(System.UnauthorizedAccessException)
+[xUnit.net 00:00:03.31]       Stack Trace:
+[xUnit.net 00:00:03.31]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\tests\Trendo.Core.Tests\RechteKernFix6Tests.cs(42,0): at Trendo.Core.Tests.RechteKernFix6.Erlaubnisliste_nicht_drin(String name, String rel)
+[xUnit.net 00:00:03.31]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:03.31]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:03.48]     T-0764 A: Erlaubnisliste – eingerichtete, unveränderte Kreativ- und Fremdprogramme (Krita, OBS, Inkscape, Audacity, GIMP, eigenes Programm) startet das Kinderprofil nicht; Erwachsene wie bisher(name: "inkscape", rel: "bin\\inkscape.exe") [FAIL]
+[xUnit.net 00:00:03.48]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:03.48]       Expected: typeof(System.UnauthorizedAccessException)
+[xUnit.net 00:00:03.48]       Stack Trace:
+[xUnit.net 00:00:03.48]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\tests\Trendo.Core.Tests\RechteKernFix6Tests.cs(42,0): at Trendo.Core.Tests.RechteKernFix6.Erlaubnisliste_nicht_drin(String name, String rel)
+[xUnit.net 00:00:03.48]            at InvokeStub_RechteKernFix6.Erlaubnisliste_nicht_drin(Object, Span`1)
+[xUnit.net 00:00:03.48]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:03.61]     T-0764 A: Erlaubnisliste – eingerichtete, unveränderte Kreativ- und Fremdprogramme (Krita, OBS, Inkscape, Audacity, GIMP, eigenes Programm) startet das Kinderprofil nicht; Erwachsene wie bisher(name: "obs", rel: "bin\\64bit\\obs64.exe") [FAIL]
+[xUnit.net 00:00:03.61]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:03.61]       Expected: typeof(System.UnauthorizedAccessException)
+[xUnit.net 00:00:03.61]       Stack Trace:
+[xUnit.net 00:00:03.61]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\tests\Trendo.Core.Tests\RechteKernFix6Tests.cs(42,0): at Trendo.Core.Tests.RechteKernFix6.Erlaubnisliste_nicht_drin(String name, String rel)
+[xUnit.net 00:00:03.61]            at InvokeStub_RechteKernFix6.Erlaubnisliste_nicht_drin(Object, Span`1)
+[xUnit.net 00:00:03.61]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:03.74]     T-0764 A: Erlaubnisliste – eingerichtete, unveränderte Kreativ- und Fremdprogramme (Krita, OBS, Inkscape, Audacity, GIMP, eigenes Programm) startet das Kinderprofil nicht; Erwachsene wie bisher(name: "notiz", rel: "notiz.exe") [FAIL]
+[xUnit.net 00:00:03.74]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:03.74]       Expected: typeof(System.UnauthorizedAccessException)
+[xUnit.net 00:00:03.74]       Stack Trace:
+[xUnit.net 00:00:03.74]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\tests\Trendo.Core.Tests\RechteKernFix6Tests.cs(42,0): at Trendo.Core.Tests.RechteKernFix6.Erlaubnisliste_nicht_drin(String name, String rel)
+[xUnit.net 00:00:03.74]            at InvokeStub_RechteKernFix6.Erlaubnisliste_nicht_drin(Object, Span`1)
+[xUnit.net 00:00:03.74]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:03.85]     T-0764 A: Erlaubnisliste – eingerichtete, unveränderte Kreativ- und Fremdprogramme (Krita, OBS, Inkscape, Audacity, GIMP, eigenes Programm) startet das Kinderprofil nicht; Erwachsene wie bisher(name: "audacity", rel: "bin\\Audacity4.exe") [FAIL]
+[xUnit.net 00:00:03.85]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:03.85]       Expected: typeof(System.UnauthorizedAccessException)
+[xUnit.net 00:00:03.85]       Stack Trace:
+[xUnit.net 00:00:03.85]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\tests\Trendo.Core.Tests\RechteKernFix6Tests.cs(42,0): at Trendo.Core.Tests.RechteKernFix6.Erlaubnisliste_nicht_drin(String name, String rel)
+[xUnit.net 00:00:03.85]            at InvokeStub_RechteKernFix6.Erlaubnisliste_nicht_drin(Object, Span`1)
+[xUnit.net 00:00:03.85]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:03.97]     T-0764 A: Erlaubnisliste – eingerichtete, unveränderte Kreativ- und Fremdprogramme (Krita, OBS, Inkscape, Audacity, GIMP, eigenes Programm) startet das Kinderprofil nicht; Erwachsene wie bisher(name: "gimp", rel: "bin\\gimp-2.10.exe") [FAIL]
+[xUnit.net 00:00:03.97]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:03.97]       Expected: typeof(System.UnauthorizedAccessException)
+[xUnit.net 00:00:03.97]       Stack Trace:
+[xUnit.net 00:00:03.97]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\tests\Trendo.Core.Tests\RechteKernFix6Tests.cs(42,0): at Trendo.Core.Tests.RechteKernFix6.Erlaubnisliste_nicht_drin(String name, String rel)
+[xUnit.net 00:00:03.97]            at InvokeStub_RechteKernFix6.Erlaubnisliste_nicht_drin(Object, Span`1)
+[xUnit.net 00:00:03.97]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:04.21]     T-0764 A: Erlaubnisliste – SumatraPDF nur als Vollpaket-Komponente „sumatra\SumatraPDF.exe“ und geprüft; gleicher Name in anderem Ordner oder unter „Programme“ nicht [FAIL]
+[xUnit.net 00:00:04.21]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:04.21]       Expected: typeof(System.UnauthorizedAccessException)
+[xUnit.net 00:00:04.21]       Stack Trace:
+[xUnit.net 00:00:04.21]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\tests\Trendo.Core.Tests\RechteKernFix6Tests.cs(59,0): at Trendo.Core.Tests.RechteKernFix6.Erlaubnisliste_Sumatra()
+[xUnit.net 00:00:04.21]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:04.21]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:04.22]   Finished:    Trendo.Core.Tests
+  Fehler T-0764 C: Zwischenspeicher und Protokolle (cache\, logs\, *.log) sperren ein Programm nicht mehr; Ausführbares darin, .pyc und Dateien ohne Endung bleiben streng(rel: "cache\\thumb-0001.bin", allowed: True) [171 ms]
+  Fehlermeldung:
+   System.UnauthorizedAccessException : Programme starten und einrichten darf nur ein Erwachsenen-Profil. Dokumente, Bilder, Musik und Videos kannst du weiter öffnen.
+  Stapelverfolgung:
+     at Trendo.Core.Rbac.DemandSoftware(Principal p, String what, AuditLog audit, String message) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Rbac.cs:line 54
+   at Trendo.Core.Integrations.<DemandLaunch>g__No|13_0(String what, <>c__DisplayClass13_0&) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Integrations.cs:line 112
+   at Trendo.Core.Integrations.DemandLaunch(Principal by, AuditLog audit, IEnumerable`1 userTargets, String exe, Boolean exeUserChosen, Boolean internalCall, IEnumerable`1 rawArgs) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Integrations.cs:line 124
+   at Trendo.Core.Integrations.LaunchDirect(Principal by, String target, AuditLog audit) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\src\Trendo.Core\Integrations.cs:line 142
+   at Trendo.Core.Tests.RechteKernFix6.Zwischenspeicher(String rel, Boolean allowed) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\tests\Trendo.Core.Tests\RechteKernFix6Tests.cs:line 86
+   at InvokeStub_RechteKernFix6.Zwischenspeicher(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 A: Erlaubnisliste – eingerichtete, unveränderte Kreativ- und Fremdprogramme (Krita, OBS, Inkscape, Audacity, GIMP, eigenes Programm) startet das Kinderprofil nicht; Erwachsene wie bisher(name: "krita", rel: "bin\\krita.exe") [188 ms]
+  Fehlermeldung:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix6.Erlaubnisliste_nicht_drin(String name, String rel) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\tests\Trendo.Core.Tests\RechteKernFix6Tests.cs:line 42
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Fehler T-0764 A: Erlaubnisliste – eingerichtete, unveränderte Kreativ- und Fremdprogramme (Krita, OBS, Inkscape, Audacity, GIMP, eigenes Programm) startet das Kinderprofil nicht; Erwachsene wie bisher(name: "inkscape", rel: "bin\\inkscape.exe") [168 ms]
+  Fehlermeldung:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix6.Erlaubnisliste_nicht_drin(String name, String rel) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\tests\Trendo.Core.Tests\RechteKernFix6Tests.cs:line 42
+   at InvokeStub_RechteKernFix6.Erlaubnisliste_nicht_drin(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 A: Erlaubnisliste – eingerichtete, unveränderte Kreativ- und Fremdprogramme (Krita, OBS, Inkscape, Audacity, GIMP, eigenes Programm) startet das Kinderprofil nicht; Erwachsene wie bisher(name: "obs", rel: "bin\\64bit\\obs64.exe") [128 ms]
+  Fehlermeldung:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix6.Erlaubnisliste_nicht_drin(String name, String rel) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\tests\Trendo.Core.Tests\RechteKernFix6Tests.cs:line 42
+   at InvokeStub_RechteKernFix6.Erlaubnisliste_nicht_drin(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 A: Erlaubnisliste – eingerichtete, unveränderte Kreativ- und Fremdprogramme (Krita, OBS, Inkscape, Audacity, GIMP, eigenes Programm) startet das Kinderprofil nicht; Erwachsene wie bisher(name: "notiz", rel: "notiz.exe") [132 ms]
+  Fehlermeldung:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix6.Erlaubnisliste_nicht_drin(String name, String rel) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\tests\Trendo.Core.Tests\RechteKernFix6Tests.cs:line 42
+   at InvokeStub_RechteKernFix6.Erlaubnisliste_nicht_drin(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 A: Erlaubnisliste – eingerichtete, unveränderte Kreativ- und Fremdprogramme (Krita, OBS, Inkscape, Audacity, GIMP, eigenes Programm) startet das Kinderprofil nicht; Erwachsene wie bisher(name: "audacity", rel: "bin\\Audacity4.exe") [109 ms]
+  Fehlermeldung:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix6.Erlaubnisliste_nicht_drin(String name, String rel) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\tests\Trendo.Core.Tests\RechteKernFix6Tests.cs:line 42
+   at InvokeStub_RechteKernFix6.Erlaubnisliste_nicht_drin(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 A: Erlaubnisliste – eingerichtete, unveränderte Kreativ- und Fremdprogramme (Krita, OBS, Inkscape, Audacity, GIMP, eigenes Programm) startet das Kinderprofil nicht; Erwachsene wie bisher(name: "gimp", rel: "bin\\gimp-2.10.exe") [126 ms]
+  Fehlermeldung:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix6.Erlaubnisliste_nicht_drin(String name, String rel) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\tests\Trendo.Core.Tests\RechteKernFix6Tests.cs:line 42
+   at InvokeStub_RechteKernFix6.Erlaubnisliste_nicht_drin(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0764 A: Erlaubnisliste – SumatraPDF nur als Vollpaket-Komponente „sumatra\SumatraPDF.exe“ und geprüft; gleicher Name in anderem Ordner oder unter „Programme“ nicht [233 ms]
+  Fehlermeldung:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.UnauthorizedAccessException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RechteKernFix6.Erlaubnisliste_Sumatra() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0764-fix6\tests\Trendo.Core.Tests\RechteKernFix6Tests.cs:line 59
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 17
+     Bestanden: 6
+     Nicht bestanden: 11
+ Gesamtzeit: 5,0845 Sekunden
+exit 1

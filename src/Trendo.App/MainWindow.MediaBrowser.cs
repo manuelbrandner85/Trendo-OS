@@ -79,6 +79,7 @@ public partial class MainWindow
     public Task MediaGet(MediaHit h) => MediaGuard($"„{h.Title}“ wird geladen …", async () =>
     {
         if (!MediaOnline) throw new InvalidOperationException("Offline – Laden geht erst mit Internet.");
+        if (!CanManageSoftware && Trendo.Core.Sys.ChildWrite.BlockedName("datei." + h.Format)) throw new UnauthorizedAccessException(Trendo.Core.Rbac.NurErwachseneEndung); // 11. Prüfrunde
         var item = await MediaLib.Download(h);
         _core.Audit.Append(Principal.LocalOwner.Name, "medien.download", $"{h.Provider}/{h.Id} ({h.License})");
         return $"✓ „{item.Name}“ liegt in deiner Bibliothek – {(h.Free ? "frei nutzbar" : "bitte den Urheber nennen")} ({h.License}).";
