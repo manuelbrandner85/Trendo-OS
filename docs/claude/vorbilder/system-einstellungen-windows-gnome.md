@@ -1,6 +1,6 @@
 # Vorbild-Analyse System: Windows-Einstellungen, GNOME-Einstellungen, macOS Systemeinstellungen, Windows-Kurzhelfer (Clean-Room)
 
-- Programme: „Einstellungen“, „Personen“, „Sehen“, „Trendo-Updates“, „Betriebsmodus“, „Fortschritt“, „Leistung“, „System & Sicherheit“, „Systemcheck“, „Übersicht“, „Werkzeuge: Notizen, Rechner, Wecker“
+- Programme: „Einstellungen“, „Personen“, „Sehen“, „Trendo-Updates“, „Betriebsmodus“, „Fortschritt“, „Alles prüfen“, „System & Sicherheit“, „Systemcheck“, „Übersicht“, „Werkzeuge: Notizen, Rechner, Wecker“
 - Vorbilder: GNOME-Einstellungen, KDE Systemeinstellungen (frei), Windows 11 Einstellungen, macOS Systemeinstellungen, Windows Kurznotizen/Rechner/Uhr, Windows Update – Funktionsumfang aus öffentlicher Doku
 - Werkzeug: Funktionsumfang aus öffentlicher Doku und Bedienkonzept; kein fremder Code, keine fremden Grafiken oder Texte. Trendo-Stand aus Code und Tests, Stand 05.11.2026.
 
@@ -29,7 +29,7 @@
 ### Betriebsmodus
 - ✓ Windows-App, Linux-USB-Stick oder Raspberry Pi – ehrlich, was im aktuellen Modus geht und was nicht
 
-### Qualität prüfen (Fortschritt, Leistung, System & Sicherheit, Systemcheck)
+### Qualität prüfen (Fortschritt, Alles prüfen mit Reiter Leistung, System & Sicherheit, Systemcheck)
 - ✓ Freigegebener Katalog SYS-13: Fehlerseite, Modul-Register, Leistung messen, Rückfall, Lizenzen
 - ✓ Qualitäts-Ampel je Programm, Bau-Fortschritt, Systemcheck
 

@@ -1,6 +1,6 @@
 # Vorbild-Analyse Netz, Teilen und Leistung: Windows Task-Manager, Free Download Manager, LocalSend, Windows-Freigaben (Clean-Room)
 
-- Programme: „Ordner im Heimnetz teilen“, „Speicher & Leistung“, „Downloads“, „Sicher prüfen“
+- Programme: „Ordner im Heimnetz teilen“, „Speicher & Leistung“, „Downloads & Links“, „Sicher prüfen“
 - Vorbilder: LocalSend, Free Download Manager, GNOME System Monitor (frei), Windows Task-Manager, Windows-Ordnerfreigabe, Windows-Sicherheit (Funktionsumfang aus öffentlicher Doku)
 - Werkzeug: Funktionsumfang aus öffentlicher Doku und Bedienkonzept; kein fremder Code, keine fremden Grafiken oder Texte. Trendo-Stand aus Code und Tests, Stand 05.11.2026.
 
@@ -18,7 +18,7 @@
 - ✓ Programm beenden nur für eigene Trendo-Programme (nie Trendo selbst), zweistufig bestätigt
 - ✗ Autostart-Liste mit Einfluss auf den Start – bewusst nicht, Windows-Einstellungen werden nicht geändert
 
-### Downloads
+### Downloads & Links
 - ✓ Warteschlange mit mehreren gleichzeitigen Downloads, Anhalten/Fortsetzen je Eintrag (Free Download Manager)
 - ✓ Mehrere Links auf einmal einfügen
 - ✓ Ziel ist der Download-Ordner; im Testmodus nie ein echter Ordner
