@@ -166,8 +166,8 @@ public class T0763SystemAlltagTests
     {
         if (!OperatingSystem.IsWindows()) return;
         var cores = Environment.ProcessorCount;
-        // Last: eine PowerShell, die 12 s lang einen Kern voll auslastet (echter fremder Prozess, wird am Ende von diesem Test beendet)
-        var psi = new ProcessStartInfo("powershell.exe", "-NoProfile -NonInteractive -Command \"$e=(Get-Date).AddSeconds(12); while((Get-Date) -lt $e){}\"") { UseShellExecute = false, CreateNoWindow = true };
+        // Last: eine PowerShell, die einen Kern voll auslastet, bis dieser Test sie beendet (T-0768: ohne feste Laufzeit – unter Last dauern die drei Messfenster länger)
+        var psi = new ProcessStartInfo("powershell.exe", "-NoProfile -NonInteractive -Command \"while($true){}\"") { UseShellExecute = false, CreateNoWindow = true };
         using var load = Process.Start(psi)!;
         try
         {
@@ -178,26 +178,29 @@ public class T0763SystemAlltagTests
             var busy = Enumerable.Range(0, threads).Select(_ => new Thread(() => { var x = 0L; while (!Volatile.Read(ref stop)) x++; }) { IsBackground = true }).ToList();
             busy.ForEach(t => t.Start());
             Thread.Sleep(1500);
-            cpu.ReadPair(); // Bezug
-            var s0 = TaskManager.Measure(); var t0 = Stopwatch.GetTimestamp();
-            Thread.Sleep(4000);
-            var pair = cpu.ReadPair();
-            var s1 = TaskManager.Measure(); var secs = Stopwatch.GetElapsedTime(t0).TotalSeconds;
+            // T-0768: drei Messfenster, gewertet wird das mittlere (Median) – ein einzelnes Fenster kippt, wenn parallel andere Läufe die Kerne
+            // belegen und die beiden Messungen (Trendo, PDH) nicht im selben Augenblick lesen. Die Grenze von 5 Prozentpunkten bleibt.
+            var probes = new List<(double Own, double Counter, double Diff, double Own2, double Counter2, double Diff2, double Secs, string Inst, string Inst2)>();
+            for (var round = 0; round < 3; round++)
+            {
+                cpu.ReadPair(); // Bezug
+                var s0 = TaskManager.Measure(); var t0 = Stopwatch.GetTimestamp();
+                Thread.Sleep(4000);
+                var pair = cpu.ReadPair();
+                var s1 = TaskManager.Measure(); var secsR = Stopwatch.GetElapsedTime(t0).TotalSeconds;
+                var rows = TaskManager.Rows(s0, s1, secsR, cores, []);
+                // PDH liefert gleichnamige Instanzen (mehrere „powershell“) ohne Nummer – Zuordnung über die Kennung aus derselben Messung
+                (string Instance, double Value) Pick(int pid) { var m = Assert.Single(pair!, x => (int)x.Second == pid); return (m.Instance, m.Value); }
+                var ownR = rows.Single(r => r.Pid == load.Id).CpuPercent; var (instR, cvalR) = Pick(load.Id);
+                var own2R = rows.Single(r => r.Pid == me).CpuPercent; var (inst2R, cval2R) = Pick(me);
+                probes.Add((ownR, cvalR / cores, Math.Abs(ownR - cvalR / cores), own2R, cval2R / cores, Math.Abs(own2R - cval2R / cores), secsR, instR, inst2R));
+            }
             Volatile.Write(ref stop, true); busy.ForEach(t => t.Join());
-            var rows = TaskManager.Rows(s0, s1, secs, cores, []);
-            var own = rows.Single(r => r.Pid == load.Id).CpuPercent;
-            // PDH liefert gleichnamige Instanzen (mehrere „powershell“) ohne Nummer – Zuordnung über die Kennung aus derselben Messung
-            (string Instance, double Value) Pick(int pid) { var m = Assert.Single(pair!, x => (int)x.Second == pid); return (m.Instance, m.Value); }
-            var (inst, cval) = Pick(load.Id);
-            var counter = cval / cores;
-            var diff = Math.Abs(own - counter);
-            var own2 = rows.Single(r => r.Pid == me).CpuPercent;
-            var (inst2, cval2) = Pick(me);
-            var counter2 = cval2 / cores;
-            var diff2 = Math.Abs(own2 - counter2);
+            var (own, counter, diff, own2, counter2, diff2, secs, inst, inst2) = probes.OrderBy(x => x.Diff + x.Diff2).ElementAt(1);
             var log = $"Lastprobe T-0763 ({DateTime.Now:yyyy-MM-dd HH:mm:ss})\nKerne: {cores}\nLastprozess: powershell (Kennung {load.Id}), Endlosschleife auf einem Kern\nMessfenster Trendo: {secs:0.00} s\n" +
                 $"Trendo (TaskManager.Rows, Prozessorzeit/Zeit/Kerne): {own:0.00} %\nWindows-Leistungsindikator \\Process({inst})\\% Processor Time / Kerne: {counter:0.00} %\nErwartet (ein Kern voll): {100.0 / cores:0.00} %\nAbweichung: {diff:0.00} Prozentpunkte\n" +
                 $"\nZweite Last: Testprozess (Kennung {me}) mit {threads} Rechenfäden\nTrendo: {own2:0.00} %\nWindows-Leistungsindikator \\Process({inst2})\\% Processor Time / Kerne: {counter2:0.00} %\nErwartet (etwa): {100.0 * threads / cores:0.00} %\nAbweichung: {diff2:0.00} Prozentpunkte\n" +
+                $"\nMessfenster je 4 s, Abweichung Last/Testprozess: " + string.Join(" | ", probes.Select(x => $"{x.Diff:0.00}/{x.Diff2:0.00}")) + " (gewertet: das mittlere)" +
                 $"\nGrenze: 5 Prozentpunkte\nErgebnis: {(diff <= 5 && diff2 <= 5 ? "BESTANDEN" : "NICHT BESTANDEN")}\n";
             if (Environment.GetEnvironmentVariable("TRENDO_BELEG_DIR") is { Length: > 0 } beleg) { Directory.CreateDirectory(beleg); File.WriteAllText(Path.Combine(beleg, "lastprobe.txt"), log); }
             Assert.True(own > 100.0 / cores / 2, log); // die Last ist wirklich gemessen

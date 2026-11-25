@@ -417,8 +417,23 @@ public sealed class SitePage : IJsonOnDeserialized
     public static readonly string ScriptHash = "sha256-" + Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(AppScript)));
 
     /// <summary>Projekt als JSON zum Einbetten in die fertige Seite (Rundreise und Laufzeit der App). Der Standard-Kodierer maskiert &lt; &gt; &amp; ' –
-    /// ein „&lt;/script&gt;“ im Inhalt kann das Skript-Element nicht schließen.</summary>
-    string EmbeddedJson() => JsonSerializer.Serialize(Model(), Compact);
+    /// ein „&lt;/script&gt;“ im Inhalt kann das Skript-Element nicht schließen.
+    /// T-0768: Linkziele werden vor dem Einbetten wie in der Seite selbst entschärft (<see cref="EmbedUrl"/>) – kein „javascript:“ o. Ä. in der Ausgabe.</summary>
+    string EmbeddedJson() => JsonSerializer.Serialize(Model(embed: true), Compact);
+
+    /// <summary>T-0768: Ziel eines Bausteins für das eingebettete JSON. Erlaubt sind Ziele ohne Doppelpunkt (Datei, „anzahl“), die internen Verweise
+    /// „seite:“/„summe:“ sowie http, https und mailto; alles andere („javascript:“, „data:“, „vbscript:“ …) wird zu „#“ wie im HTML.</summary>
+    internal static string EmbedUrl(string u)
+    {
+        var t = (u ?? "").Trim();
+        if (t.Length == 0) return t;
+        if (t.Any(char.IsControl)) return "#";
+        if (t.StartsWith("seite:", StringComparison.Ordinal) || t.StartsWith("summe:", StringComparison.Ordinal)) return t;
+        if (!t.Contains(':')) return t;
+        return Uri.TryCreate(t, UriKind.Absolute, out var x) && x.Scheme is "https" or "http" or "mailto" ? t : "#";
+    }
+
+    static List<Block> EmbedBlocks(List<Block> bs) => [.. bs.Select(b => b with { Url = EmbedUrl(b.Url) })];
 
     public string ToHtml()
     {
@@ -459,9 +474,9 @@ public sealed class SitePage : IJsonOnDeserialized
     static readonly JsonSerializerOptions Compact = new();
 
     /// <summary>Gespeicherte Form: einfache Seite als Fassung 1 (Version, Title, Accent, Blocks – lesbar auch für ältere Trendo), App als Fassung 2.</summary>
-    object Model() => IsApp
-        ? new { Version = FormatVersion, Title, Accent, AppId, Pages, Collections }
-        : new { Version = 1, Title, Accent, Blocks };
+    object Model(bool embed = false) => IsApp
+        ? new { Version = FormatVersion, Title, Accent, AppId, Pages = embed ? Pages.Select(s => new AppScreen { Id = s.Id, Name = s.Name, Blocks = EmbedBlocks(s.Blocks) }).ToList() : Pages, Collections }
+        : new { Version = 1, Title, Accent, Blocks = embed ? EmbedBlocks(Blocks) : Blocks };
 
     public string ToJson() => JsonSerializer.Serialize(Model(), Indented);
     /// <summary>T-0716: absturzsicher (Zwischendatei, dann austauschen) – ein Abbruch beim Speichern hinterlässt nie eine halbe Seite.</summary>
@@ -538,6 +553,7 @@ public sealed class SitePage : IJsonOnDeserialized
 
             // 1) lesen und prüfen – noch nichts schreiben
             var wanted = page.Pages.SelectMany(s => s.Blocks).Where(b => b.Kind == "img" && !b.Url.Contains(':') && FreeAssets.SafeRel(b.Url)
+                && !Trendo.Core.Sys.ChildWrite.BlockedName(b.Url) // T-0768 N1: keine Bildnamen mit ausführbarer Teilendung (z. B. „start.bat.png“)
                 && ImportImageTypes.Contains(Path.GetExtension(b.Url).ToLowerInvariant())).Select(b => b.Url).Distinct(StringComparer.Ordinal).ToList();
             if (wanted.Count > MaxImportImages) throw new InvalidDataException($"Die App verweist auf mehr als {MaxImportImages} Bilder – nicht geöffnet, nichts wurde geschrieben.");
             var bytes = new Dictionary<string, byte[]>(StringComparer.Ordinal); long total = 0;

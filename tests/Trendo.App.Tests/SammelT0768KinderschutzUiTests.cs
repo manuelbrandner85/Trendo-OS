@@ -94,4 +94,29 @@ public class SammelT0768KinderschutzUi
         }
         finally { w.Close(); }
     }
+
+    [Fact(DisplayName = "T-0768 N5 (T-0767 × T-0764, echter Handy-Zugang): Kinderprofil – Upload von „spiel.exe“ ergibt 403 und nichts liegt im Eingang; ein Foto geht")]
+    public async Task Handy_kind_keine_programmdatei()
+    {
+        var d = Path.Combine(Path.GetTempPath(), "trendo-t0768-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(d);
+        var ct = TestContext.Current.CancellationToken;
+        var access = new PhoneAccess(d); var inbox = Path.Combine(d, "vom"); var audit = new AuditLog(Path.Combine(d, "audit.jsonl"));
+        using var scope = Trendo.Core.Sys.ChildWrite.TestScope(d); // Testordner als freigegebener Ort – geprüft wird dann die Endung
+        var port = FreePort();
+        await using (var srv = await PhoneLinkServer.StartAsync(access, [System.Net.IPAddress.Loopback], port, inbox, Path.Combine(d, "zum"), audit,
+            (_, _) => { }, (_, _) => { }, checkTarget: t => Trendo.Core.Sys.ChildWrite.WriteProblem(Principal.ForProfile(true), t, audit)))
+        {
+            using var phone = new HttpClient(new HttpClientHandler { CookieContainer = new System.Net.CookieContainer() }) { BaseAddress = new Uri($"http://127.0.0.1:{srv.Port}") };
+            var o = access.NewOffer();
+            Assert.Equal(System.Net.HttpStatusCode.OK, (await phone.PostAsync($"/p/{o.Secret}", new FormUrlEncodedContent(new Dictionary<string, string> { ["name"] = "Kinderhandy" }), ct)).StatusCode);
+            using (var f = new MultipartFormDataContent()) { f.Add(new ByteArrayContent([0x4D, 0x5A, 0, 0]), "f", "spiel.exe"); Assert.Equal(System.Net.HttpStatusCode.Forbidden, (await phone.PostAsync("/api/upload", f, ct)).StatusCode); }
+            Assert.Empty(Directory.Exists(inbox) ? Directory.GetFileSystemEntries(inbox) : []);
+            Assert.Contains(audit.ReadAll(), a => a.Action == "rbac.denied" && a.Detail.Contains("spiel.exe"));
+            using (var f = new MultipartFormDataContent()) { f.Add(new ByteArrayContent([0xFF, 0xD8, 0xFF]), "f", "foto.jpg"); Assert.Equal(System.Net.HttpStatusCode.OK, (await phone.PostAsync("/api/upload", f, ct)).StatusCode); }
+            Assert.True(File.Exists(Path.Combine(inbox, "foto.jpg")));
+        }
+        try { Directory.Delete(d, true); } catch (IOException) { }
+    }
+
+    static int FreePort() { var l = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0); l.Start(); var p = ((System.Net.IPEndPoint)l.LocalEndpoint).Port; l.Stop(); return p; }
 }

@@ -1,0 +1,21 @@
+# Alles prüfen – Produktionspaket
+
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `qual-check` · Stand: 0.9.110 (Stand 579ed59)
+
+Arbeitsfläche: Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)  
+Modulstatus (requirements.yaml): IMPLEMENTED / Test NOT_RUN  
+Programm-Hülle (Dokumente, Rückgängig, Autosave, Bedienstufen): nein – eigene Arbeitsseite
+
+## Inhalt
+- [ARCHITECTURE.md](ARCHITECTURE.md)
+- [REA_REFERENCE_ANALYSIS.md](REA_REFERENCE_ANALYSIS.md)
+- [FEATURE_MATRIX.md](FEATURE_MATRIX.md)
+- [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md)
+- [USER_WORKFLOWS.md](USER_WORKFLOWS.md)
+- [TEST_PLAN.md](TEST_PLAN.md)
+- [TEST_RESULTS.md](TEST_RESULTS.md)
+- [PERFORMANCE_REPORT.md](PERFORMANCE_REPORT.md)
+- [LICENSE_REPORT.md](LICENSE_REPORT.md)
+- [INTEGRATION_REPORT.md](INTEGRATION_REPORT.md)
+
+Alle Angaben sind aus Code, Katalogen und Tests abgeleitet. Was nicht belegt ist, steht als „nicht erfasst“ da.
