@@ -61,7 +61,7 @@ public sealed class PhoneLinkServer : IAsyncDisposable
     /// <param name="maxFileBytes">Größenlimit je Datei vom Handy (Standard 2 GB).</param>
     public static async Task<PhoneLinkServer> StartAsync(PhoneAccess link, IReadOnlyList<IPAddress> addresses, int port, string inbox, string outbox, AuditLog audit,
         Action<string, string> onFile, Action<string, string> onText, IPhoneRemote? remote = null, PhoneRunLog? run = null, long maxFileBytes = PhoneTransfer.DefaultMaxBytes,
-        Action<string, IReadOnlyList<PhoneTransfer.Received>>? onFiles = null)
+        Action<string, IReadOnlyList<PhoneTransfer.Received>>? onFiles = null, Func<string, string?>? checkTarget = null)
     {
         var bind = addresses.Where(PhoneAccess.AllowedAddress).Distinct().ToList();
         if (bind.Count == 0) throw new InvalidOperationException("Kein Heimnetz gefunden. Ist der PC mit dem WLAN oder LAN verbunden?");
@@ -174,6 +174,13 @@ public sealed class PhoneLinkServer : IAsyncDisposable
                         return Results.Content($"Bitte höchstens {MaxFilesPerRequest} Dateien auf einmal schicken.", "text/plain; charset=utf-8", Encoding.UTF8, 400);
                     }
                     var raw = cd.FileNameStar.HasValue ? cd.FileNameStar.Value : cd.FileName.Value;
+                    // T-0768: Kinderschutz (T-0764 ChildWrite) – im Kinderprofil keine ausführbaren/auslösenden Dateien vom Handy; ganze Sendung verwerfen
+                    if (checkTarget?.Invoke(SafeTarget(inbox, raw ?? "")) is { } no)
+                    {
+                        Undo();
+                        run?.Record(PhoneRunLog.Steps.PhoneToPc, d.Id, c.Connection.RemoteIpAddress, ok: false, note: "im Kinderprofil gesperrt, nichts behalten");
+                        return Results.Content(no, "text/plain; charset=utf-8", Encoding.UTF8, 403);
+                    }
                     var one = await PhoneTransfer.ReceiveAsync(section.Body, inbox, raw, maxFileBytes, c.RequestAborted, markOutside: true);
                     got.Add((one, phoneSums.Count > 0 ? phoneSums.Dequeue() : ""));
                 }

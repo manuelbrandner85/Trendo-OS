@@ -63,6 +63,7 @@ public partial class MainWindow
     /// Lokaler Katalog: Datei liegt schon vor – gleich fragen.</summary>
     public async Task ExtCatalogInstall(CatalogEntry e)
     {
+        if (!DarfSoftware("ext.install " + e.Id, "erweiterungen")) return; // T-0768: Kinderschutz (T-0764) – kein Laden und Installieren im Kinderprofil
         var third = ExtensionCatalog.IsRemote(e.Url);
         string? file = ExtensionCatalog.LocalFile(_extCatSrcDir, e);
         if (third)

@@ -50,6 +50,7 @@ public partial class MainWindow
     public async Task HealRepairInstall()
     {
         if (_healInstall is not { Package: { } pkg } r || r.Findings.Count == 0) return;
+        if (!DarfSoftware("heal.repair.install", "heilung")) { _healRepairAsk = false; HealSay(Rbac.NurErwachseneSoftware); return; } // T-0768: Kinderschutz (T-0764) – Programmdateien ersetzt nur ein Erwachsener
         _healRepairAsk = false; _healInstallBusy = true; HealSay("Programmdateien werden aus dem Installationspaket ersetzt …");
         var dir = InstallDir;
         var (ok, bad) = await Task.Run(() => InstallIntegrity.Repair(dir, pkg, r.Findings.Select(f => f.File), _core.Audit));
@@ -85,6 +86,7 @@ public partial class MainWindow
     public void HealRestore(SelfHealer.QuarantineItem item)
     {
         _healRestoreAsk = null;
+        if (!DarfSoftware("heal.restore " + Path.GetFileName(item.File), "heilung")) { HealSay(Rbac.NurErwachseneSoftware); return; } // T-0768: Kinderschutz (T-0764) – wie „Sicherung wiederherstellen“ nur für Erwachsene
         try { HealSay("✓ " + SelfHealer.Restore(_core.DataRoot, item, _core.Audit, DateTime.Now)); }
         catch (Exception e) when (e is InvalidOperationException or IOException or UnauthorizedAccessException) { HealSay(e.Message); }
     }

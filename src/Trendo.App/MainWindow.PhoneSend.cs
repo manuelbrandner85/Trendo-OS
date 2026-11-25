@@ -62,7 +62,7 @@ public partial class MainWindow
     {
         var req = new PickRequest("phone-send", false, true, []);
         var files = PickOverride is { } fake ? await fake(req)
-            : (await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = $"Datei an „{name}“ senden", AllowMultiple = true }))
+            : (await PickOpenFiles(new FilePickerOpenOptions { Title = $"Datei an „{name}“ senden", AllowMultiple = true })) // T-0768: zentraler Dateidialog (Kinder: Trendos Auswahl, T-0764)
                 .Select(x => x.TryGetLocalPath()).OfType<string>().ToArray();
         if (files is null || files.Length == 0) return;
         foreach (var f in files) await PhoneSendFileAsync(id, f);

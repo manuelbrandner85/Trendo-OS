@@ -150,8 +150,12 @@ public partial class MainWindow
     public string? ExtWorkshopDir => _extWsDir;
     public string? ExtWorkshopZip => _extWsZip;
 
+    /// <summary>T-0768: Kinderschutz (T-0764) – eigene Erweiterungen anlegen, übersetzen und als ZIP ausgeben (ausführbarer Code) nur im Erwachsenen-Profil.</summary>
+    void ExtWorkshopDemand(string what) => Rbac.DemandSoftware(CurrentPrincipal, "ext.workshop " + what, _core.Audit);
+
     public string ExtWorkshopNew(string name)
     {
+        ExtWorkshopDemand("new");
         _extWsDir = ExtensionWorkshop.Create(_core.DataRoot, name); _extWsOpen = true; _extWsZip = null;
         _extWsMsg = $"Vorlage „{name.Trim()}“ angelegt – Beschreibung und Quelltext anpassen, dann „Bauen und prüfen“.";
         return _extWsDir;
@@ -160,6 +164,7 @@ public partial class MainWindow
     public void ExtWorkshopSave(ExtManifest m, string? source)
     {
         if (_extWsDir is not { } d) return;
+        ExtWorkshopDemand("save");
         ExtensionWorkshop.Save(d, m);
         if (source is not null) ExtensionWorkshop.SaveSource(d, source);
     }
@@ -167,6 +172,7 @@ public partial class MainWindow
     public List<string> ExtWorkshopBuild()
     {
         if (_extWsDir is not { } d) return ["Erst eine Erweiterung anlegen."];
+        ExtWorkshopDemand("build");
         var err = ExtensionWorkshop.Build(d);
         _extWsMsg = err.Count == 0 ? "Gebaut und geprüft – nur erlaubte Sandbox-Funktionen, Prüfsumme eingetragen." : "Noch nicht fertig: " + string.Join(" ", err);
         return err;
@@ -175,6 +181,7 @@ public partial class MainWindow
     public string? ExtWorkshopExport()
     {
         if (_extWsDir is not { } d) return null;
+        ExtWorkshopDemand("export");
         var (zip, err) = ExtensionWorkshop.Export(d, ExtensionWorkshop.ExportDir(_core.DataRoot));
         _extWsZip = zip;
         _extWsMsg = zip is null ? "Nicht ausgegeben: " + string.Join(" ", err) : $"ZIP liegt unter {zip} (Prüfsumme {ExtensionCatalog.FileSha256(zip)[..12]}…). Weitergeben oder hier installieren.";
@@ -185,6 +192,7 @@ public partial class MainWindow
     {
         const string V = "erweiterungen";
         var sp = new StackPanel { Name = "ext-ws", Spacing = 6 };
+        if (!CanManageSoftware) { sp.Children.Add(P("Eigene Erweiterungen bauen und installieren geht nur im Erwachsenen-Profil.", Muted, 11.5)); return Card(sp); } // T-0768: Kinderschutz (T-0764)
         var list = ExtensionWorkshop.List(_core.DataRoot);
         if (_extWsDir is null || !Directory.Exists(_extWsDir)) _extWsDir = list.FirstOrDefault();
         var newName = new TextBox { Name = "ext-ws-name", PlaceholderText = "Name der neuen Erweiterung", FontSize = 12 };

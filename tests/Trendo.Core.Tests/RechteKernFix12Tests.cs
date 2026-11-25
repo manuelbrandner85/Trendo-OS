@@ -42,6 +42,7 @@ public class RechteKernFix12
         ["MainWindow.Tabelle.RememberSheetRecent"] = "Liste „zuletzt“ in Trendos Datenordner",
         ["MainWindow.Text.RememberRecent"] = "Liste „zuletzt“ in Trendos Datenordner",
         ["MainWindow.W4Game.GameEditor"] = "nur Erwachsene (Konsolen-Programm)",
+        ["MainWindow.W4Builder.BuilderOpenExport"] = "T-0768 (aus T-0765): liest die gewählte ZIP/index.html; schreibt nur Bilder mit Bild-Endung (ImportImageTypes) in Trendos Baukasten-Ordner (WorkFolder über ProjectsBase), Unterordner von Trendo",
         ["MainWindow.WebDesign3D.WebDesignModelImport"] = "liest, kopiert in Trendos Webdesign-Ordner",
         ["MainWindow.WebDesignAssets.WebShrinkImage"] = "Aufrufer übergibt Trendos eigene Kopie",
         ["MainWindow.axaml.SaveScreenshot"] = "Startoption --screenshot (Kommandozeile, nicht Kinderprofil)",

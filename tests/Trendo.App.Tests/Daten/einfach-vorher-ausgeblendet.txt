@@ -2118,3 +2118,26 @@ podcast-programm (Dokument): podc-p-episode
 podcast-programm (Dokument): podc-p-year
 podcast-programm (Dokument): prog-export-wav
 # 3D (T-0691): die sechs Ansichten liegen in „Einfach“ im Knopf „Ansicht: … ▾“ (3d-view-menu) – alle bleiben dort erreichbar, deshalb keine Zeile.
+# T-0768 (aus T-0763): neue Einstellungsseite „Alles prüfen“ – in „Einfach“ dieselbe gekürzte Navigation wie „systemcheck“ (weitere Seiten hinter „Mehr Einstellungen (…)“ und in der Suche)
+qual-check: settings-nav-appcenter
+qual-check: settings-nav-approvals
+qual-check: settings-nav-apps
+qual-check: settings-nav-components
+qual-check: settings-nav-downloads
+qual-check: settings-nav-forensik
+qual-check: settings-nav-handy
+qual-check: settings-nav-hardware
+qual-check: settings-nav-heilung
+qual-check: settings-nav-hinzufuegen
+qual-check: settings-nav-lizenz
+qual-check: settings-nav-modus
+qual-check: settings-nav-netz-pruefen
+qual-check: settings-nav-prog-pflege
+qual-check: settings-nav-qual-leistung
+qual-check: settings-nav-qualitaet
+qual-check: settings-nav-ressourcen
+qual-check: settings-nav-schutz
+qual-check: settings-nav-system
+qual-check: settings-nav-systemcheck
+qual-check: settings-nav-teilen
+qual-check: settings-nav-verbund

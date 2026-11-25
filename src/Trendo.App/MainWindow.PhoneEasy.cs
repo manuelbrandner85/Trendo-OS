@@ -91,7 +91,8 @@ public partial class MainWindow
                     _phoneTexts.Insert(0, (dev, text)); if (_phoneTexts.Count > 10) _phoneTexts.RemoveAt(10);
                     Toast($"Vom Handy ({dev}): {(text.Length > 80 ? text[..80] + " …" : text)}", ("Kopieren", new Action(() => { if (Clipboard is { } cb) _ = cb.SetTextAsync(text); })));
                     if (CurrentView == "handy") Show("handy");
-                }), _phoneRemote, PhoneRun, PhoneMaxFileBytes, (dev, files) => _ui.Post(() => Toast(PhoneFilesToast(dev, files), ("Ordner öffnen", new Action(() => Launch(PhoneInbox))))));
+                }), _phoneRemote, PhoneRun, PhoneMaxFileBytes, (dev, files) => _ui.Post(() => Toast(PhoneFilesToast(dev, files), ("Ordner öffnen", new Action(() => Launch(PhoneInbox))))),
+                checkTarget: p => Trendo.Core.Sys.ChildWrite.WriteProblem(CurrentPrincipal, p, _core.Audit)); // T-0768: Kinderschutz (T-0764) – Dateien vom Handy wie jede Kinder-Schreibstelle
             _phoneServerError = "";
             if (!_phoneCloseHooked) { _phoneCloseHooked = true; Closed += async (_, _) => { _phoneTimer?.Stop(); if (_phoneServer is { } s) await s.DisposeAsync(); }; }
             return true;

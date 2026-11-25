@@ -250,6 +250,7 @@ public partial class MainWindow
     {
         if (_ceRoot is null) throw new InvalidOperationException("Erst einen Projektordner öffnen.");
         if (!CodeBuildHints.Any(h => h.Command == command)) throw new InvalidOperationException("Unbekannter Vorschlag.");
+        if (!DarfAusfuehren("terminal", out var notAllowed)) { _ceTab = "terminal"; _ceTerm += notAllowed + "\n"; return; } // T-0768: Kinderschutz (T-0764 H) – keine Rückfrage, keine Freigabe im Projekt
         if (CodeNeedsOssConsent(command, () => CodeTerminal(command))) { _ceTab = "terminal"; return; }
         CodeTerminal(command);
     }
@@ -259,6 +260,7 @@ public partial class MainWindow
     {
         if (_ceHintAsk is not { } label || _ceAskRun is not { } run || _ceAskProject is not { } proj) return;
         _ceHintAsk = null; _ceAskRun = null; _ceAskProject = null;
+        if (!DarfAusfuehren("oss.build.consent", out var notAllowed)) { _ceOut = notAllowed; return; } // T-0768: Kinderschutz (T-0764 H) – Kinder vermerken keine Erstlauf-Freigabe
         OpenSource.ApproveBuild(proj);
         _core.Audit.Append(Principal.LocalOwner.Name, "oss.build.consent", $"{Path.GetFileName(proj)}: {label}");
         run();

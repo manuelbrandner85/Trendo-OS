@@ -87,6 +87,7 @@ public partial class MainWindow
     /// <summary>Erst fragen (mit Name, Version, Herkunft, Prüfsumme), dann mit Freigabe installieren.</summary>
     public void ExtInstall(string path)
     {
+        if (!DarfSoftware("ext.install " + Path.GetFileName(path), "erweiterungen")) return; // T-0768: Kinderschutz (T-0764) – Erweiterungen richtet nur ein Erwachsener ein
         if (!File.Exists(path) && !Directory.Exists(path)) { Say("Nicht installiert: Ordner oder ZIP nicht gefunden.", "erweiterungen"); return; }
         var hash = ExtensionStore.SourceHash(path);
         ExtOfferKeepData(path);

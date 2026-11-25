@@ -132,6 +132,7 @@ public partial class MainWindow
     public async Task<string?> GitHubConfirmInstaller(PendingInstaller? expected = null)
     {
         if (_ghPending is not { } p) return null;
+        if (!DarfSoftware("github.installer.run " + p.Repo.FullName, "oss")) return null; // T-0768: Kinderschutz (T-0764) – Installer führt nur ein Erwachsener aus
         if (expected is not null && !ReferenceEquals(expected, p)) { Say("Inzwischen wartet ein anderer Installer – bitte die neue Karte prüfen.", "oss"); return null; }
         if (p.Check.Blocked || p.Lock is null) { Say("Der Installer ist nicht mehr da – bitte noch einmal „Installieren“.", "oss"); GitHubCancelInstaller(); return null; }
         if (p.Check.NeedsRiskConsent && !_ghRiskAccepted) { Say("Dieser Installer ist nicht vertrauenswürdig signiert. Erst das Risiko ausdrücklich bestätigen, dann ausführen.", "oss"); return null; }
@@ -265,6 +266,8 @@ public partial class MainWindow
     /// Karte „Erster Start“. Rückgabe: false (der Start passiert ggf. danach) bzw. false, wenn schon eine Prüfung läuft.</summary>
     bool StartGate(string key, string label, string exe, string dir, string? approved, Action<string> approve, Action run, string? entryId)
     {
+        // T-0768: Kinderschutz (T-0764 Erlaubnisliste) – GitHub- und Hersteller-Programme startet nur ein Erwachsener; kein Prüflauf, keine Start-Erlaubnis aus dem Kinderprofil
+        if (!CanManageSoftware) { _core.Audit.Append(CurrentPrincipal.Name, "rbac.denied", $"User fehlt ManageSoftware: start {label}"); Say(Rbac.NurErwachseneProgramm, "oss"); Toast(Rbac.NurErwachseneProgramm); return false; }
         if (GitHubStartChecking) { Say($"Trendo prüft gerade „{_ghCheckLabel}“ – bitte kurz warten oder dort „Abbrechen“.", "oss"); return false; }
         var cts = _ghCheckCts = new CancellationTokenSource();
         _ghCheckLabel = label; _ghCheckEntry = entryId; _ghCheckText = $"Prüfe „{label}“ …";
@@ -341,6 +344,7 @@ public partial class MainWindow
     {
         if (_ghStart is not { } p) return false;
         if (expected is not null && !ReferenceEquals(expected, p)) return false;
+        if (!DarfSoftware("github.start.consent " + p.Label, "oss")) return false; // T-0768: Kinderschutz (T-0764)
         if (p.Check.NeedsRiskConsent && !_ghStartRisk) { Say("Dieses Programm ist nicht vollständig vertrauenswürdig signiert. Erst das Risiko ausdrücklich bestätigen, dann starten.", "oss"); return false; }
         _ghStart = null;
         using (p.Locks)

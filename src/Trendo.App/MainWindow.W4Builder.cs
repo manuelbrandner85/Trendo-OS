@@ -339,7 +339,8 @@ public partial class MainWindow
             palette.Children.Add(pb);
         }
         palette.Children.Add(Act("builder-page-add", "+ Seite", () => BuilderAddPage("Seite " + (BuilderPage.Pages.Count + 1))));
-        palette.Children.Add(Act("builder-vorlage", "Vorlage: Einkaufsliste", () => BuilderUseTemplate("einkaufsliste")));
+        // T-0768: im Leerzustand steht dieselbe Vorlage schon als erster Schritt oben („builder-tpl-…“) – kein doppelter Knopf (V10: höchstens 40 Knöpfe in „Einfach“)
+        if (!BuilderFresh) palette.Children.Add(Act("builder-vorlage", "Vorlage: Einkaufsliste", () => BuilderUseTemplate("einkaufsliste")));
         palette.Children.Add(Act("builder-open", "Öffnen (ZIP) …", () => { _ = BuilderPickOpen(); })); // Anweisung statt Ausdruck: sonst greift die rahmenlose Task-Überladung von Act
         palette.Children.Add(new Border { Height = 8 });
         palette.Children.Add(H("Bausteine", 13));

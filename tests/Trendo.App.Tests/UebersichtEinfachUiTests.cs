@@ -118,6 +118,8 @@ public class UebersichtEinfach_Ui(ITestOutputHelper log)
     public static readonly (string Prefix, string Weg)[] Replaced =
     [
         ("prog-cmd-", "Fachwerkzeuge der Stufe: „Mehr Werkzeuge“ und Strg+K (E2)"),
+        // T-0768 (aus T-0763): neue Einstellungsseite „Alles prüfen“ – in „Einfach“ wie die übrigen Seiten von „Zustand & Leistung“ hinter „Mehr Einstellungen (…)“ und in der Suche; dazu der Link „Alles prüfen“ auf der Seite „System“
+        ("settings-nav-qual-check", "Einstellungen ▸ „Mehr Einstellungen (…)“ bzw. Suche; Link „Alles prüfen“ auf der Seite „System“"),
         ("text-gallery-", "Formatvorlagen über die Liste „Absatzart“"),
         ("garment-color-1", "weitere Farben über „Eigene Farbe“"), ("garment-color-8", "weitere Farben über „Eigene Farbe“"), ("garment-color-9", "weitere Farben über „Eigene Farbe“"),
         ("studio-card-", "Studios über die Bereichs-Kachel"),
