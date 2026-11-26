@@ -101,6 +101,8 @@ public sealed class ProgramSpec(string key, string studio, string title)
     public Func<ProgramDocument, string, string>? KiShow { get; init; }
     /// <summary>T-0782 (2. Gegenprüfung M6): „dokument.setzen“ der KI nur für diese Felder (Positivliste); null = keine Positivliste.</summary>
     public IReadOnlyList<string>? KiAllowed { get; init; }
+    /// <summary>T-0782 (3. Gegenprüfung M6): Wert eines erlaubten Felds prüfen (Feld, Wert → Grund der Ablehnung oder null), z. B. nur gültige Themen-Kennungen.</summary>
+    public Func<string, string, string?>? KiAllowedValue { get; init; }
     public int LevelOf(ProgramCmd c) => Math.Max(c.Level, CmdLevels.GetValueOrDefault(c.Name));
 }
 

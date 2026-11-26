@@ -94,6 +94,9 @@ public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocumen
             if (ki is null && cmd is null && spec.KiAllowed is { } allowed
                 && !allowed.Contains(AssistChain.PathParts(AssistChain.NormalizePath(step.Args.GetValueOrDefault("pfad") ?? "")).FirstOrDefault() ?? "", StringComparer.OrdinalIgnoreCase))
                 throw new InvalidOperationException("Das ändert die KI hier nicht – erlaubt sind nur: " + string.Join(", ", allowed) + ".");
+            if (ki is null && cmd is null && spec.KiAllowedValue is { } check
+                && check(AssistChain.PathParts(AssistChain.NormalizePath(step.Args.GetValueOrDefault("pfad") ?? "")).FirstOrDefault() ?? "", step.Args.GetValueOrDefault("wert") ?? "") is { } bad)
+                throw new InvalidOperationException(bad);
             var before = doc.Remember();
             MainWindow.AssistQuiet++;
             try

@@ -198,11 +198,16 @@ public static partial class Nachhilfe
     /// Unicode-Minus, Punkt/Komma, gesperrte Buchstaben („w-e-n-t“), ae statt ä und Rechnungen, die die Lösung ergeben („20 + 1“).</summary>
     public static bool VerraetLoesung(string text, IEnumerable<string> antworten) => VerraetLoesung(text, antworten, null);
 
-    /// <param name="frage">Brüche und Zahlen, die schon in der Aufgabe stehen (z. B. „Kürze 12/18“), gelten nicht als verraten.</param>
+    /// <param name="frage">Die Aufgabe selbst. T-0782 (3. Gegenprüfung M6): Nur Brüche (und Dezimalzahlen bei Bruch-Antworten), die schon in der Aufgabe stehen
+    /// (z. B. „Kürze 12/18“), gelten nicht als verraten. Für Zahl-Antworten gibt es diese Ausnahme nicht – bei „4x + 7 = 35“ ist „x = 7“ verraten.
+    /// Wörtliche Zitate der Aufgabe (ganz oder ein Teil nach „:“) werden vor der Prüfung herausgenommen, damit die Aufgabe selbst nicht als Lösung gilt.</param>
     public static bool VerraetLoesung(string text, IEnumerable<string> antworten, string? frage)
     {
-        var ausFrage = frage is null ? [] : Regex.Matches(Zahlwort(Flach(frage)), @"-?\d+\s*/\s*-?\d+|-?\d+(?:\.\d+)?").Select(m => m.Value.Replace(" ", "")).ToHashSet();
+        var ausFrage = frage is null ? [] : Regex.Matches(Zahlwort(Flach(frage)), @"-?\d+\s*/\s*-?\d+|(?<![\d/])-?\d+\.\d+(?![\d/])").Select(m => m.Value.Replace(" ", "")).ToHashSet();
         var flach = Flach(text);
+        if (frage is not null)
+            foreach (var teil in new[] { Flach(frage) }.Concat(Flach(frage).Split(':').Select(t => t.Trim().TrimEnd('?', '.', ' ', '=').Trim())).Where(t => t.Length >= 5).OrderByDescending(t => t.Length))
+                flach = flach.Replace(teil, " ");
         var mitZahlen = Zahlwort(flach);
         var gesperrt = LetterGaps().Replace(flach, "");
         foreach (var a0 in antworten.Select(a => NormSoll(a ?? "")).Where(a => a.Length > 0))
@@ -225,13 +230,26 @@ public static partial class Nachhilfe
             if (ZahlLesen(a0, out var v))
             {
                 foreach (Match m in Expression().Matches(mitZahlen)) if (Rechne(m.Value) is { } res && res == v) return true;
-                foreach (Match m in Number().Matches(mitZahlen)) if (!ausFrage.Contains(m.Value) && decimal.TryParse(m.Value, NumberStyles.Number, CultureInfo.InvariantCulture, out var w) && w == v) return true;
+                foreach (Match m in Number().Matches(mitZahlen)) if (decimal.TryParse(m.Value, NumberStyles.Number, CultureInfo.InvariantCulture, out var w) && w == v) return true; // keine Ausnahme aus der Frage (3. Gegenprüfung)
                 continue;
             }
             var pattern = @"(?<![\p{L}\p{N}])" + Regex.Escape(a) + @"(?![\p{L}\p{N}])";
             if (Regex.IsMatch(flach, pattern) || Regex.IsMatch(gesperrt, pattern)) return true;
         }
         return false;
+    }
+
+    /// <summary>T-0782 (3. Gegenprüfung M6): Werte, die die KI setzen darf – nur gültige Themen-Kennungen, Fächer und Klassen 1–13. Null = in Ordnung.</summary>
+    public static string? KiWertProblem(string feld, string wert)
+    {
+        var w = wert.Trim().Trim('"');
+        return feld.ToLowerInvariant() switch
+        {
+            "thema" => ThemaById(w) is null ? "Dieses Thema gibt es nicht – erlaubt sind nur: " + string.Join(", ", Themen.Select(t => t.Id)) + "." : null,
+            "fach" => Faecher.Any(f => f.Id == w) ? null : "Dieses Fach gibt es nicht – erlaubt sind: " + string.Join(", ", Faecher.Select(f => f.Id)) + ".",
+            "klasse" => int.TryParse(w, NumberStyles.None, CultureInfo.InvariantCulture, out var k) && k is >= 1 and <= 13 ? null : "Die Klasse muss eine Zahl von 1 bis 13 sein.",
+            _ => null,
+        };
     }
 
     // ───────────── Anzeige-Filter der KI-Kette (2. Gegenprüfung M6) ─────────────

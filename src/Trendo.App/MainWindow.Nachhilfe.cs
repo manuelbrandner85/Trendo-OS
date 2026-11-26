@@ -68,6 +68,7 @@ public partial class MainWindow
         KiView = Nachhilfe.KiSicht, // M6: die KI sieht keine Antworten, Lösungswege, Hinweise und Eingaben
         KiShow = Nachhilfe.FuerAnzeige, // 2. Gegenprüfung M6: Plan, Vorschau und Protokoll ohne Lösungen
         KiAllowed = ["fach", "klasse", "thema"], // 2. Gegenprüfung M6: Positivliste für „dokument.setzen“
+        KiAllowedValue = Nachhilfe.KiWertProblem, // 3. Gegenprüfung M6: nur gültige Themen, Fächer und Klassen
         Exports =
         [
             new("odt", "Arbeitsblatt (.odt)", ".odt", (d, f) => { Trendo.Core.Office.OdtFormat.Write(Nachhilfe.Arbeitsblatt(d, 8, TutorSeed ?? Environment.TickCount), f); return f; }),
