@@ -172,7 +172,17 @@ public sealed class RealProcessRunner : IProcessRunner
 /// <summary>Erkennt und installiert Abhängigkeiten. Installation nur nach Zustimmung des Owners, jede Aktion im Audit-Log.</summary>
 public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Func<string, string>? expand = null, Func<string, bool>? fileExists = null)
 {
-    private readonly Func<string, string> _expand = expand ?? Environment.ExpandEnvironmentVariables;
+    private readonly Func<string, string> _expand = expand ?? (p => ExpandPath(p, DataLocation.Instance()));
+
+    /// <summary>Korrektur 2 (N-c): Die festen Katalogpfade „%LOCALAPPDATA%\TrendoWerkzeuge\…“ zeigen in einer Prüf-Instanz in deren Werkzeugordner
+    /// (<see cref="DataLocation.ToolsRootIn"/>). Ohne Instanz bleibt es genau bei Environment.ExpandEnvironmentVariables.</summary>
+    public static string ExpandPath(string path, string? instance)
+    {
+        const string prefix = @"%LOCALAPPDATA%\TrendoWerkzeuge";
+        if (instance is not null && path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) && (path.Length == prefix.Length || path[prefix.Length] is '\\' or '/'))
+            path = DataLocation.ToolsRootIn(instance) + path[prefix.Length..];
+        return Environment.ExpandEnvironmentVariables(path);
+    }
     private readonly Func<string, bool> _exists = fileExists ?? FileExistsGlob;
     private readonly bool _customExists = fileExists is not null;
     public string? ConsentFile { get; init; }

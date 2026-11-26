@@ -1,0 +1,7 @@
+    T-0770 N-a: liegengebliebene Zwischendateien (*.nupkg.neu-*) werden vor dem Sichern weggeräumt [FAIL]
+      Assert.Equal() Failure: Collections differ
+      Expected: ["TrendoOS-1.0-full.nupkg"]
+      Actual:   ["TrendoOS-1.0-full.nupkg", "TrendoOS-1.1-full.nupkg.neu-abcd1234"]
+    T-0770 M-B: v2 frisch vor MarkOk gesichert, v3 läuft – Rückkehr geht zur gesicherten v2, Abweichung zu „zuletzt gut“ steht da [FAIL]
+      Assert.Contains() Failure: Sub-string not found
+   Trendo.App.Tests  Total: 2, Errors: 0, Failed: 2, Skipped: 0, Not Run: 0, Time: 4,302s

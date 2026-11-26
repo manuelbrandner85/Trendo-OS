@@ -76,7 +76,8 @@ class Program
             {
                 var guard = new BootGuard(crashRoot);
                 var updater = new VelopackUpdater();
-                if (updater.IsInstalled && guard.Begin(updater.Current) is { } good && updater.RollbackTo(guard.BackupDir, good)) return 0;
+                // Korrektur 2 (M-B): nach drei Fehlstarts zur tatsächlich gesicherten Version, nicht blind zu „zuletzt gut“
+                if (AppStartup.TryAutoRollback(guard, updater, note => { try { CrashLog.Write(crashRoot, new InvalidOperationException(note), "Rückkehr zur alten Version"); } catch { } })) return 0;
             }
             catch (Exception ex) when (ex is IOException or InvalidOperationException or UnauthorizedAccessException) { try { CrashLog.Write(crashRoot, ex, "Rückkehr zur alten Version"); } catch { } }
         }
@@ -179,6 +180,17 @@ public static class AppStartup
 {
     public static bool VelopackFirstRun { get; private set; }
     public static void NoteFirstRun() => VelopackFirstRun = true;
+
+    /// <summary>U5 + Korrektur 2/3 (M-B): Start zählen; nach drei Fehlstarts zur tatsächlich gesicherten Version zurück (nicht blind zu
+    /// „zuletzt gut“). Eine Abweichung geht an <paramref name="note"/>. true = Rückkehr angestoßen.</summary>
+    internal static bool TryAutoRollback(BootGuard guard, ITrendoUpdater updater, Action<string>? note)
+    {
+        if (!updater.IsInstalled || guard.Begin(updater.Current) is null) return false;
+        var (target, mismatch) = guard.RollbackTarget(updater.Current);
+        if (target is null) return false;
+        if (mismatch is not null) note?.Invoke(mismatch);
+        return updater.RollbackTo(guard.BackupDir, target);
+    }
 
     public static string[] WithoutVelopack(string[] args)
     {

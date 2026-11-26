@@ -1,0 +1,3 @@
+error CS0117: "VelopackUpdater" enthält keine Definition für "ReplaceBackup". [C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+error CS1501: Keine Überladung für die LocalSourceDir-Methode nimmt 2 Argumente an. [C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+error CS1739: Die beste Überladung für "LocalSourceDir" enthält keinen Parameter mit dem Namen "instance". [C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]

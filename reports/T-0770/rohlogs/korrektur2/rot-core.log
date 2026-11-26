@@ -1,0 +1,7 @@
+  Fehler T-0770 N-b: fehlende oder kaputte start.json blockiert das Erneuern der Sicherung nicht dauerhaft [102 ms]
+   Assert.True() Failure
+  Fehler T-0770 M-A: Werkzeugordner hinter einer Junction in der Elternkette wird beim Deinstallieren nicht gelöscht [57 ms]
+   Assert.Null() Failure: Value is not null
+  Fehler T-0770 M-A: Junction auf %LOCALAPPDATA% oder den echten Werkzeugordner wird nicht als Prüf-Instanz angenommen [50 ms]
+   Assert.Null() Failure: Value is not null
+Fehler!      : Fehler:     3, erfolgreich:     0, übersprungen:     0, gesamt:     3, Dauer: 212 ms - Trendo.Core.Tests.dll (net10.0)

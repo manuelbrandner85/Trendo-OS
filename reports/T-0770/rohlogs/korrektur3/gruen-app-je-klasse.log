@@ -1,0 +1,9 @@
+T0770Korrektur3UiTests: Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 1,511s 
+T0770Korrektur3RueckkehrTests: Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 0,296s 
+T0770Korrektur2UiTests: Total: 2, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 3,509s 
+T0770KorrekturUiTests: Total: 5, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 3,318s 
+T0770UpdateSicherungUiTests: Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 3,309s 
+T0770UpdateQuelleTests: Total: 2, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 0,213s 
+UpdatesUiTests: Total: 4, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 6,047s 
+UninstallPromptTests: Total: 8, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 0,274s 
+RechteKernFix2Ui: Total: 5, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 8,221s 

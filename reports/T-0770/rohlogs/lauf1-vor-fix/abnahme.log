@@ -1,0 +1,81 @@
+﻿03:41:08 Abnahme T-0770 2026-11-26 03:41:08 Phase Bauen, Paket-Id TrendoOSAbnahme, Arbeitsordner C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme
+03:41:08 PowerShell 5.1.26100.9843, Windows 10.0.26340.0, CPU-Kerne 16, RAM 32 GB
+03:41:09 == Bauen: TrendoOSAbnahme 0.9.110-abnahme1 und 0.9.110-abnahme2 ==
+03:41:11 PASS  Release-Build 0.9.110-abnahme1 veroeffentlicht - 2 s
+03:41:26 PASS  Velopack-Paket 0.9.110-abnahme1 gepackt
+03:41:57 PASS  Release-Build 0.9.110-abnahme2 veroeffentlicht - 31 s
+03:42:15 PASS  Velopack-Paket 0.9.110-abnahme2 gepackt
+03:42:16   aa228517455f31f09d34cc86216b4ae1603c9b45af1c9e2f8e0f3165fbc12df9  311  assets.win.json
+03:42:16   bca85c58ce344132faa3d0d3342f51693a64d5325e227dae9ee1817819cac580  192  RELEASES
+03:42:16   8ef3a06f854b74f0260e9cc39665427d1d4dd05e3f6f2719d834368e906a6d1b  836  releases.win.json
+03:42:16   7a7572bc4086f894dda7f19fa16a86fad554d01c5e28998d102f4ad0efd9e1bc  135619303  TrendoOSAbnahme-0.9.110-abnahme1-full.nupkg
+03:42:16   69d989e5d2eca3a3c3813e5b35d5f9984c6789901505874986e3f05ab5fe860f  236802  TrendoOSAbnahme-0.9.110-abnahme2-delta.nupkg
+03:42:16   cc16f9419761b9be05fc72a0f94598d0dce433f87771168999c7c1ffde8d665d  135619241  TrendoOSAbnahme-0.9.110-abnahme2-full.nupkg
+03:42:16   f9828b440f3ac1ef1b102439320ef542d2729488a806246e5cac0edcca8ca72c  135525698  TrendoOSAbnahme-win-Portable.zip
+03:42:16   14417c0b72f7544198e900d34abdd93288520120f02ac41863a849f971f2a2a5  143226537  TrendoOSAbnahme-win-Setup.exe
+03:42:16   805245f2c563b1ce2e7ea7b45a9235a538c74024914937622ebb0f0cd38ad5bf  143226599  Setup-0.9.110-abnahme1.exe
+03:42:16   14417c0b72f7544198e900d34abdd93288520120f02ac41863a849f971f2a2a5  143226537  Setup-0.9.110-abnahme2.exe
+03:42:17 PASS  echte Installation unveraendert (Ordnerstand, Verknuepfungen, HKCU-Eintrag, Prozesse; nur lesend verglichen)
+03:42:17 Ende Phase Bauen - Fehler: 0
+03:42:46 Abnahme T-0770 2026-11-26 03:42:46 Phase Installieren, Paket-Id TrendoOSAbnahme, Arbeitsordner C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme
+03:42:46 PowerShell 5.1.26100.9843, Windows 10.0.26340.0, CPU-Kerne 16, RAM 32 GB
+03:42:46 == Installieren: Setup 0.9.110-abnahme1 still nach eigenem Ordner ==
+03:43:10 PASS  Setup still beendet (Exitcode 0) - 24.4 s
+03:43:10 PASS  Installationsordner liegt unter dem eigenen Ordner - C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert
+03:43:10 PASS  Programm vorhanden (current\TrendoOS.exe)
+03:43:10 PASS  installierte Version ist 0.9.110-abnahme1 - 0.9.110-abnahme1
+03:43:10   424 Dateien, 418 MB im Installationsordner
+03:43:10   Inhalt: current
+03:43:10   Inhalt: packages
+03:43:10   Inhalt: Trendo OS Abnahme.exe
+03:43:10   Inhalt: Update.exe
+03:43:11   Verknuepfung: C:\Users\<user>\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Trendo OS Abnahme.lnk
+03:43:11   Verknuepfung: C:\Users\<user>\Desktop\Trendo OS Abnahme.lnk
+03:43:11 PASS  eigene Verknuepfungen angelegt - 2
+03:43:11 PASS  HKCU-Uninstall-Eintrag der eigenen Id - DisplayName=Trendo OS Abnahme DisplayVersion=0.9.110 InstallLocation=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert
+03:43:41   Setup hat die App nicht selbst gestartet.
+03:44:18 PASS  Start A: Prozess laeuft und Hauptfenster erscheint - PID 65820, 37608 ms, Titel 'Trendo OS'
+03:44:23 PASS  Render-Beleg A (Fensterbild nicht leer) - 1292x684, 87 % nicht schwarz
+03:44:29 PASS  Start A sauber per PID beendet
+03:44:29 PASS  Daten liegen in der Pruef-Instanz - C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\instanz\TrendoOS
+03:44:29 PASS  echte Installation unveraendert (Ordnerstand, Verknuepfungen, HKCU-Eintrag, Prozesse; nur lesend verglichen)
+03:44:29 Ende Phase Installieren - Fehler: 0
+03:44:52 Abnahme T-0770 2026-11-26 03:44:52 Phase Update, Paket-Id TrendoOSAbnahme, Arbeitsordner C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme
+03:44:52 PowerShell 5.1.26100.9843, Windows 10.0.26340.0, CPU-Kerne 16, RAM 32 GB
+03:44:52 == Update 0.9.110-abnahme1 -> 0.9.110-abnahme2 ueber den Update-Weg der App (Quelle: lokaler Ordner) ==
+03:44:52 PASS  Ausgangslage: 0.9.110-abnahme1 installiert - 0.9.110-abnahme1
+03:44:52   Testdateien angelegt: baec1ea66facc9a9392ed963cf563cf2b9b0246ebba86bb303d90c15fa01d5e2 / 128caa5b119eae6f118971f64171f33f00161e76706906aff88701a5e910f16d
+03:44:53 PASS  A gestartet (PID 70520) - Titel 'Trendo OS'
+03:45:38 PASS  A hat sich beendet (Update angewendet) - nach 43 s
+03:45:38 PASS  installierte Version ist jetzt 0.9.110-abnahme2 - 0.9.110-abnahme2
+03:45:39   neu gestartet: PID 20360, Befehl: "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\current\TrendoOS.exe" --veloapp-updated 0.9.110-abnahme2
+03:45:41 FAIL  B laeuft nach dem Update mit Hauptfenster
+03:45:41 FAIL  B sauber per PID beendet
+03:45:41 PASS  Testdatei im Datenordner unveraendert
+03:45:41 PASS  Projektdatei im Datenordner unveraendert
+03:45:41 PASS  Einstellungen vorhanden - unveraendert
+03:45:41   Protokoll: {"Seq":11,"At":"2026-11-26T03:45:02.9666567+01:00","Actor":"app","Action":"update.downloaded","Detail":"0.9.110-abnahme2","PrevHash":"AC3D059DFE3CF0D5BA4E24637BF3279BA1B05DC665D3C8E9501E0ADBB6B79DE5",
+03:45:41   Protokoll: {"Seq":12,"At":"2026-11-26T03:45:02.9719241+01:00","Actor":"app","Action":"update.countdown","Detail":"0.9.110-abnahme2","PrevHash":"310C700E614CB5DC6B2892D231436CFF64E1AAA38591C98704273C37E95E6733","
+03:45:41   Protokoll: {"Seq":13,"At":"2026-11-26T03:45:34.958517+01:00","Actor":"lokaler-besitzer","Action":"update.apply","Detail":"0.9.110-abnahme2","PrevHash":"91FB288A88A3DB71F46021658218CCA7235E3FA4B86DDC1A6D03EDDFEC6
+03:45:41   Update-Ordner: \updates\fenster.json 39 Bytes
+03:45:41   beendet (eigene PID): 64664 Update
+03:45:41 PASS  echte Installation unveraendert (Ordnerstand, Verknuepfungen, HKCU-Eintrag, Prozesse; nur lesend verglichen)
+03:45:41 Ende Phase Update - Fehler: 2
+03:51:22 Abnahme T-0770 2026-11-26 03:51:22 Phase Deinstallieren, Paket-Id TrendoOSAbnahme, Arbeitsordner C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme
+03:51:25 PowerShell 5.1.26100.9843, Windows 10.0.26340.0, CPU-Kerne 16, RAM 32 GB
+03:53:12 == Deinstallieren ueber Update.exe (still) ==
+03:57:44 PASS  Update.exe vorhanden
+03:57:53 PASS  Update.exe --uninstall --silent beendet (Exitcode 0) - 8.7 s
+03:57:58   Hook: 2026-11-26 03:57:46 Deinstallation: Programme entfernen, Frage nach Daten.
+03:57:58   Hook: 2026-11-26 03:57:47 Windows-Aufgaben der Abläufe entfernt: 0
+03:57:58   Hook: 2026-11-26 03:57:48 Stille Deinstallation: Daten bleiben.
+03:57:58 PASS  Installationsordner leer oder entfernt - Ordner entfernt
+03:57:58 PASS  eigene Verknuepfungen entfernt
+03:57:58 PASS  HKCU-Uninstall-Eintrag der eigenen Id entfernt
+03:57:58 PASS  keine weiteren HKCU-Schluessel mit der eigenen Id
+03:57:58 PASS  kein Ordner %LOCALAPPDATA%\TrendoOSAbnahme (Standardort)
+03:57:58   Datenordner der Instanz nach dem Deinstallieren: 15 Eintraege (Absicht: stille Deinstallation behaelt Daten)
+03:57:58 PASS  Nutzerdaten bleiben bei stiller Deinstallation (Absicht)
+03:57:58 PASS  keine eigenen Prozesse mehr
+03:57:58 PASS  echte Installation unveraendert (Ordnerstand, Verknuepfungen, HKCU-Eintrag, Prozesse; nur lesend verglichen)
+03:57:58 Ende Phase Deinstallieren - Fehler: 0

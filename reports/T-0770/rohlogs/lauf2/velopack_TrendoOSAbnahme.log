@@ -1,0 +1,273 @@
+[lib-csharp:59272] [04:00:44] [Information] Initializing WindowsVelopackLocator
+[lib-csharp:59272] [04:00:44] [Information] WindowsVelopackLocator: Update.exe in parent dir, Located valid manifest file at: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\current\sq.version
+[lib-csharp:59272] [04:00:44] [Information] Root directory is writable, using packages directory: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\packages
+[lib-csharp:59272] [04:00:44] [Information] Initialized WindowsVelopackLocator for TrendoOSAbnahme v0.9.110-abnahme1
+[lib-csharp:59272] [04:00:44] [Information] Starting VelopackApp.Run (library version 1.2.161).
+[lib-csharp:59272] [04:00:44] [Information] Setting current process explicit AppUserModelID to 'velopack.TrendoOSAbnahme'
+[lib-csharp:59272] [04:00:44] [Information] Found fast exit hook: --veloapp-install
+[lib-csharp:59272] [04:00:44] [Information] Completed hook, exiting...
+[lib-csharp:69024] [04:01:15] [Information] Initializing WindowsVelopackLocator
+[lib-csharp:69024] [04:01:15] [Information] WindowsVelopackLocator: Update.exe in parent dir, Located valid manifest file at: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\current\sq.version
+[lib-csharp:69024] [04:01:15] [Information] Root directory is writable, using packages directory: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\packages
+[lib-csharp:69024] [04:01:15] [Information] Initialized WindowsVelopackLocator for TrendoOSAbnahme v0.9.110-abnahme1
+[lib-csharp:69024] [04:01:15] [Information] Starting VelopackApp.Run (library version 1.2.161).
+[lib-csharp:69024] [04:01:15] [Information] Setting current process explicit AppUserModelID to 'velopack.TrendoOSAbnahme'
+[lib-csharp:59408] [04:01:23] [Information] Initializing WindowsVelopackLocator
+[lib-csharp:59408] [04:01:23] [Information] WindowsVelopackLocator: Update.exe in parent dir, Located valid manifest file at: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\current\sq.version
+[lib-csharp:59408] [04:01:23] [Information] Root directory is writable, using packages directory: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\packages
+[lib-csharp:59408] [04:01:23] [Information] Initialized WindowsVelopackLocator for TrendoOSAbnahme v0.9.110-abnahme1
+[lib-csharp:59408] [04:01:23] [Information] Starting VelopackApp.Run (library version 1.2.161).
+[lib-csharp:59408] [04:01:23] [Information] Setting current process explicit AppUserModelID to 'velopack.TrendoOSAbnahme'
+[lib-csharp:59408] [04:01:24] [Warning] No staging userId in file 'C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\packages\.betaId', creating a new one.
+[lib-csharp:59408] [04:01:24] [Information] Generated new staging userId: e4da583c-e38a-4c70-8148-5385eeec0ba6
+[lib-csharp:59408] [04:01:24] [Debug] Retrieving latest release feed.
+[lib-csharp:59408] [04:01:24] [Debug] Found local file feed at 'C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\feed\releases.win.json'.
+[lib-csharp:59408] [04:01:24] [Information] Found newer remote release available (0.9.110-abnahme1 -> 0.9.110-abnahme2).
+[lib-csharp:59408] [04:01:24] [Debug] Found 1 delta release(s) between 0.9.110-abnahme1 and 0.9.110-abnahme2.
+[lib-csharp:59408] [04:01:24] [Information] Downloading delta 0.9.110-abnahme2
+[lib-csharp:59408] [04:01:24] [Debug] Download complete for delta version 0.9.110-abnahme2
+[lib-csharp:59408] [04:01:24] [Information] All delta packages downloaded and verified.
+[lib-csharp:59408] [04:01:24] [Information] Applying 1 patches to TrendoOSAbnahme-0.9.110-abnahme1-full.nupkg.
+[lib-csharp:59408] [04:01:24] [Debug] [04:01:24] [INFO] --
+[lib-csharp:59408] [04:01:24] [Debug] [04:01:24] [INFO] Starting Velopack Updater (1.2.161)
+[lib-csharp:59408] [04:01:24] [Debug] [04:01:24] [INFO]     Location: "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\Update.exe"
+[lib-csharp:59408] [04:01:24] [Debug] [04:01:24] [INFO]     CWD: "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert"
+[lib-csharp:59408] [04:01:24] [Debug] [04:01:24] [INFO]     Verbose: false
+[lib-csharp:59408] [04:01:24] [Debug] [04:01:24] [INFO]     Silent: false
+[lib-csharp:59408] [04:01:24] [Debug] [04:01:24] [INFO]     Root Directory: Some("C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert")
+[lib-csharp:59408] [04:01:24] [Debug] [04:01:24] [INFO]     Log File: "C:\\Users\\<user>\\AppData\\Local\\velopack\\velopack_TrendoOSAbnahme.log"
+[lib-csharp:59408] [04:01:24] [Debug] [04:01:24] [INFO]     Context: FromSpecifiedRootDir("C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert", None)
+[lib-csharp:59408] [04:01:24] [Debug] [04:01:24] [INFO] Command: Patch
+[lib-csharp:59408] [04:01:24] [Debug] [04:01:24] [INFO]     Old File: Some("C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\packages\\TrendoOSAbnahme-0.9.110-abnahme1-full.nupkg")
+[lib-csharp:59408] [04:01:24] [Debug] [04:01:24] [INFO]     Delta Files: ["C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\packages\\TrendoOSAbnahme-0.9.110-abnahme2-delta.nupkg"]
+[lib-csharp:59408] [04:01:25] [Debug] [04:01:25] [INFO]     Output File: Some("C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\packages\\TrendoOSAbnahme-0.9.110-abnahme2-full.nupkg.partial")
+[lib-csharp:59408] [04:01:25] [Debug] [04:01:25] [INFO] Auto-locating app manifest...
+[lib-csharp:59408] [04:01:25] [Debug] [04:01:25] [INFO] Root directory 'C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert' writable: true
+[lib-csharp:59408] [04:01:25] [Debug] [04:01:25] [INFO] Using root packages directory: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\packages
+[lib-csharp:59408] [04:01:25] [Debug] [04:01:25] [INFO] Extracting base package for delta patching: "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\packages\\VelopackTemp\\tmp_Ydo76is63C7M3s3F"
+[lib-csharp:59408] [04:01:25] [Debug] [04:01:25] [INFO] Base package extracted. 1 delta packages to apply.
+[lib-csharp:59408] [04:01:25] [Debug] [04:01:25] [INFO] 0: extracting apply delta patch: "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\packages\\TrendoOSAbnahme-0.9.110-abnahme2-delta.nupkg"
+[lib-csharp:59408] [04:01:26] [Debug] [04:01:26] [INFO] 0: applying zsdiff patch: "lib\\app\\sq.version.zsdiff"
+[lib-csharp:59408] [04:01:26] [Debug] [04:01:26] [INFO] 0: applying zsdiff patch: "lib\\app\\Trendo OS Abnahme_ExecutionStub.exe.zsdiff"
+[lib-csharp:59408] [04:01:26] [Debug] [04:01:26] [INFO] 0: applying zsdiff patch: "lib\\app\\Trendo.Api.dll.zsdiff"
+[lib-csharp:59408] [04:01:26] [Debug] [04:01:26] [INFO] 0: applying zsdiff patch: "lib\\app\\Trendo.Core.dll.zsdiff"
+[lib-csharp:59408] [04:01:26] [Debug] [04:01:26] [INFO] 0: applying zsdiff patch: "lib\\app\\TrendoOS.deps.json.zsdiff"
+[lib-csharp:59408] [04:01:26] [Debug] [04:01:26] [INFO] 0: applying zsdiff patch: "lib\\app\\TrendoOS.dll.zsdiff"
+[lib-csharp:59408] [04:01:26] [Debug] [04:01:26] [INFO] 0: applying zsdiff patch: "lib\\app\\TrendoOS.exe.zsdiff"
+[lib-csharp:59408] [04:01:26] [Debug] [04:01:26] [INFO] 0: copying metadata file: "setup.ico"
+[lib-csharp:59408] [04:01:26] [Debug] [04:01:26] [INFO] 0: copying metadata file: "TrendoOSAbnahme.nuspec"
+[lib-csharp:59408] [04:01:26] [Debug] [04:01:26] [INFO] 0: copying metadata file: "[Content_Types].xml"
+[lib-csharp:59408] [04:01:26] [Debug] [04:01:26] [INFO] 0: copying metadata file: "_rels\\.rels"
+[lib-csharp:59408] [04:01:26] [Debug] [04:01:26] [INFO] All delta patches applied. Asembling output package at: "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\packages\\TrendoOSAbnahme-0.9.110-abnahme2-full.nupkg.partial"
+[lib-csharp:59408] [04:01:34] [Debug] [04:01:34] [INFO] Successfully applied 1 delta patches in 9.277508s.
+[lib-csharp:59408] [04:01:34] [Information] Delta update download complete. Package moved to: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\packages\TrendoOSAbnahme-0.9.110-abnahme2-full.nupkg
+[lib-csharp:59408] [04:01:34] [Information] Extracting new Update.exe to C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\Update.exe
+[lib-csharp:59408] [04:01:34] [Information] Cleaning up incomplete and delta packages from packages directory.
+[lib-csharp:59408] [04:01:34] [Trace] C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\packages\TrendoOSAbnahme-0.9.110-abnahme1-full.nupkg deleted.
+[lib-csharp:59408] [04:01:34] [Trace] C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\packages\TrendoOSAbnahme-0.9.110-abnahme2-delta.nupkg deleted.
+[lib-csharp:59408] [04:02:06] [Debug] Running: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\Update.exe apply --package C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\packages\TrendoOSAbnahme-0.9.110-abnahme2-full.nupkg --waitPid 59408 --rootDir C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert --packageDir C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\packages -- --nach-update
+[lib-csharp:59408] [04:02:06] [Information] Process started with ID: 44932
+[lib-csharp:59408] [04:02:06] [Information] Update.exe [apply] executed successfully.
+[update:44932] [04:02:06] [INFO] --
+[update:44932] [04:02:06] [INFO] Starting Velopack Updater (1.2.161)
+[update:44932] [04:02:06] [INFO]     Location: "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\Update.exe"
+[update:44932] [04:02:06] [INFO]     CWD: "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert"
+[update:44932] [04:02:06] [INFO]     Verbose: false
+[update:44932] [04:02:06] [INFO]     Silent: false
+[update:44932] [04:02:06] [INFO]     Root Directory: Some("C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert")
+[update:44932] [04:02:06] [INFO]     Log File: "C:\\Users\\<user>\\AppData\\Local\\velopack\\velopack_TrendoOSAbnahme.log"
+[update:44932] [04:02:06] [INFO]     Context: FromSpecifiedRootDir("C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert", Some("C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\packages"))
+[update:44932] [04:02:06] [INFO] Command: Apply
+[update:44932] [04:02:06] [INFO]     Restart: true
+[update:44932] [04:02:06] [INFO]     Wait: WaitPid(59408)
+[update:44932] [04:02:06] [INFO]     Package: Some("C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\packages\\TrendoOSAbnahme-0.9.110-abnahme2-full.nupkg")
+[update:44932] [04:02:06] [INFO]     Exe Args: Some(["--nach-update"])
+[update:44932] [04:02:06] [INFO] Auto-locating app manifest...
+[update:44932] [04:02:06] [INFO] Root directory 'C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert' writable: true
+[update:44932] [04:02:06] [INFO] Using root packages directory: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\packages
+[update:44932] [04:02:06] [INFO] Waiting for process pid-59408 to exit.
+[update:44932] [04:02:06] [INFO] Waiting 60000ms for process handle to exit.
+[update:44932] [04:02:06] [WARN] Failed to wait for process (59408) to exit (Zugriff verweigert (os error -2147024891)). Continuing...
+[update:44932] [04:02:06] [INFO] Getting ready to apply package to TrendoOSAbnahme ver 0.9.110-abnahme1: "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\packages\\TrendoOSAbnahme-0.9.110-abnahme2-full.nupkg"
+[update:44932] [04:02:06] [INFO] Attempting to acquire exclusive lock on packages directory (non-blocking)...
+[update:44932] [04:02:06] [INFO] Applying package 0.9.110-abnahme2 to current: 0.9.110-abnahme1
+[update:44932] [04:02:06] [INFO] Checking application pre-requisites...
+[update:44932] [04:02:06] [INFO] Extracting 426 app files to '"C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\packages\\VelopackTemp\\tmp_aK0r4KYkivxlTQne"'...
+[update:44932] [04:02:07] [INFO] Running --veloapp-obsolete hook...
+[update:44932] [04:02:07] [INFO] About to launch: 'WideString("C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\current\\TrendoOS.exe")' in dir 'Some(WideString("C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\current"))' with arguments: WideString("\"C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\current\\TrendoOS.exe\" --veloapp-obsolete 0.9.110-abnahme1\0")
+[update:44932] [04:02:07] [INFO] Environment block present: true, flags: PROCESS_CREATION_FLAGS(134218752)
+[update:44932] [04:02:07] [INFO] Waiting 15000ms for process handle to exit.
+[lib-csharp:66832] [04:02:07] [Information] Initializing WindowsVelopackLocator
+[lib-csharp:66832] [04:02:07] [Information] WindowsVelopackLocator: Update.exe in parent dir, Located valid manifest file at: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\current\sq.version
+[lib-csharp:66832] [04:02:07] [Information] Root directory is writable, using packages directory: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\packages
+[lib-csharp:66832] [04:02:07] [Information] Initialized WindowsVelopackLocator for TrendoOSAbnahme v0.9.110-abnahme1
+[lib-csharp:66832] [04:02:07] [Information] Starting VelopackApp.Run (library version 1.2.161).
+[lib-csharp:66832] [04:02:07] [Information] Setting current process explicit AppUserModelID to 'velopack.TrendoOSAbnahme'
+[lib-csharp:66832] [04:02:07] [Information] Found fast exit hook: --veloapp-obsolete
+[lib-csharp:66832] [04:02:07] [Information] Completed hook, exiting...
+[update:44932] [04:02:07] [INFO] Hook executed successfully (took 127.2135ms)
+[update:44932] [04:02:07] [INFO] Checking for running processes in: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert
+[update:44932] [04:02:08] [INFO] Inspected 613 running processes in 203ms, 1 matched directory
+[update:44932] [04:02:08] [WARN] Skipping killing self: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\Update.exe (44932)
+[update:44932] [04:02:08] [INFO] Force-stop check complete.
+[update:44932] [04:02:08] [INFO] Checking for running processes in: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert
+[update:44932] [04:02:08] [INFO] Inspected 613 running processes in 194ms, 1 matched directory
+[update:44932] [04:02:08] [WARN] Skipping killing self: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\Update.exe (44932)
+[update:44932] [04:02:08] [INFO] Force-stop check complete.
+[update:44932] [04:02:08] [INFO] Backing up current dir to "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\packages\\VelopackTemp\\tmp_lHpF1Lc1jExzgjQ4"
+[update:44932] [04:02:08] [INFO] Replacing current dir with "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\packages\\VelopackTemp\\tmp_aK0r4KYkivxlTQne"
+[update:44932] [04:02:08] [INFO] Writing uninstall registry key...
+[update:44932] [04:02:08] [INFO] Running --veloapp-updated hook...
+[update:44932] [04:02:08] [INFO] About to launch: 'WideString("C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\current\\TrendoOS.exe")' in dir 'Some(WideString("C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\current"))' with arguments: WideString("\"C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\current\\TrendoOS.exe\" --veloapp-updated 0.9.110-abnahme2\0")
+[update:44932] [04:02:08] [INFO] Environment block present: true, flags: PROCESS_CREATION_FLAGS(134218752)
+[update:44932] [04:02:08] [INFO] Waiting 15000ms for process handle to exit.
+[lib-csharp:8468] [04:02:11] [Information] Initializing WindowsVelopackLocator
+[lib-csharp:8468] [04:02:11] [Information] WindowsVelopackLocator: Update.exe in parent dir, Located valid manifest file at: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\current\sq.version
+[lib-csharp:8468] [04:02:11] [Information] Root directory is writable, using packages directory: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\packages
+[lib-csharp:8468] [04:02:11] [Information] Initialized WindowsVelopackLocator for TrendoOSAbnahme v0.9.110-abnahme2
+[lib-csharp:8468] [04:02:11] [Information] Starting VelopackApp.Run (library version 1.2.161).
+[lib-csharp:8468] [04:02:11] [Information] Setting current process explicit AppUserModelID to 'velopack.TrendoOSAbnahme'
+[lib-csharp:8468] [04:02:11] [Information] Found fast exit hook: --veloapp-updated
+[lib-csharp:8468] [04:02:11] [Information] Completed hook, exiting...
+[update:44932] [04:02:11] [INFO] Hook executed successfully (took 2798.1736ms)
+[update:44932] [04:02:11] [INFO] Checking for running processes in: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert
+[update:44932] [04:02:11] [INFO] Inspected 617 running processes in 191ms, 1 matched directory
+[update:44932] [04:02:11] [WARN] Skipping killing self: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\Update.exe (44932)
+[update:44932] [04:02:11] [INFO] Force-stop check complete.
+[update:44932] [04:02:11] [INFO] Removed temp dir "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\packages\\VelopackTemp\\tmp_lHpF1Lc1jExzgjQ4" in 160ms
+[update:44932] [04:02:11] [INFO] COM context initialized in 2ms
+[update:44932] [04:02:11] [INFO] Shortcut Previous Locations: ShortcutLocationFlags(DESKTOP | START_MENU_ROOT) (Some("0.9.110-abnahme1"))
+[update:44932] [04:02:11] [INFO] Shortcut Next Locations: ShortcutLocationFlags(DESKTOP | START_MENU_ROOT) ("0.9.110-abnahme2")
+[update:44932] [04:02:11] [INFO] App Model ID: Some("velopack.TrendoOSAbnahme")
+[update:44932] [04:02:11] [INFO] Searching for shortcuts containing root: '"C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert"'
+[update:44932] [04:02:11] [INFO] Searching for shortcuts in: ShortcutLocationFlags(DESKTOP) (C:\Users\<user>\Desktop/*.lnk)
+[update:44932] [04:02:11] [INFO] Selected shortcut for update '"C:\\Users\\<user>\\Desktop\\Trendo OS Abnahme.lnk"' because target '"C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\current\\TrendoOS.exe"' matched.
+[update:44932] [04:02:11] [INFO] Searching for shortcuts in: ShortcutLocationFlags(STARTUP) (C:\Users\<user>\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup/*.lnk)
+[update:44932] [04:02:11] [INFO] Searching for shortcuts in: ShortcutLocationFlags(START_MENU) (C:\Users\<user>\AppData\Roaming\Microsoft\Windows\Start Menu\Programs/**/*.lnk)
+[update:44932] [04:02:11] [INFO] Selected shortcut for update '"C:\\Users\\<user>\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Trendo OS Abnahme.lnk"' because target '"C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\current\\TrendoOS.exe"' matched.
+[update:44932] [04:02:11] [INFO] Searching for shortcuts in: ShortcutLocationFlags(USER_PINNED) (C:\Users\<user>\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned/**/*.lnk)
+[update:44932] [04:02:11] [INFO] Will update all current shortcuts: [(ShortcutLocationFlags(DESKTOP), Lnk("C:\\Users\\<user>\\Desktop\\Trendo OS Abnahme.lnk")), (ShortcutLocationFlags(START_MENU), Lnk("C:\\Users\\<user>\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Trendo OS Abnahme.lnk"))]
+[update:44932] [04:02:11] [INFO] Updating existing shortcut '"C:\\Users\\<user>\\Desktop\\Trendo OS Abnahme.lnk"' (ShortcutLocationFlags(DESKTOP)).
+[update:44932] [04:02:11] [INFO] Updating existing shortcut '"C:\\Users\\<user>\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Trendo OS Abnahme.lnk"' (ShortcutLocationFlags(START_MENU)).
+[update:44932] [04:02:11] [INFO] Package applied successfully.
+[update:44932] [04:02:11] [INFO] Update.exe is already in the correct location: "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\Update.exe"
+[update:44932] [04:02:11] [INFO] Extracting stub 'Trendo OS Abnahme_ExecutionStub.exe' to '"C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\Trendo OS Abnahme.exe"'
+[update:44932] [04:02:11] [INFO] Successfully extracted stub executable: "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\Trendo OS Abnahme.exe"
+[update:44932] [04:02:11] [INFO] Package version 0.9.110-abnahme2 applied successfully.
+[update:44932] [04:02:11] [INFO] About to launch: 'WideString("C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\current\\TrendoOS.exe")' in dir 'Some(WideString("C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\current"))' with arguments: WideString("\"C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\current\\TrendoOS.exe\" --nach-update\0")
+[update:44932] [04:02:11] [INFO] Environment block present: true, flags: PROCESS_CREATION_FLAGS(1024)
+[lib-csharp:65312] [04:02:11] [Information] Initializing WindowsVelopackLocator
+[lib-csharp:65312] [04:02:11] [Information] WindowsVelopackLocator: Update.exe in parent dir, Located valid manifest file at: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\current\sq.version
+[lib-csharp:65312] [04:02:11] [Information] Root directory is writable, using packages directory: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\packages
+[lib-csharp:65312] [04:02:11] [Information] Initialized WindowsVelopackLocator for TrendoOSAbnahme v0.9.110-abnahme2
+[lib-csharp:65312] [04:02:11] [Information] Starting VelopackApp.Run (library version 1.2.161).
+[lib-csharp:65312] [04:02:11] [Information] Setting current process explicit AppUserModelID to 'velopack.TrendoOSAbnahme'
+[lib-csharp:65312] [04:02:14] [Information] Loaded existing staging userId: e4da583c-e38a-4c70-8148-5385eeec0ba6 from C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\packages\.betaId
+[lib-csharp:65312] [04:02:14] [Debug] Retrieving latest release feed.
+[lib-csharp:65312] [04:02:14] [Debug] Found local file feed at 'C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\feed\releases.win.json'.
+[lib-csharp:65312] [04:02:14] [Information] No updates, remote version (0.9.110-abnahme2) is not newer than current version (0.9.110-abnahme2) and / or downgrade is not enabled.
+[lib-csharp:51360] [04:02:20] [Information] Initializing WindowsVelopackLocator
+[lib-csharp:51360] [04:02:20] [Information] WindowsVelopackLocator: Update.exe in parent dir, Located valid manifest file at: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\current\sq.version
+[lib-csharp:51360] [04:02:20] [Information] Root directory is writable, using packages directory: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\packages
+[lib-csharp:51360] [04:02:20] [Information] Initialized WindowsVelopackLocator for TrendoOSAbnahme v0.9.110-abnahme2
+[lib-csharp:51360] [04:02:20] [Information] Starting VelopackApp.Run (library version 1.2.161).
+[lib-csharp:51360] [04:02:20] [Information] Setting current process explicit AppUserModelID to 'velopack.TrendoOSAbnahme'
+[lib-csharp:64716] [04:02:27] [Information] Initializing WindowsVelopackLocator
+[lib-csharp:64716] [04:02:27] [Information] WindowsVelopackLocator: Update.exe in parent dir, Located valid manifest file at: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\current\sq.version
+[lib-csharp:64716] [04:02:27] [Information] Root directory is writable, using packages directory: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\packages
+[lib-csharp:64716] [04:02:27] [Information] Initialized WindowsVelopackLocator for TrendoOSAbnahme v0.9.110-abnahme2
+[lib-csharp:64716] [04:02:27] [Information] Starting VelopackApp.Run (library version 1.2.161).
+[lib-csharp:64716] [04:02:27] [Information] Setting current process explicit AppUserModelID to 'velopack.TrendoOSAbnahme'
+[lib-csharp:62132] [04:02:34] [Information] Initializing WindowsVelopackLocator
+[lib-csharp:62132] [04:02:34] [Information] WindowsVelopackLocator: Update.exe in parent dir, Located valid manifest file at: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\current\sq.version
+[lib-csharp:62132] [04:02:34] [Information] Root directory is writable, using packages directory: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\packages
+[lib-csharp:62132] [04:02:34] [Information] Initialized WindowsVelopackLocator for TrendoOSAbnahme v0.9.110-abnahme2
+[lib-csharp:62132] [04:02:34] [Information] Starting VelopackApp.Run (library version 1.2.161).
+[lib-csharp:62132] [04:02:34] [Information] Setting current process explicit AppUserModelID to 'velopack.TrendoOSAbnahme'
+[lib-csharp:58380] [04:02:42] [Information] Initializing WindowsVelopackLocator
+[lib-csharp:58380] [04:02:42] [Information] WindowsVelopackLocator: Update.exe in parent dir, Located valid manifest file at: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\current\sq.version
+[lib-csharp:58380] [04:02:42] [Information] Root directory is writable, using packages directory: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\packages
+[lib-csharp:58380] [04:02:42] [Information] Initialized WindowsVelopackLocator for TrendoOSAbnahme v0.9.110-abnahme2
+[lib-csharp:58380] [04:02:42] [Information] Starting VelopackApp.Run (library version 1.2.161).
+[lib-csharp:58380] [04:02:42] [Information] Setting current process explicit AppUserModelID to 'velopack.TrendoOSAbnahme'
+[lib-csharp:10460] [04:02:51] [Information] Initializing WindowsVelopackLocator
+[lib-csharp:10460] [04:02:51] [Information] WindowsVelopackLocator: Update.exe in parent dir, Located valid manifest file at: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\current\sq.version
+[lib-csharp:10460] [04:02:51] [Information] Root directory is writable, using packages directory: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\packages
+[lib-csharp:10460] [04:02:51] [Information] Initialized WindowsVelopackLocator for TrendoOSAbnahme v0.9.110-abnahme2
+[lib-csharp:10460] [04:02:51] [Information] Starting VelopackApp.Run (library version 1.2.161).
+[lib-csharp:10460] [04:02:51] [Information] Setting current process explicit AppUserModelID to 'velopack.TrendoOSAbnahme'
+[lib-csharp:66332] [04:02:59] [Information] Initializing WindowsVelopackLocator
+[lib-csharp:66332] [04:02:59] [Information] WindowsVelopackLocator: Update.exe in parent dir, Located valid manifest file at: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\current\sq.version
+[lib-csharp:66332] [04:02:59] [Information] Root directory is writable, using packages directory: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\packages
+[lib-csharp:66332] [04:02:59] [Information] Initialized WindowsVelopackLocator for TrendoOSAbnahme v0.9.110-abnahme2
+[lib-csharp:66332] [04:02:59] [Information] Starting VelopackApp.Run (library version 1.2.161).
+[lib-csharp:66332] [04:02:59] [Information] Setting current process explicit AppUserModelID to 'velopack.TrendoOSAbnahme'
+[lib-csharp:54484] [04:03:06] [Information] Initializing WindowsVelopackLocator
+[lib-csharp:54484] [04:03:07] [Information] WindowsVelopackLocator: Update.exe in parent dir, Located valid manifest file at: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\current\sq.version
+[lib-csharp:54484] [04:03:07] [Information] Root directory is writable, using packages directory: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\packages
+[lib-csharp:54484] [04:03:07] [Information] Initialized WindowsVelopackLocator for TrendoOSAbnahme v0.9.110-abnahme2
+[lib-csharp:54484] [04:03:07] [Information] Starting VelopackApp.Run (library version 1.2.161).
+[lib-csharp:54484] [04:03:07] [Information] Setting current process explicit AppUserModelID to 'velopack.TrendoOSAbnahme'
+[lib-csharp:66776] [04:03:14] [Information] Initializing WindowsVelopackLocator
+[lib-csharp:66776] [04:03:14] [Information] WindowsVelopackLocator: Update.exe in parent dir, Located valid manifest file at: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\current\sq.version
+[lib-csharp:66776] [04:03:14] [Information] Root directory is writable, using packages directory: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\packages
+[lib-csharp:66776] [04:03:14] [Information] Initialized WindowsVelopackLocator for TrendoOSAbnahme v0.9.110-abnahme2
+[lib-csharp:66776] [04:03:14] [Information] Starting VelopackApp.Run (library version 1.2.161).
+[lib-csharp:66776] [04:03:14] [Information] Setting current process explicit AppUserModelID to 'velopack.TrendoOSAbnahme'
+[lib-csharp:61140] [04:03:46] [Information] Initializing WindowsVelopackLocator
+[lib-csharp:61140] [04:03:46] [Information] WindowsVelopackLocator: Update.exe in parent dir, Located valid manifest file at: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\current\sq.version
+[lib-csharp:61140] [04:03:46] [Information] Root directory is writable, using packages directory: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\packages
+[lib-csharp:61140] [04:03:46] [Information] Initialized WindowsVelopackLocator for TrendoOSAbnahme v0.9.110-abnahme2
+[lib-csharp:61140] [04:03:46] [Information] Starting VelopackApp.Run (library version 1.2.161).
+[lib-csharp:61140] [04:03:46] [Information] Setting current process explicit AppUserModelID to 'velopack.TrendoOSAbnahme'
+[update:18724] [04:06:23] [INFO] --
+[update:18724] [04:06:23] [INFO] Starting Velopack Updater (1.2.161)
+[update:18724] [04:06:23] [INFO]     Location: "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\Update.exe"
+[update:18724] [04:06:23] [INFO]     CWD: "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert"
+[update:18724] [04:06:23] [INFO]     Verbose: false
+[update:18724] [04:06:23] [INFO]     Silent: true
+[update:18724] [04:06:23] [INFO]     Root Directory: None
+[update:18724] [04:06:23] [INFO]     Log File: "C:\\Users\\<user>\\AppData\\Local\\velopack\\velopack_TrendoOSAbnahme.log"
+[update:18724] [04:06:23] [INFO]     Context: IAmUpdateExe
+[update:18724] [04:06:23] [INFO] Command: Uninstall
+[update:18724] [04:06:23] [INFO] Auto-locating app manifest...
+[update:18724] [04:06:23] [INFO] Root directory 'C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert' writable: true
+[update:18724] [04:06:23] [INFO] Using root packages directory: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\packages
+[update:18724] [04:06:23] [INFO] Command: Uninstall
+[update:18724] [04:06:23] [INFO] Checking for running processes in: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert
+[update:18724] [04:06:23] [INFO] Inspected 613 running processes in 200ms, 1 matched directory
+[update:18724] [04:06:23] [WARN] Skipping killing self: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\Update.exe (18724)
+[update:18724] [04:06:23] [INFO] Force-stop check complete.
+[update:18724] [04:06:23] [INFO] Running --veloapp-uninstall hook...
+[update:18724] [04:06:23] [INFO] About to launch: 'WideString("C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\current\\TrendoOS.exe")' in dir 'Some(WideString("C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\current"))' with arguments: WideString("\"C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\current\\TrendoOS.exe\" --veloapp-uninstall 0.9.110-abnahme2\0")
+[update:18724] [04:06:23] [INFO] Environment block present: true, flags: PROCESS_CREATION_FLAGS(134218752)
+[update:18724] [04:06:23] [INFO] Waiting 60000ms for process handle to exit.
+[lib-csharp:49676] [04:06:23] [Information] Initializing WindowsVelopackLocator
+[lib-csharp:49676] [04:06:23] [Information] WindowsVelopackLocator: Update.exe in parent dir, Located valid manifest file at: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\current\sq.version
+[lib-csharp:49676] [04:06:23] [Information] Root directory is writable, using packages directory: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\packages
+[lib-csharp:49676] [04:06:23] [Information] Initialized WindowsVelopackLocator for TrendoOSAbnahme v0.9.110-abnahme2
+[lib-csharp:49676] [04:06:23] [Information] Starting VelopackApp.Run (library version 1.2.161).
+[lib-csharp:49676] [04:06:23] [Information] Setting current process explicit AppUserModelID to 'velopack.TrendoOSAbnahme'
+[lib-csharp:49676] [04:06:23] [Information] Found fast exit hook: --veloapp-uninstall
+[lib-csharp:49676] [04:06:24] [Information] Completed hook, exiting...
+[update:18724] [04:06:24] [INFO] Hook executed successfully (took 907.6352ms)
+[update:18724] [04:06:24] [INFO] Checking for running processes in: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert
+[update:18724] [04:06:24] [INFO] Inspected 613 running processes in 197ms, 1 matched directory
+[update:18724] [04:06:24] [WARN] Skipping killing self: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\Update.exe (18724)
+[update:18724] [04:06:24] [INFO] Force-stop check complete.
+[update:18724] [04:06:24] [INFO] COM context initialized in 4ms
+[update:18724] [04:06:24] [INFO] Searching for shortcuts containing root: '"C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert"'
+[update:18724] [04:06:24] [INFO] Searching for shortcuts in: ShortcutLocationFlags(DESKTOP) (C:\Users\<user>\Desktop/*.lnk)
+[update:18724] [04:06:25] [INFO] Selected shortcut for update '"C:\\Users\\<user>\\Desktop\\Trendo OS Abnahme.lnk"' because target '"C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\current\\TrendoOS.exe"' matched.
+[update:18724] [04:06:25] [INFO] Searching for shortcuts in: ShortcutLocationFlags(STARTUP) (C:\Users\<user>\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup/*.lnk)
+[update:18724] [04:06:25] [INFO] Searching for shortcuts in: ShortcutLocationFlags(START_MENU) (C:\Users\<user>\AppData\Roaming\Microsoft\Windows\Start Menu\Programs/**/*.lnk)
+[update:18724] [04:06:25] [INFO] Selected shortcut for update '"C:\\Users\\<user>\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Trendo OS Abnahme.lnk"' because target '"C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\current\\TrendoOS.exe"' matched.
+[update:18724] [04:06:25] [INFO] Searching for shortcuts in: ShortcutLocationFlags(USER_PINNED) (C:\Users\<user>\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned/**/*.lnk)
+[update:18724] [04:06:25] [INFO] Removing shortcut '"C:\\Users\\<user>\\Desktop\\Trendo OS Abnahme.lnk"' (ShortcutLocationFlags(DESKTOP)).
+[update:18724] [04:06:25] [INFO] Removing shortcut '"C:\\Users\\<user>\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Trendo OS Abnahme.lnk"' (ShortcutLocationFlags(START_MENU)).
+[update:18724] [04:06:25] [INFO] Removing directory '"C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert"'
+[update:18724] [04:06:25] [INFO] Removing directory '"C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\tmp\\velopack_TrendoOSAbnahme"'
+[update:18724] [04:06:25] [INFO] Removing uninstall registry keys...
+[update:18724] [04:06:25] [INFO] Finished successfully.
+[update:18724] [04:06:25] [INFO] Scheduling removal of install directory...
+[update:18724] [04:06:25] [INFO] Running: cmd.exe /C choice /C Y /N /D Y /T 3 & rmdir /s /q "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert"

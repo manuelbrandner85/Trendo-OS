@@ -1,0 +1,63 @@
+[setup:59524] [03:42:46] [INFO] Starting Velopack Setup (1.2.161)
+[setup:59524] [03:42:46] [INFO]     Location: "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\pakete\\Setup-0.9.110-abnahme1.exe"
+[setup:59524] [03:42:46] [INFO]     Silent: true
+[setup:59524] [03:42:46] [INFO]     Verbose: false
+[setup:59524] [03:42:46] [INFO]     Log: "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\log\\setup-a.log"
+[setup:59524] [03:42:46] [INFO]     Install To: Some("C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert")
+[setup:59524] [03:42:46] [INFO] OS: Windows 10.0.26340 (Windows 11 Professional) [64-bit], Arch=Some(
+    X64,
+)
+[setup:59524] [03:42:46] [INFO] Reading bundle header...
+[setup:59524] [03:42:46] [INFO] Bundle offset = 7607296, length = 135619303
+[setup:59524] [03:42:46] [INFO] Loading bundle from embedded zip...
+[setup:59524] [03:42:46] [INFO] No channel override tag found in installer signature.
+[setup:59524] [03:42:46] [INFO] Loading bundle from embedded zip...
+[setup:59524] [03:42:46] [INFO] Reading package manifest...
+[setup:59524] [03:42:46] [INFO] Package manifest loaded successfully.
+[setup:59524] [03:42:46] [INFO]     Package ID: TrendoOSAbnahme
+[setup:59524] [03:42:46] [INFO]     Package Version: 0.9.110-abnahme1
+[setup:59524] [03:42:46] [INFO]     Package Title: Trendo OS Abnahme
+[setup:59524] [03:42:46] [INFO]     Package Authors: Trendo OS Projekt
+[setup:59524] [03:42:46] [INFO]     Package Description: Trendo OS Abnahme
+[setup:59524] [03:42:46] [INFO]     Package Machine Architecture: x64
+[setup:59524] [03:42:46] [INFO]     Package Runtime Dependencies: 
+[setup:59524] [03:42:46] [INFO] Checking application pre-requisites...
+[setup:59524] [03:42:46] [INFO] Determining install directory...
+[setup:59524] [03:42:46] [INFO] Installation Directory: "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert"
+[setup:59524] [03:42:46] [INFO] There is 39.02 GB free space available at destination, this package requires 488.56 MB.
+[setup:59524] [03:42:46] [INFO] Preparing and cleaning installation directory...
+[setup:59524] [03:42:46] [INFO] Acquiring lock...
+[setup:59524] [03:42:46] [INFO] Root directory 'C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert' writable: true
+[setup:59524] [03:42:46] [INFO] Using root packages directory: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert\packages
+[setup:59524] [03:42:46] [INFO] Attempting to acquire exclusive lock on packages directory (non-blocking)...
+[setup:59524] [03:42:46] [INFO] Will not show splash because silent mode is on.
+[setup:59524] [03:42:46] [INFO] Starting installation!
+[setup:59524] [03:42:46] [INFO] Extracting Update.exe...
+[setup:59524] [03:42:46] [INFO] Extracting stub 'Trendo OS Abnahme_ExecutionStub.exe' to '"C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\Trendo OS Abnahme.exe"'
+[setup:59524] [03:42:46] [INFO] Successfully extracted stub executable: "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\Trendo OS Abnahme.exe"
+[setup:59524] [03:42:46] [INFO] Copying nupkg to packages directory...
+[setup:59524] [03:42:48] [INFO] Extracting 426 app files to '"C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\current"'...
+[setup:59524] [03:42:49] [INFO] Creating shortcuts...
+[setup:59524] [03:42:49] [INFO] COM context initialized in 5ms
+[setup:59524] [03:42:49] [INFO] Shortcut Previous Locations: ShortcutLocationFlags(0x0) (None)
+[setup:59524] [03:42:49] [INFO] Shortcut Next Locations: ShortcutLocationFlags(DESKTOP | START_MENU_ROOT) ("0.9.110-abnahme1")
+[setup:59524] [03:42:49] [INFO] App Model ID: Some("velopack.TrendoOSAbnahme")
+[setup:59524] [03:42:49] [INFO] Searching for shortcuts containing root: '"C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert"'
+[setup:59524] [03:42:49] [INFO] Searching for shortcuts in: ShortcutLocationFlags(DESKTOP) (C:\Users\<user>\Desktop/*.lnk)
+[setup:59524] [03:42:49] [INFO] Searching for shortcuts in: ShortcutLocationFlags(STARTUP) (C:\Users\<user>\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup/*.lnk)
+[setup:59524] [03:42:49] [INFO] Searching for shortcuts in: ShortcutLocationFlags(START_MENU) (C:\Users\<user>\AppData\Roaming\Microsoft\Windows\Start Menu\Programs/**/*.lnk)
+[setup:59524] [03:42:49] [INFO] Searching for shortcuts in: ShortcutLocationFlags(USER_PINNED) (C:\Users\<user>\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned/**/*.lnk)
+[setup:59524] [03:42:49] [INFO] Will update all current shortcuts: []
+[setup:59524] [03:42:49] [INFO] Creating new shortcut for flag '"C:\\Users\\<user>\\Desktop\\Trendo OS Abnahme.lnk"' (ShortcutLocationFlags(DESKTOP)).
+[setup:59524] [03:42:49] [INFO] Creating new shortcut for flag '"C:\\Users\\<user>\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Trendo OS Abnahme.lnk"' (ShortcutLocationFlags(START_MENU_ROOT)).
+[setup:59524] [03:42:49] [INFO] Starting process install hook
+[setup:59524] [03:42:49] [INFO] Running --veloapp-install hook...
+[setup:59524] [03:42:49] [INFO] About to launch: 'WideString("C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\current\\TrendoOS.exe")' in dir 'Some(WideString("C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\current"))' with arguments: WideString("\"C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-auftrag-T-0770\\_abnahme\\installiert\\current\\TrendoOS.exe\" --veloapp-install 0.9.110-abnahme1\0")
+[setup:59524] [03:42:49] [INFO] Environment block present: true, flags: PROCESS_CREATION_FLAGS(134218752)
+[setup:59524] [03:43:05] [INFO] Waiting 30000ms for process handle to exit.
+[setup:59524] [03:43:10] [INFO] Hook executed successfully (took 20692.168ms)
+[setup:59524] [03:43:10] [INFO] Checking for running processes in: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\installiert
+[setup:59524] [03:43:10] [INFO] Inspected 593 running processes in 211ms, 0 matched directory
+[setup:59524] [03:43:10] [INFO] Force-stop check complete.
+[setup:59524] [03:43:10] [INFO] Writing uninstall registry key...
+[setup:59524] [03:43:10] [INFO] Installation completed successfully!

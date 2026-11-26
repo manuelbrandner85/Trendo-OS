@@ -1,0 +1,5 @@
+    T-0770: Sicherung der laufenden Version entsteht vor dem Laden des Updates – beim Installieren ist sie da [FAIL]
+      Assert.Equal() Failure: Strings differ
+      Expected: "backup-ok"
+      Actual:   "download"
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 1, Skipped: 0, Not Run: 0, Time: 11,426s

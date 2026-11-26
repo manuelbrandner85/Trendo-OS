@@ -51,6 +51,7 @@ public class RechteKernFix12
         ["ScreenGrab.SavePng"] = "Aufrufer: Bildschirmfoto mit festem Namen im Bilder-Ordner",
         ["TrendoUpdater.BackupCurrent"] = "Update (nur Erwachsene)",
         ["TrendoUpdater.RollbackTo"] = "Update (nur Erwachsene)",
+        ["TrendoUpdater.ReplaceBackup"] = "T-0770: internal; schreibt nur, wenn das Ziel genau „…/updates/vorherige-version“ ist (BootGuard.BackupDir, sonst Abbruch ohne Schreiben), Quelle ist das Velopack-Paket der laufenden Version; Aufrufer nur BackupCurrent (Update-Weg, Erwachsene)",
         ["VollpaketStart.RememberFromInstaller"] = "Einrichtung (nur Erwachsene)",
     };
 
