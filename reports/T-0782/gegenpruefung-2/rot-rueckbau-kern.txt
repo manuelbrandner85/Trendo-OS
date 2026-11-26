@@ -1,0 +1,52 @@
+# T-0782 2. Gegenprüfung – Rot-Lauf Kern (Rückbau M4-Rest: ganzer AC-Ordner, Registry, Schreib-/Laufwerkgrenze; M6-Rest: Anzeige-Filter; M7-Erweiterung; Umlaut-Richtung; 1.234 – gleichzeitig; danach git checkout)
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0782\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:04.82]     Niedrig: ue → ü nur in Richtung Eingabe („Baür“ ist nicht „Bauer“), „1.234“ zählt nicht als Versuch [FAIL]
+  Fehler Niedrig: ue → ü nur in Richtung Eingabe („Baür“ ist nicht „Bauer“), „1.234“ zählt nicht als Versuch [26 ms]
+  Fehlermeldung:
+   Assert.False() Failure
+Expected: False
+Actual:   True
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0782_Gegenpruefung2.Umlaut_and_thousands() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0782\tests\Trendo.Core.Tests\T0782Gegenpruefung2Tests.cs:line 98
+[xUnit.net 00:00:10.54]     M4-Rest ECHT: Registry-Speicher des Containers – Schreiben über GetAppContainerRegistryLocation wird begrenzt, danach ist der Speicher leer [FAIL]
+  Fehler M4-Rest ECHT: Registry-Speicher des Containers – Schreiben über GetAppContainerRegistryLocation wird begrenzt, danach ist der Speicher leer [5 s]
+  Fehlermeldung:
+   ok | REG 0
+GESCHRIEBEN
+
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0782_Gegenpruefung2.M4_registry_storage() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0782\tests\Trendo.Core.Tests\T0782Gegenpruefung2Tests.cs:line 50
+[xUnit.net 00:00:10.59]     M6-Rest: Anzeige-Filter verdeckt Antwort/Lösungsweg/Hinweis in Plan-Texten und hält Texte mit der Lösung der offenen Übung zurück [FAIL]
+[xUnit.net 00:00:10.91]     M4-Rest ECHT: ganzer AC-Ordner (INetCache, Microsoft, neue Unterordner) nach dem Lauf leer, Standardordner bleiben; Größe im ganzen AC-Ordner begrenzt [FAIL]
+[xUnit.net 00:00:10.92]     M7 erweitert: „drei Viertel“, 0,75 und 6/8 bei Brüchen, „zweieinhalb“; Bruch aus der Aufgabe zählt nicht [FAIL]
+[xUnit.net 00:00:11.54]     M4-Rest ECHT: sinkender freier Platz des Laufwerks bricht ab (Dateigrenze hier absichtlich hoch) [FAIL]
+  Fehler M6-Rest: Anzeige-Filter verdeckt Antwort/Lösungsweg/Hinweis in Plan-Texten und hält Texte mit der Lösung der offenen Übung zurück [17 ms]
+  Fehlermeldung:
+   Assert.DoesNotContain() Failure: Sub-string found
+                                ↓ (pos 49)
+String: ···"st 6 · 7?, Antwort: 42, Lösungsweg: sechs"···
+Found:  "42"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0782_Gegenpruefung2.M6_display_filter() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0782\tests\Trendo.Core.Tests\T0782Gegenpruefung2Tests.cs:line 77
+  Fehler M4-Rest ECHT: ganzer AC-Ordner (INetCache, Microsoft, neue Unterordner) nach dem Lauf leer, Standardordner bleiben; Größe im ganzen AC-Ordner begrenzt [317 ms]
+  Fehlermeldung:
+   Assert.False() Failure
+Expected: False
+Actual:   True
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0782_Gegenpruefung2.M4_whole_ac_folder() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0782\tests\Trendo.Core.Tests\T0782Gegenpruefung2Tests.cs:line 30
+  Fehler M7 erweitert: „drei Viertel“, 0,75 und 6/8 bei Brüchen, „zweieinhalb“; Bruch aus der Aufgabe zählt nicht [15 ms]
+  Fehlermeldung:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0782_Gegenpruefung2.M7_more() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0782\tests\Trendo.Core.Tests\T0782Gegenpruefung2Tests.cs:line 87
+  Fehler M4-Rest ECHT: sinkender freier Platz des Laufwerks bricht ab (Dateigrenze hier absichtlich hoch) [613 ms]
+  Fehlermeldung:
+   ok
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0782_Gegenpruefung2.M4_drive_drop() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0782\tests\Trendo.Core.Tests\T0782Gegenpruefung2Tests.cs:line 65
+
+Fehler!      : Fehler:     6, erfolgreich:     1, übersprungen:     0, gesamt:     7, Dauer: 6 s - Trendo.Core.Tests.dll (net10.0)

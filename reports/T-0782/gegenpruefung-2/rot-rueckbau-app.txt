@@ -1,0 +1,31 @@
+# T-0782 2. Gegenprüfung – Rot-Lauf App (Rückbau H1b: ClaudeBelongs, Claude-Bereich, Fehlerknopf, Brücke, LocalOnlyRefusal für Plan-Zeilen/Chat; M6-Rest: KiShow, KiAllowed – gleichzeitig; danach git checkout)
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    H1b: Nachhilfe – kein Claude-Menü (ClaudeBelongs false), kein Claude-Bereich, kein „Claude fragen“ an Fehlern; Brücke lehnt dokument_lesen/setzen, feld_setzen, befehl, klicken ab; Gegenprobe anderes Programm [FAIL]
+      Assert.False() Failure
+      Expected: False
+      Actual:   True
+      Stack Trace:
+        tests\Trendo.App.Tests\T0782Gegenpruefung2UiTests.cs(55,0): at Trendo.App.Tests.T0782Gegenpruefung2_Ui.H1b_no_claude_in_tutor()
+        --- End of stack trace from previous location ---
+    H1b Plan-Zeilen: Claude-Bereich aus einem anderen Programm, dann Wechsel in die Nachhilfe – Chat sendet nichts, ein offener Plan wird nicht ausgeführt, die Übung bleibt unverändert [FAIL]
+      Assert.Contains() Failure: Sub-string not found
+      String:    "Im Programm erledigt:\n- „Speichern unter: Ordner\\N"···
+      Not found: "Nicht ausgeführt"
+      Stack Trace:
+        tests\Trendo.App.Tests\T0782Gegenpruefung2UiTests.cs(161,0): at Trendo.App.Tests.T0782Gegenpruefung2_Ui.H1b_plan_and_chat_refused()
+        --- End of stack trace from previous location ---
+    M6-Rest: dokument.setzen nur für Fach, Klasse, Thema (Positivliste); Plan, Meldung und Protokoll zeigen keine Lösung [FAIL]
+      Assert.Equal() Failure: Strings differ
+                 ↓ (pos 0)
+      Expected: "fehler"
+      Actual:   "vorschau"
+                 ↑ (pos 0)
+      Stack Trace:
+        tests\Trendo.App.Tests\T0782Gegenpruefung2UiTests.cs(98,0): at Trendo.App.Tests.T0782Gegenpruefung2_Ui.M6_allowlist_and_hidden_answers()
+        --- End of stack trace from previous location ---
+  Finished:    Trendo.App.Tests (ID = 'f6d0891a28c15250435b1b4f8281571aec646f47e954b6d2d82cf32837030490')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 3, Errors: 0, Failed: 3, Skipped: 0, Not Run: 0, Time: 14,781s

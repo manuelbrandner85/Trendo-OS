@@ -10,6 +10,9 @@ b6bf0d64eb7db75e731a4456b4a8ca658e852b49ea346101148e0a4a6745bdc6 *./fremd/libreo
 4f7857821011ac47cd581c3a3cb2ca36bf080a8725858d99b85bf1f05c715806 *./fremd/libreoffice-ausgabe/rueck/eigene-uebungen.csv
 2b958778013d860638b0ebfb5bd7a23adfde6c9dbe67c295f40dc2c37bfcdde1 *./fremdprogramm-libreoffice.log
 e7f931d44284d837ce3c5c5d7d1c2393611818c4e5016dbdaa8f85713d3e4095 *./fremdprogramm-python.log
+7de7a05319f7711b64244c79d80931fadef811eb7bb83ba550318bcc48409f2e *./gegenpruefung-2/gruen.txt
+6e30eafa6a046581862b18f9730185414ea9fde106bc5b72b1bb967e0cf3b605 *./gegenpruefung-2/rot-rueckbau-app.txt
+630f668362bb8a5df997a85ad1a6ab0f909611560ff75623ab8e7d959937b020 *./gegenpruefung-2/rot-rueckbau-kern.txt
 1a1f53bdc8cc722bcae9b57f4dd17086206de94072ba9e46f816549a5c73841e *./gegenpruefung/T0782RotAltTests.cs.txt
 4bbd326b2a50ef30d859e84e5e2727bed0b411c16c285fd3b53dea20e5b13dbe *./gegenpruefung/gruen-app.txt
 a28f4a3513814c31c9b6faf45a19f6e450ed230f70be2cc21f30b9ab486c5c53 *./gegenpruefung/gruen-kern.txt
