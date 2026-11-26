@@ -713,7 +713,7 @@ public static partial class TimelineKit
                     }
                     case PImage im:
                         try { using var ms = new MemoryStream(im.Data); var xi = PdfSharp.Drawing.XImage.FromStream(ms); g.DrawImage(xi, im.X, im.Y, im.W, im.H); }
-                        catch (Exception e) when (e is ArgumentException or InvalidOperationException or NotSupportedException or InvalidDataException) { }
+                        catch (Exception e) when (e is not OutOfMemoryException) { } // T-0780 (M2): kaputtes Bild – PDF ohne dieses Bild
                         break;
                 }
             }

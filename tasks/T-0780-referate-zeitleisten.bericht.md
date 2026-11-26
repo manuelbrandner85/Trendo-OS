@@ -2,6 +2,20 @@
 
 **Auftrag:** `tasks/T-0780-referate-zeitleisten.md` (Freigabe 26.11.2026) · **Branch:** `claude/T-0780-referate-zeitleisten` (Basis main 0.9.112 = 184fcbbfc) · eigene Kopie in `%TEMP%\trendo-auftrag-T-0780`.
 
+## Nachbesserung nach der 2. Gegenprüfung
+Rot-Lauf gegen b256e1859: `reports/T-0780/rot-gegenpruefung-2.txt` (Core-Tests übersetzen nicht – `CitationHits` fehlt; App: `Bridge_every_step_checked` und `Fake_png_does_not_break` rot, die übrigen 4 Tests der Klasse grün wie vorher).
+
+| Nr. | Befund | Behebung | Regressionstest |
+|---|---|---|---|
+| H1 | Claude-Brücke umging Quellen-Sperre und Zitatprüfung über `befehl`, `feld_setzen`, `klicken` | Prüfung am Ende **jedes** Claude-Schritts (`BridgeUi`): Stand aller offenen Dokumente von Programmen mit `KiLocked`/`KiCheck` vorher merken, nach dem Schritt Felder übernehmen (Fokus weg, notfalls neu zeichnen), dann gesperrte Felder (jede Tiefe) vergleichen und `KiCheck` ausführen; bei Verstoß `Rollback` auf den Stand davor (Daten und Rückgängig-Liste), Claude bekommt „Zurückgenommen: …“, Protokoll `claude.zurueckgerollt`. `feld_setzen` fokussiert das Feld vorher (wie getippt). Gilt für alle Programme mit KiLocked/KiCheck | `T0780Gegenpruefung_Ui.Bridge_every_step_checked`: Quelle per `befehl ref-src-buch` und per `klicken ref-srcadd-buch` → zurückgerollt; erfundener Beleg per `feld_setzen ref-sec-text` → zurückgerollt; Gegenprobe mit `[@q-buch]` übernommen; Scannen `feld_setzen scan-folder-box` → abgelehnt, Ordner unverändert |
+| M1 | zu viele Fehlalarme | Gesperrt nur: Klammer mit Jahr plus Komma, Seitenangabe oder „vgl.“, „(Name o. J.)“, „(n.d.)“, „(Name [2021])“, „vgl. Name, 2021, S. 4“ ohne Klammer, Ort/Verlag-Angaben; Jahre vor 1500 und „v. Chr.“. Nur Hinweis (in „Formvorgaben prüfen“, keine Ablehnung): erzählend „Name (2005)“, „In Deutschland (2023)“, „(Olympia 2024)“, „(erfunden 2021)“, Fußnotenzeile „1) … 1990“ | Testtabelle `T0780GegenpruefungTests.Blocked` (17 Fälle), `Hint_only` (8), `No_false_alarm` (9 Gegenproben) |
+| M2 | unechtes PNG mit gültigem Kopf brach Import/Export ab | Dekodieren in `Reencode`, `Thumb`, PNG-Export, Zeichenfläche und PDF abgesichert; beim Import verworfen und gemeldet | `T0780Gegenpruefung_Ui.Fake_png_does_not_break` (Import, PNG, Zeichnen, PDF) |
+| M3 | 2020a/b nur nach erster Person | Gruppe = ganze Personenliste | `Year_suffix_full_list` |
+| niedrig | KiCheck beanstandete schon vorhandene Belege der Person | Nur neue Verweise/Belege im geänderten Abschnitt zählen | `Only_new_text_checked` |
+
+Ehrlich: `scan-folder-box` ist im Programm ein Pfadfeld, das nur über „Ordner wählen …“ geändert wird (schreibgeschützt) – `feld_setzen` wird dort schon vorher abgelehnt; der Schutz am Schritt-Ende greift für jeden anderen Weg (geprüft mit `befehl`/`klicken` an der Quellen-Sperre).
+**Tests dieser Runde:** Build 0 Fehler. Core (u. a. PromptAction, CiteFormats, KreativKits4, WissenStudios, T0780Gegenpruefung, Deck/Slide/Docx/Odt/Text/Office, Assist, Fremdnachlauf echt): **360 bestanden, 5 übersprungen, 0 Fehler**. App 17 Klassen inkl. ClaudeBridge, ClaudeLive, ClaudeLiveSync, ClaudeLiveRegie, ClaudeRunFix, ClaudePrograms, Assist*, T0774, DocScan, WissenStudios, T0780Gegenpruefung: **205 gesamt, 0 fehlgeschlagen, 3 übersprungen** (`reports/T-0780/app-klassen-3.txt`).
+
 ## Nachbesserung nach der Gegenprüfung („nicht freigabefähig“)
 Rot-Lauf: `reports/T-0780/rot-gegenpruefung.txt` – die neuen Core-Tests übersetzen auf 11c40362d nicht (fehlende Prüfungen), die 4 App-Tests übersetzen dort und schlagen alle fehl. Endstand grün (Zahlen unten).
 

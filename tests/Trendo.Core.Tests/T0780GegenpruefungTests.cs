@@ -22,36 +22,83 @@ public class T0780GegenpruefungTests
 
     // ---------------- H1/H2: freie Kurzbelege ----------------
 
-    [Theory(DisplayName = "T-0780 H1/H2: freie Kurzbelege in allen üblichen Formen werden erkannt")]
+    // Testtabelle aus beiden Gegenprüfungen (2. Gegenprüfung M1): gesperrt – nur Hinweis – gar nichts, je mit Gegenprobe
+
+    [Theory(DisplayName = "T-0780 M1 (Tabelle): eindeutige Belegformen werden gesperrt")]
     [InlineData("Mulch spart Wasser (vgl. Erfunden 2021).")]
     [InlineData("Mulch spart Wasser (Erfunden 2021: 5).")]
     [InlineData("Mulch spart Wasser (Erfunden 2021, 5).")]
     [InlineData("Mulch spart Wasser (Erfunden, 2021, p. 3).")]
-    [InlineData("Wie Erfunden (2021) zeigt, spart Mulch Wasser.")]
     [InlineData("Das ist belegt (Erfunden, 2021; Ander, 2019).")]
     [InlineData("Das ist belegt (van Erfunden, 2021).")]
     [InlineData("Das ist belegt (A, B & C, 2021).")]
     [InlineData("Das ist belegt (Erfunden et al., 2021, S. 12).")]
     [InlineData("Mulch hilft.\n¹ Erfunden, Max: Gartenbuch. Musterstadt 2021, S. 5.")]
     [InlineData("Siehe dazu Erfunden, Gartenbuch, Musterstadt: Grünverlag, 2021.")]
-    public void Free_citations_found(string text)
+    [InlineData("Das ist belegt (Erfunden o. J.).")]
+    [InlineData("Das ist belegt (n.d.).")]
+    [InlineData("Das ist belegt, vgl. Erfunden, 2021, S. 4.")]
+    [InlineData("Das ist belegt (Erfunden 2021 S. 5).")]
+    [InlineData("Das ist belegt (Erfunden [2021]).")]
+    [InlineData("Das ist belegt (Platon, 380 v. Chr.).")]
+    [InlineData("Das ist belegt (Erfunden, 1200).")]
+    public void Blocked(string text)
     {
         Assert.NotEmpty(ReferatKit.FreeCitations(text));
         Assert.NotNull(ReferatKit.KiTextProblem(text, Src));
     }
 
-    [Theory(DisplayName = "T-0780 H1/H2: kein Fehlalarm bei normalem Text mit Jahreszahlen")]
-    [InlineData("Im Jahr 2021 war der Sommer sehr trocken.")]
-    [InlineData("Die Regentonne (Stand 2021) fasst 300 Liter.")]
+    [Theory(DisplayName = "T-0780 M1 (Tabelle): erzählende Formen und Klammern ohne Komma/Seite sind nur ein Hinweis – keine Ablehnung")]
+    [InlineData("Wie Erfunden (2021) zeigt, spart Mulch Wasser.")]
+    [InlineData("Angela Merkel (2005) wurde Bundeskanzlerin.")]
+    [InlineData("In Deutschland (2023) regnete es wenig.")]
+    [InlineData("Die Spiele (Olympia 2024) fanden in Paris statt.")]
+    [InlineData("1) Die Wiedervereinigung 1990 veränderte vieles.")]
+    [InlineData("Das ist belegt (erfunden 2021).")]
     [InlineData("Die Französische Revolution (1789) veränderte Europa.")]
     [InlineData("Nach dem Mauerfall (1989) änderte sich viel.")]
-    [InlineData("Im Juli (2021) regnete es kaum.")]
-    [InlineData("Ein guter Boden braucht Zeit [@q-buch, S. 12].")]
-    [InlineData("Seit 2019 sammeln wir Regenwasser, 2021 kam eine zweite Tonne dazu.")]
-    public void No_false_alarm(string text)
+    public void Hint_only(string text)
     {
         Assert.Empty(ReferatKit.FreeCitations(text));
         Assert.Null(ReferatKit.KiTextProblem(text, Src));
+        Assert.Contains(ReferatKit.CitationHits(text), h => !h.Blocks);
+    }
+
+    [Theory(DisplayName = "T-0780 M1 (Tabelle, Gegenproben): normaler Text mit Zahlen und Jahren – weder Sperre noch Hinweis")]
+    [InlineData("Im Jahr 2021 war der Sommer sehr trocken.")]
+    [InlineData("Die Regentonne (Stand 2021) fasst 300 Liter.")]
+    [InlineData("Die Regentonne (Stand, 2021) fasst 300 Liter.")]
+    [InlineData("Im Juli (2021) regnete es kaum.")]
+    [InlineData("Ein guter Boden braucht Zeit [@q-buch, S. 12].")]
+    [InlineData("Seit 2019 sammeln wir Regenwasser, 2021 kam eine zweite Tonne dazu.")]
+    [InlineData("Mehr dazu (vgl. Abschnitt 2).")]
+    [InlineData("Die Tabelle (siehe Seite 4) zeigt es.")]
+    [InlineData("Das kostet (rund 300 Euro) im Jahr.")]
+    public void No_false_alarm(string text)
+    {
+        Assert.Empty(ReferatKit.CitationHits(text));
+        Assert.Null(ReferatKit.KiTextProblem(text, Src));
+    }
+
+    [Fact(DisplayName = "T-0780 (2. Gegenprüfung, niedrig): Belege, die die Person schon geschrieben hat, sperren eine KI-Ergänzung nicht – neue schon")]
+    public void Only_new_text_checked()
+    {
+        var before = Doc("Alter Text (Müller, 2019, S. 3) und [@alt].");
+        Assert.Null(ReferatKit.KiCheck(before, Doc("Alter Text (Müller, 2019, S. 3) und [@alt]. Neu von der KI [@q-buch].")));
+        Assert.NotNull(ReferatKit.KiCheck(before, Doc("Alter Text (Müller, 2019, S. 3) und [@alt]. Neu (Erfunden, 2021).")));
+        Assert.NotNull(ReferatKit.KiCheck(before, Doc("Alter Text (Müller, 2019, S. 3) und [@alt]. Neu [@neu].")));
+    }
+
+    [Fact(DisplayName = "T-0780 M3 (2. Gegenprüfung): 2020a/2020b nur bei gleicher ganzer Personenliste – „Muster“ und „Muster; Beispiel“ im gleichen Jahr bleiben ohne Buchstaben")]
+    public void Year_suffix_full_list()
+    {
+        var o = ReferatKit.ForOutput(
+        [
+            new() { Id = "a", Kind = "buch", Authors = "Muster, Erika", Title = "Eins", Year = "2020", Publisher = "V" },
+            new() { Id = "b", Kind = "buch", Authors = "Muster, Erika; Beispiel, Max", Title = "Zwei", Year = "2020", Publisher = "V" },
+            new() { Id = "c", Kind = "buch", Authors = "Muster, Erika; Beispiel, Max", Title = "Drei", Year = "2020", Publisher = "V" },
+        ]);
+        Assert.Equal(["2020", "2020b", "2020a"], o.Select(s => s.Year));
     }
 
     static JsonObject Doc(string text) => new()
@@ -68,7 +115,7 @@ public class T0780GegenpruefungTests
         var after = Doc("Neuer Text (Erfunden, 2021).");
         Assert.Contains("Erfunden, 2021", ReferatKit.KiCheck(before, after));
         Assert.Contains("[@neu]", ReferatKit.KiCheck(before, Doc("Neuer Text [@neu].")));
-        var title = before.DeepClone().AsObject(); title["sections"] = ReferatKit.SectionsJson([new("s1", 1, "Einleitung nach Erfunden (2021)", "Alter Text der Person (Müller, 2019).")]);
+        var title = before.DeepClone().AsObject(); title["sections"] = ReferatKit.SectionsJson([new("s1", 1, "Einleitung (vgl. Erfunden 2021)", "Alter Text der Person (Müller, 2019).")]);
         Assert.NotNull(ReferatKit.KiCheck(before, title)); // auch Überschriften (Gliederung)
         var src = before.DeepClone().AsObject(); ((JsonArray)src["sources"]!).Add(ReferatKit.SourceJson(new CiteKit.Source { Id = "q-x", Title = "Erfunden", Year = "2021" }));
         Assert.Contains("Quellen", ReferatKit.KiCheck(before, src));

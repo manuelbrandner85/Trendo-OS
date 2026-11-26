@@ -99,7 +99,7 @@ public partial class MainWindow
                 switch (c)
                 {
                     case TextBox tb when tb.PasswordChar != default || ClaudeActions.Secret(tb.PlaceholderText ?? "", tb.Name ?? ""): return McpResult.Fail("Geheimnisfelder füllt nur der Nutzer selbst aus.");
-                    case TextBox tb when tb.IsEffectivelyEnabled && !tb.IsReadOnly: tb.Text = value; break;
+                    case TextBox tb when tb.IsEffectivelyEnabled && !tb.IsReadOnly: tb.Focus(); tb.Text = value; break; // T-0780: wie getippt – beim Verlassen übernimmt das Programm den Wert (danach Prüfung des Schritts)
                     case Slider s when double.TryParse(value.Replace(',', '.'), System.Globalization.CultureInfo.InvariantCulture, out var v): s.Value = Math.Clamp(v, s.Minimum, s.Maximum); break;
                     case NumericUpDown n when decimal.TryParse(value.Replace(',', '.'), System.Globalization.CultureInfo.InvariantCulture, out var v): n.Value = v; break;
                     case ToggleButton t when bool.TryParse(value, out var v): t.IsChecked = v; break;
@@ -298,7 +298,15 @@ public partial class MainWindow
         var result = await _ui.InvokeAsync(async () =>
         {
             if (_core.Approvals.Halted) return McpResult.Fail("Nicht bestätigt: Der Not-Stopp ist aktiv. " + _core.Approvals.HaltReason);
-            try { return await BridgeGuard(run, name, a) ?? await body(a); }
+            // T-0780 (2. Gegenprüfung H1): Stand aller offenen Dokumente mit KiLocked/KiCheck vor dem Schritt – nach JEDEM Claude-Schritt (befehl, feld_setzen, klicken,
+            // dokument_setzen …) wird geprüft und bei Verstoß zurückgerollt, damit kein Weg an Quellen-Sperre oder Zitatprüfung vorbeiführt
+            var guarded = BridgeSnapshot();
+            try
+            {
+                var res = await BridgeGuard(run, name, a) ?? await body(a);
+                await BridgeFlushFields();
+                return BridgeAfterStep(guarded) ?? res;
+            }
             catch (Exception e) when (e is InvalidOperationException or ArgumentException or IOException or UnauthorizedAccessException or FormatException or KeyNotFoundException or NullReferenceException or IndexOutOfRangeException)
             { return McpResult.Fail(e.Message); }
         });
@@ -307,6 +315,60 @@ public partial class MainWindow
     }
 
     Task Pump() => _ui.InvokeAsync(() => { }, DispatcherPriority.Background).GetTask();
+
+    /// <summary>T-0780 (2. Gegenprüfung H1): Dokumente der Programme mit <see cref="ProgramSpec.KiLocked"/> oder <see cref="ProgramSpec.KiCheck"/> – Stand vor dem Claude-Schritt.</summary>
+    List<(ProgramSpec Spec, ProgramDocument Doc, ProgramDocument.Mark Before)> BridgeSnapshot() =>
+        [.. _progDocs.Where(p => Programs.TryGetValue(p.Key, out var s) && (s.KiLocked.Count > 0 || s.KiCheck is not null))
+            .SelectMany(p => p.Value.Select(d => (Programs[p.Key], d, d.Remember())))];
+
+    /// <summary>Getipptes übernehmen: Felder übernehmen beim Verlassen – ein Feld, das Claude gerade gefüllt hat, verliert den Fokus, damit die Prüfung den echten Stand sieht.</summary>
+    async Task BridgeFlushFields()
+    {
+        if (FocusManager?.GetFocusedElement() is not TextBox tb) return;
+        // Fokus auf einen Knopf der Seite (wie ein Klick daneben) – das Feld meldet „verlassen“ und übernimmt den Wert
+        var other = Avalonia.LogicalTree.LogicalExtensions.GetLogicalDescendants(ActivePageRoot ?? (Control)this).OfType<Button>().FirstOrDefault(b => b.IsEffectivelyVisible && b.IsEffectivelyEnabled && b.Focusable);
+        if (other is not null) other.Focus(); else Focus();
+        await Pump();
+        if (FocusManager?.GetFocusedElement() == tb && CurrentView is { Length: > 0 } v) { Show(v); await Pump(); } // notfalls neu zeichnen: Felder übernehmen beim Ablösen
+    }
+
+    /// <summary>Werte aller Felder mit gesperrtem Namen (jede Tiefe) – zum Vergleich vorher/nachher.</summary>
+    static string LockedValues(JsonNode? n, IReadOnlyList<string> locked)
+    {
+        var sb = new System.Text.StringBuilder();
+        void Walk(JsonNode? x, string path)
+        {
+            switch (x)
+            {
+                case JsonObject o: foreach (var (k, v) in o) { if (locked.Contains(k, StringComparer.OrdinalIgnoreCase)) sb.Append(path).Append('/').Append(k).Append('=').Append(v?.ToJsonString()).Append('\n'); else Walk(v, path + "/" + k); } break;
+                case JsonArray a: for (var i = 0; i < a.Count; i++) Walk(a[i], path + "/" + i); break;
+            }
+        }
+        Walk(n, "");
+        return sb.ToString();
+    }
+
+    /// <summary>Nach dem Claude-Schritt: gesperrtes Feld geändert oder KiCheck findet einen Fehler → Dokument auf den Stand davor zurück (samt Rückgängig-Liste) und Fehler an Claude.</summary>
+    McpResult? BridgeAfterStep(List<(ProgramSpec Spec, ProgramDocument Doc, ProgramDocument.Mark Before)> guarded)
+    {
+        foreach (var (spec, doc, before) in guarded)
+        {
+            var now = doc.Data.ToJsonString();
+            if (now == before.Data) continue;
+            var old = JsonNode.Parse(before.Data)!.AsObject();
+            string? why = null;
+            if (spec.KiLocked.Count > 0 && LockedValues(old, spec.KiLocked) != LockedValues(doc.Data, spec.KiLocked))
+                why = $"„{string.Join("“, „", spec.KiLocked)}“ legt die Person selbst fest – Claude ändert das nicht.";
+            why ??= spec.KiCheck?.Invoke(old, doc.Data);
+            if (why is null) continue;
+            doc.Rollback(before);
+            if (_claudeChanges.TryGetValue(spec.Key, out var c) && c.DocId == doc.Id && c.Before.Data == before.Data) _claudeChanges.Remove(spec.Key);
+            _core.Audit.Append(Principal.LocalOwner.Name, "claude.zurueckgerollt", $"{spec.Key} {why}");
+            if (CurrentView == spec.Key) Show(spec.Key);
+            return McpResult.Fail("Zurückgenommen: " + why);
+        }
+        return null;
+    }
 
     string? BridgeKey(BridgeRun run) => run.Page is { } p && Programs.ContainsKey(p) ? p : Programs.ContainsKey(CurrentView) ? CurrentView : null;
     ProgramDocument? BridgeDoc(BridgeRun run) => BridgeKey(run) is { } k ? ProgramActive(k) : null;

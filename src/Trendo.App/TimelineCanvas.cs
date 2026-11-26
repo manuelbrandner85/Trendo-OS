@@ -171,7 +171,7 @@ public sealed class TimelineCanvas : Control
     {
         if (Bitmaps.TryGetValue(data, out var b)) return b;
         try { using var ms = new MemoryStream(data); b = new Bitmap(ms); Bitmaps.Add(data, b); return b; }
-        catch (Exception e) when (e is ArgumentException or InvalidOperationException or NotSupportedException or IOException) { return null; }
+        catch (Exception e) when (e is not OutOfMemoryException) { return null; } // T-0780 (M2): kaputtes Bild zeichnet nicht
     }
 
     // ---------------- PNG (SkiaSharp) ----------------
@@ -226,8 +226,9 @@ public sealed class TimelineCanvas : Control
                     }
                     case PImage im:
                     {
-                        using var img = SKBitmap.Decode(im.Data);
-                        if (img is not null) c.DrawBitmap(img, new SKRect((float)im.X, (float)im.Y, (float)(im.X + im.W), (float)(im.Y + im.H)));
+                        SKBitmap? img = null;
+                        try { img = SKBitmap.Decode(im.Data); } catch (Exception e) when (e is not OutOfMemoryException) { } // unechtes Bild: auslassen, Export läuft weiter
+                        using (img) if (img is not null) c.DrawBitmap(img, new SKRect((float)im.X, (float)im.Y, (float)(im.X + im.W), (float)(im.Y + im.H)));
                         break;
                     }
                 }
@@ -245,7 +246,9 @@ public sealed class TimelineCanvas : Control
     public static byte[]? Reencode(byte[]? data, int max = 480)
     {
         if (!TimelineKit.ValidImage(data)) return null;
-        using var src = SKBitmap.Decode(data);
+        SKBitmap? src;
+        try { src = SKBitmap.Decode(data); } catch (Exception e) when (e is not OutOfMemoryException) { return null; } // T-0780 (2. Gegenprüfung M2): gültiger Kopf, kaputter Inhalt
+        using var _ = src;
         if (src is null || src.Width < 1 || src.Height < 1 || (long)src.Width * src.Height > 40_000_000) return null;
         var k = Math.Min(1.0, max / (double)Math.Max(src.Width, src.Height));
         using var small = k < 1 ? src.Resize(new SKImageInfo(Math.Max(1, (int)(src.Width * k)), Math.Max(1, (int)(src.Height * k))), new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear)) : src.Copy();
@@ -258,7 +261,9 @@ public sealed class TimelineCanvas : Control
     /// <summary>Bild für einen Eintrag verkleinern (längste Seite höchstens <paramref name="max"/> px, JPEG) – so bleibt das Dokument klein.</summary>
     public static byte[] Thumb(string file, int max = 480)
     {
-        using var src = SKBitmap.Decode(file) ?? throw new InvalidDataException("Das Bild lässt sich nicht lesen (PNG, JPEG, WebP oder BMP).");
+        SKBitmap? decoded = null;
+        try { decoded = SKBitmap.Decode(file); } catch (Exception e) when (e is not OutOfMemoryException) { } // T-0780 (M2): kaputter Inhalt trotz gültigem Kopf
+        using var src = decoded ?? throw new InvalidDataException("Das Bild lässt sich nicht lesen (PNG, JPEG, WebP oder BMP).");
         var k = Math.Min(1.0, max / (double)Math.Max(src.Width, src.Height));
         using var small = k < 1 ? src.Resize(new SKImageInfo(Math.Max(1, (int)(src.Width * k)), Math.Max(1, (int)(src.Height * k))), new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear)) : src.Copy();
         using var img = SKImage.FromBitmap(small);

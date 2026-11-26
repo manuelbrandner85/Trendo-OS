@@ -67,7 +67,7 @@ public class T0780Gegenpruefung_Ui
             var r = await Call(m, "dokument_setzen", new JsonObject { ["pfad"] = "sections/3/text", ["wert"] = "Mulch spart 70 % Wasser (vgl. Erfunden 2021: 5)." });
             Assert.True(Failed(r)); Assert.Contains("Erfunden 2021", Text(r));
             Assert.True(Failed(await Call(m, "dokument_setzen", new JsonObject { ["pfad"] = "sections/3/text", ["wert"] = "Mulch spart Wasser [ @neu]." })));
-            Assert.True(Failed(await Call(m, "dokument_setzen", new JsonObject { ["pfad"] = "sections/3", ["wert"] = new JsonObject { ["id"] = "s4", ["level"] = 2, ["title"] = "Mulchen nach Erfunden (2021)", ["text"] = "x" } })));
+            Assert.True(Failed(await Call(m, "dokument_setzen", new JsonObject { ["pfad"] = "sections/3", ["wert"] = new JsonObject { ["id"] = "s4", ["level"] = 2, ["title"] = "Mulchen (vgl. Erfunden 2021)", ["text"] = "x" } })));
             Assert.Equal(before, d.Data.ToJsonString());
             Assert.False(Failed(await Call(m, "dokument_setzen", new JsonObject { ["pfad"] = "sections/3/text", ["wert"] = "Mulch hält den Boden feucht [@q-buch, S. 20]." })));
             Assert.Equal("Mulch hält den Boden feucht [@q-buch, S. 20].", MainWindow.RefSections(d)[3].Text);
@@ -103,6 +103,79 @@ public class T0780Gegenpruefung_Ui
             Directory.CreateDirectory(root);
             var png = TimelineCanvas.SavePng(TimelineKit.Layout(t, -800, 1600, 1200), Path.Combine(root, "z.png"));
             Assert.True(new FileInfo(png).Length > 1000);
+        }
+        finally { w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0780 H1 (2. Gegenprüfung): Claude-Brücke – „befehl“, „klicken“ und „feld_setzen“ kommen an Quellen-Sperre, Zitatprüfung und Ordner-Sperre nicht vorbei; Schritt wird zurückgerollt und Claude bekommt den Fehler")]
+    public async Task Bridge_every_step_checked()
+    {
+        var (w, _, _) = Ui.Open(); var folder = Folder();
+        try
+        {
+            w.Width = 1600; w.Height = 1100; w.ProgramSetLevel(UserLevel.Profi);
+            var m = w.ClaudeBridgeForTest(folder);
+            Assert.False(Failed(await Call(m, "programm_oeffnen", new JsonObject { ["programm"] = MainWindow.RefKey, ["vorlage"] = "beispiel" })));
+            var d = w.ProgramActive(MainWindow.RefKey)!; var before = d.Data.ToJsonString(); var undo = d.History.Count;
+            // 1. befehl „Buch“ legt eine Quelle an → gesperrt
+            var r = await Call(m, "befehl", new JsonObject { ["name"] = "ref-src-buch" });
+            Assert.True(Failed(r)); Assert.Contains("Zurückgenommen", Text(r));
+            Assert.Equal(before, d.Data.ToJsonString()); Assert.Equal(undo, d.History.Count);
+            // 2. klicken auf „+ Buch“ unter Literatur → gesperrt
+            w.RefSetStep(d, 3); w.Show(MainWindow.RefKey); Settle();
+            Assert.True(Failed(await Call(m, "klicken", new JsonObject { ["ziel"] = "ref-srcadd-buch" })));
+            Assert.Equal(2, MainWindow.RefSources(w.ProgramActive(MainWindow.RefKey)!).Count);
+            // 3. feld_setzen in den Abschnittstext mit erfundenem Beleg → gesperrt, Text unverändert
+            w.RefSelect(d, MainWindow.RefSections(d)[3].Id); w.RefSetStep(d, 2); w.Show(MainWindow.RefKey); Settle();
+            r = await Call(m, "feld_setzen", new JsonObject { ["ziel"] = "ref-sec-text", ["wert"] = "Mulch spart 70 % Wasser (vgl. Erfunden 2021: 5)." });
+            Assert.True(Failed(r)); Assert.Contains("Erfunden 2021", Text(r));
+            Assert.Equal("Eine Schicht aus Rasenschnitt oder Laub hält den Boden feucht.", MainWindow.RefSections(w.ProgramActive(MainWindow.RefKey)!)[3].Text);
+            // Gegenprobe: derselbe Weg mit Verweis auf eine eigene Quelle wird übernommen (das Feld wird wirklich übernommen, nicht nur angezeigt)
+            w.Show(MainWindow.RefKey); Settle();
+            Assert.False(Failed(await Call(m, "feld_setzen", new JsonObject { ["ziel"] = "ref-sec-text", ["wert"] = "Mulch hält den Boden feucht [@q-buch, S. 20]." })));
+            Assert.Equal("Mulch hält den Boden feucht [@q-buch, S. 20].", MainWindow.RefSections(w.ProgramActive(MainWindow.RefKey)!)[3].Text);
+            // 4. Scannen: Ablage-Ordner per feld_setzen → gesperrt
+            Assert.False(Failed(await Call(m, "programm_oeffnen", new JsonObject { ["programm"] = MainWindow.ScanKey, ["vorlage"] = "leer" })));
+            // mit einem Foto (sonst steht nur der erste Schritt da und die Felder sind gesperrt)
+            var foto = Path.Combine(folder, "seite.png"); File.WriteAllBytes(foto, Trendo.Core.Kreativ.PngCodec.Encode(Trendo.Core.Office.DocScan.TestPhoto(600, 450, [(130, 45), (465, 75), (505, 410), (85, 380)])));
+            w.PickOverride = _ => Task.FromResult<string[]?>([foto]); w.Show(MainWindow.ScanKey); Settle();
+            Assert.False(Failed(await Call(m, "befehl", new JsonObject { ["name"] = "scan-add" }))); for (var i = 0; i < 50; i++) Settle(); w.PickOverride = null;
+            var s = w.ProgramActive(MainWindow.ScanKey)!; var sb = s.Data.ToJsonString();
+            w.Show(MainWindow.ScanKey); Settle();
+            r = await Call(m, "feld_setzen", new JsonObject { ["ziel"] = "scan-folder-box", ["wert"] = @"\\rechner\freigabe" });
+            Assert.True(Failed(r), Text(r)); // abgelehnt: das Pfadfeld ist nur über „Ordner wählen …“ änderbar, und jede Änderung an „folder“ würde am Schritt-Ende zurückgerollt
+            Assert.Equal(sb, w.ProgramActive(MainWindow.ScanKey)!.Data.ToJsonString());
+            Assert.Contains(w.Core.Audit.ReadAll(), a => a.Action == "claude.zurueckgerollt");
+        }
+        finally { w.Close(); try { Directory.Delete(folder, true); } catch (IOException) { } }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0780 M2 (2. Gegenprüfung): unechtes PNG mit gültigem Kopf – Import verwirft und meldet es, PNG-Export und Zeichenfläche laufen weiter")]
+    public void Fake_png_does_not_break()
+    {
+        var (w, _, root) = Ui.Open();
+        try
+        {
+            var fake = new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }.Concat(Enumerable.Repeat((byte)0x41, 400)).ToArray();
+            Assert.True(TimelineKit.ValidImage(fake)); // Kopf allein genügt nicht …
+            Assert.Null(TimelineCanvas.Reencode(fake)); // … erst das Dekodieren entscheidet
+            w.Width = 1400; w.Height = 900; w.Show(MainWindow.TlKey); Settle(); RealClick(w, w.Find<Button>("prog-tpl-leer")); Settle();
+            var d = w.ProgramActive(MainWindow.TlKey)!;
+            Directory.CreateDirectory(root);
+            var json = new JsonObject { ["title"] = "x", ["tracks"] = new JsonArray(new JsonObject { ["id"] = "t1", ["name"] = "A", ["color"] = "#D4A017" }),
+                ["items"] = new JsonArray(new JsonObject { ["id"] = "e1", ["title"] = "Kaputt", ["start"] = "1789", ["track"] = "t1", ["image"] = Convert.ToBase64String(fake) }) };
+            var f = Path.Combine(root, "fake.json"); File.WriteAllText(f, json.ToJsonString());
+            Assert.Equal(1, w.TlImport(d, f));
+            Assert.Null(MainWindow.TlData(d).Items.Single().Image);
+            Assert.Contains("Bild", w.ProgramMessage(MainWindow.TlKey));
+            // steht das unechte Bild schon im Dokument (alte Datei), brechen PNG-Export und Zeichnen nicht ab
+            var t = MainWindow.TlData(d); t.Items[0] = t.Items[0] with { Image = fake };
+            var png = TimelineCanvas.SavePng(TimelineKit.Layout(t, 1700, 1900, 1200), Path.Combine(root, "z.png"));
+            Assert.True(new FileInfo(png).Length > 1000);
+            var canvas = w.Find<TimelineCanvas>("tl-canvas"); canvas.Data = t; canvas.InvalidateVisual();
+            Settle(); Avalonia.Headless.AvaloniaHeadlessPlatform.ForceRenderTimerTick(); Settle();
+            TimelineKit.ToPdf(TimelineKit.Layout(t, 1700, 1900, 1200), Path.Combine(root, "z.pdf"));
+            Assert.True(File.Exists(Path.Combine(root, "z.pdf")));
         }
         finally { w.Close(); }
     }
