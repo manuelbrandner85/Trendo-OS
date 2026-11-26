@@ -64,7 +64,7 @@ public partial class MainWindow
                 new ProgramCmd("nw-farbe-masse", "Nach Atommasse", d => d.Set("faerben", "masse", "Färbung"), Level: 1),
             ]),
             ("Bearbeiten", [
-                new ProgramCmd("nw-loeschen", "Eintrag löschen", d => NwLoeschen(d, NwAuswahl(d)), Tip: "Entfernt den gewählten Laborheft-Eintrag (Entf)."),
+                new ProgramCmd("nw-loeschen", "Eintrag löschen", d => NwLoeschen(d, NwAuswahl(d)), Tip: "Entfernt den gewählten Laborheft-Eintrag (Entf).") { OhneKi = true },
             ]),
             ("Messwerte", [
                 new ProgramCmd("nw-messwerte", "Messreihe auswerten …", d => Show(SK), Level: 1, Tip: "Öffnet „Messdaten & Auswertung“: Statistik, Ausgleichsgerade, Tests."),
@@ -155,6 +155,7 @@ public partial class MainWindow
     /// <summary>Einen Eintrag rechnen – immer frisch aus dem Kern.</summary>
     public static BlattEintrag NwRechne(JsonNode? e)
     {
+        using var zeit = Rechenzeit.Grenze(Rechenzeit.Standard); // T-0781: nie einfrieren
         var art = Js(e?["art"]); var ein = Js(e?["eingabe"]);
         try
         {
@@ -200,7 +201,7 @@ public partial class MainWindow
                 default: throw new ArgumentException("Unbekannte Art des Eintrags.");
             }
         }
-        catch (Exception ex) when (ex is FormatException or ArgumentException or DivideByZeroException or OverflowException or KeyNotFoundException)
+        catch (Exception ex) when (ex is FormatException or ArgumentException or DivideByZeroException or OverflowException or KeyNotFoundException or OperationCanceledException)
         {
             return new BlattEintrag(art, ein, [], "", "", [], ex.Message);
         }
@@ -230,7 +231,7 @@ public partial class MainWindow
         {
             var art = (a.GetValueOrDefault("art") ?? "").Trim().ToLowerInvariant();
             var ein = (a.GetValueOrDefault("eingabe") ?? "").Trim();
-            if (art == "reaktion" && Regex.IsMatch(ein, @"(^|[+>=→]\s*)\d+\s*[A-Z]")) throw new InvalidOperationException("Die KI hat schon Faktoren vor die Stoffe geschrieben – ausgeglichen wird nur im Programm. Bitte die Reaktion ohne Faktoren angeben.");
+            if (art == "reaktion" && Regex.IsMatch(ein, @"(^|[+>=→⇌⟶]\s*)\d+\s*[A-Z(\[]")) throw new InvalidOperationException("Die KI hat schon Faktoren vor die Stoffe geschrieben – ausgeglichen wird nur im Programm. Bitte die Reaktion ohne Faktoren angeben.");
             var e = NwEintrag(art, ein, a.GetValueOrDefault("formel") ?? "", a.GetValueOrDefault("gesucht") ?? "", a.GetValueOrDefault("ziel") ?? "", "KI: Textaufgabe");
             var b = NwRechne(e);
             if (b.Fehler is { } f) throw new InvalidOperationException($"Das versteht das Programm nicht ({art}: „{ein}“): {f}");
@@ -289,7 +290,7 @@ public partial class MainWindow
             sp.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("24,*"), Children = {
                 new TextBlock { Text = ++k + ".", Foreground = Accent, FontSize = 12.5 },
                 Pos(new StackPanel { Children = { new TextBlock { Text = s.Text, Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap }, new TextBlock { Text = s.Formel, Foreground = Text, FontFamily = Mono, FontSize = 13, TextWrapping = TextWrapping.Wrap } } }, 1) } });
-        foreach (var p in b.Proben) sp.Children.Add(new TextBlock { Text = p.Text, Foreground = p.Ok ? K4Good : K4Bad, FontSize = 12, TextWrapping = TextWrapping.Wrap });
+        foreach (var p in b.Proben) sp.Children.Add(new TextBlock { Text = p.Text, Foreground = p.Unsicher ? K4Warn : p.Ok ? K4Good : K4Bad, FontSize = 12, TextWrapping = TextWrapping.Wrap });
         return sp;
     }
 

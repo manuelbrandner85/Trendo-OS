@@ -11,3 +11,4 @@
 | `SHA256.txt` | Prüfsummen aller Belege (`sha256sum -c SHA256.txt`) |
 
 Pfade mit Benutzernamen sind durch `C:\Users\<user>` ersetzt.
+| `nachbesserung/` | Nachbesserung nach der Gegenprüfung: Rot-Läufe gegen 5f38f9b4c (`rot-vorher.txt`, `rot-vorher-app.txt`), gezielte Testläufe danach (`rohlog-core-tests.txt`, `rohlog-app-tests.txt`); der Fremdprogramm-Beleg in `fremdprogramm/` ist mit dem neuen Stand neu erzeugt (Hochzahlen im PDF) |

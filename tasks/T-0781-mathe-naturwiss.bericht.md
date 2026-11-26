@@ -2,6 +2,31 @@
 
 **Auftrag:** `tasks/T-0781-mathe-naturwiss.md` (Freigabe 26.11.2026, Etappe 0.9.113) · **Branch:** `claude/T-0781-mathe-naturwiss` (Basis main 0.9.112 = 184fcbbfc) · eigene Kopie `%TEMP%\trendo-auftrag-T-0781`.
 
+## Nachbesserung nach der Gegenprüfung („nicht freigabefähig“, fachlich falsche Ergebnisse)
+
+Grundregel umgesetzt: Kann der Kern eine Aufgabe nicht sicher vollständig lösen, ist die Probe **gelb/unsicher** (`Probe.Unsicher`, `Loesung.ProbeOk = false`, Ergebniszeile „(unsicher – siehe Probe)“, Liste „?“, PDF „Probe unsicher:“) – keine falsche Antwort mit grüner Probe. Keine Probe benutzt denselben Suchweg wie die Lösung. Neu: `src/Trendo.Core/Wissen/MatheGleichung.cs`.
+
+| Nr. | Befund | Behebung | Regressionstest (rot auf 5f38f9b4c → grün) |
+|---|---|---|---|
+| 1 HOCH | Variable im Nenner: `1/x=2` u. a. falsch, 30 leere Schritte | Bruchgleichungen über Zähler/Nenner (`Rational`): Definitionsmenge, Hauptnenner, Polynom lösen, Nennernullstellen ausschließen; Umformen ohne leere Schritte, Abbruch statt Endlosschleife; `x/x = 1` → „jede Zahl außer x = 0“, `x²/x = 0` und `1/x = 0` → keine Lösung | Core `T0781GegenprobeTests.Nenner` (5 Fälle), `Definitionsmenge` (3) |
+| 2 HOCH | Verlorene Lösungen | Umkehren mit Fallunterscheidung: Betrag und gerade Potenzen (±), `(ln x)² = 4` → e⁻², e²; sin/cos/tan mit allgemeiner Lösung (`π/6 + 2kπ oder 5π/6 + 2kπ (k ∈ ℤ)`), `sin(2x)` mit Periode π; |c| > 1 → keine Lösung. Probe: Einsetzen (k = −1…2) und **eigene Nullstellensuche** von links − rechts (Abtasten, Polstellen ausgesondert, Berührpunkte) – Abweichung = gelb | `Alle_loesungen` (4), `Trig` (4 + sin x = 2) |
+| 3 HOCH | Nullstellen nur in [−1000, 1000] mit Schritt 0,1 | Quadratfreier Anteil, Cauchy-Schranke, Nullstellen der Ableitung als Trenner, Vorzeichen **exakt mit Brüchen**, Intervallhalbierung; Grad > 64 ehrlich abgelehnt bzw. sauber gelöst; **Probe: Sturm-Kette** zählt die verschiedenen reellen Nullstellen unabhängig (Grad > 30: gelb) | `Nullstellen` (x³ − 2000000001, x⁴ − 4,0001x² + 4,0002 mit 4 Lösungen, x⁵ − x − 1, x^720720 − 1 → ±1) |
+| 4 HOCH | ∫ über Polstellen falsch | Lücken im Intervall (Nenner-, ln-, Wurzelstellen) erkennen, uneigentliches Integral per Grenzwert von F, sonst „existiert nicht“; Probe ohne Stammfunktion: adaptive Simpson-Regel mit ausgesparten Lücken bzw. Wachstumstest | `Uneigentlich` (6: ∫₋₁¹1/x², 1/x, ∫₀¹1/(x−0,5), ∫₋₂⁰1/(x+1) existieren nicht; ∫₀¹1/√x = 2; ∫₀¹ln x = −1) |
+| 5 HOCH | ΔT in °C | Temperaturdifferenz ohne Nullpunktverschiebung (`InSi/Aus(…, differenz)` für Größen mit Δ); „30 °C − 20 °C = 10 K“, „20 °C + 5 K“ | `DeltaT` (Q = 83 720 J) |
+| 6 HOCH | 3e5, 6,022e23, 1,6e-19 | Termleser liest Zehnerpotenzen; `2e`, `e^2`, `3·e` bleiben die Konstante e | `Zehnerpotenz` |
+| 7 HOCH | Einfrieren | `Bruch.ISqrt/IRoot` mit Newton; `Bruch.Hoch` begrenzt die Bits (200 000); große Potenzen klar abgelehnt; `Rechenzeit` (3 s, je Thread) in allen langen Schleifen (Teiler, Eingrenzung, Sturm, Wurzelzerlegung); Oberfläche rechnet im Hintergrund (¼ s sofort, sonst „Rechnet …“, Neuzeichnen nach Ende) | Core `Kein_einfrieren` (4), `Isqrt`; UI `Gegenpruefung_einfrieren_und_gelb` |
+| 8 HOCH | PDF-Hochzahlen | Folgen zusammenhängend: 10⁻¹⁹ → 10^(-19), xⁿ⁻¹ → x^(n-1), SO₄²⁻ → SO4^(2-); Beleg neu erzeugt (`reports/T-0781/fremdprogramm/`) | `Pdf_hochzahlen`, `MatheKernTests.Pdf_zeichen` |
+| M | Linse f = g | „b = ∞ – Bild im Unendlichen“, Teilen durch 0 sonst „nicht bestimmbar“ mit gelber Probe | `Linse` |
+| M | Sperre gegen fertige Ergebnisse | beide Seiten vorher vereinfacht (`x + 0 = 5`, `1x = 5`, `2x/2 = 5`) | UI `Gegenpruefung_ki_sperren` |
+| M | Pfeile ⇌/⟶ im Faktor-Filter | ergänzt | UI `Gegenpruefung_ki_sperren` |
+| M | Löschen/Kopieren für die KI | `ProgramCmd.OhneKi` (mh-loeschen, mh-kopie, mh-hoch, mh-runter, mh-beispiel, nw-loeschen) | UI `Gegenpruefung_ki_sperren` |
+| N | Definitionsbereich bei `x/x`, `x²/x` | Schritt „Definitionsbereich … x ≠ 0“ | `Niedrig` |
+| N | falsch rote Proben `x⁰`, `(−8)^(1/3)` | Variablen der Probe aus dem Term; ungerade Wurzel durch Potenzieren gegengerechnet; zu große Zahlen gelb statt rot | `Niedrig` |
+| N | `Cu2+` ohne `^`, mL, mT, Lu/Lr | Ladung am Ende (einatomig: Ziffern = Ladung; mehratomig: zwei Ziffern → letzte ist Ladung, NH4+ bleibt NH₄⁺); Liter und Tesla mit Vorsätzen; Lu und Lr in Gruppe 3 (La–Yb, Ac–No in der Fußzeile) | `Niedrig_natur`, `NaturKernTests.Neu2024` |
+
+Rot-Lauf: `reports/T-0781/nachbesserung/rot-vorher.txt` – alle 30 Fälle der neuen Core-Klasse rot gegen 5f38f9b4c. **Ehrlich:** `Kein_einfrieren` meldete auf dem alten Stand 3 Fälle als bestanden (dort warf der alte Stand schon eine Überlaufmeldung); der Einfrier-Befund des Prüfers betraf „Vereinfachen“ von `(10^4000)^4000` über 15 s – jetzt sofort abgelehnt. Die zwei neuen UI-Tests nutzen die neue Eigenschaft `Unsicher` bzw. die Sperrliste; auf dem alten Stand übersetzt die Testdatei nicht (`reports/T-0781/nachbesserung/rot-vorher-app.txt`).
+Gezielte Läufe: Core `rohlog-core-tests.txt`: 313 bestanden, 1 übersprungen (PubChem-Abgleich ohne CSV). App `rohlog-app-tests.txt`: 377 gesamt, 373 bestanden, 4 übersprungen (Echtläufe ohne Variable), 0 rot – darin T0781Wissen_Ui, StudioBilder und 25 Querschnittsklassen; `StartMenu_StudioFenster` nicht erneut gelaufen (rot bis zum requirements.yaml-Eintrag, unverändert). Merge-Hinweis: `ProgramKiAction.Hinweis` unverändert (T-0779 bringt `bool MakesFile`).
+
 ## Was war → was ist
 | Punkt | Vorher (Beleg) | Jetzt | Nachweis |
 |---|---|---|---|

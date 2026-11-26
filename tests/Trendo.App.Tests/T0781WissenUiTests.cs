@@ -381,6 +381,68 @@ public partial class T0781Wissen_Ui
         finally { w.PickOverride = null; w.Close(); }
     }
 
+    // =============================== Nachbesserung nach der Gegenprüfung ===============================
+
+    [AvaloniaFact(DisplayName = "T-0781 Gegenprüfung (MITTEL): fertige Ergebnisse wie „x + 0 = 5“ und „1x = 5“ lehnt die Sperre ab; Löschen/Kopieren sind für die KI gesperrt (KI ersetzt)")]
+    public async Task Gegenpruefung_ki_sperren()
+    {
+        var (w, _, _) = Ui.Open(); MainWindow.AssistStepDelayMs = 0;
+        var antwort = "";
+        var ki = new FixedKi(_ => antwort);
+        try
+        {
+            w.KiBackendsOverride = () => [ki];
+            var d = OpenMathe(w);
+            foreach (var fertig in new[] { "x + 0 = 5", "1x = 5", "2x/2 = 5" })
+            {
+                antwort = Plan("mathe.rechnung", new JsonObject { ["art"] = "gleichung", ["eingabe"] = fertig });
+                Assert.Equal("fehler", await Ask(w, M, "Wie breit ist das Rechteck?"));
+                Assert.Contains("Ergebnis eingesetzt", w.AssistLast!.Value.Message);
+                Assert.Empty(d.List("rechnungen"));
+            }
+            var ziel = Assert.IsType<ProgramAssistTarget>(w.AssistTargetFor(M));
+            Assert.DoesNotContain(ziel.Actions, a => a.Id is "mh-loeschen" or "mh-kopie" or "mh-hoch" or "mh-runter" or "mh-beispiel");
+            var n = OpenNatur(w);
+            var zn = Assert.IsType<ProgramAssistTarget>(w.AssistTargetFor(N));
+            Assert.DoesNotContain(zn.Actions, a => a.Id == "nw-loeschen");
+            foreach (var pfeil in new[] { "⇌", "⟶", "->" })
+            {
+                antwort = Plan("natur.rechnung", new JsonObject { ["art"] = "reaktion", ["eingabe"] = $"2 H2 + O2 {pfeil} 2 H2O" });
+                Assert.Equal("fehler", await Ask(w, N, "Gleiche Knallgas aus"));
+                Assert.Contains("Faktoren", w.AssistLast!.Value.Message);
+            }
+            Assert.Empty(n.List("eintraege"));
+        }
+        finally { MainWindow.AssistStepDelayMs = 140; w.KiBackendsOverride = null; w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0781 Gegenprüfung (Einfrieren): Riesenaufgabe hält die Oberfläche nicht an – klare Meldung, nichts angelegt; unsichere Probe wird gelb („?“) angezeigt")]
+    public async Task Gegenpruefung_einfrieren_und_gelb()
+    {
+        var (w, _, _) = Ui.Open();
+        try
+        {
+            var d = OpenMathe(w);
+            Tippe(w, "mh-eingabe", "(10^4000)^4000");
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            Tap(w, "prog-cmd-mh-run-rechnen");
+            Assert.True(sw.ElapsedMilliseconds < 2000, $"Oberfläche stand {sw.ElapsedMilliseconds} ms");
+            await Until(() => !w.ProgramMessage(M).StartsWith("Rechnet", StringComparison.Ordinal), 6000);
+            Assert.Contains("zu groß", w.ProgramMessage(M));
+            Assert.Empty(d.List("rechnungen"));
+            // Grad > 30: Sturm-Kette nicht berechnet → Probe gelb, Liste zeigt „?“
+            Tippe(w, "mh-eingabe", "x^31 - 2 = 0");
+            Tap(w, "prog-cmd-mh-run-rechnen");
+            await Until(() => d.List("rechnungen").Count == 1, 6000);
+            Settle();
+            var (l, _) = w.MhLoesung(d, 0);
+            Assert.True(l!.Unsicher); Assert.False(l.ProbeOk);
+            Assert.Contains("unsicher", l.Ergebnis);
+            Assert.Contains(w.Find<Button>("mh-zeile-0").Texte(), t => t == "?");
+        }
+        finally { w.Close(); }
+    }
+
     // =============================== Echtlauf mit lokaler KI ===============================
 
     static string? Beleg() => Environment.GetEnvironmentVariable("TRENDO_T0781_ECHT") is { Length: > 0 } d ? Directory.CreateDirectory(d).FullName : null;

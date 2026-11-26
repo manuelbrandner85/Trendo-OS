@@ -42,11 +42,17 @@ public readonly struct Bruch : IEquatable<Bruch>, IComparable<Bruch>
     public static bool operator >=(Bruch a, Bruch b) => a.CompareTo(b) >= 0;
 
     /// <summary>Ganzzahlige Potenz (auch negativ). Zu große Exponenten werden abgelehnt, damit nichts ausufert.</summary>
+    /// <summary>Höchstzahl an Bits für Zähler oder Nenner eines Ergebnisses (Gegenprüfung T-0781: (10^4000)^4000 fror ein).</summary>
+    public const long MaxBits = 200_000;
+
     public Bruch Hoch(int e)
     {
-        if (Math.Abs(e) > 4096) throw new OverflowException("Der Exponent ist zu groß.");
+        if (Math.Abs(e) > 100_000) throw new OverflowException("Der Exponent ist zu groß.");
         if (e == 0) return Eins;
         if (e < 0) { if (IstNull) throw new DivideByZeroException("0 hoch eine negative Zahl geht nicht."); return Kehrwert.Hoch(-e); }
+        var bits = Math.Max((long)BigInteger.Abs(Z).GetBitLength(), (long)N.GetBitLength());
+        if (bits * e > MaxBits) throw new OverflowException($"Die Zahl wird zu groß (mehr als {MaxBits:N0} Binärstellen) – das rechnet der Mathe-Helfer nicht aus.");
+        Rechenzeit.Pruefe();
         return new(BigInteger.Pow(Z, e), BigInteger.Pow(N, e));
     }
 
@@ -68,20 +74,23 @@ public readonly struct Bruch : IEquatable<Bruch>, IComparable<Bruch>
         return new Bruch(Z.Sign < 0 ? -a : a, b);
     }
 
-    public static BigInteger ISqrt(BigInteger v)
+    /// <summary>Ganzzahlige Quadratwurzel ⌊√v⌋ mit dem Newton-Verfahren (auch für Zahlen mit Tausenden Stellen schnell).</summary>
+    public static BigInteger ISqrt(BigInteger v) => IRoot(v, 2);
+
+    /// <summary>Ganzzahlige n-te Wurzel ⌊v^(1/n)⌋ mit dem Newton-Verfahren, Startwert über die Bitlänge (immer zu groß, fällt dann monoton).</summary>
+    public static BigInteger IRoot(BigInteger v, int n)
     {
         if (v.Sign <= 0) return BigInteger.Zero;
-        var x = (BigInteger)Math.Sqrt((double)v);
-        while (x * x > v) x--;
-        while ((x + 1) * (x + 1) <= v) x++;
-        return x;
-    }
-
-    static BigInteger IRoot(BigInteger v, int n)
-    {
-        if (v.IsZero) return 0;
-        var x = (BigInteger)Math.Round(Math.Pow((double)v, 1.0 / n));
-        while (x > 0 && BigInteger.Pow(x, n) > v) x--;
+        if (n == 1) return v;
+        var x = BigInteger.One << (int)((v.GetBitLength() + n - 1) / n + 1);
+        while (true)
+        {
+            Rechenzeit.Pruefe();
+            var y = ((n - 1) * x + v / BigInteger.Pow(x, n - 1)) / n;
+            if (y >= x) break;
+            x = y;
+        }
+        while (BigInteger.Pow(x, n) > v) x--;
         while (BigInteger.Pow(x + 1, n) <= v) x++;
         return x;
     }
@@ -171,4 +180,28 @@ public readonly struct Bruch : IEquatable<Bruch>, IComparable<Bruch>
         }
         return new Bruch(h1, k1 == 0 ? 1 : k1);
     }
+}
+
+/// <summary>T-0781 (Gegenprüfung: Einfrieren): Zeitgrenze für eine Rechnung des Kerns. Lange Schleifen fragen <see cref="Pruefe"/>; ist die Zeit um,
+/// bricht die Rechnung mit einer klaren Meldung ab statt die Oberfläche anzuhalten. Gilt je Thread.</summary>
+public static class Rechenzeit
+{
+    [ThreadStatic] static DateTime _ende;
+
+    public static readonly TimeSpan Standard = TimeSpan.FromSeconds(3);
+
+    public static IDisposable Grenze(TimeSpan dauer)
+    {
+        var alt = _ende;
+        _ende = DateTime.UtcNow + dauer;
+        return new Zurueck(alt);
+    }
+
+    public static void Pruefe()
+    {
+        if (_ende != default && DateTime.UtcNow > _ende)
+            throw new OperationCanceledException($"Die Rechnung dauert zu lange (über {Standard.TotalSeconds:0} s) und wurde abgebrochen – bitte die Aufgabe kleiner machen.");
+    }
+
+    sealed class Zurueck(DateTime alt) : IDisposable { public void Dispose() => _ende = alt; }
 }

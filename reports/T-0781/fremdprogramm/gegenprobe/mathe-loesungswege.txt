@@ -11,11 +11,12 @@ Gleichung lösen
       3x = 12
  3. Beide Seiten durch 3 teilen
 
-      x = 12/3 = 4
+      x = 12 : 3 = 4
 
 Ergebnis: x = 4
 
 Probe bestanden: x = 4 einsetzen: links 17, rechts 17 – stimmt (exakt).
+Probe bestanden: Unabhängige Zählung mit der Sturm-Kette: genau 1 verschiedene reelle Nullstelle(n) – alle gefunden.
 
 2. Löse nach x: x² + 2x − 15 = 0
 
@@ -31,6 +32,7 @@ Ergebnis: x1 = −5; x2 = 3
 
 Probe bestanden: x = −5 einsetzen: links 0, rechts 0 – stimmt (exakt).
 Probe bestanden: x = 3 einsetzen: links 0, rechts 0 – stimmt (exakt).
+Probe bestanden: Unabhängige Zählung mit der Sturm-Kette: genau 2 verschiedene reelle Nullstelle(n) – alle gefunden.
 
 3. Löse das Gleichungssystem
 
@@ -97,13 +99,13 @@ Integrieren
  2. Faktorregel: der Faktor 4 kommt vor das Integral
       ∫ 4x³ dx = 4 · ∫ x³ dx
 
- 3. Potenzregel: ∫ uⁿ du = uⁿ^+¹/(n + 1) mit n = 3
+ 3. Potenzregel: ∫ u^n du = u^(n+1)/(n + 1) mit n = 3
       ∫ x³ dx = x^4/4
 
  4. Faktorregel: der Faktor −2 kommt vor das Integral
       ∫ −2x dx = −2 · ∫ x dx
 
- 5. Potenzregel: ∫ xⁿ dx = xⁿ^+¹/(n + 1) mit n = 1
+ 5. Potenzregel: ∫ x^n dx = x^(n+1)/(n + 1) mit n = 1
       ∫ x dx = x²/2
 
  6. Stammfunktion (C ist eine beliebige Konstante)
@@ -120,7 +122,7 @@ Ableiten
  1. Produktregel: (u·v)' = u'·v + u·v' mit u = x², v = e^x
       (x²·e^x)' = x²·e^x + 2x·e^x
 
- 2. Potenzregel: (xⁿ)' = n·xⁿ^-¹ mit n = 2
+ 2. Potenzregel: (x^n)' = n·x^(n-1) mit n = 2
       (x²)' = 2x
 
  3. e-Funktion: (eᵘ)' = eᵘ·u'

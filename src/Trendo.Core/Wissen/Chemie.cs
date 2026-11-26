@@ -33,7 +33,7 @@ public static class Chemie
         if (t.Length == 0) throw new FormatException("Bitte eine Summenformel eingeben, z. B. H2SO4.");
         if (t.Length > 200) throw new FormatException("Die Formel ist zu lang.");
         // Ladung am Ende: ^2-, ^+, {3+}, „+“/„−“ nach ^
-        var ladung = 0;
+        var ladung = 0; string? anzeige = null;
         var dach = t.IndexOfAny(['^', '{']);
         if (dach >= 0)
         {
@@ -45,6 +45,20 @@ public static class Chemie
             ladung = zeichen * (ziffern.Length == 0 ? 1 : int.Parse(ziffern, CultureInfo.InvariantCulture));
         }
         if (t is "e" or "e-") return new Formel("e^-", [], -1);
+        // T-0781 (Gegenprüfung): Ladung ohne „^“ am Ende („Cu2+“, „Na+“, „NH4+“, „SO42-“). Einatomige Ionen: alle Ziffern davor sind die Ladung (Cu2+ = Cu²⁺);
+        // mehratomige: eine einzelne Ziffer gehört zur Formel (NH4+ = NH₄⁺), bei zwei Ziffern ist die letzte die Ladung (SO42- = SO₄²⁻)
+        if (dach < 0 && t.Length > 1 && t[^1] is '+' or '-' && !t.Contains('·') && !t.Contains('*'))
+        {
+            var zeichen = t[^1] == '+' ? 1 : -1; var rumpf = t[..^1];
+            var z = rumpf.Length; while (z > 0 && char.IsAsciiDigit(rumpf[z - 1])) z--;
+            var ziffern = rumpf[z..]; var vorne = rumpf[..z];
+            var einatomig = System.Text.RegularExpressions.Regex.IsMatch(vorne, "^[A-Z][a-z]?$");
+            var betrag = 1;
+            if (einatomig && ziffern.Length > 0) { betrag = int.Parse(ziffern, CultureInfo.InvariantCulture); rumpf = vorne; }
+            else if (!einatomig && ziffern.Length >= 2) { betrag = ziffern[^1] - '0'; rumpf = vorne + ziffern[..^1]; }
+            if (betrag is < 1 or > 9) throw new FormatException($"Ladung „{t}“ nicht verstanden – schreib z. B. {vorne}^{betrag}{t[^1]}.");
+            t = rumpf; ladung = zeichen * betrag; anzeige = rumpf + "^" + (betrag > 1 ? betrag.ToString(CultureInfo.InvariantCulture) : "") + (zeichen > 0 ? "+" : "-");
+        }
         var atome = new Dictionary<string, int>(StringComparer.Ordinal); var reihe = new List<string>();
         foreach (var teil in t.Split(['·', '*', '•', '.'], StringSplitOptions.RemoveEmptyEntries))
         {
@@ -56,7 +70,7 @@ public static class Chemie
             foreach (var (s, n) in gruppe) { if (!atome.ContainsKey(s)) { atome[s] = 0; reihe.Add(s); } atome[s] += n * vorne; }
         }
         if (reihe.Count == 0) throw new FormatException("In der Formel steht kein Element.");
-        return new Formel(text!.Trim(), [.. reihe.Select(s => (s, atome[s]))], ladung);
+        return new Formel(anzeige ?? text!.Trim(), [.. reihe.Select(s => (s, atome[s]))], ladung);
     }
 
     static List<(string, int)> Gruppe(string t, ref int i, int tiefe)
@@ -150,7 +164,8 @@ public static class Chemie
         var pfeil = Pfeile.FirstOrDefault(p => text.Contains(p, StringComparison.Ordinal)) ?? throw new FormatException("Zwischen Ausgangsstoffen und Produkten fehlt der Pfeil, z. B. H2 + O2 -> H2O.");
         var seiten = text.Split(pfeil);
         if (seiten.Length != 2) throw new FormatException("Bitte genau einen Pfeil.");
-        List<Formel> Stoffe(string seite) => [.. seite.Split(" + ").SelectMany(x => x.Split('+').Length > 1 && !x.Contains('^') && !x.Contains('{') ? x.Split('+') : [x])
+        // „+“ trennt Stoffe nur, wenn danach ein neuer Stoff beginnt (Buchstabe/Ziffer); ein „+“ am Ende ist die Ladung (Cu2+)
+        List<Formel> Stoffe(string seite) => [.. System.Text.RegularExpressions.Regex.Split(seite.Trim(), @"\s+\+\s+|(?<=[A-Za-z0-9)\]])\+(?=[A-Za-z0-9(\[])")
             .Select(x => x.Trim()).Where(x => x.Length > 0).Select(x => { var i = 0; while (i < x.Length && char.IsAsciiDigit(x[i])) i++; return Lies(x[i..]); })];
         var links = Stoffe(seiten[0]); var rechts = Stoffe(seiten[1]);
         if (links.Count == 0 || rechts.Count == 0) throw new FormatException("Auf beiden Seiten muss mindestens ein Stoff stehen.");

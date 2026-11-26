@@ -44,7 +44,7 @@ public class NaturKernTests(ITestOutputHelper log)
     public void Neu2024()
     {
         Assert.Equal(91.222, Elemente.Symbol("Zr")!.Masse); Assert.Equal(157.25, Elemente.Symbol("Gd")!.Masse); Assert.Equal(174.97, Elemente.Symbol("Lu")!.Masse);
-        Assert.Equal((8, 2), Elemente.Raster(Elemente.Symbol("La")!)); Assert.Equal((9, 16), Elemente.Raster(Elemente.Symbol("Lr")!));
+        Assert.Equal((8, 2), Elemente.Raster(Elemente.Symbol("La")!)); Assert.Equal((6, 2), Elemente.Raster(Elemente.Symbol("Lr")!)); // T-0781: Lr in Gruppe 3
         Assert.True(Elemente.Symbol("Tc")!.MasseGeschaetzt); Assert.Equal("[98]", Elemente.Symbol("Tc")!.MasseText);
     }
 

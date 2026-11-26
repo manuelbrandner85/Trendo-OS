@@ -116,6 +116,15 @@ public static class Vereinfacher
             if (z.Wert.IstNull && name == "cos") return Term.Eins;
             if (z.Wert == Bruch.Eins && name is "ln" or "log") return Term.Null;
             if (name == "abs") return new Zahl(z.Wert.Betrag);
+            // T-0781: Hauptwerte der Umkehrfunktionen an den bekannten Stellen exakt (für allgemeine Lösungen wie π/6 + 2kπ)
+            Bruch? pi = name switch
+            {
+                "asin" => z.Wert == Bruch.Eins ? new Bruch(1, 2) : z.Wert == Bruch.MinusEins ? new Bruch(-1, 2) : z.Wert == new Bruch(1, 2) ? new Bruch(1, 6) : z.Wert == new Bruch(-1, 2) ? new Bruch(-1, 6) : null,
+                "acos" => z.Wert == Bruch.Eins ? Bruch.Null : z.Wert == Bruch.MinusEins ? Bruch.Eins : z.Wert.IstNull ? new Bruch(1, 2) : z.Wert == new Bruch(1, 2) ? new Bruch(1, 3) : z.Wert == new Bruch(-1, 2) ? new Bruch(2, 3) : null,
+                "atan" => z.Wert == Bruch.Eins ? new Bruch(1, 4) : z.Wert == Bruch.MinusEins ? new Bruch(-1, 4) : null,
+                _ => null,
+            };
+            if (pi is { } p) return p.IstNull ? Term.Null : p == Bruch.Eins ? Konst.Pi : new Produkt([new Zahl(p), Konst.Pi]);
         }
         if (name is "sin" or "cos" && PiVielfaches(a) is { } k && (k * 2).IstGanz)
         {
@@ -146,7 +155,15 @@ public static class Vereinfacher
             if (ez.Wert == Bruch.Eins) return b;
             if (b is Zahl bz)
             {
-                if (ez.Wert.IstGanz && BigInteger.Abs(ez.Wert.Z) <= 512) return bz.Wert.IstNull && ez.Wert.Vorzeichen < 0 ? throw new DivideByZeroException("Teilen durch 0 geht nicht.") : new Zahl(bz.Wert.Hoch((int)ez.Wert.Z));
+                if (ez.Wert.IstGanz)
+                {
+                    // Gegenprüfung T-0781: große Potenzen nicht still stehen lassen (Probe rot) und nicht endlos rechnen – ausrechnen oder klar ablehnen
+                    if (bz.Wert.IstNull && ez.Wert.Vorzeichen < 0) throw new DivideByZeroException("Teilen durch 0 geht nicht.");
+                    if (bz.Wert.IstNull || bz.Wert == Bruch.Eins) return new Zahl(bz.Wert);
+                    if (bz.Wert == Bruch.MinusEins) return new Zahl(ez.Wert.Z.IsEven ? Bruch.Eins : Bruch.MinusEins);
+                    if (BigInteger.Abs(ez.Wert.Z) > 100_000) throw new OverflowException("Die Zahl wird zu groß – das rechnet der Mathe-Helfer nicht aus.");
+                    return new Zahl(bz.Wert.Hoch((int)ez.Wert.Z));
+                }
                 if (ez.Wert.N <= 12 && bz.Wert.Wurzel((int)ez.Wert.N) is { } r && BigInteger.Abs(ez.Wert.Z) <= 512) return new Zahl(r.Hoch((int)ez.Wert.Z));
             }
             if (b is Potenz bw && ez.Wert.IstGanz) return Pot(bw.Basis, Prod([bw.Exponent, e]));
@@ -419,8 +436,9 @@ public readonly struct WurzelZahl(Bruch a, Bruch b, BigInteger m)
         if (r.Vorzeichen < 0) throw new ArgumentException("Wurzel aus einer negativen Zahl");
         // √(z/n) = √(z·n)/n
         var zn = r.Z * r.N; BigInteger aussen = 1, innen = 1, rest = zn;
-        for (BigInteger p = 2; p * p <= rest && p < 1_000_000; p++)
+        for (BigInteger p = 2; p * p <= rest && p < 100_000; p++)
         {
+            if (p % 1024 == 0) Rechenzeit.Pruefe();
             while (rest % (p * p) == 0) { rest /= p * p; aussen *= p; }
             if (rest % p == 0) { rest /= p; innen *= p; }
         }

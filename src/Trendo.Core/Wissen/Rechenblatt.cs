@@ -63,13 +63,20 @@ public static class Rechenblatt
     /// (Befund der Gegenprobe mit pdftotext: diese Zeichen fehlten im PDF).</summary>
     public static string PdfText(string s)
     {
+        const string hoch = "⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻ⁿ", normal = "0123456789+-n";
         var sb = new StringBuilder(s.Length);
-        foreach (var c in s)
+        for (var i = 0; i < s.Length; i++)
         {
-            if (c is >= '₀' and <= '₉') sb.Append((char)('0' + (c - '₀')));
-            else if (c is '⁺' or '⁻' && sb.Length > 0 && "¹²³".IndexOf(sb[^1]) is var q and >= 0) { sb.Length--; sb.Append('^').Append("123"[q]).Append(c == '⁺' ? '+' : '-'); } // Ladung SO₄²⁻ → SO4^2-
-            else if ("⁰⁴⁵⁶⁷⁸⁹⁺⁻".IndexOf(c) is var h and >= 0) sb.Append('^').Append("0456789+-"[h]); // Arial kennt nur ¹ ² ³ hochgestellt
-            else sb.Append(c);
+            var c = s[i];
+            if (c is >= '₀' and <= '₉') { sb.Append((char)('0' + (c - '₀'))); continue; }
+            if (hoch.IndexOf(c) < 0) { sb.Append(c); continue; }
+            // T-0781 (Gegenprüfung): Folgen von Hochzeichen zusammenhängend ersetzen – 10⁻¹⁹ → 10^(-19), xⁿ⁻¹ → x^(n-1); einzelnes ¹ ² ³ bleibt (Arial kennt sie)
+            var j = i; var lauf = new StringBuilder();
+            while (j < s.Length && hoch.IndexOf(s[j]) is var h and >= 0) { lauf.Append(normal[h]); j++; }
+            if (lauf.Length == 1 && "¹²³".Contains(c)) sb.Append(c);
+            else if (lauf.Length == 1) sb.Append('^').Append(lauf);
+            else sb.Append("^(").Append(lauf).Append(')');
+            i = j - 1;
         }
         return sb.ToString().Replace("⇔", "<=>").Replace("⇒", "=>").Replace("⟶", "→");
     }
@@ -98,7 +105,8 @@ public static class Rechenblatt
             }
             pdf.Need(10); pdf.Y += 1;
             pdf.Write(PdfText("Ergebnis: " + e.Ergebnis), 11.5, true, pdf.Accent);
-            foreach (var p in e.Proben) pdf.Write(PdfText(p.Text).Replace("✓", "Probe bestanden:").Replace("✗", "Probe NICHT bestanden:"), 8.5, false, p.Ok ? gruen : rot);
+            var gelb = XColor.FromArgb(0xA0, 0x6A, 0x00);
+            foreach (var p in e.Proben) pdf.Write(PdfText(p.Text).Replace("✓", "Probe bestanden:").Replace("✗", "Probe NICHT bestanden:").Replace("⚠", "Probe unsicher:"), 8.5, false, p.Unsicher ? gelb : p.Ok ? gruen : rot);
             pdf.Y += 3; pdf.Rule(); pdf.Y += 4;
         }
         return pdf.Save(pfad);

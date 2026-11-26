@@ -238,6 +238,22 @@ public static class TermLeser
                 while (i < s.Length && (char.IsAsciiDigit(s[i]) || (s[i] is '.' or ',') && i + 1 < s.Length && char.IsAsciiDigit(s[i + 1]))) i++;
                 var txt = s[st..i];
                 if (txt.Count(ch => ch is '.' or ',') > 1) throw new FormatException($"„{txt}“ ist keine Zahl.");
+                // T-0781 (Gegenprüfung): Zehnerpotenz „3e5“, „6,022e23“, „1,6e-19“ – nur wenn nach e/E Ziffern folgen; „2e“, „2e^x“, „3·e“ bleiben die Konstante e
+                if (i + 1 < s.Length && s[i] is 'e' or 'E')
+                {
+                    var j = i + 1;
+                    if (j < s.Length && s[j] is '+' or '-') j++;
+                    var ziffern = j;
+                    while (j < s.Length && char.IsAsciiDigit(s[j])) j++;
+                    if (j > ziffern && (j >= s.Length || !char.IsLetter(s[j])))
+                    {
+                        if (j - ziffern > 6) throw new FormatException("Die Zehnerpotenz ist zu groß.");
+                        var exp = int.Parse(s[(i + 1)..j], System.Globalization.NumberStyles.AllowLeadingSign, System.Globalization.CultureInfo.InvariantCulture);
+                        if (Math.Abs(exp) > 10_000) throw new FormatException("Die Zehnerpotenz ist zu groß (höchstens 10⁴).");
+                        i = j;
+                        return new Zahl(Bruch.Lies(txt) * new Bruch(10).Hoch(exp));
+                    }
+                }
                 return new Zahl(Bruch.Lies(txt));
             }
             if (c == '(')

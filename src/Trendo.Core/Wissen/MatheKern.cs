@@ -11,7 +11,12 @@ public enum MatheArt { Automatisch, Vereinfachen, Ausmultiplizieren, Faktorisier
 public sealed record Schritt(string Text, string Formel);
 
 /// <summary>Probe (Einsetzen oder Gegenrechnung): bestanden? und was gerechnet wurde.</summary>
-public sealed record Probe(bool Ok, string Text);
+public sealed record Probe(bool Ok, string Text)
+{
+    /// <summary>T-0781 (Gegenprüfung): die Probe konnte die Vollständigkeit oder Richtigkeit nicht sicher bestätigen – gelb anzeigen, nie als „bestanden“ zählen.</summary>
+    public bool Unsicher { get; init; }
+    public static Probe Gelb(string text) => new(false, "⚠ " + text) { Unsicher = true };
+}
 
 /// <summary>Aufgabe an den Rechenkern.</summary>
 public sealed record MatheAuftrag(MatheArt Art, string Eingabe, string? Variable = null, string? Von = null, string? Bis = null);
@@ -19,14 +24,16 @@ public sealed record MatheAuftrag(MatheArt Art, string Eingabe, string? Variable
 /// <summary>Ergebnis mit Lösungsweg. <see cref="Graph"/>: Funktionen für den Funktionsgraph (Eingabeform, mit „;“ getrennt), sonst leer.</summary>
 public sealed record Loesung(MatheArt Art, string Eingabe, string Aufgabe, IReadOnlyList<Schritt> Schritte, string Ergebnis, string ErgebnisLatex, IReadOnlyList<Probe> Proben, string Graph, string Variable)
 {
-    public bool ProbeOk => Proben.Count > 0 && Proben.All(p => p.Ok);
+    public bool ProbeOk => Proben.Count > 0 && Proben.All(p => p.Ok && !p.Unsicher);
+    /// <summary>Mindestens eine Probe ist unsicher (gelb) und keine ist fehlgeschlagen.</summary>
+    public bool Unsicher => Proben.Any(p => p.Unsicher) && !Proben.Any(p => !p.Ok && !p.Unsicher);
 }
 
 /// <summary>Eigener, geprüfter Rechenkern des Mathe-Helfers: Terme vereinfachen, ausmultiplizieren und faktorisieren, lineare und quadratische Gleichungen
 /// (auch höheren Grades mit rationalen Nullstellen), lineare Gleichungssysteme (Gauß), Bruchrechnen, Ableitungen und einfache Integrale – jeweils mit
 /// Lösungsweg Schritt für Schritt und einer Probe, die unabhängig vom Lösungsweg rechnet (Einsetzen, Ausmultiplizieren, Gegenrechnung mit dem Rechner).
 /// Exakt mit Brüchen; Gleitkomma nur für Näherungen und die numerische Gegenprobe.</summary>
-public static class MatheKern
+public static partial class MatheKern
 {
     public static string ArtName(MatheArt a) => a switch
     {
@@ -73,6 +80,7 @@ public static class MatheKern
     /// <summary>Rechnen. Wirft <see cref="FormatException"/> oder <see cref="ArgumentException"/> mit einem Satz für die Person, wenn die Aufgabe nicht geht.</summary>
     public static Loesung Rechne(MatheAuftrag a)
     {
+        using var zeit = Rechenzeit.Grenze(Rechenzeit.Standard); // Gegenprüfung T-0781: nie einfrieren
         var eingabe = Vorbereiten(a.Eingabe ?? "");
         if (eingabe.Length == 0) throw new FormatException("Bitte eine Aufgabe eingeben.");
         var art = a.Art == MatheArt.Automatisch ? Erkenne(eingabe) : a.Art;
@@ -124,6 +132,9 @@ public static class MatheKern
             if (ergebnis.Schluessel != t.Schluessel) schritte.Add(new Schritt("Zahlen ausrechnen, gleiche Glieder und gleiche Basen zusammenfassen (Potenzgesetze)", A(t) + " = " + A(ergebnis)));
         }
         if (schritte.Count == 0) schritte.Add(new Schritt("Der Term lässt sich nicht weiter vereinfachen.", A(t)));
+        // T-0781 (Gegenprüfung): Wer kürzt, verliert Definitionslücken – x/x = 1 gilt nur für x ≠ 0
+        var luecken = NennerNull(t).Where(l => !NennerNull(ergebnis).Contains(l)).ToList();
+        if (luecken.Count > 0) schritte.Add(new Schritt("Definitionsbereich: Der Ausgangsterm ist an diesen Stellen nicht definiert – die Vereinfachung gilt nur dort, wo der Nenner nicht 0 ist", string.Join(", ", luecken)));
         var proben = new List<Probe> { ProbeGleichwertig(t, ergebnis) };
         var vars = ergebnis.Variablen().ToList();
         return new Loesung(art, eingabe, (ausmultiplizieren ? "Multipliziere aus: " : "Vereinfache: ") + A(t), schritte, A(ergebnis), TermText.Latex(ergebnis), proben,
@@ -194,7 +205,7 @@ public static class MatheKern
         if (Polynom.Aus(vorher) is { } p1 && Polynom.Aus(nachher) is { } p2)
         {
             // unabhängig vom Lösungsweg: an drei Stellen exakt einsetzen
-            var vars = p1.Variablen.Union(p2.Variablen).ToList();
+            var vars = p1.Variablen.Union(p2.Variablen).Union(vorher.Variablen()).Union(nachher.Variablen()).Distinct().ToList(); // x⁰: Variable bleibt im Ausgangsterm
             var stellen = new[] { new Bruch(2), new Bruch(-3, 2), new Bruch(7, 3) };
             var ok = true; var txt = new List<string>();
             foreach (var (st, k) in stellen.Select((s, k) => (s, k)))
@@ -207,6 +218,31 @@ public static class MatheKern
             return new Probe(ok, (ok ? "✓ Gleichwertig – " : "✗ Nicht gleichwertig – ") + string.Join("; ", txt) + " (dazu zwei weitere Stellen, exakt mit Brüchen).");
         }
         return ProbeNumerisch(vorher, nachher, "Einsetzen an Probestellen");
+    }
+
+    /// <summary>Stellen, an denen ein Nenner 0 wird („x ≠ 0“, „x ≠ 3/2“) – nur für lineare Nenner exakt, sonst „Nenner ≠ 0“.</summary>
+    static List<string> NennerNull(Term t)
+    {
+        var res = new List<string>();
+        void Walk(Term u)
+        {
+            switch (u)
+            {
+                case Summe s: foreach (var g in s.Glieder) Walk(g); break;
+                case Produkt p: foreach (var g in p.Faktoren) Walk(g); break;
+                case Potenz w:
+                    Walk(w.Basis);
+                    if (w.Exponent is Zahl e && e.Wert.Vorzeichen < 0 && w.Basis.Variablen().ToList() is [var v] && Polynom.Aus(w.Basis)?.Koeffizienten(v) is { } k)
+                    {
+                        if (k.Length == 2 && !k[1].IstNull) res.Add($"{v} ≠ {-k[0] / k[1]}");
+                        else if (k.Length > 2) res.Add($"{A(w.Basis)} ≠ 0");
+                    }
+                    break;
+                case Fkt f: Walk(f.Argument); break;
+            }
+        }
+        Walk(t);
+        return [.. res.Distinct()];
     }
 
     static Probe ProbeNumerisch(Term vorher, Term nachher, string was)
@@ -398,114 +434,9 @@ public static class MatheKern
         return v + string.Join("", teile) is { Length: > 0 } r ? r : "1";
     }
 
-    /// <summary>Rationale Nullstelle p/q (p teilt a₀, q teilt aₙ) oder null.</summary>
-    static Bruch? RationaleNullstelle(Bruch[] k)
-    {
-        if (k[0].IstNull) return Bruch.Null;
-        var nenner = k.Select(c => c.N).Aggregate(Bruch.Kgv);
-        var ganz = k.Select(c => (c * new Bruch(nenner, 1)).Z).ToArray();
-        var p0 = BigInteger.Abs(ganz[0]); var pn = BigInteger.Abs(ganz[^1]);
-        if (p0 > 1_000_000 || pn > 1_000_000) return null;
-        foreach (var p in Teiler(p0))
-            foreach (var q in Teiler(pn))
-                foreach (var s in new[] { 1, -1 })
-                {
-                    var r = new Bruch(s * p, q);
-                    if (Polynom.Horner(k, r).Restwert.IstNull) return r;
-                }
-        return null;
-    }
-
-    static IEnumerable<BigInteger> Teiler(BigInteger n)
-    {
-        for (BigInteger d = 1; d <= n; d++) if (n % d == 0) yield return d;
-    }
-
     // =====================================================================================
     // Gleichungen in einer Variablen
     // =====================================================================================
-
-    static Loesung Gleichung(string eingabe, string? variable)
-    {
-        var teile = eingabe.Split('=');
-        if (teile.Length != 2) throw new FormatException(teile.Length < 2 ? "In einer Gleichung steht ein „=“." : "Bitte nur ein „=“ – mehrere Gleichungen mit „;“ trennen (Gleichungssystem).");
-        var links = TermLeser.Lies(teile[0]); var rechts = TermLeser.Lies(teile[1]);
-        var alle = links.Variablen().Union(rechts.Variablen()).ToList();
-        var x = variable is { Length: > 0 } v0 ? v0 : alle.Count == 1 ? alle[0] : alle.Contains("x") ? "x" : alle.Count == 0 ? throw new ArgumentException("In der Gleichung kommt keine Variable vor.") : alle[0];
-        if (alle.Any(v => v != x)) throw new ArgumentException($"In der Gleichung kommen mehrere Variablen vor ({string.Join(", ", alle)}) – für mehrere Gleichungen nimm „Gleichungssystem“.");
-        var aufgabe = $"Löse nach {x}: {A(links)} = {A(rechts)}";
-        var differenz = Term.Plus(links, Term.Minus(rechts));
-        var poly = Polynom.Aus(differenz);
-        if (poly is null) return GleichungUmformen(eingabe, aufgabe, links, rechts, x);
-        var schritte = new List<Schritt>();
-        var k = poly.Koeffizienten(x) ?? throw new ArgumentException("Unerwartete Variable.");
-        var normal = poly.AlsTerm();
-        if (!(rechts is Zahl { Wert.IstNull: true } && A(links) == A(normal)))
-            schritte.Add(new Schritt("Alles auf eine Seite bringen, ausmultiplizieren und zusammenfassen", $"{A(links)} = {A(rechts)}  ⇔  {A(normal)} = 0"));
-        var grad = k.Length - 1;
-        while (grad > 0 && k[grad].IstNull) grad--;
-        var lsg = new List<(string Text, Bruch? Exakt, WurzelZahl? Wurzel, double Naeherung)>();
-        string ergebnis;
-        if (grad == 0)
-        {
-            var allg = k[0].IstNull;
-            schritte.Add(new Schritt(allg ? $"Die Gleichung stimmt immer (0 = 0) – jede Zahl ist eine Lösung." : $"Die Gleichung ist ein Widerspruch ({k[0]} = 0) – es gibt keine Lösung.", allg ? "0 = 0" : $"{k[0]} = 0"));
-            ergebnis = allg ? "L = ℝ (jede Zahl)" : "L = { } (keine Lösung)";
-            var probe0 = new Probe(true, allg ? "✓ Beide Seiten sind nach dem Umformen gleich – jede Zahl erfüllt die Gleichung (Probe mit " + x + " = 2: " + Probe1(links, rechts, x, 2) + ")." : "✓ Kein Wert kann einen Widerspruch erfüllen.");
-            return new Loesung(MatheArt.Gleichung, eingabe, aufgabe, schritte, ergebnis, ergebnis.Replace("ℝ", "\\mathbb{R}").Replace("{ }", "\\{\\}"), [probe0], TermText.Eingabe(links) + ";" + TermText.Eingabe(rechts), x);
-        }
-        // x ausklammern, wenn kein absolutes Glied: x^m·(…) = 0
-        var m = 0; while (k[m].IstNull) m++;
-        var arbeit = k[m..(grad + 1)];
-        if (m > 0)
-        {
-            var innen = Polynom.AusKoeffizienten(x, arbeit);
-            schritte.Add(new Schritt($"{x}{(m > 1 ? Hoch(m) : "")} ausklammern und den Satz vom Nullprodukt nutzen: ein Produkt ist 0, wenn ein Faktor 0 ist", $"{x}{(m > 1 ? Hoch(m) : "")}·({A(innen.AlsTerm())}) = 0  ⇒  {x} = 0 oder {A(innen.AlsTerm())} = 0"));
-            lsg.Add(("0", Bruch.Null, null, 0));
-        }
-        LoeseUnivariat(arbeit, x, schritte, lsg);
-        var eindeutig = lsg.GroupBy(l => l.Text).Select(g => g.First()).OrderBy(l => l.Naeherung).ToList();
-        ergebnis = eindeutig.Count == 0 ? "L = { } (keine reelle Lösung)"
-            : eindeutig.Count == 1 ? $"{x} = {eindeutig[0].Text}" : string.Join(";  ", eindeutig.Select((l, i) => $"{x}{Index(i + 1)} = {l.Text}"));
-        var proben = new List<Probe>();
-        foreach (var l in eindeutig)
-        {
-            if (l.Exakt is { } e)
-            {
-                var w = new Dictionary<string, Bruch> { [x] = e };
-                var lw = Auswertung.Exakt(links, w); var rw = Auswertung.Exakt(rechts, w);
-                var ok = lw is not null && lw == rw;
-                proben.Add(new Probe(ok, $"{(ok ? "✓" : "✗")} {x} = {e} einsetzen: links {lw?.ToString() ?? "—"}, rechts {rw?.ToString() ?? "—"}{(ok ? " – stimmt (exakt)." : " – stimmt NICHT.")}"));
-            }
-            else if (l.Wurzel is { } wz)
-            {
-                var null0 = wz.Einsetzen(k);
-                var ok = null0.IstNull;
-                double lw = Auswertung.Wert(links, new Dictionary<string, double> { [x] = wz.AlsDouble() }), rw = Auswertung.Wert(rechts, new Dictionary<string, double> { [x] = wz.AlsDouble() });
-                proben.Add(new Probe(ok, $"{(ok ? "✓" : "✗")} {x} = {wz} einsetzen: exakt mit Wurzeln gerechnet ergibt {A(normal)} = {(ok ? "0" : null0.ToString())}; als Zahl links {Zahlwort(lw)}, rechts {Zahlwort(rw)}."));
-            }
-            else
-            {
-                double lw = Auswertung.Wert(links, new Dictionary<string, double> { [x] = l.Naeherung }), rw = Auswertung.Wert(rechts, new Dictionary<string, double> { [x] = l.Naeherung });
-                var ok = Math.Abs(lw - rw) <= 1e-6 * Math.Max(1, Math.Abs(lw));
-                proben.Add(new Probe(ok, $"{(ok ? "✓" : "✗")} {x} ≈ {l.Text.TrimStart('≈', ' ')} einsetzen (Näherung): links {Zahlwort(lw)}, rechts {Zahlwort(rw)}."));
-            }
-        }
-        if (eindeutig.Count == 0)
-        {
-            // Gegenprobe: das Polynom wechselt nirgends das Vorzeichen und hat keine Nullstelle in einem weiten Bereich
-            var ok = NumerischeNullstellen(arbeit).Count == 0;
-            proben.Add(new Probe(ok, ok ? "✓ Gegenprobe: im Bereich −1000 … 1000 nimmt die Gleichung nirgends den Wert 0 an." : "✗ Gegenprobe fand doch eine Nullstelle."));
-        }
-        var latex = eindeutig.Count == 0 ? "\\mathbb{L} = \\{\\}" : string.Join(",\\quad ", eindeutig.Select((l, i) => $"{x}_{{{i + 1}}} = " + (l.Exakt is { } e ? TermText.Latex(new Zahl(e)) : l.Wurzel is { } wz ? TermText.Latex(wz.AlsTerm()) : l.Text.Replace("≈", "\\approx").Replace(",", "{,}"))));
-        return new Loesung(MatheArt.Gleichung, eingabe, aufgabe, schritte, ergebnis, latex, proben, TermText.Eingabe(links) + ";" + TermText.Eingabe(rechts), x);
-    }
-
-    static string Probe1(Term l, Term r, string x, long v)
-    {
-        var w = new Dictionary<string, Bruch> { [x] = v };
-        return $"links {Auswertung.Exakt(l, w)}, rechts {Auswertung.Exakt(r, w)}";
-    }
 
     static string Hoch(int n) => n switch { 2 => "²", 3 => "³", _ => "^" + n };
     static string Index(int n) => string.Concat(n.ToString(CultureInfo.InvariantCulture).Select(c => "₀₁₂₃₄₅₆₇₈₉"[c - '0']));
@@ -519,7 +450,8 @@ public static class MatheKern
             Bruch a = k[1], b = k[0];
             if (!b.IstNull) schritte.Add(new Schritt($"{(b.Vorzeichen > 0 ? "−" + b : "+" + (-b))} auf beiden Seiten", $"{A(Polynom.AusKoeffizienten(x, [Bruch.Null, a]).AlsTerm())} = {-b}"));
             var x0 = -b / a;
-            if (a != Bruch.Eins) schritte.Add(new Schritt($"Beide Seiten durch {a} teilen", $"{x} = {-b}/{(a.IstGanz ? a.ToString() : "(" + a + ")")} = {x0}"));
+            static string K(Bruch v) => v.Vorzeichen < 0 || !v.IstGanz ? "(" + v + ")" : v.ToString();
+            if (a != Bruch.Eins) schritte.Add(new Schritt($"Beide Seiten durch {(a.Vorzeichen < 0 ? "(" + a + ")" : a.ToString())} teilen", $"{x} = {K(-b)} : {K(a)} = {x0}"));
             lsg.Add((x0.ToString(), x0, null, x0.AlsDouble()));
             return;
         }
@@ -555,7 +487,7 @@ public static class MatheKern
             rest = qk;
         }
         if (rest.Length - 1 <= 2) { LoeseUnivariat(rest, x, schritte, lsg); return; }
-        var num = NumerischeNullstellen(rest);
+        var num = ReelleNullstellen(rest);
         schritte.Add(new Schritt($"Keine weitere rationale Nullstelle – die übrigen Lösungen werden näherungsweise bestimmt (Vorzeichenwechsel und Intervallhalbierung).", $"{A(Polynom.AusKoeffizienten(x, rest).AlsTerm())} = 0"));
         foreach (var n in num) lsg.Add(("≈ " + Zahlwort(Math.Round(n, 8)), null, null, n));
     }
@@ -573,122 +505,6 @@ public static class MatheKern
         var z1 = new WurzelZahl(mitte, faktor * f, m); var z2 = new WurzelZahl(mitte, -faktor * f, m);
         schritte.Add(new Schritt((text ?? $"√({D}) lässt sich nicht ganz ziehen") + $" – teilweise Wurzel ziehen: √({D}) = {(f == Bruch.Eins ? "" : f.ToString())}√{m}", $"{x}₁ = {z1} ≈ {Zahlwort(Math.Round(z1.AlsDouble(), 6))};  {x}₂ = {z2} ≈ {Zahlwort(Math.Round(z2.AlsDouble(), 6))}"));
         lsg.Add((z1.ToString(), null, z1, z1.AlsDouble())); lsg.Add((z2.ToString(), null, z2, z2.AlsDouble()));
-    }
-
-    static List<double> NumerischeNullstellen(Bruch[] k)
-    {
-        var c = k.Select(b => b.AlsDouble()).ToArray();
-        double F(double x) { var r = 0.0; for (var i = c.Length - 1; i >= 0; i--) r = r * x + c[i]; return r; }
-        var res = new List<double>();
-        var bound = 1 + c.Take(c.Length - 1).Select(v => Math.Abs(v / c[^1])).DefaultIfEmpty(0).Max();
-        bound = Math.Min(bound, 1000);
-        const int n = 20000; var step = 2 * bound / n;
-        double xa = -bound, fa = F(xa);
-        for (var i = 1; i <= n; i++)
-        {
-            var xb = -bound + i * step; var fb = F(xb);
-            if (fa == 0) res.Add(xa);
-            else if (fa * fb < 0)
-            {
-                double lo = xa, hi = xb, flo = fa;
-                for (var j = 0; j < 200; j++) { var mid = (lo + hi) / 2; var fm = F(mid); if (flo * fm <= 0) hi = mid; else { lo = mid; flo = fm; } }
-                res.Add((lo + hi) / 2);
-            }
-            xa = xb; fa = fb;
-        }
-        return [.. res.Distinct()];
-    }
-
-    /// <summary>Gleichungen, in denen die Variable nur einmal vorkommt (√x = 3, 2^x = 8, ln(x) = 2, sin(x) = 0,5): Schritt für Schritt umkehren.</summary>
-    static Loesung GleichungUmformen(string eingabe, string aufgabe, Term links, Term rechts, string x)
-    {
-        var schritte = new List<Schritt>();
-        Term seite = links, wert = rechts;
-        if (!links.Enthaelt(x)) (seite, wert) = (rechts, links);
-        if (wert.Enthaelt(x) || Vorkommen(seite, x) != 1)
-            throw new ArgumentException("Diese Gleichung kann der Mathe-Helfer nicht Schritt für Schritt lösen: Die Variable kommt in Funktionen, Wurzeln oder im Nenner mehrfach vor. Lösbar sind Polynomgleichungen und Gleichungen, in denen die Variable nur einmal vorkommt.");
-        var hinweise = new List<string>();
-        var guard = 0;
-        while (seite is not Var && guard++ < 30)
-        {
-            var (neuSeite, neuWert, text) = Umkehren(seite, wert, x, hinweise);
-            wert = V(neuWert); seite = neuSeite;
-            schritte.Add(new Schritt(text, $"{A(seite)} = {A(wert)}"));
-        }
-        var ergebnisWert = V(wert);
-        var dez = Auswertung.Wert(ergebnisWert);
-        var exakt = Auswertung.Exakt(ergebnisWert);
-        var erg = exakt is { } ex ? $"{x} = {ex}" : $"{x} = {A(ergebnisWert)} ≈ {Zahlwort(Math.Round(dez, 8))}";
-        // Probe: einsetzen (Gleitkomma, weil ln, sin … keine Brüche liefern)
-        double lw = Auswertung.Wert(links, new Dictionary<string, double> { [x] = dez }), rw = Auswertung.Wert(rechts, new Dictionary<string, double> { [x] = dez });
-        var ok = double.IsFinite(lw) && Math.Abs(lw - rw) <= 1e-9 * Math.Max(1, Math.Abs(rw));
-        var proben = new List<Probe> { new(ok, $"{(ok ? "✓" : "✗")} {x} ≈ {Zahlwort(Math.Round(dez, 8))} einsetzen: links {Zahlwort(lw)}, rechts {Zahlwort(rw)}" + (ok ? "." : " – die Umformung war nicht umkehrbar (Scheinlösung).")) };
-        if (hinweise.Count > 0) schritte.Add(new Schritt("Hinweis", string.Join(" ", hinweise.Distinct())));
-        if (!ok) erg = "L = { } (keine Lösung – die Probe verwirft den Wert)";
-        return new Loesung(MatheArt.Gleichung, eingabe, aufgabe, schritte, erg, ok ? $"{x} = {TermText.Latex(ergebnisWert)}" : "\\mathbb{L} = \\{\\}", proben, TermText.Eingabe(links) + ";" + TermText.Eingabe(rechts), x);
-    }
-
-    static int Vorkommen(Term t, string x) => t switch
-    {
-        Var v => v.Name == x ? 1 : 0,
-        Summe s => s.Glieder.Sum(g => Vorkommen(g, x)),
-        Produkt p => p.Faktoren.Sum(g => Vorkommen(g, x)),
-        Potenz w => Vorkommen(w.Basis, x) + Vorkommen(w.Exponent, x),
-        Fkt f => Vorkommen(f.Argument, x),
-        _ => 0,
-    };
-
-    static (Term Seite, Term Wert, string Text) Umkehren(Term seite, Term wert, string x, List<string> hinweise)
-    {
-        switch (seite)
-        {
-            case Summe s:
-                {
-                    var mit = s.Glieder.First(g => g.Enthaelt(x)); var ohne = s.Glieder.Where(g => !g.Enthaelt(x)).ToList();
-                    var o = ohne.Count == 1 ? ohne[0] : new Summe(ohne);
-                    return (mit, Term.Plus(wert, Term.Minus(o)), $"{(TermText.Negativ(o) ? "+ " + A(TermText.Negiert(o)) : "− " + A(o))} auf beiden Seiten");
-                }
-            case Produkt p:
-                {
-                    var mit = p.Faktoren.First(g => g.Enthaelt(x)); var ohne = p.Faktoren.Where(g => !g.Enthaelt(x)).ToList();
-                    var o = V(ohne.Count == 1 ? ohne[0] : new Produkt(ohne));
-                    if (mit is Potenz { Exponent: Zahl { Wert: var me } } nw && me == Bruch.MinusEins)
-                        return (Term.Durch(Term.Eins, nw.Basis), wert, ""); // wird unten als Kehrwert behandelt
-                    return (mit, Term.Durch(wert, o), $"Beide Seiten durch {A(o)} teilen");
-                }
-            case Potenz w when w.Exponent is Zahl ez && !w.Exponent.Enthaelt(x):
-                {
-                    var e = ez.Wert;
-                    if (e == Bruch.MinusEins) return (w.Basis, Term.Durch(Term.Eins, wert), "Kehrwert auf beiden Seiten");
-                    if (!e.IstGanz && e.Z == 1) { hinweise.Add("Beim Quadrieren können Scheinlösungen entstehen – darum entscheidet die Probe."); return (w.Basis, Term.Hoch(wert, new Bruch(e.N, 1)), $"Beide Seiten hoch {e.N} (Wurzel auflösen)"); }
-                    if (e.IstGanz && e.Z % 2 == 0)
-                    {
-                        hinweise.Add($"Bei geraden Potenzen gibt es auch die negative Wurzel −{A(V(Term.Hoch(wert, e.Kehrwert)))}; für alle Lösungen besser „Gleichung“ mit einem Polynom eingeben.");
-                        return (w.Basis, Term.Hoch(wert, e.Kehrwert), $"{e.Z}. Wurzel auf beiden Seiten (positive Lösung)");
-                    }
-                    return (w.Basis, Term.Hoch(wert, e.Kehrwert), $"Beide Seiten hoch {e.Kehrwert}");
-                }
-            case Potenz w when !w.Basis.Enthaelt(x):
-                {
-                    if (w.Basis is Konst { Name: "e" }) return (w.Exponent, new Fkt("ln", wert), "Natürlichen Logarithmus auf beiden Seiten (ln(eᵘ) = u)");
-                    return (w.Exponent, Term.Durch(new Fkt("ln", wert), new Fkt("ln", w.Basis)), $"Logarithmieren: u = ln({A(wert)})/ln({A(w.Basis)})");
-                }
-            case Fkt f:
-                switch (f.Name)
-                {
-                    case "ln": return (f.Argument, Term.Hoch(Konst.E, wert), "e hoch beide Seiten (Umkehrung von ln)");
-                    case "log": return (f.Argument, Term.Hoch(new Zahl(10), wert), "10 hoch beide Seiten (Umkehrung von lg)");
-                    case "sin": hinweise.Add("sin, cos und tan sind periodisch: angegeben ist der Hauptwert (Bogenmaß), weitere Lösungen im Abstand von 2π bzw. π."); return (f.Argument, new Fkt("asin", wert), "arcsin auf beiden Seiten");
-                    case "cos": hinweise.Add("sin, cos und tan sind periodisch: angegeben ist der Hauptwert (Bogenmaß), weitere Lösungen im Abstand von 2π bzw. π."); return (f.Argument, new Fkt("acos", wert), "arccos auf beiden Seiten");
-                    case "tan": hinweise.Add("sin, cos und tan sind periodisch: angegeben ist der Hauptwert (Bogenmaß), weitere Lösungen im Abstand von 2π bzw. π."); return (f.Argument, new Fkt("atan", wert), "arctan auf beiden Seiten");
-                    case "asin": return (f.Argument, new Fkt("sin", wert), "sin auf beiden Seiten");
-                    case "acos": return (f.Argument, new Fkt("cos", wert), "cos auf beiden Seiten");
-                    case "atan": return (f.Argument, new Fkt("tan", wert), "tan auf beiden Seiten");
-                    case "abs": hinweise.Add($"Beim Betrag gibt es auch die Lösung mit −{A(wert)}."); return (f.Argument, wert, "Betrag auflösen (positiver Fall)");
-                }
-                break;
-        }
-        throw new ArgumentException("Diese Gleichung kann der Mathe-Helfer nicht Schritt für Schritt umformen.");
     }
 
     // =====================================================================================
@@ -828,12 +644,24 @@ public static class MatheKern
         try
         {
             var calc = Calc.Eval(eingabe.Replace(':', '/').Replace('·', '*'), false, null);
-            var ok = Math.Abs(calc - ergebnis.AlsDouble()) <= 1e-9 * Math.Max(1, Math.Abs(calc));
-            probe = new Probe(ok, $"{(ok ? "✓" : "✗")} Gegenrechnung mit dem Taschenrechner (Gleitkomma): {Zahlwort(calc)} – Bruch {anzeige} ergibt {Zahlwort(ergebnis.AlsDouble())}.");
+            var erwartet = ergebnis.AlsDouble();
+            if (!double.IsFinite(calc) && !double.IsFinite(erwartet)) probe = Probe.Gelb("Die Zahl ist für die Gegenrechnung mit Gleitkomma zu groß – nur exakt gerechnet.");
+            else if (double.IsNaN(calc))
+            {
+                // T-0781 (Gegenprüfung): ungerade Wurzeln negativer Zahlen ((−8)^(1/3)) kann der Taschenrechner nicht – Gegenprobe durch Potenzieren
+                var zurueck = Calc.Eval("(" + erwartet.ToString(global::System.Globalization.CultureInfo.InvariantCulture) + ")^3", false, null);
+                var ok3 = eingabe.Replace(" ", "").Contains("^(1/3)") && Math.Abs(zurueck - Calc.Eval(eingabe.Replace(" ", "").Replace("^(1/3)", ""), false, null)) <= 1e-9 * Math.Max(1, Math.Abs(zurueck));
+                probe = ok3 ? new Probe(true, $"✓ Gegenrechnung: ({Zahlwort(erwartet)})³ = {Zahlwort(zurueck)} – das ist die Zahl unter der dritten Wurzel.") : Probe.Gelb("Der Taschenrechner kann diese Wurzel aus einer negativen Zahl nicht nachrechnen.");
+            }
+            else
+            {
+                var ok = Math.Abs(calc - erwartet) <= 1e-9 * Math.Max(1, Math.Abs(calc));
+                probe = new Probe(ok, $"{(ok ? "✓" : "✗")} Gegenrechnung mit dem Taschenrechner (Gleitkomma): {Zahlwort(calc)} – Bruch {anzeige} ergibt {Zahlwort(erwartet)}.");
+            }
         }
         catch (Exception e) when (e is FormatException or DivideByZeroException or OverflowException)
         {
-            probe = new Probe(false, "✗ Der Taschenrechner konnte die Eingabe nicht nachrechnen: " + e.Message);
+            probe = Probe.Gelb("Der Taschenrechner konnte die Eingabe nicht nachrechnen (" + e.Message + ") – nur exakt gerechnet.");
         }
         return new Loesung(MatheArt.Bruchrechnen, eingabe, "Berechne: " + A(t), schritte, ergebnisText, TermText.Latex(new Zahl(ergebnis)), [probe], "", "x");
     }
@@ -1136,21 +964,7 @@ public static class MatheKern
         var latex = $"\\int {TermText.Latex(f)}\\,d{x} = {TermText.Latex(F)} + C";
         var aufgabe = $"Integriere: ∫ {fa} d{x}";
         if (von is { Length: > 0 } && bis is { Length: > 0 })
-        {
-            var a = V(TermLeser.Lies(von)); var b = V(TermLeser.Lies(bis));
-            if (a.Variablen().Any() || b.Variablen().Any()) throw new FormatException("Die Grenzen müssen Zahlen sein.");
-            var Fa = V(F.Ersetze(x, a)); var Fb = V(F.Ersetze(x, b));
-            var exa = Auswertung.Exakt(Fa); var exb = Auswertung.Exakt(Fb);
-            double wa = Auswertung.Wert(Fa), wb = Auswertung.Wert(Fb), wert = wb - wa;
-            if (!double.IsFinite(wert)) throw new ArgumentException("Das Integral existiert in diesen Grenzen nicht (Polstelle oder Definitionslücke).");
-            var exText = exa is { } ea && exb is { } eb ? (eb - ea).ToString() : null;
-            var wertText = exText is not null ? exText + (exText.Contains('/') ? " ≈ " + Zahlwort(Math.Round(wert, 8)) : "") : A(V(Term.Plus(Fb, Term.Minus(Fa)))) + " ≈ " + Zahlwort(Math.Round(wert, 8));
-            schritte.Add(new Schritt($"Hauptsatz: Grenzen einsetzen, F({A(b)}) − F({A(a)})", $"[{A(F)}] von {A(a)} bis {A(b)} = {A(Fb)} − ({A(Fa)}) = {wertText}"));
-            aufgabe = $"Berechne: ∫ von {A(a)} bis {A(b)} {fa} d{x}";
-            ergebnis = $"∫ von {A(a)} bis {A(b)} {fa} d{x} = {wertText}";
-            latex = $"\\int_{{{TermText.Latex(a)}}}^{{{TermText.Latex(b)}}} {TermText.Latex(f)}\\,d{x} = {(exText is not null && exa is { } la && exb is { } lb ? TermText.Latex(new Zahl(lb - la)) : Zahlwort(Math.Round(wert, 8)).Replace(",", "{,}"))}";
-            proben.Add(ProbeSimpson(f, x, Auswertung.Wert(a), Auswertung.Wert(b), wert));
-        }
+            (aufgabe, ergebnis, latex) = BestimmtesIntegral(f, F, x, fa, von, bis, schritte, proben);
         return new Loesung(MatheArt.Integrieren, eingabe, aufgabe, schritte, ergebnis, latex, proben,
             f.Variablen().All(v => v == x) ? TermText.Eingabe(f) + ";" + TermText.Eingabe(F) : "", x);
     }

@@ -53,13 +53,13 @@ public partial class MainWindow
         [
             ("Rechnen", [
                 new ProgramCmd("mh-run-rechnen", "Rechnen", d => MhRechnen(d), Primary: true, Tip: "Rechnet die Aufgabe aus der Eingabezeile mit Lösungsweg und Probe (Enter)."),
-                new ProgramCmd("mh-beispiel", "Beispiel einsetzen", d => MhBeispiel(d), Tip: "Setzt ein Beispiel für die gewählte Aufgabenart in die Eingabezeile."),
+                new ProgramCmd("mh-beispiel", "Beispiel einsetzen", d => MhBeispiel(d), Tip: "Setzt ein Beispiel für die gewählte Aufgabenart in die Eingabezeile.") { OhneKi = true },
             ]),
             ("Bearbeiten", [
-                new ProgramCmd("mh-loeschen", "Rechnung löschen", d => MhLoeschen(d, MhAuswahl(d)), Tip: "Entfernt die gewählte Rechnung (Entf). Rückgängig holt sie zurück."),
-                new ProgramCmd("mh-kopie", "Rechnung kopieren", d => MhKopie(d, MhAuswahl(d)), Tip: "Legt eine Kopie der gewählten Rechnung an."),
-                new ProgramCmd("mh-hoch", "Nach oben", d => MhVerschieben(d, MhAuswahl(d), -1), Level: 1),
-                new ProgramCmd("mh-runter", "Nach unten", d => MhVerschieben(d, MhAuswahl(d), 1), Level: 1),
+                new ProgramCmd("mh-loeschen", "Rechnung löschen", d => MhLoeschen(d, MhAuswahl(d)), Tip: "Entfernt die gewählte Rechnung (Entf). Rückgängig holt sie zurück.") { OhneKi = true },
+                new ProgramCmd("mh-kopie", "Rechnung kopieren", d => MhKopie(d, MhAuswahl(d)), Tip: "Legt eine Kopie der gewählten Rechnung an.") { OhneKi = true },
+                new ProgramCmd("mh-hoch", "Nach oben", d => MhVerschieben(d, MhAuswahl(d), -1), Level: 1) { OhneKi = true },
+                new ProgramCmd("mh-runter", "Nach unten", d => MhVerschieben(d, MhAuswahl(d), 1), Level: 1) { OhneKi = true },
             ]),
             ("Datei", [
                 new ProgramCmd("mh-import", "Aufgabenblatt öffnen …", d => _ = MhImportPick(d), Tip: "Liest Aufgaben aus einer Text-, Markdown- oder CSV-Datei (eine Aufgabe je Zeile, optional „gleichung: 3x + 7 = 22“). Du kannst die Datei auch auf das Rechenblatt ziehen."),
@@ -100,11 +100,37 @@ public partial class MainWindow
         var r = d.List("rechnungen")[i];
         var key = r?.ToJsonString() ?? "";
         if (_mhCache.TryGetValue(key, out var c)) return c;
-        (Loesung?, string?) res;
-        try { res = (MatheKern.Rechne(MhAuftrag(r)), null); }
-        catch (Exception e) when (e is FormatException or ArgumentException or DivideByZeroException or OverflowException or InvalidOperationException) { res = (null, e.Message); }
+        return MhMerken(key, MhRechneSicher(MhAuftrag(r)));
+    }
+
+    (Loesung? L, string? Fehler) MhMerken(string key, (Loesung? L, string? Fehler) res)
+    {
         if (_mhCache.Count > 500) _mhCache.Clear();
         return _mhCache[key] = res;
+    }
+
+    /// <summary>Rechnen mit Zeitgrenze (3 s im Kern): Fehler und Abbruch werden zur Meldung, nie zum Absturz.</summary>
+    static (Loesung? L, string? Fehler) MhRechneSicher(MatheAuftrag a)
+    {
+        try { return (MatheKern.Rechne(a), null); }
+        catch (Exception e) when (e is FormatException or ArgumentException or DivideByZeroException or OverflowException or InvalidOperationException or OperationCanceledException) { return (null, e.Message); }
+    }
+
+    /// <summary>T-0781 (Gegenprüfung: Einfrieren): Rechnung im Hintergrund; kurze Rechnungen (unter ¼ s) kommen sofort, längere melden sich nach dem Ende
+    /// und zeichnen das Programm neu – die Oberfläche bleibt bedienbar. Die Rechenzeit ist im Kern auf 3 s begrenzt.</summary>
+    readonly HashSet<string> _mhLaeuft = [];
+    (Loesung? L, string? Fehler)? MhLoesungOderSpaeter(ProgramDocument d, int i)
+    {
+        var r = d.List("rechnungen")[i];
+        var key = r?.ToJsonString() ?? "";
+        if (_mhCache.TryGetValue(key, out var c)) return c;
+        if (_mhLaeuft.Contains(key)) return null;
+        var auftrag = MhAuftrag(r);
+        var task = Task.Run(() => MhRechneSicher(auftrag));
+        if (task.Wait(250)) return MhMerken(key, task.Result);
+        _mhLaeuft.Add(key);
+        task.ContinueWith(t => Avalonia.Threading.Dispatcher.UIThread.Post(() => { _mhLaeuft.Remove(key); MhMerken(key, t.Result); if (CurrentView == MatheKey) Show(MatheKey); }));
+        return null;
     }
 
     IEnumerable<BlattEintrag> MhBlatt(ProgramDocument d)
@@ -124,19 +150,26 @@ public partial class MainWindow
         if (text.Length == 0) throw new ArgumentException("Tippe oben eine Aufgabe ein, z. B. 3x + 7 = 22.");
         var art = d.Text("art", "auto");
         var e = MhEintrag(art, text);
-        var (l, err) = MhPruefen(e);
+        var auftrag = MhAuftrag(e);
+        var task = Task.Run(() => MhRechneSicher(auftrag));
+        if (task.Wait(250)) { MhUebernehmen(d, e, text, task.Result); return; }
+        // länger als ¼ s: im Hintergrund weiterrechnen (höchstens 3 s), die Oberfläche bleibt bedienbar
+        _progMsg[MatheKey] = "Rechnet … (höchstens 3 Sekunden)";
+        task.ContinueWith(t => Avalonia.Threading.Dispatcher.UIThread.Post(() => ProgramRun(MatheKey, () => MhUebernehmen(d, e, text, t.Result))));
+    }
+
+    void MhUebernehmen(ProgramDocument d, JsonObject e, string text, (Loesung? L, string? Fehler) res)
+    {
+        var (l, err) = res;
         if (l is null) throw new ArgumentException(err!);
+        MhMerken(e.ToJsonString(), res);
         d.Edit("Rechnen: " + (text.Length > 30 ? text[..30] + "…" : text), x => { ((JsonArray)(x["rechnungen"] ??= new JsonArray())).Add(e); x["eingabe"] = ""; });
         _mhTyped.Remove(d.Id);
         _mhSel[d.Id] = d.List("rechnungen").Count - 1;
-        _progMsg[MatheKey] = $"{MatheKern.ArtName(l.Art)}: {l.Ergebnis}" + (l.ProbeOk ? " – Probe bestanden." : " – Achtung: Probe nicht bestanden.");
+        _progMsg[MatheKey] = $"{MatheKern.ArtName(l.Art)}: {l.Ergebnis}" + (l.ProbeOk ? " – Probe bestanden." : l.Unsicher ? " – Achtung: Probe unsicher (gelb)." : " – Achtung: Probe nicht bestanden.");
     }
 
-    (Loesung? L, string? Fehler) MhPruefen(JsonObject e)
-    {
-        try { return (MatheKern.Rechne(MhAuftrag(e)), null); }
-        catch (Exception ex) when (ex is FormatException or ArgumentException or DivideByZeroException or OverflowException) { return (null, ex.Message); }
-    }
+    (Loesung? L, string? Fehler) MhPruefen(JsonObject e) => MhRechneSicher(MhAuftrag(e));
 
     void MhBeispiel(ProgramDocument d)
     {
@@ -252,6 +285,8 @@ public partial class MainWindow
             try
             {
                 var l = TermLeser.Lies(t[0]); var r = TermLeser.Lies(t[1]);
+                // Gegenprüfung T-0781: auch „x + 0 = 5“, „1x = 5“, „2x/2 = 5“ sind schon nach x aufgelöst
+                l = Vereinfacher.Vereinfache(l); r = Vereinfacher.Vereinfache(r);
                 return l is Var && !r.Variablen().Any() || r is Var && !l.Variablen().Any();
             }
             catch (FormatException) { return false; }
@@ -309,9 +344,9 @@ public partial class MainWindow
         var links = new StackPanel { Name = "mh-liste", Spacing = 4 };
         for (var i = 0; i < liste.Count; i++)
         {
-            var (l, err) = MhLoesung(d, i);
+            var (l, err) = MhLoesungOderSpaeter(d, i) ?? (null, "Rechnet …");
             var ok = l?.ProbeOk ?? false;
-            var zeichen = new TextBlock { Text = err is not null ? "!" : ok ? "✓" : "✗", Foreground = err is not null || !ok ? K4Warn : K4Good, FontSize = 14, FontWeight = FontWeight.SemiBold, Width = 18 };
+            var zeichen = new TextBlock { Text = err is not null ? "!" : ok ? "✓" : l!.Unsicher ? "?" : "✗", Foreground = err is not null || !ok ? (l is { Unsicher: false, ProbeOk: false } ? K4Bad : K4Warn) : K4Good, FontSize = 14, FontWeight = FontWeight.SemiBold, Width = 18 };
             var inhalt = new StackPanel { Spacing = 1, Children = {
                 new TextBlock { Text = Js(liste[i]?["eingabe"]), Foreground = Text, FontFamily = Mono, FontSize = 12.5, TextTrimming = TextTrimming.CharacterEllipsis },
                 new TextBlock { Text = err ?? l!.Ergebnis, Foreground = err is null ? Accent : K4Warn, FontSize = 11.5, TextTrimming = TextTrimming.CharacterEllipsis },
@@ -351,7 +386,7 @@ public partial class MainWindow
 
     Control MhDetail(ProgramDocument d, int i)
     {
-        var (l, err) = MhLoesung(d, i);
+        var (l, err) = MhLoesungOderSpaeter(d, i) ?? (null, "Rechnet … (höchstens 3 Sekunden, die Oberfläche bleibt bedienbar)");
         var sp = new StackPanel { Name = "mh-detail", Spacing = 10 };
         if (l is null)
         {
@@ -379,7 +414,7 @@ public partial class MainWindow
         sp.Children.Add(new Expander { Name = "mh-weg-auf", Header = H($"Lösungsweg ({l.Schritte.Count} Schritte)", 13), IsExpanded = true, HorizontalAlignment = HorizontalAlignment.Stretch, Content = weg });
         // Probe
         var probe = new StackPanel { Name = "mh-probe", Spacing = 3 };
-        foreach (var p in l.Proben) probe.Children.Add(new TextBlock { Text = p.Text, Foreground = p.Ok ? K4Good : K4Bad, FontSize = 12, TextWrapping = TextWrapping.Wrap });
+        foreach (var p in l.Proben) probe.Children.Add(new TextBlock { Text = p.Text, Foreground = p.Unsicher ? K4Warn : p.Ok ? K4Good : K4Bad, FontSize = 12, TextWrapping = TextWrapping.Wrap });
         sp.Children.Add(new StackPanel { Spacing = 4, Children = { H("Probe", 13), probe } });
         if (ProgramLevel >= UserLevel.Profi) sp.Children.Add(new TextBlock { Name = "mh-latex", Text = "LaTeX: " + l.ErgebnisLatex, Foreground = Muted, FontSize = 11, FontFamily = Mono, TextWrapping = TextWrapping.Wrap });
         // Funktionsgraph (vorhandener GraphView des Rechners)

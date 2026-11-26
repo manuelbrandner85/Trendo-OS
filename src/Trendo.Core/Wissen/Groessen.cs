@@ -136,9 +136,9 @@ public static class Einheiten
         E("Ω", "Ohm", 1, Spannung / I, true);
         E("Ohm", "Ohm", 1, Spannung / I, true);
         E("F", "Farad", 1, Ladung / Spannung, true);
-        E("T", "Tesla", 1, M / (T * T * I), false);
+        E("T", "Tesla", 1, M / (T * T * I), true); // T-0781: mT, µT …
         E("l", "Liter", 1e-3, L * L * L, true);
-        E("L", "Liter", 1e-3, L * L * L, false);
+        E("L", "Liter", 1e-3, L * L * L, true); // T-0781: mL, dL …
         E("ha", "Hektar", 1e4, L * L);
         E("rad", "Radiant", 1, Dimension.Eins);
         E("°", "Grad", Math.PI / 180, Dimension.Eins);
@@ -180,22 +180,23 @@ public static class Einheiten
     }
 
     /// <summary>Wert in einer Einheit → SI (°C und °F mit Verschiebung, nur bei einer einfachen Temperatureinheit).</summary>
-    public static Groesse InSi(double wert, string einheit, double unsicherheit = 0)
+    /// <param name="differenz">T-0781 (Gegenprüfung): Temperatur-DIFFERENZ (ΔT) – °C und K sind gleich groß, der verschobene Nullpunkt zählt nicht.</param>
+    public static Groesse InSi(double wert, string einheit, double unsicherheit = 0, bool differenz = false)
     {
         var e = (einheit ?? "").Trim();
-        if (Finde(e) is { Verschiebung: not 0 } t) return new Groesse(wert * t.Faktor + t.Verschiebung, t.Dim, unsicherheit * t.Faktor);
+        if (Finde(e) is { Verschiebung: not 0 } t) return new Groesse(wert * t.Faktor + (differenz ? 0 : t.Verschiebung), t.Dim, unsicherheit * t.Faktor);
         var g = Lies(e);
         return new Groesse(wert * g.Wert, g.Dim, unsicherheit * Math.Abs(g.Wert));
     }
 
     /// <summary>SI-Wert in eine Zieleinheit umrechnen (Dimension muss passen).</summary>
-    public static (double Wert, double Unsicherheit) Aus(Groesse g, string einheit)
+    public static (double Wert, double Unsicherheit) Aus(Groesse g, string einheit, bool differenz = false)
     {
         var e = (einheit ?? "").Trim();
         if (Finde(e) is { Verschiebung: not 0 } t)
         {
             if (g.Dim != t.Dim) throw new DimensionsFehler(g.Dim, t.Dim, "in");
-            return ((g.Wert - t.Verschiebung) / t.Faktor, g.Unsicherheit / t.Faktor);
+            return ((g.Wert - (differenz ? 0 : t.Verschiebung)) / t.Faktor, g.Unsicherheit / t.Faktor);
         }
         var z = Lies(e);
         if (z.Dim != g.Dim) throw new ArgumentException($"{g.Dim.Beschreibung()} ({g.Dim.SiText()}) lässt sich nicht in {e} umrechnen – das ist {z.Dim.Beschreibung()} ({z.Dim.SiText()}).");
@@ -271,7 +272,32 @@ public static class Einheiten
         Groesse g;
         // Temperatur mit Nullpunkt (°C, °F) nur als Einzelwert umrechnen
         var tm = Regex.Match(e, @"^(-?[\d.,]+)\s*(°[CF]|K)$");
-        if (tm.Success)
+        // T-0781 (Gegenprüfung): Temperaturen mit verschobenem Nullpunkt: Differenz zweier Temperaturen ist eine Temperaturdifferenz (in K),
+        // Temperatur ± Differenz ist wieder eine Temperatur
+        var td = Regex.Match(e, @"^(-?[\d.,]+)\s*(°[CF]|K)\s*([+\-−])\s*(-?[\d.,]+)\s*(°[CF]|K)$");
+        if (td.Success && (td.Groups[2].Value != "K" || td.Groups[5].Value != "K"))
+        {
+            double V(int i) => double.Parse(td.Groups[i].Value.Replace(',', '.'), CultureInfo.InvariantCulture);
+            var minus = td.Groups[3].Value != "+";
+            var a = InSi(V(1), td.Groups[2].Value);
+            var bAbs = td.Groups[5].Value != "K";
+            if (minus && bAbs)
+            {
+                var b = InSi(V(4), td.Groups[5].Value);
+                g = new Groesse(a.Wert - b.Wert, a.Dim);
+                schritte.Add(new Schritt("Zwei Temperaturen voneinander abziehen ergibt eine Temperaturdifferenz (°C- und K-Schritte sind gleich groß)", $"{Zahl(a.Wert)} K − {Zahl(b.Wert)} K = {Zahl(g.Wert)} K"));
+                ziel ??= "K";
+            }
+            else if (!bAbs)
+            {
+                var d = V(4) * (minus ? -1 : 1);
+                g = new Groesse(a.Wert + d, a.Dim);
+                schritte.Add(new Schritt("Temperatur plus Temperaturdifferenz ergibt wieder eine Temperatur", $"{Zahl(a.Wert)} K {(minus ? "−" : "+")} {Zahl(Math.Abs(d))} K = {Zahl(g.Wert)} K"));
+                ziel ??= td.Groups[2].Value;
+            }
+            else throw new ArgumentException("Zwei Temperaturen lassen sich nicht addieren – nur abziehen (ergibt eine Differenz) oder eine Differenz in K dazuzählen.");
+        }
+        else if (tm.Success)
         {
             var v = double.Parse(tm.Groups[1].Value.Replace(',', '.'), CultureInfo.InvariantCulture);
             g = InSi(v, tm.Groups[2].Value);

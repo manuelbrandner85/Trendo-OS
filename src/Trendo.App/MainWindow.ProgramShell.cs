@@ -16,7 +16,11 @@ namespace Trendo.App;
 /// Menüband (Datei, Bearbeiten, Studio-Gruppen, Export), Arbeitsfläche, Eigenschaften rechts, Statusleiste, Tastenkürzel, automatisches Sichern.</summary>
 public sealed record ProgramTemplate(string Id, string Name, string Hint, Func<JsonObject> Create);
 /// <summary><paramref name="Level"/>: ab welcher Bedienstufe das Werkzeug erscheint (0 Einfach, 1 Erweitert, 2 Profi – siehe <see cref="UserLevel"/>).</summary>
-public sealed record ProgramCmd(string Name, string Label, Action<ProgramDocument> Run, bool Primary = false, string? Tip = null, int Level = 0);
+public sealed record ProgramCmd(string Name, string Label, Action<ProgramDocument> Run, bool Primary = false, string? Tip = null, int Level = 0)
+{
+    /// <summary>T-0781 (Gegenprüfung): Befehl steht der KI-Kette nicht zur Verfügung (z. B. Löschen oder Kopieren von Rechnungen) – nur die Person löst ihn aus.</summary>
+    public bool OhneKi { get; init; }
+}
 public sealed record ProgramExport(string Name, string Label, string Extension, Func<ProgramDocument, string, string> Write);
 /// <summary>Paket F (A1 Profi-Bauplan): ein Werkzeug der Werkzeugleiste links – Zeichen, Name, Hinweis; <paramref name="Active"/> markiert das gewählte.</summary>
 public sealed record ProgramTool(string Name, string Icon, string Label, string Tip, Action<ProgramDocument> Select, Func<bool> Active)

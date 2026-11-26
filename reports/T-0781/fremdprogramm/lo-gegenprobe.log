@@ -1,4 +1,4 @@
-LibreOffice aus Kopie im eigenen Temp-Ordner, eigenes Profil (-env:UserInstallation), 2026-11-26 16:27
+LibreOffice aus Kopie im eigenen Temp-Ordner, eigenes Profil (-env:UserInstallation), 2026-11-26 17:45
 > soffice --headless --infilter=CSV:59,34,76,1,,1031 --convert-to xlsx laborheft.csv
 convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-fremd\laborheft.csv as a Calc document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-fremd\gegenprobe\laborheft.xlsx using filter : Calc Office Open XML
 Exit 0

@@ -82,7 +82,7 @@ public static class Formelsammlung
                 throw new FormatException($"„{wert}“ ist keine Zahl ({g.Zeichen}).");
             var u = 0.0;
             if (e?.Unsicherheit is { Length: > 0 } us && !double.TryParse(us.Replace('−', '-'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.GetCultureInfo("de-DE"), out u)) throw new FormatException($"„{us}“ ist keine Zahl (Unsicherheit von {g.Zeichen}).");
-            var q = Einheiten.InSi(zahl, einheit, Math.Abs(u));
+            var q = Einheiten.InSi(zahl, einheit, Math.Abs(u), differenz: g.Zeichen.StartsWith('Δ')); // ΔT: Differenz – 20 °C Unterschied sind 20 K
             var soll = Einheiten.Lies(g.Einheit).Dim;
             if (q.Dim != soll) throw new ArgumentException($"{g.Zeichen} ({g.Bedeutung}) braucht eine Einheit für {soll.Beschreibung()} wie {g.Einheit} – „{einheit}“ ist {q.Dim.Beschreibung()}.");
             map[Ersatz(g.Zeichen)] = q;
@@ -90,13 +90,31 @@ public static class Formelsammlung
             dimPruef.Add($"[{g.Zeichen}] = {q.Dim.SiText()}");
         }
         schritte.Add(new Schritt("Werte in SI-Einheiten umrechnen und einsetzen", string.Join(";  ", einsetzen)));
-        var r = Einheiten.Werte(t, map);
+        Groesse r;
+        try { r = Einheiten.Werte(t, map); }
+        catch (DivideByZeroException) { r = new Groesse(double.NaN, Dimension.Eins); }
         var zielSoll = Einheiten.Lies(f.Groessen.First(x => x.Zeichen == gesucht).Einheit).Dim;
+        if (!double.IsFinite(r.Wert))
+        {
+            // T-0781 (Gegenprüfung): Teilen durch 0 nie mit „—“ und grüner Probe. Linse: Gegenstand im Brennpunkt → Bild im Unendlichen.
+            var zielE = zielEinheit is { Length: > 0 } ze ? ze : f.Groessen.First(x => x.Zeichen == gesucht).Einheit;
+            if (f.Id == "linse" && gesucht is "b" or "g")
+            {
+                var andere = gesucht == "b" ? "g" : "b";
+                var gleich = map.TryGetValue("f", out var fq) && map.TryGetValue(andere, out var aq) && Math.Abs(fq.Wert - aq.Wert) <= 1e-12 * Math.Abs(fq.Wert);
+                schritte.Add(new Schritt($"1/f − 1/{andere} = 0: der Gegenstand steht im Brennpunkt – die Strahlen laufen parallel", $"{gesucht} = ∞"));
+                return new PhysikErgebnis(f, gesucht, new Groesse(double.PositiveInfinity, zielSoll), zielE, $"{gesucht} = ∞ – Bild im Unendlichen ({andere} = f, Gegenstand im Brennpunkt)", schritte,
+                    [new Probe(gleich, $"{(gleich ? "✓" : "✗")} Gegenrechnung: {andere} und f sind gleich groß – dann gibt es kein Bild im Endlichen.")]);
+            }
+            schritte.Add(new Schritt("Mit diesen Werten müsste durch 0 geteilt werden – die Größe ist nicht bestimmbar", $"{gesucht} = nicht bestimmbar"));
+            return new PhysikErgebnis(f, gesucht, new Groesse(double.NaN, zielSoll), zielE, $"{gesucht} nicht bestimmbar (Teilen durch 0 – bitte die Werte prüfen)", schritte,
+                [Probe.Gelb("Keine Probe möglich: das Ergebnis ist nicht endlich.")]);
+        }
         var dimOk = r.Dim == zielSoll;
         schritte.Add(new Schritt("Dimensionsprüfung: die Einheiten mitrechnen", $"[{gesucht}] = {r.Dim.SiText()} ({r.Dim.Beschreibung()}) – {(dimOk ? "passt" : "passt NICHT")} zu {gesucht} ({f.Groessen.First(x => x.Zeichen == gesucht).Bedeutung}, {zielSoll.SiText()})"));
         if (!dimOk) throw new ArgumentException("Die Einheiten passen nicht zusammen – bitte die Eingaben prüfen.");
         var ziel = zielEinheit is { Length: > 0 } z ? z : f.Groessen.First(x => x.Zeichen == gesucht).Einheit;
-        var (wz, uz) = Einheiten.Aus(r, ziel);
+        var (wz, uz) = Einheiten.Aus(r, ziel, differenz: gesucht.StartsWith('Δ'));
         var text = $"{gesucht} = {Einheiten.Text(wz, uz, ziel)}";
         if (ziel != Einheiten.SiEinheit(r.Dim)) schritte.Add(new Schritt("Ergebnis in SI und in der gewünschten Einheit", $"{gesucht} = {Einheiten.Text(r.Wert, r.Unsicherheit, Einheiten.SiEinheit(r.Dim))} = {Einheiten.Text(wz, uz, ziel)}"));
         else schritte.Add(new Schritt("Ergebnis", text));

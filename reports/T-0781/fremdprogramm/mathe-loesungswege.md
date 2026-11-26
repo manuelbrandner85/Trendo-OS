@@ -11,7 +11,7 @@
 2. +12 auf beiden Seiten  
    `3x = 12`
 3. Beide Seiten durch 3 teilen  
-   `x = 12/3 = 4`
+   `x = 12 : 3 = 4`
 
 **Ergebnis:** x = 4
 
@@ -20,6 +20,7 @@ $$x_{1} = 4$$
 **Probe**
 
 - ✓ x = 4 einsetzen: links 17, rechts 17 – stimmt (exakt).
+- ✓ Unabhängige Zählung mit der Sturm-Kette: genau 1 verschiedene reelle Nullstelle(n) – alle gefunden.
 
 ## 2. Löse nach x: x² + 2x − 15 = 0
 
@@ -40,6 +41,7 @@ $$x_{1} = -5,\quad x_{2} = 3$$
 
 - ✓ x = −5 einsetzen: links 0, rechts 0 – stimmt (exakt).
 - ✓ x = 3 einsetzen: links 0, rechts 0 – stimmt (exakt).
+- ✓ Unabhängige Zählung mit der Sturm-Kette: genau 2 verschiedene reelle Nullstelle(n) – alle gefunden.
 
 ## 3. Löse das Gleichungssystem
 

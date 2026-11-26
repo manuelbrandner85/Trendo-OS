@@ -139,7 +139,8 @@ public class MatheKernTests(ITestOutputHelper log)
         Assert.True(l.ProbeOk, string.Join(" | ", l.Proben.Select(p => p.Text)));
         var t = ein.Split('='); var links = TermLeser.Lies(t[0]); var rechts = TermLeser.Lies(t[1]);
         if (erwartet.Length == 0) { Assert.Contains("keine", l.Ergebnis); return; }
-        Assert.Equal(erwartet.Length, l.Proben.Count);
+        Assert.Equal(erwartet.Length, l.Proben.Count(p => !p.Text.Contains("Sturm"))); // T-0781: dazu die unabhängige Zählung (Sturm-Kette)
+        Assert.Contains(l.Proben, p => p.Text.Contains("Sturm") && p.Ok);
         foreach (var e in erwartet)
         {
             // Gegenprobe des Tests: der erwartete Wert erfüllt die Gleichung, und der Kern nennt ihn
@@ -312,7 +313,7 @@ public class MatheKernTests(ITestOutputHelper log)
     [Fact(DisplayName = "T-0781 Rechenblatt-PDF: Zeichen ohne Glyphe in Arial werden lesbar ersetzt (Befund pdftotext: ⇔, x₁, H₂O fehlten) – PDF entsteht mit Seiten")]
     public void Pdf_zeichen()
     {
-        Assert.Equal("x1 = 2 <=> H2O, x^4, SO4^2-, x²", Rechenblatt.PdfText("x₁ = 2 ⇔ H₂O, x⁴, SO4²⁻, x²"));
+        Assert.Equal("x1 = 2 <=> H2O, x^4, SO4^(2-), x²", Rechenblatt.PdfText("x₁ = 2 ⇔ H₂O, x⁴, SO4²⁻, x²"));
         var f = Path.Combine(Path.GetTempPath(), "trendo-t0781-" + Guid.NewGuid().ToString("N")[..8] + ".pdf");
         try
         {

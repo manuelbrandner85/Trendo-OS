@@ -89,8 +89,8 @@ public static class Elemente
             case 4 or 5: return (p, k + 1, k < 2 ? 's' : k < 12 ? 'd' : 'p');
             default:
                 if (k < 2) return (p, k + 1, 's');
-                if (k < 17) return (p, null, 'f'); // La–Lu bzw. Ac–Lr
-                return (p, k - 13, k < 26 ? 'd' : 'p'); // Gruppe 3 bleibt in Periode 6/7 frei (La/Ac stehen in der Fußzeile)
+                if (k < 16) return (p, null, 'f'); // La–Yb bzw. Ac–No in der Fußzeile
+                return (p, k - 13, k < 26 ? 'd' : 'p'); // T-0781 (Gegenprüfung): Lu und Lr in Gruppe 3 (IUPAC-Empfehlung 2021), Hf/Rf in Gruppe 4
         }
     }
 
