@@ -1,0 +1,22 @@
+LibreOffice aus Kopie im eigenen Temp-Ordner, eigenes Profil (-env:UserInstallation), 2026-11-26 16:27
+> soffice --headless --infilter=CSV:59,34,76,1,,1031 --convert-to xlsx laborheft.csv
+convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-fremd\laborheft.csv as a Calc document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-fremd\gegenprobe\laborheft.xlsx using filter : Calc Office Open XML
+Exit 0
+> soffice --headless --infilter=CSV:59,34,76,1,,1031 --convert-to xlsx periodensystem.csv
+convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-fremd\periodensystem.csv as a Calc document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-fremd\gegenprobe\periodensystem.xlsx using filter : Calc Office Open XML
+Exit 0
+> soffice --headless --convert-to png mathe-loesungswege.pdf (Draw-PDF-Import)
+Could not find platform independent libraries <prefix>
+convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-fremd\mathe-loesungswege.pdf as a Draw document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-fremd\gegenprobe\mathe-loesungswege.png using filter : draw_png_Export
+Exit 0
+> soffice --headless --convert-to png laborheft.pdf (Draw-PDF-Import)
+Could not find platform independent libraries <prefix>
+convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-fremd\laborheft.pdf as a Draw document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-fremd\gegenprobe\laborheft.png using filter : draw_png_Export
+Exit 0
+> soffice --convert-to csv gegenprobe/laborheft.xlsx (Rückweg)
+convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-fremd\gegenprobe\laborheft.xlsx as a Calc document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-fremd\gegenprobe\rueck\laborheft.csv using filter : Text - txt - csv (StarCalc):59,34,76
+Exit 0
+> pdftotext -enc UTF-8 -layout (Xpdf aus Git for Windows)
+pdftotext version 4.06 [www.xpdfreader.com]
+Exit 0
+Exit 0

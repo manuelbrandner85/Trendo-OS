@@ -76,6 +76,8 @@ public static class StudioCatalog
         ["SPEC-07"] = new("Texte übersetzen", "Texte mit der lokalen KI übersetzen.", "Wissen & Lernen"),
         ["CORE-10"] = new("Wissen merken", "Merkt sich, was du gelernt und gemacht hast.", "Wissen & Lernen"),
         ["SYS-08"] = new("Sicher recherchieren", "Sicher im Netz recherchieren – nur lesen.", "Wissen & Lernen"),
+        ["STUDIO-MATH-01"] = new("Mathe-Helfer", "Rechnen mit Lösungsweg Schritt für Schritt: Gleichungen, Terme, Brüche, Ableitungen und Integrale – exakt und mit Probe.", "Wissen & Lernen"), // T-0781
+        ["STUDIO-SCIENCE-01"] = new("Naturwissenschaft", "Periodensystem, Molmasse, Reaktionen ausgleichen und Physik-Formeln mit Einheiten – mit Rechenweg und Probe.", "Wissen & Lernen"), // T-0781
         ["STUDIO-CITE-01"] = new("Recherche mit Quellen", "Quellen und Zitate sammeln, sauber zitieren (APA, Harvard, DIN) und als Literaturverzeichnis ausgeben.", "KI & Automatik"), // T-0777: Nutzerentscheidung 26.11.2026 – Bereich KI & Automatik
 
         ["CORE-02"] = new("KI fragen", "Dein Helfer, der Fragen beantwortet und Aufgaben erledigt.", "KI & Automatik"),

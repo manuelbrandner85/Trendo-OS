@@ -11,6 +11,8 @@ public sealed class GraphView : Control
     public List<(string Label, List<(double X, double Y)> Points)> Series { get; } = [];
     public IBrush Background { get; set; } = Brushes.White;
     public IBrush Foreground { get; set; } = Brushes.Black;
+    /// <summary>T-0781: Kurvenfarben (Mathe-Helfer zeichnet in Gold statt Blau); Vorgabe wie bisher.</summary>
+    public string[] Farben { get; set; } = Palette;
 
     /// <summary>Sichtbarer y-Bereich: gerundete Grenzen der Werte, Ausreißer (Polstellen) abgeschnitten.</summary>
     public (double Min, double Max) YRange()
@@ -48,7 +50,7 @@ public sealed class GraphView : Control
         using (g.PushClip(new Rect(m, 10, W, H)))
             for (var k = 0; k < Series.Count; k++)
             {
-                var pen = new Pen(Brush.Parse(Palette[k % Palette.Length]), 2.2);
+                var pen = new Pen(Brush.Parse(Farben[k % Farben.Length]), 2.2);
                 var geo = new StreamGeometry(); using (var ctx = geo.Open())
                 {
                     var open = false; var span = y1 - y0;

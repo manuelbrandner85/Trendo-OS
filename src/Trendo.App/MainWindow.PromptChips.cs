@@ -54,6 +54,8 @@ public partial class MainWindow
         ["STUDIO-CONTRACTS-01"] = ["Bis wann kann ich kündigen?", "Was kosten meine Verträge im Jahr?", "Kündigung für den Handyvertrag"],
         ["STUDIO-PDFTOOLS-01"] = ["PDFs zusammenfügen", "PDF kleiner machen", "Seiten 1-3 herauslösen"],
         ["STUDIO-FORMS-01"] = ["Formular mit meinen Angaben ausfüllen", "Welche Pflichtfelder fehlen?", "Unterschrift einsetzen"],
+        ["STUDIO-MATH-01"] = ["Löse 3x + 7 = 22", "Ein Rechteck ist 3 cm länger als breit und hat 40 cm² – wie breit?", "Leite x² · sin(x) ab"],
+        ["STUDIO-SCIENCE-01"] = ["Molmasse von Glucose", "Gleiche Fe + O2 -> Fe2O3 aus", "Wie lange fällt ein Stein aus 20 m Höhe?"],
     };
 
     /// <summary>Chips für ein Studio (leer = keine Vorschläge hinterlegt).</summary>

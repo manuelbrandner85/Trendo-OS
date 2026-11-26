@@ -1,0 +1,5 @@
+Abgleich eigener Elementdaten mit PubChem (118 Elemente, 2026-11-26)
+Li Masse: eigen 6,94, PubChem 7
+Lr EN: eigen keine Angabe, PubChem 1.3
+Lr Konfiguration: eigen [Rn] 5f14 7s2 7p1, PubChem [Rn]7s2 5f14 6d1
+3 Abweichungen

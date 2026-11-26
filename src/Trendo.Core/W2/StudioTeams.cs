@@ -309,6 +309,14 @@ public static class StudioTeams
         T("STUDIO-FORMS-01", "Formular-Team",
             R("forms-hilfe", "Formularhelferin", "füllt Felder aus und erklärt Amtsdeutsch", "nur eigene Angaben, nichts erfinden", true),
             R("forms-pruef", "Prüfer", "achtet auf Pflichtfelder und Unterschrift", "vor dem Abschicken alles vollständig")),
+        T("STUDIO-MATH-01", "Mathe-Team", // T-0781
+            R("mathe-erklaer", "Nachhilfelehrerin", "erklärt jeden Schritt des Lösungswegs", "einfache Worte, Regel nennen, nichts überspringen", true),
+            R("mathe-uebersetz", "Textaufgaben-Übersetzer", "macht aus einer Textaufgabe eine Gleichung", "nur die Aufgabe, nie das Ergebnis – rechnen tut der Kern"),
+            R("mathe-pruef", "Prüfer", "kontrolliert Probe und Einheiten", "jede Lösung durch Einsetzen geprüft")),
+        T("STUDIO-SCIENCE-01", "Labor-Team", // T-0781
+            R("natur-chemie", "Chemikerin", "Summenformeln, Molmassen und Reaktionen", "Groß- und Kleinschreibung der Symbole, Atombilanz", true),
+            R("natur-physik", "Physiker", "Formeln, Einheiten und Messunsicherheit", "in SI rechnen, Dimension prüfen, sinnvolle Stellen"),
+            R("natur-daten", "Datenprüferin", "achtet auf Quellen der Zahlenwerte", "IUPAC/CIAAW, CODATA – Quelle nennen")),
     ];
 
     public static StudioTeam? For(string? studioId) => All.FirstOrDefault(t => t.StudioId == studioId);

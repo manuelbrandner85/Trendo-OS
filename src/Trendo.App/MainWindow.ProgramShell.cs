@@ -36,7 +36,11 @@ public sealed record ProgramFirstStep(string Label, string Hint, Action<ProgramD
 /// Rückgängig legt die erzeugte Datei beiseite (Ordner „.rueckgaengig“), Wiederholen holt sie zurück.
 /// Höchstens eine Fachaktion je Auftrag, als letzter Schritt. <paramref name="Produce"/> meldet über den zweiten Wert jede Datei, die es selbst anlegt (vor dem Schreiben) –
 /// schlägt das Erzeugen fehl, werden genau diese Dateien beiseitegelegt („.rueckgaengig“); fremde Dateien im selben Ordner bleiben unberührt.</summary>
-public sealed record ProgramKiAction(AssistAction Def, Action<ProgramDocument, IReadOnlyDictionary<string, string>> Prepare, Func<ProgramDocument, Action<string>, IReadOnlyList<string>> Produce);
+public sealed record ProgramKiAction(AssistAction Def, Action<ProgramDocument, IReadOnlyDictionary<string, string>> Prepare, Func<ProgramDocument, Action<string>, IReadOnlyList<string>> Produce)
+{
+    /// <summary>T-0781: Hinweis in der Vorschau, was „Ja, behalten“ tut – für Fachaktionen, die keine neue Datei erzeugen, sondern ins Dokument schreiben (fehlt = Hinweis auf die neue Datei).</summary>
+    public string? Hinweis { get; init; }
+}
 
 public sealed class ProgramSpec(string key, string studio, string title)
 {

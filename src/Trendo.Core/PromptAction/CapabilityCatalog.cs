@@ -98,6 +98,9 @@ public static class CapabilityCatalog
         P("X-08", "Handy verbinden", "System & Sicherheit", "MobileBridge", "adb-Liste, wenn adb schon da ist", "keine", "Liste", "Nur „adb devices -l“. Kein Spiegel, kein Foto, keine Installation."),
         P("CORE-04", "PC, Pi & Handy verbinden", "System & Sicherheit", "FusionStore", "Verbund nur zeigen", "keine", "Liste", "Nur die gespeicherten Geräte. Es wird nichts gekoppelt."),
         P("X-09", "Leistung anzeigen", "System & Sicherheit", "ResourceMonitor, SystemMetrics", "Messwerte lesen", "keine", "Messwert", "Nur die gelesenen Messwerte. Es wird kein Programm beendet."),
+        // T-0781 Wissen & Lernen (Freigabe 26.11.2026)
+        P("STUDIO-MATH-01", "Mathe-Helfer", "Wissen & Lernen", "MatheKern, Bruch, Polynom, Rechenblatt, GraphView", "Aufgabe mit Lösungsweg rechnen", "Aufgabe, Art (Gleichung, System, Bruch, Ableiten …)", "Lösungsweg (MD); im Studio Rechenblatt als PDF, LaTeX, Markdown", "Gerechnet wird nur im eigenen Rechenkern; die KI übersetzt höchstens eine Textaufgabe. Integrale nur für Grundfunktionen und Polynom mal e/sin/cos; Gleichungen höheren Grades ohne rationale Nullstelle nur als Näherung."),
+        P("STUDIO-SCIENCE-01", "Naturwissenschaft", "Wissen & Lernen", "Elemente, Chemie, Einheiten, Formelsammlung, StatsPlus.Propagate", "Molmasse, Reaktion oder Einheiten rechnen", "Summenformel, Reaktionsgleichung oder Rechnung mit Einheiten", "Rechnung (MD); im Studio Laborheft als PDF, CSV, Markdown und Element-Tabelle", "Physik nur mit den Formeln der eingebauten Formelsammlung; keine Strukturformeln, keine Simulation. Messreihen wertet „Messdaten & Auswertung“ aus."),
     ];
 
     private static StudioProfile P(string id, string title, string area, string existing, string action, string inputs, string outputs, string blocker) =>

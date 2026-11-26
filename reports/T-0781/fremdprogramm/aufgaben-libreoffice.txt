@@ -1,0 +1,7 @@
+﻿Hausaufgabe Mathematik
+gleichung: 5x - 3 = 2x + 9
+gleichung: x^2 + 2x - 15 = 0
+system: x + y = 10; x - y = 2
+bruch: 2/3 + 3/4
+faktorisieren: x^2 - 16
+integrieren: 4x^3 - 2x
