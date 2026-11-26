@@ -40,7 +40,7 @@ public class T0771Restpunkte
     [
         "//fremd.example/x", "\\\\fremd.example\\x", "\\fremd.example", "/\\fremd.example", "\\/fremd.example", "   //fremd.example", "/pfad/auf/der/wurzel",
         "%2F%2Ffremd.example", "%2f%5cfremd.example", "%5C%5Cfremd.example", "%252F%252Ffremd.example", "&#47;&#47;fremd.example", "&#x2F;&#x2F;fremd.example",
-        "%20%2F%2Ffremd.example", "%09//fremd.example", "%00//fremd.example", "javascript%3Aalert(1)", "javascript&#58;alert(1)", "%6A%61vascript%3Aalert(1)",
+        "%20%2F%2Ffremd.example", "%09//fremd.example", "%00//fremd.example", "javascript%3Aalert(1)", "javascript&#58;alert(1)", "%6A%61vascript%3Aalert(1)", "javascript%3Fx%3Aalert(1)", "javascript&#63;x&#58;alert(1)", "javascript:alert(1)?q=1",
     ];
 
     [Theory(DisplayName = "T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“")]
@@ -64,7 +64,7 @@ public class T0771Restpunkte
     public void Erlaubte_ziele_bleiben()
     {
         var p = SitePage.Template("einkaufsliste")!;
-        string[] gut = ["bild.png", "ordner/bild.png", "info@beispiel.de", "https://example.org/a?b=%2F%2F", "mailto:info@beispiel.de", "anzahl"];
+        string[] gut = ["bild.png", "ordner/bild.png", "info@beispiel.de", "https://example.org/a?b=%2F%2F", "mailto:info@beispiel.de", "anzahl", "suche.html?q=12%3A30", "plan.html?zeit=12:30", "seite.html#zeit:12"];
         foreach (var g in gut) p.Pages[0].Blocks.Add(new Block("button", "Gut", g));
         var d = Tmp();
         try
@@ -144,7 +144,7 @@ public class T0771Restpunkte
         var root = Tmp();
         try
         {
-            Directory.CreateDirectory(Path.Combine(root, "audit")); File.WriteAllText(Path.Combine(root, "audit", "audit.jsonl"), "{}\n"); // wie der Kern beim Start
+            Directory.CreateDirectory(Path.Combine(root, "projekte")); File.WriteAllText(Path.Combine(root, "projekte", "bild.txt"), "x"); // das Kind arbeitet
             new UserSettings { Child = true, Name = "Kind" }.Save(root);
             Assert.True(ProfileRole.IsChild(root));
             Thread.Sleep(20);
@@ -152,6 +152,58 @@ public class T0771Restpunkte
             Assert.True(ProfileRole.IsChild(root));
         }
         finally { Weg(root); }
+    }
+
+    [Fact(DisplayName = "T-0771 Korrektur (a): Neuinstallation mit Vollpaket – vollpaket-quelle.txt vom Setup, erster Start Minuten später → Besitzer")]
+    public void Vollpaket_vom_setup_bleibt_ersteinrichtung()
+    {
+        var root = Tmp();
+        try
+        {
+            File.WriteAllText(Path.Combine(root, "vollpaket-quelle.txt"), "D:\\Trendo\\Programme"); // wie VollpaketStart.RememberFromInstaller
+            Altern(root); // der Installer lief in einem eigenen Prozess, lange vor diesem Start
+            Assert.False(ProfileRole.IsChild(root));
+            Assert.Contains("Ersteinrichtung", File.ReadAllText(ProfileRole.FileOf(root)));
+        }
+        finally { Weg(root); }
+    }
+
+    [Fact(DisplayName = "T-0771 Korrektur (b): Start- und Absturzspuren eines früheren Laufs ohne Nutzerdaten (Protokoll, Zwischenspeicher, Werkzeuge, Sicherheit, Logs) → Besitzer")]
+    public void Startspuren_ohne_nutzerdaten_bleiben_ersteinrichtung()
+    {
+        var root = Tmp();
+        try
+        {
+            foreach (var (dir, file) in new[] { ("audit", "audit.jsonl"), ("cache", "seiten.bin"), ("werkzeuge", "tools.json"), ("sicherheit", "vertrauen.json"),
+                         ("freigaben", "offen.json"), ("protokolle", "start.log"), ("updates", "stand.json"), ("", "start.json"), ("", "absturz.txt"), ("", "deps-consent.txt") })
+            {
+                var d = Path.Combine(root, dir); Directory.CreateDirectory(d); File.WriteAllText(Path.Combine(d, file), "{\"action\":\"core.start\"}");
+            }
+            Directory.CreateDirectory(Path.Combine(root, "projekte", "leer")); // leere Ordner zählen nicht
+            File.WriteAllText(Path.Combine(root, "projekte", "leer.txt"), ""); // leere Datei auch nicht
+            Altern(root);
+            Assert.False(ProfileRole.IsChild(root));
+        }
+        finally { Weg(root); }
+    }
+
+    [Fact(DisplayName = "T-0771 Korrektur (c): Kinderprofil mit echten Daten (Projekt, Brief, PIN) und gelöschten Rollendateien → Kind")]
+    public void Kind_mit_nutzerdaten_bleibt_kind()
+    {
+        foreach (var rel in new[] { Path.Combine("projekte", "Mein Spiel", "spiel.json"), Path.Combine("briefe", "oma.tdoc"), Path.Combine("profil", "anmeldung.json") })
+        {
+            var root = Tmp();
+            try
+            {
+                new UserSettings { Child = true, Name = "Kind" }.Save(root);
+                Assert.True(ProfileRole.IsChild(root));
+                var f = Path.Combine(root, rel); Directory.CreateDirectory(Path.GetDirectoryName(f)!); File.WriteAllText(f, "{}");
+                Altern(root);
+                File.Delete(ProfileRole.FileOf(root)); File.Delete(UserSettings.PathIn(root));
+                Assert.True(ProfileRole.IsChild(root), rel);
+            }
+            finally { Weg(root); }
+        }
     }
 
     [Fact(DisplayName = "T-0771 Prüfer-N1: echte Ersteinrichtung bleibt Besitzer – leerer Ordner, Dateien dieses Laufs, alte leere Unterordner")]

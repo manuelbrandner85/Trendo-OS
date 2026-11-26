@@ -434,7 +434,13 @@ public sealed class SitePage : IJsonOnDeserialized
         if (t.StartsWith("seite:", StringComparison.Ordinal) || t.StartsWith("summe:", StringComparison.Ordinal)) return t;
         var d = Decoded(t);
         if (d.Any(char.IsControl) || (d.Length > 0 && d[0] is '/' or '\\')) return "#";
-        if (!t.Contains(':') && !d.Contains(':')) return t;
+        // Korrektur nach Gegenprüfung: Ein Schema steht nur vor „?“ und „#“ – ein (kodierter) Doppelpunkt in Abfrage oder Sprungmarke eines relativen
+        // Links („suche.html?q=12%3A30“) ist kein Schema. Geteilt wird am ROHEN Text, geprüft der entschlüsselte Teil davor; „javascript%3F…%3A…“ hat
+        // roh kein „?“ und bleibt gesperrt.
+        // Ein „&“ vor dem Trenner kann eine HTML-Kodierung sein („javascript&#58;…“ – dort ist das „#“ Teil von „&#58;“): dann streng wie bisher.
+        var cut = t.IndexOfAny(['?', '#']); var head = cut < 0 ? t : t[..cut];
+        var relative = head.Contains('&') ? !d.Contains(':') : !head.Contains(':') && !Decoded(head).Contains(':');
+        if (relative) return t;
         return Uri.TryCreate(t, UriKind.Absolute, out var x) && x.Scheme is "https" or "http" or "mailto" ? t : "#";
     }
 

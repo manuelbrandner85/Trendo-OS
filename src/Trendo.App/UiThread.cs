@@ -16,6 +16,13 @@ public static class UiThread
     /// <summary>Auf dem Oberflächen-Thread aufrufen (Hauptfenster).</summary>
     public static void Remember() => s_main = Dispatcher.UIThread;
 
+    /// <summary>NUR FÜR TESTS: vergisst den gemerkten Dispatcher (danach gilt wieder der von Avalonia). Bewusst nicht beim Schließen des Hauptfensters –
+    /// sonst griffe späte Hintergrund-Arbeit wieder auf <c>Dispatcher.UIThread</c> zu, genau der Fall, den diese Klasse verhindert.</summary>
+    internal static void ForgetForTests() => s_main = null;
+
+    /// <summary>Ist ein Dispatcher gemerkt?</summary>
+    internal static bool Remembered => s_main is not null;
+
     /// <summary>Der gemerkte Dispatcher; vor dem ersten Fenster der von Avalonia.</summary>
     public static Dispatcher Current => s_main ?? Dispatcher.UIThread;
 

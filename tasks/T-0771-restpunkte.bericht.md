@@ -78,3 +78,18 @@ Künstliche Last: 16 PowerShell-Endlosschleifen auf 16 logischen Kernen. Die Pro
 - **Doku:** `docs/programme/**` (neu erzeugt, `qual-leistung` entfernt), `installer/neuerungen/0.9.111.md` (neu), `tasks/T-0771-restpunkte*.md`, `reports/T-0771/*` mit `SHA256SUMS.txt`
 
 **Status:** gepusht auf `claude/T-0771-restpunkte`; Merge und Release macht die Hauptsitzung.
+
+## Korrekturrunde nach Gegenprüfung (fix1)
+
+| Befund | Änderung | Test (Rot auf 76a08e7c5 → grün) |
+|---|---|---|
+| HOCH 1: Neuinstallation mit Vollpaket startete als Kind (vollpaket-quelle.txt vom Setup ist älter als der erste Start); dasselbe nach einem abgestürzten ersten Start | `ProfileRole.UsedBefore` statt „irgendeine ältere Datei“: Als „schon benutzt“ zählen nur nicht leere Dateien aus einem früheren Lauf an echten Nutzerdaten-Orten (`UserDataPlaces`: projekte, projects, text, briefe, tabelle, präsentation, bild, künstler, karten, post, finanzen, code-editor, claude-chats, webseiten, abläufe … und profil/anmeldung.json = eigene PIN). Setup- und Startdateien zählen nie (vollpaket-quelle.txt, audit, cache, werkzeuge, sicherheit, freigaben, updates, protokolle, Start- und Absturzspuren, leere Ordner und Dateien). Unlesbare Orte gelten als „unklar“, NICHT als Nutzerdaten; das steht als `Grund` in rolle.json und im Trace (keine stille Aussperrung) | (a) `Vollpaket_vom_setup_bleibt_ersteinrichtung` und (b) `Startspuren_ohne_nutzerdaten_bleiben_ersteinrichtung` rot auf 76a08e7c5 (`rot-korrektur-76a08e7c5.log`), jetzt grün; (c) `Kind_mit_nutzerdaten_bleibt_kind` (Projekt, Brief, PIN) und `Kind_loescht_rollendateien_bleibt_kind` grün; (d) Altstand mit settings.json in `Echte_ersteinrichtung_bleibt_besitzer` grün |
+| NIEDRIG 3: `suche.html?q=12%3A30` wurde gesperrt | Die Prüfung auf ein Schema gilt nur für den Teil vor „?“/„#“ (am rohen Text geteilt, entschlüsselt geprüft). Steht vor dem Trenner ein „&“ (mögliche HTML-Kodierung wie `&#58;`), bleibt die strenge Prüfung. Wurzelpfade „/…“ bleiben bewusst gesperrt | Gegenprobe um `suche.html?q=12%3A30`, `plan.html?zeit=12:30`, `seite.html#zeit:12` erweitert (rot auf 76a08e7c5). Neue Umgehungen gesperrt: `javascript%3Fx%3Aalert(1)`, `javascript&#63;x&#58;alert(1)`, `javascript:alert(1)?q=1` |
+| NIEDRIG 4: `UiThread.s_main` in Tests | `UiThread.ForgetForTests()` (internal) und `Remembered`. Bewusst kein Zurücksetzen beim Schließen des Hauptfensters: Späte Hintergrund-Arbeit griffe sonst wieder auf `Dispatcher.UIThread` zu | `T0771Dispatcher_Ui.D_ruecksetzen_fuer_tests` |
+
+- Eine Besitzer-Bestätigung für den Fall „unklar“ gibt es im Code nicht. Bei einem fehlenden Profil gibt es auch keine PIN. Ich habe keine neue erfunden: offener Punkt.
+- Neue Grenze: Ein Kind, das nichts im Trendo-Datenordner angelegt hat (nur in „Dokumente“ gespeichert), bekommt nach dem Löschen der Rollendateien wieder eine Ersteinrichtung. Das steht in den Neuerungen 0.9.111.
+- **Tests:**
+  - Core: T0771*, Profile*, T0764*, RechteKern*, PageBuilder, SitePage, X03, Vollpaket*, SammelT0768, Person* – 331/331 grün.
+  - App: alle RechteKern*-Ui, SammelT0768, T0771Dispatcher_Ui, alle WebDesign*-Klassen und die Vollpaket-Klassen (32 Klassen) – 121 Tests, 0 rot, 3 übersprungen.
+  - Logs: `gruen-korrektur.log`.

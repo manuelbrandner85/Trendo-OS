@@ -1,0 +1,36 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:04.99]     T-0771 Korrektur (b): Start- und Absturzspuren eines früheren Laufs ohne Nutzerdaten (Protokoll, Zwischenspeicher, Werkzeuge, Sicherheit, Logs) → Besitzer [FAIL]
+[xUnit.net 00:00:05.00]     T-0771 Korrektur (a): Neuinstallation mit Vollpaket – vollpaket-quelle.txt vom Setup, erster Start Minuten später → Besitzer [FAIL]
+[xUnit.net 00:00:05.04]     T-0771 N-a: Gegenprobe – Datei, E-Mail, seite:, summe:, https und mailto bleiben im eingebetteten JSON erhalten [FAIL]
+  Fehler T-0771 Korrektur (b): Start- und Absturzspuren eines früheren Laufs ohne Nutzerdaten (Protokoll, Zwischenspeicher, Werkzeuge, Sicherheit, Logs) → Besitzer [17 ms]
+  Fehlermeldung:
+   Assert.False() Failure
+Expected: False
+Actual:   True
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0771Restpunkte.Startspuren_ohne_nutzerdaten_bleiben_ersteinrichtung() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0771RestpunkteTests.cs:line 185
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0771 Korrektur (a): Neuinstallation mit Vollpaket – vollpaket-quelle.txt vom Setup, erster Start Minuten später → Besitzer [3 ms]
+  Fehlermeldung:
+   Assert.False() Failure
+Expected: False
+Actual:   True
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0771Restpunkte.Vollpaket_vom_setup_bleibt_ersteinrichtung() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0771RestpunkteTests.cs:line 165
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0771 N-a: Gegenprobe – Datei, E-Mail, seite:, summe:, https und mailto bleiben im eingebetteten JSON erhalten [41 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Collections differ
+                                                                                              ↓ (pos 6)
+Expected: string[]                                 [···, "mailto:info@beispiel.de", "anzahl", "suche.html?q=12%3A30", "plan.html?zeit=12:30", "seite.html#zeit:12"]
+Actual:   IEnumerableSelectIterator<Block, string> [···, "mailto:info@beispiel.de", "anzahl", "#", "#", "#"]
+                                                                                              ↑ (pos 6)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0771Restpunkte.Erlaubte_ziele_bleiben() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0771RestpunkteTests.cs:line 74
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+Fehler!      : Fehler:     3, erfolgreich:    29, übersprungen:     0, gesamt:    32, Dauer: 1 s - Trendo.Core.Tests.dll (net10.0)

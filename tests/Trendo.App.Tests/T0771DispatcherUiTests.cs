@@ -22,4 +22,13 @@ public class T0771Dispatcher_Ui
 
     [AvaloniaFact(DisplayName = "T-0771: übernächster Test – der Dispatcher gehört dem Oberflächen-Thread")]
     public void C_uebernaechster_test() => Assert.True(Dispatcher.UIThread.CheckAccess());
+
+    [AvaloniaFact(DisplayName = "T-0771: Rücksetzen nur für Tests – danach gilt wieder der Dispatcher von Avalonia, Remember merkt den aktuellen")]
+    public void D_ruecksetzen_fuer_tests()
+    {
+        Trendo.App.UiThread.Remember(); Assert.True(Trendo.App.UiThread.Remembered);
+        Trendo.App.UiThread.ForgetForTests(); Assert.False(Trendo.App.UiThread.Remembered);
+        Assert.Same(Dispatcher.UIThread, Trendo.App.UiThread.Current);
+        Trendo.App.UiThread.Remember(); Assert.Same(Dispatcher.UIThread, Trendo.App.UiThread.Current);
+    }
 }

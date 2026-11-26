@@ -224,7 +224,7 @@ public static class BrowserImport
 public static class ProfileRole
 {
     public static string FileOf(string baseRoot) => Path.Combine(baseRoot, "profil", "rolle.json");
-    sealed record Stored(bool Child, DateTime AtUtc);
+    sealed record Stored(bool Child, DateTime AtUtc, string? Grund = null);
 
     /// <summary>Kinderprofil? true auch, wenn die Quelle fehlt, unlesbar ist oder widerspricht (außer Ersteinrichtung des Hauptprofils).</summary>
     public static bool IsChild(string dataRoot)
@@ -243,10 +243,12 @@ public static class ProfileRole
             // kein Eintrag: Ersteinrichtung (nichts da) → Besitzer; Stand vor dem Umbau → einmalig aus settings.json; sonst (Personen da, settings.json fehlt) → Kind
             var hasSettings = File.Exists(UserSettings.PathIn(dataRoot));
             var hasPersons = File.Exists(Path.Combine(baseRoot, "personen.json"));
-            // T-0771 (Prüfer-N1): Ersteinrichtung nur in einem wirklich neuen Datenordner. Fehlen rolle.json, settings.json und personen.json, liegt aber
-            // noch irgendeine ältere Datei im Ordner (Protokoll, Projekte, Sicherheit …), hat jemand die Rollendateien gelöscht → Kind (fail-closed).
-            var child = hasSettings ? mirror : hasPersons || !FreshFolder(baseRoot);
-            Write(baseRoot, child);
+            // T-0771 (Prüfer-N1, Korrektur): Ersteinrichtung nur, wenn das Profil noch nicht benutzt wurde. Fehlen rolle.json, settings.json und
+            // personen.json, liegen aber schon NUTZERDATEN aus einem früheren Lauf im Ordner (Projekte, Texte, Briefe, PIN …), hat jemand die
+            // Rollendateien gelöscht → Kind. Setup- und Startdateien (vollpaket-quelle.txt, Protokoll, Zwischenspeicher, Werkzeuge …) zählen nicht.
+            string? grund = null;
+            var child = hasSettings ? mirror : hasPersons || UsedBefore(baseRoot, out grund);
+            Write(baseRoot, child, hasSettings ? "Übernahme aus settings.json" : hasPersons ? "Personen vorhanden, keine Rollendatei" : grund);
             Decided[Path.GetFullPath(baseRoot)] = DateTime.UtcNow;
             return child;
         }
@@ -256,23 +258,49 @@ public static class ProfileRole
     /// <summary>T-0771: Zeitpunkt, zu dem dieser Prozess für einen Hauptordner zuletzt die Ersteinrichtung entschieden hat.</summary>
     static readonly System.Collections.Concurrent.ConcurrentDictionary<string, DateTime> Decided = new(StringComparer.OrdinalIgnoreCase);
 
-    /// <summary>T-0771 (Prüfer-N1): Ist der Hauptordner wirklich neu? Ja, wenn keine Datei darin älter ist als der Start dieses Trendo-Prozesses
-    /// (bzw. als die letzte Entscheidung dieses Prozesses für denselben Ordner). Leere Ordner zählen nicht (ein früher angelegter, leerer
-    /// Datenordner verhindert keine echte Ersteinrichtung). Unlesbar → nicht neu (fail-closed).</summary>
-    /// <remarks>Grenze: Wer den GANZEN Datenordner bzw. alle Dateien darin löscht, löst wieder eine Ersteinrichtung aus – dabei gehen auch alle Daten
-    /// des Profils verloren.</remarks>
-    internal static bool FreshFolder(string baseRoot)
+    /// <summary>T-0771 (Prüfer-N1): Orte im Datenordner, an denen nur durch Benutzung Inhalte entstehen (Projekte, Dokumente der Werkstätten,
+    /// Chats, Anmeldung). Bewusst NICHT dabei: was Setup und Start selbst anlegen – vollpaket-quelle.txt (Installer), audit (jeder Start schreibt
+    /// „core.start“), cache, werkzeuge, tools, sicherheit, freigaben, updates, protokolle, Start- und Absturzspuren, leere Ordner.</summary>
+    internal static readonly string[] UserDataPlaces =
+    [
+        "projekte", "projects", "Projekte", "text", "briefe", "tabelle", "praesentation", "bild", "kuenstler", "karten", "post", "finanzen",
+        "code-editor", "code-ki", "claude-chats", "webseiten", "ablaeufe", "automation", "kleidung", "3d-druck", "bibliothek", "bibliothek3d",
+        "ki-bilder", "ki-videos", "print-on-demand", "scannen", "tiere", "stimme-eigen", "zwilling", "agent", "berichte", "animationen",
+        "business-sicherung", Path.Combine("profil", "anmeldung.json"),
+    ];
+
+    /// <summary>T-0771 (Prüfer-N1, Korrektur nach Gegenprüfung): Wurde dieses Hauptprofil schon benutzt? Ja, wenn an einem der
+    /// <see cref="UserDataPlaces"/> eine nicht leere Datei liegt, die älter ist als der Start dieses Trendo-Prozesses (bzw. als die letzte
+    /// Rollen-Entscheidung dieses Prozesses für denselben Ordner). Setup- und Startdateien zählen nie – eine Neuinstallation mit Vollpaket oder ein
+    /// abgestürzter erster Start bleibt eine Ersteinrichtung. Ein unlesbarer Ort zählt nicht als Nutzerdaten („unklar“, steht in <paramref name="note"/>
+    /// und in rolle.json) – keine stille Aussperrung.</summary>
+    /// <remarks>Grenzen: Wer alle Nutzerdaten löscht (oder nie welche im Datenordner hatte, z. B. nur in „Dokumente“ gespeichert), löst wieder eine
+    /// Ersteinrichtung aus.</remarks>
+    internal static bool UsedBefore(string baseRoot, out string note)
     {
-        try
+        var since = ProcessStartUtc() - TimeSpan.FromSeconds(2);
+        if (Decided.TryGetValue(Path.GetFullPath(baseRoot), out var d) && d > since) since = d;
+        var unclear = new List<string>();
+        foreach (var rel in UserDataPlaces)
         {
-            var since = ProcessStartUtc() - TimeSpan.FromSeconds(2);
-            if (Decided.TryGetValue(Path.GetFullPath(baseRoot), out var d) && d > since) since = d;
-            if (!Directory.Exists(baseRoot)) return true;
-            foreach (var f in new DirectoryInfo(baseRoot).EnumerateFiles("*", new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = false, AttributesToSkip = 0 }))
-                if (f.CreationTimeUtc < since) return false; // Erstellzeit, nicht Änderungszeit (entpackte Dateien tragen alte Änderungszeiten)
-            return true;
+            var p = Path.Combine(baseRoot, rel);
+            try
+            {
+                if (File.Exists(p))
+                {
+                    var fi = new FileInfo(p);
+                    if (fi.Length > 0 && fi.CreationTimeUtc < since) { note = "Nutzerdaten aus einem früheren Lauf: " + rel; return true; }
+                    continue;
+                }
+                if (!Directory.Exists(p)) continue;
+                foreach (var f in new DirectoryInfo(p).EnumerateFiles("*", new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = false, AttributesToSkip = 0 }))
+                    if (f.Length > 0 && f.CreationTimeUtc < since) { note = "Nutzerdaten aus einem früheren Lauf: " + Path.GetRelativePath(baseRoot, f.FullName); return true; }
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Security.SecurityException) { unclear.Add(rel + " (" + e.GetType().Name + ")"); }
         }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Security.SecurityException) { return false; }
+        note = "Ersteinrichtung" + (unclear.Count > 0 ? " – unklar, nicht lesbar: " + string.Join(", ", unclear) : "");
+        if (unclear.Count > 0) System.Diagnostics.Trace.WriteLine("Trendo Rolle: " + note);
+        return false;
     }
 
     static DateTime ProcessStartUtc()
@@ -290,10 +318,10 @@ public static class ProfileRole
         catch (JsonException) { return false; }
     }
 
-    static void Write(string baseRoot, bool child)
+    static void Write(string baseRoot, bool child, string? why = null)
     {
         var f = FileOf(baseRoot); Directory.CreateDirectory(Path.GetDirectoryName(f)!);
-        AtomicFile.WriteAllText(f, JsonSerializer.Serialize(new Stored(child, DateTime.UtcNow)));
+        AtomicFile.WriteAllText(f, JsonSerializer.Serialize(new Stored(child, DateTime.UtcNow, why)));
     }
 
     /// <summary>Der Erwachsenen-Weg: Rolle eines Profils festlegen (Hauptprofil: rolle.json, Person: personen.json) – nur durch ein Erwachsenen-Profil
