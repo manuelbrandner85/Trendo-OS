@@ -128,4 +128,41 @@ public class T0782Gegenpruefung2_Ui
         }
         finally { MainWindow.AssistStepDelayMs = 140; w.KiBackendsOverride = null; w.Close(); }
     }
+
+    [AvaloniaFact(DisplayName = "H1b Plan-Zeilen: Claude-Bereich aus einem anderen Programm, dann Wechsel in die Nachhilfe – Chat sendet nichts, ein offener Plan wird nicht ausgeführt, die Übung bleibt unverändert")]
+    public async Task H1b_plan_and_chat_refused()
+    {
+        var (w, _, _) = Ui.Open();
+        var calls = 0;
+        MainWindow.ClaudeStatusOverride = () => Task.FromResult(new ClaudeCode.Status(true, true, "claude.ai", "max", @"C:\x\claude.exe"));
+        MainWindow.ClaudeStepDelay = 0;
+        MainWindow.ClaudeRunOverride = (args, _, line, _) =>
+        {
+            calls++;
+            var text = "Ich trage es ein.\n[[trendo:feld | nh-eingabe | 42]]\n[[trendo:feld | prog-saveas-path | x]]";
+            line(System.Text.Json.JsonSerializer.Serialize(new { type = "system", subtype = "init", session_id = "s1", model = "claude" }));
+            line(System.Text.Json.JsonSerializer.Serialize(new { type = "assistant", message = new { content = new object[] { new { type = "text", text } } } }));
+            line(System.Text.Json.JsonSerializer.Serialize(new { type = "result", subtype = "success", is_error = false, result = text, session_id = "s1", num_turns = 1 }));
+            return Task.FromResult(0);
+        };
+        try
+        {
+            await Run(w.ClaudeCheck(true));
+            var d = Open(w); Nachhilfe.NaechsteUebung(d, new Random(4));
+            var page = MainWindow.Programs.Keys.First(k => MainWindow.Programs[k].Studio == "SPEC-01");
+            w.Show(page); w.ProgramNew(page); w.Show(page);
+            w.ClaudeDockToggle("SPEC-01"); Dispatcher.UIThread.RunJobs();
+            await Run(w.ClaudeChatSend("Trag etwas ein"));
+            Assert.Equal(1, calls); Assert.True(w.ClaudePlanPending()); // Gegenprobe: anderswo arbeitet Claude
+            w.Show(Tu); Settle();
+            var before = d.Data.ToJsonString();
+            await Run(w.ClaudeRunPlan());
+            Assert.Equal(before, d.Data.ToJsonString());
+            Assert.Contains("Nicht ausgeführt", w.ClaudeChatCurrent()!.Messages[^1].Text);
+            await Run(w.ClaudeChatSend("Lies die Aufgabe vor"));
+            Assert.Equal(1, calls); // vom Nachhilfe-Programm geht nichts an Claude
+            Assert.Contains(w.Core.Audit.ReadAll(), a => a.Action == "claude.plan.lokal");
+        }
+        finally { MainWindow.ClaudeStatusOverride = null; MainWindow.ClaudeRunOverride = null; MainWindow.ClaudeStepDelay = 350; w.Close(); }
+    }
 }

@@ -39,6 +39,13 @@ public partial class MainWindow
     /// <summary>T-0782: Darf dieses Programm nur die KI auf diesem PC fragen (<see cref="ProgramSpec.KiLocalOnly"/>)?</summary>
     public bool AssistLocalOnly(string? key) => key is not null && Programs.TryGetValue(key, out var spec) && spec.KiLocalOnly?.Invoke() == true;
 
+    /// <summary>T-0782 (H1b): EINE Prüfung für alle Claude-Wege (Brücke, Plan-Zeilen, Chat): Ist die Seite <paramref name="page"/> oder die offene Seite ein Programm
+    /// nur mit der KI auf diesem PC, kommt der Satz für Claude bzw. den Chat zurück, sonst null.</summary>
+    public string? LocalOnlyRefusal(string? page = null) =>
+        AssistLocalOnly(page) || AssistLocalOnly(CurrentView)
+            ? "Dieses Programm arbeitet nur mit der KI auf diesem PC (z. B. Nachhilfe oder Kinderprofil). Claude darf es weder lesen noch ändern – bitte nichts weiter versuchen."
+            : null;
+
     /// <summary>T-0782 (H1b): Claude ist hier aus – die offene Seite oder das Studio gehört zu einem Programm nur mit der KI auf diesem PC.</summary>
     public bool ClaudeBlockedFor(string? studio) =>
         AssistLocalOnly(CurrentView) || studio is not null && Programs.Values.Any(p => string.Equals(p.Studio, studio, StringComparison.OrdinalIgnoreCase) && p.KiLocalOnly?.Invoke() == true);

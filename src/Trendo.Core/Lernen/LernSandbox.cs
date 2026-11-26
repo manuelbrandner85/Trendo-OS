@@ -324,7 +324,11 @@ public static class LernSandbox
                     lastDisk = TreeBytes(workDir) + TreeBytes(acTemp);
                     if (lastDisk > lim.DiskBytes) { outLimit = true; break; }
                     if (RegistryBytes(container) > lim.RegistryBytes) { outLimit = true; break; }
-                    try { if (freeAtStart - drive.AvailableFreeSpace > lim.DriveDropBytes) { outLimit = true; break; } } catch (IOException) { } // offene, wachsende Dateien
+                    // offene, wachsende Dateien: geschriebene Bytes des Jobs (nur der Lerncode, unabhängig von anderen Programmen) und der sinkende freie Platz.
+                    // Der freie Platz allein könnte auch durch andere Programme sinken – er zählt nur, wenn der Lerncode selbst nennenswert geschrieben hat.
+                    var written = JobWrittenBytes(job);
+                    long drop; try { drop = freeAtStart - drive.AvailableFreeSpace; } catch (IOException) { drop = 0; }
+                    if (written > lim.DriveDropBytes || drop > lim.DriveDropBytes && written > lim.DriveDropBytes / 5) { outLimit = true; break; }
                     lastDiskCheck = sw.ElapsedMilliseconds;
                 }
             }
@@ -412,6 +416,16 @@ public static class LernSandbox
     [StructLayout(LayoutKind.Sequential)] struct SECURITY_ATTRIBUTES { public int nLength; public IntPtr lpSecurityDescriptor; public bool bInheritHandle; }
     [StructLayout(LayoutKind.Sequential)]
     struct JOBOBJECT_BASIC_LIMIT_INFORMATION { public long PerProcessUserTimeLimit, PerJobUserTimeLimit; public uint LimitFlags; public UIntPtr MinimumWorkingSetSize, MaximumWorkingSetSize; public uint ActiveProcessLimit; public UIntPtr Affinity; public uint PriorityClass, SchedulingClass; }
+    [StructLayout(LayoutKind.Sequential)]
+    struct JOBOBJECT_BASIC_AND_IO_ACCOUNTING_INFORMATION { public long TotalUserTime, TotalKernelTime, ThisPeriodTotalUserTime, ThisPeriodTotalKernelTime; public uint TotalPageFaultCount, TotalProcesses, ActiveProcesses, TotalTerminatedProcesses; public IO_COUNTERS Io; }
+    [DllImport("kernel32.dll", SetLastError = true)] static extern bool QueryInformationJobObject(IntPtr job, int cls, ref JOBOBJECT_BASIC_AND_IO_ACCOUNTING_INFORMATION info, uint len, IntPtr ret);
+
+    /// <summary>T-0782 (2. Gegenprüfung M4): vom Lerncode geschriebene Bytes (Dateien, Registry, Pipes) laut Job-Abrechnung.</summary>
+    static long JobWrittenBytes(IntPtr job)
+    {
+        var a = new JOBOBJECT_BASIC_AND_IO_ACCOUNTING_INFORMATION();
+        return QueryInformationJobObject(job, 8, ref a, (uint)Marshal.SizeOf<JOBOBJECT_BASIC_AND_IO_ACCOUNTING_INFORMATION>(), IntPtr.Zero) ? (long)a.Io.WriteTransferCount : 0;
+    }
     [StructLayout(LayoutKind.Sequential)] struct IO_COUNTERS { public ulong ReadOperationCount, WriteOperationCount, OtherOperationCount, ReadTransferCount, WriteTransferCount, OtherTransferCount; }
     [StructLayout(LayoutKind.Sequential)]
     struct JOBOBJECT_EXTENDED_LIMIT_INFORMATION { public JOBOBJECT_BASIC_LIMIT_INFORMATION BasicLimitInformation; public IO_COUNTERS IoInfo; public UIntPtr ProcessMemoryLimit, JobMemoryLimit, PeakProcessMemoryUsed, PeakJobMemoryUsed; }

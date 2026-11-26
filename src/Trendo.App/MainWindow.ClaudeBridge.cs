@@ -64,9 +64,10 @@ public partial class MainWindow
     {
         if (tool == "programme") return null;
         var target = a["programm"].AsText();
-        if (tool == "programm_oeffnen" ? !AssistLocalOnly(target) : !AssistLocalOnly(target) && !AssistLocalOnly(run.Page) && !AssistLocalOnly(CurrentView)) return null;
+        var why = tool == "programm_oeffnen" ? (AssistLocalOnly(target) ? LocalOnlyRefusal(target) : null) : LocalOnlyRefusal(target) ?? LocalOnlyRefusal(run.Page);
+        if (why is null) return null;
         _core.Audit.Append(Principal.LocalOwner.Name, "claude.bruecke.lokal", $"{tool} {target ?? run.Page ?? CurrentView}");
-        return McpResult.Fail("Dieses Programm arbeitet nur mit der KI auf diesem PC (z. B. Nachhilfe oder Kinderprofil). Claude darf es weder lesen noch ändern – bitte nichts weiter versuchen.");
+        return McpResult.Fail(why);
     }
 
     IReadOnlyList<McpTool> BridgeTools(BridgeRun run)

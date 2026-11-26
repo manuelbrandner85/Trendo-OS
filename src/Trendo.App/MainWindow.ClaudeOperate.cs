@@ -170,6 +170,12 @@ public partial class MainWindow
     {
         if (!_chatUis.TryGetValue(dock, out var ui) || ui.Plan is not { } plan) return;
         ui.Plan = null;
+        if (LocalOnlyRefusal(plan.Page) is { } why) // T-0782 (H1b): Plan-Zeilen nie in Programmen nur mit lokaler KI
+        {
+            _core.Audit.Append(Principal.LocalOwner.Name, "claude.plan.lokal", plan.Page);
+            CChats.Add(ChatStudio(dock), plan.ChatId, new ClaudeChats.Msg("assistant", "✕ Nicht ausgeführt: " + why, [], DateTimeOffset.Now));
+            RenderChat(dock); return;
+        }
         if (CurrentView != plan.Page) Show(plan.Page);
         var doc = Programs.ContainsKey(plan.Page) ? ProgramActive(plan.Page) : null;
         if (doc is not null) ClaudeChangeBegin(plan.Page, doc);
