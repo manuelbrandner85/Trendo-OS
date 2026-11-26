@@ -116,3 +116,26 @@ OHNE-COMFY STUDIO-TRAIN-01 30.65 trendo-studio_00042_.png
 OHNE-COMFY STUDIO-TUTOR-01 33.23 trendo-studio_00093_.png
 OHNE-COMFY STUDIO-VIDEOAI-01 45.12 trendo-studio_00093_.png
 OHNE-COMFY STUDIO-VISION-01 32.43 trendo-studio-X-01-29_00001_.png
+
+# Lauf 5 (Nachbesserung nach Gegenprüfung, 26.11.2026): STUDIO-PHOTOS-01 und STUDIO-CODEAI-01 mit angepasster Anweisung, je 4 Kandidaten (--seed 20261910/20261920/20261930/20261940), Prüfsummen-Abgleich der Modelle jetzt Pflicht (Standard-Modellordner)
+MODELL flux-2-klein-4b.safetensors sha256 ok
+MODELL qwen_3_4b.safetensors sha256 ok
+MODELL flux2-vae.safetensors sha256 ok
+BILD STUDIO-PHOTOS-01 11.3s -> STUDIO-PHOTOS-01.jpg
+BILD STUDIO-CODEAI-01 6.7s -> STUDIO-CODEAI-01.jpg
+MODELL flux-2-klein-4b.safetensors sha256 ok
+MODELL qwen_3_4b.safetensors sha256 ok
+MODELL flux2-vae.safetensors sha256 ok
+BILD STUDIO-PHOTOS-01 7.2s -> STUDIO-PHOTOS-01.jpg
+BILD STUDIO-CODEAI-01 7.2s -> STUDIO-CODEAI-01.jpg
+MODELL flux-2-klein-4b.safetensors sha256 ok
+MODELL qwen_3_4b.safetensors sha256 ok
+MODELL flux2-vae.safetensors sha256 ok
+BILD STUDIO-PHOTOS-01 8.7s -> STUDIO-PHOTOS-01.jpg
+BILD STUDIO-CODEAI-01 9.4s -> STUDIO-CODEAI-01.jpg
+MODELL flux-2-klein-4b.safetensors sha256 ok
+MODELL qwen_3_4b.safetensors sha256 ok
+MODELL flux2-vae.safetensors sha256 ok
+BILD STUDIO-PHOTOS-01 7.5s -> STUDIO-PHOTOS-01.jpg
+BILD STUDIO-CODEAI-01 9.3s -> STUDIO-CODEAI-01.jpg
+# Auswahl: Kandidat 1 für beide (STUDIO-PHOTOS-01 Startwert 20261910, STUDIO-CODEAI-01 Startwert 20261911)

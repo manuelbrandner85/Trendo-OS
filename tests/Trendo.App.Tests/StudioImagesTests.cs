@@ -63,6 +63,26 @@ public class StudioBilder
         }
     }
 
+    [Theory(DisplayName = "Bild-Herkunft T-0783: jedes ausgelieferte Studio-Bild und Spiele-Cover hat einen Herkunftseintrag mit FLUX.2 [klein] 4B, Anweisung, Startwert und passender Prüfsumme")]
+    [InlineData("docs/design/STUDIOBILDER.json", "src/Trendo.App/Assets/studios")]
+    [InlineData("docs/design/SPIELECOVER.json", "src/Trendo.App/Assets/bibliothek")]
+    public void Every_shipped_image_has_flux_provenance(string json, string folder)
+    {
+        using var reg = System.Text.Json.JsonDocument.Parse(File.ReadAllText(Repo(json)));
+        var bad = new List<string>();
+        foreach (var f in Directory.GetFiles(Repo(folder), "*.jpg"))
+        {
+            var id = Path.GetFileNameWithoutExtension(f);
+            if (!reg.RootElement.TryGetProperty(id, out var e)) { bad.Add(id + ": kein Eintrag"); continue; }
+            if (e.GetProperty("modell").GetString()?.Contains("FLUX.2 [klein] 4B") != true) bad.Add(id + ": Modell");
+            if (e.GetProperty("lizenz").GetString()?.Contains("Apache-2.0") != true) bad.Add(id + ": Lizenz");
+            if (string.IsNullOrWhiteSpace(e.GetProperty("prompt").GetString()) || e.GetProperty("seed").ValueKind != System.Text.Json.JsonValueKind.Number) bad.Add(id + ": Anweisung/Startwert");
+            var sha = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(f))).ToLowerInvariant();
+            if (!e.TryGetProperty("sha256", out var s) || s.GetString() != sha) bad.Add(id + ": Prüfsumme");
+        }
+        Assert.True(bad.Count == 0, string.Join("; ", bad));
+    }
+
     [Fact(DisplayName = "Studio-Bilder: jedes JPG ist 768 × 432 und trägt keine Metadaten mit Pfaden, Rechner- oder Benutzernamen (kein EXIF/XMP)")]
     public void Studio_jpgs_size_and_clean_metadata()
     {

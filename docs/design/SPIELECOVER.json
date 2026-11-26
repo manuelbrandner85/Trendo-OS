@@ -1,0 +1,152 @@
+{
+  "ascheturm": {
+    "datei": "src/Trendo.App/Assets/bibliothek/ascheturm.jpg",
+    "seed": 20261111,
+    "prompt": "an armored lone knight with a worn greatsword before an immense tower of grey ash and drifting embers, gloomy dusk, cinematic key art for an original video game, vertical poster composition, dramatic believable lighting, rich detail, no text, no letters, no title, no logos, no watermark, no brand names",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, ComfyUI lokal",
+    "erzeugt": "2026-11-09",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "fdcad12d329ede294e5b93655952c06e03653f7f9f391413c66bc1612a5a4a79",
+    "quelle": "Prompt und Startwert aus den PNG-Metadaten der ComfyUI-Ausgabe trendo-studio_00086_.png (Bildabweichung 0.18)"
+  },
+  "demo-dodge": {
+    "datei": "src/Trendo.App/Assets/bibliothek/demo-dodge.jpg",
+    "seed": 20261121,
+    "prompt": "a small character dodging swarms of little creatures on a dark blue field, simple playful 2D illustration, cinematic key art for an original video game, vertical poster composition, dramatic believable lighting, rich detail, no text, no letters, no title, no logos, no watermark, no brand names",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, ComfyUI lokal",
+    "erzeugt": "2026-11-09",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "399c6cb12bd0f09c7cf435ba9a9fa389411e2dae2379b5a2ababf16b6e7208a8",
+    "quelle": "Prompt und Startwert aus den PNG-Metadaten der ComfyUI-Ausgabe trendo-studio_00096_.png (Bildabweichung 0.21)"
+  },
+  "demo-platformer-2d": {
+    "datei": "src/Trendo.App/Assets/bibliothek/demo-platformer-2d.jpg",
+    "seed": 20261120,
+    "prompt": "a pixel art scene of a small adventurer running across green platforms in a cave, retro palette, cinematic key art for an original video game, vertical poster composition, dramatic believable lighting, rich detail, no text, no letters, no title, no logos, no watermark, no brand names",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, ComfyUI lokal",
+    "erzeugt": "2026-11-09",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "6507a5e5921e2a7b55e232c29ffee0ef9f4d638673a4c97dfc8c15a09b1c19d5",
+    "quelle": "Prompt und Startwert aus den PNG-Metadaten der ComfyUI-Ausgabe trendo-studio_00095_.png (Bildabweichung 0.20)"
+  },
+  "demo-platformer-3d": {
+    "datei": "src/Trendo.App/Assets/bibliothek/demo-platformer-3d.jpg",
+    "seed": 20261117,
+    "prompt": "a small cheerful robot jumping across floating grass islands collecting golden coins, bright blue sky, stylized 3D, cinematic key art for an original video game, vertical poster composition, dramatic believable lighting, rich detail, no text, no letters, no title, no logos, no watermark, no brand names",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, ComfyUI lokal",
+    "erzeugt": "2026-11-09",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "fce1411abe2633235b239851ceac2813516405c557a6a3b38cc2fc830ac931cc",
+    "quelle": "Prompt und Startwert aus den PNG-Metadaten der ComfyUI-Ausgabe trendo-studio_00092_.png (Bildabweichung 0.19)"
+  },
+  "demo-squash": {
+    "datei": "src/Trendo.App/Assets/bibliothek/demo-squash.jpg",
+    "seed": 20261118,
+    "prompt": "a small round hero jumping onto colorful blob creatures on a simple arena floor, playful stylized 3D, cinematic key art for an original video game, vertical poster composition, dramatic believable lighting, rich detail, no text, no letters, no title, no logos, no watermark, no brand names",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, ComfyUI lokal",
+    "erzeugt": "2026-11-09",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "11e7d5632cb0de2a9e601d7343a830c6719d517a065ec5b82eedc2714c19b329",
+    "quelle": "Prompt und Startwert aus den PNG-Metadaten der ComfyUI-Ausgabe trendo-studio_00093_.png (Bildabweichung 0.20)"
+  },
+  "demo-truck": {
+    "datei": "src/Trendo.App/Assets/bibliothek/demo-truck.jpg",
+    "seed": 20261178,
+    "prompt": "a tiny toy-like wooden delivery truck painted solid orange seen from the side and from behind, driving away through a tiny toy-like town on a hilly road, no grille visible, no emblem, warm afternoon light, cinematic key art for an original video game, vertical poster composition, dramatic believable lighting, rich detail, no text, no letters, no title, no logos, no watermark, no brand names",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, ComfyUI lokal",
+    "erzeugt": "2026-11-09",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "728429d64de292b3bed9209f00d37569c1a1a48b6ce55bac31c93e33ef18e3a3",
+    "quelle": "Prompt und Startwert aus den PNG-Metadaten der ComfyUI-Ausgabe trendo-studio_00100_.png (Bildabweichung 0.18)"
+  },
+  "eisfront": {
+    "datei": "src/Trendo.App/Assets/bibliothek/eisfront.jpg",
+    "seed": 20261113,
+    "prompt": "an abandoned arctic research station in a blizzard at night, one flickering window, a figure with a flashlight in a heavy parka, cinematic key art for an original video game, vertical poster composition, dramatic believable lighting, rich detail, no text, no letters, no title, no logos, no watermark, no brand names",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, ComfyUI lokal",
+    "erzeugt": "2026-11-09",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "9d91aa4d39e7be3214ee950ff2a0ec8fdbede139a658a9d4f6cc37ee618cced4",
+    "quelle": "Prompt und Startwert aus den PNG-Metadaten der ComfyUI-Ausgabe trendo-studio_00088_.png (Bildabweichung 0.18)"
+  },
+  "funkstille": {
+    "datei": "src/Trendo.App/Assets/bibliothek/funkstille.jpg",
+    "seed": 20261115,
+    "prompt": "a silent agent in dark tactical clothing crouching in a concrete corridor, narrow beams of red light, deep shadows, cinematic key art for an original video game, vertical poster composition, dramatic believable lighting, rich detail, no text, no letters, no title, no logos, no watermark, no brand names",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, ComfyUI lokal",
+    "erzeugt": "2026-11-09",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "5c49196f422d0ad38bd2b5348080c70edb77ab33e12cf4a7c7882dfbe99ce59a",
+    "quelle": "Prompt und Startwert aus den PNG-Metadaten der ComfyUI-Ausgabe trendo-studio_00090_.png (Bildabweichung 0.19)"
+  },
+  "hb-libbet": {
+    "datei": "src/Trendo.App/Assets/bibliothek/hb-libbet.jpg",
+    "seed": 20261122,
+    "prompt": "a small girl unrolling a magic glowing carpet tile by tile across a dark floor, four-color green handheld game palette, pixel art, cinematic key art for an original video game, vertical poster composition, dramatic believable lighting, rich detail, no text, no letters, no title, no logos, no watermark, no brand names",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, ComfyUI lokal",
+    "erzeugt": "2026-11-09",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "554dc27eec0c09bb868c2d3ccc8767221ebf89d9c6b740f6030cbcffb8ef71f1",
+    "quelle": "Prompt und Startwert aus den PNG-Metadaten der ComfyUI-Ausgabe trendo-studio_00097_.png (Bildabweichung 0.20)"
+  },
+  "hb-ucity": {
+    "datei": "src/Trendo.App/Assets/bibliothek/hb-ucity.jpg",
+    "seed": 20261123,
+    "prompt": "a tiny pixel art city seen from above with roads, houses and a power plant, bright handheld game colors, cinematic key art for an original video game, vertical poster composition, dramatic believable lighting, rich detail, no text, no letters, no title, no logos, no watermark, no brand names",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, ComfyUI lokal",
+    "erzeugt": "2026-11-09",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "d35b462f2e543b42401d37c49f499323323f2bdb9440adf63c2c39a8e1740de5",
+    "quelle": "Prompt und Startwert aus den PNG-Metadaten der ComfyUI-Ausgabe trendo-studio_00098_.png (Bildabweichung 0.21)"
+  },
+  "klingenbund": {
+    "datei": "src/Trendo.App/Assets/bibliothek/klingenbund.jpg",
+    "seed": 20261114,
+    "prompt": "four mismatched fantasy travelers standing on a hill looking over a fading kingdom, sunset, painterly early 2000s role playing game look, cinematic key art for an original video game, vertical poster composition, dramatic believable lighting, rich detail, no text, no letters, no title, no logos, no watermark, no brand names",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, ComfyUI lokal",
+    "erzeugt": "2026-11-09",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "69e7e0edb9de31ed3aa1b72edf2d5335b4aa645818bdc27adb5df33aca7a4761",
+    "quelle": "Prompt und Startwert aus den PNG-Metadaten der ComfyUI-Ausgabe trendo-studio_00089_.png (Bildabweichung 0.19)"
+  },
+  "kuestenrallye": {
+    "datei": "src/Trendo.App/Assets/bibliothek/kuestenrallye.jpg",
+    "seed": 20261112,
+    "prompt": "two plain unbranded rally cars drifting around a sunny coastal cliff road, turquoise sea, dust clouds, early 2000s 3D racing game look, cinematic key art for an original video game, vertical poster composition, dramatic believable lighting, rich detail, no text, no letters, no title, no logos, no watermark, no brand names",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, ComfyUI lokal",
+    "erzeugt": "2026-11-09",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "a77b6291251c8ab793d6edef6d40b43bad8281bef051bc9962a7afa23697adf8",
+    "quelle": "Prompt und Startwert aus den PNG-Metadaten der ComfyUI-Ausgabe trendo-studio_00087_.png (Bildabweichung 0.19)"
+  },
+  "moosgrund": {
+    "datei": "src/Trendo.App/Assets/bibliothek/moosgrund.jpg",
+    "seed": 20261110,
+    "prompt": "a tiny glowing forest spirit made of moss leaping between giant mossy tree tops, shafts of warm sunlight, stylized early 2000s 3D game look, cinematic key art for an original video game, vertical poster composition, dramatic believable lighting, rich detail, no text, no letters, no title, no logos, no watermark, no brand names",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, ComfyUI lokal",
+    "erzeugt": "2026-11-09",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "8fffdb6611bb69aff366b100cacb9996fa14310f153449728e2576c8858ccdf3",
+    "quelle": "Prompt und Startwert aus den PNG-Metadaten der ComfyUI-Ausgabe trendo-studio_00085_.png (Bildabweichung 0.18)"
+  },
+  "morvane": {
+    "datei": "src/Trendo.App/Assets/bibliothek/morvane.jpg",
+    "seed": 20261177,
+    "prompt": "an invented rainy harbor city at night seen from a rooftop, container cranes, wet streets with car headlights, a lone courier in a plain hooded jacket standing with his back to the viewer, no motorcycle, no vehicle close to the camera, no patches, no badges, cinematic key art for an original video game, vertical poster composition, dramatic believable lighting, rich detail, no text, no letters, no title, no logos, no watermark, no brand names",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, ComfyUI lokal",
+    "erzeugt": "2026-11-09",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "78c7d2d9710b6f103a57b747a093af7649e37c764a9affc2d410db28e8885f2d",
+    "quelle": "Prompt und Startwert aus den PNG-Metadaten der ComfyUI-Ausgabe trendo-studio_00099_.png (Bildabweichung 0.17)"
+  },
+  "sternenwerft": {
+    "datei": "src/Trendo.App/Assets/bibliothek/sternenwerft.jpg",
+    "seed": 20261116,
+    "prompt": "a huge orbital shipyard above a blue planet, a small patched-together spaceship leaving the dock, laser sparks in the distance, cinematic key art for an original video game, vertical poster composition, dramatic believable lighting, rich detail, no text, no letters, no title, no logos, no watermark, no brand names",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, ComfyUI lokal",
+    "erzeugt": "2026-11-09",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "a425e54d1c0017d16cdf71b2639791843611a7a69786976ec59597493f1cd5e2",
+    "quelle": "Prompt und Startwert aus den PNG-Metadaten der ComfyUI-Ausgabe trendo-studio_00091_.png (Bildabweichung 0.18)"
+  }
+}
