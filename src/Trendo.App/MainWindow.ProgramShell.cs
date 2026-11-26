@@ -30,6 +30,14 @@ public sealed record ProgramPanel(string Title, Func<ProgramDocument, Control> B
 /// <paramref name="Run"/> löst die echte Funktion aus (auch wenn die Eigenschaften-Spalte in „Einfach“ eingeklappt ist); <paramref name="Empty"/> sagt, ob das Dokument noch leer ist.</summary>
 public sealed record ProgramFirstStep(string Label, string Hint, Action<ProgramDocument> Run, Func<ProgramDocument, bool> Empty);
 
+/// <summary>T-0774 (Q1 „KI schreibt ins offene Dokument“): eine Fachaktion des Programms für die KI-Kette (<see cref="Trendo.Core.Programs.AssistChain"/>).
+/// <paramref name="Prepare"/> läuft schon in der Vorschau (nur Einstellungen im Dokument, prüft die Werte – wirft mit einem Satz für die Person);
+/// <paramref name="Produce"/> läuft erst bei „Ja, behalten“ am echten Dokument und erzeugt die echte Datei. Beides zusammen ist EIN Rückgängig-Schritt;
+/// Rückgängig legt die erzeugte Datei beiseite (Ordner „.rueckgaengig“), Wiederholen holt sie zurück.
+/// Höchstens eine Fachaktion je Auftrag, als letzter Schritt. <paramref name="Produce"/> meldet über den zweiten Wert jede Datei, die es selbst anlegt (vor dem Schreiben) –
+/// schlägt das Erzeugen fehl, werden genau diese Dateien beiseitegelegt („.rueckgaengig“); fremde Dateien im selben Ordner bleiben unberührt.</summary>
+public sealed record ProgramKiAction(AssistAction Def, Action<ProgramDocument, IReadOnlyDictionary<string, string>> Prepare, Func<ProgramDocument, Action<string>, IReadOnlyList<string>> Produce);
+
 public sealed class ProgramSpec(string key, string studio, string title)
 {
     public string Key { get; } = key;
@@ -75,6 +83,12 @@ public sealed class ProgramSpec(string key, string studio, string title)
     /// <summary>T-0710: fachliche Einträge, die nicht im Menüband stehen (eigene Menüs oder Ergänzungen der Standardmenüs) – mit denselben Handlern wie die Programmfunktionen.
     /// Kürzel, die hier stehen, löst die Hülle im Programm aus.</summary>
     public Func<ProgramDocument, IEnumerable<MenuTop>>? Menus { get; init; }
+    /// <summary>T-0774: Fachaktionen für die KI (neue Datei im offenen Programm, ein Rückgängig-Schritt).</summary>
+    public List<ProgramKiAction> KiActions { get; init; } = [];
+    /// <summary>T-0774: Zusatz zur Rolle der KI – wann sie welche Fachaktion nimmt.</summary>
+    public string KiHint { get; init; } = "";
+    /// <summary>T-0774: Felder, die nur die Person selbst setzt – „dokument.setzen“ der KI wird dort abgelehnt (z. B. Ablage-Ordner).</summary>
+    public IReadOnlyList<string> KiLocked { get; init; } = [];
     public int LevelOf(ProgramCmd c) => Math.Max(c.Level, CmdLevels.GetValueOrDefault(c.Name));
 }
 

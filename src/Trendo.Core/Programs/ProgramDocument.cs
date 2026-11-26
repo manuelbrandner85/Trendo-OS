@@ -132,18 +132,25 @@ public sealed class ProgramDocument
     /// auf echte Dateien außerhalb des .tdoc zeigt (Code mit KI), bringen hier diese Dateien mit – so bleibt es EIN Rückgängig-Schritt.</summary>
     public event Action<ProgramDocument>? Restored;
 
+    /// <summary>T-0774: Ein Schritt wurde wirklich zurückgenommen (<c>Undo = true</c>) oder wiederholt – nur durch <see cref="Undo"/> und <see cref="Redo"/>,
+    /// nie durch <see cref="Rollback"/> (Vorschau). <c>From</c> ist die Nummer des Schritts vorher, <c>To</c> danach (Wiederholen vergibt eine neue Nummer).</summary>
+    public event Action<ProgramDocument, (long From, long To, bool Undo)>? Stepped;
+
+    /// <summary>T-0774: Nummer des obersten Rückgängig-Schritts (0 = keiner).</summary>
+    public long TopStep => _undo.Count > 0 ? _undo.Peek().Seq : 0;
+
     public bool Undo()
     {
         if (_undo.Count == 0) return false;
-        var (data, label, _) = _undo.Pop(); _redo.Push((Data.ToJsonString(), label, 0));
-        Data = JsonNode.Parse(data)!.AsObject(); Dirty = true; Changed = DateTime.Now; Restored?.Invoke(this); return true;
+        var (data, label, seq) = _undo.Pop(); _redo.Push((Data.ToJsonString(), label, seq)); // T-0774: Nummer merken, damit Wiederholen den Schritt wiedererkennt
+        Data = JsonNode.Parse(data)!.AsObject(); Dirty = true; Changed = DateTime.Now; Restored?.Invoke(this); Stepped?.Invoke(this, (seq, seq, true)); return true;
     }
 
     public bool Redo()
     {
         if (_redo.Count == 0) return false;
-        var (data, label, _) = _redo.Pop(); PushUndo(Data.ToJsonString(), label); // neue Nummer: gilt als nach einer Marke hinzugekommen
-        Data = JsonNode.Parse(data)!.AsObject(); Dirty = true; Changed = DateTime.Now; Restored?.Invoke(this); return true;
+        var (data, label, old) = _redo.Pop(); PushUndo(Data.ToJsonString(), label); // neue Nummer: gilt als nach einer Marke hinzugekommen
+        Data = JsonNode.Parse(data)!.AsObject(); Dirty = true; Changed = DateTime.Now; Restored?.Invoke(this); Stepped?.Invoke(this, (old, _pushes, false)); return true;
     }
 
     /// <summary>T-0315: Stand merken (Daten, Rückgängig-Tiefe, „geändert“) – für Vorschau-Läufe des Assistenten.</summary>

@@ -100,6 +100,10 @@ public partial class MainWindow
             new("pdf", "Ergebnis als PDF", ".pdf", (d, f) => PwRunTo(d, f)),
             new("vergleich", "Vergleich als Text (.txt)", ".txt", (d, f) => { var c = PwCompare(d); File.WriteAllText(f, PdfTools.CompareText(c.Result, c.A, c.B)); return f; }),
         ],
+        // T-0774 (Q1): die KI arbeitet mit denselben Fachaktionen wie die Knöpfe – „Seiten 1–3 heraus“ ergibt eine neue PDF im offenen Programm, ein Rückgängig-Schritt
+        KiActions = [PwKiPages, PwKiRun],
+        KiHint = "Eine neue PDF entsteht nur mit „pdf.seiten_heraus“ (Seiten wie „1-3“ oder „2,5-z“) oder „pdf.ausfuehren“ (Werkzeug auf die Dateiliste anwenden); "
+               + "„dokument.setzen“ ändert nur Einstellungen wie Wasserzeichen-Text oder Stempel und erzeugt keine Datei. Die Originale bleiben immer unverändert.",
         Tools = [.. PwTools.Select(t => new ProgramTool("pw-tool-" + t.Id, t.Icon, t.Name, t.What, d => PwSetTool(d, t.Id), () => ProgramActive(PwKey)?.Text("tool") == t.Id))],
         // T-0702 (V-02): leere Liste – erst Dateien holen
         FirstStep = new("Dateien hinzufügen …", "Wähl die PDFs (oder Bilder) oder zieh sie aus dem Explorer hierher – die Originale bleiben unverändert, jedes Ergebnis wird eine neue Datei.",
@@ -111,13 +115,77 @@ public partial class MainWindow
              + "die Originale bleiben unverändert. Seiten ordnen: Seiten anklicken (Strg für mehrere), dann drehen, löschen oder verschieben. Schwärzen: Balken mit der Maus über die Stelle ziehen.",
     }, "pdf-werkstatt", "pdf zusammenfügen", "pdf teilen", "pdf komprimieren", "pdf verkleinern", "schwärzen", "wasserzeichen", "seitenzahlen", "pdf vergleichen", "bilder zu pdf", "pdf24", "pdfsam", "metadaten");
 
+    // ---------- T-0774: Fachaktionen für die KI ----------
+
+    /// <summary>„Seiten herausziehen“: Bereich aus jeder PDF der Liste als neue Datei (Werkzeug „Teilen“ mit genau einem Bereich).</summary>
+    ProgramKiAction PwKiPages => new(new AssistAction("pdf.seiten_heraus", "Seiten als neue PDF herausziehen", ["seiten", "heraus", "herausziehen", "herausnehmen", "extrahieren", "auszug", "neue", "pdf"],
+        [new AssistParam("seiten", "Seiten", Words: ["seiten", "seite"])]),
+        (d, a) =>
+        {
+            var spec = PwPageSpec(a.GetValueOrDefault("seiten") ?? "");
+            var pdfs = PwFiles(d).Where(f => !PwIsImage(f)).ToList();
+            if (pdfs.Count == 0) throw new InvalidOperationException("Es ist noch keine PDF in der Liste – erst „Dateien hinzufügen …“.");
+            foreach (var f in pdfs) { if (!File.Exists(f)) throw new FileNotFoundException("Datei nicht gefunden: " + Path.GetFileName(f)); PdfTools.ParsePages(spec, PdfView.PageCount(f)); } // prüft schon in der Vorschau
+            d.Edit("Seiten herausziehen", x => { x["tool"] = "teilen"; x["splitMode"] = "bereiche"; x["ranges"] = spec; });
+        },
+        PwKiProduce);
+
+    /// <summary>„Werkzeug ausführen“: das gewählte (oder genannte) Werkzeug auf die Liste – wie der Knopf „Ausführen“.</summary>
+    ProgramKiAction PwKiRun => new(new AssistAction("pdf.ausfuehren", "Werkzeug ausführen (neue Datei)", ["ausfuehren", "anwenden", "zusammenfuegen", "komprimieren", "verkleinern", "wasserzeichen", "stempel", "seitenzahlen", "metadaten", "vergleichen", "bilder"],
+        [new AssistParam("werkzeug", "Werkzeug", AssistKind.Choice, [.. PwTools.Select(t => t.Id)], Required: false)]),
+        (d, a) =>
+        {
+            if (a.GetValueOrDefault("werkzeug") is { Length: > 0 } t && PwTools.Any(x => x.Id == t)) d.Edit("Werkzeug: " + PwTools.First(x => x.Id == t).Name, x => x["tool"] = t);
+            if (PwFiles(d).Count == 0) throw new InvalidOperationException("Es ist noch keine Datei in der Liste – erst „Dateien hinzufügen …“.");
+            PwKiAllowed(d);
+        },
+        PwKiProduce);
+
+    /// <summary>T-0774 (Gegenprüfung 2): KI-Pläne führen keine Passwort-Werkzeuge aus (weder schützen noch entsperren) – geprüft am Stand, der wirklich läuft.</summary>
+    static void PwKiAllowed(ProgramDocument d)
+    {
+        if (d.Text("tool") == "passwort") throw new InvalidOperationException("Passwörter setzt oder entfernt nur die Person selbst (Werkzeug „Passwort“) – die KI führt das nicht aus.");
+    }
+
+    /// <summary>Erzeugen bei „Ja, behalten“: dieselbe Prüfung noch einmal am echten Dokument, dann dieselbe Funktion wie der Knopf „Ausführen“.</summary>
+    List<string> PwKiProduce(ProgramDocument d, Action<string> created) { PwKiAllowed(d); return PwRun(d, created); }
+
+    /// <summary>T-0774 (2. Gegenprüfung M1): während eines KI-Laufs bekommt jede Ausgabedatei, die die Werkstatt selbst anlegt, hier Bescheid (vor dem Schreiben).</summary>
+    Action<string>? _pwCreated;
+
+    /// <summary>Füllwörter rund um eine Seitenangabe („Seiten 1 bis 3 als neue PDF heraus“) – alles andere ist eine unbekannte Angabe und wird gemeldet.</summary>
+    static readonly HashSet<string> PwSpecFill = ["seite", "seiten", "s", "und", "als", "neue", "neuen", "pdf", "datei", "heraus", "herausziehen", "herausnehmen", "raus", "aus", "der", "die", "das", "dem", "den", "von",
+        "nur", "bitte", "zieh", "ziehe", "nimm", "nehmen", "extrahieren", "mach", "mache", "daraus", "eine", "einer", "ein"];
+
+    /// <summary>Seitenangabe aus KI oder Alltagssprache: „1–3“, „1 bis 3“, „Seite 2 und 5“, „3 bis Ende“, „3-“ → „1-3“, „2,5“, „3-z“.
+    /// Wirft, wenn keine Seite darin steht oder ein Teil keine Seitenangabe ist (nichts wird still verworfen).</summary>
+    public static string PwPageSpec(string raw)
+    {
+        var t = raw.ToLowerInvariant().Replace('–', '-').Replace('—', '-');
+        t = System.Text.RegularExpressions.Regex.Replace(t, @"\b(?:zum\s+|bis\s+zum\s+|bis\s+)?(?:ende|schluss|letzten?\s+seite|letzte)\b", m => m.Value.StartsWith("bis") || m.Value.StartsWith("zum") ? "-z" : "z");
+        t = System.Text.RegularExpressions.Regex.Replace(t, @"\s*\bbis\b\s*", "-");
+        t = System.Text.RegularExpressions.Regex.Replace(t, @"\s*-\s*", "-").Replace("--", "-");
+        t = System.Text.RegularExpressions.Regex.Replace(t, @"(\d)-(?=$|[\s,;]|und\b)", "$1-z"); // „3-“ = bis zum Ende
+        var parts = new List<string>(); var unknown = new List<string>();
+        foreach (var tok in System.Text.RegularExpressions.Regex.Split(t, @"[\s,;:.]+").Where(x => x.Length > 0))
+        {
+            if (System.Text.RegularExpressions.Regex.IsMatch(tok, @"^(\d{1,6}|z)(-(\d{1,6}|z))?$")) parts.Add(tok);
+            else if (!PwSpecFill.Contains(tok)) unknown.Add(tok);
+        }
+        if (unknown.Count > 0) throw new ArgumentException($"Diese Seitenangabe verstehe ich nicht: „{string.Join(" ", unknown)}“. Beispiel: „1-3“, „2,5“ oder „3 bis Ende“.");
+        if (parts.Count == 0) throw new ArgumentException("Welche Seiten? Zum Beispiel „1-3“ oder „2,5-z“.");
+        return string.Join(",", parts);
+    }
+
     // ---------- Modell ----------
 
     static List<string> PwFiles(ProgramDocument d) => [.. d.List("files").Select(n => n.AsText()).OfType<string>()];
     static string PwToolName(ProgramDocument d) => PwTools.FirstOrDefault(t => t.Id == d.Text("tool")).Name ?? "Zusammenfügen";
     static bool PwIsImage(string f) => Path.GetExtension(f).ToLowerInvariant() is ".png" or ".jpg" or ".jpeg";
-    string PwOutDir() { var d = Path.Combine(WorkFolder("PDF-Werkstatt"), "Ergebnisse"); Directory.CreateDirectory(d); return d; }
-    string PwOut(string stem, string suffix, string ext = ".pdf") => PdfTools.Free(Path.Combine(PwOutDir(), DevStudio.SafeName(stem) + suffix + ext));
+    string PwOutDir() => PwNewDir(Path.Combine(WorkFolder("PDF-Werkstatt"), "Ergebnisse"));
+    /// <summary>Ordner anlegen; legt ihn dieser KI-Lauf neu an, bekommt <see cref="_pwCreated"/> Bescheid (leer gebliebene Ordner werden bei einem Fehler wieder entfernt).</summary>
+    string PwNewDir(string d) { var isNew = !Directory.Exists(d); Directory.CreateDirectory(d); if (isNew) _pwCreated?.Invoke(d); return d; }
+    string PwOut(string stem, string suffix, string ext = ".pdf") { var p = PdfTools.Free(Path.Combine(PwOutDir(), DevStudio.SafeName(stem) + suffix + ext)); _pwCreated?.Invoke(p); return p; }
 
     void PwSetTool(ProgramDocument d, string id)
     {
@@ -239,12 +307,14 @@ public partial class MainWindow
     static string Kb(long b) => b >= 1 << 20 ? $"{b / 1048576.0:0.0} MB" : $"{Math.Max(1, b / 1024)} KB";
 
     /// <summary>Werkzeug auf die Liste anwenden. Ergebnis: neue Dateien (auch im Dokument unter „results“).</summary>
-    public List<string> PwRun(ProgramDocument d)
+    public List<string> PwRun(ProgramDocument d, Action<string>? created = null)
     {
+        _pwCreated = created;
         try { return PwRunCore(d); }
         catch (PdfSharp.Pdf.IO.PdfReaderException e) when (e.Message.Contains("password", StringComparison.OrdinalIgnoreCase))
         { throw new InvalidOperationException(PwPassword.Length > 0 ? "Das Passwort stimmt nicht – bitte noch einmal eingeben." : "Diese PDF ist mit Passwort geschützt – erst mit „Passwort“ entsperren.", e); }
         catch (PdfSharp.Pdf.IO.PdfReaderException e) { throw new InvalidDataException("Die PDF lässt sich nicht lesen – ist sie beschädigt?", e); }
+        finally { _pwCreated = null; }
     }
 
     List<string> PwRunCore(ProgramDocument d)
@@ -286,7 +356,7 @@ public partial class MainWindow
                 }
                 break;
             default:
-                foreach (var f in pdfs) outs.AddRange(PwOne(d, tool, f));
+                foreach (var f in pdfs) { var r = PwOne(d, tool, f); foreach (var (file, _) in r) _pwCreated?.Invoke(file); outs.AddRange(r); } // Teilen: Namen vergibt PdfTools
                 break;
         }
         PwResult(d, outs);
@@ -302,7 +372,7 @@ public partial class MainWindow
         switch (tool)
         {
             case "teilen":
-                var parts = d.Text("splitMode") == "alle" ? PdfTools.Split(f, PwSplitDir(stem), PwInt(d, "every", 1, 1, 10000), _core.Audit) : PdfTools.SplitRanges(f, PwSplitDir(stem), d.Text("ranges", "1-z"), _core.Audit);
+                var parts = d.Text("splitMode") == "alle" ? PdfTools.Split(f, PwSplitDir(stem), PwInt(d, "every", 1, 1, 10000), _core.Audit, _pwCreated) : PdfTools.SplitRanges(f, PwSplitDir(stem), d.Text("ranges", "1-z"), _core.Audit, _pwCreated);
                 res.AddRange(parts.Select(p => (p, $"Teil von {Path.GetFileName(f)}")));
                 break;
             case "komprimieren":
@@ -345,7 +415,7 @@ public partial class MainWindow
         return res;
     }
 
-    string PwSplitDir(string stem) { var dir = Path.Combine(PwOutDir(), DevStudio.SafeName(stem) + "-teile"); Directory.CreateDirectory(dir); return dir; }
+    string PwSplitDir(string stem) => PwNewDir(Path.Combine(PwOutDir(), DevStudio.SafeName(stem) + "-teile"));
 
     /// <summary>Export „Ergebnis als PDF“: Werkzeug ausführen und das (eine) Ergebnis an den gewählten Ort kopieren.</summary>
     string PwRunTo(ProgramDocument d, string target)

@@ -1,0 +1,63 @@
+# T-0774 Nachbesserung: Rot-Lauf der Regressionstests auf dem vorherigen Zweigstand 6588330f8
+# Befehl: Trendo.App.Tests.exe -class Trendo.App.Tests.T0774KiDokument_Ui (Testdatei vom Endstand, Code von 6588330f8)
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0774 Gegenprüfung 1: zwei Fachaktionen („1-2“, dann „4-5“) oder „dokument.setzen“ danach – deutlicher Fehler, keine Datei, Dokument unverändert [FAIL]
+      Assert.Equal() Failure: Strings differ
+                 ↓ (pos 0)
+      Expected: "fehler"
+      Actual:   "vorschau"
+                 ↑ (pos 0)
+      Stack Trace:
+        tests\Trendo.App.Tests\T0774KiDokumentUiTests.cs(223,0): at Trendo.App.Tests.T0774KiDokument_Ui.One_production_per_plan()
+        --- End of stack trace from previous location ---
+    T-0774 Gegenprüfung 3: Vorschau-Zurückrollen bewegt keine KI-Datei – nach „Ergebnisliste leeren“ und neuer Vorschau mit „Nein“ liegt die PDF noch da [FAIL]
+      Vorschau hat die KI-PDF verschoben
+      Stack Trace:
+        tests\Trendo.App.Tests\T0774KiDokumentUiTests.cs(281,0): at Trendo.App.Tests.T0774KiDokument_Ui.Preview_rollback_never_moves_files()
+        --- End of stack trace from previous location ---
+    T-0774 ECHT: lokale KI (Ollama) – PDF-Werkstatt „Seiten 1–3 heraus“ und Scannen „Fotos → PDF“ im offenen Programm, echte PDFs, Rückgängig (nur mit TRENDO_T0774_ECHT) [SKIP]
+      Echtlauf nur mit TRENDO_T0774_ECHT=<Belegordner> (braucht Ollama mit Modell auf diesem PC).
+    T-0774 Gegenprüfung 6: Wiederholen bei belegtem Namen trifft keine fremde Datei – Meldung, beiseitegelegte Fassung bleibt [FAIL]
+      Assert.Contains() Failure: Sub-string not found
+      String:    "Fertig: vertrag-teil1.pdf – Teil von vertrag.pdf."
+      Not found: "gibt es inzwischen wieder"
+      Stack Trace:
+        tests\Trendo.App.Tests\T0774KiDokumentUiTests.cs(351,0): at Trendo.App.Tests.T0774KiDokument_Ui.Redo_never_overwrites()
+        --- End of stack trace from previous location ---
+    T-0774 Gegenprüfung 8–10: „3 bis Ende“ → 3-z, Unbekanntes gemeldet; nach „Nein“ keine Meldung stehen; Regel-Planer setzt Modus „foto“ nicht ungefragt [FAIL]
+      Assert.Equal() Failure: Strings differ
+                  ↓ (pos 1)
+      Expected: "3-z"
+      Actual:   "3"
+      Stack Trace:
+        tests\Trendo.App.Tests\T0774KiDokumentUiTests.cs(359,0): at Trendo.App.Tests.T0774KiDokument_Ui.Small_fixes()
+        --- End of stack trace from previous location ---
+    T-0774 Gegenprüfung 2: KI-Plan mit Werkzeug „Passwort“ (entfernen) – abgelehnt, keine entsperrte Kopie [FAIL]
+      Assert.DoesNotContain() Failure: Filter matched in collection
+                   ↓ (pos 0)
+      Collection: ["C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-tes"···]
+      Stack Trace:
+        tests\Trendo.App.Tests\T0774KiDokumentUiTests.cs(257,0): at Trendo.App.Tests.T0774KiDokument_Ui.No_password_tools_from_ki()
+        --- End of stack trace from previous location ---
+    T-0774 Gegenprüfung 5: Fehler beim Übernehmen (zweite PDF kaputt) – schon geschriebene Dateien werden zurückgenommen, Dokument unverändert [FAIL]
+      Assert.Empty() Failure: Collection was not empty
+      Collection: ["C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-tes"···]
+      Stack Trace:
+        tests\Trendo.App.Tests\T0774KiDokumentUiTests.cs(327,0): at Trendo.App.Tests.T0774KiDokument_Ui.Failed_apply_leaves_no_files()
+        --- End of stack trace from previous location ---
+    T-0774 Gegenprüfung 4: KI setzt keinen Ablage-Ordner (absolut/UNC) für Scans – abgelehnt, keine PDF außerhalb [FAIL]
+      Assert.Equal() Failure: Strings differ
+                 ↓ (pos 0)
+      Expected: "fehler"
+      Actual:   "vorschau"
+                 ↑ (pos 0)
+      Stack Trace:
+        tests\Trendo.App.Tests\T0774KiDokumentUiTests.cs(299,0): at Trendo.App.Tests.T0774KiDokument_Ui.Ki_cannot_set_scan_folder()
+        --- End of stack trace from previous location ---
+  Finished:    Trendo.App.Tests (ID = '376738cb34d312fb94f4a131254f30b7f3d176bfdf848929a13549966dd2ea08')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 12, Errors: 0, Failed: 7, Skipped: 1, Not Run: 0, Time: 19,484s
+EXIT 1

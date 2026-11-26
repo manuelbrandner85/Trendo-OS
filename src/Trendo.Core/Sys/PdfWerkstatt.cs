@@ -49,7 +49,8 @@ public static partial class PdfTools
 
     /// <summary>Teilen nach Bereichen wie PDFsam „Split by page ranges“: „1-3; 4-6; 7-z“ – jede Gruppe (durch Semikolon oder Zeilenumbruch getrennt)
     /// wird eine eigene Datei name-teil1.pdf, name-teil2.pdf … Innerhalb einer Gruppe gilt die Seitenangabe von <see cref="ParsePages"/>.</summary>
-    public static List<string> SplitRanges(string input, string outDir, string ranges, AuditLog? audit = null)
+    /// <param name="created">T-0774: bekommt jede neue Datei vor dem Schreiben (KI-Lauf: bei einem Fehler wird genau diese zurückgenommen).</param>
+    public static List<string> SplitRanges(string input, string outDir, string ranges, AuditLog? audit = null, Action<string>? created = null)
     {
         var groups = ranges.Split([';', '\n', '|'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         if (groups.Length == 0) throw new ArgumentException("Bitte Bereiche angeben, z. B. „1-3; 4-6; 7-z“.");
@@ -62,7 +63,7 @@ public static partial class PdfTools
             using var t = new PdfDocument();
             foreach (var i in lists[k]) t.AddPage(src.Pages[i]);
             var f = Free(Path.Combine(outDir, $"{stem}-teil{k + 1}.pdf"));
-            Guard(f, input); Save(t, f); files.Add(f);
+            Guard(f, input); created?.Invoke(f); Save(t, f); files.Add(f);
         }
         audit?.Append("app", "pdf.split.ranges", $"{Path.GetFileName(input)} → {files.Count} Dateien");
         return files;

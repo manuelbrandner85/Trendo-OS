@@ -68,9 +68,14 @@ public partial class MainWindow
                 new ProgramCmd("scan-save", "Als PDF ablegen", d => ScanSavePdf(d), Primary: true, Tip: "Mehrseitige PDF, Name „Datum Titel.pdf“, im passenden Ordner – nichts wird überschrieben."),
                 new ProgramCmd("scan-ocr", "Durchsuchbare PDF", d => _ = ScanSearchablePdf(d), Tip: "Mit Texterkennung (Tesseract, offline) – Suchen und Kopieren gehen dann."),
                 new ProgramCmd("scan-open-pdf", "In Trendo PDF öffnen", d => ScanOpenInPdf(d), Tip: "Zuletzt abgelegte PDF in „Trendo PDF“ – unterschreiben, zusammenfügen, schwärzen."),
-                new ProgramCmd("scan-scanner", "Scanner …", d => _progMsg[ScanKey] = "Ein Scanner (WIA/TWAIN) ist noch nicht angeschlossen. So geht es trotzdem: mit dem Scanner-Programm als Bild speichern oder das Blatt mit dem Handy fotografieren und hier „Fotos hinzufügen“.", Level: 1),
+                new ProgramCmd("scan-scanner", "Hinweis: Papier-Scanner", d => _progMsg[ScanKey] = "Ein Scanner (WIA/TWAIN) ist noch nicht angeschlossen. So geht es trotzdem: mit dem Scanner-Programm als Bild speichern oder das Blatt mit dem Handy fotografieren und hier „Fotos hinzufügen“.", Level: 1),
             ]),
         ],
+        // T-0774 (Q1): KI-Aktion „Fotos → PDF“ – im offenen Scan, die PDF entsteht bei „Ja, behalten“, ein Rückgängig-Schritt
+        KiActions = [ScanKiPdf],
+        KiLocked = ["folder"], // T-0774 (Gegenprüfung 4): den Ablage-Ordner wählt nur die Person – die KI legt nie außerhalb der Scan-Ablage ab
+        KiHint = "Eine PDF aus den Fotos entsteht nur mit „scan.pdf“ (optional mit titel, modus und ordner mit weiteren Fotos); „dokument.setzen“ ändert nur Angaben wie Titel oder Datum "
+               + "und erzeugt keine Datei. Die Fotos selbst bleiben unverändert, ein Scanner wird nicht angesteuert.",
         Exports =
         [
             new("pdf", "PDF (alle Seiten)", ".pdf", (d, f) => { ScanWritePdf(d, f); return f; }),
@@ -90,6 +95,33 @@ public partial class MainWindow
         Help = "Blatt flach auf eine dunkle Unterlage legen und von oben fotografieren. Dann „Fotos hinzufügen“ oder „Ordner …“: Trendo findet die Blattkanten und entzerrt die Seite. Stimmen die Ecken nicht, "
              + "im Original an den Punkten ziehen. Links den Modus wählen (Dokument = Schwarzweiß, Whiteboard, Foto …), drehen und ordnen. Rechts Titel und Datum – daraus wird der Dateiname. „Als PDF ablegen“ speichert, ohne etwas zu überschreiben. Die Fotos selbst bleiben unverändert.",
     }, "scannen", "scanner", "einscannen", "dokument scannen", "lens", "adobe scan", "naps2", "rechnung scannen", "whiteboard", "pdf aus fotos", "entzerren");
+
+    // ---------- T-0774: Fachaktion für die KI ----------
+
+    /// <summary>„Fotos als PDF ablegen“: optional Fotos aus einem Ordner dazu, Titel und Modus setzen (Vorschau), dann dieselbe Ablage wie „Als PDF ablegen“.</summary>
+    ProgramKiAction ScanKiPdf => new(new AssistAction("scan.pdf", "Fotos als PDF ablegen", ["fotos", "foto", "pdf", "scan", "ablegen", "speichern", "scannen", "zusammenfassen"],
+        [new AssistParam("titel", "Titel", Required: false, Words: ["titel", "name", "heißen"]),
+         // Words: der Regel-Planer setzt den Modus nur, wenn er genannt ist („Modus Foto“) – „Fotos“ allein heißt nicht Modus „foto“
+         new AssistParam("modus", "Modus", AssistKind.Choice, [.. DocScan.Modes.Select(m => m.Id)], Required: false, Words: ["modus"]),
+         new AssistParam("ordner", "Ordner mit Fotos", Required: false, Words: ["ordner"])]),
+        (d, a) =>
+        {
+            var note = _progMsg.GetValueOrDefault(ScanKey); // Vorschau: keine Meldung bleibt stehen (auch nicht nach „Nein“)
+            try
+            {
+                if (a.GetValueOrDefault("ordner") is { Length: > 0 } dir)
+                {
+                    if (dir.StartsWith(@"\\", StringComparison.Ordinal) || dir.StartsWith("//", StringComparison.Ordinal)) throw new InvalidOperationException("Fotos aus Netzwerk-Ordnern holt die KI nicht – bitte selbst mit „Fotos hinzufügen …“ wählen.");
+                    if (!Path.IsPathRooted(dir) || !Directory.Exists(dir)) throw new DirectoryNotFoundException("Den Ordner mit Fotos gibt es nicht: " + Path.GetFileName(dir.TrimEnd('/', '\\')));
+                    ScanAddFolder(d, dir);
+                }
+                if (ScanPages(d).Count == 0) throw new InvalidOperationException("Es gibt noch keine Seite – erst „Fotos hinzufügen …“ (oder der KI einen Ordner mit Fotos nennen).");
+                if (a.GetValueOrDefault("titel") is { Length: > 0 } title && title.Trim() != d.Text("title")) d.Set("title", title.Trim().Length > 120 ? title.Trim()[..120] : title.Trim(), "Titel");
+                if (a.GetValueOrDefault("modus") is { Length: > 0 } mode && DocScan.Modes.Any(m => m.Id == mode)) ScanSetModeAll(d, mode);
+            }
+            finally { if (note is null) _progMsg.Remove(ScanKey); else _progMsg[ScanKey] = note; }
+        },
+        (d, created) => [ScanSavePdf(d, created)]);
 
     // ---------- Modell (öffentlich für Tests und die KI) ----------
 
@@ -274,11 +306,13 @@ public partial class MainWindow
     }
 
     /// <summary>Als PDF ablegen: Name aus Datum und Titel, Ordner nach Art – vorhandene Dateien werden nie überschrieben.</summary>
-    public string ScanSavePdf(ProgramDocument d)
+    /// <param name="created">T-0774: bekommt den Namen der neuen Datei vor dem Schreiben (KI-Lauf: bei einem Fehler wird genau diese Datei zurückgenommen).</param>
+    public string ScanSavePdf(ProgramDocument d, Action<string>? created = null)
     {
         var dir = UserDirFixedNames(ScanFolder(d)); // T-0764 (13. Prüfrunde): Ordner/Datei frei getippt – Kinder nur Freigabe, keine neue ausführbare Endung
         Directory.CreateDirectory(dir);
         var f = UserFile(DocScan.Unique(dir, DocScan.FileName(ScanDate(d), d.Text("title"))));
+        created?.Invoke(f);
         ScanWritePdf(d, f); NotifyFileResult(_progMsg[ScanKey]);
         return f;
     }

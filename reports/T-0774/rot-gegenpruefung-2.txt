@@ -1,0 +1,48 @@
+# T-0774 2. Nachbesserung: Rot-Lauf der neuen Regressionstests gegen den Code von 1703134a3
+# Befehl: Trendo.App.Tests.exe -class Trendo.App.Tests.T0774KiDokument_Ui (Testdatei vom Endstand ohne die eine Zeile mit der neuen Hilfe AssistChain.PathParts)
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0774 ECHT: lokale KI (Ollama) – PDF-Werkstatt „Seiten 1–3 heraus“ und Scannen „Fotos → PDF“ im offenen Programm, echte PDFs, Rückgängig (nur mit TRENDO_T0774_ECHT) [SKIP]
+      Echtlauf nur mit TRENDO_T0774_ECHT=<Belegordner> (braucht Ollama mit Modell auf diesem PC).
+    T-0774 2. Gegenprüfung N2: „pdf.ausfuehren“ ohne Werkzeug nach „tool=passwort“ fällt nicht still weg – deutlicher Fehler [FAIL]
+      Assert.Equal() Failure: Strings differ
+                 ↓ (pos 0)
+      Expected: "fehler"
+      Actual:   "vorschau"
+                 ↑ (pos 0)
+      Stack Trace:
+        tests\Trendo.App.Tests\T0774KiDokumentUiTests.cs(476,0): at Trendo.App.Tests.T0774KiDokument_Ui.Run_without_tool_after_password_is_reported()
+        --- End of stack trace from previous location ---
+    T-0774 2. Gegenprüfung M1: Fehler beim Übernehmen – eine fremde Datei, die währenddessen im Ergebnis-Ordner entsteht, bleibt liegen; nur eigene Dateien werden beiseitegelegt [FAIL]
+      fremde Datei wurde mitgenommen
+      Stack Trace:
+        tests\Trendo.App.Tests\T0774KiDokumentUiTests.cs(429,0): at Trendo.App.Tests.T0774KiDokument_Ui.Foreign_file_survives_failed_apply()
+        --- End of stack trace from previous location ---
+    T-0774 2. Gegenprüfung H1: gesperrte Stelle „folder“ auch mit Leerzeichen, Tab und anderer Groß-/Kleinschreibung – abgelehnt, nichts geschrieben [FAIL]
+      Assert.Equal() Failure: Strings differ
+                 ↓ (pos 0)
+      Expected: "fehler"
+      Actual:   "vorschau"
+                 ↑ (pos 0)
+      Stack Trace:
+        tests\Trendo.App.Tests\T0774KiDokumentUiTests.cs(398,0): at Trendo.App.Tests.T0774KiDokument_Ui.Locked_path_variants()
+        --- End of stack trace from previous location ---
+    T-0774 Gegenprüfung 5: Fehler beim Übernehmen (zweite PDF kaputt) – schon geschriebene Dateien werden zurückgenommen, Dokument unverändert [FAIL]
+      Assert.Contains() Failure: Filter not matched in collection
+      Collection: []
+      Stack Trace:
+        tests\Trendo.App.Tests\T0774KiDokumentUiTests.cs(328,0): at Trendo.App.Tests.T0774KiDokument_Ui.Failed_apply_leaves_no_files()
+        --- End of stack trace from previous location ---
+    T-0774 2. Gegenprüfung N1: Rückgängig mit gesperrter KI-Datei wirft nicht – Schritt zurückgenommen, Meldung im Programm [FAIL]
+      Assert.Contains() Failure: Sub-string not found
+      String:    "„vertrag-teil1.pdf“ ließ sich nicht verschieben: D"···
+      Not found: "ließ sich nicht beiseitelegen"
+      Stack Trace:
+        tests\Trendo.App.Tests\T0774KiDokumentUiTests.cs(452,0): at Trendo.App.Tests.T0774KiDokument_Ui.Undo_with_locked_file_does_not_throw()
+        --- End of stack trace from previous location ---
+  Finished:    Trendo.App.Tests (ID = '376738cb34d312fb94f4a131254f30b7f3d176bfdf848929a13549966dd2ea08')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 16, Errors: 0, Failed: 5, Skipped: 1, Not Run: 0, Time: 20,226s
+EXIT 1

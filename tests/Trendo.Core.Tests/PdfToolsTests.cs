@@ -69,6 +69,25 @@ public class T0223_TrendoPdf
         finally { Directory.Delete(d, true); }
     }
 
+    [Fact(DisplayName = "T-0774 (PW-12): zweimal „alle n Seiten“ teilen in denselben Ordner – die Teile des ersten Laufs bleiben unverändert, der zweite bekommt freie Namen")]
+    public void Split_twice_keeps_old_parts()
+    {
+        var d = Tmp();
+        try
+        {
+            var a = Make(d, "a.pdf", 3); var b = Make(d, "b.pdf", 2, offset: 100);
+            var src = Path.Combine(d, "ab.pdf"); PdfTools.Merge([a, b], src);
+            var first = PdfTools.Split(src, Path.Combine(d, "teile"), 2);
+            var bytes = first.Select(File.ReadAllBytes).ToList();
+            var second = PdfTools.Split(src, Path.Combine(d, "teile"), 2);
+            Assert.Equal(["ab-01 (2).pdf", "ab-02 (2).pdf", "ab-03 (2).pdf"], second.Select(Path.GetFileName));
+            Assert.Empty(first.Intersect(second));
+            for (var i = 0; i < first.Count; i++) Assert.Equal(bytes[i], File.ReadAllBytes(first[i]));
+            Assert.Equal([203, 301], Widths(second[1]));
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
     [Fact(DisplayName = "T-0223 P4: Passwort setzen und entfernen – ohne Passwort kein Zugriff, Info erkennt den Schutz, Passwort nie im Protokoll")]
     public void Password()
     {

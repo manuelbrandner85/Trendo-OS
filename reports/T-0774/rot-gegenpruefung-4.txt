@@ -1,0 +1,25 @@
+# T-0774 4. Nachbesserung: Rot-Lauf der neuen Tests gegen den Code von be84a2574 (Testdateien vom Endstand)
+# Befehl 1: dotnet test tests/Trendo.Core.Tests --filter FullyQualifiedName~Split_twice_keeps_old_parts
+  Fehler T-0774 (PW-12): zweimal „alle n Seiten“ teilen in denselben Ordner – die Teile des ersten Laufs bleiben unverändert, der zweite bekommt freie Namen [314 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Collections differ
+Expected: <generated>                        ["ab-01 (2).pdf", "ab-02 (2).pdf", "ab-03 (2).pdf"]
+Actual:   ListSelectIterator<string, string> ["ab-01.pdf", "ab-02.pdf", "ab-03.pdf"]
+     at Trendo.Core.Tests.T0223_TrendoPdf.Split_twice_keeps_old_parts() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0774-rot\tests\Trendo.Core.Tests\PdfToolsTests.cs:line 83
+Fehler!      : Fehler:     1, erfolgreich:     0, übersprungen:     0, gesamt:     1, Dauer: 314 ms - Trendo.Core.Tests.dll (net10.0)
+# Befehl 2: Trendo.App.Tests.exe -method Trendo.App.Tests.T0774KiDokument_Ui.Two_split_runs_undo_second_keeps_first
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0774 (PW-12): zwei KI-Teilläufe „alle n Seiten“ nacheinander, dann Rückgängig des zweiten – die Dateien des ersten Laufs bleiben unverändert liegen [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: 3
+      Actual:   0
+      Stack Trace:
+        tests\Trendo.App.Tests\T0774KiDokumentUiTests.cs(587,0): at Trendo.App.Tests.T0774KiDokument_Ui.Two_split_runs_undo_second_keeps_first()
+        --- End of stack trace from previous location ---
+  Finished:    Trendo.App.Tests (ID = '376738cb34d312fb94f4a131254f30b7f3d176bfdf848929a13549966dd2ea08')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 1, Skipped: 0, Not Run: 0, Time: 7,521s
+EXIT 0

@@ -33,10 +33,12 @@ public interface IAssistSession
     bool Changed { get; }
     /// <summary>In das Original übernehmen – als ein rückgängig machbarer Schritt; Schritte mit Folgen laufen erst hier.</summary>
     void Apply(string label, IReadOnlyList<AssistStep> sideEffects);
+    /// <summary>T-0774: Hinweis in der Vorschau, was erst bei „Ja, behalten“ entsteht (null = nichts).</summary>
+    string? OnApply => null;
 }
 
 /// <summary>Programme der Programm-Hülle: Aktionen aus dem Menüband (ohne Ansicht, Abspielen, Bauen, Export), Arbeitskopie des Dokuments, Vorschau = echte Arbeitsfläche der Kopie.</summary>
-public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocument doc) : IAssistTarget
+public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocument doc, Action<ProgramDocument, long, IReadOnlyList<string>>? produced = null, Func<string, string?>? setAside = null) : IAssistTarget
 {
     static readonly string[] SkipGroups = ["Ansicht", "Datei", "Export", "Ausgabe", "Hilfe", "Werkzeug"];
     [GeneratedRegex(@"(play|run|export|build|zoom|fit|start$|end$|speed|reset|-v-|photo|2d3d|grid|dims|tiles|-100|open|save|print|import|close|share|send|claude)", RegexOptions.IgnoreCase)] private static partial Regex Risky(); // T-0707: KI-Befehle („… mit Claude“) sind Einstiege in die Kette, keine Schritte darin
@@ -44,11 +46,16 @@ public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocumen
 
     public string Key => spec.Key;
     public string Title => spec.Title;
-    public string Role => $"Du bist erfahrene Fachkraft für „{spec.Title}“ in Trendo OS. {spec.Sentence}".Trim();
-    public IReadOnlyList<AssistAction> Actions { get; } = spec.Ribbon.Where(g => !SkipGroups.Contains(g.Group)).SelectMany(g => g.Cmds.Where(c => !Risky().IsMatch(c.Name))
-        .Select(c => new AssistAction(c.Name, Symbols().Replace(c.Label, "").Trim() is { Length: > 0 } l ? l : c.Name, [.. Symbols().Replace(c.Label + " " + g.Group + " " + (c.Tip ?? ""), " ").Split(' ', StringSplitOptions.RemoveEmptyEntries)]))).ToList();
+    public string Role => ($"Du bist erfahrene Fachkraft für „{spec.Title}“ in Trendo OS. {spec.Sentence} " + spec.KiHint).Trim();
+    /// <summary>T-0774: zuerst die Fachaktionen des Programms (echte Datei), dann die Befehle des Menübands.</summary>
+    public IReadOnlyList<AssistAction> Actions { get; } = [.. spec.KiActions.Select(k => k.Def), .. spec.Ribbon.Where(g => !SkipGroups.Contains(g.Group)).SelectMany(g => g.Cmds.Where(c => !Risky().IsMatch(c.Name))
+        .Select(c => new AssistAction(c.Name, Symbols().Replace(c.Label, "").Trim() is { Length: > 0 } l ? l : c.Name, [.. Symbols().Replace(c.Label + " " + g.Group + " " + (c.Tip ?? ""), " ").Split(' ', StringSplitOptions.RemoveEmptyEntries)])))];
 
-    public IAssistSession Begin() => new Session(spec, doc);
+    public IAssistSession Begin() => new Session(spec, doc, produced, setAside);
+    /// <summary>T-0774: Ist die Aktion eine Fachaktion, die erst bei „Ja, behalten“ eine Datei erzeugt?</summary>
+    public bool Produces(string actionId) => spec.KiActions.Any(k => k.Def.Id == actionId);
+    /// <summary>T-0774: Hat das Programm Fachaktionen, die Dateien erzeugen?</summary>
+    public bool HasKiActions => spec.KiActions.Count > 0;
     /// <summary>T-0707: das offene Dokument (für den KI-Plan der einen Kette, <see cref="AssistChain"/>).</summary>
     public ProgramDocument Document => doc;
     public IEnumerable<AssistSuggestion> Hints() => [];
@@ -56,21 +63,34 @@ public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocumen
 
     /// <summary>Vorschau-Lauf am echten Dokument mit Merken/Zurückrollen – so greifen auch Befehle, die das aktive Dokument direkt bearbeiten.
     /// Nach jedem Lauf steht das Original wieder exakt wie vorher (Daten und Rückgängig-Liste); erst „Übernehmen“ setzt das Ergebnis als einen Schritt.</summary>
-    sealed class Session(ProgramSpec spec, ProgramDocument doc) : IAssistSession
+    sealed class Session(ProgramSpec spec, ProgramDocument doc, Action<ProgramDocument, long, IReadOnlyList<string>>? produced, Func<string, string?>? setAside) : IAssistSession
     {
         readonly ProgramDocument.Mark _start = doc.Remember();
         string _after = doc.Data.ToJsonString();
         Control? _preview;
+        /// <summary>T-0774: Fachaktionen, deren Datei erst bei „Ja, behalten“ entsteht.</summary>
+        readonly List<ProgramKiAction> _produce = [];
         public void Run(AssistStep step)
         {
+            // T-0774: Fachaktion des Programms – in der Vorschau nur vorbereiten (Einstellungen, Prüfung), die Datei entsteht beim Übernehmen
+            var ki = spec.KiActions.FirstOrDefault(k => k.Def.Id == step.Action.Id);
             // T-0707: „dokument.setzen“ aus dem KI-Plan schreibt geprüften Inhalt an eine Stelle (dieselbe Prüfung wie bei der Claude-Brücke); sonst ein Befehl des Menübands
-            var cmd = step.Action.Id == AssistChain.EditAction ? null : spec.Ribbon.SelectMany(g => g.Cmds).First(c => c.Name == step.Action.Id);
+            var cmd = step.Action.Id == AssistChain.EditAction || ki is not null ? null : spec.Ribbon.SelectMany(g => g.Cmds).First(c => c.Name == step.Action.Id);
+            // T-0774 (Gegenprüfung 1/2): höchstens EINE Fachaktion je Auftrag und nur als letzter Schritt – sonst liefe die Fachaktion auf einem anderen Stand
+            // als dem, den Vorschau und Prüfung gezeigt haben (z. B. „1-2“, dann „4-5“ → zweimal 4–5; Werkzeug danach auf „Passwort“ umgestellt)
+            if (_produce.Count > 0)
+                throw new InvalidOperationException($"Nach „{_produce[0].Def.Label}“ darf in einem Auftrag nichts mehr folgen – die KI erzeugt je Auftrag höchstens eine neue Datei, als letzten Schritt. Bitte den Auftrag aufteilen.");
+            // 2. Gegenprüfung H1: dieselbe Zerlegung wie CheckEdit/DocPath (Rand-Leerzeichen, Tabs, Groß/klein) – „ folder“ ist „folder“
+            if (ki is null && cmd is null && AssistChain.PathParts(AssistChain.NormalizePath(step.Args.GetValueOrDefault("pfad") ?? "")).FirstOrDefault() is { } field
+                && spec.KiLocked.Contains(field, StringComparer.OrdinalIgnoreCase))
+                throw new InvalidOperationException($"„{field}“ legst du selbst fest – die KI ändert das nicht.");
             var before = doc.Remember();
             MainWindow.AssistQuiet++;
             try
             {
                 doc.Rollback(before with { Data = _after }); // auf den bisherigen Vorschau-Stand setzen
-                if (cmd is null) doc.Edit(AssistChain.UndoPrefix + "Inhalt", d => AssistChain.ApplyEdit(d, step.Args.GetValueOrDefault("pfad") ?? "", step.Args.GetValueOrDefault("wert") ?? ""));
+                if (ki is not null) { ki.Prepare(doc, step.Args); _produce.Add(ki); }
+                else if (cmd is null) doc.Edit(AssistChain.UndoPrefix + "Inhalt", d => AssistChain.ApplyEdit(d, step.Args.GetValueOrDefault("pfad") ?? "", step.Args.GetValueOrDefault("wert") ?? ""));
                 else for (var i = 0; i < step.Times; i++) cmd.Run(doc);
                 _after = doc.Data.ToJsonString();
                 _preview = null;
@@ -84,12 +104,36 @@ public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocumen
             try { doc.Rollback(_start with { Data = _after }); return _preview = spec.Workspace(doc); } // Bild im Ergebnis-Stand aufbauen …
             finally { doc.Rollback(_start); MainWindow.AssistQuiet--; } // … und sofort zurück
         }
-        public bool Changed => _after != _start.Data;
+        public bool Changed => _after != _start.Data || _produce.Count > 0;
+        public string? OnApply => _produce.Count == 0 ? null : "Die neue Datei entsteht erst bei „Ja, behalten“ – das Original bleibt unverändert.";
         public void Apply(string label, IReadOnlyList<AssistStep> sideEffects)
         {
-            var after = JsonNode.Parse(_after)!.AsObject();
-            doc.Edit(AssistChain.UndoPrefix + label, d => { d.Clear(); foreach (var (k, v) in after.ToList()) { after.Remove(k); d[k] = v; } });
+            var mark = doc.Remember();
+            Replace(JsonNode.Parse(_after)!.AsObject(), label);
+            if (_produce.Count == 0) return;
+            // T-0774: die echte Fachaktion am echten Dokument (genau der Stand der Vorschau, sie ist der letzte Schritt); was sie dabei im Dokument ändert
+            // (Ergebnisliste …), gehört zum selben KI-Schritt
+            var k = _produce[0];
+            var mine = new List<string>(); // nur Dateien, die die Fachaktion selbst angelegt hat – kein Durchsuchen von Ordnern
+            IReadOnlyList<string> files;
+            MainWindow.AssistQuiet++;
+            try { files = k.Produce(doc, f => { var full = Path.GetFullPath(f); if (!mine.Contains(full, StringComparer.OrdinalIgnoreCase)) mine.Add(full); }); }
+            catch
+            {
+                doc.Rollback(mark); // nichts halb übernehmen …
+                foreach (var f in mine) if (File.Exists(f)) setAside?.Invoke(f); // … und die eigenen, schon geschriebenen Dateien beiseitelegen (nicht löschen)
+                // 3. Gegenprüfung N-b: Ordner, die dieser Lauf selbst angelegt hat und die jetzt leer sind, wieder entfernen (nur leere, nie rekursiv)
+                foreach (var dir in mine.Where(Directory.Exists).OrderByDescending(x => x.Length))
+                    try { if (!Directory.EnumerateFileSystemEntries(dir).Any()) Directory.Delete(dir); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+                throw;
+            }
+            finally { MainWindow.AssistQuiet--; }
+            var final = doc.Data.ToJsonString();
+            doc.Rollback(mark);
+            Replace(JsonNode.Parse(final)!.AsObject(), label); // genau EIN Rückgängig-Schritt „KI: …“
+            produced?.Invoke(doc, doc.TopStep, files);
         }
+        void Replace(JsonObject after, string label) => doc.Edit(AssistChain.UndoPrefix + label, d => { d.Clear(); foreach (var (k, v) in after.ToList()) { after.Remove(k); d[k] = v; } });
     }
 }
 
@@ -104,7 +148,7 @@ public partial class MainWindow
     {
         if (key is null) return null;
         if (_assistAdapters.TryGetValue(key, out var f)) return f();
-        if (Programs.TryGetValue(key, out var spec) && ProgramActive(key) is { } doc) return new ProgramAssistTarget(spec, doc); // T-0707: jedes Programm der Hülle – auch ohne passende Menüband-Befehle schreibt die KI über „dokument.setzen“
+        if (Programs.TryGetValue(key, out var spec) && ProgramActive(key) is { } doc) return new ProgramAssistTarget(spec, doc, KiTrackFiles, KiSetAside); // T-0707: jedes Programm der Hülle – auch ohne passende Menüband-Befehle schreibt die KI über „dokument.setzen“
         return null;
     }
 
@@ -199,6 +243,15 @@ public partial class MainWindow
     {
         if (r.Plan.Questions.Count > 0) { r.Phase = "fragen"; AssistRender(r, host); return; }
         if (r.Plan.Steps.Count == 0) { r.Phase = "verworfen"; r.Message = "Nichts mehr zu tun."; AssistRender(r, host); return; }
+        // T-0774 (2. Gegenprüfung N2): Bei Programmen mit Fachaktion (neue Datei) läuft ein Plan mit ausgelassenen oder unerlaubten Teilen gar nicht erst –
+        // sonst entstünde z. B. eine Datei mit dem falschen Werkzeug, weil das genannte still weggefallen ist
+        // 3. Gegenprüfung M-a: nur KI-Pläne – beim Regel-Planer (ohne KI) bleibt „Nicht verstanden und ausgelassen“ ein Hinweis, die Ausführung läuft weiter
+        if (r.Plan.Unclear.Count > 0 && r.Plan.Source.StartsWith("KI", StringComparison.Ordinal) && r.Target is ProgramAssistTarget { HasKiActions: true })
+        {
+            r.Phase = "fehler"; r.Message = "Die KI hat etwas geplant, das es hier so nicht gibt: " + string.Join(" · ", r.Plan.Unclear) + ". Es wurde nichts ausgeführt – bitte den Auftrag genauer formulieren.";
+            _core.Audit.Append(Principal.LocalOwner.Name, "assist.ki.unklar", $"{r.Target.Key} {r.Plan.Unclear.Count}");
+            AssistRender(r, host); return;
+        }
         r.Phase = "läuft"; r.StepState.Clear(); r.StepState.AddRange(r.Plan.Steps.Select(_ => "offen")); r.Log.Clear();
         r.Session = r.Target.Begin();
         AssistRender(r, host);
@@ -214,7 +267,7 @@ public partial class MainWindow
         }
         try { r.Preview = r.Session.Preview(); } catch (Exception ex) when (ex is not OutOfMemoryException) { r.Preview = null; r.Log.Add("Keine Bildvorschau möglich: " + Trendo.Core.FriendlyError.Say(ex)); }
         r.Phase = "vorschau";
-        r.Message = r.Session.Changed || r.Plan.HasSideEffects ? "So sieht es aus. Behalten?" : "Das ändert nichts am Dokument.";
+        r.Message = r.Session.Changed || r.Plan.HasSideEffects ? "So sieht es aus. Behalten?" + (r.Session.OnApply is { } later ? " " + later : "") : "Das ändert nichts am Dokument.";
         AssistRender(r, host);
     }
 
@@ -349,7 +402,8 @@ public partial class MainWindow
         var plan = AssistPlanner.Plan(prompt, t.Actions, new AssistPrefs(_core.DataRoot, t.Key).Values);
         if (!plan.Understood) return ("Noch nicht verstanden – „Plan erstellen“ fragt die KI.", null);
         var text = "Ich würde: " + string.Join(" → ", plan.Steps.Select(s => s.Text)) + (plan.Questions.Count > 0 ? $"  ·  {plan.Questions.Count} Rückfrage(n)" : "");
-        if (!plan.Ready || plan.HasSideEffects) return (text, null);
+        // T-0774: Fachaktionen (neue Datei) nicht beim Tippen vorbereiten – der Probelauf würde Einstellungen setzen und damit „Wiederholen“ leeren
+        if (!plan.Ready || plan.HasSideEffects || t is ProgramAssistTarget pt && plan.Steps.Any(s => pt.Produces(s.Action.Id))) return (text, null);
         try
         {
             var s = t.Begin(); foreach (var st in plan.Steps) s.Run(st);
@@ -362,6 +416,82 @@ public partial class MainWindow
 
 public partial class MainWindow
 {
+    /// <summary>T-0774: Dateien, die eine KI-Fachaktion erzeugt hat – je Dokument und je Rückgängig-Schritt. Nur echtes Rückgängig legt sie in den Ordner
+    /// „.rueckgaengig“ daneben, nur echtes Wiederholen holt sie zurück (<see cref="ProgramDocument.Stepped"/>); Vorschau-Läufe (Zurückrollen) bewegen nie eine Datei.
+    /// Gelöscht und überschrieben wird nichts.</summary>
+    sealed class KiFileStep(string program, List<string> files)
+    {
+        public string Program = program; public readonly List<string> Files = files; public readonly Dictionary<string, string> Away = new(StringComparer.OrdinalIgnoreCase);
+    }
+    readonly System.Runtime.CompilerServices.ConditionalWeakTable<ProgramDocument, Dictionary<long, KiFileStep>> _kiFiles = [];
+
+    /// <summary>Wohin eine zurückgenommene KI-Datei gelegt wurde (null = sie liegt an ihrem Platz oder ist unbekannt).</summary>
+    public string? KiUndoPlace(ProgramDocument doc, string file) =>
+        _kiFiles.TryGetValue(doc, out var m) ? m.Values.Select(st => st.Away.GetValueOrDefault(Path.GetFullPath(file))).FirstOrDefault(a => a is not null) : null;
+
+    void KiTrackFiles(ProgramDocument doc, long step, IReadOnlyList<string> files)
+    {
+        if (files.Count == 0 || step == 0) return;
+        if (!_kiFiles.TryGetValue(doc, out var map)) { map = []; _kiFiles.Add(doc, map); doc.Stepped += KiFilesStepped; }
+        map[step] = new KiFileStep(Programs.Values.FirstOrDefault(p => ProgramActive(p.Key) == doc)?.Key ?? "", [.. files.Select(Path.GetFullPath)]);
+    }
+
+    void KiFilesStepped(ProgramDocument doc, (long From, long To, bool Undo) e)
+    {
+        if (!_kiFiles.TryGetValue(doc, out var map) || !map.TryGetValue(e.From, out var st)) return;
+        if (!e.Undo) { map.Remove(e.From); map[e.To] = st; }
+        foreach (var f in st.Files)
+            try
+            {
+                if (e.Undo && File.Exists(f))
+                {
+                    if (KiMoveAside(f) is { } to) st.Away[f] = to;
+                    else KiFileSay(st.Program, $"„{Path.GetFileName(f)}“ ließ sich nicht beiseitelegen – der Schritt im Dokument ist trotzdem zurückgenommen.");
+                }
+                else if (!e.Undo && st.Away.TryGetValue(f, out var away) && File.Exists(away))
+                {
+                    if (File.Exists(f)) // Name inzwischen belegt: nichts Fremdes treffen – melden statt verschieben
+                    {
+                        KiFileSay(st.Program, $"„{Path.GetFileName(f)}“ gibt es inzwischen wieder – die zurückgenommene Fassung bleibt in „.rueckgaengig“.");
+                        _core.Audit.Append(Principal.LocalOwner.Name, "assist.datei.belegt", Path.GetFileName(f));
+                        continue;
+                    }
+                    Trendo.Core.Sys.ChildWrite.DemandMove(CurrentPrincipal, away, f, _core.Audit);
+                    File.Move(away, f); st.Away.Remove(f);
+                    _core.Audit.Append(Principal.LocalOwner.Name, "assist.datei.wieder", Path.GetFileName(f));
+                }
+            }
+            catch (Exception x) when (x is not OutOfMemoryException) // 2. Gegenprüfung N1: nie aus Rückgängig/Wiederholen heraus werfen (auch ChildWrite.DemandMove)
+            {
+                KiFileSay(st.Program, $"„{Path.GetFileName(f)}“ ließ sich nicht verschieben: {Trendo.Core.FriendlyError.Say(x)}");
+                _core.Audit.Append(Principal.LocalOwner.Name, "assist.datei.fehler", $"{Path.GetFileName(f)} {x.Message}");
+            }
+    }
+
+    void KiFileSay(string program, string text) { if (program.Length > 0) _progMsg[program] = text; }
+
+    /// <summary>Eigene Datei in „.rueckgaengig“ daneben legen (nie überschreiben, Rechte wie beim Verschieben im Kern). Gibt das Ziel zurück, null bei Fehler –
+    /// der Fehler steht im Protokoll, geworfen wird nicht.</summary>
+    string? KiMoveAside(string f)
+    {
+        try
+        {
+            var to = Trendo.Core.Sys.PdfTools.Free(Path.Combine(Path.GetDirectoryName(f)!, ".rueckgaengig", Path.GetFileName(f)));
+            Trendo.Core.Sys.ChildWrite.DemandMove(CurrentPrincipal, f, to, _core.Audit);
+            Directory.CreateDirectory(Path.GetDirectoryName(to)!); File.Move(f, to);
+            _core.Audit.Append(Principal.LocalOwner.Name, "assist.datei.zurueck", Path.GetFileName(f));
+            return to;
+        }
+        catch (Exception x) when (x is not OutOfMemoryException)
+        {
+            _core.Audit.Append(Principal.LocalOwner.Name, "assist.datei.fehler", $"{Path.GetFileName(f)} {x.Message}");
+            return null;
+        }
+    }
+
+    /// <summary>T-0774 (2. Gegenprüfung M1): Übernehmen ist gescheitert – eigene, schon geschriebene Datei beiseitelegen.</summary>
+    string? KiSetAside(string f) => KiMoveAside(f);
+
     /// <summary>Eigene Anbindung eines Programms außerhalb der Programm-Hülle anmelden (Seite → Ziel).</summary>
     public void RegisterAssistAdapter(string key, Func<IAssistTarget?> target) => _assistAdapters[key] = target;
 }

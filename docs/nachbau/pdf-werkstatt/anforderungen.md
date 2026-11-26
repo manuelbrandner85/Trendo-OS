@@ -32,6 +32,7 @@ Wiederverwendet (kein zweites PDF-System): `PdfTools` aus „Trendo PDF“ (Merg
 | PW-11 | Stapel | Werkzeuge Teilen, Komprimieren, Wasserzeichen, Stempel, Seitenzahlen, Metadaten, Passwort laufen für jede Datei der Liste | UI `Batch_tools` (2 Dateien → 2 Ergebnisse) | PDF24 Stapelverarbeitung | 1 |
 | PW-12 | Original bleibt | jede Aktion schreibt neue Dateien unter „Ergebnisse“ | UI `Merge_by_clicks` (SHA-256 gleich), `Redact_by_mouse` | alle Vorbilder | 1 |
 | PW-13 | KI-Auftrag | Adapter `pdf.auftrag`: Seitenangaben werden aufgelöst, Schritte im Studio, keine Nebenwirkung | Core `PdfWerkstattTests.Adapter` | – | 1 |
+| PW-14 | KI im offenen Programm (T-0774) | Auftragszeile → KI-Plan „pdf.seiten_heraus“ (Seiten wie „1-3“) oder „pdf.ausfuehren“ (Werkzeug) → Vorschau ohne Datei, falsche Seiten schon dort gemeldet → „Ja, behalten“ → neue PDF unter „Ergebnisse“, ein Rückgängig-Schritt, Rückgängig legt die PDF beiseite, Wiederholen holt sie zurück | UI `T0774KiDokument_Ui.Pdf_pages_out_into_open_program`, `Pdf_bad_pages_stop_in_preview`, Echtlauf `Real_local_ki` (`reports/T-0774/`) | Acrobat-KI-Assistent (nur Vorbild) | 1 |
 
 ## Grenzen (ehrlich)
 - Schwärzen macht die betroffene Seite zum Bild: dort ist kein Text mehr auswählbar oder durchsuchbar (◐ gegenüber Acrobat, das nur den Text unter dem Balken entfernt).

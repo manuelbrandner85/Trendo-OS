@@ -179,7 +179,7 @@ public static partial class AssistChain
     /// eine vorhandene Stelle behält ihre Art (Text bleibt Text, Liste bleibt Liste). Wirft <see cref="ArgumentException"/> mit einem Satz für die Person.</summary>
     public static void CheckEdit(JsonObject document, string path, JsonNode? value)
     {
-        var parts = (path ?? "").Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var parts = PathParts(path);
         if (parts.Length == 0) throw new ArgumentException("Die KI hat keine Stelle im Dokument genannt.");
         if (ConsentPath().IsMatch(path!)) throw new ArgumentException("Einwilligungen und Freigaben trägt nur der Nutzer selbst ein.");
         if (value is not null && value.ToJsonString().Length > MaxValue) throw new ArgumentException("Der neue Inhalt ist zu groß für eine Stelle im Dokument.");
@@ -210,6 +210,10 @@ public static partial class AssistChain
 
     [GeneratedRegex(@"\[(\d+)\]")] private static partial Regex IndexBrackets();
     [GeneratedRegex(@"^[\p{L}\p{N}_-]+$")] private static partial Regex FieldName();
+
+    /// <summary>T-0774 (2. Gegenprüfung H1): die Teile einer Stelle genau so, wie <see cref="CheckEdit"/> und <see cref="DocPath"/> sie lesen
+    /// (Leerzeichen und Tabs am Rand weg, leere Teile weg) – für jede Prüfung, die eine Stelle mit einem Feldnamen vergleicht.</summary>
+    public static string[] PathParts(string? path) => (path ?? "").Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
     /// <summary>Pfad vereinheitlichen: „tasks[0]/title“ und „/tasks/0“ werden zu „tasks/0/title“ (so schreiben KIs Pfade oft).</summary>
     public static string NormalizePath(string path) => IndexBrackets().Replace(path ?? "", "/$1").Replace('.', '/').Trim('/');
