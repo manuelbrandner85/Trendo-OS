@@ -109,7 +109,8 @@ public static partial class ReferatKit
 
     // ---------------- Zitate im Text ----------------
 
-    [GeneratedRegex(@"\[@(?<id>[A-Za-z0-9_\-]+)(?:\s*[,;]?\s*(?:S\.|s\.|p\.)?\s*(?<page>[^\]]*))?\]")] private static partial Regex CiteRx();
+    // T-0780 (Gegenprüfung M3): Kennungen auch mit Umlauten, Punkt oder Doppelpunkt; Leerzeichen nach „[“ („[ @neu]“) zählt ebenfalls als Verweis
+    [GeneratedRegex(@"\[\s*@\s*(?<id>[\p{L}\p{N}_\-]+(?:[.:][\p{L}\p{N}_\-]+)*)(?:\s*[,;]?\s*(?:S\.|s\.|p\.|pp\.)?\s*(?<page>[^\]]*))?\]")] private static partial Regex CiteRx();
 
     public sealed record Citation(string Id, string Page, int Index, int Length);
 
@@ -128,11 +129,97 @@ public static partial class ReferatKit
     public static List<string> UnknownCitations(string text, IReadOnlyList<CiteKit.Source> sources) =>
         Citations(text).Select(c => c.Id).Where(id => sources.All(s => s.Id != id)).Distinct().ToList();
 
+    // ---------- T-0780 (Gegenprüfung H1/H2): freie Kurzbelege erkennen ----------
+
+    const string Year = @"(?:1[5-9]\d\d|20\d\d)[a-z]?";
+    const string Particle = @"(?:(?:van|von|de|der|den|du|la|le|zu|ten|ter|da|di)\s+)";
+    const string Name = @"(?:" + Particle + @"?[A-ZÄÖÜ][\p{L}'’\-]*\.?)";
+    const string Names = Name + @"(?:\s*(?:,|&|und|and)\s*" + Name + @")*(?:\s+(?:et\s+al\.|u\.\s*a\.))?";
+    const string Locator = @"(?:\s*[,:]\s*(?:S\.|s\.|p\.|pp\.|Sp\.)?\s*\d+(?:\s*[–\-]\s*\d+)?\s*(?:f{1,2}\.)?)?";
+    const string One = @"(?:(?:vgl\.|siehe|s\.|zit\.\s*n\.|nach)\s*)?" + Names + @",?\s+" + Year + Locator;
+
+    /// <summary>„(vgl. Name 2021: 5)“, „(Name, 2021, p. 3)“, „(Name, 2021; Ander, 2019)“, „(van Name, 2021)“, „(A, B &amp; C, 2021)“.</summary>
+    [GeneratedRegex(@"\(\s*" + One + @"(?:\s*;\s*" + One + @")*\s*\)")] private static partial Regex ParenCiteRx();
+    /// <summary>Erzählend: „Name (2021)“, „Name und Ander (2021: 5)“, „Name et al. (2021)“.</summary>
+    [GeneratedRegex(@"(?<pre>\b[\p{L}]+\s+)?(?<n>" + Names + @")\s*\(\s*" + Year + Locator + @"\s*\)")] private static partial Regex NarrativeRx();
+    /// <summary>Fußnote/Literaturangabe im Fließtext: „Musterstadt: Grünverlag, 2021“, „Musterstadt 2021, S. 5“.</summary>
+    [GeneratedRegex(@"\b[A-ZÄÖÜ][\p{L}\-]+\s*:\s*[A-ZÄÖÜ][^,\n]{1,60},\s*" + Year + @"\b|\b[A-ZÄÖÜ][\p{L}\-]+\s+" + Year + @",\s*S\.\s*\d+")] private static partial Regex FootRx();
+    /// <summary>Fußnotenzeile: beginnt mit Fußnotenzeichen und enthält eine Jahreszahl.</summary>
+    [GeneratedRegex(@"(?m)^\s*(?:\[\d+\]|\d+\)|[¹²³⁴⁵⁶⁷⁸⁹⁰]+)\s*[A-ZÄÖÜ][^\n]*\b" + Year + @"\b")] private static partial Regex FootLineRx();
+
+    /// <summary>Wörter in Klammern vor einer Jahreszahl, die keine Namen sind („(Stand 2021)“, „(Juli 2021)“) – kein Fehlalarm.</summary>
+    static readonly HashSet<string> NotNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Stand", "Seit", "Ab", "Bis", "Ende", "Anfang", "Mitte", "Jahr", "Jahre", "Frühjahr", "Sommer", "Herbst", "Winter", "Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August",
+        "September", "Oktober", "November", "Dezember", "Ca", "Etwa", "Rund", "Um", "Im", "In", "Nach", "Vor", "Gegründet", "Geboren", "Gestorben", "Erschienen", "Ausgabe", "Auflage", "Version", "Stichtag", "Quartal",
+    };
+    /// <summary>Vor einem erzählenden „Name (Jahr)“: Artikel und Präpositionen zeigen ein Ereignis („die Französische Revolution (1789)“), kein Zitat.</summary>
+    static readonly HashSet<string> EventWords = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "der", "die", "das", "dem", "den", "des", "ein", "eine", "einem", "einen", "einer", "eines", "im", "am", "vom", "zum", "zur", "beim", "seit", "ihre", "seine", "unsere", "dieser", "diese", "dieses",
+    };
+
+    /// <summary>Freie Kurzbelege und Literaturangaben im Text, die nicht als Verweis <c>[@kennung]</c> geschrieben sind. Für Texte der KI: jeder Treffer wird abgelehnt.
+    /// Ehrlich: eine Erkennung über Muster – Ereignisse mit Jahreszahl in Klammern nach Artikel („der Mauerfall (1989)“) gelten bewusst nicht als Zitat.</summary>
+    public static List<string> FreeCitations(string text)
+    {
+        var t = CiteRx().Replace(text ?? "", " ");
+        var hits = new List<string>();
+        foreach (Match m in ParenCiteRx().Matches(t))
+        {
+            var first = Regex.Match(m.Value, @"[A-ZÄÖÜ][\p{L}'’\-]+").Value;
+            if (NotNames.Contains(first.TrimEnd('.'))) continue;
+            hits.Add(m.Value);
+        }
+        foreach (Match m in NarrativeRx().Matches(t))
+        {
+            if (hits.Any(h => m.Value.Contains(h, StringComparison.Ordinal))) continue;
+            var pre = m.Groups["pre"].Value.Trim();
+            var name = m.Groups["n"].Value.Trim();
+            if (NotNames.Contains(Regex.Match(name, @"[A-ZÄÖÜ][\p{L}'’\-]+").Value)) continue;
+            // „die Französische Revolution (1789)“, „der Mauerfall (1989)“: Artikel/Präposition oder großgeschriebenes Adjektiv davor → Ereignis
+            if (pre.Length > 0 && (EventWords.Contains(pre) || pre.Length >= 5 && Regex.IsMatch(pre, @"^[A-ZÄÖÜ]\p{L}*(e|en|er|es|ische|ischen)$"))) continue;
+            hits.Add(m.Value.Trim());
+        }
+        foreach (Match m in FootRx().Matches(t)) hits.Add(m.Value);
+        foreach (Match m in FootLineRx().Matches(t)) if (!hits.Any(h => m.Value.Contains(h, StringComparison.Ordinal))) hits.Add(m.Value.Trim());
+        return hits.Distinct().ToList();
+    }
+
+    /// <summary>Gemeinsame Zitatprüfung für Text, den eine KI schreibt (Assistent, Fachaktion, Claude-Brücke): nur Verweise auf Quellen der Liste, keine freien Kurzbelege.
+    /// null = in Ordnung, sonst ein Satz für die Person.</summary>
+    public static string? KiTextProblem(string text, IReadOnlyList<CiteKit.Source> sources)
+    {
+        if (UnknownCitations(text, sources) is { Count: > 0 } unknown)
+            return $"Die KI hat eine Quelle zitiert, die nicht in deiner Liste steht ([@{unknown[0]}]) – zitiert wird nur aus deinen eigenen Quellen. Nichts übernommen.";
+        if (FreeCitations(text) is { Count: > 0 } free)
+            return $"Die KI hat „{free[0]}“ geschrieben – Belege stehen nur als Verweis auf eine Quelle deiner Liste ([@kennung]). Nichts übernommen.";
+        return null;
+    }
+
+    /// <summary>Prüfung nach jeder Änderung durch eine KI am Dokument: geänderte oder neue Abschnitte (Überschrift und Text) und die Quellenliste.
+    /// Quellen legt nur die Person an; null = in Ordnung.</summary>
+    public static string? KiCheck(JsonObject before, JsonObject after)
+    {
+        var src = Sources(after);
+        if ((before["sources"]?.ToJsonString() ?? "[]") != (after["sources"]?.ToJsonString() ?? "[]")) return "Quellen legt nur die Person selbst an – die KI ändert die Quellenliste nicht. Nichts übernommen.";
+        var old = Sections(before).ToDictionary(s => s.Id, s => s);
+        foreach (var s in Sections(after))
+        {
+            if (old.TryGetValue(s.Id, out var o) && o.Title == s.Title && o.Text == s.Text && o.Points == s.Points) continue;
+            if (KiTextProblem(s.Title + "\n" + s.Text + "\n" + s.Points, src) is { } why) return why;
+        }
+        return null;
+    }
+
     // ---------------- Prüfen ----------------
 
     public sealed record Finding(string Text, bool Blocks);
 
-    /// <summary>Formvorgaben prüfen: Thema, Gliederung, leere Abschnitte, Verweise ohne Quelle (blockiert), unvollständige Quellen, nie zitierte Quellen, Wortzahl.</summary>
+    [GeneratedRegex(@"\d+")] private static partial Regex NumRx();
+
+    /// <summary>Formvorgaben prüfen: Thema, Gliederung, leere Abschnitte, Verweise ohne Quelle (blockiert), freie Kurzbelege, Seitenangaben außerhalb der bekannten Seiten,
+    /// unvollständige Quellen, nie zitierte Quellen.</summary>
     public static List<Finding> Check(JsonObject o)
     {
         var f = new List<Finding>();
@@ -144,6 +231,10 @@ public static partial class ReferatKit
             if (s.Title.Trim().Length == 0) f.Add(new($"Abschnitt {num} hat keine Überschrift.", false));
             if (s.Text.Trim().Length == 0 && !sections.SkipWhile(x => x != s).Skip(1).TakeWhile(x => x.Level > s.Level).Any()) f.Add(new($"Abschnitt {num} „{s.Title}“ hat noch keinen Text.", false));
             foreach (var id in UnknownCitations(s.Text, sources)) f.Add(new($"Abschnitt {num}: Verweis [@{id}] zeigt auf keine Quelle der Liste – Quelle anlegen oder Verweis entfernen.", true));
+            foreach (var free in FreeCitations(s.Text)) f.Add(new($"Abschnitt {num}: „{free}“ ist ein Beleg ohne Verweis – als [@kennung] aus der Liste zitieren.", false));
+            foreach (var c in Citations(s.Text))
+                if (sources.FirstOrDefault(x => x.Id == c.Id) is { } src && PageOutside(c.Page, src.Pages) is { } p)
+                    f.Add(new($"Abschnitt {num}: Seite {p} liegt außerhalb der Seiten der Quelle „{src.Title}“ ({src.Pages}).", false));
         }
         var cited = sections.SelectMany(s => Citations(s.Text)).Select(c => c.Id).ToHashSet();
         foreach (var s in sources)
@@ -153,6 +244,39 @@ public static partial class ReferatKit
             if (!cited.Contains(s.Id)) f.Add(new($"Quelle „{(s.Title.Length > 0 ? s.Title : s.Id)}“ wird im Text nicht zitiert.", false));
         }
         return f;
+    }
+
+    /// <summary>Seitenangabe eines Verweises außerhalb der bekannten Seiten der Quelle („45–67“ beim Artikel)? Gibt die erste unpassende Seite zurück, sonst null.
+    /// Ohne bekannte Seiten (Bücher, Webseiten) wird nichts geprüft.</summary>
+    public static int? PageOutside(string page, string known)
+    {
+        var k = NumRx().Matches(known ?? "").Select(m => int.TryParse(m.Value, out var v) ? v : -1).Where(v => v >= 0).ToList();
+        if (k.Count == 0) return null;
+        int lo = k.Min(), hi = k.Max();
+        if (k.Count == 1) lo = 1; // nur eine Zahl: Seitenzahl des Werks
+        foreach (Match m in NumRx().Matches(page ?? "")) if (int.TryParse(m.Value, out var p) && (p < lo || p > hi)) return p;
+        return null;
+    }
+
+    // ---------- T-0780 (Gegenprüfung M4): 2020a/2020b und „*“ im Titel ----------
+
+    static string FirstAuthor(CiteKit.Source s) { var first = s.Authors.Split(';')[0].Trim().Trim('{', '}'); var c = first.IndexOf(','); return (c > 0 ? first[..c] : first.Split(' ').LastOrDefault() ?? "").Trim().ToLowerInvariant(); }
+
+    /// <summary>Quellen für die Ausgabe: gleiche Erstautorin im gleichen Jahr bekommt „2020a“, „2020b“ (nach Titel sortiert), „*“ im Titel wird nicht zur Kursivmarke.</summary>
+    public static List<CiteKit.Source> ForOutput(IReadOnlyList<CiteKit.Source> sources)
+    {
+        var list = sources.Select(s => s with { Title = s.Title.Replace('*', '∗'), Journal = s.Journal.Replace('*', '∗') }).ToList();
+        var cmp = StringComparer.Create(De, true);
+        foreach (var g in list.Where(s => s.Year.Trim().Length > 0 && FirstAuthor(s).Length > 0).GroupBy(s => (FirstAuthor(s), s.Year.Trim())).Where(g => g.Count() > 1))
+        {
+            var i = 0;
+            foreach (var s in g.OrderBy(x => x.Title, cmp).ToList())
+            {
+                var at = list.IndexOf(s);
+                list[at] = s with { Year = s.Year.Trim() + (char)('a' + Math.Min(i++, 25)) };
+            }
+        }
+        return list;
     }
 
     public static int Words(JsonObject o) => Sections(o).Sum(s => Regex.Matches(CiteRx().Replace(s.Text, ""), @"[\p{L}\p{N}]+").Count);
@@ -174,7 +298,7 @@ public static partial class ReferatKit
     public static TextDoc BuildText(JsonObject o)
     {
         EnsureExportable(o);
-        var sections = Sections(o); var sources = Sources(o); var style = Style(o);
+        var sections = Sections(o); var sources = ForOutput(Sources(o)); var style = Style(o);
         var kind = Kinds.FirstOrDefault(k => k.Id == Str(o["kind"])).Label ?? "Hausarbeit";
         var title = Str(o["title"]).Trim();
         var doc = new TextDoc { Title = title.Length > 0 ? title : kind, Page = new PageSetup { PageNumbers = true, Top = 2.5, Bottom = 2, Left = 2.5, Right = 3, Design = "standard" } };
@@ -241,7 +365,7 @@ public static partial class ReferatKit
     public static SlideDoc BuildSlides(JsonObject o)
     {
         EnsureExportable(o);
-        var sections = Sections(o); var sources = Sources(o); var style = Style(o);
+        var sections = Sections(o); var sources = ForOutput(Sources(o)); var style = Style(o);
         var d = new SlideDoc { Theme = SlideThemes.Get(Str(o["theme"]) is { Length: > 0 } th ? th : "klar") };
         var t = d.AddSlide(SlideLayout.Titel);
         t.ByRole("title")!.Text = Str(o["title"]) is { Length: > 0 } title ? title : "Thema";
@@ -302,7 +426,7 @@ public static partial class ReferatKit
     public static string Markdown(JsonObject o)
     {
         EnsureExportable(o);
-        var sources = Sources(o); var style = Style(o);
+        var sources = ForOutput(Sources(o)); var style = Style(o);
         var sb = new StringBuilder($"# {Str(o["title"]).Trim()}\n\n");
         if (Str(o["subtitle"]) is { Length: > 0 } sub) sb.Append($"*{sub}*\n\n");
         foreach (var (num, s) in Numbered(Sections(o)))

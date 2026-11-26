@@ -13,8 +13,9 @@ namespace Trendo.Core.Programs;
 public enum AssistKind { Text, Number, Date, Choice, YesNo }
 
 /// <summary>Parameter einer Aktion. <paramref name="Words"/>: Wörter, hinter denen der Wert im Auftrag steht (z. B. „Betreff“, „Titel“).
-/// <paramref name="Max"/> (T-0780): größte Länge eines Werts aus dem KI-Plan – längere Werte gelten als nicht geliefert (bisher fest 2000 Zeichen).</summary>
-public sealed record AssistParam(string Name, string Label, AssistKind Kind = AssistKind.Text, IReadOnlyList<string>? Options = null, string? Default = null, bool Required = true, IReadOnlyList<string>? Words = null, int Max = 2000);
+/// <paramref name="Max"/> (T-0780): größte Länge eines Werts aus dem KI-Plan – längere Werte gelten als nicht geliefert (bisher fest 2000 Zeichen).
+/// <paramref name="Multiline"/>: der Wert besteht aus Zeilen – eine Liste von Texten im KI-Plan wird dann zu Zeilen (sonst nicht verstanden).</summary>
+public sealed record AssistParam(string Name, string Label, AssistKind Kind = AssistKind.Text, IReadOnlyList<string>? Options = null, string? Default = null, bool Required = true, IReadOnlyList<string>? Words = null, int Max = 2000, bool Multiline = false);
 
 /// <summary>Eine Aktion des Programms. <paramref name="SideEffect"/>: wirkt nach außen (senden, löschen, drucken, Datei schreiben) → nur nach Ja, nie in der Vorschau.
 /// <paramref name="Next"/>: sinnvolle nächste Aktionen (für Vorschläge).</summary>
@@ -301,7 +302,7 @@ public static partial class AssistPlanner
                             else plan.Unclear.Add($"{a.Label}: „{raw}“ ist kein erlaubter Wert für „{p.Label}“");
                         }
                         // T-0780 (Echtlauf qwen2.5:7b): eine Liste von Texten für einen Text-Wert („ereignisse“: ["…", "…"]) gilt als ein Text mit einer Zeile je Eintrag
-                        else if (p.Kind == AssistKind.Text && ao[p.Name] is JsonArray ja && ja.Count > 0 && ja.All(x => x is JsonValue xv && xv.GetValueKind() == System.Text.Json.JsonValueKind.String)
+                        else if (p.Kind == AssistKind.Text && p.Multiline && ao[p.Name] is JsonArray ja && ja.Count > 0 && ja.All(x => x is JsonValue xv && xv.GetValueKind() == System.Text.Json.JsonValueKind.String)
                                  && string.Join("\n", ja.Select(x => x!.GetValue<string>().Trim())) is { Length: > 0 } joined && joined.Length < p.Max)
                             args[p.Name] = joined;
                         else if (ao[p.Name] is JsonValue jv && jv.ToString() is { Length: > 0 } v && v.Length < p.Max && (p.Kind != AssistKind.Choice || (p.Options ?? []).Contains(v)) && (p.Kind != AssistKind.Number || double.TryParse(v, NumberStyles.Float, CultureInfo.InvariantCulture, out _)))

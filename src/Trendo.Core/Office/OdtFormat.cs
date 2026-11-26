@@ -23,7 +23,7 @@ public static class OdtFormat
         ParaStyle.Title => "Title", ParaStyle.Subtitle => "Subtitle", ParaStyle.Heading1 => "Heading_20_1", ParaStyle.Heading2 => "Heading_20_2", ParaStyle.Heading3 => "Heading_20_3", ParaStyle.Quote => "Quotations", _ => "Standard",
     };
 
-    static string Esc(string s) => SecurityElement.Escape(s) ?? "";
+    static string Esc(string s) => XmlSafe.Escape(s); // T-0780: Steuerzeichen raus (M2)
 
     // ---------- Schreiben ----------
     public static void Write(TextDoc doc, string path)

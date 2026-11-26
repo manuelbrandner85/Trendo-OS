@@ -302,24 +302,14 @@ public partial class MainWindow
 
     // ---------------- KI-Fachaktionen ----------------
 
-    [GeneratedRegex(@"\((?<n>[A-ZÄÖÜ][\p{L}\-]+)(?:\s+et\s+al\.|\s*(?:&|und|u\.\s*a\.)\s*[A-ZÄÖÜ][\p{L}\-]+)?,?\s+(?<y>1[5-9]\d\d|20\d\d)[a-z]?(?:,\s*S\.\s*[\d–\-f.]+)?\)")]
-    private static partial Regex AuthorYearRx();
-
-    /// <summary>Die KI darf nur Quellen der Liste zitieren: Verweise müssen auf eine Kennung der Liste zeigen, frei erfundene Kurzbelege („(Name, 2019)“) ohne passende Quelle werden abgelehnt.</summary>
+    /// <summary>Die KI darf nur Quellen der Liste zitieren – gemeinsame Prüfung (<see cref="ReferatKit.KiTextProblem"/>), dieselbe wie für „dokument.setzen“ und die Claude-Brücke.</summary>
     static void RefKiCitesOnlyKnown(string text, IReadOnlyList<CiteKit.Source> sources)
     {
-        if (ReferatKit.UnknownCitations(text, sources) is { Count: > 0 } unknown)
-            throw new InvalidOperationException($"Die KI hat eine Quelle zitiert, die nicht in deiner Liste steht ([@{unknown[0]}]) – zitiert wird nur aus deinen eigenen Quellen. Nichts übernommen.");
-        foreach (Match m in AuthorYearRx().Matches(text))
-        {
-            var name = m.Groups["n"].Value; var year = m.Groups["y"].Value;
-            if (!sources.Any(s => s.Authors.Contains(name, StringComparison.OrdinalIgnoreCase) && s.Year.Contains(year, StringComparison.Ordinal)))
-                throw new InvalidOperationException($"Die KI hat „{m.Value}“ geschrieben – diese Quelle steht nicht in deiner Liste. Zitiert wird nur aus deinen eigenen Quellen. Nichts übernommen.");
-        }
+        if (ReferatKit.KiTextProblem(text, sources) is { } why) throw new InvalidOperationException(why);
     }
 
     ProgramKiAction RefKiOutline => new(new AssistAction("referat.gliederung", "Gliederung erzeugen", ["gliederung", "gliedern", "kapitel", "aufbau", "inhaltsverzeichnis", "struktur"],
-        [new AssistParam("gliederung", "Gliederung (eine Zeile je Punkt, z. B. „1 Einleitung“, „1.1 Fragestellung“)", Max: 20_000)]),
+        [new AssistParam("gliederung", "Gliederung (eine Zeile je Punkt, z. B. „1 Einleitung“, „1.1 Fragestellung“)", Max: 20_000, Multiline: true)]),
         (d, a) =>
         {
             var text = a.GetValueOrDefault("gliederung") ?? "";
@@ -331,7 +321,7 @@ public partial class MainWindow
     { OnApplyNote = "Erst bei „Ja, behalten“ kommt es ins Dokument – ein Rückgängig-Schritt nimmt es wieder heraus." };
 
     ProgramKiAction RefKiSection => new(new AssistAction("referat.abschnitt", "Abschnitt schreiben", ["abschnitt", "schreiben", "schreib", "text", "einleitung", "fazit", "kapitel", "formuliere", "ausformulieren"],
-        [new AssistParam("abschnitt", "Abschnitt (Nummer wie „2.1“ oder Überschrift)"), new AssistParam("text", "Fertiger Text des Abschnitts", Max: ReferatKit.MaxSectionChars)]),
+        [new AssistParam("abschnitt", "Abschnitt (Nummer wie „2.1“ oder Überschrift)"), new AssistParam("text", "Fertiger Text des Abschnitts", Max: ReferatKit.MaxSectionChars, Multiline: true)]),
         (d, a) =>
         {
             var which = (a.GetValueOrDefault("abschnitt") ?? "").Trim(); var text = (a.GetValueOrDefault("text") ?? "").Trim();
@@ -407,6 +397,7 @@ public partial class MainWindow
         SimpleExports = 3,
         KiActions = [RefKiOutline, RefKiSection],
         KiLocked = ["sources"],
+        KiCheck = ReferatKit.KiCheck, // T-0780 (Gegenprüfung H1/H2): jeder KI-Schreibweg in Abschnitte und Quellen
         KiHint = "Eine Gliederung entsteht mit „referat.gliederung“ (eine Zeile je Punkt, nummeriert wie „1 Einleitung“, „1.1 …“); den Text eines Abschnitts schreibst du mit „referat.abschnitt“ "
                + "(abschnitt = Nummer oder Überschrift, text = fertiger Text in ganzen Sätzen, Absätze durch eine Leerzeile). Je Auftrag genau eine dieser Aktionen, danach nichts mehr. Zitiere nur Quellen aus „sources“ und nur als Verweis [@kennung] oder [@kennung, S. 12] "
                + "mit der Kennung („id“) aus der Liste. Erfinde keine Quellen, Autorinnen, Jahre oder Seiten – gibt es keine passende Quelle, schreib ohne Verweis. Quellen legt nur die Person an.",

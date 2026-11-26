@@ -48,13 +48,16 @@ public readonly partial record struct HistDate(int Year, int Month = 0, int Day 
         {
             DatePrecision.Day => $"{Day}. {Months[Month - 1]} {y}",
             DatePrecision.Month => $"{Months[Month - 1]} {y}",
-            DatePrecision.Decade => $"{y}er",
+            DatePrecision.Decade => $"{DecadeNo()}er",
             DatePrecision.Century => $"{CenturyNo()}. Jh.",
             DatePrecision.Millennium => $"{MillenniumNo()}. Jt.",
             _ => y.ToString(CultureInfo.InvariantCulture),
         };
         return (Approx ? "ca. " : "") + core + bc;
     }
+
+    /// <summary>T-0780 (Gegenprüfung H5): Jahrzehnt wie gelesen – „50er v. Chr.“ steht als −59 (59 … 50 v. Chr.), „0er“ n. Chr. als Jahr 1 (1 … 9).</summary>
+    int DecadeNo() => Year < 0 ? -Year - 9 : Year - Year % 10;
 
     /// <summary>Kurz für die Achse und Tabellen: „14.07.1789“, „07.1789“, „1789“, „44 v. Chr.“.</summary>
     public string Short()
@@ -63,8 +66,8 @@ public readonly partial record struct HistDate(int Year, int Month = 0, int Day 
         var core = Precision switch
         {
             DatePrecision.Day => $"{Day:00}.{Month:00}.{y}",
-            DatePrecision.Month => $"{Month:00}.{y}",
-            DatePrecision.Decade => $"{y}er",
+            DatePrecision.Month => $"{Month:00}.{(y < 100 ? y.ToString("000", CultureInfo.InvariantCulture) : y.ToString(CultureInfo.InvariantCulture))}", // „02.001“: kurze Jahre dreistellig, sonst wäre es ein Tag
+            DatePrecision.Decade => $"{DecadeNo()}er",
             DatePrecision.Century => $"{CenturyNo()}. Jh.",
             DatePrecision.Millennium => $"{MillenniumNo()}. Jt.",
             _ => y.ToString(CultureInfo.InvariantCulture),
@@ -87,6 +90,7 @@ public readonly partial record struct HistDate(int Year, int Month = 0, int Day 
     [GeneratedRegex(@"^(\d{1,2})\.?\s+([\p{L}]+)\.?\s+(\d{1,5})$")] private static partial Regex DayName();
     [GeneratedRegex(@"^([\p{L}]+)\.?\s+(\d{1,5})$")] private static partial Regex MonthName();
     [GeneratedRegex(@"^(-?)(\d{1,5})$")] private static partial Regex YearOnly();
+    [GeneratedRegex(@"^(-?)(0\d{3})$")] private static partial Regex IsoYear();
 
     /// <summary>Ein Datum lesen; null = nicht lesbar. Erlaubt: „1789“, „14.07.1789“, „14. Juli 1789“, „Juli 1789“, „07.1789“, „1789-07-14“, „44 v. Chr.“, „-44“,
     /// „ca. 1200“, „um 800“, „~1500“, „1990er“, „3. Jh. v. Chr.“, „12. Jahrhundert“, „2. Jt. v. Chr.“, „500 BC“.</summary>
@@ -109,14 +113,15 @@ public readonly partial record struct HistDate(int Year, int Month = 0, int Day 
         if (Millennium().Match(s) is { Success: true } mm && int.TryParse(mm.Groups[1].Value, out var mi) && mi is >= 1 and <= 99)
             return new HistDate(bc ? -(mi * 1000) : (mi - 1) * 1000 + 1, 0, 0, DatePrecision.Millennium, approx);
         if (Decade().Match(s) is { Success: true } dm && int.TryParse(dm.Groups[1].Value, out var dy) && dy % 10 == 0)
-            return new HistDate(bc ? -(dy + 9) : dy, 0, 0, DatePrecision.Decade, approx);
+            return new HistDate(bc ? -(dy + 9) : dy == 0 ? 1 : dy, 0, 0, DatePrecision.Decade, approx); // „0er“ n. Chr. = 1 … 9 (es gibt kein Jahr 0)
         if (DayDot().Match(s) is { Success: true } dd && int.TryParse(dd.Groups[1].Value, out var d1) && int.TryParse(dd.Groups[2].Value, out var m1) && int.TryParse(dd.Groups[3].Value, out var y1))
             return Valid(Sign(y1), m1, d1, approx);
         if (Iso().Match(s) is { Success: true } im && int.TryParse(im.Groups[2].Value, out var y2) && int.TryParse(im.Groups[3].Value, out var m2))
         {
-            var neg = im.Groups[1].Value == "-" || bc;
+            // ISO 8601 zählt astronomisch (mit Jahr 0): „-0044-03-15“ = 15. März 45 v. Chr., „0000“ = 1 v. Chr.; mit „v. Chr.“ dahinter gilt die Geschichtszählung
+            var hy = bc ? -y2 : im.Groups[1].Value == "-" ? -(y2 + 1) : y2 == 0 ? -1 : y2;
             var day = im.Groups[4].Success && int.TryParse(im.Groups[4].Value, out var d2) ? d2 : 0;
-            return day > 0 ? Valid(neg ? -y2 : y2, m2, day, approx) : ValidMonth(neg ? -y2 : y2, m2, approx);
+            return day > 0 ? Valid(hy, m2, day, approx) : ValidMonth(hy, m2, approx);
         }
         if (MonthDot().Match(s) is { Success: true } md && int.TryParse(md.Groups[1].Value, out var m3) && int.TryParse(md.Groups[2].Value, out var y3) && md.Groups[2].Value.Length >= 3)
             return ValidMonth(Sign(y3), m3, approx);
@@ -124,6 +129,9 @@ public readonly partial record struct HistDate(int Year, int Month = 0, int Day 
             return Valid(Sign(y4), m4, d4, approx);
         if (MonthName().Match(s) is { Success: true } mn && MonthOf(mn.Groups[1].Value) is { } m5 && int.TryParse(mn.Groups[2].Value, out var y5))
             return ValidMonth(Sign(y5), m5, approx);
+        // ISO-Jahr mit führenden Nullen („-0044“, „0000“) zählt astronomisch wie oben
+        if (IsoYear().Match(s) is { Success: true } iy && int.TryParse(iy.Groups[2].Value, out var y7) && !bc)
+            return iy.Groups[1].Value == "-" ? new HistDate(-(y7 + 1), 0, 0, DatePrecision.Year, approx) : y7 == 0 ? new HistDate(-1, 0, 0, DatePrecision.Year, approx) : new HistDate(y7, 0, 0, DatePrecision.Year, approx);
         if (YearOnly().Match(s) is { Success: true } ym && int.TryParse(ym.Groups[2].Value, out var y6) && OkYear(y6))
             return new HistDate(ym.Groups[1].Value == "-" || bc ? -y6 : y6, 0, 0, DatePrecision.Year, approx);
         return null;
@@ -184,6 +192,8 @@ public sealed class Timeline
     public List<TlTrack> Tracks { get; } = [];
     public List<TlItem> Items { get; } = [];
     public string TrackName(string id) => Tracks.FirstOrDefault(t => t.Id == id)?.Name ?? (Tracks.FirstOrDefault()?.Name ?? "");
+    /// <summary>T-0780 (Gegenprüfung H5): was beim Lesen verworfen oder ersetzt wurde – für die Meldung im Programm.</summary>
+    public List<string> Problems { get; } = [];
 }
 
 /// <summary>T-0780: Fachkern des Studios „Zeitleisten“ – Daten aus dem Dokument lesen und schreiben, CSV/JSON ein und aus (auch TimelineJS-Spalten),
@@ -195,18 +205,41 @@ public static partial class TimelineKit
 
     // ---------------- Dokument (JSON) ----------------
 
+    /// <summary>Gültige Farbe: nur „#RRGGBB“ oder „#AARRGGBB“ (Gegenprüfung H4) – alles andere (Text, Skript, Anführungszeichen) wird durch den Standard ersetzt.</summary>
+    public static bool ValidColor(string? c) => c is { Length: 7 or 9 } && c[0] == '#' && c.Skip(1).All(Uri.IsHexDigit);
+    public static string SafeColor(string? c, string fallback) => ValidColor(c) ? c! : fallback;
+
+    /// <summary>Nur echte Bilder (PNG/JPEG am Kopf erkannt) bis <see cref="MaxImageBytes"/> (Gegenprüfung M1). Neu kodiert wird beim Einlesen in der App.</summary>
+    public static bool ValidImage(byte[]? b) => b is { Length: > 8 and <= MaxImageBytes } &&
+        (b[0] == 0x89 && b[1] == 0x50 && b[2] == 0x4E && b[3] == 0x47 && b[4] == 0x0D && b[5] == 0x0A && b[6] == 0x1A && b[7] == 0x0A || b[0] == 0xFF && b[1] == 0xD8 && b[2] == 0xFF);
+
     public static Timeline FromJson(JsonObject o)
     {
         var t = new Timeline { Title = Str(o["title"]) };
         foreach (var n in (o["tracks"] as JsonArray ?? []).OfType<JsonObject>().Take(MaxTracks))
-            if (Str(n["id"]) is { Length: > 0 } id && t.Tracks.All(x => x.Id != id)) t.Tracks.Add(new(id, Str(n["name"]), Str(n["color"]) is { Length: > 0 } c ? c : Palette[t.Tracks.Count % Palette.Length]));
-        foreach (var n in (o["items"] as JsonArray ?? []).OfType<JsonObject>().Take(MaxItems))
+            if (Str(n["id"]) is { Length: > 0 } id && t.Tracks.All(x => x.Id != id))
+            {
+                var c = Str(n["color"]);
+                if (c.Length > 0 && !ValidColor(c)) t.Problems.Add($"Spur „{Cut(Str(n["name"]), 40)}“: Farbe „{Cut(c, 20)}“ ungültig – Standardfarbe genommen");
+                t.Tracks.Add(new(id, Str(n["name"]), SafeColor(c, Palette[t.Tracks.Count % Palette.Length])));
+            }
+        var items = (o["items"] as JsonArray ?? []).OfType<JsonObject>().ToList();
+        if (items.Count > MaxItems) t.Problems.Add($"{items.Count - MaxItems} Einträge über der Höchstzahl {MaxItems} nicht gelesen");
+        foreach (var n in items.Take(MaxItems))
         {
-            if (HistDate.Parse(Str(n["start"])) is not { } s) continue;
+            var title = Str(n["title"]);
+            if (HistDate.Parse(Str(n["start"])) is not { } s) { t.Problems.Add($"„{Cut(title, 40)}“: Beginn „{Cut(Str(n["start"]), 30)}“ nicht lesbar – Eintrag ausgelassen"); continue; }
             var e = HistDate.Parse(Str(n["end"]));
+            if (Str(n["end"]).Length > 0 && e is null) t.Problems.Add($"„{Cut(title, 40)}“: Ende „{Cut(Str(n["end"]), 30)}“ nicht lesbar – als Ereignis gelesen");
             byte[]? img = null;
-            if (Str(n["image"]) is { Length: > 0 } b64) try { img = Convert.FromBase64String(b64); } catch (FormatException) { }
-            t.Items.Add(new(Str(n["id"]) is { Length: > 0 } id ? id : NewId("e"), Str(n["title"]), s, e, Str(n["track"]), Str(n["text"]), img, Str(n["color"])));
+            if (Str(n["image"]) is { Length: > 0 } b64)
+            {
+                try { img = Convert.FromBase64String(b64); } catch (FormatException) { }
+                if (!ValidImage(img)) { t.Problems.Add($"„{Cut(title, 40)}“: Bild ist kein PNG/JPEG oder zu groß – weggelassen"); img = null; }
+            }
+            var color = Str(n["color"]);
+            if (color.Length > 0 && !ValidColor(color)) { t.Problems.Add($"„{Cut(title, 40)}“: Farbe „{Cut(color, 20)}“ ungültig – Farbe der Spur genommen"); color = ""; }
+            t.Items.Add(new(Str(n["id"]) is { Length: > 0 } id ? id : NewId("e"), title, s, e, Str(n["track"]), Str(n["text"]), img, color));
         }
         return t;
     }
@@ -321,7 +354,7 @@ public static partial class TimelineKit
             if (eText.Length > 0 && e is null) { bad.Add($"Zeile {r + 1}: Ende „{Cut(eText, 30)}“ nicht lesbar – als Ereignis übernommen"); }
             if (e is { } ee && ee.PositionEnd < s.Position) { bad.Add($"Zeile {r + 1}: Ende vor Beginn – als Ereignis übernommen"); e = null; }
             var trackName = Cell(row, cTrack); var track = TrackFor(t, trackName.Length > 0 ? trackName : "Allgemein");
-            t.Items.Add(new(NewId("e"), title.Length > 0 ? Cut(title, 200) : "Ohne Titel", s, e, track, Cut(Cell(row, cText), 4000), null, Cell(row, cColor)));
+            t.Items.Add(new(NewId("e"), title.Length > 0 ? Cut(title, 200) : "Ohne Titel", s, e, track, Cut(Cell(row, cText), 4000), null, ValidColor(Cell(row, cColor)) ? Cell(row, cColor) : ""));
         }
         return (t, bad);
     }
@@ -509,7 +542,7 @@ public static partial class TimelineKit
             {
                 var x1 = X(p.From); var x2 = Math.Max(X(p.To), x1 + 4);
                 var yy = laneTop + 8 + row * RowH;
-                var color = p.Color.Length > 0 ? p.Color : lane.Color;
+                var color = SafeColor(p.Color.Length > 0 ? p.Color : lane.Color, Palette[0]);
                 var approx = p.Start.Approx || p.End is { Approx: true } || p.Start.Precision >= DatePrecision.Decade || p.End is { Precision: >= DatePrecision.Decade };
                 var sel = p.Id == selected;
                 items.Add(new PRect(x1, yy, x2 - x1, RowH - 6, color, sel ? "#FFFFFF" : approx ? color : null, 4, approx, paper ? 0.85 : 0.75, p.Id));
@@ -523,7 +556,7 @@ public static partial class TimelineKit
             {
                 var x = X(e.Start.Center);
                 var yy = evTop + row * evRowH;
-                var color = e.Color.Length > 0 ? e.Color : lane.Color;
+                var color = SafeColor(e.Color.Length > 0 ? e.Color : lane.Color, Palette[0]);
                 var sel = e.Id == selected;
                 var approx = e.Start.Approx || e.Start.Precision >= DatePrecision.Decade;
                 if (e.Start.Precision >= DatePrecision.Decade) // grobe Angabe: Bereich als zarter Balken unter dem Punkt
@@ -533,7 +566,7 @@ public static partial class TimelineKit
                 if (flip)
                 {
                     var tx = x - 12;
-                    if (images && e.Image is { Length: > 0 } img) { items.Add(new PImage(tx - 46, yy + 2, 46, 34, img, e.Id)); tx -= 52; }
+                    if (images && ValidImage(e.Image)) { items.Add(new PImage(tx - 46, yy + 2, 46, 34, e.Image!, e.Id)); tx -= 52; }
                     items.Add(new PText(tx, yy + 15, e.Title, 12.5, ink, sel, 1, e.Id));
                     items.Add(new PText(tx, yy + 28, e.Start.Short(), 10.5, muted, false, 1, e.Id));
                     hits[e.Id] = (x - w, yy + 2, w + 8, evRowH - 4);
@@ -541,7 +574,7 @@ public static partial class TimelineKit
                 else
                 {
                     var tx = x + 12;
-                    if (images && e.Image is { Length: > 0 } img) { items.Add(new PImage(tx, yy + 2, 46, 34, img, e.Id)); tx += 52; }
+                    if (images && ValidImage(e.Image)) { items.Add(new PImage(tx, yy + 2, 46, 34, e.Image!, e.Id)); tx += 52; }
                     items.Add(new PText(tx, yy + 15, e.Title, 12.5, ink, sel, -1, e.Id));
                     items.Add(new PText(tx, yy + 28, e.Start.Short(), 10.5, muted, false, -1, e.Id));
                     hits[e.Id] = (x - 8, yy + 2, w + 8, evRowH - 4);
@@ -557,7 +590,7 @@ public static partial class TimelineKit
         foreach (var (lane, laneTop, laneH, _) in laneLayouts)
         {
             prims.Add(new PRect(0, laneTop, width, laneH, band));
-            prims.Add(new PRect(0, laneTop, 5, laneH, lane.Color));
+            prims.Add(new PRect(0, laneTop, 5, laneH, SafeColor(lane.Color, Palette[0])));
             prims.Add(new PText(14, laneTop + 22, lane.Name, 13, ink, true, -1));
         }
         foreach (var v in ticks)
@@ -582,7 +615,7 @@ public static partial class TimelineKit
     // ---------------- SVG ----------------
 
     static string F(double v) => v.ToString("0.##", CultureInfo.InvariantCulture);
-    static string X(string s) => System.Security.SecurityElement.Escape(s) ?? "";
+    static string X(string s) => Office.XmlSafe.Escape(s);
     static (string Color, double Alpha) Svg(string c)
     {
         var h = c.TrimStart('#');

@@ -194,6 +194,16 @@ public partial class MainWindow
                 var remove = a["loeschen"].AsBool();
                 var value = remove ? null : DocPath.Unwrap(a["wert"]?.DeepClone());
                 if (!remove) try { AssistChain.CheckEdit(doc.Data, path, value); } catch (ArgumentException e) { return McpResult.Fail(e.Message); } // T-0707: dieselbe Prüfung wie der Assistent
+                // T-0780 (Gegenprüfung H3): Felder, die nur die Person setzt (ProgramSpec.KiLocked), gelten auch für Claude – dieselbe Sperr-Prüfung wie im Assistenten
+                // (jedes Pfadsegment und jeder Schlüssel im geschriebenen Wert; Session.LockedField aus T-0779)
+                if (spec.KiLocked.Count > 0 && ProgramAssistTarget.LockedFieldFor(spec.KiLocked, path, value?.ToJsonString() ?? "") is { } field)
+                    return McpResult.Fail($"„{field}“ legt die Person selbst fest – Claude ändert das nicht.");
+                if (spec.KiCheck is { } check) // T-0780 (H1/H2): dieselbe Prüfung wie im Assistenten, am Ergebnis vor dem Übernehmen
+                {
+                    var probe = doc.Data.DeepClone().AsObject();
+                    if (remove) DocPath.Remove(probe, path); else DocPath.Set(probe, path, value?.DeepClone());
+                    if (check(doc.Data, probe) is { } why) return McpResult.Fail(why);
+                }
                 run.Page = spec.Key; ClaudeChangeBegin(spec.Key, doc);
                 doc.Edit("Claude: " + path, d => { if (remove) DocPath.Remove(d, path); else DocPath.Set(d, path, value); });
                 ClaudeChangeAfter(spec.Key, doc);

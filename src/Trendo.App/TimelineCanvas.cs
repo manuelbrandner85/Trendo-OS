@@ -130,7 +130,8 @@ public sealed class TimelineCanvas : Control
         }
     }
 
-    static Color C(string hex) => Color.Parse(hex.StartsWith('#') ? hex : "#" + hex);
+    /// <summary>T-0780 (Gegenprüfung H4): nur #RRGGBB/#AARRGGBB, sonst Standardfarbe – nie ein Abbruch beim Zeichnen.</summary>
+    static Color C(string hex) => Color.TryParse(TimelineKit.SafeColor(hex, TimelineKit.Palette[0]), out var c) ? c : Colors.Goldenrod;
 
     public override void Render(DrawingContext g)
     {
@@ -177,7 +178,7 @@ public sealed class TimelineCanvas : Control
 
     static SKColor Sk(string hex, double opacity = 1)
     {
-        var h = hex.TrimStart('#'); byte a = 255;
+        var h = TimelineKit.SafeColor(hex, TimelineKit.Palette[0]).TrimStart('#'); byte a = 255;
         if (h.Length == 8) { a = Convert.ToByte(h[..2], 16); h = h[2..]; }
         return new SKColor(Convert.ToByte(h[..2], 16), Convert.ToByte(h[2..4], 16), Convert.ToByte(h[4..6], 16), (byte)Math.Round(a * Math.Clamp(opacity, 0, 1)));
     }
@@ -238,6 +239,20 @@ public sealed class TimelineCanvas : Control
         using (var f = File.Create(tmp)) data.SaveTo(f);
         Trendo.Core.SafeFile.Move(tmp, path);
         return path;
+    }
+
+    /// <summary>T-0780 (Gegenprüfung M1): Bilddaten aus einer Datei (JSON) nur als echtes Bild – dekodieren, verkleinern, als JPEG neu kodieren; sonst null.</summary>
+    public static byte[]? Reencode(byte[]? data, int max = 480)
+    {
+        if (!TimelineKit.ValidImage(data)) return null;
+        using var src = SKBitmap.Decode(data);
+        if (src is null || src.Width < 1 || src.Height < 1 || (long)src.Width * src.Height > 40_000_000) return null;
+        var k = Math.Min(1.0, max / (double)Math.Max(src.Width, src.Height));
+        using var small = k < 1 ? src.Resize(new SKImageInfo(Math.Max(1, (int)(src.Width * k)), Math.Max(1, (int)(src.Height * k))), new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear)) : src.Copy();
+        using var img = SKImage.FromBitmap(small);
+        using var enc = img.Encode(SKEncodedImageFormat.Jpeg, 85);
+        var bytes = enc.ToArray();
+        return bytes.Length <= TimelineKit.MaxImageBytes ? bytes : null;
     }
 
     /// <summary>Bild für einen Eintrag verkleinern (längste Seite höchstens <paramref name="max"/> px, JPEG) – so bleibt das Dokument klein.</summary>

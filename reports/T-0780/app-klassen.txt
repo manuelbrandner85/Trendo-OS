@@ -2,48 +2,6 @@ xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
   Discovering: Trendo.App.Tests
   Discovered:  Trendo.App.Tests
   Starting:    Trendo.App.Tests
-    [Test Case Cleanup Failure (Studio-Ordnung: Übersicht zeigt Unterteilungen und Anzahl; „Zuletzt benutzt“ erscheint nach dem Öffnen eines Studios und nicht bei der Suche)] System.InvalidOperationException
-      System.InvalidOperationException : The calling thread cannot access this object because a different thread owns it.
-      Stack Trace:
-           at Avalonia.Threading.Dispatcher.<VerifyAccess>g__ThrowVerifyAccess|17_0()
-           at Avalonia.Threading.Dispatcher.VerifyAccess()
-           at Avalonia.Rendering.DefaultRenderLoop.Add(IRenderLoopTask i)
-           at Avalonia.Rendering.Composition.Server.ServerCompositor..ctor(IRenderLoop renderLoop, IPlatformGraphics platformGraphics, CompositionOptions options, BatchStreamObjectPool`1 batchObjectPool, BatchStreamMemoryPool batchMemoryPool)
-           at Avalonia.Rendering.Composition.Compositor..ctor(IRenderLoop loop, IPlatformGraphics gpu, Boolean useUiThreadForSynchronousCommits, ICompositorScheduler scheduler, Boolean reclaimBuffersImmediately, Dispatcher dispatcher, CompositionOptions options)
-           at Avalonia.Rendering.Composition.Compositor..ctor(IRenderLoop loop, IPlatformGraphics gpu, Boolean useUiThreadForSynchronousCommits)
-           at Avalonia.Rendering.Composition.Compositor..ctor(IPlatformGraphics gpu, Boolean useUiThreadForSynchronousCommits)
-           at Avalonia.Headless.AvaloniaHeadlessPlatform.Initialize(AvaloniaHeadlessPlatformOptions opts)
-           at Avalonia.Headless.AvaloniaHeadlessPlatformExtensions.<>c__DisplayClass0_0.<UseHeadless>b__0()
-           at Avalonia.AppBuilder.SetupUnsafe()
-           at Avalonia.Headless.HeadlessUnitTestSession.EnsureIsolatedApplication()
-           at Avalonia.Headless.HeadlessUnitTestSession.<>c__DisplayClass12_0`1.<DispatchCore>b__0()
-        --- End of stack trace from previous location ---
-           at Avalonia.Headless.XUnit.AvaloniaTestRunner.Run(IXunitTest test, IMessageBus messageBus, Object[] constructorArguments, ExplicitOption explicitOption, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, IReadOnlyCollection`1 beforeAfterAttributes, HeadlessUnitTestSession session)
-           at Avalonia.Headless.XUnit.AvaloniaTestRunner.Run(IXunitTest test, IMessageBus messageBus, Object[] constructorArguments, ExplicitOption explicitOption, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, IReadOnlyCollection`1 beforeAfterAttributes, HeadlessUnitTestSession session)
-    Startmenü: jedes Katalog-Studio öffnet das eigene Fenster, Taskleiste, Minimieren, Wiederherstellen, Schließen [FAIL]
-      Assert.Contains() Failure: Filter not matched in collection
-      Collection: [StudioEntry { Id = CORE-01, Name = Desktop einrichten, ApprovalStatus = APPROVED_SPEC, ImplementationStatus = IN_PROGRESS, TestStatus = PC_VERIFIED, Capability = InProgress, Reason = Teilweise gebaut – einige Funktionen fehlen noch }, StudioEntry { Id = CORE-02, Name = KI fragen, ApprovalStatus = APPROVED_SPEC, ImplementationStatus = IMPLEMENTED, TestStatus = NOT_RUN, Capability = InProgress, Reason = Teilweise gebaut – einige Funktionen fehlen noch }, StudioEntry { Id = CORE-03, Name = KI-Team einsetzen, ApprovalStatus = APPROVED_SPEC, ImplementationStatus = IMPLEMENTED, TestStatus = PC_VERIFIED, Capability = Ready, Reason = Gebaut, getestet und auf dem PC geprüft }, StudioEntry { Id = CORE-04, Name = PC, Pi & Handy verbinden, ApprovalStatus = APPROVED_SPEC, ImplementationStatus = IN_PROGRESS, TestStatus = TESTED, Capability = InProgress, Reason = Teilweise gebaut – einige Funktionen fehlen noch }, StudioEntry { Id = CORE-05, Name = 3D-Modelle erstellen, ApprovalStatus = APPROVED_SPEC, ImplementationStatus = IMPLEMENTED, TestStatus = NOT_RUN, Capability = Blocked, Reason = Benötigtes Programm nicht gefunden: blender }, ···]
-      Stack Trace:
-        tests\Trendo.App.Tests\StartMenuWindowTests.cs(57,0): at Trendo.App.Tests.StartMenu_StudioFenster.Jedes_Studio()
-        --- End of stack trace from previous location ---
-    Studio-Ordnung: Zusammengelegtes fehlt in der Übersicht, Suche findet es, SPEC-07 nirgends [FAIL]
-      Assert.Equal() Failure: Strings differ
-                  ↓ (pos 1)
-      Expected: "63 Studios"
-      Actual:   "61 Studios"
-                  ↑ (pos 1)
-      Stack Trace:
-        tests\Trendo.App.Tests\StudioFoldsUiTests.cs(30,0): at Trendo.App.Tests.StudioFolds_Ui.Overview_and_search()
-           at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
-           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
-           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
-    SYS-13-P13: Jede Seite gehört zu einem Modul aus requirements.yaml [FAIL]
-      Assert.Empty() Failure: Collection was not empty
-      Collection: ["STUDIO-REFERAT-01", "STUDIO-TIMELINE-01"]
-      Stack Trace:
-        tests\Trendo.App.Tests\Sys13UiTests.cs(17,0): at Trendo.App.Tests.Sys13_Qualitaet_Ui.Modules()
-           at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
-           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
     T-0774 ECHT: lokale KI (Ollama) – PDF-Werkstatt „Seiten 1–3 heraus“ und Scannen „Fotos → PDF“ im offenen Programm, echte PDFs, Rückgängig (nur mit TRENDO_T0774_ECHT) [SKIP]
       Echtlauf nur mit TRENDO_T0774_ECHT=<Belegordner> (braucht Ollama mit Modell auf diesem PC).
     T-0707 ECHT: lokale KI (Ollama, bestes Modell nach T-0703) ändert in drei Programmen das offene Dokument, Datei auf der Platte, Rückgängig (nur mit TRENDO_ASSIST_ECHT) [SKIP]
@@ -52,5 +10,5 @@ xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
       Echtlauf nur mit TRENDO_T0780_ECHT=<Belegordner> (braucht Ollama mit Modell auf diesem PC).
   Finished:    Trendo.App.Tests (ID = '966fa3da3ad68c7a4c81a650277255ddcd8c9cb8b23c0e15362ec91e29a324fc')
 === TEST EXECUTION SUMMARY ===
-   Trendo.App.Tests  Total: 405, Errors: 1, Failed: 3, Skipped: 3, Not Run: 0, Time: 719,602s
+   Trendo.App.Tests  Total: 328, Errors: 0, Failed: 0, Skipped: 3, Not Run: 0, Time: 869,183s
 Waiting 10 seconds for foreground threads to exit...

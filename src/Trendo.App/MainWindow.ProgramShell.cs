@@ -98,6 +98,9 @@ public sealed class ProgramSpec(string key, string studio, string title)
     public string KiHint { get; init; } = "";
     /// <summary>T-0774: Felder, die nur die Person selbst setzt – „dokument.setzen“ der KI wird dort abgelehnt (z. B. Ablage-Ordner).</summary>
     public IReadOnlyList<string> KiLocked { get; init; } = [];
+    /// <summary>T-0780 (Gegenprüfung H1/H2): Prüfung nach jeder Änderung durch eine KI – Assistent (Fachaktion, „dokument.setzen“, Befehle) und Claude-Brücke.
+    /// Bekommt die Daten vorher und nachher; Rückgabe null = in Ordnung, sonst ein Satz für die Person (die Änderung wird dann nicht übernommen).</summary>
+    public Func<JsonObject, JsonObject, string?>? KiCheck { get; init; }
     public int LevelOf(ProgramCmd c) => Math.Max(c.Level, CmdLevels.GetValueOrDefault(c.Name));
 }
 

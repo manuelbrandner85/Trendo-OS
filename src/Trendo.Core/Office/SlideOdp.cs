@@ -11,7 +11,9 @@ namespace Trendo.Core.Office;
 public static partial class SlideFiles
 {
     static string Cm(double v) => v.ToString("0.###", CultureInfo.InvariantCulture) + "cm";
-    static string Ox(string s) => SecurityElement.Escape(s) ?? "";
+    static string Ox(string s) => XmlSafe.Escape(s);
+    /// <summary>Tabulator im Text als ODF-Tab statt als rohes Zeichen (Gegenprüfung).</summary>
+    static string Tabs(string s) => Ox(s).Replace("\t", "<text:tab/>");
     static string OdpColor(string? c, string fallback)
     {
         var h = (c ?? fallback).TrimStart('#');
@@ -82,12 +84,12 @@ public static partial class SlideFiles
                         {
                             if (raw.Trim().Length == 0) continue;
                             var deep = raw.StartsWith('\t');
-                            var item = $"<text:list-item><text:p text:style-name=\"{ps}\"><text:span text:style-name=\"{ts}\">{Ox(raw.Trim())}</text:span></text:p></text:list-item>";
+                            var item = $"<text:list-item><text:p text:style-name=\"{ps}\"><text:span text:style-name=\"{ts}\">{Tabs(raw.Trim())}</text:span></text:p></text:list-item>";
                             sb.Append(deep ? $"<text:list-item><text:list>{item}</text:list></text:list-item>" : item);
                         }
                         sb.Append("</text:list>");
                     }
-                    else foreach (var raw in lines) sb.Append($"<text:p text:style-name=\"{ps}\"><text:span text:style-name=\"{ts}\">{Ox(raw)}</text:span></text:p>");
+                    else foreach (var raw in lines) sb.Append($"<text:p text:style-name=\"{ps}\"><text:span text:style-name=\"{ts}\">{Tabs(raw)}</text:span></text:p>");
                     return sb.ToString();
                 }
                 switch (sh.Kind)
@@ -119,7 +121,7 @@ public static partial class SlideFiles
             if (s.Notes.Trim().Length > 0)
             {
                 body.Append($"<presentation:notes><draw:page-thumbnail draw:layer=\"layout\" svg:width=\"16.932cm\" svg:height=\"9.524cm\" svg:x=\"1.058cm\" svg:y=\"1.905cm\" draw:page-number=\"{no}\" presentation:class=\"page\"/><draw:frame draw:name=\"Notizen\" draw:layer=\"layout\" presentation:class=\"notes\" presentation:style-name=\"prNotes\" svg:x=\"1.905cm\" svg:y=\"12.065cm\" svg:width=\"15.239cm\" svg:height=\"11.429cm\"><draw:text-box>");
-                foreach (var line in s.Notes.Replace("\r\n", "\n").Split('\n')) body.Append($"<text:p>{Ox(line)}</text:p>");
+                foreach (var line in s.Notes.Replace("\r\n", "\n").Split('\n')) body.Append($"<text:p>{Tabs(line)}</text:p>");
                 body.Append("</draw:text-box></draw:frame></presentation:notes>");
             }
             body.Append("</draw:page>");

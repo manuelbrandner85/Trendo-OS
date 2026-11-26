@@ -197,7 +197,7 @@ public partial class MainWindow
     {
         if (!KreativSafe.LocalFile(file, TimelineKit.MaxImportBytes)) throw new InvalidOperationException("Wähle eine CSV- oder JSON-Datei auf diesem Rechner (höchstens 5 MB).");
         var text = File.ReadAllText(file);
-        var (got, probs) = Path.GetExtension(file).Equals(".json", StringComparison.OrdinalIgnoreCase) ? TimelineKit.FromExchangeJson(text) : TimelineKit.FromCsv(text);
+        var (got, probs0) = Path.GetExtension(file).Equals(".json", StringComparison.OrdinalIgnoreCase) ? TimelineKit.FromExchangeJson(text) : TimelineKit.FromCsv(text);
         var t = TlData(d); var added = 0;
         foreach (var it in got.Items)
         {
@@ -206,13 +206,16 @@ public partial class MainWindow
             var tr = TimelineKit.TrackFor(t, got.TrackName(it.Track) is { Length: > 0 } n ? n : "Allgemein");
             if (got.Tracks.FirstOrDefault(x => x.Id == it.Track) is { } src && t.Tracks.FirstOrDefault(x => x.Id == tr) is { } mine && t.Items.All(i => i.Track != tr) && src.Color.Length > 0)
                 t.Tracks[t.Tracks.IndexOf(mine)] = mine with { Color = src.Color };
-            t.Items.Add(it with { Id = TimelineKit.NewId("e"), Track = tr }); added++;
+            var img = it.Image is null ? null : TimelineCanvas.Reencode(it.Image); // T-0780 (M1): nur echte Bilder, neu kodiert
+            if (it.Image is not null && img is null) got.Problems.Add($"„{it.Title}“: Bild nicht lesbar – weggelassen");
+            t.Items.Add(it with { Id = TimelineKit.NewId("e"), Track = tr, Image = img }); added++;
         }
         if (t.Title.Trim().Length == 0 && got.Title.Length > 0) t.Title = got.Title;
         // Platzhalter-Spur „Allgemein“ ohne Einträge entfernen, wenn die Datei eigene Spuren mitbrachte
         if (t.Tracks.Count > 1 && t.Tracks.FirstOrDefault(x => x.Id == "t-allg") is { } allg && t.Items.All(i => i.Track != allg.Id)) t.Tracks.Remove(allg);
         TlSave(d, t, "Eingelesen: " + Path.GetFileName(file));
         _tlView.Remove(d.Id);
+        var probs = probs0.Concat(got.Problems).Distinct().ToList();
         _progMsg[TlKey] = $"{added} Einträge aus „{Path.GetFileName(file)}“ eingelesen" + (probs.Count > 0 ? $", {probs.Count} Hinweis(e): {probs[0]}." : ".");
         return added;
     }
@@ -260,7 +263,7 @@ public partial class MainWindow
     // ---------------- KI-Fachaktion ----------------
 
     ProgramKiAction TlKiEvents => new(new AssistAction("zeitleiste.ereignisse", "Ereignisse aus Text einfügen", ["ereignisse", "ereignis", "einfügen", "einfuegen", "daten", "zeitleiste", "aus", "text", "jahreszahlen", "chronik"],
-        [new AssistParam("ereignisse", "Ereignisse, eine Zeile je Eintrag: „Datum | Titel | Spur | Beschreibung“ oder „Beginn – Ende | Titel …“", Max: 50_000)]),
+        [new AssistParam("ereignisse", "Ereignisse, eine Zeile je Eintrag: „Datum | Titel | Spur | Beschreibung“ oder „Beginn – Ende | Titel …“", Max: 50_000, Multiline: true)]),
         (d, a) =>
         {
             var lines = a.GetValueOrDefault("ereignisse") ?? "";
@@ -326,7 +329,7 @@ public partial class MainWindow
             d => TlAdd(d, DateTime.Today.Year.ToString(CultureInfo.InvariantCulture)), d => TlData(d).Items.Count == 0),
         Workspace = TlWorkspace,
         Properties = TlProperties,
-        Status = d => { var t = TlData(d); var (f, to) = TlViewOf(d); return $"{t.Items.Count(i => !i.IsPeriod)} Ereignisse · {t.Items.Count(i => i.IsPeriod)} Zeiträume · {t.Tracks.Count} Spuren · Ansicht {HistDate.AxisLabel(f, 1)} bis {HistDate.AxisLabel(to, 1)}"; },
+        Status = d => { var t = TlData(d); var (f, to) = TlViewOf(d); return (t.Problems.Count > 0 ? $"⚠ {t.Problems.Count} Hinweis(e) beim Lesen: {t.Problems[0]} · " : "") + $"{t.Items.Count(i => !i.IsPeriod)} Ereignisse · {t.Items.Count(i => i.IsPeriod)} Zeiträume · {t.Tracks.Count} Spuren · Ansicht {HistDate.AxisLabel(f, 1)} bis {HistDate.AxisLabel(to, 1)}"; },
         Help = "Oben „Ereignis“ oder „Zeitraum“, dann Datum und Titel in der Zeile über der Zeitleiste eintragen. Daten dürfen vor Christus liegen („44 v. Chr.“), ungefähr sein („ca. 1200“, „um 800“) "
              + "oder grob („3. Jh. v. Chr.“, „1990er“). Mausrad vergrößert und verkleinert, Ziehen auf freier Fläche verschiebt die Ansicht, Ziehen eines Eintrags verschiebt ihn in der Zeit, Doppelklick legt ein Ereignis an. "
              + "Rechtsklick auf einen Eintrag für mehr. Bilder, CSV- und JSON-Dateien kannst du auf die Zeitleiste ziehen. Ausgabe als SVG (Inkscape), PNG und PDF.",

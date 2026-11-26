@@ -1,10 +1,10 @@
-# T-0780 Fremdnachlauf inkscape-zeitleiste – 2026-11-26 15:24:37 +01:00
+# T-0780 Fremdnachlauf inkscape-zeitleiste – 2026-11-26 17:58:15 +01:00
 Datei fremd-timelinejs.csv: 491 Bytes, SHA-256 e0578b5af3b42bc1b80f514871afbe16123eab97a58e08db863760327bb5cb13
 TimelineJS-Tabelle gelesen: „Antike Welt“, 5 Einträge, Spuren Politik, Krieg, Kultur
 Datei trendo-zeitleiste.svg: 4720 Bytes, SHA-256 de9536c5d50167de428024b122bfa5619306362ac8eb20db7666a341bb360e9f
 $ Inkscape liest zeitleiste.svg (alle Objekte)
-  inkscape.com --query-all C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\zeitleiste-b2b4db\zeitleiste.svg
-Exit 0 nach 2,3 s
+  inkscape.com --query-all C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\ad4d5e82\zeitleiste-e7481d\zeitleiste.svg
+Exit 0 nach 1,9 s
 svg22,0,0,1400,306
 rect1,0,0,1400,306
 text1,16.0977,15.1953,110.176,15.0488
@@ -51,17 +51,17 @@ rect21,486.57,236,14.18,20
 text22,493.531,242.117,104.479,9.0293
 Inkscape: 44 Objekte, davon 19 Texte (Trendo: 19)
 $ Inkscape speichert als einfaches SVG (Texte bleiben Text)
-  inkscape.com C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\zeitleiste-b2b4db\zeitleiste.svg --export-type=svg --export-plain-svg --export-filename=C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\zeitleiste-b2b4db\inkscape-text.svg
-Exit 0 nach 1,1 s
+  inkscape.com C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\ad4d5e82\zeitleiste-e7481d\zeitleiste.svg --export-type=svg --export-plain-svg --export-filename=C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\ad4d5e82\zeitleiste-e7481d\inkscape-text.svg
+Exit 0 nach 1,0 s
 Datei inkscape-plain.svg: 7060 Bytes, SHA-256 d20054b2e11741b7afa9ff3f0c59738e3dccc7be2435bc6923d10e5691dee67a
 $ Inkscape rendert die Zeitleiste als PNG
-  inkscape.com C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\zeitleiste-b2b4db\zeitleiste.svg --export-type=png --export-filename=C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\zeitleiste-b2b4db\inkscape-zeitleiste.png --export-width=1400
-Exit 0 nach 1,2 s
+  inkscape.com C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\ad4d5e82\zeitleiste-e7481d\zeitleiste.svg --export-type=png --export-filename=C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\ad4d5e82\zeitleiste-e7481d\inkscape-zeitleiste.png --export-width=1400
+Exit 0 nach 1,0 s
 Datei inkscape-zeitleiste.png: 29783 Bytes, SHA-256 5a8fc98cd575803cb711ae1d94d99d66fdec46bc31e30b82fae7ba2151e8df77
 Inkscape-PNG 1400×306
-Datei trendo-zeitleiste.pdf: 74310 Bytes, SHA-256 f65c760ba82b88a311f899c900b260f49c10b731e158eb7703a83d827d2e6b4b
+Datei trendo-zeitleiste.pdf: 74310 Bytes, SHA-256 76f4e49bb097b54ea73e04cca7a408af616de0fdc504dbc59944fa638e274244
 $ pdftotext liest Trendos Zeitleisten-PDF
-  pdftotext.exe -enc UTF-8 C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\zeitleiste-b2b4db\zeitleiste.pdf -
+  pdftotext.exe -enc UTF-8 C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\ad4d5e82\zeitleiste-e7481d\zeitleiste.pdf -
 Exit 0 nach 0,1 s
 Antike Welt
 
@@ -98,17 +98,17 @@ Kultur
 Bau des Parthenon
 Datei trendo-zeitleiste.csv: 355 Bytes, SHA-256 7a0dd1242c95a41c51711f5ec753e307d9eb1adde6014fefe542896fdaf9e479
 $ LibreOffice öffnet zeitleiste.csv und schreibt ods
-  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-t0780-work/zeitleiste-b2b4db/lo-profil --headless --norestore --nolockcheck --infilter=CSV:59,34,76,1 --convert-to ods --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\zeitleiste-b2b4db\lo-aus-csv-ods C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\zeitleiste-b2b4db\zeitleiste.csv
-Exit 0 nach 9,3 s
-convert C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\zeitleiste-b2b4db\zeitleiste.csv as a Calc document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\zeitleiste-b2b4db\lo-aus-csv-ods\zeitleiste.ods using filter : calc8
-  eigene Prozesse (6): PID 2872 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-2bea00\libreoffice\program\soffice.bin; PID 14340 conhost.exe: C:\Windows\System32\conhost.exe; PID 31636 opencltest.exe: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-2bea00\libreoffice\program\opencltest.exe; PID 54672 soffice.com: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-2bea00\libreoffice\program\soffice.com; PID 57600 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-2bea00\libreoffice\program\soffice.bin; PID 67160 conhost.exe: C:\Windows\System32\conhost.exe
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-t0780-work/ad4d5e82/zeitleiste-e7481d/lo-profil --headless --norestore --nolockcheck --infilter=CSV:59,34,76,1 --convert-to ods --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\ad4d5e82\zeitleiste-e7481d\lo-aus-csv-ods C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\ad4d5e82\zeitleiste-e7481d\zeitleiste.csv
+Exit 0 nach 9,0 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\ad4d5e82\zeitleiste-e7481d\zeitleiste.csv as a Calc document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\ad4d5e82\zeitleiste-e7481d\lo-aus-csv-ods\zeitleiste.ods using filter : calc8
+  eigene Prozesse (6): PID 24484 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-15cfc3\libreoffice\program\soffice.bin; PID 29600 soffice.com: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-15cfc3\libreoffice\program\soffice.com; PID 33592 conhost.exe: C:\Windows\System32\conhost.exe; PID 39084 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-15cfc3\libreoffice\program\soffice.bin; PID 43644 opencltest.exe: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-15cfc3\libreoffice\program\opencltest.exe; PID 65292 conhost.exe: C:\Windows\System32\conhost.exe
 $ LibreOffice öffnet zeitleiste.ods und schreibt csv
-  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-t0780-work/zeitleiste-b2b4db/lo-profil --headless --norestore --nolockcheck --convert-to "csv:Text - txt - csv (StarCalc):59,34,76,1" --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\zeitleiste-b2b4db\lo-aus-ods-csv C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\zeitleiste-b2b4db\lo-aus-csv-ods\zeitleiste.ods
-Exit 0 nach 1,9 s
-convert C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\zeitleiste-b2b4db\lo-aus-csv-ods\zeitleiste.ods as a Calc document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\zeitleiste-b2b4db\lo-aus-ods-csv\zeitleiste.csv using filter : Text - txt - csv (StarCalc):59,34,76,1
-  eigene Prozesse (3): PID 1484 soffice.com: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-2bea00\libreoffice\program\soffice.com; PID 68460 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-2bea00\libreoffice\program\soffice.bin; PID 70068 conhost.exe: C:\Windows\System32\conhost.exe
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-t0780-work/ad4d5e82/zeitleiste-e7481d/lo-profil --headless --norestore --nolockcheck --convert-to "csv:Text - txt - csv (StarCalc):59,34,76,1" --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\ad4d5e82\zeitleiste-e7481d\lo-aus-ods-csv C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\ad4d5e82\zeitleiste-e7481d\lo-aus-csv-ods\zeitleiste.ods
+Exit 0 nach 2,1 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\ad4d5e82\zeitleiste-e7481d\lo-aus-csv-ods\zeitleiste.ods as a Calc document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\ad4d5e82\zeitleiste-e7481d\lo-aus-ods-csv\zeitleiste.csv using filter : Text - txt - csv (StarCalc):59,34,76,1
+  eigene Prozesse (3): PID 21176 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-15cfc3\libreoffice\program\soffice.bin; PID 27520 soffice.com: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-15cfc3\libreoffice\program\soffice.com; PID 66248 conhost.exe: C:\Windows\System32\conhost.exe
 Datei libreoffice-csv-zurueck.csv: 412 Bytes, SHA-256 f9594c86650abd60a8fdafe17621ca2c61f340eab41c94799b84440752e7ac70
 LibreOffice Calc: 6 Zeilen, Kopf „Art;Titel;Beginn;Ende;Spur;Beschreibung;Farbe“
-LibreOffice läuft aus einer Kopie im eigenen Temp-Ordner (14745 Dateien, 882 MB, kopiert in 24,0 s; frei vorher 28,3 GB). Keine alte eigene LibreOffice-Kopie vorhanden.
+LibreOffice läuft aus einer Kopie im eigenen Temp-Ordner (14745 Dateien, 882 MB, kopiert in 20,4 s; frei vorher 19,8 GB). Keine alte eigene LibreOffice-Kopie vorhanden.
 Original: unverändert. Trendo-Werkzeugordner (LibreOffice-Original): 15933 Einträge, keiner geändert, keiner neu, keiner fehlt. In der Kopie hat LibreOffice bisher 2 Einträge angelegt/geändert/entfernt: program\opencl, share\uno_packages\cache.
 ERGEBNIS: BESTANDEN

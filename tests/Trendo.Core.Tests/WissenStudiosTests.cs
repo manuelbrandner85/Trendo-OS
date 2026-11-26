@@ -286,7 +286,7 @@ public class WissenStudiosTests
     [Fact(DisplayName = "KI-Plan (T-0780, Befund Echtlauf): Liste von Texten für einen Text-Wert wird zu Zeilen; lange Texte gelten bis zur Grenze der Aktion (statt fest 2000 Zeichen)")]
     public void Planner_list_and_long_text()
     {
-        var ev = new Programs.AssistAction("zeitleiste.ereignisse", "Ereignisse", ["ereignisse"], [new Programs.AssistParam("ereignisse", "Ereignisse", Max: 50_000)]);
+        var ev = new Programs.AssistAction("zeitleiste.ereignisse", "Ereignisse", ["ereignisse"], [new Programs.AssistParam("ereignisse", "Ereignisse", Max: 50_000, Multiline: true)]);
         var plan = Programs.AssistChain.FromKi("Ereignisse einfügen", """{"steps":[{"action":"zeitleiste.ereignisse","args":{"ereignisse":["44 v. Chr. | Tod Caesars", "800 | Kaiserkrönung"]}}]}""", [ev]);
         Assert.True(plan.Understood);
         Assert.Equal("44 v. Chr. | Tod Caesars\n800 | Kaiserkrönung", plan.Steps.Single().Args["ereignisse"]);

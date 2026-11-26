@@ -1,0 +1,54 @@
+# T-0780 Gegenprüfung – Rot-Lauf: neue Testdateien T0780GegenpruefungTests/T0780Gegenpruefung_Ui gegen 11c40362d (eigener Worktree)
+# dotnet build -c Release
+## tests/Trendo.Core.Tests
+T0780GegenpruefungTests.cs(112,28): error CS0117: "ReferatKit" enthält keine Definition für "ForOutput". 
+T0780GegenpruefungTests.cs(168,27): error CS1061: "Timeline" enthält keine Definition für "Problems", und es konnte keine zugängliche Problems-Erweiterungsmethode gefunden werden, die ein erstes Argument vom Typ "Timeline" akzeptiert (möglicherweise fehlt eine using-Direktive oder ein Assemblyverweis). 
+T0780GegenpruefungTests.cs(169,27): error CS1061: "Timeline" enthält keine Definition für "Problems", und es konnte keine zugängliche Problems-Erweiterungsmethode gefunden werden, die ein erstes Argument vom Typ "Timeline" akzeptiert (möglicherweise fehlt eine using-Direktive oder ein Assemblyverweis). 
+T0780GegenpruefungTests.cs(170,27): error CS1061: "Timeline" enthält keine Definition für "Problems", und es konnte keine zugängliche Problems-Erweiterungsmethode gefunden werden, die ein erstes Argument vom Typ "Timeline" akzeptiert (möglicherweise fehlt eine using-Direktive oder ein Assemblyverweis). 
+T0780GegenpruefungTests.cs(178,33): error CS0117: "TimelineKit" enthält keine Definition für "ValidColor". 
+T0780GegenpruefungTests.cs(178,81): error CS0117: "TimelineKit" enthält keine Definition für "ValidColor". 
+T0780GegenpruefungTests.cs(179,127): error CS0117: "TimelineKit" enthält keine Definition für "ValidColor". 
+T0780GegenpruefungTests.cs(179,34): error CS0117: "TimelineKit" enthält keine Definition für "ValidColor". 
+T0780GegenpruefungTests.cs(179,82): error CS0117: "TimelineKit" enthält keine Definition für "ValidColor". 
+T0780GegenpruefungTests.cs(189,59): error CS0117: "TimelineKit" enthält keine Definition für "ValidColor". 
+T0780GegenpruefungTests.cs(190,81): error CS0117: "TimelineKit" enthält keine Definition für "ValidColor". 
+T0780GegenpruefungTests.cs(209,33): error CS0117: "TimelineKit" enthält keine Definition für "ValidImage". 
+T0780GegenpruefungTests.cs(210,34): error CS0117: "TimelineKit" enthält keine Definition für "ValidImage". 
+T0780GegenpruefungTests.cs(211,34): error CS0117: "TimelineKit" enthält keine Definition für "ValidImage". 
+T0780GegenpruefungTests.cs(222,27): error CS1061: "Timeline" enthält keine Definition für "Problems", und es konnte keine zugängliche Problems-Erweiterungsmethode gefunden werden, die ein erstes Argument vom Typ "Timeline" akzeptiert (möglicherweise fehlt eine using-Direktive oder ein Assemblyverweis). 
+T0780GegenpruefungTests.cs(232,47): error CS0103: Der Name "XmlSafe" ist im aktuellen Kontext nicht vorhanden. 
+T0780GegenpruefungTests.cs(233,33): error CS0103: Der Name "XmlSafe" ist im aktuellen Kontext nicht vorhanden. 
+T0780GegenpruefungTests.cs(269,31): error CS0117: "ReferatKit" enthält keine Definition für "ForOutput". 
+T0780GegenpruefungTests.cs(284,94): error CS1739: Die beste Überladung für "AssistParam" enthält keinen Parameter mit dem Namen "Multiline". 
+T0780GegenpruefungTests.cs(39,36): error CS0117: "ReferatKit" enthält keine Definition für "FreeCitations". 
+T0780GegenpruefungTests.cs(40,35): error CS0117: "ReferatKit" enthält keine Definition für "KiTextProblem". 
+T0780GegenpruefungTests.cs(53,33): error CS0117: "ReferatKit" enthält keine Definition für "FreeCitations". 
+T0780GegenpruefungTests.cs(54,32): error CS0117: "ReferatKit" enthält keine Definition für "KiTextProblem". 
+T0780GegenpruefungTests.cs(67,32): error CS0117: "ReferatKit" enthält keine Definition für "KiCheck". 
+T0780GegenpruefungTests.cs(69,54): error CS0117: "ReferatKit" enthält keine Definition für "KiCheck". 
+T0780GegenpruefungTests.cs(70,46): error CS0117: "ReferatKit" enthält keine Definition für "KiCheck". 
+T0780GegenpruefungTests.cs(72,35): error CS0117: "ReferatKit" enthält keine Definition für "KiCheck". 
+T0780GegenpruefungTests.cs(74,47): error CS0117: "ReferatKit" enthält keine Definition für "KiCheck". 
+T0780GegenpruefungTests.cs(75,32): error CS0117: "ReferatKit" enthält keine Definition für "KiCheck". 
+T0780GegenpruefungTests.cs(81,37): error CS0117: "ReferatKit" enthält keine Definition für "PageOutside". 
+T0780GegenpruefungTests.cs(82,32): error CS0117: "ReferatKit" enthält keine Definition für "PageOutside". 
+T0780GegenpruefungTests.cs(83,37): error CS0117: "ReferatKit" enthält keine Definition für "PageOutside". 
+T0780GegenpruefungTests.cs(84,32): error CS0117: "ReferatKit" enthält keine Definition für "PageOutside". 
+## tests/Trendo.App.Tests
+
+## App-Tests auf 11c40362d ausgeführt (übersetzen dort): 4 von 4 rot
+    T-0780 M1: JSON-Datei mit Nicht-Bild als „image“ einlesen – Bild weggelassen und gemeldet, echtes Bild neu kodiert (JPEG) [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: 255
+      Actual:   137
+    T-0780 H3: Claude-Brücke hält KiLocked ein – „sources“ (Referate) und „folder“ (Dokumente scannen) setzt Claude nicht, freie Felder weiter schon [FAIL]
+      Assert.True() Failure
+      Expected: True
+      Actual:   False
+    T-0780 H1/H2: Claude-Brücke und Assistent („dokument.setzen“) prüfen Zitate wie die Fachaktion – freier Kurzbeleg und unbekannter Verweis abgelehnt, Verweis auf eigene Quelle übernommen [FAIL]
+      Assert.True() Failure
+      Expected: True
+      Actual:   False
+    T-0780 H4: ungültige Farbe im Modell – Zeichenfläche und PNG-Ausgabe brechen nicht ab, Standardfarbe statt Fehler [FAIL]
+      System.FormatException : Invalid color string: '#keine-farbe'.
+   Trendo.App.Tests  Total: 4, Errors: 0, Failed: 4, Skipped: 0, Not Run: 0, Time: 14,603s

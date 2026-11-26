@@ -15,11 +15,20 @@ namespace Trendo.Core.Tests;
 /// LibreOffice (nur aus der Kopie von <see cref="T0776_LoKopie"/>, eigenes Profil) öffnet DOCX, ODT, PPTX und ODP, Inkscape (eigenes Profil) die SVG,
 /// pdftotext (Xpdf aus Git für Windows) liest die PDFs. Fehlt ein Werkzeug: „übersprungen“ mit Grund (BLOCKIERT).
 /// Rohlog und SHA-256 je Fall im Ordner aus <c>TRENDO_BELEG_DIR</c> (sonst Temp) – abgelegt unter <c>reports/T-0780/</c>.</summary>
-public class T0780_Fremdnachlauf(T0776_LoKopie loKopie, ITestOutputHelper output) : IClassFixture<T0776_LoKopie>
+public class T0780_Fremdnachlauf(T0776_LoKopie loKopie, ITestOutputHelper output) : IClassFixture<T0776_LoKopie>, IDisposable
 {
+    /// <summary>Gegenprüfung: eigener Arbeitsordner je Testlauf, am Ende wieder entfernt – ebenso der Belegordner, wenn kein TRENDO_BELEG_DIR gesetzt ist.</summary>
+    readonly string _work = Path.Combine(TempDir.SystemTemp, "trendo-t0780-work", Guid.NewGuid().ToString("N")[..8]);
+    static readonly string DefaultBeleg = Path.Combine(TempDir.SystemTemp, "trendo-t0780-beleg");
+    public void Dispose()
+    {
+        foreach (var d in new[] { _work, Path.GetDirectoryName(_work)! }.Concat(Environment.GetEnvironmentVariable("TRENDO_BELEG_DIR") is { Length: > 0 } ? [] : new[] { DefaultBeleg }))
+            try { if (Directory.Exists(d) && (d != Path.GetDirectoryName(_work) || !Directory.EnumerateFileSystemEntries(d).Any())) Directory.Delete(d, true); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+    }
+
     static string Need(string? path, string was) { if (path is null) Ueberspringen.Weil("BLOCKIERT – fehlt auf diesem PC: " + was); return path; }
     static string? Konsole(string? exe) => exe is null ? null : Path.ChangeExtension(exe, ".com") is var c && File.Exists(c) ? c : exe;
-    static string Work(string name) { var d = Path.Combine(TempDir.SystemTemp, "trendo-t0780-work", name + "-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(d); return d; }
+    string Work(string name) { var d = Path.Combine(_work, name + "-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(d); return d; }
     static string Sha(string f) => Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(f))).ToLowerInvariant();
     static string? PdfToText() => Cli.Find("pdftotext") ?? new[] { Environment.GetEnvironmentVariable("ProgramW6432"), Environment.GetEnvironmentVariable("ProgramFiles") }
         .Where(p => p is { Length: > 0 }).Select(p => Path.Combine(p!, "Git", "mingw64", "bin", "pdftotext.exe")).FirstOrDefault(File.Exists);
@@ -31,7 +40,7 @@ public class T0780_Fremdnachlauf(T0776_LoKopie loKopie, ITestOutputHelper output
         public Beleg(string name)
         {
             _name = name;
-            Dir = Path.Combine(Environment.GetEnvironmentVariable("TRENDO_BELEG_DIR") is { Length: > 0 } d ? d : Path.Combine(TempDir.SystemTemp, "trendo-t0780-beleg"), name);
+            Dir = Path.Combine(Environment.GetEnvironmentVariable("TRENDO_BELEG_DIR") is { Length: > 0 } d ? d : DefaultBeleg, name);
             Directory.CreateDirectory(Dir);
             Line($"# T-0780 Fremdnachlauf {name} – {DateTime.Now:yyyy-MM-dd HH:mm:ss zzz}");
         }
