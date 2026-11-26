@@ -17,7 +17,7 @@ public static partial class Nachhilfe
     /// <param name="Generator">Erzeugt beliebig viele Aufgaben (Mathe); null = feste Aufgaben in <paramref name="Items"/>.</param>
     public sealed record Thema(string Id, string Fach, int VonKlasse, int BisKlasse, string Titel, string Einfuehrung, Func<Random, Item>? Generator = null, IReadOnlyList<Item>? Items = null);
     /// <summary>Eine Übung: Frage, erlaubte Antworten (erste = Musterlösung), Lösungsweg, Hinweise in Stufen.</summary>
-    public sealed record Item(string Frage, IReadOnlyList<string> Antworten, string Erklaerung, IReadOnlyList<string> Hinweise, string Art = "text");
+    public sealed record Item(string Frage, IReadOnlyList<string> Antworten, string Erklaerung, IReadOnlyList<string> Hinweise, string Art = "text", string? Einheit = null);
 
     public static readonly IReadOnlyList<Fach> Faecher = [new("mathe", "Mathe"), new("deutsch", "Deutsch"), new("englisch", "Englisch")];
     public const int RundeLaenge = 5;
@@ -28,6 +28,7 @@ public static partial class Nachhilfe
     // ───────────────────────── Lernpfad ─────────────────────────
 
     static Item Num(string frage, double wert, string weg, params string[] hinweise) => new(frage, [Fmt(wert)], weg, hinweise, "zahl");
+    static Item NumE(string einheit, string frage, double wert, string weg, params string[] hinweise) => new(frage, [Fmt(wert)], weg, hinweise, "zahl", einheit);
     static string Fmt(double v) => Math.Abs(v - Math.Round(v)) < 1e-9 ? ((long)Math.Round(v)).ToString(CultureInfo.InvariantCulture) : v.ToString("0.###", CultureInfo.GetCultureInfo("de-DE"));
     static int Ggt(int a, int b) { a = Math.Abs(a); b = Math.Abs(b); while (b != 0) (a, b) = (b, a % b); return Math.Max(1, a); }
 
@@ -56,7 +57,7 @@ public static partial class Nachhilfe
                     $"Bring zuerst die Zahl ohne x auf die andere Seite.", $"{a}x = {c - b}. Was musst du jetzt mit beiden Seiten machen?"); }),
         new("m-pythagoras", "mathe", 9, 10, "Satz des Pythagoras", "Im rechtwinkligen Dreieck gilt a² + b² = c². c ist die längste Seite, gegenüber dem rechten Winkel.",
             r => { int[][] t = [[3, 4, 5], [6, 8, 10], [5, 12, 13], [9, 12, 15], [8, 15, 17], [7, 24, 25]]; var s = t[r.Next(t.Length)];
-                return Num($"Rechtwinkliges Dreieck mit a = {s[0]} cm und b = {s[1]} cm. Wie lang ist c (in cm)?", s[2], $"{s[0]}² + {s[1]}² = {s[0] * s[0]} + {s[1] * s[1]} = {s[2] * s[2]}, die Wurzel daraus ist {s[2]}.",
+                return NumE("cm", $"Rechtwinkliges Dreieck mit a = {s[0]} cm und b = {s[1]} cm. Wie lang ist c (in cm)?", s[2], $"{s[0]}² + {s[1]}² = {s[0] * s[0]} + {s[1] * s[1]} = {s[2] * s[2]}, die Wurzel daraus ist {s[2]}.",
                     "Quadriere a und b und zähle sie zusammen.", $"{s[0] * s[0]} + {s[1] * s[1]} = {s[2] * s[2]}. Welche Zahl mal sich selbst ergibt das?"); }),
 
         new("d-wortarten", "deutsch", 3, 5, "Wortarten erkennen", "Nomen benennen Dinge und Lebewesen (groß geschrieben), Verben sagen, was jemand tut, Adjektive beschreiben, wie etwas ist.", Items:
@@ -125,12 +126,12 @@ public static partial class Nachhilfe
         [.. d.List("eigene").OfType<JsonObject>().Where(o => o["thema"].AsText() == thema).Select(o => (o["id"].AsText() ?? "", ItemOf(o), o["herkunft"].AsText() ?? "eigen"))];
 
     static Item ItemOf(JsonObject o) => new(o["frage"].AsText() ?? "", [.. (o["antworten"] as JsonArray ?? []).Select(x => x.AsText() ?? "").Where(x => x.Length > 0)],
-        o["erklaerung"].AsText() ?? "", [.. (o["hinweise"] as JsonArray ?? []).Select(x => x.AsText() ?? "").Where(x => x.Length > 0)], o["art"].AsText() ?? "text");
+        o["erklaerung"].AsText() ?? "", [.. (o["hinweise"] as JsonArray ?? []).Select(x => x.AsText() ?? "").Where(x => x.Length > 0)], o["art"].AsText() ?? "text", o["einheit"].AsText() is { Length: > 0 } eh ? eh : null);
 
     static JsonObject Json(Item i, string thema, string quelle) => new()
     {
         ["thema"] = thema, ["frage"] = i.Frage, ["antworten"] = new JsonArray([.. i.Antworten.Select(a => (JsonNode)a)]), ["erklaerung"] = i.Erklaerung,
-        ["hinweise"] = new JsonArray([.. i.Hinweise.Select(h => (JsonNode)h)]), ["art"] = i.Art, ["quelle"] = quelle,
+        ["hinweise"] = new JsonArray([.. i.Hinweise.Select(h => (JsonNode)h)]), ["art"] = i.Art, ["einheit"] = i.Einheit, ["quelle"] = quelle, ["uid"] = "e" + Guid.NewGuid().ToString("N")[..12],
         ["versuche"] = 0, ["hinweiseGezeigt"] = 0, ["geloest"] = false, ["loesungGezeigt"] = false, ["eingaben"] = new JsonArray(),
     };
 
@@ -174,58 +175,36 @@ public static partial class Nachhilfe
     /// <summary>Antwort normalisieren: klein, Leerzeichen, Anführungszeichen, Komma als Dezimalzeichen.</summary>
     public static string Norm(string s) => Spaces().Replace(s.Trim().Trim('.', '!', '„', '“', '"', '\'').ToLowerInvariant().Replace('’', '\''), " ");
 
-    static bool Zahl(string s, out double v) => double.TryParse(s.Replace(" ", "").Replace(',', '.'), NumberStyles.Float, CultureInfo.InvariantCulture, out v);
-
-    /// <summary>Prüft eine Eingabe gegen die erlaubten Antworten. Gibt (richtig, Rückmeldung) zurück; „fast richtig“ (Bruch nicht ganz gekürzt) zählt nicht.</summary>
-    public static (bool Richtig, string Rueckmeldung) Vergleiche(Item i, string eingabe)
-    {
-        var e = Norm(eingabe);
-        if (e.Length == 0) return (false, "Schreib zuerst eine Antwort.");
-        switch (i.Art)
-        {
-            case "zahl":
-                if (!Zahl(e, out var v)) return (false, "Hier ist eine Zahl gefragt.");
-                return i.Antworten.Any(a => Zahl(a, out var w) && Math.Abs(v - w) < 1e-6) ? (true, "Richtig!") : (false, "Noch nicht richtig.");
-            case "bruch":
-                var m = Fraction().Match(e.Replace(" ", ""));
-                if (!m.Success) return (false, "Schreib den Bruch als Zähler/Nenner, z. B. 3/4.");
-                int z = int.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture), n = int.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture);
-                var soll = Fraction().Match(i.Antworten[0]); int sz = int.Parse(soll.Groups[1].Value, CultureInfo.InvariantCulture), sn = int.Parse(soll.Groups[2].Value, CultureInfo.InvariantCulture);
-                if (n == 0) return (false, "Durch null kann man nicht teilen – der Nenner darf nicht 0 sein.");
-                if (z == sz && n == sn) return (true, "Richtig!");
-                if ((long)z * sn == (long)sz * n) return (false, "Der Wert stimmt, aber du kannst noch weiter kürzen.");
-                return (false, "Noch nicht richtig.");
-            case "rest":
-                var re = Spaces().Replace(e.Replace("rest", "r"), " ");
-                return i.Antworten.Any(a => Spaces().Replace(Norm(a), " ") == re || Norm(a).Replace(" ", "") == re.Replace(" ", "")) ? (true, "Richtig!") : (false, "Noch nicht richtig.");
-            default:
-                string Loose(string s) => Norm(s).Replace("ä", "ae").Replace("ö", "oe").Replace("ü", "ue").Replace("ß", "ss");
-                return i.Antworten.Any(a => Loose(a) == Loose(e)) ? (true, "Richtig!") : (false, "Noch nicht richtig.");
-        }
-    }
-
-    /// <summary>Antwort der lernenden Person prüfen. Zählt als Versuch; bei „richtig“ geht das Ergebnis in den Fortschritt des Themas ein.</summary>
-    public static (bool Richtig, string Rueckmeldung) Pruefen(ProgramDocument d, string eingabe, DateTime? heute = null)
+    /// <summary>Antwort der lernenden Person prüfen. Zählt als Versuch (außer leere oder unlesbare Eingaben); bei „richtig“ geht das Ergebnis in den Fortschritt ein.
+    /// T-0782 (M6): Versuche und „Lösung gesehen“ stehen zusätzlich außerhalb der Rückgängig-Liste (Dokument-Meta) – Strg+Z setzt sie nicht zurück.
+    /// Wer den Lösungsweg schon gesehen hat, bekommt für eine richtige Antwort keinen Punkt.</summary>
+    public static Pruefung Pruefen(ProgramDocument d, string eingabe, DateTime? heute = null)
     {
         var u = Uebung(d) ?? throw new InvalidOperationException("Es gibt gerade keine Übung – „Nächste Übung“ holt eine.");
         if (u["geloest"].AsBool() || u["loesungGezeigt"].AsBool()) throw new InvalidOperationException("Diese Übung ist schon abgeschlossen – „Nächste Übung“ holt eine neue.");
         var item = ItemOf(u);
-        var (ok, msg) = Vergleiche(item, eingabe);
-        if (Norm(eingabe).Length == 0) return (false, msg);
+        var p = Vergleiche(item, eingabe);
+        if (!p.Zaehlt) return p;
+        var meta = MetaFor(d, u, true);
+        var gesehen = meta["gesehen"].AsBool();
+        var echt = (int)ProgramDocument.ToNumber(meta["versuche"]) + 1;
+        d.EditMeta(_ => meta["versuche"] = echt);
         var tag = (heute ?? DateTime.Today).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-        d.Edit(ok ? "Richtig beantwortet" : "Antwort geprüft", x =>
+        d.Edit(p.Richtig ? "Richtig beantwortet" : "Antwort geprüft", x =>
         {
             var ue = (JsonObject)x["uebung"]!;
-            ue["versuche"] = (int)ProgramDocument.ToNumber(ue["versuche"]) + 1;
-            ((JsonArray)ue["eingaben"]!).Add(eingabe.Trim());
-            if (ok)
+            ue["versuche"] = Math.Max(echt, (int)ProgramDocument.ToNumber(ue["versuche"]) + 1);
+            ((JsonArray)ue["eingaben"]!).Add(eingabe.Trim().Length > 200 ? eingabe.Trim()[..200] : eingabe.Trim());
+            if (p.Richtig)
             {
                 ue["geloest"] = true;
-                Werten(x, ue["thema"].AsText()!, ue["frage"].AsText()!, eingabe, (int)ProgramDocument.ToNumber(ue["versuche"]) == 1, tag);
+                if (gesehen) ue["loesungGezeigt"] = true;
+                Werten(x, ue["thema"].AsText()!, ue["frage"].AsText()!, eingabe, echt == 1 && !gesehen, tag, falsch: gesehen);
             }
         });
-        if (!ok && (int)ProgramDocument.ToNumber(Uebung(d)!["versuche"]) >= 1 && d.Flag("sokratisch")) msg += " Schau dir einen Hinweis an oder versuch es nochmal – nach deinem Versuch kannst du dir auch den Lösungsweg zeigen lassen.";
-        return (ok, msg);
+        if (p.Richtig && gesehen) return p with { Rueckmeldung = "Richtig – zählt aber nicht als gelöst, weil du den Lösungsweg schon gesehen hattest." };
+        if (!p.Richtig && d.Flag("sokratisch")) return p with { Rueckmeldung = p.Rueckmeldung + " Schau dir einen Hinweis an oder versuch es nochmal – nach deinem Versuch kannst du dir auch den Lösungsweg zeigen lassen." };
+        return p;
     }
 
     /// <summary>Nächsten Hinweis zeigen (ohne Versuch erlaubt). Null, wenn alle gezeigt sind.</summary>
@@ -238,19 +217,21 @@ public static partial class Nachhilfe
         return hs[n];
     }
 
-    /// <summary>Sokratischer Modus: Den Lösungsweg gibt es erst nach mindestens einem eigenen Versuch. Danach zählt die Übung als nicht gelöst.</summary>
+    /// <summary>Sokratischer Modus: Den Lösungsweg gibt es erst nach mindestens einem eigenen Versuch. Danach zählt die Übung als nicht gelöst – auch nach Strg+Z (M6).</summary>
     public static string LoesungZeigen(ProgramDocument d, DateTime? heute = null)
     {
         var u = Uebung(d) ?? throw new InvalidOperationException("Es gibt gerade keine Übung.");
-        if (d.Flag("sokratisch") && (int)ProgramDocument.ToNumber(u["versuche"]) == 0 && !u["geloest"].AsBool())
+        if (d.Flag("sokratisch") && VersucheEcht(d) == 0 && !u["geloest"].AsBool() && !LoesungGesehen(d))
             throw new InvalidOperationException("Versuch es zuerst selbst – schon ein erster Gedanke zählt. Danach zeigt Trendo dir den ganzen Lösungsweg. Ein Hinweis geht jederzeit.");
         var item = ItemOf(u);
         if (!u["geloest"].AsBool() && !u["loesungGezeigt"].AsBool())
         {
+            var meta = MetaFor(d, u, true);
+            d.EditMeta(_ => meta["gesehen"] = true);
             var tag = (heute ?? DateTime.Today).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
             d.Edit("Lösungsweg gezeigt", x => { var ue = (JsonObject)x["uebung"]!; ue["loesungGezeigt"] = true; Werten(x, ue["thema"].AsText()!, ue["frage"].AsText()!, "", false, tag, falsch: true); });
         }
-        return $"Lösung: {item.Antworten[0]}\n{item.Erklaerung}";
+        return $"Lösung: {item.Antworten[0]}{(item.Einheit is { } e ? " " + e : "")}\n{item.Erklaerung}";
     }
 
     /// <summary>Ergebnis einer Übung in Verlauf und Thema eintragen; nach <see cref="RundeLaenge"/> Übungen wird die Runde gewertet (FSRS, Beherrschung).</summary>
@@ -347,13 +328,13 @@ public static partial class Nachhilfe
         var t = ThemaById(thema) ?? throw new ArgumentException("Dieses Thema gibt es nicht.");
         string Clean(string s, int max) { s = OhneLinks(OhneLatex(s ?? "")); return s.Length > max ? s[..max] : s; }
         frage = Clean(frage, 400); erklaerung = Clean(erklaerung, 800);
-        var antworten = (antwort ?? "").Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(a => Clean(a, 120)).Where(a => a.Length > 0).Take(5).ToList();
+        var antworten = (antwort ?? "").Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(a => NormSoll(Clean(a, 120))).Where(a => a.Length > 0).Distinct().Take(5).ToList();
         if (frage.Length < 3) throw new ArgumentException("Die Übung braucht eine Frage.");
         if (antworten.Count == 0) throw new ArgumentException("Die Übung braucht eine richtige Antwort.");
         var hs = hinweise.Select(h => Clean(h, 300)).Where(h => h.Length > 0).Take(3).ToList();
         // Ein Hinweis darf die Lösung nicht einfach verraten (sokratisch)
         hs = [.. hs.Where(h => !VerraetLoesung(h, antworten))];
-        var art = antworten.All(a => Zahl(Norm(a), out _)) ? "zahl" : antworten.All(a => Fraction().IsMatch(a.Replace(" ", ""))) ? "bruch" : "text";
+        var art = ArtVon(antworten);
         var item = new Item(frage, antworten, erklaerung.Length > 0 ? erklaerung : "Die richtige Antwort ist: " + antworten[0], hs, art);
         var id = "u" + Guid.NewGuid().ToString("N")[..8];
         var o = Json(item, t.Id, herkunft); o["id"] = id; o["herkunft"] = herkunft;
@@ -365,18 +346,6 @@ public static partial class Nachhilfe
             if (aktivieren) { x["thema"] = t.Id; x["fach"] = t.Fach; x["uebung"] = o; }
         });
         return o;
-    }
-
-    /// <summary>Enthält ein Text die Lösung (als eigenes Wort/Zahl)?</summary>
-    public static bool VerraetLoesung(string text, IEnumerable<string> antworten)
-    {
-        var t = " " + Norm(text).Replace(",", ".") + " ";
-        foreach (var a in antworten.Select(Norm).Where(a => a.Length > 0))
-        {
-            var pattern = @"(?<![\p{L}\p{N}])" + Regex.Escape(a.Replace(",", ".")) + @"(?![\p{L}\p{N}])";
-            if (Regex.IsMatch(t, pattern)) return true;
-        }
-        return false;
     }
 
     // ───────────────────────── KI (nur lokal) ─────────────────────────
@@ -458,8 +427,9 @@ public static partial class Nachhilfe
             if (thema is null) { skipped.Add($"Zeile {i + 1}: Thema „{f[0]}“ unbekannt"); continue; }
             if (f[1].Trim().Length < 3 || f[2].Trim().Length == 0) { skipped.Add($"Zeile {i + 1}: Frage oder Antwort fehlt"); continue; }
             if (HatLink(string.Join(" ", f))) { skipped.Add($"Zeile {i + 1}: enthält einen Link (im Kinderprofil nicht erlaubt)"); continue; }
-            var antworten = f[2].Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            var art = antworten.All(a => Zahl(Norm(a), out _)) ? "zahl" : antworten.All(a => Fraction().IsMatch(a.Replace(" ", ""))) ? "bruch" : "text";
+            var antworten = f[2].Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(NormSoll).Where(a => a.Length > 0).Distinct().ToArray(); // M8: Soll-Antworten vereinheitlicht
+            if (antworten.Length == 0) { skipped.Add($"Zeile {i + 1}: Antwort fehlt"); continue; }
+            var art = ArtVon(antworten);
             rows.Add(new JsonObject { ["id"] = "u" + Guid.NewGuid().ToString("N")[..8], ["thema"] = thema, ["frage"] = f[1].Trim(), ["antworten"] = new JsonArray([.. antworten.Select(a => (JsonNode)a)]),
                 ["erklaerung"] = f.ElementAtOrDefault(3)?.Trim() ?? "", ["hinweise"] = new JsonArray([.. f.Skip(4).Select(h => h.Trim()).Where(h => h.Length > 0 && !VerraetLoesung(h, antworten)).Take(3).Select(h => (JsonNode)h)]),
                 ["art"] = art, ["herkunft"] = "eigen" });

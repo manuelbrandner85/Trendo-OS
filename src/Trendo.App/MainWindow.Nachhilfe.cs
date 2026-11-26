@@ -65,6 +65,7 @@ public partial class MainWindow
                + "Keine Links, keine Adressen. Fortschritt, Verlauf und Einstellungen änderst du nicht.",
         KiLocked = ["themen", "verlauf", "eigene", "uebung", "sokratisch", "zaehler"],
         KiLocalOnly = () => true,
+        KiView = Nachhilfe.KiSicht, // M6: die KI sieht keine Antworten, Lösungswege, Hinweise und Eingaben
         Exports =
         [
             new("odt", "Arbeitsblatt (.odt)", ".odt", (d, f) => { Trendo.Core.Office.OdtFormat.Write(Nachhilfe.Arbeitsblatt(d, 8, TutorSeed ?? Environment.TickCount), f); return f; }),
@@ -251,7 +252,7 @@ public partial class MainWindow
             check.Click += (_, _) => ProgramRun(TutorKey, () => TutorCheck(d));
             var hint = new Button { Name = "nh-hinweis", Content = "Hinweis", Padding = new Thickness(12, 6), IsEnabled = !done };
             hint.Click += (_, _) => ProgramRun(TutorKey, () => TutorHint(d));
-            var versuche = (int)ProgramDocument.ToNumber(u["versuche"]);
+            var versuche = Nachhilfe.VersucheEcht(d); // M6: auch nach Strg+Z
             var sol = new Button { Name = "nh-loesung", Content = "Lösungsweg zeigen", Padding = new Thickness(12, 6), IsEnabled = !d.Flag("sokratisch") || versuche > 0 || done };
             ToolTip.SetTip(sol, d.Flag("sokratisch") && versuche == 0 ? "Erst nach deinem ersten Versuch." : "Zeigt die Lösung mit Rechenweg.");
             sol.Click += (_, _) => ProgramRun(TutorKey, () => TutorSolution(d));

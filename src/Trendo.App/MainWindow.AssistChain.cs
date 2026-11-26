@@ -29,9 +29,15 @@ public partial class MainWindow
     public AssistRoute AssistRouteFor(string? key)
     {
         var target = AssistTargetFor(key);
+        // T-0782 (Gegenprüfung H1): Programme, die nur die KI auf diesem PC fragen dürfen (Nachhilfe, Kinderprofil), gehen nie in den Claude-Bereich –
+        // auch nicht bei „Claude ohne Klicks“ und ohne offenes Dokument
+        if (AssistLocalOnly(key)) return target is not null ? AssistRoute.Dokument : AssistRoute.Projekt;
         if (ClaudeTakesStudioPrompts && (ClaudeNoClicks || target is null)) return AssistRoute.ClaudeBereich;
         return target is not null ? AssistRoute.Dokument : AssistRoute.Projekt;
     }
+
+    /// <summary>T-0782: Darf dieses Programm nur die KI auf diesem PC fragen (<see cref="ProgramSpec.KiLocalOnly"/>)?</summary>
+    public bool AssistLocalOnly(string? key) => key is not null && Programs.TryGetValue(key, out var spec) && spec.KiLocalOnly?.Invoke() == true;
 
     /// <summary>Programme aus dem Programmkatalog, die (noch) nicht in der Programm-Hülle laufen – dort sagt die Kette „Noch nicht im Dokument möglich“.
     /// Maßgeblich ist, was gerade angemeldet ist: zieht ein Programm in die Hülle (B6), fällt es hier von selbst heraus.</summary>

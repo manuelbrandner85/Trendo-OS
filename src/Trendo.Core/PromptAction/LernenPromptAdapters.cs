@@ -68,7 +68,7 @@ public sealed class CodeLearnTaskAdapter : IStudioActionAdapter
         var a = Find(FieldKit.Text(call.Parameters, "aufgabe"));
         var d = new Programs.ProgramDocument("STUDIO-CODELEARN-01", a.Titel, CodeLernen.Neu());
         d.Data["aufgabe"] = a.Id;
-        var qa = new QaResult(ActionId, true, $"Aufgabe „{a.Titel}“ mit {a.Tests.Split("def test_").Length - 1} Tests.", null, a.Titel, "CodeLernen");
+        var qa = new QaResult(ActionId, true, $"Aufgabe „{a.Titel}“ mit {a.Faelle.Count} Tests.", null, a.Titel, "CodeLernen");
         return FieldKit.Save(call, FieldKit.Slot("programmieren-lernen", call.Version, a.Id + ".py"), CodeLernen.Export(d), a.Titel, qa, null);
     }
     public AdapterOutcome SideEffect(AdapterCall call) => FieldKit.Blocked("Es wird nichts ausgeführt, gesendet oder veröffentlicht.");

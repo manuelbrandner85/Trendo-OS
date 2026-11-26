@@ -79,12 +79,23 @@ public static class UninstallPrompt
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException) { log?.Invoke("Windows-Aufgaben der Abläufe nicht geprüft: " + ex.Message); return 0; }
     }
 
+    /// <summary>T-0782 (Nutzerentscheidung 26.11.2026): Das Windows-App-Profil des abgeschotteten Laufs von „Programmieren lernen“ („Trendo.Lernen.Code“) beim Deinstallieren
+    /// entfernen. Nur bei der echten Installation – eine Prüf-Instanz (eigener Datenordner) teilt sich das Profil mit der echten Installation und lässt es stehen.</summary>
+    public static void RemoveLearnProfile(string? instance, Action<string>? log, string name = Trendo.Core.Lernen.LernSandbox.ContainerName)
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        if (instance is not null) { log?.Invoke($"App-Profil „{name}“ bleibt (Prüf-Instanz)."); return; }
+        try { log?.Invoke(Trendo.Core.Lernen.LernSandbox.RemoveProfile(name)); }
+        catch (Exception ex) when (ex is DllNotFoundException or EntryPointNotFoundException or System.ComponentModel.Win32Exception) { log?.Invoke("App-Profil nicht entfernt: " + ex.Message); }
+    }
+
     public static void Run(Action<string>? log = null)
     {
         var clock = Stopwatch.StartNew(); // Velopack beendet den Hook nach 30 s
         log?.Invoke("Deinstallation: Programme entfernen, Frage nach Daten.");
         if (!OperatingSystem.IsWindows()) return;
         if (Environment.ProcessPath is { } self) RemoveWorkflowTasks(new WorkflowTaskPlan(), self, log);
+        RemoveLearnProfile(DataLocation.Instance(), log);
         var root = DataLocation.Default(); // fest: nie ein anderer Ordner
         var tools = DataLocation.ToolsRoot();
         if (DataLocation.ToolsSummary(tools) is { } toolInfo) RemoveTools(tools, toolInfo, log);

@@ -58,6 +58,8 @@ public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocumen
     public bool HasKiActions => spec.KiActions.Count > 0;
     /// <summary>T-0782: nur die KI auf diesem PC (siehe <see cref="ProgramSpec.KiLocalOnly"/>).</summary>
     public bool LocalOnly => spec.KiLocalOnly?.Invoke() == true;
+    /// <summary>T-0782: Daten des Dokuments für die KI (<see cref="ProgramSpec.KiView"/>).</summary>
+    public JsonObject KiData => spec.KiView?.Invoke(doc.Data) ?? doc.Data;
     /// <summary>T-0707: das offene Dokument (für den KI-Plan der einen Kette, <see cref="AssistChain"/>).</summary>
     public ProgramDocument Document => doc;
     public IEnumerable<AssistSuggestion> Hints() => [];
@@ -212,7 +214,7 @@ public partial class MainWindow
             var role = t.Role + StudioTeams.Brief(ClaudeBelongs(t.Key) ? ClaudeStudioOf(t.Key) : null, prompt); // T-0630: das Team des Studios arbeitet ohne Auswahl mit
             // T-0707: eine KI für alle Einstiege – IntelligenceCore (Claude über das eigene Abo, wenn als Haupt-KI verbunden, sonst das beste Modell auf diesem PC aus T-0703).
             // Programme der Hülle bekommen die Daten des offenen Dokuments und die Aktion „dokument.setzen“: so landet eine Fachaufgabe direkt im Dokument.
-            var system = t is ProgramAssistTarget pt ? AssistChain.KiPrompt(t.Title, t.Actions, role, SkillsFor(t.Key), pt.Document.Data) : AssistPlanner.KiPrompt(t.Title, t.Actions, role, SkillsFor(t.Key));
+            var system = t is ProgramAssistTarget pt ? AssistChain.KiPrompt(t.Title, t.Actions, role, SkillsFor(t.Key), pt.KiData) : AssistPlanner.KiPrompt(t.Title, t.Actions, role, SkillsFor(t.Key));
             AssistBusy(host, t.Title);
             // T-0782: Programme, die nur die KI auf diesem PC fragen dürfen (Nachhilfe, Kinderprofil) – derselbe Kern, auf lokale Quellen beschränkt
             var intel = t is ProgramAssistTarget { LocalOnly: true } ? AgentKi("lokal", out _) : Intel;

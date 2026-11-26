@@ -181,7 +181,7 @@ public class T0782_CodeLernen
             Assert.Equal("error", r2.Status); Assert.Contains("Syntax", r2.Meldung); Assert.DoesNotContain(root, r2.Meldung);
             var note = CodeLernen.Track.First(x => x.Id == "note");
             var r3 = CodeLernen.Testen(note, "def note(p):\n    return 1 if p >= 90 else 2 if p >= 75 else 3 if p >= 60 else 4 if p >= 45 else 5 if p > 25 else 6\n", py, Work(root));
-            Assert.Equal("fail", r3.Status); Assert.Contains(r3.Tests, t => t.Name.Contains("punkte=25") && t.Status == "fail");
+            Assert.Equal("fail", r3.Status); Assert.Contains(r3.Tests, t => t.Name == "punkte_25" && t.Status == "fail");
         }
         finally { try { Directory.Delete(root, true); } catch (IOException) { } }
     }

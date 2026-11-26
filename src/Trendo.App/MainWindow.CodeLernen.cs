@@ -62,6 +62,7 @@ public partial class MainWindow
                + "Du bewertest den Code nie – das machen die echten Tests. Den Code der lernenden Person änderst du nicht.",
         KiLocked = ["code", "stand", "kiHinweise", "aufgabe", "sprache", "begonnen"],
         KiLocalOnly = () => _roleChild,
+        KiView = CodeLearnKiView, // M2: keine Programmausgaben und Testmeldungen an die KI-Kette
         Exports =
         [
             new("py", "Lösung mit Tests (.py)", ".py", (d, f) => { CodeLearnCommit(d); File.WriteAllText(f, CodeLernen.Export(d), new UTF8Encoding(false)); return f; }),
@@ -83,7 +84,10 @@ public partial class MainWindow
         Properties = CodeLearnProperties,
         Status = d => { var a = CodeLernen.Aktuell(d); var l = CodeLernen.Letzter(d); return $"Python · {a.Titel} ({CodeLernen.KonzeptName(a.Konzept)}) · {CodeLernen.Track.Count(x => CodeLernen.Geloest(d, x.Id))}/{CodeLernen.Track.Count} gelöst" + (l is null ? "" : $" · letzter Lauf: {l.Bestanden}/{l.Tests.Count} Tests"); },
         Help = "Links eine Aufgabe wählen (die nächste schaltet sich frei, wenn die vorige gelöst ist). In der Mitte steht, was zu tun ist; darunter schreibst du den Code. "
-             + "„Tests ausführen“ (F5) startet die echten Tests der Aufgabe in einem abgeschotteten Bereich – ohne Internet, mit 10 Sekunden Zeitgrenze, ohne Zugriff auf deine Dateien. "
+             + "„Tests ausführen“ (F5) startet die echten Tests der Aufgabe in einem abgeschotteten Bereich von Windows (App-Container): ohne Internet, mit 10 Sekunden Zeitgrenze, "
+             + "ohne Zugriff auf deine Dateien und deinen Bildschirm (eigener, unsichtbarer Desktop). Ehrlich: Rechner- und Benutzername und einige Windows-Einstellungen "
+             + "(Teile der Registrierung) kann der Code dort trotzdem lesen – das lässt sich in einem App-Container nicht ganz sperren. Was dein Programm ausgibt, geht nicht an Claude. "
+             + "Für den abgeschotteten Bereich legt Windows einmalig ein App-Profil „Trendo.Lernen.Code“ an; Trendo entfernt es beim Deinstallieren wieder. "
              + "Grün heißt bestanden. „Hinweis“ gibt Denkanstöße; die KI gibt ebenfalls nur Hinweise und bewertet nie. Export: Lösung mit Tests als .py, läuft in jedem Python.",
     }, "programmieren lernen", "python lernen", "coden lernen", "programmieren", "exercism", "codecademy", "freecodecamp", "scratch", "aufgaben mit tests", "informatik");
 
@@ -149,7 +153,9 @@ public partial class MainWindow
         _clKi = "Die KI denkt nach …"; Show(CodeLearnKey);
         IntelligenceCore core; string? pref;
         if (_roleChild) core = AgentKi("lokal", out pref); else { core = Intel; pref = KiModelName; }
-        var a = await core.AskAsync(new KiRequest(CodeLernen.KiFrage(d, frage), CodeLernen.KiRolle, pref, UseKnowledge: false));
+        // M2: Programmausgabe und Testmeldungen nur an die KI auf diesem PC (Kinderprofil oder keine Internet-/Claude-Quelle im Spiel)
+        var local = _roleChild;
+        var a = await core.AskAsync(new KiRequest(CodeLernen.KiFrage(d, frage, mitAusgabe: local), CodeLernen.KiRolle, pref, UseKnowledge: false));
         var text = Nachhilfe.OhneLinks(System.Text.RegularExpressions.Regex.Replace(a.Text, @"<think>[\s\S]*?</think>", "").Trim());
         _clKi = !a.Ok ? "Die KI antwortet gerade nicht: " + a.Text
             : CodeLernen.HinweisProblem(CodeLernen.Aktuell(d), text) is { } p && p.Contains("Code") ? "Die KI hat fertigen Code geschrieben – den zeigt Trendo nicht, du sollst ja selbst darauf kommen. Frag nach einem kleineren Hinweis."
@@ -225,6 +231,9 @@ public partial class MainWindow
             }
         }
         else res.Children.Add(P("Noch nicht getestet. „Tests ausführen“ (F5) prüft deinen Code mit den Tests der Aufgabe.", Muted, 12));
+        res.Children.Add(new TextBlock { Name = "cl-hinweis-sicherheit", TextWrapping = TextWrapping.Wrap, FontSize = 11, Foreground = Muted,
+            Text = "Abgeschottet: kein Internet, keine deiner Dateien, nicht dein Bildschirm. Lesbar bleiben Rechner- und Benutzername. Programmausgaben gehen nicht an Claude. "
+                 + "Windows legt dafür einmalig das App-Profil „Trendo.Lernen.Code“ an – Trendo entfernt es beim Deinstallieren." });
         center.Children.Add(KrCard(res, "cl-ergebnis-karte"));
 
         var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,16,*") };
@@ -232,6 +241,20 @@ public partial class MainWindow
         grid.Children.Add(center); Grid.SetColumn(center, 2);
         BueroFileDrop(grid, CodeLearnKey, BueroExt(".py"), "Python-Dateien (.py)", (dd, files) => CodeLearnImport(dd, files[0]));
         return grid;
+    }
+
+    /// <summary>M2: Sicht der KI-Kette – ohne Programmausgaben und Testmeldungen (sie enthalten Werte, die der Lerncode erzeugt hat).</summary>
+    static System.Text.Json.Nodes.JsonObject CodeLearnKiView(System.Text.Json.Nodes.JsonObject data)
+    {
+        var c = data.DeepClone().AsObject();
+        if (c["stand"] is System.Text.Json.Nodes.JsonObject st)
+            foreach (var (_, v) in st)
+                if (v?["letzter"] is System.Text.Json.Nodes.JsonObject l)
+                {
+                    l.Remove("meldung");
+                    if (l["tests"] is System.Text.Json.Nodes.JsonArray ts) foreach (var t in ts.OfType<System.Text.Json.Nodes.JsonObject>()) { t.Remove("meldung"); t.Remove("ausgabe"); }
+                }
+        return c;
     }
 
     void CodeLearnTick(object? s, EventArgs e) { _clTimer!.Stop(); if (ProgramActive(CodeLearnKey) is { } a && _clDoc is not null && _clFor == a.Id + "|" + CodeLernen.Aktuell(a).Id && _clDoc.Text != CodeLernen.Code(a)) CodeLernen.CodeSetzen(a, _clDoc.Text); }

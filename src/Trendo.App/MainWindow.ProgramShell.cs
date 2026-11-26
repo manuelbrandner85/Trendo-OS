@@ -95,6 +95,8 @@ public sealed class ProgramSpec(string key, string studio, string title)
     public IReadOnlyList<string> KiLocked { get; init; } = [];
     /// <summary>T-0782: Die KI-Kette dieses Programms fragt nur die KI auf diesem PC (nie Claude oder einen Dienst im Internet) – z. B. für Kinder.</summary>
     public Func<bool>? KiLocalOnly { get; init; }
+    /// <summary>T-0782 (Gegenprüfung M2/M6): was die KI-Kette vom Dokument sieht (z. B. ohne Lösungen oder Programmausgaben); fehlt = alles.</summary>
+    public Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>? KiView { get; init; }
     public int LevelOf(ProgramCmd c) => Math.Max(c.Level, CmdLevels.GetValueOrDefault(c.Name));
 }
 

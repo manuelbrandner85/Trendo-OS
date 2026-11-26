@@ -13,11 +13,19 @@ namespace Trendo.Core.Lernen;
 /// Anforderungen und Prüfungen: docs/nachbau/programmieren-lernen/anforderungen.md.</summary>
 public static partial class CodeLernen
 {
-    /// <param name="Tests">Python-Testcode (unittest), importiert die Lösung als Modul „loesung“.</param>
-    public sealed record Aufgabe(string Id, string Konzept, string Titel, string Anleitung, string Start, string Tests, IReadOnlyList<string> Hinweise, string? Braucht = null);
+    /// <summary>T-0782 (Gegenprüfung M5): ein Testfall als Daten. <paramref name="Aufruf"/> läuft im abgeschotteten Python; <paramref name="Erwartet"/>
+    /// (JSON) bleibt außerhalb – verglichen wird in Trendo, nie im Lerncode. <paramref name="Art"/>: „gleich“, „fast“ (Kommazahl) oder „typ“ (Name des Typs).</summary>
+    public sealed record Fall(string Name, string Aufruf, string Erwartet, string Art = "gleich");
+
+    /// <param name="Faelle">Die Tests der Aufgabe als Daten (siehe <see cref="Fall"/>).</param>
+    public sealed record Aufgabe(string Id, string Konzept, string Titel, string Anleitung, string Start, IReadOnlyList<Fall> Faelle, IReadOnlyList<string> Hinweise, string? Braucht = null)
+    {
+        /// <summary>Dieselben Tests als unittest-Code (für den Export – läuft in jedem Python).</summary>
+        public string Tests => UnittestCode(this);
+    }
 
     public sealed record TestErgebnis(string Name, string Status, string Meldung, string Ausgabe);
-    /// <param name="Status">„pass“, „fail“, „error“ (Syntax-/Laufzeitfehler vor den Tests) oder „timeout“.</param>
+    /// <param name="Status">„pass“, „fail“, „error“ (Syntax-/Laufzeitfehler vor den Tests), „timeout“ oder „limit“ (Ausgabe/Dateien zu groß).</param>
     public sealed record Bericht(string Status, IReadOnlyList<TestErgebnis> Tests, string Meldung, double Sekunden)
     {
         public int Bestanden => Tests.Count(t => t.Status == "pass");
@@ -28,47 +36,75 @@ public static partial class CodeLernen
         ("ausgabe", "Funktionen und Rückgabe"), ("zahlen", "Rechnen"), ("bedingungen", "Bedingungen"), ("schleifen", "Schleifen"), ("listen", "Listen"), ("texte", "Texte"), ("woerterbuecher", "Wörterbücher"),
     ];
 
-    const string T = "import unittest\nfrom loesung import *\n\n";
+    static Fall F(string name, string aufruf, string erwartet, string art = "gleich") => new(name, aufruf, erwartet, art);
 
     public static readonly IReadOnlyList<Aufgabe> Track =
     [
         new("gruss", "ausgabe", "Begrüßung", "Schreibe eine Funktion `gruss(name)`, die den Text `Hallo, <name>!` zurückgibt.\n\nBeispiel: `gruss(\"Lea\")` gibt `\"Hallo, Lea!\"` zurück.",
             "def gruss(name):\n    # Gib hier den Begrüßungstext zurück\n    pass\n",
-            T + "class Tests(unittest.TestCase):\n    def test_lea(self):\n        self.assertEqual(gruss(\"Lea\"), \"Hallo, Lea!\")\n    def test_tom(self):\n        self.assertEqual(gruss(\"Tom\"), \"Hallo, Tom!\")\n    def test_gibt_zurueck(self):\n        self.assertIsInstance(gruss(\"Ali\"), str)\n",
+            [F("lea", "gruss(\"Lea\")", "\"Hallo, Lea!\""), F("tom", "gruss(\"Tom\")", "\"Hallo, Tom!\""), F("gibt_text_zurueck", "gruss(\"Ali\")", "\"str\"", "typ")],
             ["Eine Funktion gibt etwas mit `return` zurück – `print` zeigt es nur an.", "Texte kannst du mit `+` verbinden oder mit einem f-String: `f\"Hallo, {name}!\"`."]),
         new("summe", "zahlen", "Zwei Zahlen addieren", "Schreibe `summe(a, b)`, die die Summe der beiden Zahlen zurückgibt.",
             "def summe(a, b):\n    pass\n",
-            T + "class Tests(unittest.TestCase):\n    def test_klein(self):\n        self.assertEqual(summe(2, 3), 5)\n    def test_negativ(self):\n        self.assertEqual(summe(-4, 1), -3)\n    def test_komma(self):\n        self.assertAlmostEqual(summe(0.1, 0.2), 0.3)\n",
+            [F("klein", "summe(2, 3)", "5"), F("negativ", "summe(-4, 1)", "-3"), F("komma", "summe(0.1, 0.2)", "0.3", "fast")],
             ["`return a + b` – mehr braucht es nicht.", "Achte darauf, dass `return` eingerückt in der Funktion steht."], "gruss"),
         new("gerade", "bedingungen", "Gerade oder ungerade", "Schreibe `ist_gerade(n)`, die `True` zurückgibt, wenn `n` gerade ist, sonst `False`.",
             "def ist_gerade(n):\n    pass\n",
-            T + "class Tests(unittest.TestCase):\n    def test_vier(self):\n        self.assertTrue(ist_gerade(4))\n    def test_sieben(self):\n        self.assertFalse(ist_gerade(7))\n    def test_null(self):\n        self.assertTrue(ist_gerade(0))\n    def test_negativ(self):\n        self.assertFalse(ist_gerade(-3))\n",
+            [F("vier", "ist_gerade(4)", "true"), F("sieben", "ist_gerade(7)", "false"), F("null", "ist_gerade(0)", "true"), F("negativ", "ist_gerade(-3)", "false")],
             ["Der Rest-Operator `%` gibt den Rest einer Division: `7 % 2` ist 1.", "Eine Zahl ist gerade, wenn beim Teilen durch 2 kein Rest bleibt."], "summe"),
         new("note", "bedingungen", "Schulnote aus Punkten", "Schreibe `note(punkte)` für einen Test mit 100 Punkten: ab 90 → 1, ab 75 → 2, ab 60 → 3, ab 45 → 4, ab 25 → 5, sonst 6.",
             "def note(punkte):\n    pass\n",
-            T + "class Tests(unittest.TestCase):\n    def test_grenzen(self):\n        for p, n in [(100, 1), (90, 1), (89, 2), (75, 2), (60, 3), (45, 4), (25, 5), (24, 6), (0, 6)]:\n            with self.subTest(punkte=p):\n                self.assertEqual(note(p), n)\n",
+            [.. new[] { (100, 1), (90, 1), (89, 2), (75, 2), (60, 3), (45, 4), (25, 5), (24, 6), (0, 6) }.Select(x => F($"punkte_{x.Item1}", $"note({x.Item1})", x.Item2.ToString(CultureInfo.InvariantCulture)))],
             ["Prüfe von oben nach unten mit `if`, `elif` und `else`.", "Bei `if punkte >= 90:` ist 90 selbst schon dabei."], "gerade"),
         new("zaehlen", "schleifen", "Bis n zählen", "Schreibe `bis(n)`, die eine Liste der Zahlen von 1 bis n zurückgibt. `bis(3)` → `[1, 2, 3]`, `bis(0)` → `[]`.",
             "def bis(n):\n    ergebnis = []\n    # Schleife hier\n    return ergebnis\n",
-            T + "class Tests(unittest.TestCase):\n    def test_drei(self):\n        self.assertEqual(bis(3), [1, 2, 3])\n    def test_null(self):\n        self.assertEqual(bis(0), [])\n    def test_zehn(self):\n        self.assertEqual(len(bis(10)), 10)\n",
+            [F("drei", "bis(3)", "[1, 2, 3]"), F("null", "bis(0)", "[]"), F("zehn_lang", "len(bis(10))", "10")],
             ["`for i in range(1, n + 1):` läuft von 1 bis n.", "Mit `ergebnis.append(i)` hängst du eine Zahl an die Liste an."], "gerade"),
         new("klatschen", "schleifen", "Klatsch-Spiel", "Schreibe `klatsch(n)`: Ist n durch 3 teilbar, gib `\"Klatsch\"` zurück; durch 5 → `\"Stampf\"`; durch beide → `\"KlatschStampf\"`; sonst die Zahl als Text.",
             "def klatsch(n):\n    pass\n",
-            T + "class Tests(unittest.TestCase):\n    def test_eins(self):\n        self.assertEqual(klatsch(1), \"1\")\n    def test_drei(self):\n        self.assertEqual(klatsch(9), \"Klatsch\")\n    def test_fuenf(self):\n        self.assertEqual(klatsch(10), \"Stampf\")\n    def test_beide(self):\n        self.assertEqual(klatsch(30), \"KlatschStampf\")\n",
+            [F("eins", "klatsch(1)", "\"1\""), F("drei", "klatsch(9)", "\"Klatsch\""), F("fuenf", "klatsch(10)", "\"Stampf\""), F("beide", "klatsch(30)", "\"KlatschStampf\"")],
             ["Prüfe den Fall „durch beide teilbar“ zuerst.", "`str(n)` macht aus der Zahl einen Text."], "zaehlen"),
         new("umdrehen", "listen", "Liste umdrehen", "Schreibe `umgedreht(liste)`, die eine neue Liste in umgekehrter Reihenfolge zurückgibt – ohne die alte zu verändern.",
             "def umgedreht(liste):\n    pass\n",
-            T + "class Tests(unittest.TestCase):\n    def test_zahlen(self):\n        self.assertEqual(umgedreht([1, 2, 3]), [3, 2, 1])\n    def test_leer(self):\n        self.assertEqual(umgedreht([]), [])\n    def test_alt_bleibt(self):\n        a = [1, 2]\n        umgedreht(a)\n        self.assertEqual(a, [1, 2])\n",
+            [F("zahlen", "umgedreht([1, 2, 3])", "[3, 2, 1]"), F("leer", "umgedreht([])", "[]"), F("alt_bleibt", "(lambda a: (umgedreht(a), a)[1])([1, 2])", "[1, 2]")],
             ["Eine Liste lässt sich mit einem Ausschnitt umdrehen – schau dir die Schreibweise `liste[::…]` an.", "`liste.reverse()` verändert die alte Liste – das soll hier nicht passieren."], "zaehlen"),
         new("palindrom", "texte", "Palindrom", "Schreibe `ist_palindrom(wort)`: `True`, wenn das Wort vorwärts und rückwärts gleich ist – ohne auf Groß- und Kleinschreibung zu achten („Anna“).",
             "def ist_palindrom(wort):\n    pass\n",
-            T + "class Tests(unittest.TestCase):\n    def test_anna(self):\n        self.assertTrue(ist_palindrom(\"Anna\"))\n    def test_otto(self):\n        self.assertTrue(ist_palindrom(\"otto\"))\n    def test_haus(self):\n        self.assertFalse(ist_palindrom(\"Haus\"))\n",
+            [F("anna", "ist_palindrom(\"Anna\")", "true"), F("otto", "ist_palindrom(\"otto\")", "true"), F("haus", "ist_palindrom(\"Haus\")", "false")],
             ["`wort.lower()` macht alles klein.", "Vergleiche das Wort mit seiner umgedrehten Fassung."], "umdrehen"),
         new("woerter", "woerterbuecher", "Wörter zählen", "Schreibe `zaehle_woerter(text)`, die ein Wörterbuch zurückgibt: jedes Wort (klein geschrieben) → wie oft es vorkommt. Wörter sind durch Leerzeichen getrennt.",
             "def zaehle_woerter(text):\n    pass\n",
-            T + "class Tests(unittest.TestCase):\n    def test_einfach(self):\n        self.assertEqual(zaehle_woerter(\"ich bin ich\"), {\"ich\": 2, \"bin\": 1})\n    def test_gross(self):\n        self.assertEqual(zaehle_woerter(\"Ball ball\"), {\"ball\": 2})\n    def test_leer(self):\n        self.assertEqual(zaehle_woerter(\"\"), {})\n",
+            [F("einfach", "zaehle_woerter(\"ich bin ich\")", "{\"ich\": 2, \"bin\": 1}"), F("gross", "zaehle_woerter(\"Ball ball\")", "{\"ball\": 2}"), F("leer", "zaehle_woerter(\"\")", "{}")],
             ["`text.split()` zerlegt den Text in Wörter.", "Mit `zaehler[wort] = zaehler.get(wort, 0) + 1` zählst du hoch."], "palindrom"),
     ];
+
+    /// <summary>JSON-Wert als Python-Literal (true → True, null → None …) für den unittest-Export.</summary>
+    static string PyLiteral(JsonNode? n) => n switch
+    {
+        null => "None",
+        JsonArray a => "[" + string.Join(", ", a.Select(PyLiteral)) + "]",
+        JsonObject o => "{" + string.Join(", ", o.Select(kv => JsonSerializer.Serialize(kv.Key) + ": " + PyLiteral(kv.Value))) + "}",
+        JsonValue v when v.GetValueKind() == JsonValueKind.True => "True",
+        JsonValue v when v.GetValueKind() == JsonValueKind.False => "False",
+        _ => n.ToJsonString(new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }),
+    };
+
+    static string UnittestCode(Aufgabe a)
+    {
+        var sb = new StringBuilder("import unittest\nfrom loesung import *\n\n\nclass Tests(unittest.TestCase):\n");
+        foreach (var f in a.Faelle)
+        {
+            var exp = JsonNode.Parse(f.Erwartet);
+            sb.Append($"    def test_{f.Name}(self):\n");
+            sb.Append(f.Art switch
+            {
+                "fast" => $"        self.assertAlmostEqual({f.Aufruf}, {PyLiteral(exp)})\n",
+                "typ" => $"        self.assertEqual(type({f.Aufruf}).__name__, {PyLiteral(exp)})\n",
+                _ => $"        self.assertEqual({f.Aufruf}, {PyLiteral(exp)})\n",
+            });
+        }
+        return sb.ToString();
+    }
 
     public static Aufgabe? ById(string? id) => Track.FirstOrDefault(a => a.Id == id);
     public static string KonzeptName(string id) => Konzepte.FirstOrDefault(k => k.Id == id).Name ?? id;
@@ -142,72 +178,63 @@ public static partial class CodeLernen
 
     // ───────────────────────── Testlauf ─────────────────────────
 
-    /// <summary>Kleiner Testlauf (eigener Code): führt die unittest-Tests aus und schreibt „ergebnis.json“ im Arbeitsordner.
-    /// Fängt Syntax- und Importfehler als Status „error“ ab; Ausgabe je Test höchstens 500 Zeichen.</summary>
+    /// <summary>Marke vor jeder Ergebniszeile des Laufs.</summary>
+    public const string Marke = "@@T0782@@";
+
+    /// <summary>T-0782 (Gegenprüfung M5): Lauf-Hilfe im Container. Sie ruft nur die Aufrufe der Testfälle auf („faelle.json“ enthält KEINE erwarteten Werte)
+    /// und schreibt je Fall den zurückgegebenen Wert (als JSON) über eine vorab gesicherte Kopie der Standardausgabe. Verglichen wird danach in Trendo.
+    /// Ehrlich: Der Lerncode läuft im selben Python-Prozess und kann diese Zeilen fälschen – aber nur mit Werten, die er selbst ausrechnet; die erwarteten
+    /// Werte kennt er nicht. Eine gefälschte „bestanden“-Datei wie früher („ergebnis.json“) gibt es nicht mehr.</summary>
     public const string Runner = """
-import io, json, os, sys, traceback, unittest
+import io, json, os, sys, traceback
 sys.path.insert(0, os.getcwd())
-erg = {"status": "pass", "message": "", "tests": []}
-def schreiben():
-    with open("ergebnis.json", "w", encoding="utf-8") as f:
-        json.dump(erg, f, ensure_ascii=False)
+_kanal = os.fdopen(os.dup(1), "w", encoding="utf-8")
+_marke = "@@T0782@@"
+_dumps = json.dumps
+def _sende(o):
+    _kanal.write(_marke + _dumps(o, ensure_ascii=False) + "\n")
+    _kanal.flush()
+with open("faelle.json", encoding="utf-8") as _f:
+    _faelle = json.load(_f)
+_alt = sys.stdout
+sys.stdout = io.StringIO()
 try:
-    import test_aufgabe
+    import loesung
+    _ns = dict(vars(loesung))
 except BaseException as e:
-    tb = traceback.format_exception_only(type(e), e)
-    erg["status"] = "error"
-    erg["message"] = "".join(tb).strip()[-1500:]
-    schreiben()
-    sys.exit(0)
-class Sammler(unittest.TestResult):
-    def __init__(self):
-        super().__init__()
-        self.puffer = None
-    def startTest(self, test):
-        super().startTest(test)
-        self.puffer = io.StringIO()
-        self._alt = sys.stdout
-        sys.stdout = self.puffer
-    def stopTest(self, test):
-        sys.stdout = self._alt
-        super().stopTest(test)
-    def eintrag(self, test, status, meldung=""):
-        name = test.id().split(".")[-1]
-        erg["tests"].append({"name": name, "status": status, "message": meldung[-800:], "output": (self.puffer.getvalue() if self.puffer else "")[:500]})
-    def addSuccess(self, test):
-        self.eintrag(test, "pass")
-    def addFailure(self, test, err):
-        self.eintrag(test, "fail", str(err[1]))
-    def addError(self, test, err):
-        self.eintrag(test, "error", "".join(traceback.format_exception_only(err[0], err[1])).strip())
-    def addSubTest(self, test, sub, err):
-        if err is not None:
-            self.eintrag(sub, "fail" if issubclass(err[0], AssertionError) else "error", str(err[1]))
-suite = unittest.defaultTestLoader.loadTestsFromModule(test_aufgabe)
-r = Sammler()
-suite.run(r)
-namen = {}
-for t in erg["tests"]:
-    namen[t["name"]] = t
-erg["tests"] = list(namen.values())
-if any(t["status"] == "error" for t in erg["tests"]):
-    erg["status"] = "fail"
-elif any(t["status"] != "pass" for t in erg["tests"]) or not erg["tests"]:
-    erg["status"] = "fail"
-schreiben()
+    sys.stdout = _alt
+    _sende({"fehler": "".join(traceback.format_exception_only(type(e), e)).strip()[-1500:]})
+    raise SystemExit(0)
+for _fall in _faelle:
+    _puffer = io.StringIO()
+    sys.stdout = _puffer
+    try:
+        _wert = eval(_fall["aufruf"], _ns)
+        sys.stdout = _alt
+        try:
+            _sende({"name": _fall["name"], "wert": _wert, "typ": type(_wert).__name__, "ausgabe": _puffer.getvalue()[:500]})
+        except (TypeError, ValueError):
+            _sende({"name": _fall["name"], "wert": None, "repr": repr(_wert)[:300], "typ": type(_wert).__name__, "ausgabe": _puffer.getvalue()[:500]})
+    except BaseException as e:
+        sys.stdout = _alt
+        _sende({"name": _fall["name"], "ausnahme": "".join(traceback.format_exception_only(type(e), e)).strip()[-800:], "ausgabe": _puffer.getvalue()[:500]})
+_sende({"ende": True})
 """;
 
     /// <summary>Echte Tests der Aufgabe gegen <paramref name="code"/> im abgeschotteten Lauf ausführen. <paramref name="arbeit"/> wird angelegt und danach gelöscht.</summary>
-    public static Bericht Testen(Aufgabe a, string code, string python, string arbeit, int timeoutMs = 10_000)
+    public static Bericht Testen(Aufgabe a, string code, string python, string arbeit, int timeoutMs = 10_000) =>
+        Testen(a, code, python, arbeit, new LernSandbox.Limits(timeoutMs));
+
+    public static Bericht Testen(Aufgabe a, string code, string python, string arbeit, LernSandbox.Limits lim)
     {
         Directory.CreateDirectory(arbeit);
         try
         {
             File.WriteAllText(Path.Combine(arbeit, "loesung.py"), code, new UTF8Encoding(false));
-            File.WriteAllText(Path.Combine(arbeit, "test_aufgabe.py"), a.Tests, new UTF8Encoding(false));
+            File.WriteAllText(Path.Combine(arbeit, "faelle.json"), new JsonArray([.. a.Faelle.Select(f => (JsonNode)new JsonObject { ["name"] = f.Name, ["aufruf"] = f.Aufruf })]).ToJsonString(), new UTF8Encoding(false));
             File.WriteAllText(Path.Combine(arbeit, "lauf.py"), Runner, new UTF8Encoding(false));
-            var r = LernSandbox.Run(python, ["-I", "-B", "-X", "utf8", "lauf.py"], arbeit, timeoutMs);
-            return Auswerten(r, Path.Combine(arbeit, "ergebnis.json"), arbeit);
+            var r = LernSandbox.Run(python, ["-I", "-B", "-X", "utf8", "lauf.py"], arbeit, lim);
+            return Auswerten(a, r, arbeit);
         }
         finally { try { Directory.Delete(arbeit, true); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } }
     }
@@ -217,20 +244,85 @@ schreiben()
     /// <summary>Pfade in Meldungen kürzen (nur Dateiname) – keine Ordnernamen des Rechners in Anzeige oder Belegen.</summary>
     public static string Kurz(string s) => FilePaths().Replace(s, "File \"$1\"");
 
-    static Bericht Auswerten(LernSandbox.Result r, string json, string arbeit)
+    /// <summary>Meldung kürzen (M5): höchstens <paramref name="max"/> Zeichen, ohne Steuerzeichen.</summary>
+    public static string Knapp(string? s, int max = 300)
     {
+        s = new string((s ?? "").Where(c => c is '\n' or '\t' || !char.IsControl(c)).ToArray());
+        return s.Length > max ? s[..max] + " …" : s;
+    }
+
+    static string Zeige(JsonNode? n) => n is null ? "None" : Knapp(PyLiteral(n), 120);
+
+    /// <summary>Zahlen gleich behandeln (5 und 5.0), sonst Struktur vergleichen.</summary>
+    public static bool Gleich(JsonNode? a, JsonNode? b)
+    {
+        if (a is null || b is null) return a is null && b is null;
+        if (a is JsonValue va && b is JsonValue vb)
+        {
+            var ka = va.GetValueKind(); var kb = vb.GetValueKind();
+            if (ka == JsonValueKind.Number && kb == JsonValueKind.Number) return va.GetValue<double>() == vb.GetValue<double>();
+            return ka == kb && va.ToJsonString() == vb.ToJsonString();
+        }
+        if (a is JsonArray xa && b is JsonArray xb) return xa.Count == xb.Count && xa.Zip(xb).All(p => Gleich(p.First, p.Second));
+        if (a is JsonObject oa && b is JsonObject ob) return oa.Count == ob.Count && oa.All(kv => ob.TryGetPropertyValue(kv.Key, out var v) && Gleich(kv.Value, v));
+        return false;
+    }
+
+    /// <summary>Ergebnis eines Laufs bewerten – die erwarteten Werte stehen nur hier. Kaputte Zeilen werden übergangen (M5), Meldungen gekürzt.</summary>
+    public static Bericht Auswerten(Aufgabe a, LernSandbox.Result r, string arbeit = "")
+    {
+        string Clean(string s) => Knapp(arbeit.Length > 0 ? Kurz(s).Replace(arbeit, ".") : Kurz(s), 800);
         if (r.TimedOut) return new("timeout", [], $"Zeitgrenze überschritten ({r.Seconds:0.#} s) – läuft eine Schleife endlos?", r.Seconds);
+        if (r.OutputLimit) return new("limit", [], "Abgebrochen: zu viel Ausgabe oder zu große Dateien – schreibt der Code in einer Schleife ohne Ende?", r.Seconds);
         if (r.MemoryLimit) return new("error", [], "Speichergrenze erreicht – legt der Code riesige Listen an?", r.Seconds);
-        if (!File.Exists(json)) return new("error", [], Kurz(("Der Testlauf hat kein Ergebnis geschrieben. " + r.Text + "\n" + r.Err).Trim()).Replace(arbeit, "."), r.Seconds);
-        using var doc = JsonDocument.Parse(File.ReadAllText(json));
-        var root = doc.RootElement;
-        var tests = root.GetProperty("tests").EnumerateArray().Select(t => new TestErgebnis(t.GetProperty("name").GetString() ?? "", t.GetProperty("status").GetString() ?? "",
-            Kurz(t.GetProperty("message").GetString() ?? "").Replace(arbeit, "."), t.GetProperty("output").GetString() ?? "")).ToList();
-        var status = root.GetProperty("status").GetString() ?? "error";
-        var msg = Kurz(root.GetProperty("message").GetString() ?? "").Replace(arbeit, ".");
-        if (status == "error" && msg.Length == 0) msg = "Fehler beim Laden des Codes.";
-        if (status == "error") msg = Freundlich(msg);
-        return new(status, tests, msg, r.Seconds);
+        var zeilen = new Dictionary<string, JsonObject>(StringComparer.Ordinal); string? fehler = null; var ende = false;
+        foreach (var line in r.Out.Split('\n'))
+        {
+            var at = line.IndexOf(Marke, StringComparison.Ordinal); if (at < 0) continue;
+            JsonObject? o;
+            try { o = JsonNode.Parse(line[(at + Marke.Length)..].Trim()) as JsonObject; }
+            catch (JsonException) { continue; } // M5: kaputte Zeile → übergehen
+            if (o is null) continue;
+            if (o["fehler"] is JsonValue fv && fv.GetValueKind() == JsonValueKind.String) fehler ??= fv.GetValue<string>();
+            else if (o["ende"] is not null) ende = true;
+            else if (o["name"] is JsonValue nv && nv.GetValueKind() == JsonValueKind.String && !zeilen.ContainsKey(nv.GetValue<string>())) zeilen[nv.GetValue<string>()] = o;
+        }
+        if (fehler is not null) return new("error", [], fehler.Contains("MemoryError", StringComparison.Ordinal) ? "Speichergrenze erreicht – legt der Code riesige Listen an?" : Freundlich(Clean(fehler)), r.Seconds); // N2
+        if (zeilen.Count == 0 && !ende) return new("error", [], Clean(("Der Testlauf hat kein Ergebnis geliefert. " + r.Text + "\n" + r.Err).Trim()), r.Seconds);
+        var tests = new List<TestErgebnis>();
+        foreach (var f in a.Faelle)
+        {
+            string Txt(JsonObject o, string k) => o[k] is JsonValue v && v.GetValueKind() == JsonValueKind.String ? v.GetValue<string>() : "";
+            if (!zeilen.TryGetValue(f.Name, out var o)) { tests.Add(new(f.Name, "error", "Keine Rückmeldung für diesen Test (der Lauf endete vorher).", "")); continue; }
+            var ausgabe = Knapp(Txt(o, "ausgabe"), 500);
+            if (Txt(o, "ausnahme") is { Length: > 0 } ex) { tests.Add(new(f.Name, "error", Freundlich(Clean(ex)), ausgabe)); continue; }
+            var soll = JsonNode.Parse(f.Erwartet);
+            var ist = o["wert"];
+            bool ok;
+            string meldung;
+            try
+            {
+                switch (f.Art)
+                {
+                    case "typ":
+                        ok = Txt(o, "typ") == soll!.GetValue<string>();
+                        meldung = ok ? "" : $"Erwartet wurde ein Wert vom Typ {soll!.GetValue<string>()}, bekommen: {Knapp(Txt(o, "typ"), 40)}.";
+                        break;
+                    case "fast":
+                        ok = ist is JsonValue iv && iv.GetValueKind() == JsonValueKind.Number && Math.Abs(iv.GetValue<double>() - soll!.GetValue<double>()) < 1e-7;
+                        meldung = ok ? "" : $"{f.Aufruf} ergab {Zeige(ist)}, erwartet etwa {Zeige(soll)}.";
+                        break;
+                    default:
+                        ok = Gleich(ist, soll);
+                        meldung = ok ? "" : $"{f.Aufruf} ergab {(o["repr"] is JsonValue rv ? Knapp(rv.ToString(), 120) : Zeige(ist))}, erwartet {Zeige(soll)}.";
+                        break;
+                }
+            }
+            catch (Exception e) when (e is InvalidOperationException or FormatException or JsonException) { ok = false; meldung = "Der Wert ließ sich nicht prüfen."; }
+            tests.Add(new(f.Name, ok ? "pass" : "fail", Knapp(meldung, 400), ausgabe));
+        }
+        var status = tests.All(t => t.Status == "pass") ? "pass" : "fail";
+        return new(status, tests, "", r.Seconds);
     }
 
     /// <summary>Häufige Python-Fehler in einem Satz erklären (die Meldung selbst bleibt dabei).</summary>
@@ -265,11 +357,18 @@ schreiben()
         d.Edit(label, x => { var all = (JsonObject)(x["kiHinweise"] ??= new JsonObject()); ((JsonArray)(all[a.Id] ??= new JsonArray())).Add(hinweis.Trim()); });
     }
 
-    public static string KiFrage(ProgramDocument d, string frage)
+    /// <summary>Frage an die KI zur Aufgabe. T-0782 (Gegenprüfung M2): Programmausgabe und Testmeldungen (enthalten Werte, die der Lerncode erzeugt hat – z. B.
+    /// Rechner- oder Benutzername) gehen nur mit <paramref name="mitAusgabe"/> mit – das setzt Trendo nur für die KI auf diesem PC; sonst nur Testnamen und Status.</summary>
+    public static string KiFrage(ProgramDocument d, string frage, bool mitAusgabe = false)
     {
         var a = Aktuell(d); var l = Letzter(d);
         var sb = new StringBuilder($"Aufgabe „{a.Titel}“ (Konzept: {KonzeptName(a.Konzept)}):\n{a.Anleitung}\n\nAktueller Code der lernenden Person:\n{Code(d)}\n");
-        if (l is not null) sb.Append($"\nLetzter Testlauf: {l.Status}, {l.Bestanden}/{l.Tests.Count} bestanden. {l.Meldung} " + string.Join(" ", l.Tests.Where(t => t.Status != "pass").Take(3).Select(t => $"{t.Name}: {t.Meldung}")) + "\n");
+        if (l is not null)
+        {
+            sb.Append($"\nLetzter Testlauf: {l.Status}, {l.Bestanden}/{l.Tests.Count} bestanden. Nicht bestanden: {string.Join(", ", l.Tests.Where(t => t.Status != "pass").Select(t => t.Name))}.");
+            if (mitAusgabe) sb.Append(" " + Knapp(l.Meldung, 300) + " " + string.Join(" ", l.Tests.Where(t => t.Status != "pass").Take(3).Select(t => $"{t.Name}: {Knapp(t.Meldung, 200)}")));
+            sb.Append('\n');
+        }
         sb.Append($"\nFrage: {frage}");
         return sb.ToString();
     }
