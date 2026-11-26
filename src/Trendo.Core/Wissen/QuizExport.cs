@@ -89,7 +89,7 @@ function TrendoQuiz(root,quiz,opt){
     {
         var sb = new StringBuilder();
         sb.Append("<!DOCTYPE html>\n<html lang=\"de\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">");
-        sb.Append("<meta name=\"generator\" content=\"Trendo OS – Quiz erstellen\"><title>").Append(WebUtility.HtmlEncode(q.Titel)).Append("</title><style>").Append(Css).Append("</style></head>\n<body><main class=\"tq-wrap\" id=\"tq\"><noscript>Für dieses Quiz muss JavaScript an sein.</noscript></main>\n");
+        sb.Append("<title>").Append(WebUtility.HtmlEncode(q.Titel)).Append("</title><style>").Append(Css).Append("</style></head>\n<body><main class=\"tq-wrap\" id=\"tq\"><noscript>Für dieses Quiz muss JavaScript an sein.</noscript></main>\n");
         sb.Append("<script id=\"tq-data\" type=\"application/json\">").Append(ScriptJson(q.ToJsonText())).Append("</script>\n<script>").Append(PlayerJs);
         sb.Append("\nvar tqQuiz=JSON.parse(document.getElementById('tq-data').textContent);TrendoQuiz(document.getElementById('tq'),tqQuiz,{auto:location.hash==='#selbsttest',onDone:function(r){document.body.setAttribute('data-tq-result',r.prozent);}});\n");
         // T-0779 H1: Beleg, dass der Spieler dieselbe Lückenregel nutzt wie Trendo (#regeln schreibt das Ergebnis je Fall in data-tq-rules)
@@ -119,7 +119,7 @@ public static class QuizPdf
         if (q.Fragen.Count == 0) throw new InvalidOperationException("Das Quiz hat noch keine Frage.");
         Sys.PdfTools.EnsureFonts();
         using var doc = new PdfDocument();
-        doc.Info.Title = q.Titel; doc.Info.Subject = "Quiz"; doc.Info.Creator = "Trendo OS – Quiz erstellen";
+        doc.Info.Title = q.Titel; doc.Info.Subject = "Quiz"; doc.Info.Creator = ""; // T-0784: kein Trendo-Branding in Nutzer-Inhalten
         var measure = XGraphics.CreateMeasureContext(new XSize(595, 842), XGraphicsUnit.Point, XPageDirection.Downwards);
         XFont F(double pt, bool bold = false) => new("Arial", pt, bold ? XFontStyleEx.Bold : XFontStyleEx.Regular);
         var gold = XColor.FromArgb(0x9A, 0x74, 0x10); var grey = XColor.FromArgb(0x55, 0x55, 0x55);

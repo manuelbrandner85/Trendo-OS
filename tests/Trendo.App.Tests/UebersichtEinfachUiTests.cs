@@ -118,6 +118,8 @@ public class UebersichtEinfach_Ui(ITestOutputHelper log)
     public static readonly (string Prefix, string Weg)[] Replaced =
     [
         ("prog-cmd-", "Fachwerkzeuge der Stufe: „Mehr Werkzeuge“ und Strg+K (E2)"),
+        // T-0784 (Naturwissenschaft, 0.9.113): Periodensystem in „Einfach“ als Auswahl „Element wählen“ (nw-el-wahl) und Suche statt 118 Knöpfen; Rechtsklick je Element: „Molmasse mit diesem Element …“ (nw-el-molmasse) im Steckbrief bzw. „Ins Laborheft“ (nw-run-laborheft) im Menüband
+        ("nw-el-", "Auswahl „Element wählen“ (nw-el-wahl) und Suche (nw-suche)"), ("nw-ctx-mol-", "Steckbrief „Molmasse mit diesem Element …“ (nw-el-molmasse)"), ("nw-ctx-heft-", "Menüband „Ins Laborheft“ (nw-run-laborheft) nimmt den Steckbrief des gewählten Elements"),
         // T-0768 (aus T-0763): neue Einstellungsseite „Alles prüfen“ – in „Einfach“ wie die übrigen Seiten von „Zustand & Leistung“ hinter „Mehr Einstellungen (…)“ und in der Suche; dazu der Link „Alles prüfen“ auf der Seite „System“
         ("settings-nav-qual-check", "Einstellungen ▸ „Mehr Einstellungen (…)“ bzw. Suche; Link „Alles prüfen“ auf der Seite „System“"),
         ("text-gallery-", "Formatvorlagen über die Liste „Absatzart“"),

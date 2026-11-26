@@ -392,6 +392,17 @@ public partial class MainWindow
         var suche = new TextBox { Name = "nw-suche", PlaceholderText = "Element suchen: Name, Symbol oder Ordnungszahl", Width = 320, HorizontalAlignment = HorizontalAlignment.Left };
         suche.KeyDown += (_, e) => { if (e.Key == Key.Enter && Elemente.Finde(suche.Text ?? "") is { } el) { e.Handled = true; NwWaehleElement(d, el.Z); } };
         var detail = NwSteckbrief(sel, d);
+        // T-0784 (V10 „Einfach“): statt 118 einzelner Knöpfe eine Auswahl mit allen Elementen; die Tabelle, Färbung und das Rechtsklick-Menü je Element zeigt „Erweitert“
+        if (IsSimple)
+        {
+            var alle = Elemente.Alle.ToList();
+            var wahl = new ComboBox { Name = "nw-el-wahl", HorizontalAlignment = HorizontalAlignment.Left, MinWidth = 320, ItemsSource = alle.Select(x => $"{x.Z} {x.Symbol} – {x.Name}").ToList(), SelectedIndex = alle.FindIndex(x => x.Z == sel.Z) };
+            Avalonia.Automation.AutomationProperties.SetName(wahl, "Element wählen");
+            wahl.SelectionChanged += (_, _) => { if (wahl.SelectedIndex >= 0 && alle[wahl.SelectedIndex].Z != sel.Z) NwWaehleElement(d, alle[wahl.SelectedIndex].Z); };
+            var einfach = new StackPanel { Spacing = 6, Children = { suche, new TextBlock { Text = "Element wählen", Foreground = Muted, FontSize = 12 }, wahl,
+                P("Das ganze Periodensystem als Tabelle zeigt die Bedienstufe „Erweitert“ („Mehr Werkzeuge“).", Muted, 11) } };
+            return new Grid { ColumnDefinitions = new ColumnDefinitions("*,14,300"), Children = { KrCard(einfach, "nw-pse-karte"), Pos(detail, 2) } };
+        }
         var tabelle = new StackPanel { Spacing = 6, Children = { suche, grid, legende } };
         return new Grid { ColumnDefinitions = new ColumnDefinitions("*,14,300"), Children = { KrCard(tabelle, "nw-pse-karte"), Pos(detail, 2) } };
     }

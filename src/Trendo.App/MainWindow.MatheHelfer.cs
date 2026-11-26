@@ -432,7 +432,9 @@ public partial class MainWindow
             tasten.Children.Add(b);
         }
         var zeile = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { box, Pos(los, 1) } };
-        sp.Children.Add(KrCard(new StackPanel { Spacing = 6, Children = { arten, zeile, tasten } }, "mh-eingabe-karte"));
+        // T-0784 (V10 „Einfach“): die 17 Zeichentasten in einem Bereich mit Wort – in „Einfach“ zugeklappt, sonst offen; Funktion bleibt gleich
+        var tastenBereich = new Expander { Name = "mh-tasten-bereich", Header = "Zeichen einfügen (², √, π, sin …)", IsExpanded = !IsSimple, HorizontalAlignment = HorizontalAlignment.Stretch, Content = tasten };
+        sp.Children.Add(KrCard(new StackPanel { Spacing = 6, Children = { arten, zeile, tastenBereich } }, "mh-eingabe-karte"));
         BueroFileDrop(sp, MatheKey, BueroExt(MhImportEndungen), "ein Aufgabenblatt (.txt, .md, .csv oder .tex)", (dd, files) => _ = MhImportAsync(dd, files[0]));
 
         var liste = d.List("rechnungen");

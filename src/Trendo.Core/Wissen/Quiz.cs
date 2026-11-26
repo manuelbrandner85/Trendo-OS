@@ -424,7 +424,7 @@ public static partial class QuizGift
     public static string Write(Quiz q)
     {
         var sb = new StringBuilder();
-        sb.AppendLine("// " + q.Titel.Replace("\n", " ") + " – erstellt mit Trendo OS (Quiz erstellen), Format GIFT für Moodle");
+        sb.AppendLine("// " + q.Titel.Replace("\n", " ") + " – Format GIFT für Moodle"); // T-0784: kein Trendo-Branding in Nutzer-Inhalten
         sb.AppendLine("$CATEGORY: $course$/top/" + Esc(q.Titel.Replace("/", "-")));
         sb.AppendLine();
         var n = 0;

@@ -353,7 +353,7 @@ kStart();
         foreach (var c in (data["kapitel"] as JsonArray)!.OfType<JsonObject>()) foreach (var l in (c["lektionen"] as JsonArray)!.OfType<JsonObject>()) foreach (var b in (l["bloecke"] as JsonArray)!.OfType<JsonObject>()) b["bild"] = ""; // keine lokalen Pfade weitergeben
         var sb = new StringBuilder();
         sb.Append("<!DOCTYPE html>\n<html lang=\"de\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">");
-        sb.Append("<meta name=\"generator\" content=\"Trendo OS – Kurse erstellen\"><title>").Append(WebUtility.HtmlEncode(k.Titel)).Append("</title><style>").Append(QuizHtml.Css).Append(Css).Append("</style></head>\n<body>");
+        sb.Append("<title>").Append(WebUtility.HtmlEncode(k.Titel)).Append("</title><style>").Append(QuizHtml.Css).Append(Css).Append("</style></head>\n<body>");
         sb.Append("<div class=\"k-grid\"><nav class=\"k-nav\" id=\"k-nav\"></nav><main id=\"k-main\"><noscript>Für diesen Kurs muss JavaScript an sein.</noscript></main></div>\n");
         sb.Append("<script id=\"k-data\" type=\"application/json\">").Append(QuizHtml.ScriptJson(data.ToJsonString(Kurs.O))).Append("</script>\n<script>").Append(QuizHtml.PlayerJs).Append('\n').Append(Js).Append("</script></body></html>\n");
         return sb.ToString();

@@ -31,7 +31,7 @@ public static class Rechenblatt
             foreach (var p in e.Proben) sb.Append($"- {p.Text}\n");
             sb.Append('\n');
         }
-        sb.Append("---\nGerechnet mit dem Rechenkern von Trendo OS (exakt mit Brüchen, Probe unabhängig vom Lösungsweg).\n");
+        sb.Append("---\nGerechnet mit dem eigenen Rechenkern (exakt mit Brüchen, Probe unabhängig vom Lösungsweg).\n");
         return sb.ToString();
     }
 
@@ -41,7 +41,7 @@ public static class Rechenblatt
     public static string Latex(string titel, IEnumerable<BlattEintrag> eintraege)
     {
         var sb = new StringBuilder();
-        sb.Append("% Erzeugt mit Trendo OS – mit LuaLaTeX oder XeLaTeX übersetzen\n\\documentclass[11pt,a4paper]{article}\n\\usepackage{fontspec}\n\\usepackage{amsmath,amssymb}\n\\usepackage[ngerman]{babel}\n\\usepackage[margin=2cm]{geometry}\n");
+        sb.Append("% Mit LuaLaTeX oder XeLaTeX übersetzen\n\\documentclass[11pt,a4paper]{article}\n\\usepackage{fontspec}\n\\usepackage{amsmath,amssymb}\n\\usepackage[ngerman]{babel}\n\\usepackage[margin=2cm]{geometry}\n");
         sb.Append($"\\title{{{Tex(titel)}}}\n\\date{{}}\n\\begin{{document}}\n\\maketitle\n");
         foreach (var e in eintraege)
         {
@@ -84,7 +84,7 @@ public static class Rechenblatt
     /// <summary>PDF mit Lösungswegen (A4, Seitenumbruch, Seitenzahlen); gibt die Seitenzahl zurück.</summary>
     public static int Pdf(string pfad, string titel, IEnumerable<BlattEintrag> eintraege)
     {
-        using var pdf = new BizPdf(titel, "Trendo OS") { Footer = "Gerechnet mit dem Rechenkern von Trendo OS – exakt mit Brüchen, jede Lösung mit Probe." };
+        using var pdf = new BizPdf(titel, "") { Footer = "Gerechnet mit dem eigenen Rechenkern – exakt mit Brüchen, jede Lösung mit Probe." } /* T-0784: kein Trendo-Branding */;
         pdf.Write(PdfText(titel), 18, true, pdf.Accent); pdf.Y += 3;
         var n = 0;
         var gruen = XColor.FromArgb(0x1E, 0x7B, 0x4A); var rot = XColor.FromArgb(0xB0, 0x2A, 0x2A);

@@ -76,7 +76,7 @@ public partial class MainWindow
                 new("cl-key-hint", "Hinweis", () => ProgramRun(CodeLearnKey, () => { var h = CodeLernen.Hinweis(d); _progMsg[CodeLearnKey] = h is null ? "Alle Hinweise sind schon zu sehen." : "Hinweis: " + h; }), "Strg+J"),
             ]),
         ],
-        Blocker = _ => OperatingSystem.IsWindows() && LernSandbox.BundledPython(CodeLearnToolsRoot ?? _deps.ToolsRoot) is null ? new ProgramBlocker("Das mitgelieferte Python fehlt – ohne es laufen keine Tests", "Zusatzprogramme öffnen", () => Show("components")) : null,
+        Blocker = _ => OperatingSystem.IsWindows() && LernSandbox.BundledPython(CodeLearnToolsRoot ?? _deps.ToolsRoot) is null ? new ProgramBlocker("Python fehlt", /* T-0784: kurz, sonst bricht das Menüband in „Einfach“ in eine zweite Zeile (V-01); der Hinweis am Knopf sagt „Python fehlt – hier einrichten …“ */ "Einrichten", () => Show("components")) : null,
         FirstStep = new("Mit der ersten Aufgabe beginnen", "Lies die Aufgabe, schreib deinen Code in den Editor und starte dann die echten Tests (F5) – abgeschottet, ohne Internet. Hinweise gibt es jederzeit.",
             d => { d.Set("begonnen", true, "Lernpfad begonnen"); _progMsg[CodeLearnKey] = "Los geht’s: Schreib deinen Code in den Editor, dann „Tests ausführen“."; },
             d => !d.Flag("begonnen") && (d.Data["stand"] as System.Text.Json.Nodes.JsonObject)?.Count is null or 0),

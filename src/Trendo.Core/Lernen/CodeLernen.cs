@@ -378,7 +378,7 @@ _sende({"ende": True})
     {
         var a = Aktuell(d);
         var tests = a.Tests.Replace("from loesung import *\n", "");
-        return $"# Trendo – Programmieren lernen: {a.Titel}\n# Aufgabe: {a.Anleitung.Split('\n')[0]}\n\n{Code(d).TrimEnd()}\n\n\n# ---- Tests der Aufgabe ----\n{tests.TrimEnd()}\n\n\nif __name__ == \"__main__\":\n    unittest.main(verbosity=2)\n";
+        return $"# Programmieren lernen: {a.Titel}\n# Aufgabe: {a.Anleitung.Split('\n')[0]}\n\n{Code(d).TrimEnd()}\n\n\n# ---- Tests der Aufgabe ----\n{tests.TrimEnd()}\n\n\nif __name__ == \"__main__\":\n    unittest.main(verbosity=2)\n";
     }
 
     /// <summary>Eigene Python-Datei als Code der aktuellen Aufgabe einlesen (Tests aus einer exportierten Datei werden abgeschnitten).</summary>
@@ -388,7 +388,7 @@ _sende({"ende": True})
         text = text.Replace("\r\n", "\n").TrimStart('﻿');
         var cut = text.IndexOf("# ---- Tests der Aufgabe ----", StringComparison.Ordinal);
         if (cut >= 0) text = text[..cut];
-        var lines = text.Split('\n').SkipWhile(l => l.StartsWith("# Trendo – Programmieren lernen", StringComparison.Ordinal) || l.StartsWith("# Aufgabe:", StringComparison.Ordinal)).ToList();
+        var lines = text.Split('\n').SkipWhile(l => l.StartsWith("# Programmieren lernen", StringComparison.Ordinal) || l.StartsWith("# Trendo – Programmieren lernen", StringComparison.Ordinal) || l.StartsWith("# Aufgabe:", StringComparison.Ordinal)).ToList();
         return string.Join("\n", lines).Trim('\n') + "\n";
     }
 }

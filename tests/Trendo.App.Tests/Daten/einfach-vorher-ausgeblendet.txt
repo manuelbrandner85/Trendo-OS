@@ -2167,3 +2167,106 @@ zeitleisten-programm (Dokument): tl-p-title
 zeitleisten-programm (Dokument): tl-p-track-0
 zeitleisten-programm (Dokument): tl-p-trackcolor-0
 zeitleisten-programm (Dokument): tl-p-trackdel-0
+# T-0784 (aus T-0779, T-0781, T-0782 – 0.9.113 „Wissen & Lernen“): wie bei Referate/Zeitleisten (T-0780) liegen in „Einfach“ die Bedienstufen-Knöpfe, weitere Ausgaben
+#   und die rechte Spalte (Eigenschaften: Titel, Beschreibung, Bestehensgrenze, Zeit, Mischen, Personen, eigene Übungen, Graph-Bereich) unter „Mehr Werkzeuge“ (prog-tools-more).
+#   Ersatzwege im Dokument: Programmieren lernen – Hinweis und KI-Hinweis im Menüband (cl-hint, cl-ki) und die Auftragszeile oben; Naturwissenschaft – jede Formel
+#   der Formelsammlung über die Auswahl „Formel“ (nw-ph-formel) in der Ansicht „Physik-Formeln“; Nachhilfe – eigene Übungen auch über „Übungen einlesen …“ (nh-import).
+kurse-programm: prog-level-einfach
+kurse-programm: prog-level-erweitert
+kurse-programm: prog-level-profi
+kurse-programm (Dokument): cs-chapter-title
+kurse-programm (Dokument): cs-desc
+kurse-programm (Dokument): cs-order
+kurse-programm (Dokument): cs-pass
+kurse-programm (Dokument): cs-person-add
+kurse-programm (Dokument): cs-person-name
+kurse-programm (Dokument): cs-title
+kurse-programm (Dokument): prog-export-csv
+kurse-programm (Dokument): prog-level-einfach
+kurse-programm (Dokument): prog-level-erweitert
+kurse-programm (Dokument): prog-level-profi
+mathe-helfer-programm: prog-level-einfach
+mathe-helfer-programm: prog-level-erweitert
+mathe-helfer-programm: prog-level-profi
+mathe-helfer-programm (Dokument): mh-graph-bis
+mathe-helfer-programm (Dokument): mh-graph-von
+mathe-helfer-programm (Dokument): mh-titel
+mathe-helfer-programm (Dokument): prog-export-md
+mathe-helfer-programm (Dokument): prog-export-tex
+mathe-helfer-programm (Dokument): prog-level-einfach
+mathe-helfer-programm (Dokument): prog-level-erweitert
+mathe-helfer-programm (Dokument): prog-level-profi
+nachhilfe-programm: prog-level-einfach
+nachhilfe-programm: prog-level-erweitert
+nachhilfe-programm: prog-level-profi
+nachhilfe-programm (Dokument): nh-eigen-anlegen
+nachhilfe-programm (Dokument): nh-eigen-antwort
+nachhilfe-programm (Dokument): nh-eigen-erklaerung
+nachhilfe-programm (Dokument): nh-eigen-frage
+nachhilfe-programm (Dokument): nh-eigen-hinweis
+nachhilfe-programm (Dokument): prog-export-csv
+nachhilfe-programm (Dokument): prog-export-docx
+nachhilfe-programm (Dokument): prog-level-einfach
+nachhilfe-programm (Dokument): prog-level-erweitert
+nachhilfe-programm (Dokument): prog-level-profi
+naturwissenschaft-programm: prog-level-einfach
+naturwissenschaft-programm: prog-level-erweitert
+naturwissenschaft-programm: prog-level-profi
+naturwissenschaft-programm (Dokument): nw-fs-arbeit
+naturwissenschaft-programm (Dokument): nw-fs-beschleunigung
+naturwissenschaft-programm (Dokument): nw-fs-dichte
+naturwissenschaft-programm (Dokument): nw-fs-druck
+naturwissenschaft-programm (Dokument): nw-fs-e-kin
+naturwissenschaft-programm (Dokument): nw-fs-e-pot
+naturwissenschaft-programm (Dokument): nw-fs-el-energie
+naturwissenschaft-programm (Dokument): nw-fs-el-leistung
+naturwissenschaft-programm (Dokument): nw-fs-freier-fall
+naturwissenschaft-programm (Dokument): nw-fs-gas
+naturwissenschaft-programm (Dokument): nw-fs-geschwindigkeit
+naturwissenschaft-programm (Dokument): nw-fs-gewichtskraft
+naturwissenschaft-programm (Dokument): nw-fs-gravitation
+naturwissenschaft-programm (Dokument): nw-fs-impuls
+naturwissenschaft-programm (Dokument): nw-fs-konzentration
+naturwissenschaft-programm (Dokument): nw-fs-kraft
+naturwissenschaft-programm (Dokument): nw-fs-ladung
+naturwissenschaft-programm (Dokument): nw-fs-leistung
+naturwissenschaft-programm (Dokument): nw-fs-linse
+naturwissenschaft-programm (Dokument): nw-fs-ohm
+naturwissenschaft-programm (Dokument): nw-fs-pendel
+naturwissenschaft-programm (Dokument): nw-fs-periode
+naturwissenschaft-programm (Dokument): nw-fs-photon
+naturwissenschaft-programm (Dokument): nw-fs-stoffmenge
+naturwissenschaft-programm (Dokument): nw-fs-waerme
+naturwissenschaft-programm (Dokument): nw-fs-weg-beschleunigt
+naturwissenschaft-programm (Dokument): nw-fs-welle
+naturwissenschaft-programm (Dokument): nw-titel
+naturwissenschaft-programm (Dokument): prog-export-elemente
+naturwissenschaft-programm (Dokument): prog-export-md
+naturwissenschaft-programm (Dokument): prog-level-einfach
+naturwissenschaft-programm (Dokument): prog-level-erweitert
+naturwissenschaft-programm (Dokument): prog-level-profi
+programmieren-lernen-programm: prog-level-einfach
+programmieren-lernen-programm: prog-level-erweitert
+programmieren-lernen-programm: prog-level-profi
+programmieren-lernen-programm (Dokument): cl-hinweis
+programmieren-lernen-programm (Dokument): cl-ki-frage
+programmieren-lernen-programm (Dokument): cl-ki-fragen
+programmieren-lernen-programm (Dokument): prog-level-einfach
+programmieren-lernen-programm (Dokument): prog-level-erweitert
+programmieren-lernen-programm (Dokument): prog-level-profi
+quiz-programm: prog-level-einfach
+quiz-programm: prog-level-erweitert
+quiz-programm: prog-level-profi
+quiz-programm (Dokument): prog-export-gift
+quiz-programm (Dokument): prog-export-text
+quiz-programm (Dokument): prog-level-einfach
+quiz-programm (Dokument): prog-level-erweitert
+quiz-programm (Dokument): prog-level-profi
+quiz-programm (Dokument): quiz-bonus
+quiz-programm (Dokument): quiz-desc
+quiz-programm (Dokument): quiz-pass
+quiz-programm (Dokument): quiz-shuffle
+quiz-programm (Dokument): quiz-shuffle-a
+quiz-programm (Dokument): quiz-source-text
+quiz-programm (Dokument): quiz-time
+quiz-programm (Dokument): quiz-title
