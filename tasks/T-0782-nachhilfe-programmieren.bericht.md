@@ -84,6 +84,7 @@ Je Studio mit Quellen, Datum, offenen Alternativen samt Lizenz und Prüfung je Z
 - Der Katalog `docs/programme/katalog.json`/`KATALOG.md` und `docs/programme/<seite>/` wurden nicht neu erzeugt (macht die Hauptsitzung mit TRX).
 
 ## Offene Punkte
+- **Nebenwirkung der Abschottung (bitte entscheiden):** `CreateAppContainerProfile` legt für den Windows-Benutzer einmalig das Profil „Trendo.Lernen.Code“ an (Ordner unter `%LOCALAPPDATA%\Packages	rendo.lernen.code` und Einträge, die Windows selbst unter HKCU verwaltet). Das geschieht ohne Admin über die offizielle API, so wie bei jeder Windows-App mit AppContainer – ist aber eine Änderung außerhalb von Trendos Ordnern. Durch meine Tests existiert das Profil auf diesem PC bereits. Entfernen ginge mit `DeleteAppContainerProfile("Trendo.Lernen.Code")` (z. B. beim Deinstallieren); das ist noch nicht eingebaut.
 - `requirements.yaml`: Einträge oben eintragen (dann Startmenü/Übersicht + QA-015-Zahl).
 - Merge-Hinweis: Zählwerte in `PromptBarTests` (83→85), `StudioFolds_Ui` (61→63), `PromptActionTests` (107→109, 78→80) und `docs/improvement-42/studio-capability-matrix.md` überschneiden sich mit T-0779…T-0781 – beim Zusammenführen addieren bzw. Matrix mit `TRENDO_UPDATE_MATRIX=1` neu schreiben.
 - Lokale KI: qwen3:14b brauchte im ersten Lauf unter Last mehr als 90 s bis zum ersten Wort; dann antwortet das Ausweichmodell. Kleine Modelle liefern schwächere Übungen (LaTeX, ungekürzte Antworten – jetzt abgefangen).
