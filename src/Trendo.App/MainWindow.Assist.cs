@@ -56,6 +56,8 @@ public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocumen
     public bool Produces(string actionId) => spec.KiActions.Any(k => k.Def.Id == actionId);
     /// <summary>T-0774: Hat das Programm Fachaktionen, die Dateien erzeugen?</summary>
     public bool HasKiActions => spec.KiActions.Count > 0;
+    /// <summary>T-0782: nur die KI auf diesem PC (siehe <see cref="ProgramSpec.KiLocalOnly"/>).</summary>
+    public bool LocalOnly => spec.KiLocalOnly?.Invoke() == true;
     /// <summary>T-0707: das offene Dokument (für den KI-Plan der einen Kette, <see cref="AssistChain"/>).</summary>
     public ProgramDocument Document => doc;
     public IEnumerable<AssistSuggestion> Hints() => [];
@@ -105,7 +107,7 @@ public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocumen
             finally { doc.Rollback(_start); MainWindow.AssistQuiet--; } // … und sofort zurück
         }
         public bool Changed => _after != _start.Data || _produce.Count > 0;
-        public string? OnApply => _produce.Count == 0 ? null : "Die neue Datei entsteht erst bei „Ja, behalten“ – das Original bleibt unverändert.";
+        public string? OnApply => _produce.Count == 0 ? null : _produce[0].ApplyNote ?? "Die neue Datei entsteht erst bei „Ja, behalten“ – das Original bleibt unverändert.";
         public void Apply(string label, IReadOnlyList<AssistStep> sideEffects)
         {
             var mark = doc.Remember();
@@ -212,13 +214,15 @@ public partial class MainWindow
             // Programme der Hülle bekommen die Daten des offenen Dokuments und die Aktion „dokument.setzen“: so landet eine Fachaufgabe direkt im Dokument.
             var system = t is ProgramAssistTarget pt ? AssistChain.KiPrompt(t.Title, t.Actions, role, SkillsFor(t.Key), pt.Document.Data) : AssistPlanner.KiPrompt(t.Title, t.Actions, role, SkillsFor(t.Key));
             AssistBusy(host, t.Title);
-            var ki = await Intel.AskAsync(new KiRequest(prompt, system, PreferredModel: KiModelName, UseKnowledge: false));
+            // T-0782: Programme, die nur die KI auf diesem PC fragen dürfen (Nachhilfe, Kinderprofil) – derselbe Kern, auf lokale Quellen beschränkt
+            var intel = t is ProgramAssistTarget { LocalOnly: true } ? AgentKi("lokal", out _) : Intel;
+            var ki = await intel.AskAsync(new KiRequest(prompt, system, PreferredModel: KiModelName, UseKnowledge: false));
             kiAnswered = ki.Ok; AssistLastKiAnswer = ki.Text;
             // T-0707: kaputtes JSON (echter Fall mit qwen3:14b: eine schließende Klammer fehlte) – genau einmal nachfragen statt raten
             if (ki.Ok && t is ProgramAssistTarget && !AssistChain.FromKi(prompt, ki.Text, t.Actions).Understood && AssistChain.LooksLikePlan(ki.Text))
             {
                 _core.Audit.Append(Principal.LocalOwner.Name, "assist.ki.nachfrage", t.Key);
-                var again = await Intel.AskAsync(new KiRequest(AssistChain.RepairPrompt, system, PreferredModel: KiModelName, History: [new KiMessage("user", prompt), new KiMessage("assistant", AssistChain.CleanAnswer(ki.Text))], UseKnowledge: false));
+                var again = await intel.AskAsync(new KiRequest(AssistChain.RepairPrompt, system, PreferredModel: KiModelName, History: [new KiMessage("user", prompt), new KiMessage("assistant", AssistChain.CleanAnswer(ki.Text))], UseKnowledge: false));
                 if (again.Ok) { ki = again; AssistLastKiAnswer = ki.Text; }
             }
             if (ki.Ok) { var kp = t is ProgramAssistTarget ? AssistChain.FromKi(prompt, ki.Text, t.Actions) : AssistPlanner.FromKi(prompt, ki.Text, t.Actions); kp.Source = $"KI ({ki.Backend}{(ki.Model is { Length: > 0 } km ? ", " + km : "")})"; if (kp.Understood) plan = kp; }

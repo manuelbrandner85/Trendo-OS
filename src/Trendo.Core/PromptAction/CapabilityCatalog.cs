@@ -98,6 +98,8 @@ public static class CapabilityCatalog
         P("X-08", "Handy verbinden", "System & Sicherheit", "MobileBridge", "adb-Liste, wenn adb schon da ist", "keine", "Liste", "Nur „adb devices -l“. Kein Spiegel, kein Foto, keine Installation."),
         P("CORE-04", "PC, Pi & Handy verbinden", "System & Sicherheit", "FusionStore", "Verbund nur zeigen", "keine", "Liste", "Nur die gespeicherten Geräte. Es wird nichts gekoppelt."),
         P("X-09", "Leistung anzeigen", "System & Sicherheit", "ResourceMonitor, SystemMetrics", "Messwerte lesen", "keine", "Messwert", "Nur die gelesenen Messwerte. Es wird kein Programm beendet."),
+        P("STUDIO-TUTOR-01", "Nachhilfe mit KI", "Wissen & Lernen", "Nachhilfe, Fsrs, KI auf diesem PC", "Arbeitsblatt erstellen", "Thema, Anzahl", "Arbeitsblatt (MD) mit Lösungen", "Üben, Prüfen, Hinweise und KI-Übungen nur im Studio; die KI dort läuft nur auf diesem PC."),
+        P("STUDIO-CODELEARN-01", "Programmieren lernen", "Wissen & Lernen", "CodeLernen, LernSandbox (AppContainer)", "Aufgabe als Datei", "Aufgabe", "Python-Datei mit Tests", "Tests laufen nur im Studio im abgeschotteten Lauf; ohne mitgeliefertes Python blockiert."),
     ];
 
     private static StudioProfile P(string id, string title, string area, string existing, string action, string inputs, string outputs, string blocker) =>

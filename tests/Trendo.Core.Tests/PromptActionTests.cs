@@ -1687,7 +1687,7 @@ public partial class PromptActionTests
         var adapters = PromptActions.CreateDefault();
         var registered = adapters.Select(a => a.StudioId).ToHashSet(StringComparer.OrdinalIgnoreCase);
         Assert.Equal(ids.Count, registered.Count);
-        Assert.Equal(107, adapters.Count); // − 3 Adapter der mit T-0720 entfernten Studios SPEC-16 (Fahrtkosten) und CORE-09 (Kamera nennen, Kamera steuern); + sieben Studios Arbeiten & Büro, + Künstlerstudio (15.11.2026), + Kreativ & KI Teil 3 und 4 (14.11.2026), + vier + vier Studios Kreativ & KI (11.11.2026), + TV & Live (27.10.2026), + Trendo Musik (03.11.2026), + Filme machen und Print on Demand (08.11.2026); SPEC-07 abgelehnt: nur die Sperre, kein Übersetzungsadapter
+        Assert.Equal(109, adapters.Count); // + Nachhilfe mit KI und Programmieren lernen (T-0782); − 3 Adapter der mit T-0720 entfernten Studios SPEC-16 (Fahrtkosten) und CORE-09 (Kamera nennen, Kamera steuern); + sieben Studios Arbeiten & Büro, + Künstlerstudio (15.11.2026), + Kreativ & KI Teil 3 und 4 (14.11.2026), + vier + vier Studios Kreativ & KI (11.11.2026), + TV & Live (27.10.2026), + Trendo Musik (03.11.2026), + Filme machen und Print on Demand (08.11.2026); SPEC-07 abgelehnt: nur die Sperre, kein Übersetzungsadapter
         Assert.Equal(adapters.Count, adapters.Select(a => a.ActionId).Distinct(StringComparer.OrdinalIgnoreCase).Count());
         Assert.All(adapters, a => Assert.NotNull(CapabilityCatalog.Find(a.StudioId)));
         Assert.Contains(registered, id => id == "STUDIO-LETTER-01");
@@ -1714,7 +1714,7 @@ public partial class PromptActionTests
             Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level(id, adapters));
         }
         Assert.Equal(CapabilityLevel.Blocked, CapabilityCatalog.Level("SPEC-07", adapters));
-        Assert.Equal(78, ids.Count(id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Partial)); // − SPEC-16, CORE-09 (T-0720, Nutzerentscheidung 16.11.2026); + sieben Studios Arbeiten & Büro, + Künstlerstudio, + TV & Live, + Trendo Musik (03.11.2026), + Filme machen und Print on Demand (08.11.2026)
+        Assert.Equal(80, ids.Count(id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Partial)); // + Nachhilfe mit KI, Programmieren lernen (T-0782); − SPEC-16, CORE-09 (T-0720, Nutzerentscheidung 16.11.2026); + sieben Studios Arbeiten & Büro, + Künstlerstudio, + TV & Live, + Trendo Musik (03.11.2026), + Filme machen und Print on Demand (08.11.2026)
         Assert.Equal(3, ids.Count(id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Blocked));
         Assert.DoesNotContain(ids, id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.NotImplemented);
         Assert.DoesNotContain(ids, id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Ready);

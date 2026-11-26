@@ -309,6 +309,12 @@ public static class StudioTeams
         T("STUDIO-FORMS-01", "Formular-Team",
             R("forms-hilfe", "Formularhelferin", "füllt Felder aus und erklärt Amtsdeutsch", "nur eigene Angaben, nichts erfinden", true),
             R("forms-pruef", "Prüfer", "achtet auf Pflichtfelder und Unterschrift", "vor dem Abschicken alles vollständig")),
+        T("STUDIO-TUTOR-01", "Nachhilfe-Team",
+            R("tutor-lehrer", "Nachhilfe-Lehrerin", "erklärt, stellt Rückfragen und baut Übungen", "nie die Lösung vorwegnehmen, einfache Sprache", true),
+            R("tutor-plan", "Lernplanerin", "achtet auf Fortschritt und Wiederholung", "fällige Themen zuerst, kleine Schritte")),
+        T("STUDIO-CODELEARN-01", "Programmier-Lern-Team",
+            R("code-tutor", "Programmier-Tutorin", "gibt Hinweise zur Aufgabe", "nie fertigen Code, nur Denkanstöße", true),
+            R("code-pruef", "Testleiter", "lässt die echten Tests laufen und erklärt Fehlermeldungen", "nur die Tests bewerten")),
     ];
 
     public static StudioTeam? For(string? studioId) => All.FirstOrDefault(t => t.StudioId == studioId);

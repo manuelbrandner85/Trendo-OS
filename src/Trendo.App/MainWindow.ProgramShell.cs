@@ -36,7 +36,11 @@ public sealed record ProgramFirstStep(string Label, string Hint, Action<ProgramD
 /// Rückgängig legt die erzeugte Datei beiseite (Ordner „.rueckgaengig“), Wiederholen holt sie zurück.
 /// Höchstens eine Fachaktion je Auftrag, als letzter Schritt. <paramref name="Produce"/> meldet über den zweiten Wert jede Datei, die es selbst anlegt (vor dem Schreiben) –
 /// schlägt das Erzeugen fehl, werden genau diese Dateien beiseitegelegt („.rueckgaengig“); fremde Dateien im selben Ordner bleiben unberührt.</summary>
-public sealed record ProgramKiAction(AssistAction Def, Action<ProgramDocument, IReadOnlyDictionary<string, string>> Prepare, Func<ProgramDocument, Action<string>, IReadOnlyList<string>> Produce);
+public sealed record ProgramKiAction(AssistAction Def, Action<ProgramDocument, IReadOnlyDictionary<string, string>> Prepare, Func<ProgramDocument, Action<string>, IReadOnlyList<string>> Produce)
+{
+    /// <summary>T-0782: Hinweis in der Vorschau, wenn die Fachaktion keine Datei erzeugt, sondern ins offene Dokument schreibt (null = Standard „neue Datei“).</summary>
+    public string? ApplyNote { get; init; }
+}
 
 public sealed class ProgramSpec(string key, string studio, string title)
 {
@@ -89,6 +93,8 @@ public sealed class ProgramSpec(string key, string studio, string title)
     public string KiHint { get; init; } = "";
     /// <summary>T-0774: Felder, die nur die Person selbst setzt – „dokument.setzen“ der KI wird dort abgelehnt (z. B. Ablage-Ordner).</summary>
     public IReadOnlyList<string> KiLocked { get; init; } = [];
+    /// <summary>T-0782: Die KI-Kette dieses Programms fragt nur die KI auf diesem PC (nie Claude oder einen Dienst im Internet) – z. B. für Kinder.</summary>
+    public Func<bool>? KiLocalOnly { get; init; }
     public int LevelOf(ProgramCmd c) => Math.Max(c.Level, CmdLevels.GetValueOrDefault(c.Name));
 }
 

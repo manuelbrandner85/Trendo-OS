@@ -96,6 +96,9 @@ PROMPTS = {
     'X-08': 'a smartphone connected by cable to a laptop on a dark desk',
     'CORE-04': 'a Raspberry Pi board, a smartphone and a laptop connected on a dark desk',
     'X-09': 'computer RAM modules and a CPU on a dark anti-static mat',
+    # T-0782 (Wissen & Lernen)
+    'STUDIO-TUTOR-01': 'a school exercise book with handwritten fractions and arithmetic, a pencil, an eraser and a small desk lamp on a dark wooden desk, warm evening light, no readable text, no faces',
+    'STUDIO-CODELEARN-01': 'a laptop with abstract colorful program code lines out of focus on a dark desk, a paper notebook with hand drawn flowchart boxes and a pencil beside it, warm light, no readable text, no faces',
 }
 
 def req(path, data=None, timeout=30):

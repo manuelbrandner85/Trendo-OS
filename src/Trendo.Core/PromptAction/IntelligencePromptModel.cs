@@ -48,6 +48,7 @@ public static class PromptActions
             new CodeProjectAdapter(), new VisionFactsAdapter(), new CiteSourceAdapter(), new DayPlanAdapter(), new KunstVorlageAdapter(), new LebenslaufAdapter(), new KarteAdapter(), new VertragFristAdapter(),
             new DeckDesignAdapter(), new DocScanAdapter(),
             new PdfWerkstattAdapter(), new FormularZuordnenAdapter(),
+            new TutorSheetAdapter(), new CodeLearnTaskAdapter(), // T-0782
             ..SystemActions.Create()
         ];
 }

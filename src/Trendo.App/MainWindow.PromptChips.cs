@@ -54,6 +54,8 @@ public partial class MainWindow
         ["STUDIO-CONTRACTS-01"] = ["Bis wann kann ich kündigen?", "Was kosten meine Verträge im Jahr?", "Kündigung für den Handyvertrag"],
         ["STUDIO-PDFTOOLS-01"] = ["PDFs zusammenfügen", "PDF kleiner machen", "Seiten 1-3 herauslösen"],
         ["STUDIO-FORMS-01"] = ["Formular mit meinen Angaben ausfüllen", "Welche Pflichtfelder fehlen?", "Unterschrift einsetzen"],
+        ["STUDIO-TUTOR-01"] = ["Gib mir eine Übung zu diesem Thema", "Erklär mir das mit einem Beispiel", "Was soll ich heute wiederholen?"],
+        ["STUDIO-CODELEARN-01"] = ["Warum schlägt mein Test fehl?", "Gib mir einen kleinen Hinweis", "Was bedeutet diese Fehlermeldung?"],
     };
 
     /// <summary>Chips für ein Studio (leer = keine Vorschläge hinterlegt).</summary>

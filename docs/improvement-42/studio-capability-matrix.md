@@ -85,5 +85,7 @@ Erzeugt aus `CapabilityCatalog` und den wirklich registrierten Adaptern. `ready`
 | X-08 | Handy verbinden | System & Sicherheit | MobileBridge | adb-Liste, wenn adb schon da ist | keine | handy.verbinden, handy.nennen | Liste | partial | PromptActionTests.Gesperrte_Studios_schreiben_nichts, ConnectedPromptTests.Handy_listet_ohne_verbindung | Nur „adb devices -l“. Kein Spiegel, kein Foto, keine Installation. |
 | CORE-04 | PC, Pi & Handy verbinden | System & Sicherheit | FusionStore | Verbund nur zeigen | keine | verbund.oeffnen, verbund.zeigen | Liste | partial | PromptActionTests.Gesperrte_Studios_schreiben_nichts, ConnectedPromptTests.Verbund_zeigt_ohne_kopplung | Nur die gespeicherten Geräte. Es wird nichts gekoppelt. |
 | X-09 | Leistung anzeigen | System & Sicherheit | ResourceMonitor, SystemMetrics | Messwerte lesen | keine | leistung.lesen | Messwert | partial | PromptActionTests.Leistung_liest_prozesse | Nur die gelesenen Messwerte. Es wird kein Programm beendet. |
+| STUDIO-TUTOR-01 | Nachhilfe mit KI | Wissen & Lernen | Nachhilfe, Fsrs, KI auf diesem PC | Arbeitsblatt erstellen | Thema, Anzahl | arbeitsblatt.erstellen | Arbeitsblatt (MD) mit Lösungen | partial | T0782_Nachhilfe | Üben, Prüfen, Hinweise und KI-Übungen nur im Studio; die KI dort läuft nur auf diesem PC. |
+| STUDIO-CODELEARN-01 | Programmieren lernen | Wissen & Lernen | CodeLernen, LernSandbox (AppContainer) | Aufgabe als Datei | Aufgabe | aufgabe.datei | Python-Datei mit Tests | partial | T0782_CodeLernen | Tests laufen nur im Studio im abgeschotteten Lauf; ohne mitgeliefertes Python blockiert. |
 
-Anzahl: 81 Katalogeinträge, 107 registrierte Aktionen.
+Anzahl: 83 Katalogeinträge, 109 registrierte Aktionen.
