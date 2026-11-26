@@ -1,17 +1,17 @@
-# T-0776 Fremdnachlauf inkscape-svg – 2026-11-26 12:36:53 +01:00
+# T-0776 Fremdnachlauf inkscape-svg – 2026-11-26 12:55:25 +01:00
 Datei trendo-logo.svg: 1206 Bytes, SHA-256 64979d0b2bcaae70b691cce3cf62cd8e0ef1a8733696f343d3f32704e3ffd5d3
 Datei trendo-animation.svg: 3648 Bytes, SHA-256 efca2ffc735793503626f305f5a74483fa76b35f48433b022f61f7db0472bae2
 $ Inkscape liest logo.svg (alle Objekte mit Lage)
-  inkscape.com --query-all C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\logo.svg
-  Umgebung APPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil\AppData\Roaming
-  Umgebung LOCALAPPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil\AppData\Local
-  Umgebung INKSCAPE_PROFILE_DIR=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil\profil
-  Umgebung XDG_CONFIG_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil\config
-  Umgebung XDG_CACHE_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil\cache
-  Umgebung XDG_DATA_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil\data
-  Umgebung USERPROFILE=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil
-  Umgebung HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil
-Exit 0 nach 1,7 s
+  inkscape.com --query-all C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\logo.svg
+  Umgebung APPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil\AppData\Roaming
+  Umgebung LOCALAPPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil\AppData\Local
+  Umgebung INKSCAPE_PROFILE_DIR=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil\profil
+  Umgebung XDG_CONFIG_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil\config
+  Umgebung XDG_CACHE_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil\cache
+  Umgebung XDG_DATA_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil\data
+  Umgebung USERPROFILE=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil
+  Umgebung HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil
+Exit 0 nach 2,3 s
 svg2,0,0,300,200
 rect1,0,0,300,200
 flaeche,20,30,120,60
@@ -24,30 +24,30 @@ tspan2,23.0599,155.326,231.687,25.0649
 [stderr] WARNING: unknown type: trendo:vektor
 Inkscape: flaeche bei x=20 y=30 b=120 h=60 (Trendo 20/30/120/60)
 $ Inkscape rendert logo.svg als PNG (300 px breit)
-  inkscape.com C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\logo.svg --export-type=png --export-filename=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-logo.png --export-width=300 --export-background=#FFFFFF --export-background-opacity=1
-  Umgebung APPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil\AppData\Roaming
-  Umgebung LOCALAPPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil\AppData\Local
-  Umgebung INKSCAPE_PROFILE_DIR=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil\profil
-  Umgebung XDG_CONFIG_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil\config
-  Umgebung XDG_CACHE_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil\cache
-  Umgebung XDG_DATA_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil\data
-  Umgebung USERPROFILE=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil
-  Umgebung HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil
-Exit 0 nach 1,4 s
+  inkscape.com C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\logo.svg --export-type=png --export-filename=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-logo.png --export-width=300 --export-background=#FFFFFF --export-background-opacity=1
+  Umgebung APPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil\AppData\Roaming
+  Umgebung LOCALAPPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil\AppData\Local
+  Umgebung INKSCAPE_PROFILE_DIR=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil\profil
+  Umgebung XDG_CONFIG_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil\config
+  Umgebung XDG_CACHE_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil\cache
+  Umgebung XDG_DATA_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil\data
+  Umgebung USERPROFILE=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil
+  Umgebung HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil
+Exit 0 nach 1,2 s
 [stderr] WARNING: unknown type: trendo:vektor
 Datei inkscape-logo.png: 8385 Bytes, SHA-256 6b275e34c5d67c7feb501229862c6fb00c10243918e164d9239d8eeb6ef1a17b
 Inkscape-PNG 300×200: Fläche #1E3A8A, Kreis #D4A017, frei #FFFFFF
 $ Inkscape liest animation.svg
-  inkscape.com --query-all C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\animation.svg
-  Umgebung APPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil\AppData\Roaming
-  Umgebung LOCALAPPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil\AppData\Local
-  Umgebung INKSCAPE_PROFILE_DIR=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil\profil
-  Umgebung XDG_CONFIG_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil\config
-  Umgebung XDG_CACHE_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil\cache
-  Umgebung XDG_DATA_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil\data
-  Umgebung USERPROFILE=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil
-  Umgebung HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil
-Exit 0 nach 1,2 s
+  inkscape.com --query-all C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\animation.svg
+  Umgebung APPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil\AppData\Roaming
+  Umgebung LOCALAPPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil\AppData\Local
+  Umgebung INKSCAPE_PROFILE_DIR=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil\profil
+  Umgebung XDG_CONFIG_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil\config
+  Umgebung XDG_CACHE_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil\cache
+  Umgebung XDG_DATA_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil\data
+  Umgebung USERPROFILE=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil
+  Umgebung HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil
+Exit 0 nach 1,1 s
 svg4,-20,-20,340,200
 rect1,0,0,320,180
 g4,-20,-20,40,40
@@ -60,15 +60,15 @@ WARNING: unknown type: svg:animateTransform
 WARNING: unknown type: svg:animateTransform
 WARNING: unknown type: svg:animate
 $ Inkscape rendert animation.svg (Anfangsbild)
-  inkscape.com C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\animation.svg --export-type=png --export-filename=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-animation.png --export-width=320
-  Umgebung APPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil\AppData\Roaming
-  Umgebung LOCALAPPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil\AppData\Local
-  Umgebung INKSCAPE_PROFILE_DIR=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil\profil
-  Umgebung XDG_CONFIG_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil\config
-  Umgebung XDG_CACHE_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil\cache
-  Umgebung XDG_DATA_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil\data
-  Umgebung USERPROFILE=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil
-  Umgebung HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-bbcf63\inkscape-profil
+  inkscape.com C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\animation.svg --export-type=png --export-filename=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-animation.png --export-width=320
+  Umgebung APPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil\AppData\Roaming
+  Umgebung LOCALAPPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil\AppData\Local
+  Umgebung INKSCAPE_PROFILE_DIR=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil\profil
+  Umgebung XDG_CONFIG_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil\config
+  Umgebung XDG_CACHE_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil\cache
+  Umgebung XDG_DATA_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil\data
+  Umgebung USERPROFILE=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil
+  Umgebung HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\svg-7528a6\inkscape-profil
 Exit 0 nach 1,1 s
 [stderr] WARNING: unknown type: svg:animateTransform
 WARNING: unknown type: svg:animateTransform

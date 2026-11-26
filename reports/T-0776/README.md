@@ -33,3 +33,9 @@ der Windows-Konsolenhost `conhost.exe`. Die Kopie wird einmal angelegt, und zwar
 Teilkopie gelöscht. Alte eigene Kopien (Kennung `.t0776-lokopie`, älter als der Teststart) werden beim Start entfernt. Am Ende werden eigene soffice-Prozesse aus der Kopie
 per PID beendet; danach wird die Kopie gelöscht. Scheitert das Löschen, schlägt das Aufräumen laut fehl. Nachgewiesen mit einer Ersatz-„Installation“ (cmd.exe als
 `soffice.exe`) in `T0776_Korrektur.LoKopie_watch`: fremder Prozess erkannt, Kindprozess außerhalb erkannt, Aufräumen.
+**Nachprüfung 3 (H-neu, M-neu, N-neu):**
+- Alte Kopien werden nur noch entfernt, wenn der Prozess aus der Kennung `.t0776-lokopie` beendet ist. Die Kennung enthält jetzt `pid=` und `start=` (UTC-Ticks).
+  Eine laufende Kopie einer anderen Sitzung bleibt liegen, auch wenn sie älter ist. Eine wiederverwendete PID (andere Startzeit) gilt als beendet.
+- BLOCKIERT wegen Platzmangel wird gemerkt; jeder Folgefall wird mit demselben Grund übersprungen.
+- Ein Nachkomme zählt nur als eigener Prozess, wenn er nach seinem Elternprozess gestartet ist (Startzeit über `GetProcessTimes`).
+- Eigene Prozesse mit nicht lesbarem Pfad stehen als HINWEIS im Rohlog und in der Testausgabe.

@@ -1,16 +1,16 @@
-# T-0776 Fremdnachlauf freecad-cad-dxf – 2026-11-26 12:37:38 +01:00
+# T-0776 Fremdnachlauf freecad-cad-dxf – 2026-11-26 12:56:12 +01:00
 Vorlage fremd-halteplatte.dxf: SHA-256 b96cc46e7eeaf4a495ce4a1f111bfe1a24670ca904cce5b131d78711a16fb486
 Datei trendo-halteplatte.dxf: 1104 Bytes, SHA-256 b0ba65a59f6c2fbdbee7e03fdacde08d8de5a0920259777dcb22a3a711d4853c
 $ FreeCAD liest halteplatte-trendo.dxf
   freecadcmd.exe C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\tools\echtlauf\t0776\freecad_pruefe.py
-  Umgebung FREECAD_USER_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\cad-dxf-6dd82d\freecad-profil\home
-  Umgebung FREECAD_USER_DATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\cad-dxf-6dd82d\freecad-profil\daten
-  Umgebung FREECAD_USER_TEMP=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\cad-dxf-6dd82d\freecad-profil\tmp
-  Umgebung USERPROFILE=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\cad-dxf-6dd82d\freecad-profil\home
+  Umgebung FREECAD_USER_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\cad-dxf-46f501\freecad-profil\home
+  Umgebung FREECAD_USER_DATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\cad-dxf-46f501\freecad-profil\daten
+  Umgebung FREECAD_USER_TEMP=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\cad-dxf-46f501\freecad-profil\tmp
+  Umgebung USERPROFILE=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\cad-dxf-46f501\freecad-profil\home
   Umgebung T0776_ART=dxf
-  Umgebung T0776_IN=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\cad-dxf-6dd82d\halteplatte-trendo.dxf
-  Umgebung T0776_OUT=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\cad-dxf-6dd82d\halteplatte-trendo-freecad.json
-Exit 0 nach 2,4 s
+  Umgebung T0776_IN=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\cad-dxf-46f501\halteplatte-trendo.dxf
+  Umgebung T0776_OUT=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\cad-dxf-46f501\halteplatte-trendo-freecad.json
+Exit 0 nach 2,8 s
 {"freecad": ["1", "1", "4"], "art": "dxf", "importer": "Import.readDXF (C++)", "objekte": 13, "kanten": 10, "umriss": [0.0, 0.0, 0.0, 80.0, 50.0, 0.0]}
 FreeCAD 1.1.4, Libs: 1.1.4R20260928 (Git shallow)
 (C) 2001-2026 FreeCAD contributors

@@ -191,37 +191,108 @@ public class T0776_Korrektur
         finally { Directory.Delete(dir, true); }
     }
 
-    [Fact(DisplayName = "T-0776 LibreOffice-Kopie: alte eigene Kopien weg, fremde bleiben; Start nur aus der Kopie (Prozesspfade, Kindprozess außerhalb erkannt); fremder Zugriff aufs Original = „nicht prüfbar“, Änderung ohne fremden Zugriff = Hinweis; Aufräumen löscht die Kopie")]
+    static System.Diagnostics.Process StartPing(int seconds) =>
+        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "ping.exe"), $"-n {seconds} 127.0.0.1") { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true })!;
+
+    static bool UnderPath(string path, string dir) => Path.GetFullPath(path).StartsWith(Path.GetFullPath(dir).TrimEnd('\\', '/') + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+
+    [Fact(DisplayName = "T-0776 LibreOffice-Kopie aufräumen: Kopie mit Kennung eines laufenden Prozesses bleibt (auch wenn älter), Kennung eines beendeten Prozesses oder einer wiederverwendeten PID wird entfernt, Ordner ohne Kennung bleibt")]
+    public void LoKopie_cleanup_only_dead_owner()
+    {
+        if (!OperatingSystem.IsWindows()) { Ueberspringen.Weil("nur unter Windows."); return; }
+        var root = Environment.GetEnvironmentVariable("T0776_WORK") is { Length: > 0 } w ? w : Path.Combine(TempDir.SystemTemp, "trendo-t0776-work");
+        Directory.CreateDirectory(root);
+        string Make(string name, string? marker)
+        {
+            var d = Path.Combine(root, "lo-kopie-" + name + Guid.NewGuid().ToString("N")[..4]); Directory.CreateDirectory(d);
+            if (marker is not null) File.WriteAllText(Path.Combine(d, T0776_LoKopie.Marker), marker);
+            Directory.SetCreationTimeUtc(d, DateTime.UtcNow.AddDays(-1)); // älter als jeder Teststart – darf trotzdem nur bei beendetem Besitzer weg
+            return d;
+        }
+        using var lebt = StartPing(30);
+        var lebtStart = lebt.StartTime;
+        string tot; using (var ende = StartPing(1)) { var s = ende.StartTime; tot = T0776_LoKopie.MarkerText(ende.Id, s); ende.WaitForExit(15000); Assert.True(ende.HasExited); }
+        var dLebt = Make("lebt", T0776_LoKopie.MarkerText(lebt.Id, lebtStart));
+        var dTot = Make("tot", tot);
+        var dReused = Make("pidneu", T0776_LoKopie.MarkerText(lebt.Id, lebtStart.AddHours(-3))); // gleiche PID, andere Startzeit → PID wiederverwendet
+        var dAlt = Make("altformat", "T-0776 LibreOffice-Kopie, Prozess 0, 2026-11-26T12:00:00"); // alte Kennung ohne Startzeit, PID 0 läuft nicht als eigener Prozess
+        var dOhne = Make("ohne", null);
+        try
+        {
+            Assert.True(T0776_LoKopie.OwnerAlive(T0776_LoKopie.MarkerText(lebt.Id, lebtStart)).Alive);
+            Assert.False(T0776_LoKopie.OwnerAlive(tot).Alive);
+            Assert.True(T0776_LoKopie.OwnerAlive("keine Angaben").Alive); // ohne PID vorsichtshalber belegt
+            var fx = new T0776_LoKopie();
+            try
+            {
+                Assert.True(Directory.Exists(dLebt), "Kopie eines laufenden Prozesses wurde gelöscht: " + fx.CleanupNote);
+                Assert.False(Directory.Exists(dTot), "Kopie eines beendeten Prozesses blieb: " + fx.CleanupNote);
+                Assert.False(Directory.Exists(dReused), "Kopie mit wiederverwendeter PID blieb: " + fx.CleanupNote);
+                Assert.True(Directory.Exists(dOhne));
+                Assert.Contains("bleibt", fx.CleanupNote); Assert.Contains("alte eigene Kopie entfernt", fx.CleanupNote);
+            }
+            finally { fx.Dispose(); }
+        }
+        finally
+        {
+            try { lebt.Kill(true); lebt.WaitForExit(10000); } catch (InvalidOperationException) { }
+            foreach (var d in new[] { dLebt, dTot, dReused, dAlt, dOhne }) if (Directory.Exists(d)) Directory.Delete(d, true);
+        }
+    }
+
+    [Fact(DisplayName = "T-0776 LibreOffice-Kopie: BLOCKIERT wegen Platzmangel wird gemerkt – jeder Folgefall wird mit demselben Grund übersprungen, nichts wird kopiert")]
+    public void LoKopie_skip_reason_kept()
+    {
+        var dir = Tmp();
+        var inst = Path.Combine(dir, "libreoffice"); Directory.CreateDirectory(Path.Combine(inst, "program"));
+        var fake = Path.Combine(inst, "program", "soffice.exe"); File.WriteAllText(fake, "x");
+        var fx = new T0776_LoKopie { ReserveBytes = long.MaxValue / 4 };
+        try
+        {
+            var e1 = Assert.Throws<UebersprungenException>(() => fx.Exe(fake));
+            var e2 = Assert.Throws<UebersprungenException>(() => fx.Exe(fake));
+            Assert.Contains("BLOCKIERT – zu wenig freier Platz", e1.Message);
+            Assert.Equal(e1.Message, e2.Message);
+            Assert.Null(fx.CopyDir);
+        }
+        finally { fx.Dispose(); Directory.Delete(dir, true); }
+    }
+
+    [Fact(DisplayName = "T-0776 LibreOffice-Kopie: Start nur aus der Kopie (Prozesspfade, Kindprozess außerhalb erkannt); fremder Zugriff aufs Original = „nicht prüfbar“, Änderung ohne fremden Zugriff = Hinweis; Aufräumen löscht die Kopie")]
     public void LoKopie_watch()
     {
         if (!OperatingSystem.IsWindows()) { Ueberspringen.Weil("nur unter Windows (Prozessliste über Toolhelp)."); return; }
-        var root = Environment.GetEnvironmentVariable("T0776_WORK") is { Length: > 0 } w ? w : Path.Combine(TempDir.SystemTemp, "trendo-t0776-work");
-        Directory.CreateDirectory(root);
-        var alt = Path.Combine(root, "lo-kopie-alt" + Guid.NewGuid().ToString("N")[..4]); Directory.CreateDirectory(alt); File.WriteAllText(Path.Combine(alt, T0776_LoKopie.Marker), "alt");
-        Directory.SetCreationTimeUtc(alt, DateTime.UtcNow.AddDays(-1));
-        var fremd = Path.Combine(root, "lo-kopie-fremd" + Guid.NewGuid().ToString("N")[..4]); Directory.CreateDirectory(fremd); // ohne Kennung: nicht von diesem Test
-        Directory.SetCreationTimeUtc(fremd, DateTime.UtcNow.AddDays(-1));
         var dir = Tmp();
+        T0776_LoKopie? fx = null;
         try
         {
             // Ersatz-„Installation“: cmd.exe als program\soffice.exe – nur, um Start, Kindprozesse und fremden Zugriff zu beobachten
             var inst = Path.Combine(dir, "libreoffice"); Directory.CreateDirectory(Path.Combine(inst, "program"));
             var fake = Path.Combine(inst, "program", "soffice.exe"); File.Copy(Path.Combine(Environment.SystemDirectory, "cmd.exe"), fake);
-            var fx = new T0776_LoKopie();
-            Assert.False(Directory.Exists(alt)); Assert.True(Directory.Exists(fremd));
-            Assert.Contains("alte eigene Kopie entfernt", fx.CleanupNote);
+            fx = new T0776_LoKopie();
             var exe = fx.Exe(fake);
-            Assert.StartsWith(fx.CopyDir!, exe, StringComparison.OrdinalIgnoreCase);
-            Assert.True(File.Exists(Path.Combine(Path.GetDirectoryName(fx.CopyDir!)!, T0776_LoKopie.Marker)));
+            Assert.True(UnderPath(exe, fx.CopyDir!), $"{exe} liegt nicht in {fx.CopyDir}");
+            var marker = File.ReadAllText(Path.Combine(Path.GetDirectoryName(fx.CopyDir!)!, T0776_LoKopie.Marker));
+            Assert.Contains($"pid={Environment.ProcessId}", marker); Assert.Contains("start=", marker); Assert.True(T0776_LoKopie.OwnerAlive(marker).Alive);
             Assert.Same(exe, fx.Exe(fake)); // nur einmal kopiert
             Assert.Throws<InvalidOperationException>(() => fx.Run(fake, ["/c", "exit", "0"])); // nie aus dem Original
             // eigener Start aus der Kopie: der Kindprozess ping.exe liegt außerhalb der Kopie und wird gemeldet
             fx.BeginCase();
             var r = fx.Run(exe, ["/c", "ping -n 3 127.0.0.1 >nul"]);
-            Assert.Contains(r.Own, x => x.Contains("soffice.exe", StringComparison.OrdinalIgnoreCase) && x.Contains(fx.CopyDir!, StringComparison.OrdinalIgnoreCase));
+            Assert.Contains(r.Own, x => x.Contains("soffice.exe", StringComparison.OrdinalIgnoreCase) && x.Contains(Path.GetFullPath(fx.CopyDir!), StringComparison.OrdinalIgnoreCase));
             Assert.Contains(r.OwnOutside, x => x.Contains("ping.exe", StringComparison.OrdinalIgnoreCase));
             Assert.Empty(r.Foreign);
             Assert.Equal("unverändert", fx.EndCase().Status);
+            // Ein Prozess, der vor dem eigenen Start lief, zählt nie als Nachkomme (PIDs werden wiederverwendet)
+            using (var vorher = StartPing(5))
+            {
+                try
+                {
+                    var r1 = fx.Run(exe, ["/c", "exit 0"]);
+                    Assert.DoesNotContain(r1.Own, x => x.StartsWith($"PID {vorher.Id} "));
+                }
+                finally { vorher.Kill(true); vorher.WaitForExit(10000); }
+            }
             // fremder Zugriff: ein soffice aus dem Original läuft während des Falls
             fx.BeginCase();
             using (var foreign = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(fake, "/c ping -n 8 127.0.0.1 >nul") { UseShellExecute = false, CreateNoWindow = true })!)
@@ -240,9 +311,9 @@ public class T0776_Korrektur
             var (st3, rep3) = fx.EndCase();
             Assert.Equal("geändert", st3); Assert.StartsWith("HINWEIS", rep3); Assert.Contains("neu.txt", rep3);
             var copyRoot = Path.GetDirectoryName(fx.CopyDir!)!;
-            fx.Dispose();
+            fx.Dispose(); fx = null;
             Assert.False(Directory.Exists(copyRoot));
         }
-        finally { Directory.Delete(dir, true); try { Directory.Delete(fremd, true); } catch (IOException) { } }
+        finally { fx?.Dispose(); Directory.Delete(dir, true); }
     }
 }

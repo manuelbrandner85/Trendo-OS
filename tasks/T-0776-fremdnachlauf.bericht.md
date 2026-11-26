@@ -87,3 +87,13 @@ Gezielte Tests grün: siehe `reports/T-0776/korrektur/` und `reports/T-0776/test
 | N-a | Wörtliches `\u` im Dateinamen bleibt wörtlich; alte Sicherung mit UTF-8-Umlaut-Vermerk wird weiter gelesen (Hinweis, Namen, Prüfen, „letzte Sicherung“). Dafür `Backup.NoteComment` öffentlich. | `T0776_Korrektur.Backup_note_literal_backslash_u`, `Backup_old_umlaut_note_still_read` |
 
 **Offener Punkt (Befund, keine Änderung, Folgeauftrag):** Trendo selbst startet LibreOffice im Produkt aus dem Trendo-Werkzeugordner (`DependencyManager.ResolvePath` → `%LOCALAPPDATA%\TrendoWerkzeuge\libreoffice\App\libreoffice\program\soffice.exe`) und ändert dort dabei die Ordnerzeiten von `program\opencl` und `share\uno_packages\cache` (LibreOffice legt dort kurz Einträge an). Das betrifft jede Umwandlung über LibreOffice im Produkt.
+## Nachtrag 3: Nachprüfung auf c7219e2f3 (26.11.2026)
+| Punkt | Was jetzt | Test |
+|---|---|---|
+| H-neu | Der Fixture-Konstruktor löscht eine `lo-kopie-*` nur, wenn der Prozess aus der Kennung nicht mehr läuft. Die Kennung enthält PID und Startzeit; eine andere Startzeit gilt als wiederverwendete PID, also als beendet. Eine Kennung ohne PID bleibt vorsichtshalber liegen. Das Alter des Ordners zählt nicht mehr. | `T0776_Korrektur.LoKopie_cleanup_only_dead_owner` (laufender fremder Prozess → bleibt; beendeter Prozess und wiederverwendete PID → entfernt; ohne Kennung → bleibt) |
+| M-neu-1 | Der Grund für BLOCKIERT (Platzmangel) wird gemerkt und in jedem Folgefall erneut als Überspringen gemeldet. Die Reserve ist für Tests über `ReserveBytes` einstellbar. | `T0776_Korrektur.LoKopie_skip_reason_kept` |
+| M-neu-2 | Ein Nachkomme zählt nur, wenn seine Startzeit nach der des Elternprozesses liegt (`GetProcessTimes`). | `T0776_Korrektur.LoKopie_watch`: ein vorher gestarteter Prozess zählt nicht mit |
+| N-neu-1 | Ein eigener Prozess mit nicht lesbarem Pfad steht als HINWEIS im Rohlog und in der Testausgabe (`LoRun.OwnNoPath`). | 3 LibreOffice-Fälle in `T0776_Fremdnachlauf` |
+| N-neu-3 | Pfade werden normalisiert verglichen (`Path.GetFullPath`); `fx.Dispose()` steht im `finally`. | `T0776_Korrektur.LoKopie_watch` |
+
+Rot: Auf c7219e2f3 lassen sich die neuen Tests nicht übersetzen, weil `MarkerText`, `OwnerAlive` und `ReserveBytes` fehlen. Der alte Konstruktor hätte den Ordner des laufenden Prozesses wegen seines Alters gelöscht.

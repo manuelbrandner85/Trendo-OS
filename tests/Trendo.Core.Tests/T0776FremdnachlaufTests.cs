@@ -137,6 +137,7 @@ public class T0776_Fremdnachlauf(T0776_LoKopie loKopie, ITestOutputHelper output
         if (r.Err.Trim().Length > 0) b.Line("[stderr] " + r.Err.Trim());
         b.Line($"  eigene Prozesse ({run.Own.Count}): {string.Join("; ", run.Own)}");
         if (run.Foreign.Count > 0) b.Line($"  HINWEIS fremde soffice aus dem Original: {string.Join("; ", run.Foreign)}");
+        if (run.OwnNoPath.Count > 0) { var t = $"  HINWEIS eigene Prozesse mit nicht lesbarem Pfad (nicht als „in der Kopie“ bestätigt): {string.Join("; ", run.OwnNoPath)}"; b.Line(t); output.WriteLine(t.Trim()); }
         Assert.True(run.Own.Count >= 1, "Kein eigener LibreOffice-Prozess beobachtet.");
         Assert.True(run.OwnOutside.Count == 0, "Ein eigener LibreOffice-Prozess lief nicht aus der Kopie: " + string.Join("; ", run.OwnOutside));
         var target = Path.Combine(outDir, Path.GetFileNameWithoutExtension(file) + "." + ext);
@@ -606,6 +607,9 @@ public sealed class T0776_LoKopie : IDisposable
     string? _source, _copyRoot, _copy, _exe;
     Exception? _copyError;
     bool _copyTried;
+    string? _skipReason;
+    /// <summary>Platzreserve über der Größe der Kopie (Standard 5 GB); nur für Tests änderbar.</summary>
+    public long ReserveBytes { get; init; } = Reserve;
     Dictionary<string, (long Ticks, long Size)>? _copyBefore, _caseBefore;
     readonly List<string> _caseForeign = [];
     public string Note { get; private set; } = "";
@@ -619,9 +623,15 @@ public sealed class T0776_LoKopie : IDisposable
         if (Directory.Exists(root))
             foreach (var d in Directory.GetDirectories(root, "lo-kopie-*"))
             {
-                // nur eigene (Kennung) und nur ältere als dieser Testlauf – eine gleichzeitig laufende andere Instanz bleibt unberührt
-                if (!File.Exists(Path.Combine(d, Marker)) || Directory.GetCreationTimeUtc(d) >= _start) continue;
-                try { Directory.Delete(d, true); notes.Add($"alte eigene Kopie entfernt: {Path.GetFileName(d)}"); }
+                // nur Kopien mit Kennung dieses Tests – und nur, wenn der Prozess aus der Kennung (PID + Startzeit) nicht mehr läuft.
+                // Die laufende Kopie einer anderen Sitzung bleibt liegen, auch wenn sie früher angelegt wurde.
+                var marker = Path.Combine(d, Marker);
+                if (!File.Exists(marker)) continue;
+                string text;
+                try { text = File.ReadAllText(marker); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { notes.Add($"Kennung von {Path.GetFileName(d)} nicht lesbar – bleibt liegen"); continue; }
+                var (alive, why) = OwnerAlive(text);
+                if (alive) { notes.Add($"{Path.GetFileName(d)} bleibt: {why}"); continue; }
+                try { Directory.Delete(d, true); notes.Add($"alte eigene Kopie entfernt: {Path.GetFileName(d)} ({why})"); }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                 {
                     var msg = $"WARNUNG: alte eigene LibreOffice-Kopie {Path.GetFileName(d)} ließ sich nicht löschen: {ex.Message}";
@@ -629,6 +639,36 @@ public sealed class T0776_LoKopie : IDisposable
                 }
             }
         CleanupNote = notes.Count == 0 ? "Keine alte eigene LibreOffice-Kopie vorhanden." : string.Join("; ", notes);
+    }
+
+    /// <summary>Inhalt der Kennung: PID und Startzeit (UTC-Ticks) des Prozesses, der die Kopie angelegt hat.</summary>
+    public static string MarkerText(int pid, DateTime startUtc) =>
+        $"T-0776 LibreOffice-Kopie\npid={pid}\nstart={startUtc.ToUniversalTime().Ticks}\nangelegt={DateTime.UtcNow:O}\n";
+
+    /// <summary>Läuft der Besitzer aus der Kennung noch? Ja, wenn ein Prozess mit dieser PID läuft und – falls die Kennung eine Startzeit hat – genau
+    /// zu dieser Zeit gestartet ist (sonst ist die PID wiederverwendet). Ohne lesbare PID gilt die Kopie vorsichtshalber als belegt.</summary>
+    public static (bool Alive, string Why) OwnerAlive(string markerText)
+    {
+        int? pid = null; long? start = null;
+        foreach (var line in markerText.Split('\n', StringSplitOptions.TrimEntries))
+        {
+            if (line.StartsWith("pid=", StringComparison.Ordinal) && int.TryParse(line[4..], NumberStyles.Integer, CultureInfo.InvariantCulture, out var p)) pid = p;
+            else if (line.StartsWith("start=", StringComparison.Ordinal) && long.TryParse(line[6..], NumberStyles.Integer, CultureInfo.InvariantCulture, out var t)) start = t;
+            else if (pid is null && System.Text.RegularExpressions.Regex.Match(line, @"Prozess (\d+)") is { Success: true } m) pid = int.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture); // alte Kennung ohne Startzeit
+        }
+        if (pid is null) return (true, "Kennung ohne PID – bleibt vorsichtshalber liegen");
+        try
+        {
+            using var pr = System.Diagnostics.Process.GetProcessById(pid.Value);
+            if (pr.HasExited) return (false, $"Prozess {pid} beendet");
+            if (start is null) return (true, $"Prozess {pid} läuft (Kennung ohne Startzeit)");
+            var real = pr.StartTime.ToUniversalTime().Ticks;
+            return Math.Abs(real - start.Value) < TimeSpan.TicksPerSecond
+                ? (true, $"Prozess {pid} läuft noch (gleiche Startzeit)")
+                : (false, $"PID {pid} gehört inzwischen einem anderen Prozess (andere Startzeit)");
+        }
+        catch (ArgumentException) { return (false, $"Prozess {pid} läuft nicht mehr"); }
+        catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception) { return (true, $"Prozess {pid}: Startzeit nicht lesbar ({ex.Message}) – bleibt liegen"); }
     }
 
     static string WorkRoot() => Environment.GetEnvironmentVariable("T0776_WORK") is { Length: > 0 } w ? w : Path.Combine(TempDir.SystemTemp, "trendo-t0776-work");
@@ -639,6 +679,7 @@ public sealed class T0776_LoKopie : IDisposable
         lock (_lock)
         {
             if (_exe is not null) return _exe;
+            if (_skipReason is not null) Ueberspringen.Weil(_skipReason); // gleicher Grund in jedem Folgefall
             if (_copyTried) throw new InvalidOperationException("Die LibreOffice-Kopie ist schon einmal gescheitert: " + _copyError?.Message, _copyError);
             _copyTried = true;
             var program = Path.GetDirectoryName(Path.GetFullPath(original))!;              // …\libreoffice\program
@@ -646,8 +687,11 @@ public sealed class T0776_LoKopie : IDisposable
             var root = WorkRoot(); Directory.CreateDirectory(root);
             long need = Directory.EnumerateFiles(_source, "*", SearchOption.AllDirectories).Sum(f => new FileInfo(f).Length);
             var free = new DriveInfo(Path.GetPathRoot(Path.GetFullPath(root))!).AvailableFreeSpace;
-            if (free < need + Reserve)
-                Ueberspringen.Weil($"BLOCKIERT – zu wenig freier Platz für die LibreOffice-Kopie: frei {free / 1073741824.0:0.0} GB, nötig {need / 1073741824.0:0.0} GB + 5 GB Reserve.");
+            if (free < need + ReserveBytes)
+            {
+                _skipReason = $"BLOCKIERT – zu wenig freier Platz für die LibreOffice-Kopie: frei {free / 1073741824.0:0.0} GB, nötig {need / 1073741824.0:0.0} GB + {ReserveBytes / 1073741824.0:0.#} GB Reserve.";
+                Ueberspringen.Weil(_skipReason);
+            }
             _copyRoot = Path.Combine(root, "lo-kopie-" + Guid.NewGuid().ToString("N")[..6]);
             var copy = Path.Combine(_copyRoot, Path.GetFileName(_source));
             var sw = System.Diagnostics.Stopwatch.StartNew();
@@ -655,7 +699,7 @@ public sealed class T0776_LoKopie : IDisposable
             try
             {
                 Directory.CreateDirectory(_copyRoot);
-                File.WriteAllText(Path.Combine(_copyRoot, Marker), $"T-0776 LibreOffice-Kopie, Prozess {Environment.ProcessId}, {DateTime.Now:O}");
+                File.WriteAllText(Path.Combine(_copyRoot, Marker), MarkerText(Environment.ProcessId, _start));
                 Directory.CreateDirectory(copy);
                 foreach (var d in Directory.EnumerateDirectories(_source, "*", SearchOption.AllDirectories)) Directory.CreateDirectory(Path.Combine(copy, Path.GetRelativePath(_source, d)));
                 foreach (var f in Directory.EnumerateFiles(_source, "*", SearchOption.AllDirectories))
@@ -690,7 +734,7 @@ public sealed class T0776_LoKopie : IDisposable
         }
     }
 
-    public sealed record LoRun(Cli.Result Result, int Pid, List<string> Own, List<string> OwnOutside, List<string> Foreign);
+    public sealed record LoRun(Cli.Result Result, int Pid, List<string> Own, List<string> OwnOutside, List<string> Foreign, List<string> OwnNoPath);
 
     /// <summary>Startet LibreOffice (nur aus der Kopie) und beobachtet währenddessen alle Prozesse: eigene (gestarteter Prozess und alle Nachkommen)
     /// mit Pfad, fremde soffice aus dem Original.</summary>
@@ -698,14 +742,22 @@ public sealed class T0776_LoKopie : IDisposable
     {
         if (_copy is null || !Under(exe, _copy)) throw new InvalidOperationException($"LibreOffice soll nur aus der Kopie starten, nicht aus {exe}.");
         var pid = 0; var own = new Dictionary<int, (string Name, string? Path)>(); var foreign = new HashSet<string>(StringComparer.Ordinal);
+        var starts = new Dictionary<int, long?>(); // Startzeit je PID (einmal gelesen)
+        long? StartCached(int id) { if (!starts.TryGetValue(id, out var v)) starts[id] = v = StartOf(id); return v; }
         using var stop = new CancellationTokenSource();
         void Sample()
         {
             var all = Procs();
             if (pid != 0)
             {
+                // Nachkomme nur, wenn er nach seinem Elternprozess gestartet ist – PIDs werden wiederverwendet
                 var ids = new HashSet<int> { pid };
-                bool grew; do { grew = false; foreach (var p in all) if (ids.Contains(p.Parent) && ids.Add(p.Pid)) grew = true; } while (grew);
+                bool grew; do
+                {
+                    grew = false;
+                    foreach (var p in all)
+                        if (!ids.Contains(p.Pid) && ids.Contains(p.Parent) && StartCached(p.Parent) is { } ps && StartCached(p.Pid) is { } cs && cs > ps && ids.Add(p.Pid)) grew = true;
+                } while (grew);
                 foreach (var p in all.Where(p => ids.Contains(p.Pid))) if (!own.TryGetValue(p.Pid, out var o) || o.Path is null) own[p.Pid] = (p.Name, p.Path ?? PathOf(p.Pid)); // jeden eigenen Prozess mit Pfad
                 foreach (var p in all.Where(p => !ids.Contains(p.Pid) && IsSoffice(p.Name) && _source is not null && Under(p.Path, _source))) foreign.Add($"während des Falls: PID {p.Pid} {p.Name}");
             }
@@ -717,8 +769,9 @@ public sealed class T0776_LoKopie : IDisposable
         // Ausnahme nur der Konsolen-Host von Windows (conhost.exe), den Windows für jedes Konsolenprogramm ohne Fenster anlegt
         var outside = own.Where(kv => kv.Value.Path is { } p && !Under(p, _copy) && !string.Equals(kv.Value.Name, "conhost.exe", StringComparison.OrdinalIgnoreCase))
             .Select(kv => $"PID {kv.Key} {kv.Value.Name}: {kv.Value.Path}").ToList();
+        var noPath = own.Where(kv => kv.Value.Path is null).Select(kv => $"PID {kv.Key} {kv.Value.Name}").ToList();
         lock (_lock) _caseForeign.AddRange(foreign);
-        return new(r, pid, ownList, outside, [.. foreign]);
+        return new(r, pid, ownList, outside, [.. foreign], noPath);
     }
 
     /// <summary>Ende eines Falls: Status des Originals – „unverändert“, „geändert“ (deutlicher Hinweis) oder „nicht prüfbar (fremder Zugriff)“.</summary>
@@ -777,6 +830,17 @@ public sealed class T0776_LoKopie : IDisposable
     [System.Runtime.InteropServices.DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr h);
     [System.Runtime.InteropServices.DllImport("kernel32.dll", SetLastError = true)] static extern IntPtr OpenProcess(uint access, bool inherit, int pid);
     [System.Runtime.InteropServices.DllImport("kernel32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode, SetLastError = true)] static extern bool QueryFullProcessImageNameW(IntPtr h, int flags, StringBuilder name, ref int size);
+
+    [System.Runtime.InteropServices.DllImport("kernel32.dll", SetLastError = true)] static extern bool GetProcessTimes(IntPtr h, out long creation, out long exit, out long kernel, out long user);
+
+    /// <summary>Startzeit eines Prozesses (FILETIME, UTC) oder null, wenn nicht lesbar.</summary>
+    public static long? StartOf(int pid)
+    {
+        var h = OpenProcess(0x1000 /* PROCESS_QUERY_LIMITED_INFORMATION */, false, pid);
+        if (h == IntPtr.Zero) return null;
+        try { return GetProcessTimes(h, out var c, out _, out _, out _) ? c : null; }
+        finally { CloseHandle(h); }
+    }
 
     static string? PathOf(int pid)
     {

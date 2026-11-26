@@ -1,4 +1,4 @@
-# T-0776 Fremdnachlauf 7zip-zip – 2026-11-26 12:37:40 +01:00
+# T-0776 Fremdnachlauf 7zip-zip – 2026-11-26 12:56:15 +01:00
 $ 7-Zip Version
   7z.exe i
 Exit 0 nach 0,0 s
@@ -111,18 +111,18 @@ Hashers:
  0   32      202 BLAKE2sp
 7-Zip: 7-Zip 26.05 (x64) : Copyright (c) 1999-2026 Igor Pavlov : 2026-10-21
 Trendo: Gesichert: trendo-sicherung-20261126-100000.zip (3 Dateien, geprüft, nicht verschlüsselt).
-Datei trendo-sicherung.zip: 201056 Bytes, SHA-256 fa22dd26d3242b63b1b542f84cb471ada61e5a6760b23070b6223cc9f7a43039
+Datei trendo-sicherung.zip: 201056 Bytes, SHA-256 226f98507d9a14eb4a36504cb86c4f8aca18097d5cc90da69465cdd7d3dd9ad4
 $ 7-Zip prüft trendo-sicherung-20261126-100000.zip
-  7z.exe t -sccUTF-8 C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-6a9bf4\daten\backups\trendo-sicherung-20261126-100000.zip
+  7z.exe t -sccUTF-8 C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-e71581\daten\backups\trendo-sicherung-20261126-100000.zip
 Exit 0 nach 0,0 s
 7-Zip 26.05 (x64) : Copyright (c) 1999-2026 Igor Pavlov : 2026-10-21
 
 Scanning the drive for archives:
 1 file, 201056 bytes (197 KiB)
 
-Testing archive: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-6a9bf4\daten\backups\trendo-sicherung-20261126-100000.zip
+Testing archive: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-e71581\daten\backups\trendo-sicherung-20261126-100000.zip
 --
-Path = C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-6a9bf4\daten\backups\trendo-sicherung-20261126-100000.zip
+Path = C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-e71581\daten\backups\trendo-sicherung-20261126-100000.zip
 Type = zip
 Physical Size = 201056
 Comment = trendo-sicherung-v1 {"Saved":3,"NotSavedCount":0,"NotSaved":[],"Hinweis":"Diese Sicherungen sind nicht verschluesselt. Es sind gewoehnliche ZIP-Dateien: Jeder, der Zugriff auf den Sicherungsordner hat, kann sie oeffnen und alles darin lesen - Projekte, Einstellungen und das Protokoll. Empfehlung: Lege den Sicherungsordner auf ein verschluesseltes Laufwerk, zum Beispiel ein Laufwerk mit BitLocker (Windows) oder einen verschluesselten USB-Stick. Trendo aendert dafuer nichts an deinem System. Verschluesselt mit Passwort sichern kannst du unter \"Schutz\" mit restic."}
@@ -133,13 +133,13 @@ Files: 3
 Size:       200048
 Compressed: 201056
 $ 7-Zip listet trendo-sicherung-20261126-100000.zip
-  7z.exe l -slt -ba -sccUTF-8 C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-6a9bf4\daten\backups\trendo-sicherung-20261126-100000.zip
+  7z.exe l -slt -ba -sccUTF-8 C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-e71581\daten\backups\trendo-sicherung-20261126-100000.zip
 Exit 0 nach 0,0 s
 Path = settings.json
 Folder = -
 Size = 16
 Packed Size = 18
-Modified = 2026-11-26 12:37:40
+Modified = 2026-11-26 12:56:14
 Created = 
 Accessed = 
 Attributes = 
@@ -157,13 +157,13 @@ Path = projekte\Garten\foto.bin
 Folder = -
 Size = 200000
 Packed Size = 200065
-Modified = 2026-11-26 12:37:40
+Modified = 2026-11-26 12:56:14
 Created = 
 Accessed = 
 Attributes = 
 Encrypted = -
 Comment = 
-CRC = BCD8DFDE
+CRC = 5D1C1B88
 Method = Deflate
 Characteristics = 
 Host OS = FAT
@@ -175,7 +175,7 @@ Path = projekte\Garten\plan.md
 Folder = -
 Size = 32
 Packed Size = 32
-Modified = 2026-11-26 12:37:40
+Modified = 2026-11-26 12:56:14
 Created = 
 Accessed = 
 Attributes = 
@@ -190,16 +190,16 @@ Volume Index = 0
 Offset = 200180
 7-Zip: 3 Dateien in trendo-sicherung-20261126-100000.zip
 $ 7-Zip entpackt trendo-sicherung-20261126-100000.zip
-  7z.exe x -y -sccUTF-8 -oC:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-6a9bf4\7z-trendo-sicherung-20261126-100000 C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-6a9bf4\daten\backups\trendo-sicherung-20261126-100000.zip
+  7z.exe x -y -sccUTF-8 -oC:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-e71581\7z-trendo-sicherung-20261126-100000 C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-e71581\daten\backups\trendo-sicherung-20261126-100000.zip
 Exit 0 nach 0,0 s
 7-Zip 26.05 (x64) : Copyright (c) 1999-2026 Igor Pavlov : 2026-10-21
 
 Scanning the drive for archives:
 1 file, 201056 bytes (197 KiB)
 
-Extracting archive: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-6a9bf4\daten\backups\trendo-sicherung-20261126-100000.zip
+Extracting archive: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-e71581\daten\backups\trendo-sicherung-20261126-100000.zip
 --
-Path = C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-6a9bf4\daten\backups\trendo-sicherung-20261126-100000.zip
+Path = C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-e71581\daten\backups\trendo-sicherung-20261126-100000.zip
 Type = zip
 Physical Size = 201056
 Comment = trendo-sicherung-v1 {"Saved":3,"NotSavedCount":0,"NotSaved":[],"Hinweis":"Diese Sicherungen sind nicht verschluesselt. Es sind gewoehnliche ZIP-Dateien: Jeder, der Zugriff auf den Sicherungsordner hat, kann sie oeffnen und alles darin lesen - Projekte, Einstellungen und das Protokoll. Empfehlung: Lege den Sicherungsordner auf ein verschluesseltes Laufwerk, zum Beispiel ein Laufwerk mit BitLocker (Windows) oder einen verschluesselten USB-Stick. Trendo aendert dafuer nichts an deinem System. Verschluesselt mit Passwort sichern kannst du unter \"Schutz\" mit restic."}
@@ -210,21 +210,21 @@ Files: 3
 Size:       200048
 Compressed: 201056
   settings.json: 16 Bytes, SHA-256 56033660bd376838492a298f2de49650540dab403f6468a9785af0946b8d07b7 = Original
-  projekte\Garten\foto.bin: 200000 Bytes, SHA-256 daa9a55a3dc42d514cfa4e866bb0091827e1d7af9beb22598970213d3ef0f1cd = Original
+  projekte\Garten\foto.bin: 200000 Bytes, SHA-256 f1c58fc9193b06d002c2be54bfe2afacbf1926cb6bebbfa97ff1cb4aaccf6df8 = Original
   projekte\Garten\plan.md: 32 Bytes, SHA-256 eee52cc68e623edea6171e2643ff361029f789c0670591831fba16ef013efed3 = Original
 7-Zip zeigt den Vermerk: Comment = trendo-sicherung-v1 {"Saved":3,"NotSavedCount":0,"NotSaved":[],"Hinweis":"Diese Sicherungen sind nicht verschluesselt. Es sind gewoehnliche ZIP-Dateie …
-Datei trendo-erweiterung.zip: 3154 Bytes, SHA-256 bc0e3e84907161993c98e90ea4ee1514140398704606fe7b06b540bb95545444
+Datei trendo-erweiterung.zip: 3154 Bytes, SHA-256 18c98b6f7884dcbecf8454299cddd4c6cdb1bcf4c049e9e1be0439fab2bc5a9e
 $ 7-Zip prüft eigene.meine-tabelle-1.0.0.zip
-  7z.exe t -sccUTF-8 C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-6a9bf4\werkstatt\erweiterungen-export\eigene.meine-tabelle-1.0.0.zip
+  7z.exe t -sccUTF-8 C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-e71581\werkstatt\erweiterungen-export\eigene.meine-tabelle-1.0.0.zip
 Exit 0 nach 0,0 s
 7-Zip 26.05 (x64) : Copyright (c) 1999-2026 Igor Pavlov : 2026-10-21
 
 Scanning the drive for archives:
 1 file, 3154 bytes (4 KiB)
 
-Testing archive: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-6a9bf4\werkstatt\erweiterungen-export\eigene.meine-tabelle-1.0.0.zip
+Testing archive: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-e71581\werkstatt\erweiterungen-export\eigene.meine-tabelle-1.0.0.zip
 --
-Path = C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-6a9bf4\werkstatt\erweiterungen-export\eigene.meine-tabelle-1.0.0.zip
+Path = C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-e71581\werkstatt\erweiterungen-export\eigene.meine-tabelle-1.0.0.zip
 Type = zip
 Physical Size = 3154
 
@@ -234,13 +234,13 @@ Files: 3
 Size:       8758
 Compressed: 3154
 $ 7-Zip listet eigene.meine-tabelle-1.0.0.zip
-  7z.exe l -slt -ba -sccUTF-8 C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-6a9bf4\werkstatt\erweiterungen-export\eigene.meine-tabelle-1.0.0.zip
-Exit 0 nach 0,0 s
+  7z.exe l -slt -ba -sccUTF-8 C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-e71581\werkstatt\erweiterungen-export\eigene.meine-tabelle-1.0.0.zip
+Exit 0 nach 0,1 s
 Path = modul.wasm
 Folder = -
 Size = 1081
 Packed Size = 710
-Modified = 2026-11-26 12:37:40
+Modified = 2026-11-26 12:56:14
 Created = 
 Accessed = 
 Attributes = 
@@ -258,7 +258,7 @@ Path = trendo-extension.json
 Folder = -
 Size = 565
 Packed Size = 322
-Modified = 2026-11-26 12:37:40
+Modified = 2026-11-26 12:56:14
 Created = 
 Accessed = 
 Attributes = 
@@ -276,7 +276,7 @@ Path = quelle\modul.wat
 Folder = -
 Size = 7112
 Packed Size = 1778
-Modified = 2026-11-26 12:37:40
+Modified = 2026-11-26 12:56:14
 Created = 
 Accessed = 
 Attributes = 
@@ -291,16 +291,16 @@ Volume Index = 0
 Offset = 1123
 7-Zip: 3 Dateien in eigene.meine-tabelle-1.0.0.zip
 $ 7-Zip entpackt eigene.meine-tabelle-1.0.0.zip
-  7z.exe x -y -sccUTF-8 -oC:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-6a9bf4\7z-eigene.meine-tabelle-1.0.0 C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-6a9bf4\werkstatt\erweiterungen-export\eigene.meine-tabelle-1.0.0.zip
-Exit 0 nach 0,0 s
+  7z.exe x -y -sccUTF-8 -oC:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-e71581\7z-eigene.meine-tabelle-1.0.0 C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-e71581\werkstatt\erweiterungen-export\eigene.meine-tabelle-1.0.0.zip
+Exit 0 nach 0,1 s
 7-Zip 26.05 (x64) : Copyright (c) 1999-2026 Igor Pavlov : 2026-10-21
 
 Scanning the drive for archives:
 1 file, 3154 bytes (4 KiB)
 
-Extracting archive: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-6a9bf4\werkstatt\erweiterungen-export\eigene.meine-tabelle-1.0.0.zip
+Extracting archive: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-e71581\werkstatt\erweiterungen-export\eigene.meine-tabelle-1.0.0.zip
 --
-Path = C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-6a9bf4\werkstatt\erweiterungen-export\eigene.meine-tabelle-1.0.0.zip
+Path = C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\zip-e71581\werkstatt\erweiterungen-export\eigene.meine-tabelle-1.0.0.zip
 Type = zip
 Physical Size = 3154
 
