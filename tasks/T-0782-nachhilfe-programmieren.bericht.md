@@ -166,3 +166,21 @@ Jeder Punkt hat einen Regressionstest. Rot belegt auf zwei Wegen:
 - Kern: `src/Trendo.Core/Lernen/LernSandbox.cs`, `NachhilfePruefung.cs`, `Nachhilfe.cs`
 - App: `src/Trendo.App/MainWindow.ClaudeBridge.cs` (nur `BridgeLocalOnlyRefusal` und der Aufruf in `T(…)`), `MainWindow.ClaudeOperate.cs` (`ClaudeRunPlan`), `MainWindow.ClaudeChat.cs` (`ClaudeChatSend`), `MainWindow.PromptAction.cs` (`ClaudeBelongs`), `MainWindow.ClaudeDock.cs`, `MainWindow.ProgramFrame.cs`, `MainWindow.AssistChain.cs` (`ClaudeBlockedFor`), `MainWindow.ClaudeLos.cs`, `MainWindow.Assist.cs`, `MainWindow.ProgramShell.cs` (`KiShow`, `KiAllowed`), `MainWindow.Nachhilfe.cs`, `MainWindow.CodeLernen.cs`
 - Tests: `tests/Trendo.Core.Tests/T0782Gegenpruefung2Tests.cs` (neu), `tests/Trendo.App.Tests/T0782Gegenpruefung2UiTests.cs` (neu); `tests/Trendo.App.Tests/ClaudeBridgeUiTests.cs` (Programme mit KiLocalOnly müssen dort abgelehnt werden); Testprofile in `T0782LernenTests.cs`, `T0782GegenpruefungTests.cs`, `T0782LernenUiTests.cs`, `T0782GegenpruefungUiTests.cs`
+
+## 3. Gegenprüfung (Commit 19cbac82f)
+
+| Punkt | Behebung | Test | Rot belegt |
+|---|---|---|---|
+| M6-Rest: Zahl aus der Frage | Die Ausnahme „steht in der Frage“ gilt in `VerraetLoesung` nur noch für Brüche und Dezimalzahlen bei Bruch-Antworten (z. B. „Kürze 12/18“). Bei Zahl-Antworten gibt es sie nicht mehr: Bei „4x + 7 = 35“ ist „x = 7“ verraten. Damit die Aufgabe selbst nicht als Lösung gilt, werden wörtliche Zitate der Frage (ganz oder ein Teil nach „:“) vor der Prüfung herausgenommen. | Kern `Equations_hidden`: alle 200 Gleichungen aus dem Erzeuger – „x = <Lösung>“ und „Die Lösung ist <Lösung>“ sind verdeckt, die Aufgabe selbst bleibt sichtbar, und die Stichprobe enthält Gleichungen mit der Lösung in der Frage.<br>Kern `Fractions_counterproof` (200 Kürz-Aufgaben): Bruch aus der Aufgabe bleibt sichtbar, Lösung verdeckt. | Alter Stand 660a6a444: `Equations_hidden` rot („Löse nach x auf: 4x + 7 = 35 → x = 7“ nicht verdeckt). Die Bruch-Gegenprobe ist dort grün, wie es sein soll. |
+| M6-Rest: Werte der Positivliste | Neu `ProgramSpec.KiAllowedValue` mit `Nachhilfe.KiWertProblem`: „thema“ nur gültige Themen-Kennungen, „fach“ nur bekannte Fächer, „klasse“ 1 bis 13. | Kern `Allowed_values`; App `T0782Gegenpruefung3_Ui.Thema_only_valid_ids` über die echte KI-Kette (KI ersetzt): freier Text abgelehnt, Dokument unverändert; gültige Kennung führt zur Vorschau. | Rückbau (`KiWertProblem` liefert immer null): beide Tests rot |
+
+**Grün:**
+- Kern T0782 und PromptAction: 120 bestanden, 1 übersprungen.
+- App: `T0782Gegenpruefung3_Ui` 1/1, `T0782Gegenpruefung2_Ui` 3/3, `T0782Gegenpruefung_Ui` 6/6, `T0782Lernen_Ui` 8 bestanden, 1 übersprungen.
+
+**Belege:** `reports/T-0782/gegenpruefung-3/`
+
+**Berührte Dateien:**
+- Kern: `src/Trendo.Core/Lernen/NachhilfePruefung.cs`
+- App: `src/Trendo.App/MainWindow.ProgramShell.cs` (`KiAllowedValue`), `src/Trendo.App/MainWindow.Assist.cs` (Prüfung neben der Positivliste), `src/Trendo.App/MainWindow.Nachhilfe.cs`
+- Tests (neu): `tests/Trendo.Core.Tests/T0782Gegenpruefung3Tests.cs`, `tests/Trendo.App.Tests/T0782Gegenpruefung3UiTests.cs`

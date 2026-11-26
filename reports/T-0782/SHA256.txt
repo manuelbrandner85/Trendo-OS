@@ -13,6 +13,9 @@ e7f931d44284d837ce3c5c5d7d1c2393611818c4e5016dbdaa8f85713d3e4095 *./fremdprogram
 7de7a05319f7711b64244c79d80931fadef811eb7bb83ba550318bcc48409f2e *./gegenpruefung-2/gruen.txt
 6e30eafa6a046581862b18f9730185414ea9fde106bc5b72b1bb967e0cf3b605 *./gegenpruefung-2/rot-rueckbau-app.txt
 630f668362bb8a5df997a85ad1a6ab0f909611560ff75623ab8e7d959937b020 *./gegenpruefung-2/rot-rueckbau-kern.txt
+0aedae24ac286065947f3716885d1c3c4b644efc081084b4bb9d43e33044b5ee *./gegenpruefung-3/gruen.txt
+3f41f63ee6ee5a0588dec71450b4f95cb2c851efdf91780c06b6a3e6c01c4eae *./gegenpruefung-3/rot-alter-stand.txt
+1015e81814116bead37a4abfde0c5325387a179a4bae9de8433f4fc3c56e5239 *./gegenpruefung-3/rot-rueckbau-werte.txt
 1a1f53bdc8cc722bcae9b57f4dd17086206de94072ba9e46f816549a5c73841e *./gegenpruefung/T0782RotAltTests.cs.txt
 4bbd326b2a50ef30d859e84e5e2727bed0b411c16c285fd3b53dea20e5b13dbe *./gegenpruefung/gruen-app.txt
 a28f4a3513814c31c9b6faf45a19f6e450ed230f70be2cc21f30b9ab486c5c53 *./gegenpruefung/gruen-kern.txt
