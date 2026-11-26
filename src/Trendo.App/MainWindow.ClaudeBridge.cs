@@ -319,7 +319,9 @@ public partial class MainWindow
             {
                 if (await BridgeGuard(run, name, a) is { } refused) return refused; // Rückfragen/Zustimmung vor dem Merken – Eingaben der Person währenddessen zählen nicht als Claudes Schritt
                 McpResult? res = null;
-                var why = await KiStepGuarded(BridgeKey(run), async () => res = await body(a));
+                // T-0784: „programme“ (nur die Liste lesen) ist auch in Programmen nur mit lokaler KI erlaubt (BridgeLocalOnlyRefusal) – ohne Vorab-Ablehnung, ändert nichts
+                string? why = null;
+                if (name == "programme") res = await body(a); else why = await KiStepGuarded(BridgeKey(run), async () => res = await body(a));
                 return why is not null ? McpResult.Fail("Zurückgenommen: " + why) : res!;
             }
             catch (Exception e) when (e is InvalidOperationException or ArgumentException or IOException or UnauthorizedAccessException or FormatException or KeyNotFoundException or NullReferenceException or IndexOutOfRangeException)

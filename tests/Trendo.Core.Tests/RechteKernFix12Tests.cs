@@ -47,6 +47,8 @@ public class RechteKernFix12
         ["MainWindow.WebDesignAssets.WebShrinkImage"] = "Aufrufer übergibt Trendos eigene Kopie",
         ["MainWindow.axaml.SaveScreenshot"] = "Startoption --screenshot (Kommandozeile, nicht Kinderprofil)",
         ["MapCanvas.TileCache"] = "Kartenkacheln in Trendos Zwischenspeicher",
+        ["MainWindow.Referate.RefOpenIn"] = "T-0784 (aus T-0780): „target“ ist das Zielprogramm (text/praesentation), Ausgabe in Trendos Ordner Referate/Ausgaben (WorkFolder), Name aus DevStudio.SafeName, Endung fest (.docx/.pptx)",
+        ["TimelineCanvas.SavePng"] = "T-0784 (aus T-0780): Aufrufer ist die Export-Liste der Programm-Hülle (Ordner von Trendo, Endung .png fest)",
         ["PdfView.SavePng"] = "Aufrufer: Seitenbild für die Texterkennung in Trendos Ordner",
         ["ScreenGrab.SavePng"] = "Aufrufer: Bildschirmfoto mit festem Namen im Bilder-Ordner",
         ["TrendoUpdater.BackupCurrent"] = "Update (nur Erwachsene)",
