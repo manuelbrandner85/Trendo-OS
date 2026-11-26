@@ -412,7 +412,7 @@ public partial class MainWindow
         grid.SizeChanged += (_, e) => ApplyNarrow(e.NewSize.Width);
         // T-0708: Rückgängig/Wiederholen über die Hülle (ProgramLink) – V-14-Gruppe Speichern · Rückgängig · Wiederholen · Exportieren
         var undo = Act("letter-undo", "Rückgängig", Mdi.Undo); var redo = Act("letter-redo", "Wiederholen", Mdi.Redo);
-        ToolTip.SetTip(undo, "Rückgängig (bis 100 Schritte)"); ToolTip.SetTip(redo, "Wiederholen");
+        ToolTip.SetTip(undo, "Rückgängig – Strg+Z (bis 100 Schritte)"); ToolTip.SetTip(redo, "Wiederholen – Strg+Y");
         undo.Click += (_, _) => { if (LetterUndo()) { _letterMsg = "Rückgängig gemacht."; Show("brief"); } };
         redo.Click += (_, _) => { if (LetterRedo()) { _letterMsg = "Wiederholt."; Show("brief"); } };
         _letterUndoRefresh = () => { undo.IsEnabled = LetterLink.CanUndo || _letterTyping?.IsEnabled == true; redo.IsEnabled = LetterLink.CanRedo; };
@@ -422,7 +422,18 @@ public partial class MainWindow
         var steps = LetterSteps(d);
         steps.IsVisible = ProgramLevel != Trendo.Core.Programs.UserLevel.Einfach; // V2 (T-0663): in „Einfach“ nur eine Schrittfolge (Was? → An wen? → Text & Design); die Fortschrittsleiste zeigen Erweitert und Profi
         stack.Children.Add(steps); Grid.SetRow(toggle, 1); stack.Children.Add(toggle); Grid.SetRow(grid, 2); stack.Children.Add(grid);
-        return LetterShell(stack, actions);
+        var page = LetterShell(stack, actions);
+        // T-0775: Strg+Z / Strg+Y (auch Strg+Umschalt+Z) wie in der Programm-Hülle – in einem Eingabefeld nimmt das Feld selbst zurück
+        page.KeyDown += (_, e) =>
+        {
+            if (e.Source is TextBox) return;
+            var undoKey = e.KeyModifiers == Avalonia.Input.KeyModifiers.Control && e.Key == Avalonia.Input.Key.Z;
+            var redoKey = e.KeyModifiers == Avalonia.Input.KeyModifiers.Control && e.Key == Avalonia.Input.Key.Y
+                       || e.KeyModifiers == (Avalonia.Input.KeyModifiers.Control | Avalonia.Input.KeyModifiers.Shift) && e.Key == Avalonia.Input.Key.Z;
+            if (undoKey) { if (LetterUndo()) { _letterMsg = "Rückgängig gemacht."; Show("brief"); } e.Handled = true; }
+            else if (redoKey) { if (LetterRedo()) { _letterMsg = "Wiederholt."; Show("brief"); } e.Handled = true; }
+        };
+        return page;
     }
 
     private static TextBlock FieldLabel(string text) => new() { Text = text, Foreground = Muted, FontSize = 12, Margin = new Thickness(0, 8, 0, 2) };
