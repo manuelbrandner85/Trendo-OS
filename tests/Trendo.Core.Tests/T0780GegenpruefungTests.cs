@@ -51,8 +51,6 @@ public class T0780GegenpruefungTests
     [Theory(DisplayName = "T-0780 M1 (Tabelle): erzählende Formen und Klammern ohne Komma/Seite sind nur ein Hinweis – keine Ablehnung")]
     [InlineData("Wie Erfunden (2021) zeigt, spart Mulch Wasser.")]
     [InlineData("Angela Merkel (2005) wurde Bundeskanzlerin.")]
-    [InlineData("In Deutschland (2023) regnete es wenig.")]
-    [InlineData("Die Spiele (Olympia 2024) fanden in Paris statt.")]
     [InlineData("1) Die Wiedervereinigung 1990 veränderte vieles.")]
     [InlineData("Das ist belegt (erfunden 2021).")]
     [InlineData("Die Französische Revolution (1789) veränderte Europa.")]
@@ -74,10 +72,41 @@ public class T0780GegenpruefungTests
     [InlineData("Mehr dazu (vgl. Abschnitt 2).")]
     [InlineData("Die Tabelle (siehe Seite 4) zeigt es.")]
     [InlineData("Das kostet (rund 300 Euro) im Jahr.")]
+    [InlineData("Die Spiele (Olympia 2024) fanden in Paris statt.")]
+    [InlineData("In Deutschland (2023) regnete es wenig.")]
+    [InlineData("Die Zahl stieg deutlich (Deutschland, 2023).")]
+    [InlineData("Ergebnis: Deutschland gewann die WM, 2014 war das.")]
+    [InlineData("Hinweis: Große Ernte, 2021 im Herbst war sie gut.")]
     public void No_false_alarm(string text)
     {
         Assert.Empty(ReferatKit.CitationHits(text));
         Assert.Null(ReferatKit.KiTextProblem(text, Src));
+    }
+
+    [Theory(DisplayName = "T-0780 M (3. Gegenprüfung): eindeutige Kurzbelege ohne Komma (et al., &/und, 2021a, Seite), „(Name 2021)“ ohne passende Quelle und „ebd./a. a. O.“ ohne Verweis davor werden in KI-Text gesperrt")]
+    [InlineData("Das ist belegt (Erfunden & Ander 2021).")]
+    [InlineData("Das ist belegt (Erfunden und Ander 2021).")]
+    [InlineData("Das ist belegt (Erfunden et al. 2021).")]
+    [InlineData("Das ist belegt (Erfunden 2021a).")]
+    [InlineData("Das ist belegt (Erfunden 2021: 5).")]
+    [InlineData("Wie Erfunden (2021: 5) zeigt, ist das so.")]
+    [InlineData("Wie Erfunden et al. (2021) zeigen, ist das so.")]
+    [InlineData("Wie Erfunden (2021b) zeigt, ist das so.")]
+    [InlineData("Das ist belegt (Erfunden 2021).")]
+    [InlineData("Das ist belegt (ebd.).")]
+    [InlineData("Das ist belegt (ebd., S. 4).")]
+    [InlineData("Das ist belegt (a. a. O., S. 5).")]
+    public void Blocked_round3(string text) => Assert.NotNull(ReferatKit.KiTextProblem(text, Src));
+
+    [Fact(DisplayName = "T-0780 M (3. Gegenprüfung): „(Name 2021)“ mit passender Quelle und „ebd.“ nach echtem Verweis – nur Hinweis bzw. gar nichts")]
+    public void Allowed_round3()
+    {
+        const string a = "Gute Erde ist wichtig (Muster 2024).";
+        Assert.Null(ReferatKit.KiTextProblem(a, Src));
+        Assert.Contains(ReferatKit.CitationHits(a, Src), h => !h.Blocks);
+        const string b = "Gute Erde ist wichtig [@q-buch, S. 12]. Das gilt auch für Laub (ebd., S. 13).";
+        Assert.Null(ReferatKit.KiTextProblem(b, Src));
+        Assert.Empty(ReferatKit.CitationHits(b, Src));
     }
 
     [Fact(DisplayName = "T-0780 (2. Gegenprüfung, niedrig): Belege, die die Person schon geschrieben hat, sperren eine KI-Ergänzung nicht – neue schon")]

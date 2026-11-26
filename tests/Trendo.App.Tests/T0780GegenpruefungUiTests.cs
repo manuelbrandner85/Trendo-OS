@@ -150,6 +150,57 @@ public class T0780Gegenpruefung_Ui
         finally { w.Close(); try { Directory.Delete(folder, true); } catch (IOException) { } }
     }
 
+    static Func<IReadOnlyList<string>, string, Action<string>, CancellationToken, Task<int>> PlanAnswer(Func<string> answer) => (args, dir, line, _) =>
+    {
+        static string J(object o) => System.Text.Json.JsonSerializer.Serialize(o);
+        line(J(new { type = "system", subtype = "init", session_id = "s1", model = "claude" }));
+        var text = answer();
+        line(J(new { type = "assistant", message = new { content = new object[] { new { type = "text", text } } } }));
+        line(J(new { type = "result", subtype = "success", is_error = false, result = text, session_id = "s1", num_turns = 1 }));
+        return Task.FromResult(0);
+    };
+    static async Task Pump(Task t) { while (!t.IsCompleted) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); await Task.Delay(20); } await t; }
+
+    [AvaloniaFact(DisplayName = "T-0780 (3. Gegenprüfung): Plan im Chat läuft durch denselben Wächter – [[trendo:klick]] auf „Buch“ und [[trendo:feld]] mit erfundenem Beleg werden zurückgerollt, ein erlaubter Plan wird übernommen")]
+    public async Task Chat_plan_guarded()
+    {
+        var (w, _, _) = Ui.Open();
+        var answer = "";
+        MainWindow.ClaudeStatusOverride = () => Task.FromResult(new ClaudeCode.Status(true, true, "claude.ai", "max", @"C:\x\claude.exe"));
+        MainWindow.ClaudeStepDelay = 0;
+        MainWindow.ClaudeRunOverride = PlanAnswer(() => answer);
+        try
+        {
+            await Pump(w.ClaudeCheck(true));
+            w.Width = 1600; w.Height = 1100; w.ProgramSetLevel(UserLevel.Profi);
+            w.Show(MainWindow.RefKey); Settle(); RealClick(w, w.Find<Button>("prog-tpl-beispiel")); Settle();
+            var d = w.ProgramActive(MainWindow.RefKey)!; d.Set("subtitle", "Eigene Arbeit", "Untertitel"); // eigenes (bearbeitetes) Dokument: Claude arbeitet darin
+            w.ClaudeDockToggle(MainWindow.RefStudio); Settle();
+            // 1. klick auf „Buch“ legt eine Quelle an → zurück
+            answer = "Ich lege eine Quelle an.\n[[trendo:klick | prog-cmd-ref-src-buch]]";
+            await Pump(w.ClaudeChatSend("Leg eine neue Buchquelle an"));
+            Assert.Same(d, w.ProgramActive(MainWindow.RefKey)); var before = d.Data.ToJsonString();
+            await Pump(w.ClaudeRunPlan());
+            Assert.Equal(before, w.ProgramActive(MainWindow.RefKey)!.Data.ToJsonString());
+            Assert.Contains("zurückgenommen", w.ClaudeChatCurrent()!.Messages[^1].Text);
+            Assert.Contains(w.Core.Audit.ReadAll(), a => a.Action == "claude.plan.zurueckgerollt");
+            // 2. feld mit erfundenem Beleg → zurück
+            w.RefSelect(d, MainWindow.RefSections(d)[3].Id); w.RefSetStep(d, 2); w.Show(MainWindow.RefKey); Settle();
+            answer = "Ich schreibe den Abschnitt.\n[[trendo:feld | ref-sec-text | Mulch spart 70 % Wasser (vgl. Erfunden 2021: 5).]]";
+            await Pump(w.ClaudeChatSend("Schreib den Abschnitt Mulchen neu"));
+            await Pump(w.ClaudeRunPlan());
+            Assert.Equal("Eine Schicht aus Rasenschnitt oder Laub hält den Boden feucht.", MainWindow.RefSections(w.ProgramActive(MainWindow.RefKey)!)[3].Text);
+            Assert.Contains("Erfunden 2021", w.ClaudeChatCurrent()!.Messages[^1].Text);
+            // 3. erlaubter Plan → übernommen
+            w.Show(MainWindow.RefKey); Settle();
+            answer = "Ich schreibe den Abschnitt.\n[[trendo:feld | ref-sec-text | Mulch hält den Boden feucht und spart Gießwasser.]]"; // ohne eckige Klammern: eine Planzeile endet am ersten „]“
+            await Pump(w.ClaudeChatSend("Schreib den Abschnitt Mulchen mit meinem Gartenbuch"));
+            await Pump(w.ClaudeRunPlan());
+            Assert.Equal("Mulch hält den Boden feucht und spart Gießwasser.", MainWindow.RefSections(w.ProgramActive(MainWindow.RefKey)!)[3].Text);
+        }
+        finally { MainWindow.ClaudeStatusOverride = null; MainWindow.ClaudeRunOverride = null; MainWindow.ClaudeStepDelay = 350; w.Close(); }
+    }
+
     [AvaloniaFact(DisplayName = "T-0780 M2 (2. Gegenprüfung): unechtes PNG mit gültigem Kopf – Import verwirft und meldet es, PNG-Export und Zeichenfläche laufen weiter")]
     public void Fake_png_does_not_break()
     {

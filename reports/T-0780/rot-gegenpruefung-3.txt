@@ -1,0 +1,11 @@
+# T-0780 3. Gegenprüfung – Rot-Lauf gegen 53a8c28bf (eigener Worktree)
+## Core: dotnet build
+T0780GegenpruefungTests.cs(106,36): error CS1501: Keine Überladung für die CitationHits-Methode nimmt 2 Argumente an. 
+T0780GegenpruefungTests.cs(109,33): error CS1501: Keine Überladung für die CitationHits-Methode nimmt 2 Argumente an. 
+## App: T0780Gegenpruefung_Ui.Chat_plan_guarded auf dem alten Stand
+    0 Fehler
+    T-0780 (3. Gegenprüfung): Plan im Chat läuft durch denselben Wächter – [[trendo:klick]] auf „Buch“ und [[trendo:feld]] mit erfundenem Beleg werden zurückgerollt, ein erlaubter Plan wird 
+      Assert.Equal() Failure: Strings differ
+      Expected: ···","accessed":"2026-11-03"}]}"
+      Actual:   ···","accessed":"2026-11-03"},{"id":"q69c0c697","kind""···
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 1, Skipped: 0, Not Run: 0, Time: 22,173s

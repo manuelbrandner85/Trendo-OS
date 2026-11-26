@@ -298,14 +298,14 @@ public partial class MainWindow
         var result = await _ui.InvokeAsync(async () =>
         {
             if (_core.Approvals.Halted) return McpResult.Fail("Nicht bestätigt: Der Not-Stopp ist aktiv. " + _core.Approvals.HaltReason);
-            // T-0780 (2. Gegenprüfung H1): Stand aller offenen Dokumente mit KiLocked/KiCheck vor dem Schritt – nach JEDEM Claude-Schritt (befehl, feld_setzen, klicken,
-            // dokument_setzen …) wird geprüft und bei Verstoß zurückgerollt, damit kein Weg an Quellen-Sperre oder Zitatprüfung vorbeiführt
-            var guarded = BridgeSnapshot();
+            // T-0780 (2./3. Gegenprüfung): jeder Claude-Schritt läuft durch den gemeinsamen Wächter (auch der Plan-Weg im Chat) – Vorab-Ablehnung, Stand merken,
+            // Schritt, Felder verlassen, prüfen, bei Verstoß zurückrollen; auch wenn der Schritt mit einem Fehler endet
             try
             {
-                var res = await BridgeGuard(run, name, a) ?? await body(a);
-                await BridgeFlushFields();
-                return BridgeAfterStep(guarded) ?? res;
+                if (await BridgeGuard(run, name, a) is { } refused) return refused; // Rückfragen/Zustimmung vor dem Merken – Eingaben der Person währenddessen zählen nicht als Claudes Schritt
+                McpResult? res = null;
+                var why = await KiStepGuarded(BridgeKey(run), async () => res = await body(a));
+                return why is not null ? McpResult.Fail("Zurückgenommen: " + why) : res!;
             }
             catch (Exception e) when (e is InvalidOperationException or ArgumentException or IOException or UnauthorizedAccessException or FormatException or KeyNotFoundException or NullReferenceException or IndexOutOfRangeException)
             { return McpResult.Fail(e.Message); }
@@ -349,6 +349,28 @@ public partial class MainWindow
     }
 
     /// <summary>Nach dem Claude-Schritt: gesperrtes Feld geändert oder KiCheck findet einen Fehler → Dokument auf den Stand davor zurück (samt Rückgängig-Liste) und Fehler an Claude.</summary>
+    /// <summary>T-0780 (3. Gegenprüfung): Vorab-Ablehnung eines KI-Schritts, bevor er läuft – klar abgegrenzte Stelle für weitere Regeln
+    /// (z. B. T-0782: Programme, die nur lokale KI zulassen). null = Schritt darf laufen, sonst der Grund für die Person/Claude.</summary>
+    string? KiStepPreReject(string? page) => null;
+
+    /// <summary>T-0780 (3. Gegenprüfung): gemeinsamer Wächter für jeden KI-Schritt (MCP-Brücke und Plan-Weg im Chat): Vorab-Ablehnung → Stand der Dokumente mit KiLocked/KiCheck merken →
+    /// Schritt → Felder verlassen (übernehmen) → prüfen; bei Verstoß Daten und Rückgängig-Liste zurück. Auch wenn der Schritt mit einem Fehler endet, wird geprüft und zurückgerollt
+    /// (dann geht der Fehler weiter). Rückgabe null = in Ordnung, sonst der Grund.</summary>
+    async Task<string?> KiStepGuarded(string? page, Func<Task> step)
+    {
+        if (KiStepPreReject(page) is { } no) return no;
+        var guarded = BridgeSnapshot();
+        try { await step(); }
+        catch
+        {
+            try { await BridgeFlushFields(); } catch (Exception e) when (e is not OutOfMemoryException) { }
+            BridgeAfterStep(guarded);
+            throw;
+        }
+        await BridgeFlushFields();
+        return BridgeAfterStep(guarded) is { } fail ? fail.Text.Replace("Zurückgenommen: ", "") : null;
+    }
+
     McpResult? BridgeAfterStep(List<(ProgramSpec Spec, ProgramDocument Doc, ProgramDocument.Mark Before)> guarded)
     {
         foreach (var (spec, doc, before) in guarded)

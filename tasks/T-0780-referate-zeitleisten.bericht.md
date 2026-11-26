@@ -2,6 +2,20 @@
 
 **Auftrag:** `tasks/T-0780-referate-zeitleisten.md` (Freigabe 26.11.2026) · **Branch:** `claude/T-0780-referate-zeitleisten` (Basis main 0.9.112 = 184fcbbfc) · eigene Kopie in `%TEMP%\trendo-auftrag-T-0780`.
 
+## Nachbesserung nach der 3. Gegenprüfung
+Rot-Lauf gegen 53a8c28bf: `reports/T-0780/rot-gegenpruefung-3.txt` (Core-Tests übersetzen nicht – `CitationHits(text, quellen)` fehlt; App `Chat_plan_guarded` rot: der Plan „klick prog-cmd-ref-src-buch“ legte auf dem alten Stand eine Quelle an).
+
+| Nr. | Befund | Behebung | Regressionstest |
+|---|---|---|---|
+| HOCH | Plan-Weg im Chat (`ClaudeRunPlan`, auch automatisch bei „ohne Klicks“) lief an der Schutzschicht vorbei | Gemeinsamer Helfer `KiStepGuarded(seite, schritt)` in `MainWindow.ClaudeBridge.cs`: Vorab-Ablehnung (`KiStepPreReject` – abgegrenzte Stelle, dort baut T-0782 die Ablehnung für Programme mit nur lokaler KI ein) → Stand merken → Schritt → Felder verlassen → prüfen bzw. zurückrollen. Die MCP-Brücke (`BridgeUi`) und jeder Plan-Schritt (`ClaudeRunPlan`) nutzen ihn; bei Verstoß endet der Plan, der Chat nennt den Grund, Protokoll `claude.plan.zurueckgerollt`. Plan-„feld“ fokussiert das Feld wie beim Tippen | `T0780Gegenpruefung_Ui.Chat_plan_guarded`: klick „Buch“ → zurück; feld mit „(vgl. Erfunden 2021: 5)“ → zurück; erlaubter Plan → übernommen |
+| MITTEL | eindeutige Kurzbelege ohne Komma, „(Name 2021)“, „ebd.“ | Gesperrt zusätzlich: „et al.“, „&“/„und“ zwischen Namen, Buchstabe am Jahr (2021a), Seitenangabe – auch erzählend („Erfunden (2021: 5)“, „Erfunden et al. (2021)“); „(Name 2021)“ in KI-Text gesperrt, wenn der Name zu keiner Quelle passt, sonst Hinweis „als [@kennung] setzen“; „(ebd.)“, „(ebd., S. 4)“, „(a. a. O., S. 5)“ ohne echten Verweis davor. Nebenbei behoben: „und“ zählte auch mitten im Wort („Erf-und-en“) als Trenner | `Blocked_round3` (12 Fälle), `Allowed_round3` |
+| niedrig | FootRx-Fehlalarme, „(Deutschland, 2023)“ | „Ort: Verlag, Jahr“ nur mit höchstens vier großgeschriebenen Wörtern und Satzende danach; häufige Orte/Ereignisse (Deutschland, Olympia, WM …) gelten nicht als Namen | `No_false_alarm` (3 neue Gegenproben) |
+| niedrig | catch-Zweig der Brücke ohne Prüfung | `KiStepGuarded` prüft und rollt auch zurück, wenn der Schritt mit einem Fehler endet (danach geht der Fehler weiter) | – (kein eigener Test: es gibt keinen Befehl, der nach einer Änderung absichtlich wirft) |
+| niedrig | Eingaben der Person während eines Claude-Schritts | Teilweise: Der Stand wird erst nach Rückfragen/Zustimmung gemerkt, der Plan merkt ihn je Schritt neu – Eingaben während einer Rückfrage zählen nicht als Claudes Schritt. Was die Person genau während des Schritts selbst tippt, lässt sich nicht trennen | – |
+
+Ehrlich: „(Olympia 2024)“ und „(Deutschland, 2023)“ sind jetzt kein Alarm mehr, weil diese Wörter auf einer Liste stehen – andere Ereignisse in der Form „(Wort Jahr)“ werden in KI-Text gesperrt, wenn das Wort zu keiner Quelle passt. Eine Planzeile endet am ersten „]“; Verweise `[@kennung]` schreibt Claude deshalb über die Brücke (`dokument_setzen`/`feld_setzen`), nicht über `[[trendo:feld …]]`.
+**Tests dieser Runde:** Build 0 Fehler. Core (PromptAction, KreativKits4, CiteFormats, WissenStudios, T0780Gegenpruefung, Assist, NoFixedUser, Fremdnachlauf echt): **241 bestanden, 0 Fehler** (`reports/T-0780/core-klassen-4.txt`). App 22 Klassen inkl. aller Claude*-Klassen mit Plan oder Brücke (Claude3D, ClaudeBridge, ClaudeEverywhere, ClaudeFallback, ClaudeGame, ClaudeLive, ClaudeLiveRegie, ClaudeLiveSync, ClaudeMusik, ClaudeOperate, ClaudePolish, ClaudePrograms, ClaudeRunFix, MediaPro) sowie WissenStudios, T0780Gegenpruefung, Assist*, T0774, DocScan, RechercheQuellen, StudiosAlle: **201 gesamt, 0 fehlgeschlagen, 3 übersprungen** (`reports/T-0780/app-klassen-4.txt`).
+
 ## Nachbesserung nach der 2. Gegenprüfung
 Rot-Lauf gegen b256e1859: `reports/T-0780/rot-gegenpruefung-2.txt` (Core-Tests übersetzen nicht – `CitationHits` fehlt; App: `Bridge_every_step_checked` und `Fake_png_does_not_break` rot, die übrigen 4 Tests der Klasse grün wie vorher).
 

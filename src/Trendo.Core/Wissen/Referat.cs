@@ -129,71 +129,87 @@ public static partial class ReferatKit
     public static List<string> UnknownCitations(string text, IReadOnlyList<CiteKit.Source> sources) =>
         Citations(text).Select(c => c.Id).Where(id => sources.All(s => s.Id != id)).Distinct().ToList();
 
-    // ---------- T-0780 (2. Gegenprüfung M1): Belege ohne Verweis erkennen – gesperrt nur eindeutige Formen, sonst Hinweis ----------
+    // ---------- T-0780 (2./3. Gegenprüfung): Belege ohne Verweis erkennen – gesperrt eindeutige Formen, sonst Hinweis ----------
 
     const string Year = @"(?:\d{1,4}\s*v\.\s*Chr\.|\[\s*\d{3,4}[a-z]?\s*\]|\d{3,4}[a-z]?|o\.\s*J\.|n\.\s*d\.)";
     const string Particle = @"(?:(?:van|von|de|der|den|du|la|le|zu|ten|ter|da|di)\s+)";
     const string Name = @"(?:" + Particle + @"?\p{L}[\p{L}'’\-]*\.?)";
-    const string Names = Name + @"(?:\s*(?:,|&|und|and)\s*" + Name + @")*(?:\s+(?:et\s+al\.|u\.\s*a\.))?";
+    // „und“/„and“ nur als eigenes Wort – sonst zerlegt das Muster Namen wie „Erfunden“ in „Erf“ + „und“ + „en“
+    const string Sep = @"(?:\s*[,&]\s*|\s+(?:und|and)\s+)";
+    const string Names = Name + @"(?:" + Sep + Name + @")*(?:\s+(?:et\s+al\.|u\.\s*a\.))?";
+    /// <summary>Mehrere Personen („A &amp; B“, „A und B“, „A et al.“) – eindeutig ein Beleg, auch ohne Komma.</summary>
+    const string NamesMulti = @"(?:" + Name + @"(?:" + Sep + Name + @")+(?:\s+(?:et\s+al\.|u\.\s*a\.))?|" + Name + @"\s+(?:et\s+al\.|u\.\s*a\.))";
     const string Locator = @"(?:\s*[,:]?\s*(?:S\.|s\.|p\.|pp\.|Sp\.)\s*\d+(?:\s*[–\-]\s*\d+)?\s*(?:f{1,2}\.)?|\s*[,:]\s*\d+(?:\s*[–\-]\s*\d+)?)";
-    // eine Angabe mit Komma vor dem Jahr, mit Seitenangabe oder mit „vgl.“ – das sind Belege
-    const string Strict = @"(?:(?:(?:vgl\.|siehe|s\.|zit\.\s*n\.)\s*" + Names + @",?\s+" + Year + Locator + @"?)|(?:" + Names + @"\s*,\s*" + Year + Locator + @"?)|(?:" + Names + @"\s+" + Year + Locator + @"))";
+    // gesperrt: Komma vor dem Jahr, Seitenangabe, „vgl.“, mehrere Personen oder Buchstabe am Jahr (2021a)
+    const string Strict = @"(?:(?:(?:vgl\.|siehe|s\.|zit\.\s*n\.)\s*" + Names + @",?\s+" + Year + Locator + @"?)|(?:" + Names + @"\s*,\s*" + Year + Locator + @"?)|(?:" + Names + @"\s+" + Year + Locator + @")"
+        + @"|(?:" + NamesMulti + @"\s+" + Year + Locator + @"?)|(?:" + Names + @"\s+\d{3,4}[a-z]" + Locator + @"?))";
 
-    /// <summary>Gesperrt: „(vgl. Name 2021)“, „(Name, 2021)“, „(Name 2021: 5)“, „(Name 2021 S. 5)“, „(Name, 2021; Ander, 2019)“, „(A, B &amp; C, 2021)“, „(Platon, 380 v. Chr.)“.</summary>
     [GeneratedRegex(@"\(\s*" + Strict + @"(?:\s*;\s*(?:" + Strict + @"|" + Names + @"\s+" + Year + @"))*\s*\)")] private static partial Regex StrictParenRx();
-    /// <summary>Gesperrt: Jahr fehlt bzw. eckig – „(Name o. J.)“, „(n.d.)“, „(Name [2021])“.</summary>
     [GeneratedRegex(@"\(\s*(?:(?:vgl\.\s*)?" + Names + @",?\s+)?(?:o\.\s*J\.|n\.\s*d\.|\[\s*\d{3,4}[a-z]?\s*\])" + Locator + @"?\s*\)")] private static partial Regex NoYearRx();
-    /// <summary>Gesperrt ohne Klammer: „vgl. Name, 2021, S. 4.“</summary>
     [GeneratedRegex(@"\b(?:vgl\.|siehe)\s+" + Names + @"\s*,\s*" + Year + Locator + @"?")] private static partial Regex VglRx();
-    /// <summary>Gesperrt: Literaturangabe mit Ort und Verlag – „Musterstadt: Grünverlag, 2021“, „Musterstadt 2021, S. 5“.</summary>
-    [GeneratedRegex(@"\b[A-ZÄÖÜ][\p{L}\-]+\s*:\s*[A-ZÄÖÜ][^,\n]{1,60},\s*" + Year + @"|\b[A-ZÄÖÜ][\p{L}\-]+\s+\d{3,4},\s*S\.\s*\d+")] private static partial Regex FootRx();
-    /// <summary>Nur Hinweis: „(Name 2021)“, „(erfunden 2021)“, „(Olympia 2024)“.</summary>
-    [GeneratedRegex(@"\(\s*" + Names + @"\s+\d{3,4}[a-z]?\s*\)")] private static partial Regex LooseParenRx();
-    /// <summary>Nur Hinweis: erzählend „Name (2021)“, „In Deutschland (2023)“.</summary>
+    /// <summary>Gesperrt: Literaturangabe „Ort: Verlag, Jahr“ (Verlag aus höchstens vier großgeschriebenen Wörtern, danach Satzende) oder „Ort Jahr, S. n“.</summary>
+    [GeneratedRegex(@"\b[A-ZÄÖÜ][\p{L}\-]+\s*:\s*[A-ZÄÖÜ][\p{L}\-\.&]*(?:\s+[A-ZÄÖÜ&][\p{L}\-\.]*){0,3},\s*" + Year + @"(?=\s*[.;)]|\s*$)|\b[A-ZÄÖÜ][\p{L}\-]+\s+\d{3,4},\s*S\.\s*\d+")] private static partial Regex FootRx();
+    /// <summary>„Name (2021: 5)“, „Name et al. (2021)“, „Name (2021a)“ – erzählend, aber eindeutig.</summary>
+    [GeneratedRegex(@"\b(?:" + Names + @"\s*\(\s*\d{3,4}[a-z]?" + Locator + @"\s*\)|" + NamesMulti + @"\s*\(\s*\d{3,4}[a-z]?" + Locator + @"?\s*\)|" + Names + @"\s*\(\s*\d{3,4}[a-z]" + Locator + @"?\s*\))")] private static partial Regex NarrativeStrictRx();
+    /// <summary>„(Name 2021)“ – genau die Form, die Trendo bei Harvard/DIN selbst ausgibt; Prüfung gegen die Quellen der Liste.</summary>
+    [GeneratedRegex(@"\(\s*(?<n>" + Name + @")\s+\d{3,4}\s*\)")] private static partial Regex LooseParenRx();
     [GeneratedRegex(@"\b" + Names + @"\s*\(\s*\d{3,4}[a-z]?\s*\)")] private static partial Regex NarrativeRx();
-    /// <summary>Nur Hinweis: Fußnotenzeile mit Jahr („1) Die Wiedervereinigung 1990“).</summary>
     [GeneratedRegex(@"(?m)^\s*(?:\[\d+\]|\d+\)|[¹²³⁴⁵⁶⁷⁸⁹⁰]+)\s*\p{Lu}[^\n]*\b\d{3,4}\b")] private static partial Regex FootLineRx();
+    /// <summary>„(ebd.)“, „(ebd., S. 4)“, „(a. a. O., S. 5)“ – nur zulässig, wenn davor ein echter Verweis steht.</summary>
+    [GeneratedRegex(@"\(\s*(?:ebd\.|ebenda|a\.\s*a\.\s*O\.)(?:\s*,?\s*(?:S\.|p\.)?\s*\d+(?:\s*[–\-]\s*\d+)?)?\s*\)")] private static partial Regex IbidRx();
 
-    /// <summary>Wörter vor einer Jahreszahl, die keine Namen sind („(Stand, 2021)“, „(Juli 2021, S. 3)“) – kein Fehlalarm.</summary>
+    /// <summary>Wörter vor einer Jahreszahl, die keine Namen sind („(Stand, 2021)“, „(Juli 2021)“, „(Deutschland, 2023)“, „(Olympia 2024)“) – kein Fehlalarm.</summary>
     static readonly HashSet<string> NotNames = new(StringComparer.OrdinalIgnoreCase)
     {
         "Stand", "Seit", "Ab", "Bis", "Ende", "Anfang", "Mitte", "Jahr", "Jahre", "Frühjahr", "Sommer", "Herbst", "Winter", "Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August",
         "September", "Oktober", "November", "Dezember", "Ca", "Etwa", "Rund", "Um", "Im", "In", "Nach", "Vor", "Gegründet", "Geboren", "Gestorben", "Erschienen", "Ausgabe", "Auflage", "Version", "Stichtag", "Quartal",
+        // 3. Gegenprüfung (niedrig): häufige Orte und Ereignisse in Klammern mit Jahr
+        "Deutschland", "Österreich", "Schweiz", "Europa", "EU", "USA", "China", "Frankreich", "Italien", "Spanien", "Polen", "Russland", "Japan", "Bayern", "Berlin", "Wien", "Hamburg", "München",
+        "Olympia", "WM", "EM", "Corona", "Covid", "Census", "Zensus", "Wahl", "Bundestagswahl",
     };
 
     public sealed record CiteHit(string Text, bool Blocks);
 
-    /// <summary>Belege im Text, die nicht als Verweis <c>[@kennung]</c> geschrieben sind. <see cref="CiteHit.Blocks"/>: eindeutige Belegform (KI-Text wird abgelehnt);
-    /// sonst nur Hinweis in „Formvorgaben prüfen“. Ehrlich: eine Erkennung über Muster.</summary>
-    public static List<CiteHit> CitationHits(string text)
+    /// <summary>Belege im Text, die nicht als Verweis <c>[@kennung]</c> geschrieben sind. <see cref="CiteHit.Blocks"/>: eindeutige Belegform (KI-Text wird abgelehnt), sonst Hinweis.
+    /// Mit <paramref name="sources"/>: „(Name 2021)“ ist gesperrt, wenn der Name zu keiner Quelle passt, sonst nur Hinweis „als [@kennung] setzen“. Ehrlich: eine Erkennung über Muster.</summary>
+    public static List<CiteHit> CitationHits(string text, IReadOnlyList<CiteKit.Source>? sources = null)
     {
-        var t = CiteRx().Replace(text ?? "", " ");
+        var raw = text ?? "";
+        var t = CiteRx().Replace(raw, m => new string(' ', m.Length)); // gleiche Länge – Stellen bleiben vergleichbar
         var hits = new List<CiteHit>();
         bool Known(string v) => hits.Any(h => h.Text.Contains(v, StringComparison.Ordinal) || v.Contains(h.Text, StringComparison.Ordinal));
         string FirstWord(string v) => Regex.Match(v, @"\p{L}[\p{L}'’\-]*").Value;
         foreach (Match m in StrictParenRx().Matches(t)) { var w = FirstWord(m.Value); if (w is "vgl" or "siehe" || !NotNames.Contains(w)) hits.Add(new(m.Value, true)); }
         foreach (Match m in NoYearRx().Matches(t)) if (!Known(m.Value)) hits.Add(new(m.Value, true));
         foreach (Match m in VglRx().Matches(t)) if (!Known(m.Value)) hits.Add(new(m.Value.Trim(), true));
-        foreach (Match m in FootRx().Matches(t)) if (!Known(m.Value)) hits.Add(new(m.Value, true));
-        foreach (Match m in LooseParenRx().Matches(t)) if (!Known(m.Value) && !NotNames.Contains(FirstWord(m.Value))) hits.Add(new(m.Value, false));
+        foreach (Match m in FootRx().Matches(t)) if (!Known(m.Value) && !NotNames.Contains(FirstWord(m.Value))) hits.Add(new(m.Value, true));
+        foreach (Match m in NarrativeStrictRx().Matches(t)) if (!Known(m.Value.Trim()) && !NotNames.Contains(FirstWord(m.Value))) hits.Add(new(m.Value.Trim(), true));
+        foreach (Match m in IbidRx().Matches(t)) if (!CiteRx().IsMatch(raw[..m.Index])) hits.Add(new(m.Value, true)); // „ebd.“ ohne echten Verweis davor
+        foreach (Match m in LooseParenRx().Matches(t))
+        {
+            var n = m.Groups["n"].Value.Trim().TrimEnd('.');
+            if (Known(m.Value) || NotNames.Contains(n)) continue;
+            var lower = char.IsLower(n[0]);
+            var matchesSource = sources?.Any(s => s.Authors.Contains(n, StringComparison.OrdinalIgnoreCase)) ?? true;
+            hits.Add(new(m.Value, sources is not null && !lower && !matchesSource));
+        }
         foreach (Match m in NarrativeRx().Matches(t)) if (!Known(m.Value) && !NotNames.Contains(FirstWord(m.Value))) hits.Add(new(m.Value.Trim(), false));
         foreach (Match m in FootLineRx().Matches(t)) if (!Known(m.Value.Trim())) hits.Add(new(m.Value.Trim(), false));
         return hits;
     }
 
-    /// <summary>Nur die eindeutigen Belegformen (für KI-Texte gesperrt).</summary>
-    public static List<string> FreeCitations(string text) => [.. CitationHits(text).Where(h => h.Blocks).Select(h => h.Text).Distinct()];
+    /// <summary>Eindeutige Belegformen (für KI-Texte gesperrt); mit <paramref name="sources"/> zusätzlich „(Name Jahr)“ ohne passende Quelle.</summary>
+    public static List<string> FreeCitations(string text, IReadOnlyList<CiteKit.Source>? sources = null) => [.. CitationHits(text, sources).Where(h => h.Blocks).Select(h => h.Text).Distinct()];
 
-    /// <summary>Gemeinsame Zitatprüfung für Text, den eine KI schreibt (Assistent, Fachaktion, Claude-Brücke): nur Verweise auf Quellen der Liste, keine eindeutigen freien Belege.
-    /// <paramref name="before"/>: Text davor – Belege und Verweise, die dort schon standen (von der Person), werden nicht beanstandet (2. Gegenprüfung, niedrig).
-    /// null = in Ordnung, sonst ein Satz für die Person.</summary>
+    /// <summary>Gemeinsame Zitatprüfung für Text, den eine KI schreibt (Assistent, Fachaktion, Claude-Brücke, Plan im Chat): nur Verweise auf Quellen der Liste, keine eindeutigen freien Belege.
+    /// <paramref name="before"/>: Text davor – Belege und Verweise, die dort schon standen (von der Person), werden nicht beanstandet. null = in Ordnung, sonst ein Satz für die Person.</summary>
     public static string? KiTextProblem(string text, IReadOnlyList<CiteKit.Source> sources, string before = "")
     {
         var oldIds = Citations(before).Select(c => c.Id).ToHashSet();
         if (UnknownCitations(text, sources).Where(id => !oldIds.Contains(id)).ToList() is { Count: > 0 } unknown)
             return $"Die KI hat eine Quelle zitiert, die nicht in deiner Liste steht ([@{unknown[0]}]) – zitiert wird nur aus deinen eigenen Quellen. Nichts übernommen.";
-        var oldFree = FreeCitations(before).ToHashSet();
-        if (FreeCitations(text).Where(f => !oldFree.Contains(f)).ToList() is { Count: > 0 } free)
+        var oldFree = FreeCitations(before, sources).ToHashSet();
+        if (FreeCitations(text, sources).Where(f => !oldFree.Contains(f)).ToList() is { Count: > 0 } free)
             return $"Die KI hat „{free[0]}“ geschrieben – Belege stehen nur als Verweis auf eine Quelle deiner Liste ([@kennung]). Nichts übernommen.";
         return null;
     }
@@ -233,7 +249,7 @@ public static partial class ReferatKit
             if (s.Title.Trim().Length == 0) f.Add(new($"Abschnitt {num} hat keine Überschrift.", false));
             if (s.Text.Trim().Length == 0 && !sections.SkipWhile(x => x != s).Skip(1).TakeWhile(x => x.Level > s.Level).Any()) f.Add(new($"Abschnitt {num} „{s.Title}“ hat noch keinen Text.", false));
             foreach (var id in UnknownCitations(s.Text, sources)) f.Add(new($"Abschnitt {num}: Verweis [@{id}] zeigt auf keine Quelle der Liste – Quelle anlegen oder Verweis entfernen.", true));
-            foreach (var h in CitationHits(s.Text)) f.Add(new(h.Blocks ? $"Abschnitt {num}: „{h.Text}“ ist ein Beleg ohne Verweis – als [@kennung] aus der Liste zitieren." : $"Abschnitt {num}: „{h.Text}“ sieht aus wie ein Beleg – falls ja, als [@kennung] aus der Liste zitieren.", false));
+            foreach (var h in CitationHits(s.Text, sources)) f.Add(new(h.Blocks ? $"Abschnitt {num}: „{h.Text}“ ist ein Beleg ohne Verweis – als [@kennung] aus der Liste zitieren." : $"Abschnitt {num}: „{h.Text}“ sieht aus wie ein Beleg – falls ja, als [@kennung] aus der Liste zitieren.", false));
             foreach (var c in Citations(s.Text))
                 if (sources.FirstOrDefault(x => x.Id == c.Id) is { } src && PageOutside(c.Page, src.Pages) is { } p)
                     f.Add(new($"Abschnitt {num}: Seite {p} liegt außerhalb der Seiten der Quelle „{src.Title}“ ({src.Pages}).", false));
