@@ -1,0 +1,14 @@
+# T-0782 Fremdprogramm Python – 2026-11-26 15:34
+Programm: System-Python (nicht Trendos Laufzeit), Python 3.13.15
+Befehl: python begruessung.py
+test_gibt_zurueck (__main__.Tests.test_gibt_zurueck) ... ok
+test_lea (__main__.Tests.test_lea) ... ok
+test_tom (__main__.Tests.test_tom) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.001s
+
+OK
+exit=0
+## SHA-256
+20b7bb608376e6bf8978116f48de9b4e995b17457879589e810760b88966a41b *begruessung.py

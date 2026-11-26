@@ -1,0 +1,16 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0782 ECHT: lokale KI (Ollama) – Nachhilfe „Übung erzeugen“ und Programmieren „Hinweis geben“ im offenen Dokument, Rückgängig; Code-Tests echt (nur mit TRENDO_T0782_ECHT) [FAIL]
+      Assert.True() Failure
+      Expected: True
+      Actual:   False
+      Stack Trace:
+        tests\Trendo.App.Tests\T0782LernenUiTests.cs(48,0): at Trendo.App.Tests.T0782Lernen_Ui.Until(Func`1 ok, Int32 ms)
+        tests\Trendo.App.Tests\T0782LernenUiTests.cs(349,0): at Trendo.App.Tests.T0782Lernen_Ui.Real_local_ki()
+        --- End of stack trace from previous location ---
+  Finished:    Trendo.App.Tests (ID = 'f6d0891a28c15250435b1b4f8281571aec646f47e954b6d2d82cf32837030490')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 1, Skipped: 0, Not Run: 0, Time: 1884,412s
+exit=1

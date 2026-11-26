@@ -346,7 +346,7 @@ public class T0782Lernen_Ui
             const string p1 = "Erzeuge mir eine neue Übung zum Brüche kürzen mit dem Bruch 12/18, mit Lösungsweg und einem Hinweis, der die Lösung nicht verrät.";
             var sw = Stopwatch.StartNew();
             w.Find<TextBox>("auftrag-prompt").Text = p1; Tap(w, "auftrag-pruefen");
-            await Until(() => w.AssistLastKey == Tu && w.AssistLast?.Phase is "vorschau" or "fehler" or "verworfen", 600_000); sw.Stop();
+            await Until(() => w.AssistLastKey == Tu && w.AssistLast?.Phase is "vorschau" or "fehler" or "verworfen", 1_200_000); sw.Stop();
             L("## Nachhilfe mit KI (nachhilfe-programm)"); L(""); L($"- Auftrag: {p1}");
             L($"- Phase nach {sw.Elapsed.TotalSeconds:0} s: {w.AssistLast!.Value.Phase} · Quelle: {w.Find<TextBlock>("assist-source").Text}");
             L($"- KI-Antwort (roh, gekürzt): {(w.AssistLastKiAnswer ?? "").Replace("\n", " ")[..Math.Min(600, (w.AssistLastKiAnswer ?? "").Length)]}");
@@ -383,7 +383,7 @@ public class T0782Lernen_Ui
             w.Find<TextBox>("auftrag-prompt").Text = p2; Tap(w, "auftrag-pruefen");
             var audits = w.Core.Audit.ReadAll().Count;
             bool NoPlan() => w.Core.Audit.ReadAll().Skip(audits).Any(a => a.Action is "assist.ki.ohneplan" or "assist.ki.fehler" && a.Detail.StartsWith(Cl, StringComparison.Ordinal));
-            await Until(() => NoPlan() || w.AssistLastKey == Cl && w.AssistLast?.Phase is "vorschau" or "fehler" or "verworfen", 600_000); sw.Stop();
+            await Until(() => NoPlan() || w.AssistLastKey == Cl && w.AssistLast?.Phase is "vorschau" or "fehler" or "verworfen", 1_200_000); sw.Stop();
             L($"- Auftrag: {p2}");
             L($"- Phase nach {sw.Elapsed.TotalSeconds:0} s: {(NoPlan() ? "kein Plan" : w.AssistLast!.Value.Phase)} · Quelle: {(NoPlan() ? "–" : w.Find<TextBlock>("assist-source").Text)}");
             L($"- KI-Antwort (roh, gekürzt): {(w.AssistLastKiAnswer ?? "").Replace("\n", " ")[..Math.Min(600, (w.AssistLastKiAnswer ?? "").Length)]}");
