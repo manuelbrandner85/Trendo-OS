@@ -1,12 +1,33 @@
 """Fotorealistische Studio-Bilder für Trendo OS lokal erzeugen (Wunsch 02.11.2026: alle Bilder fotorealistisch, auch für künftige Studios).
 
-Nutzt eine lokal laufende ComfyUI (nur 127.0.0.1) mit FLUX.2 klein (flux-2-klein-4b, qwen_3_4b, flux2-vae) – kein Clouddienst.
+Einziger Weg: eine lokal laufende ComfyUI (nur 127.0.0.1) mit FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae) – kein Clouddienst.
+Lizenz (T-0783, geprüft 26.11.2026 an der Modellkarte): FLUX.2 [klein] 4B steht unter Apache-2.0 – Ausgabebilder dürfen ohne
+Registrierung, Umsatzgrenze oder Hinweispflicht verkauft werden. NICHT verwenden: SDXL Turbo / SD Turbo (Stability AI Community
+License: Registrierung, Umsatzgrenze, „Powered by Stability AI“) und FLUX.2 [klein] 9B (FLUX Non-Commercial License).
+Nachweis: THIRD_PARTY.md, Abschnitt „Studio-Bilder“; Herkunft je Bild in docs/design/STUDIOBILDER.json (schreibt dieses Skript).
 Neues Studio: Zeile in PROMPTS ergänzen, dann  python tools/studio_bilder.py --ids NEU-01  (ComfyUI muss laufen).
-Ausgabe: src/Trendo.App/Assets/studios/<ID>.jpg (768 × 432, über ffmpeg aus dem PNG umgewandelt).
+Ausgabe: src/Trendo.App/Assets/studios/<ID>.jpg (768 × 432, über ffmpeg aus dem PNG umgewandelt, ohne Metadaten).
 """
-import argparse, json, os, shutil, subprocess, sys, tempfile, time, urllib.request, uuid
+import argparse, datetime, hashlib, json, os, shutil, subprocess, sys, tempfile, time, urllib.parse, urllib.request, uuid
 
 HOST = 'http://127.0.0.1:8188'
+# Modellordner der ComfyUI (Prüfsummen-Abgleich ist Pflicht). Überschreibbar mit --modelle oder TRENDO_COMFY_MODELLE.
+MODELLORDNER = os.environ.get('TRENDO_COMFY_MODELLE') or os.path.join(
+    os.path.expanduser('~'), 'Desktop', 'Studio-Werkzeuge', 'GAMEFORGE_GODMODE_v2_0', 'engines', 'ComfyUI_windows_portable', 'ComfyUI', 'models')
+# Erlaubtes Modell (Apache-2.0). SHA-256 wie auf Hugging Face (black-forest-labs/FLUX.2-klein-4B, Comfy-Org/flux2-klein-4B).
+MODELL = {
+    'unet': 'flux-2-klein-4b.safetensors',
+    'clip': 'qwen_3_4b.safetensors',
+    'vae': 'flux2-vae.safetensors',
+    'sha256': {
+        'flux-2-klein-4b.safetensors': 'ec3d4e733a771f61c052fb4856c48b336c55eaf2c65487c2a1faeb9bbda7a343',
+        'qwen_3_4b.safetensors': '6c671498573ac2f7a5501502ccce8d2b08ea6ca2f661c458e708f36b36edfc5a',
+        'flux2-vae.safetensors': '868fe7b343cc8f3a19dbcfcafbc3d5f888802be3f89bd81b65b3621a066ce8f3',
+    },
+    'name': 'FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0, ComfyUI lokal',
+    'lizenz': 'Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht',
+}
+VERBOTEN = ('sdxl', 'sd_xl', 'sd-turbo', 'sd_turbo', 'klein-9b', 'klein_9b')
 STYLE = ('photorealistic photograph, shot on a full-frame camera with a 35mm lens at f/2.8, natural soft light with warm golden accent light, '
          'dark charcoal and black surroundings with subtle real gold details, shallow depth of field, realistic materials and textures, '
          'cinematic but believable, high detail, no text, no letters, no logos, no watermark, no screens with readable text')
@@ -29,13 +50,13 @@ PROMPTS = {
     'STUDIO-BOOK-01': 'an open handwritten manuscript notebook with a fountain pen, a stack of hardcover books and a cup of tea on a dark wooden writing desk, warm lamp light, no readable text',
     'STUDIO-ART-01': 'an artist desk at night with a graphics pen tablet and stylus, an open sketchbook with a pencil portrait sketch, watercolor paint pans, brushes in a glass jar and a wooden artist mannequin, warm golden lamp light, no readable text',
     'STUDIO-ANIM-01': 'a graphics tablet with a stylus next to a small flipbook showing a bouncing ball in motion blur on a dark desk, soft colorful rim light, no text',
-    'STUDIO-PHOTOS-01': 'neatly arranged printed photographs in labeled wooden boxes and a vintage camera on a dark table, warm light, no readable text, no faces',
+    'STUDIO-PHOTOS-01': 'neatly arranged printed landscape photographs of mountains, lakes and forests in plain wooden frames and wooden boxes next to a vintage camera without any nameplate on a dark table, warm light, only landscapes, no people, no faces, no readable text',
     'STUDIO-IMAGEAI-01': 'an artist easel with a canvas where a glowing landscape painting seems to emerge from soft light particles, dark studio, golden accent light, no text',
     'STUDIO-VIDEOAI-01': 'a small film camera on a tripod in front of a large monitor showing a cinematic landscape frame, film strip and storyboard cards on a dark desk, warm light, no readable text, no faces',
     'STUDIO-AGENTS-01': 'a tidy workbench with several small brass robot figurines connected by thin glowing threads to a notebook with a flow diagram, dark room, golden accent light, no readable text',
     'STUDIO-MODELS-01': 'three identical vintage scales side by side on a dark wooden table, each weighing a different glass sphere with soft inner light, warm light, no text',
     'STUDIO-TRAIN-01': 'a teacher desk with stacks of labeled index cards sorted into small wooden trays and a laptop showing a simple chart, dark study room, warm desk lamp, no readable text',
-    'STUDIO-CODEAI-01': 'a mechanical keyboard and a wide monitor with blurred colorful source code lines in a dark room, a coffee cup and a small brass lamp, warm accent light, no readable text',
+    'STUDIO-CODEAI-01': 'a mechanical keyboard and a wide frameless monitor with plain bezels showing blurred warm amber and gold source code lines on a pure black background, full screen editor without any taskbar or status bar, in a dark room, a coffee cup and a small brass lamp, warm accent light, no blue, no badge, no readable text',
     'STUDIO-VISION-01': 'a magnifying glass and a camera lens lying on a printed photograph of a forest on a dark desk, light reflections in the glass, warm light, no readable text, no faces',
     'STUDIO-CITE-01': 'open old books with colorful paper bookmarks and a card catalog drawer in a library reading room, dark wood, warm reading lamp, no readable text',
     'STUDIO-DECKDESIGN-01': 'a laptop on a dark desk showing an elegant presentation slide with a large golden number and a simple timeline, a slide clicker and printed slide thumbnails beside it, warm golden accent light, no readable text',
@@ -96,6 +117,9 @@ PROMPTS = {
     'X-08': 'a smartphone connected by cable to a laptop on a dark desk',
     'CORE-04': 'a Raspberry Pi board, a smartphone and a laptop connected on a dark desk',
     'X-09': 'computer RAM modules and a CPU on a dark anti-static mat',
+    # T-0782 (Wissen & Lernen)
+    'STUDIO-TUTOR-01': 'a school exercise book with handwritten fractions and arithmetic, a pencil, an eraser and a small desk lamp on a dark wooden desk, warm evening light, no readable text, no faces',
+    'STUDIO-CODELEARN-01': 'a laptop with abstract colorful program code lines out of focus on a dark desk, a paper notebook with hand drawn flowchart boxes and a pencil beside it, warm light, no readable text, no faces',
 }
 
 def req(path, data=None, timeout=30):
@@ -107,9 +131,9 @@ def req(path, data=None, timeout=30):
 
 def workflow(prompt, seed, w=1024, h=576):
     return {
-        '1': {'class_type': 'UNETLoader', 'inputs': {'unet_name': 'flux-2-klein-4b.safetensors', 'weight_dtype': 'default'}},
-        '2': {'class_type': 'CLIPLoader', 'inputs': {'clip_name': 'qwen_3_4b.safetensors', 'type': 'flux2', 'device': 'default'}},
-        '3': {'class_type': 'VAELoader', 'inputs': {'vae_name': 'flux2-vae.safetensors'}},
+        '1': {'class_type': 'UNETLoader', 'inputs': {'unet_name': MODELL['unet'], 'weight_dtype': 'default'}},
+        '2': {'class_type': 'CLIPLoader', 'inputs': {'clip_name': MODELL['clip'], 'type': 'flux2', 'device': 'default'}},
+        '3': {'class_type': 'VAELoader', 'inputs': {'vae_name': MODELL['vae']}},
         '4': {'class_type': 'CLIPTextEncode', 'inputs': {'text': prompt, 'clip': ['2', 0]}},
         '5': {'class_type': 'EmptyFlux2LatentImage', 'inputs': {'width': w, 'height': h, 'batch_size': 1}},
         '6': {'class_type': 'Flux2Scheduler', 'inputs': {'steps': 4, 'width': w, 'height': h}},
@@ -122,8 +146,24 @@ def workflow(prompt, seed, w=1024, h=576):
         '30': {'class_type': 'SaveImage', 'inputs': {'images': ['12', 0], 'filename_prefix': 'trendo-studio'}},
     }
 
+def modell_pruefen(models_dir):
+    """Bricht ab, wenn ComfyUI das erlaubte Modell nicht hat oder eine Modelldatei nicht den SHA-256 der Apache-2.0-Datei von Hugging Face trägt (Pflicht)."""
+    if not models_dir or not os.path.isdir(models_dir): sys.exit(f'Modellordner fehlt ({models_dir}) – mit --modelle angeben; ohne Prüfsummen-Abgleich wird nichts erzeugt.')
+    for ordner, name in (('diffusion_models', MODELL['unet']), ('text_encoders', MODELL['clip']), ('vae', MODELL['vae'])):
+        vorhanden = req(f'/models/{ordner}')
+        if name not in vorhanden: sys.exit(f'ComfyUI hat {name} nicht im Ordner {ordner} – nur FLUX.2 [klein] 4B (Apache-2.0) ist erlaubt.')
+        datei = os.path.join(models_dir, ordner, name)
+        if not os.path.isfile(datei): sys.exit(f'{datei} fehlt – Prüfsumme nicht prüfbar.')
+        h = hashlib.sha256()
+        with open(datei, 'rb') as f:
+            for block in iter(lambda: f.read(1 << 24), b''): h.update(block)
+        if h.hexdigest() != MODELL['sha256'][name]: sys.exit(f'{name}: Prüfsumme weicht ab – nicht die Apache-2.0-Datei von Hugging Face.')
+        print(f'MODELL {name} sha256 ok', flush=True)
+
 def render(sid, seed, out_dir, ffmpeg):
-    pid = req('/prompt', {'prompt': workflow(f'{PROMPTS[sid]}, {STYLE}', seed), 'client_id': uuid.uuid4().hex})['prompt_id']
+    wf = workflow(f'{PROMPTS[sid]}, {STYLE}', seed)
+    if any(v in json.dumps(wf).lower() for v in VERBOTEN): sys.exit('Ablauf nutzt ein nicht erlaubtes Modell.')
+    pid = req('/prompt', {'prompt': wf, 'client_id': uuid.uuid4().hex})['prompt_id']
     for _ in range(600):
         h = req(f'/history/{pid}').get(pid)
         if h and h.get('outputs'): break
@@ -134,23 +174,60 @@ def render(sid, seed, out_dir, ffmpeg):
     tmp = os.path.join(tempfile.gettempdir(), f'trendo-studio-{sid}.png')
     open(tmp, 'wb').write(png)
     target = os.path.join(out_dir, f'{sid}.jpg')
-    subprocess.run([ffmpeg, '-y', '-loglevel', 'error', '-i', tmp, '-vf', 'scale=768:432', '-q:v', '3', target], check=True)
+    # -map_metadata -1 und bitexact: keine Metadaten, kein Encoder-Kommentar, keine Pfade im Bild.
+    subprocess.run([ffmpeg, '-y', '-loglevel', 'error', '-i', tmp, '-vf', 'scale=768:432', '-q:v', '3',
+                    '-map_metadata', '-1', '-fflags', '+bitexact', '-flags:v', '+bitexact', target], check=True)
     os.remove(tmp)
     return target
 
+def herkunft_schreiben(path, sid, seed, jpg):
+    """Herkunft je Bild in docs/design/STUDIOBILDER.json (Prompt, Startwert, Modell, Lizenz, Datum, SHA-256)."""
+    reg = json.load(open(path, encoding='utf-8')) if os.path.exists(path) else {}
+    reg[sid] = {
+        'datei': f'src/Trendo.App/Assets/studios/{sid}.jpg',
+        'seed': seed,
+        'prompt': f'{PROMPTS[sid]}, {STYLE}',
+        'modell': MODELL['name'],
+        'erzeugt': datetime.date.today().isoformat(),
+        'lizenz': 'eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell ' + MODELL['lizenz'],
+        'sha256': hashlib.sha256(open(jpg, 'rb').read()).hexdigest(),
+    }
+    with open(path, 'w', encoding='utf-8', newline='\n') as f:
+        json.dump(reg, f, ensure_ascii=False, indent=2); f.write('\n')
+
+def host_ok(url):
+    """Nur http://127.0.0.1:<port> – geprüft mit urllib.parse (kein userinfo wie 127.0.0.1@fremd, kein anderer Rechner)."""
+    if url != url.strip(): return False
+    try:
+        u = urllib.parse.urlsplit(url)
+        port = u.port
+    except ValueError:
+        return False
+    return (u.scheme == 'http' and u.hostname == '127.0.0.1' and u.username is None and u.password is None
+            and '@' not in u.netloc and port is not None and u.path in ('', '/') and not u.query and not u.fragment)
+
 def main():
+    global HOST
+    root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
     ap = argparse.ArgumentParser()
     ap.add_argument('--ids', nargs='*', help='nur diese Studios (Standard: alle)')
     ap.add_argument('--seed', type=int, default=20261102)
-    ap.add_argument('--out', default=os.path.join(os.path.dirname(__file__), '..', 'src', 'Trendo.App', 'Assets', 'studios'))
+    ap.add_argument('--host', default=HOST, help='ComfyUI, nur 127.0.0.1 (Standard %(default)s)')
+    ap.add_argument('--modelle', default=MODELLORDNER, help='ComfyUI-Modellordner für den Pflicht-Abgleich der Prüfsummen (Standard: %(default)s)')
+    ap.add_argument('--out', default=os.path.join(root, 'src', 'Trendo.App', 'Assets', 'studios'))
+    ap.add_argument('--herkunft', default=os.path.join(root, 'docs', 'design', 'STUDIOBILDER.json'))
     ap.add_argument('--ffmpeg', default=shutil.which('ffmpeg') or 'ffmpeg')
     a = ap.parse_args()
+    if not host_ok(a.host): sys.exit('Nur eine ComfyUI auf diesem PC ist erlaubt: http://127.0.0.1:<port>, ohne Benutzerangaben, Pfad oder Abfrage.')
+    HOST = a.host
     try: req('/system_stats', timeout=3)
-    except OSError: sys.exit('ComfyUI läuft nicht auf 127.0.0.1:8188 – bitte zuerst starten.')
+    except OSError: sys.exit(f'ComfyUI läuft nicht auf {HOST} – bitte zuerst starten.')
+    modell_pruefen(a.modelle)
     ids = a.ids or list(PROMPTS)
     for i, sid in enumerate(ids):
         if sid not in PROMPTS: print(f'FEHLT Bildbeschreibung für {sid}'); continue
         t = time.time(); path = render(sid, a.seed + i, os.path.abspath(a.out), a.ffmpeg)
+        herkunft_schreiben(os.path.abspath(a.herkunft), sid, a.seed + i, path)
         print(f'BILD {sid} {time.time() - t:.1f}s -> {os.path.basename(path)}', flush=True)
 
 if __name__ == '__main__':

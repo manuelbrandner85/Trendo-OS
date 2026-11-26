@@ -1,0 +1,141 @@
+# Lauf 1 (alle 14, Startwert 20261102 + Index), ComfyUI 0.41.0 auf 127.0.0.1:8191, RTX 5070
+$ python -I tools/studio_bilder.py --host http://127.0.0.1:8191 --modelle <ComfyUI>/models --ids <14 Kennungen>
+2026-11-26T18:26:49+01:00
+MODELL flux-2-klein-4b.safetensors sha256 ok
+MODELL qwen_3_4b.safetensors sha256 ok
+MODELL flux2-vae.safetensors sha256 ok
+BILD STUDIO-BOOK-01 16.2s -> STUDIO-BOOK-01.jpg
+BILD STUDIO-ANIM-01 7.7s -> STUDIO-ANIM-01.jpg
+BILD STUDIO-PHOTOS-01 9.8s -> STUDIO-PHOTOS-01.jpg
+BILD STUDIO-IMAGEAI-01 12.0s -> STUDIO-IMAGEAI-01.jpg
+BILD STUDIO-VIDEOAI-01 10.8s -> STUDIO-VIDEOAI-01.jpg
+BILD STUDIO-AGENTS-01 8.2s -> STUDIO-AGENTS-01.jpg
+BILD STUDIO-MODELS-01 14.8s -> STUDIO-MODELS-01.jpg
+BILD STUDIO-TRAIN-01 9.3s -> STUDIO-TRAIN-01.jpg
+BILD STUDIO-CODEAI-01 8.8s -> STUDIO-CODEAI-01.jpg
+BILD STUDIO-VISION-01 9.8s -> STUDIO-VISION-01.jpg
+BILD STUDIO-CITE-01 9.4s -> STUDIO-CITE-01.jpg
+BILD STUDIO-DAYPLAN-01 9.3s -> STUDIO-DAYPLAN-01.jpg
+BILD STUDIO-TUTOR-01 8.7s -> STUDIO-TUTOR-01.jpg
+BILD STUDIO-CODELEARN-01 13.1s -> STUDIO-CODELEARN-01.jpg
+exit 0
+2026-11-26T18:29:40+01:00
+
+# Lauf 2-4: Nachwürfeln für 6 Bilder (Lauf 1 zeigte Logo-/Markenanmutung: Monitor-Schriftzug, Laptop-Plakette, Kamera-Typenschild, Startleiste); Kandidaten mit --seed 20261226/20261326/20261426, PHOTOS zusätzlich 20261526-20261826
+# Auswahl (Kennung, Lauf, Startwert):
+STUDIO-VIDEOAI-01 kand2 20261326
+STUDIO-CODEAI-01 kand1 20261227
+STUDIO-CODELEARN-01 kand3 20261428
+STUDIO-TRAIN-01 kand3 20261429
+STUDIO-DAYPLAN-01 kand1 20261231
+STUDIO-PHOTOS-01 kand6 20261726
+
+# Zuordnung aller 85 Studio-Bilder VOR T-0783 (83 aus main 184fcbbfc + 2 aus T-0782) zu ComfyUI-Ausgaben (mittlere Grauwertabweichung 96x54 Graustufen; <=0,4 = dasselbe Bild, >1 = keine ComfyUI-Ausgabe). Alle trendo-studio_*.png der ComfyUI tragen im eingebetteten Ablauf unet_name=flux-2-klein-4b.safetensors.
+COMFY CORE-01 0.18 trendo-studio_00044_.png
+COMFY CORE-02 0.18 trendo-studio_00034_.png
+COMFY CORE-03 0.17 trendo-studio_00035_.png
+COMFY CORE-04 0.19 trendo-studio_00057_.png
+COMFY CORE-05 0.16 trendo-studio_00017_.png
+COMFY CORE-06 0.20 trendo-studio_00018_.png
+COMFY CORE-07 0.19 trendo-studio_00039_.png
+COMFY CORE-08 0.21 trendo-studio_00011_.png
+COMFY CORE-09 0.19 trendo-studio_00028_.png
+COMFY CORE-10 0.40 trendo-studio_00032_.png
+COMFY CORE-11 0.22 trendo-studio_00046_.png
+COMFY CORE-12 0.23 trendo-studio_00016_.png
+COMFY SPEC-01 0.20 trendo-studio_00021_.png
+COMFY SPEC-02 0.16 trendo-studio_00022_.png
+COMFY SPEC-03 0.22 trendo-studio_00023_.png
+COMFY SPEC-04 0.18 trendo-studio_00019_.png
+COMFY SPEC-05 0.19 trendo-studio_00029_.png
+COMFY SPEC-06 0.20 trendo-studio_00030_.png
+COMFY SPEC-07 0.16 trendo-studio_00031_.png
+COMFY SPEC-08 0.29 trendo-studio_00014_.png
+COMFY SPEC-09 0.17 trendo-studio_00020_.png
+COMFY SPEC-10 0.20 trendo-studio_00024_.png
+COMFY SPEC-11 0.17 trendo-studio_00010_.png
+COMFY SPEC-12 0.17 trendo-studio_00047_.png
+COMFY SPEC-13 0.19 trendo-studio_00025_.png
+COMFY SPEC-14 0.18 trendo-studio_00026_.png
+COMFY SPEC-15 0.12 trendo-studio_00012_.png
+COMFY SPEC-16 0.21 trendo-studio_00059_.png
+COMFY STUDIO-ART-01 0.18 trendo-studio_00105_.png
+COMFY STUDIO-CARDS-01 0.19 trendo-studio_00107_.png
+COMFY STUDIO-COMIC-01 0.16 trendo-studio_00104_.png
+COMFY STUDIO-CONSOLE-01 0.18 trendo-studio_00083_.png
+COMFY STUDIO-CONTRACTS-01 0.15 trendo-studio_00108_.png
+COMFY STUDIO-CV-01 0.20 trendo-studio_00106_.png
+COMFY STUDIO-DECKDESIGN-01 0.16 trendo-studio_00109_.png
+COMFY STUDIO-DOCSCAN-01 0.16 trendo-studio_00110_.png
+COMFY STUDIO-FILM-01 0.18 trendo-studio_00081_.png
+COMFY STUDIO-FORMS-01 0.20 trendo-studio_00112_.png
+COMFY STUDIO-LETTER-01 0.18 trendo-studio_00004_.png
+COMFY STUDIO-LOGO-01 0.21 trendo-studio_00102_.png
+COMFY STUDIO-MUSIK-01 0.20 trendo-studio_00060_.png
+COMFY STUDIO-ONLINE-BUSINESS-01 0.19 trendo-studio_00009_.png
+COMFY STUDIO-PDFTOOLS-01 0.21 trendo-studio_00111_.png
+COMFY STUDIO-POD-01 0.23 trendo-studio_00082_.png
+COMFY STUDIO-PODCAST-01 0.20 trendo-studio_00103_.png
+COMFY STUDIO-SUMMARY-01 0.22 trendo-studio_00101_.png
+COMFY STUDIO-TV-01 0.17 trendo-studio_00013_.png
+COMFY SYS-01 0.22 trendo-studio_00045_.png
+COMFY SYS-02 0.15 trendo-studio_00008_.png
+COMFY SYS-03 0.17 trendo-studio_00048_.png
+COMFY SYS-04 0.16 trendo-studio_00049_.png
+COMFY SYS-05 0.17 trendo-studio_00037_.png
+COMFY SYS-06 0.14 trendo-studio_00050_.png
+COMFY SYS-07 0.16 trendo-studio_00051_.png
+COMFY SYS-08 0.20 trendo-studio_00033_.png
+COMFY SYS-09 0.17 trendo-studio_00006_.png
+COMFY SYS-10 0.21 trendo-studio_00005_.png
+COMFY SYS-11 0.17 trendo-studio_00052_.png
+COMFY SYS-12 0.18 trendo-studio_00053_.png
+COMFY SYS-13 0.18 trendo-studio_00054_.png
+COMFY X-01 0.18 trendo-studio_00038_.png
+COMFY X-02 0.16 trendo-studio_00055_.png
+COMFY X-03 0.14 trendo-studio_00040_.png
+COMFY X-04 0.19 trendo-studio_00042_.png
+COMFY X-05 0.18 trendo-studio_00036_.png
+COMFY X-06 0.27 trendo-studio_00041_.png
+COMFY X-07 0.16 trendo-studio_00015_.png
+COMFY X-08 0.17 trendo-studio_00056_.png
+COMFY X-09 0.17 trendo-studio_00058_.png
+COMFY X-10 0.22 trendo-studio_00043_.png
+COMFY X-11 0.17 trendo-studio_00007_.png
+OHNE-COMFY STUDIO-AGENTS-01 43.14 trendo-studio_00058_.png
+OHNE-COMFY STUDIO-ANIM-01 42.21 trendo-studio_00086_.png
+OHNE-COMFY STUDIO-BOOK-01 43.35 trendo-studio_00084_.png
+OHNE-COMFY STUDIO-CITE-01 33.66 trendo-studio_00002_.png
+OHNE-COMFY STUDIO-CODEAI-01 26.31 trendo-studio_00058_.png
+OHNE-COMFY STUDIO-CODELEARN-01 31.20 trendo-studio_00090_.png
+OHNE-COMFY STUDIO-DAYPLAN-01 52.95 trendo-studio_00086_.png
+OHNE-COMFY STUDIO-IMAGEAI-01 28.89 trendo-studio-SPEC-10-29_00001_.png
+OHNE-COMFY STUDIO-MODELS-01 27.83 trendo-studio_00096_.png
+OHNE-COMFY STUDIO-PHOTOS-01 36.59 trendo-studio_00090_.png
+OHNE-COMFY STUDIO-TRAIN-01 30.65 trendo-studio_00042_.png
+OHNE-COMFY STUDIO-TUTOR-01 33.23 trendo-studio_00093_.png
+OHNE-COMFY STUDIO-VIDEOAI-01 45.12 trendo-studio_00093_.png
+OHNE-COMFY STUDIO-VISION-01 32.43 trendo-studio-X-01-29_00001_.png
+
+# Lauf 5 (Nachbesserung nach Gegenprüfung, 26.11.2026): STUDIO-PHOTOS-01 und STUDIO-CODEAI-01 mit angepasster Anweisung, je 4 Kandidaten (--seed 20261910/20261920/20261930/20261940), Prüfsummen-Abgleich der Modelle jetzt Pflicht (Standard-Modellordner)
+MODELL flux-2-klein-4b.safetensors sha256 ok
+MODELL qwen_3_4b.safetensors sha256 ok
+MODELL flux2-vae.safetensors sha256 ok
+BILD STUDIO-PHOTOS-01 11.3s -> STUDIO-PHOTOS-01.jpg
+BILD STUDIO-CODEAI-01 6.7s -> STUDIO-CODEAI-01.jpg
+MODELL flux-2-klein-4b.safetensors sha256 ok
+MODELL qwen_3_4b.safetensors sha256 ok
+MODELL flux2-vae.safetensors sha256 ok
+BILD STUDIO-PHOTOS-01 7.2s -> STUDIO-PHOTOS-01.jpg
+BILD STUDIO-CODEAI-01 7.2s -> STUDIO-CODEAI-01.jpg
+MODELL flux-2-klein-4b.safetensors sha256 ok
+MODELL qwen_3_4b.safetensors sha256 ok
+MODELL flux2-vae.safetensors sha256 ok
+BILD STUDIO-PHOTOS-01 8.7s -> STUDIO-PHOTOS-01.jpg
+BILD STUDIO-CODEAI-01 9.4s -> STUDIO-CODEAI-01.jpg
+MODELL flux-2-klein-4b.safetensors sha256 ok
+MODELL qwen_3_4b.safetensors sha256 ok
+MODELL flux2-vae.safetensors sha256 ok
+BILD STUDIO-PHOTOS-01 7.5s -> STUDIO-PHOTOS-01.jpg
+BILD STUDIO-CODEAI-01 9.3s -> STUDIO-CODEAI-01.jpg
+# Auswahl: Kandidat 1 für beide (STUDIO-PHOTOS-01 Startwert 20261910, STUDIO-CODEAI-01 Startwert 20261911)
