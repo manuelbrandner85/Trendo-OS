@@ -1,0 +1,15 @@
+Auswertung 2026;;;;;
+;;;;;
+Art;Kategorie;Netto;Steuer;Brutto;Buchungen
+Einnahme;Einnahmen;1100;197;1297;2
+Ausgabe;Lebensmittel;-50;0;-50;1
+Ausgabe;Büro;-10;-1,9;-11,9;1
+Ausgabe;Gebühren;-5;0;-5;1
+;;;;;
+;Überschuss (Einnahmen − Ausgaben);1035;195,1;1230,1;
+;;;;;
+;Umsatzsteuer eingenommen;197;;;
+;Vorsteuer gezahlt;1,9;;;
+;Differenz (etwa ans Finanzamt);195,1;;;
+;;;;;
+"Zusammenstellung aus deinen Buchungen. Ersetzt keine Steuerberatung; ELSTER-Übermittlung ist bewusst nicht eingebaut.";;;;;

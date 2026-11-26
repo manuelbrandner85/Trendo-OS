@@ -1,0 +1,19 @@
+# T-0776 Fremdnachlauf krita-psd-ora – 2026-11-26 11:17:06 +01:00
+Datei trendo-bild.psd: 19508 Bytes, SHA-256 e7a09c85cb46f3c33887b45f91766b99bc492e09a557ab4b63ff5161260d5195
+Datei trendo-bild.ora: 1997 Bytes, SHA-256 e7c3ff8765024974926f5379eb9bc8c8e66f102907684dca409f28feb0bf14c2
+$ Krita öffnet bild.psd und speichert ORA
+  krita.exe C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work-rot\kunst-0ae0a8\bild.psd --export --export-filename C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work-rot\kunst-0ae0a8\krita-aus-psd.ora
+  Umgebung USERPROFILE=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work-rot\kunst-0ae0a8\krita-profil
+  Umgebung APPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work-rot\kunst-0ae0a8\krita-profil\AppData\Roaming
+  Umgebung LOCALAPPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work-rot\kunst-0ae0a8\krita-profil\AppData\Local
+  Umgebung HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work-rot\kunst-0ae0a8\krita-profil
+Exit 0 nach 18,1 s
+$ Krita öffnet bild.psd und speichert PNG
+  krita.exe C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work-rot\kunst-0ae0a8\bild.psd --export --export-filename C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work-rot\kunst-0ae0a8\krita-aus-psd.png
+  Umgebung USERPROFILE=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work-rot\kunst-0ae0a8\krita-profil
+  Umgebung APPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work-rot\kunst-0ae0a8\krita-profil\AppData\Roaming
+  Umgebung LOCALAPPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work-rot\kunst-0ae0a8\krita-profil\AppData\Local
+  Umgebung HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work-rot\kunst-0ae0a8\krita-profil
+Exit 0 nach 2,5 s
+Datei krita-aus-psd.ora: 2185 Bytes, SHA-256 f43cd93ea8e37dc51ea6f59b9cff2ff4d7f078373f5edf0697b5f4cc5d86423c
+Datei krita-aus-psd.png: 209 Bytes, SHA-256 4fb4c523c406e03cc3ffb20ca13f39baf21b8b83e890e89040cee027d49d314a

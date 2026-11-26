@@ -107,7 +107,8 @@ public static class CadExport
 
     static string Hex(string c) { var h = c.TrimStart('#').ToUpperInvariant(); return "#" + (h.Length == 8 ? h[2..] : h); }
 
-    /// <summary>STEP (ISO 10303-21, AP214) als facettiertes Volumen – lässt sich in FreeCAD, Fusion, SolidWorks usw. öffnen.</summary>
+    /// <summary>STEP (ISO 10303-21, AP214) als facettiertes Volumen. Geprüft in FreeCAD 1.1 (T-0776: gültige geschlossene Körper, Volumen und Namen stimmen);
+    /// Fusion, SolidWorks usw. sind nicht geprüft.</summary>
     public static void WriteStep(IReadOnlyList<(string Name, Solid Solid)> parts, string path)
     {
         var sb = new StringBuilder(); var n = 0;
@@ -135,7 +136,14 @@ public static class CadExport
             {
                 var loop = E($"POLY_LOOP('',(#{pts[a]},#{pts[b]},#{pts[c]}))");
                 var bound = E($"FACE_OUTER_BOUND('',#{loop},.T.)");
-                faces.Add(E($"FACE('',(#{bound}))"));
+                // T-0776: FACE_SURFACE mit Ebene statt nacktem FACE – nur so übernimmt der STEP-Leser von FreeCAD/Open CASCADE die Dreiecke
+                // (vorher las FreeCAD 1.1 zwei leere Schalen ohne eine einzige Fläche, reports/T-0776/freecad-step).
+                var (nv, rv) = PlaneAxes(v[a], v[b], v[c]);
+                var nDir = E($"DIRECTION('',({R(nv.X)},{R(nv.Y)},{R(nv.Z)}))");
+                var rDir = E($"DIRECTION('',({R(rv.X)},{R(rv.Y)},{R(rv.Z)}))");
+                var axis = E($"AXIS2_PLACEMENT_3D('',#{pts[a]},#{nDir},#{rDir})");
+                var plane = E($"PLANE('',#{axis})");
+                faces.Add(E($"FACE_SURFACE('',(#{bound}),#{plane},.T.)"));
             }
             var shell = E($"CLOSED_SHELL('',({string.Join(",", faces.Select(f => "#" + f))}))");
             var brep = E($"FACETED_BREP('{nm}',#{shell})");
@@ -150,6 +158,20 @@ public static class CadExport
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
         File.WriteAllText(path, file.ToString(), new UTF8Encoding(false));
     }
+
+    /// <summary>Normale und Bezugsrichtung (in der Ebene, senkrecht zur Normalen) eines Dreiecks; bei entarteten Dreiecken eine gültige Ersatzlage.</summary>
+    static (Vec3 Normal, Vec3 Ref) PlaneAxes(Vec3 a, Vec3 b, Vec3 c)
+    {
+        var cr = Vec3.Cross(b - a, c - a);
+        var n = cr.Len < 1e-12 ? new Vec3(0, 0, 1) : cr.Norm();
+        var r = b - a;
+        r -= n * Vec3.Dot(r, n);
+        if (r.Len < 1e-9) r = Vec3.Cross(n, Math.Abs(n.X) < 0.9 ? new Vec3(1, 0, 0) : new Vec3(0, 1, 0));
+        return (n, r.Norm());
+    }
+
+    /// <summary>STEP-Gleitkommazahl: immer mit Dezimalpunkt (ISO 10303-21 REAL).</summary>
+    static string R(double v) { var s = F(Math.Abs(v) < 1e-12 ? 0 : v); return s.Contains('.') || s.Contains('E') ? s : s + "."; }
 
     /// <summary>Kanten für Zeichnungen: Polygonränder, außer zwischen Flächen derselben Ebene (sonst sieht man jedes Dreieck).</summary>
     public static List<(Vec3 A, Vec3 B)> FeatureEdges(Solid s)

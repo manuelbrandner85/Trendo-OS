@@ -16,7 +16,7 @@
 - Vorschau-Karten und „Als Webseite speichern“ zeigen den echten Stand: Bild (in der HTML eingebettet), Beschreibung, Varianten mit Preis und Bestand, „auf Bestellung gefertigt“ bei POD-Artikeln. Preisfarbe Gold statt Blau.
 - Gefundener Fehler behoben: alte, abgelöste Eingabefelder schrieben ihren Text in die Entwürfe zurück, sodass nach einer Neuzeichnung bereits angelegte Varianten wieder im Formular standen (`W5Sell.cs` `SellField`).
 
-**Belege:** `ShopEditTests` (11, Kern), `SellEdit_Ui.Click_to_file` (Klick bis zur Datei, echte Dateien), `reports/T-0753/csv-fremdprogramme.log` (+ `.sha256`): die exportierten CSV öffnen sich in **Windows PowerShell 5.1 Import-Csv** und im **Python-csv-Modul** (echte Fremdprogramme, Umlaute, Komma im Feld, Varianten-Zeilen, Bild daneben). **LibreOffice: BLOCKIERT** – auf diesem PC nicht installiert (nur Restordner `program\logs`), Excel ebenfalls nicht. Bild der Oberfläche: `reports/T-0753/oberflaeche-online-artikel.png`.
+**Belege:** `ShopEditTests` (11, Kern), `SellEdit_Ui.Click_to_file` (Klick bis zur Datei, echte Dateien), `reports/T-0753/csv-fremdprogramme.log` (+ `.sha256`): die exportierten CSV öffnen sich in **Windows PowerShell 5.1 Import-Csv** und im **Python-csv-Modul** (echte Fremdprogramme, Umlaute, Komma im Feld, Varianten-Zeilen, Bild daneben). **LibreOffice: BLOCKIERT** – auf diesem PC nicht installiert (nur Restordner `program\logs`), Excel ebenfalls nicht. **Nachtrag T-0776:** falsch für LibreOffice – es liegt im Trendo-Werkzeugordner; LibreOffice Calc öffnet alle drei CSV (Spalten, Preise, Umlaute, Formel-Zelle bleibt Text), `reports/T-0776/libreoffice-shop-csv/`. Bild der Oberfläche: `reports/T-0753/oberflaeche-online-artikel.png`.
 
 ## 2 Print on Demand
 
@@ -37,7 +37,7 @@
 | Nr | Kriterium | Urteil | Begründung |
 |---|---|---|---|
 | 1 | Aus leerer Vorlage echtes Ergebnis | VOLLWERTIG (Shop) | Leerer Shop → Kunde, Artikel mit Bild/Varianten, Bestellung, CSV und HTML-Shop über die Oberfläche (`Click_to_file`) |
-| 2 | Fremddatei importieren, bearbeiten, exportieren; Fremdprogramm | TEILWEISE | Shopify-CSV (neue und alte Spalten) ein, bearbeiten, aus; Export in PowerShell und Python geöffnet. LibreOffice BLOCKIERT (nicht installiert); kein Import in echtes Shopify (Konto nötig) |
+| 2 | Fremddatei importieren, bearbeiten, exportieren; Fremdprogramm | TEILWEISE | Shopify-CSV (neue und alte Spalten) ein, bearbeiten, aus; Export in PowerShell und Python geöffnet. LibreOffice BLOCKIERT (nicht installiert – **Nachtrag T-0776:** falsch, LibreOffice liegt im Trendo-Werkzeugordner; Calc öffnet alle drei CSV, `reports/T-0776/libreoffice-shop-csv/`); kein Import in echtes Shopify (Konto nötig) |
 | 3 | Abbruch verliert höchstens 30 s | VOLLWERTIG (Stammdaten) | Jede Änderung sofort atomar geschrieben; kein eigener Abbruchtest in diesem Paket. Kassieren als unteilbare Aktion (audit-1) nicht Teil dieses Auftrags |
 | 4 | Claude/KI führt Fachaufgabe aus | FEHLT | Kein neuer KI-Adapter für Artikel/Kunden; nicht Teil des Auftrags |
 | 5 | Test vom Klick bis zur echten Datei | VOLLWERTIG | `SellEdit_Ui.Click_to_file` (RealClick bis CSV/HTML auf Platte) |
@@ -53,7 +53,7 @@
 
 ## Nicht geprüft
 - Echte Dienste (Printful, Printify, Stripe-Testmodus, Netlify) – BLOCKIERT ohne Schlüssel.
-- Import der CSV in ein echtes Shopify; LibreOffice/Excel.
+- Import der CSV in ein echtes Shopify; Excel (LibreOffice: Nachtrag T-0776).
 - Echtes Ziehen und Ablegen mit der Maus; Bildschirmbild im Einfach-Modus nur mit eingeklappten Karten.
 - Die Druckdatei bei „In den Shop übernehmen“ ist im Test ersetzt (`PodPngOverride`), weil die Headless-Umgebung ohne Skia leere PNG schreibt; der echte Weg nutzt `PodExportPng` wie der vorhandene PNG-Export.
 - (Im zweiten Durchgang behoben: die Kasse verkauft jetzt Varianten, siehe unten.)

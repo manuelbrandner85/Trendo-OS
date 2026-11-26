@@ -38,7 +38,7 @@ Rot-Grün: Die neuen Tests nutzen `TextPageView`, `FlowDoc`, `TextEdit`, `Table.
 6. Einfach/Profi, Tastenkürzel, Rechtsklick, Ziehen: **TEILWEISE** – Stufen, Kürzel, Rechtsklick, Ziehen zum Markieren und Spaltenbreite ziehen belegt; Text per Ziehen verschieben und Dateien auf die Seite ablegen fehlen.
 
 ## Nicht geprüft
-- Abgleich mit LibreOffice/Word (nicht vorhanden).
+- Abgleich mit Word (nicht vorhanden). LibreOffice: siehe Nachtrag T-0776 unten.
 - Bildprüfung der Stufe „Professionell“: das Render-Werkzeug setzt die Stufe nur mit Programmvorlage; „Erweitert“ ist über die UI-Tests geprüft, das Bild zeigt „Einfach“.
 - Systemzwischenablage im echten Windows-Fenster (Headless-Fenster hat keine; Weg mit Trendos Zwischenspeicher und Fremdtext ist getestet).
 - Eingabe über IME/Zusammensetzen (z. B. Akzent-Tasten) und Bildschirmleser-Unterstützung des neuen Schreibfelds.
@@ -54,3 +54,7 @@ Rot-Grün: Die neuen Tests nutzen `TextPageView`, `FlowDoc`, `TextEdit`, `Table.
 `src/Trendo.App/MainWindow.Text.cs`, `MainWindow.TextLook.cs`, `MainWindow.TextPro.cs`, neu `src/Trendo.App/TextPageView.cs`; `src/Trendo.Core/Office/TextDoc.cs`, `DocxFormat.cs`, `OdtFormat.cs`, `TextPdf.cs`, `ImportCheck.Text.cs`, neu `TextFlow.cs`, `TextEdit.cs`; Tests `tests/Trendo.Core.Tests/TextEditorTests.cs` (neu), `ImportReportTests.cs`, `tests/Trendo.App.Tests/TextEditorUiTests.cs` (neu), `TextUiTests.cs`, `TextLookUiTests.cs`, `TextF3UiTests.cs`, `TextProUiTests.cs`, `OfficeImportUiTests.cs`, `OfficeRecoveryUiTests.cs`; `reports/T-0692/*`; `tasks/T-0692-text-editor*.md`.
 
 **Status:** umgesetzt und gezielt getestet; nicht gemergt, kein Release.
+
+## Nachtrag T-0776 (26.11.2026)
+
+„Kein LibreOffice“ (Kriterium 2) war falsch: LibreOffice 26.2.4 liegt im Trendo-Werkzeugordner (`%LOCALAPPDATA%\TrendoWerkzeuge\libreoffice`); gesucht wurde nur unter `C:\Program Files\LibreOffice`, dort liegt nur ein Restordner `logs` (`reports/T-0776/werkzeuge.txt`). Nachlauf: Trendo-DOCX und -ODT öffnen in LibreOffice Writer; Text (Titel, Überschrift, Umlaute, Liste, Tabelle) und Seitenzahl stimmen – `reports/T-0776/libreoffice-text/`, Test `T0776_Fremdnachlauf.Text_docx_odt_in_LibreOffice`. Word bleibt ungeprüft.

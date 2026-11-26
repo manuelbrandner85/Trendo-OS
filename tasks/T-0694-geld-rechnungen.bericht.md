@@ -35,7 +35,7 @@ Angepasst: Speichern über `AtomicFile`, Steuersätze als Tabelle, Käufer-Ansch
 ## Abnahmekriterien
 1. Aus leerer Vorlage echtes Ergebnis: **VOLLWERTIG** – UI-Test von leerem Programm bis PDF/ZUGFeRD/XRechnung.
 2. Fremddatei importieren, bearbeiten, exportieren, im Fremdprogramm öffnen: **TEILWEISE** – CAMT/MT940/CSV nach Spezifikation (keine echten Bank-Exporte); PDFs von pdftotext gelesen
-   (`reports/T-0694/`, SHA-256); XLSX nur mit Trendos eigenem Leser (kein Excel/LibreOffice auf dem PC); E-Rechnung nicht extern validiert.
+   (`reports/T-0694/`, SHA-256); XLSX nur mit Trendos eigenem Leser (kein Excel/LibreOffice auf dem PC); E-Rechnung nicht extern validiert. **Nachtrag T-0776:** „kein LibreOffice“ war falsch – LibreOffice 26.2.4 liegt im Trendo-Werkzeugordner (`%LOCALAPPDATA%\TrendoWerkzeuge\libreoffice`); gesucht wurde nur unter `C:\Program Files\LibreOffice`, dort liegt nur ein Restordner `logs` (`reports/T-0776/werkzeuge.txt`). Die Auswertung-XLSX öffnet in LibreOffice Calc mit drei Blättern, Calc rechnet die Formeln selbst nach (`reports/T-0776/libreoffice-geld-xlsx/`).
 3. Prozessabbruch ≤ 30 s: **TEILWEISE** – jede Änderung wird sofort atomar geschrieben, .bak-Wiederherstellung getestet (beschädigte Datei); kein eigener Kill-Test für `finanzen`
    (AtomicFile selbst ist in `ProgramCrashTests` mit echtem Prozessabbruch geprüft). Das Programm läuft weiterhin **nicht** in der Programm-Hülle (Datei nicht anfassbar).
 4. KI-Fachaufgabe im offenen Dokument, rückgängig: **TEILWEISE** – „Rechnung aus Beschreibung“ erzeugt einen echten Entwurf (rückgängig), erreichbar für Claude über `feld_setzen`/`klicken`;
@@ -51,7 +51,7 @@ Angepasst: Speichern über `AtomicFile`, Steuersätze als Tabelle, Käufer-Ansch
 - Kein Volltest (macht die Hauptsitzung).
 
 ## Nicht geprüft
-PDF/A-3- und XRechnung-Validierung (kein veraPDF/Mustang/KoSIT; Schematron nicht beigelegt), DATEV-Import, echte Bank-Exporte, XLSX in Excel/LibreOffice, Drag-and-drop und Rechtsklick
+PDF/A-3- und XRechnung-Validierung (kein veraPDF/Mustang/KoSIT; Schematron nicht beigelegt), DATEV-Import, echte Bank-Exporte, XLSX in Excel (LibreOffice: Nachtrag T-0776), Drag-and-drop und Rechtsklick
 im Test, Claude-Lauf, Linux/Pi.
 
 ## Offene Punkte

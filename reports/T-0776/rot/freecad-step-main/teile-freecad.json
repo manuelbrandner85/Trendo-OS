@@ -1,0 +1,24 @@
+{
+ "freecad": [
+  "1",
+  "1",
+  "4"
+ ],
+ "art": "step",
+ "gueltig": false,
+ "volumen": 0.0,
+ "flaeche": 0.0,
+ "koerper": 0,
+ "schalen_geschlossen": false,
+ "flaechen": 0,
+ "umriss": [
+  1.7976931348623157e+308,
+  1.7976931348623157e+308,
+  1.7976931348623157e+308,
+  -1.7976931348623157e+308,
+  -1.7976931348623157e+308,
+  -1.7976931348623157e+308
+ ],
+ "koerper_volumen": [],
+ "namen": []
+}

@@ -42,7 +42,7 @@
 
 ## Abnahmekriterien
 1. Aus leerer Vorlage ein echtes Ergebnis: NICHT BETROFFEN (Dateiverwaltung/Sicherung, kein Dokument-Fach).
-2. Fremddatei importieren/exportieren: NICHT BETROFFEN. Der Hinweis im ZIP-Kommentar wurde nicht in 7-Zip angesehen (NICHT GETESTET).
+2. Fremddatei importieren/exportieren: NICHT BETROFFEN. Der Hinweis im ZIP-Kommentar wurde nicht in 7-Zip angesehen (NICHT GETESTET). **Nachtrag T-0776:** 7-Zip 26.05 prüft die Sicherung („Everything is Ok“), entpackt bitgleich und zeigt den Vermerk; die Umlaute darin stellt 7-Zip falsch dar (`reports/T-0776/7zip-zip/`).
 3. Prozessabbruch: TEILWEISE – die Liste gilt nur für die Sitzung (wie im Explorer), nach einem Neustart ist Rückgängig leer; Dateien selbst gehen nicht verloren.
 4. KI-Fachaufgabe rückgängig: FEHLT – die KI hat weiter nur „desktop.zeigen“; nicht Teil dieses Auftrags.
 5. Test vom Klick bis zur echten Datei: VOLLWERTIG (UI-Test mit echten Dateien im Testordner; Windows-Papierkorb echt im Core-Test).

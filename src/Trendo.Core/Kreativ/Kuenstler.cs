@@ -627,9 +627,13 @@ public static class PaintFiles
         w.U32(0); // Bildressourcen
         using var lm = new MemoryStream(); var l = new BinaryWriterBe(lm);
         using var li = new MemoryStream(); var i = new BinaryWriterBe(li);
-        i.I16((short)d.Layers.Count);
+        // T-0776: die Hintergrundfarbe als unterste Ebene „Hintergrund“ (wie in ORA). Ohne sie zeigte Krita 6 die freien Stellen durchsichtig
+        // statt in der Hintergrundfarbe (reports/T-0776/krita-psd-ora).
+        var bgPx = new Pixmap(d.W, d.H); var (bgR, bgG, bgB) = PaintColors.IsHex(d.Background) ? PaintColors.Rgb(d.Background) : ((byte)255, (byte)255, (byte)255); bgPx.Fill(bgR, bgG, bgB, 255);
+        var all = new List<PaintLayer> { new("hintergrund", "Hintergrund", bgPx) }; all.AddRange(d.Layers);
+        i.I16((short)all.Count);
         var chanLen = (uint)(2 + d.W * d.H);
-        foreach (var layer in d.Layers)
+        foreach (var layer in all)
         {
             i.I32(0); i.I32(0); i.I32(d.H); i.I32(d.W); i.U16(4);
             foreach (var id in new short[] { -1, 0, 1, 2 }) { i.I16(id); i.U32(chanLen); }
@@ -637,9 +641,13 @@ public static class PaintFiles
             var ascii = string.Concat(layer.Name.Select(c => c is >= ' ' and < (char)128 ? c : '_'));
             var name = Encoding.ASCII.GetBytes(ascii[..Math.Min(255, ascii.Length)]);
             var nameLen = 1 + name.Length; var pad = (4 - nameLen % 4) % 4;
-            i.U32((uint)(4 + 4 + nameLen + pad)); i.U32(0); i.U32(0); i.U8((byte)name.Length); i.Bytes(name); i.Bytes(new byte[pad]);
+            // T-0776: zusätzlich der Unicode-Name („luni“, wie Photoshop ihn schreibt). Ohne ihn übernahm Krita 6 die Füllbytes des kurzen Namens
+            // („Skizze\0“) und Umlaute kamen nur als „_“ an (reports/T-0776/krita-psd-ora).
+            var uni = Encoding.BigEndianUnicode.GetBytes(layer.Name); var uniLen = 4 + uni.Length; var uniPad = (4 - uniLen % 4) % 4;
+            i.U32((uint)(4 + 4 + nameLen + pad + 12 + uniLen + uniPad)); i.U32(0); i.U32(0); i.U8((byte)name.Length); i.Bytes(name); i.Bytes(new byte[pad]);
+            i.Ascii("8BIM"); i.Ascii("luni"); i.U32((uint)(uniLen + uniPad)); i.U32((uint)layer.Name.Length); i.Bytes(uni); i.Bytes(new byte[uniPad]);
         }
-        foreach (var layer in d.Layers)
+        foreach (var layer in all)
             foreach (var c in new[] { 3, 0, 1, 2 })
             {
                 i.U16(0); var px = layer.Px.Px; var buf = new byte[d.W * d.H];

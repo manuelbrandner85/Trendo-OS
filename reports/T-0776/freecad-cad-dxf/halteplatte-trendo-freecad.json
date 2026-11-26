@@ -1,0 +1,134 @@
+{
+ "freecad": [
+  "1",
+  "1",
+  "4"
+ ],
+ "art": "dxf",
+ "importer": "Import.readDXF (C++)",
+ "objekte": 13,
+ "kanten": 10,
+ "umriss": [
+  0.0,
+  0.0,
+  0.0,
+  80.0,
+  50.0,
+  0.0
+ ],
+ "liste": [
+  {
+   "name": "0",
+   "typ": "App::FeaturePython",
+   "enthaelt": 0
+  },
+  {
+   "name": "Layers",
+   "typ": "App::DocumentObjectGroupPython",
+   "enthaelt": 6
+  },
+  {
+   "name": "Kontur",
+   "typ": "App::FeaturePython",
+   "enthaelt": 1
+  },
+  {
+   "name": "Bohrungen",
+   "typ": "App::FeaturePython",
+   "enthaelt": 2
+  },
+  {
+   "name": "Beschriftung",
+   "typ": "App::FeaturePython",
+   "enthaelt": 0
+  },
+  {
+   "name": "Hilfslinien",
+   "typ": "App::FeaturePython",
+   "enthaelt": 2
+  },
+  {
+   "name": "Umriss",
+   "typ": "App::FeaturePython",
+   "enthaelt": 1
+  },
+  {
+   "name": "Polyline",
+   "typ": "Part::Feature",
+   "kanten": 5,
+   "umriss": [
+    0.0,
+    0.0,
+    0.0,
+    80.0,
+    50.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    10.5,
+    20.5,
+    0.0,
+    19.5,
+    29.5,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape001",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    55.5,
+    20.5,
+    0.0,
+    64.5,
+    29.5,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape002",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    29.6077,
+    31.0,
+    0.0,
+    50.3923,
+    37.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape003",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    0.0,
+    25.0,
+    0.0,
+    70.0,
+    25.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape004",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    0.0,
+    0.0,
+    0.0,
+    10.0,
+    0.0,
+    0.0
+   ]
+  }
+ ]
+}

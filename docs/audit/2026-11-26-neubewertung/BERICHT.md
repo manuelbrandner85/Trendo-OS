@@ -226,6 +226,7 @@ Spalten K1–K6 entsprechen den Abnahmekriterien 1–6. Urteile in der Schreibwe
    - FreeCAD 1.1 ist inzwischen vorhanden, wurde aber für CAD-STEP und DXF-Export noch nicht genutzt.
    - Im Trendo-Werkzeugordner liegen außerdem Krita (PSD/ORA), Inkscape (SVG) und 7-Zip (ZIP). Keines davon wurde bisher für eine Gegenprobe genutzt.
    - LibreOffice liegt im Trendo-Werkzeugordner und lief am 26.11. Die Berichte T-0692, T-0694 und T-0753 nennen es dagegen „nicht installiert“. Ein Nachlauf für Text, Geld-XLSX und Shop-CSV ist ohne Installation möglich.
+   - **Nachtrag T-0776:** Alle diese Nachläufe sind gemacht (`reports/T-0776/`): LibreOffice (Text, Geld-XLSX, Shop-CSV), FreeCAD (CAD-STEP, CAD-DXF, Wohnungs-DXF), Krita (PSD, ORA), Inkscape (Logo-/Animations-SVG), 7-Zip (Sicherungs- und Erweiterungs-ZIP). Dabei gefunden und behoben: FreeCAD las Trendos STEP ohne Flächen; Krita las PSD-Ebenennamen mit Füllbytes und ohne Hintergrund. Die Studio-Zeilen unten sind der Stand vor T-0776.
 3. **K6 – Bedienung auf der Arbeitsfläche ist uneinheitlich.**
    - Rechtsklick fehlt in Bewerbung, Karten, Formulare, Briefe, Vorhaben, POD, Trendo PDF, Bild, Ton, Künstlerstudio, Live streamen und auf fast allen System-Seiten.
    - Ablegen mit echten Fenster-Ereignissen (DragEnter → DragOver → Drop, `tests/Trendo.App.Tests/BueroAusbauUiTests.cs:58-68`) testen die Büro-Studios, Großprojekte, Karten/Tagesplaner, die T-0725-Programme und Medien bearbeiten.

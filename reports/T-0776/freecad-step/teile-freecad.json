@@ -1,0 +1,30 @@
+{
+ "freecad": [
+  "1",
+  "1",
+  "4"
+ ],
+ "art": "step",
+ "gueltig": true,
+ "volumen": 10625.0,
+ "flaeche": 4600.0,
+ "koerper": 2,
+ "schalen_geschlossen": true,
+ "flaechen": 88,
+ "umriss": [
+  0.0,
+  0.0,
+  0.0,
+  60.0,
+  20.0,
+  20.0
+ ],
+ "koerper_volumen": [
+  6000.0,
+  4625.0
+ ],
+ "namen": [
+  "Quader",
+  "Winkel"
+ ]
+}

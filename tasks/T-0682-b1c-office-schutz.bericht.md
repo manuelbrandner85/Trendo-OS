@@ -77,7 +77,7 @@ Kommandos: `dotnet build Trendo.sln -c Release` (0 Fehler), dann gezielt.
 **Gegenprobe:** Mit testweise abgeschaltetem Schutz (`ImportGuardStops` immer false) schlagen vier der fünf App-Tests fehl, drei davon genau am Bytevergleich nach Strg+S (Zeilen 49, 116, 145). Strg+S hätte das Original also wirklich überschrieben; die Tests prüfen den echten Weg. Die Änderung wurde danach zurückgenommen.
 
 ## 4. Abgleich – was wirklich mit einem Fremdwerkzeug geprüft wurde
-- **Kein Fremdwerkzeug vorhanden:** Auf diesem PC ist weder LibreOffice (`soffice`) noch Microsoft Office installiert; `python-docx`, `openpyxl`, `python-pptx` ebenfalls nicht. Es wurde nichts installiert.
+- **Kein Fremdwerkzeug vorhanden:** Auf diesem PC ist weder LibreOffice (`soffice`) noch Microsoft Office installiert (**Nachtrag T-0776:** für LibreOffice falsch – LibreOffice 26.2.4 liegt im Trendo-Werkzeugordner `%LOCALAPPDATA%\TrendoWerkzeuge\libreoffice`, `reports/T-0776/werkzeuge.txt`); `python-docx`, `openpyxl`, `python-pptx` ebenfalls nicht. Es wurde nichts installiert.
 - **Keine neue Rundreise** mit Word, Excel, PowerPoint oder LibreOffice. Die sechs Testdateien hat kein Fremdprogramm geöffnet; ob Word/LibreOffice sie ohne Reparaturhinweis öffnen, ist **nicht geprüft**.
 - **Einziger Bezug zu echten Fremdprogramm-Dateien:** Die Importprüfung lief über vier schon im Repo liegende Dateien – zwei von LibreOffice 26.2.4 geschrieben (`reports/t0223-office/text-abgleich/lo-aus-docx/probe.odt`, `lo-aus-odt/probe.docx`), zwei von Word für Mac (DIN-Briefvorlagen). Ergebnis: kein falscher Alarm. Das belegt nur „kein Fehlalarm bei bekannten Inhalten“, nicht die Vollständigkeit der Erkennung.
 - Die Abgleichtests, die ohne LibreOffice still zurückkehren, wurden nicht angefasst (T-0681).

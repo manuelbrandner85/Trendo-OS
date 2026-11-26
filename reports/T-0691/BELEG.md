@@ -25,6 +25,7 @@ Punkt anklicken, Umschalt+Klick, Pfeiltaste; Fläche füllen und Normalen über 
 
 ## Nicht belegt / blockiert
 - **STEP in FreeCAD**: FreeCAD ist auf dem PC nicht vorhanden → BLOCKIERT (nichts installiert). STEP-Export heißt jetzt ehrlich „facettiert“.
+  **Nachtrag T-0776 (26.11.2026):** FreeCAD 1.1.4 ist inzwischen vorhanden (`C:\Program Files\FreeCAD 1.1`). Der Nachlauf fand einen Fehler: FreeCAD las Trendos STEP als leere Schalen ohne Fläche (nackte `FACE`). Behoben (`FACE_SURFACE` mit Ebene); jetzt gültige geschlossene Körper mit richtigem Volumen (`reports/T-0776/freecad-step/`). DXF-Export ebenfalls in FreeCAD gelesen (`reports/T-0776/freecad-cad-dxf/`).
 - Echter Absturz der ganzen App (Fenster) wurde nicht getötet; geprüft sind der Schreibweg (Prozessabbruch) und der Neustart-Weg (neues Fenster, gleicher Datenordner) getrennt.
 
 ## SHA-256

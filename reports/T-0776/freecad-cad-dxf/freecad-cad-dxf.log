@@ -1,0 +1,38 @@
+# T-0776 Fremdnachlauf freecad-cad-dxf – 2026-11-26 11:18:45 +01:00
+Vorlage fremd-halteplatte.dxf: SHA-256 b96cc46e7eeaf4a495ce4a1f111bfe1a24670ca904cce5b131d78711a16fb486
+Datei trendo-halteplatte.dxf: 1104 Bytes, SHA-256 b0ba65a59f6c2fbdbee7e03fdacde08d8de5a0920259777dcb22a3a711d4853c
+$ FreeCAD liest halteplatte-trendo.dxf
+  freecadcmd.exe C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\tools\echtlauf\t0776\freecad_pruefe.py
+  Umgebung FREECAD_USER_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\cad-dxf-2ef2a9\freecad-profil\home
+  Umgebung FREECAD_USER_DATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\cad-dxf-2ef2a9\freecad-profil\daten
+  Umgebung FREECAD_USER_TEMP=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\cad-dxf-2ef2a9\freecad-profil\tmp
+  Umgebung USERPROFILE=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\cad-dxf-2ef2a9\freecad-profil\home
+  Umgebung T0776_ART=dxf
+  Umgebung T0776_IN=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\cad-dxf-2ef2a9\halteplatte-trendo.dxf
+  Umgebung T0776_OUT=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\cad-dxf-2ef2a9\halteplatte-trendo-freecad.json
+Exit 0 nach 1,7 s
+{"freecad": ["1", "1", "4"], "art": "dxf", "importer": "Import.readDXF (C++)", "objekte": 13, "kanten": 10, "umriss": [0.0, 0.0, 0.0, 80.0, 50.0, 0.0]}
+FreeCAD 1.1.4, Libs: 1.1.4R20260928 (Git shallow)
+(C) 2001-2026 FreeCAD contributors
+FreeCAD is free and open-source software licensed under the terms of LGPL2+ license.
+
+Recompute......
+						(7 %)							(15 %)							(23 %)							(30 %)							(38 %)							(46 %)							(53 %)							(61 %)							(69 %)							(76 %)							(84 %)							(92 %)							(100 %)									Recompute......
+						(7 %)							(15 %)							(23 %)							(30 %)							(38 %)							(46 %)							(53 %)							(61 %)							(69 %)							(76 %)							(84 %)							(92 %)							(100 %)
+Datei halteplatte-trendo-freecad.json: 1814 Bytes, SHA-256 f0c3ead2ad2c0b0037b34761cc63dc95dc52a608d7d7ddabb8cd0b8cbbed7956
+FreeCAD: 13 Objekte, 10 Kanten, Umriss [0.0,0.0,0.0,80.0,50.0,0.0]
+  App::FeaturePython „0“ Kanten= 
+  App::DocumentObjectGroupPython „Layers“ Kanten= 
+  App::FeaturePython „Kontur“ Kanten= 
+  App::FeaturePython „Bohrungen“ Kanten= 
+  App::FeaturePython „Beschriftung“ Kanten= 
+  App::FeaturePython „Hilfslinien“ Kanten= 
+  App::FeaturePython „Umriss“ Kanten= 
+  Part::Feature „Polyline“ Kanten=5 
+  Part::Feature „Shape“ Kanten=1 
+  Part::Feature „Shape001“ Kanten=1 
+  Part::Feature „Shape002“ Kanten=1 
+  Part::Feature „Shape003“ Kanten=1 
+  Part::Feature „Shape004“ Kanten=1 
+Texte in FreeCAD (Kommandozeile): 0 – Trendo schreibt 2; Texte sind mit FreeCAD hier NICHT geprüft
+ERGEBNIS: BESTANDEN

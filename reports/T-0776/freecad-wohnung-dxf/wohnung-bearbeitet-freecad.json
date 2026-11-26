@@ -1,0 +1,1569 @@
+{
+ "freecad": [
+  "1",
+  "1",
+  "4"
+ ],
+ "art": "dxf",
+ "importer": "Import.readDXF (C++)",
+ "objekte": 124,
+ "kanten": 116,
+ "umriss": [
+  -460.0,
+  -7960.0,
+  0.0,
+  10300.12,
+  340.0,
+  0.0
+ ],
+ "liste": [
+  {
+   "name": "WAENDE",
+   "typ": "App::FeaturePython",
+   "enthaelt": 40
+  },
+  {
+   "name": "Layers",
+   "typ": "App::DocumentObjectGroupPython",
+   "enthaelt": 7
+  },
+  {
+   "name": "OEFFNUNGEN",
+   "typ": "App::FeaturePython",
+   "enthaelt": 2
+  },
+  {
+   "name": "RAEUME",
+   "typ": "App::FeaturePython",
+   "enthaelt": 8
+  },
+  {
+   "name": "MOEBEL",
+   "typ": "App::FeaturePython",
+   "enthaelt": 0
+  },
+  {
+   "name": "TEXT",
+   "typ": "App::FeaturePython",
+   "enthaelt": 0
+  },
+  {
+   "name": "MASSE",
+   "typ": "App::FeaturePython",
+   "enthaelt": 30
+  },
+  {
+   "name": "Shape",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    240.0,
+    -5760.0,
+    0.0,
+    4000.0,
+    -5760.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape001",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    4000.0,
+    -5760.0,
+    0.0,
+    4000.0,
+    -240.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape002",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    240.0,
+    -240.0,
+    0.0,
+    4000.0,
+    -240.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape003",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    240.0,
+    -5760.0,
+    0.0,
+    240.0,
+    -240.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape004",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    4115.0,
+    -5760.0,
+    0.0,
+    7760.0,
+    -5760.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape005",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    7760.0,
+    -5760.0,
+    0.0,
+    7760.0,
+    -240.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape006",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    4115.0,
+    -240.0,
+    0.0,
+    7760.0,
+    -240.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape007",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    4115.0,
+    -5760.0,
+    0.0,
+    4115.0,
+    -240.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape008",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    3070.0,
+    -4000.0,
+    0.0,
+    3970.0,
+    -4000.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape009",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    3070.0,
+    -4000.0,
+    0.0,
+    3970.0,
+    -3100.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape010",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    120.0,
+    -6280.0,
+    0.0,
+    7880.0,
+    -6280.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape011",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    120.0,
+    -6340.0,
+    0.0,
+    120.0,
+    -6180.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape012",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    70.0,
+    -6330.0,
+    0.0,
+    170.0,
+    -6230.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape013",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    7880.0,
+    -6340.0,
+    0.0,
+    7880.0,
+    -6180.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape014",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    7830.0,
+    -6330.0,
+    0.0,
+    7930.0,
+    -6230.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape015",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    120.0,
+    280.0,
+    0.0,
+    7880.0,
+    280.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape016",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    7880.0,
+    180.0,
+    0.0,
+    7880.0,
+    340.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape017",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    7830.0,
+    230.0,
+    0.0,
+    7930.0,
+    330.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape018",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    120.0,
+    180.0,
+    0.0,
+    120.0,
+    340.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape019",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    70.0,
+    230.0,
+    0.0,
+    170.0,
+    330.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape020",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    8280.0,
+    -5880.0,
+    0.0,
+    8280.0,
+    -120.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape021",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    8180.0,
+    -5880.0,
+    0.0,
+    8340.0,
+    -5880.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape022",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    8230.0,
+    -5930.0,
+    0.0,
+    8330.0,
+    -5830.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape023",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    8180.0,
+    -120.0,
+    0.0,
+    8340.0,
+    -120.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape024",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    8230.0,
+    -170.0,
+    0.0,
+    8330.0,
+    -70.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape025",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    -280.0,
+    -5880.0,
+    0.0,
+    -280.0,
+    -120.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape026",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    -340.0,
+    -120.0,
+    0.0,
+    -180.0,
+    -120.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape027",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    -330.0,
+    -170.0,
+    0.0,
+    -230.0,
+    -70.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape028",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    -340.0,
+    -5880.0,
+    0.0,
+    -180.0,
+    -5880.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape029",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    -330.0,
+    -5930.0,
+    0.0,
+    -230.0,
+    -5830.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape030",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    -400.0,
+    -7500.0,
+    0.0,
+    -400.0,
+    -5880.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape031",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    -460.0,
+    -5880.0,
+    0.0,
+    -300.0,
+    -5880.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape032",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    -450.0,
+    -5930.0,
+    0.0,
+    -350.0,
+    -5830.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape033",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    -460.0,
+    -7500.0,
+    0.0,
+    -300.0,
+    -7500.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape034",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    -450.0,
+    -7550.0,
+    0.0,
+    -350.0,
+    -7450.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape035",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    0.0,
+    -7900.0,
+    0.0,
+    2500.0,
+    -7900.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape036",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    0.0,
+    -7960.0,
+    0.0,
+    0.0,
+    -7800.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape037",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    -50.0,
+    -7950.0,
+    0.0,
+    50.0,
+    -7850.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape038",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    2500.0,
+    -7960.0,
+    0.0,
+    2500.0,
+    -7800.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape039",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    2450.0,
+    -7950.0,
+    0.0,
+    2550.0,
+    -7850.0,
+    0.0
+   ]
+  },
+  {
+   "name": "NORDPFEIL",
+   "typ": "App::FeaturePython",
+   "enthaelt": 36
+  },
+  {
+   "name": "Shape040",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    10293.02,
+    -441.6,
+    0.0,
+    10300.12,
+    -369.51,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape041",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    10271.99,
+    -510.91,
+    0.0,
+    10293.02,
+    -441.6,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape042",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    10237.85,
+    -574.8,
+    0.0,
+    10271.99,
+    -510.91,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape043",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    10191.89,
+    -630.79,
+    0.0,
+    10237.85,
+    -574.8,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape044",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    10135.9,
+    -676.74,
+    0.0,
+    10191.89,
+    -630.79,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape045",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    10072.02,
+    -710.89,
+    0.0,
+    10135.9,
+    -676.74,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape046",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    10002.7,
+    -731.92,
+    0.0,
+    10072.02,
+    -710.89,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape047",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    9930.61,
+    -739.02,
+    0.0,
+    10002.7,
+    -731.92,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape048",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    9858.52,
+    -739.02,
+    0.0,
+    9930.61,
+    -731.92,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape049",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    9789.21,
+    -731.92,
+    0.0,
+    9858.52,
+    -710.89,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape050",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    9725.32,
+    -710.89,
+    0.0,
+    9789.21,
+    -676.74,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape051",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    9669.33,
+    -676.74,
+    0.0,
+    9725.32,
+    -630.79,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape052",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    9623.38,
+    -630.79,
+    0.0,
+    9669.33,
+    -574.8,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape053",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    9589.23,
+    -574.8,
+    0.0,
+    9623.38,
+    -510.91,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape054",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    9568.2,
+    -510.91,
+    0.0,
+    9589.23,
+    -441.6,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape055",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    9561.1,
+    -441.6,
+    0.0,
+    9568.2,
+    -369.51,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape056",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    9561.1,
+    -369.51,
+    0.0,
+    9568.2,
+    -297.42,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape057",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    9568.2,
+    -297.42,
+    0.0,
+    9589.23,
+    -228.1,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape058",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    9589.23,
+    -228.1,
+    0.0,
+    9623.38,
+    -164.22,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape059",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    9623.38,
+    -164.22,
+    0.0,
+    9669.33,
+    -108.23,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape060",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    9669.33,
+    -108.23,
+    0.0,
+    9725.32,
+    -62.27,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape061",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    9725.32,
+    -62.27,
+    0.0,
+    9789.21,
+    -28.13,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape062",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    9789.21,
+    -28.13,
+    0.0,
+    9858.52,
+    -7.1,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape063",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    9858.52,
+    -7.1,
+    0.0,
+    9930.61,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape064",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    9930.61,
+    -7.1,
+    0.0,
+    10002.7,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape065",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    10002.7,
+    -28.13,
+    0.0,
+    10072.02,
+    -7.1,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape066",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    10072.02,
+    -62.27,
+    0.0,
+    10135.9,
+    -28.13,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape067",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    10135.9,
+    -108.23,
+    0.0,
+    10191.89,
+    -62.27,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape068",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    10191.89,
+    -164.22,
+    0.0,
+    10237.85,
+    -108.23,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape069",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    10237.85,
+    -228.1,
+    0.0,
+    10271.99,
+    -164.22,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape070",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    10271.99,
+    -297.42,
+    0.0,
+    10293.02,
+    -228.1,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape071",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    10293.02,
+    -369.51,
+    0.0,
+    10300.12,
+    -297.42,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape072",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    9930.61,
+    -572.74,
+    0.0,
+    10048.85,
+    -18.48,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape073",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    9930.61,
+    -572.74,
+    0.0,
+    10048.85,
+    -480.36,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape074",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    9812.37,
+    -572.74,
+    0.0,
+    9930.61,
+    -480.36,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape075",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    9812.37,
+    -572.74,
+    0.0,
+    9930.61,
+    -18.48,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape076",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    0.0,
+    -6000.0,
+    0.0,
+    8000.0,
+    -6000.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape077",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    0.0,
+    -5760.0,
+    0.0,
+    8000.0,
+    -5760.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape078",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    0.0,
+    0.0,
+    0.0,
+    8000.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape079",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    0.0,
+    -240.0,
+    0.0,
+    8000.0,
+    -240.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape080",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    8000.0,
+    -6000.0,
+    0.0,
+    8000.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape081",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    7760.0,
+    -6000.0,
+    0.0,
+    7760.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape082",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    0.0,
+    -6000.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape083",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    240.0,
+    -6000.0,
+    0.0,
+    240.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape084",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    4145.0,
+    -5880.0,
+    0.0,
+    4145.0,
+    -4000.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape085",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    3970.0,
+    -5880.0,
+    0.0,
+    3970.0,
+    -4000.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape086",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    4145.0,
+    -3100.0,
+    0.0,
+    4145.0,
+    -120.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape087",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    3970.0,
+    -3100.0,
+    0.0,
+    3970.0,
+    -120.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape088",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    3970.0,
+    -4000.0,
+    0.0,
+    4145.0,
+    -4000.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape089",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    3970.0,
+    -3100.0,
+    0.0,
+    4145.0,
+    -3100.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape090",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    3970.0,
+    -5880.0,
+    0.0,
+    4145.0,
+    -5880.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape091",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    3970.0,
+    -120.0,
+    0.0,
+    4145.0,
+    -120.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape092",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    -120.0,
+    -7620.0,
+    0.0,
+    -120.0,
+    -5880.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape093",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    120.0,
+    -7620.0,
+    0.0,
+    120.0,
+    -5880.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape094",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    -120.0,
+    -5880.0,
+    0.0,
+    120.0,
+    -5880.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape095",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    -120.0,
+    -7620.0,
+    0.0,
+    2500.0,
+    -7620.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape096",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    -120.0,
+    -7380.0,
+    0.0,
+    2500.0,
+    -7380.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape097",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    2500.0,
+    -7620.0,
+    0.0,
+    2500.0,
+    -7380.0,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape098",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    8023.41,
+    -4117.69,
+    0.0,
+    8523.79,
+    -4018.16,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape099",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    7976.59,
+    -3882.31,
+    0.0,
+    8476.97,
+    -3782.77,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape100",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    7976.59,
+    -4117.69,
+    0.0,
+    8023.41,
+    -3882.31,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape101",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    8349.58,
+    -4090.32,
+    0.0,
+    8873.55,
+    -3740.21,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape102",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    8216.24,
+    -3890.77,
+    0.0,
+    8740.21,
+    -3540.66,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape103",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    8740.21,
+    -3873.55,
+    0.0,
+    9090.32,
+    -3349.58,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape104",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    8540.66,
+    -3740.21,
+    0.0,
+    8890.77,
+    -3216.24,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape105",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    9018.16,
+    -3523.79,
+    0.0,
+    9141.11,
+    -2905.72,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape106",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    8782.77,
+    -3476.97,
+    0.0,
+    8905.72,
+    -2858.89,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape107",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    9018.16,
+    -3094.28,
+    0.0,
+    9141.11,
+    -2476.21,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape108",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    8782.77,
+    -3141.11,
+    0.0,
+    8905.72,
+    -2523.03,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape109",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    8740.21,
+    -2650.42,
+    0.0,
+    9090.32,
+    -2126.45,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape110",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    8540.66,
+    -2783.76,
+    0.0,
+    8890.77,
+    -2259.79,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape111",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    8349.58,
+    -2259.79,
+    0.0,
+    8873.55,
+    -1909.68,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape112",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    8216.24,
+    -2459.34,
+    0.0,
+    8740.21,
+    -2109.23,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape113",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    8023.41,
+    -1981.84,
+    0.0,
+    8523.79,
+    -1882.31,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape114",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    7976.59,
+    -2217.23,
+    0.0,
+    8476.97,
+    -2117.69,
+    0.0
+   ]
+  },
+  {
+   "name": "Shape115",
+   "typ": "Part::Feature",
+   "kanten": 1,
+   "umriss": [
+    7976.59,
+    -2117.69,
+    0.0,
+    8023.41,
+    -1882.31,
+    0.0
+   ]
+  }
+ ]
+}

@@ -1,0 +1,19 @@
+# T-0776 Fremdnachlauf freecad-step – 2026-11-26 11:18:15 +01:00
+Datei trendo-teile.step: 25965 Bytes, SHA-256 ff141960b2e3d338f23bf985f0205cdd353ee09ace3c208d456dcaab3b729e44
+$ FreeCAD liest teile.step
+  freecadcmd.exe C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\tools\echtlauf\t0776\freecad_pruefe.py
+  Umgebung FREECAD_USER_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\step-f87f23\freecad-profil\home
+  Umgebung FREECAD_USER_DATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\step-f87f23\freecad-profil\daten
+  Umgebung FREECAD_USER_TEMP=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\step-f87f23\freecad-profil\tmp
+  Umgebung USERPROFILE=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\step-f87f23\freecad-profil\home
+  Umgebung T0776_ART=step
+  Umgebung T0776_IN=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\step-f87f23\teile.step
+  Umgebung T0776_OUT=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\step-f87f23\teile-freecad.json
+Exit 0 nach 0,7 s
+{"freecad": ["1", "1", "4"], "art": "step", "gueltig": true, "volumen": 10625.0, "flaeche": 4600.0, "koerper": 2, "schalen_geschlossen": true, "flaechen": 88, "umriss": [0.0, 0.0, 0.0, 60.0, 20.0, 20.0], "koerper_volumen": [6000.0, 4625.0], "namen": ["Quader", "Winkel"]}
+FreeCAD 1.1.4, Libs: 1.1.4R20260928 (Git shallow)
+(C) 2001-2026 FreeCAD contributors
+FreeCAD is free and open-source software licensed under the terms of LGPL2+ license.
+Datei teile-freecad.json: 351 Bytes, SHA-256 6252145c1f84a7a6b721099d9efec54c6cb350c5ccccda6693bfa9ecd744d42b
+FreeCAD 1.1.4: gültig=true, Körper=2, Volumen=10625.0, Umriss=[0.0,0.0,0.0,60.0,20.0,20.0], Namen=["Quader","Winkel"]
+ERGEBNIS: BESTANDEN
