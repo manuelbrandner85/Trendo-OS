@@ -1,12 +1,12 @@
-[xUnit.net 00:00:00.79]       Übersprungen – BLOCKIERT – fehlt auf diesem PC: LibreOffice (soffice)
-[xUnit.net 00:00:00.79]       Übersprungen – BLOCKIERT – fehlt auf diesem PC: LibreOffice (soffice)
-[xUnit.net 00:00:00.80]       Übersprungen – BLOCKIERT – fehlt auf diesem PC: LibreOffice (soffice)
-[xUnit.net 00:00:00.81]       Übersprungen – BLOCKIERT – fehlt auf diesem PC: Inkscape
-[xUnit.net 00:00:00.81]       Übersprungen – BLOCKIERT – fehlt auf diesem PC: FreeCAD (freecadcmd)
-[xUnit.net 00:00:00.81]       Übersprungen – BLOCKIERT – fehlt auf diesem PC: FreeCAD (freecadcmd)
-[xUnit.net 00:00:00.82]       Übersprungen – BLOCKIERT – fehlt auf diesem PC: Krita
-[xUnit.net 00:00:00.83]       Übersprungen – BLOCKIERT – fehlt auf diesem PC: FreeCAD (freecadcmd)
-[xUnit.net 00:00:00.83]       Übersprungen – BLOCKIERT – fehlt auf diesem PC: 7-Zip (7z.exe)
+[xUnit.net 00:00:00.95]       Übersprungen – BLOCKIERT – fehlt auf diesem PC: LibreOffice (soffice)
+[xUnit.net 00:00:00.96]       Übersprungen – BLOCKIERT – fehlt auf diesem PC: LibreOffice (soffice)
+[xUnit.net 00:00:00.97]       Übersprungen – BLOCKIERT – fehlt auf diesem PC: LibreOffice (soffice)
+[xUnit.net 00:00:00.98]       Übersprungen – BLOCKIERT – fehlt auf diesem PC: Inkscape
+[xUnit.net 00:00:00.99]       Übersprungen – BLOCKIERT – fehlt auf diesem PC: FreeCAD (freecadcmd)
+[xUnit.net 00:00:00.99]       Übersprungen – BLOCKIERT – fehlt auf diesem PC: FreeCAD (freecadcmd)
+[xUnit.net 00:00:01.00]       Übersprungen – BLOCKIERT – fehlt auf diesem PC: Krita
+[xUnit.net 00:00:01.00]       Übersprungen – BLOCKIERT – fehlt auf diesem PC: FreeCAD (freecadcmd)
+[xUnit.net 00:00:01.01]       Übersprungen – BLOCKIERT – fehlt auf diesem PC: 7-Zip (7z.exe)
   Übersprungen T-0776 echt: Texte (SYS-10) – Trendo schreibt DOCX und ODT, LibreOffice 26 öffnet beide und liefert Überschrift, Absätze, Liste und Tabelle als Text zurück [1 ms]
    Übersprungen – BLOCKIERT – fehlt auf diesem PC: LibreOffice (soffice)
   Übersprungen T-0776 echt: Geld-Auswertung (SPEC-11) – Trendos XLSX öffnet in LibreOffice Calc mit drei Blättern; Calc rechnet die Formeln selbst nach (Überschuss 1035, Monatssumme 1297) [1 ms]

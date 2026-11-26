@@ -1,4 +1,34 @@
 Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
 Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.35]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:01.14]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:01.18]   Starting:    Trendo.Core.Tests
+  Bestanden T-0776 echt: Texte (SYS-10) – Trendo schreibt DOCX und ODT, LibreOffice 26 öffnet beide und liefert Überschrift, Absätze, Liste und Tabelle als Text zurück [38 s]
+  Standardausgabemeldungen:
+ Original im Trendo-Werkzeugordner: unverändert. Trendo-Werkzeugordner (LibreOffice-Original): 15933 Einträge, keiner geändert, keiner neu, keiner fehlt. In der Kopie hat LibreOffice bisher 2 Einträge angelegt/geändert/entfernt: program\opencl, share\uno_packages\cache.
 
-Bestanden!   : Fehler:     0, erfolgreich:     9, übersprungen:     0, gesamt:     9, Dauer: 1 m 15 s - Trendo.Core.Tests.dll (net10.0)
+
+  Bestanden T-0776 echt: Geld-Auswertung (SPEC-11) – Trendos XLSX öffnet in LibreOffice Calc mit drei Blättern; Calc rechnet die Formeln selbst nach (Überschuss 1035, Monatssumme 1297) [7 s]
+  Standardausgabemeldungen:
+ Original im Trendo-Werkzeugordner: unverändert. Trendo-Werkzeugordner (LibreOffice-Original): 15933 Einträge, keiner geändert, keiner neu, keiner fehlt. In der Kopie hat LibreOffice bisher 2 Einträge angelegt/geändert/entfernt: program\opencl, share\uno_packages\cache.
+
+
+  Bestanden T-0776 echt: Online verkaufen – Trendos Shopify-CSV (Artikel, Kunden, Bestellungen) öffnet in LibreOffice Calc: Spalten, Umlaute, Preise stimmen, Formel-Zelle bleibt Text [10 s]
+  Standardausgabemeldungen:
+ Original im Trendo-Werkzeugordner: unverändert. Trendo-Werkzeugordner (LibreOffice-Original): 15933 Einträge, keiner geändert, keiner neu, keiner fehlt. In der Kopie hat LibreOffice bisher 2 Einträge angelegt/geändert/entfernt: program\opencl, share\uno_packages\cache.
+
+
+  Bestanden T-0776 echt: Logos/Animation – Trendos Logo-SVG und Animations-SVG öffnen in Inkscape 1.4: Formen mit Trendo-Kennung und -Lage, gerenderte Farben wie im Logo [5 s]
+  Bestanden T-0776 echt: Wohnung planen (SPEC-01) – fremde Wohnungs-DXF in Trendo bearbeitet und als DXF exportiert; FreeCAD 1.1 liest Wände und Umriss in Plangröße [2 s]
+  Bestanden T-0776 echt: CAD-STEP (CORE-05) – FreeCAD 1.1 liest Trendos STEP als gültigen geschlossenen Körper: Volumen 6000 mm³ bzw. Winkel, Umriss und Name stimmen [1 s]
+  Bestanden T-0776 echt: Künstlerstudio – Trendos PSD und ORA öffnen in Krita 6: Krita liest Ebenen (Namen, Sichtbarkeit) und zeigt dieselben Farben wie Trendo [36 s]
+  Bestanden T-0776 echt: CAD-DXF (CORE-05) – fremde DXF in Trendo bearbeitet und als DXF geschrieben; FreeCAD 1.1 liest Ebenen, Linien, Kreise, Bogen und Polylinie mit den Trendo-Maßen [2 s]
+  Bestanden T-0776 echt: Daten schützen und Trendo erweitern – Sicherungs-ZIP und Erweiterungs-Export-ZIP bestehen die 7-Zip-Prüfung; entpackt sind alle Dateien bitgleich [692 ms]
+[xUnit.net 00:01:48.83]   Finished:    Trendo.Core.Tests
+
+Der Testlauf war erfolgreich.
+Gesamtzahl Tests: 9
+     Bestanden: 9
+ Gesamtzeit: 1,8230 Minuten

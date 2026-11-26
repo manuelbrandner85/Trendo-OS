@@ -102,9 +102,13 @@ public sealed class Backup(string dataRoot, string backupDir, AuditLog audit)
             }
         }
         var list = notSaved.OrderBy(x => x, StringComparer.OrdinalIgnoreCase).Take(150).ToList();
-        z.Comment = NoteHead + AsciiJson(System.Text.Json.JsonSerializer.Serialize(new NoteData(sums.Count, notSaved.Count, list, Ascii(UnencryptedNotice + " " + EncryptAdvice)), NoteJson));
+        z.Comment = NoteComment(sums.Count, notSaved.Count, list);
         return null;
     }
+
+    /// <summary>Text des Vermerks (ZIP-Kommentar) einer Sicherung – nur ASCII, siehe <see cref="Ascii"/>.</summary>
+    public static string NoteComment(int saved, int notSavedCount, IReadOnlyList<string> notSaved) =>
+        NoteHead + AsciiJson(System.Text.Json.JsonSerializer.Serialize(new NoteData(saved, notSavedCount, [.. notSaved], Ascii(UnencryptedNotice + " " + EncryptAdvice)), NoteJson));
 
     /// <summary>T-0776: Der Vermerk steht nur in ASCII. ZIP-Kommentare haben keine Kennung für UTF-8; 7-Zip liest sie in der Windows-Codepage und zeigte
     /// „verschlÃ¼sselt“. Deshalb der Hinweis mit ae/oe/ue/ss („nicht verschluesselt“), lesbar in jedem Programm.</summary>

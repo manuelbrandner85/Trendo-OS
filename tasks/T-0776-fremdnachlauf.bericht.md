@@ -79,3 +79,11 @@ Rust: nicht eingesetzt (Prüfläufe und kleine Korrekturen im bestehenden C#-Cod
 
 Rot: Auf dem Stand vor der Korrektur lässt sich `T0776_Korrektur` nicht übersetzen (`CadExport.StepString`, `Backup.Ascii` fehlen, `reports/T-0776/korrektur/rot-*.txt`); der alte 7-Zip-Beleg zeigte „verschlÃ¼sselt“.
 Gezielte Tests grün: siehe `reports/T-0776/korrektur/` und `reports/T-0776/tests/`.
+## Nachtrag 2: Nachprüfung auf f3f9dfd95 (26.11.2026)
+| Punkt | Was jetzt | Test / Beleg |
+|---|---|---|
+| H1 | Änderung am Original nur noch Hinweis (Rohlog + Testausgabe), Status „unverändert“ / „geändert“ / „nicht prüfbar (fremder Zugriff)“. Harte Prüfung: Start nur aus der Kopie, alle eigenen Prozesse (mit Kindern, Pfad über Toolhelp/QueryFullProcessImageName) liegen in der Kopie; einzige Ausnahme `conhost.exe`. | `T0776_Fremdnachlauf` (3 LibreOffice-Fälle, Log „eigene Prozesse …“, „Original: …“), `T0776_Korrektur.LoKopie_watch` |
+| M-a | 5 GB Reserve vor dem Kopieren (sonst BLOCKIERT); einmal kopieren, Teilkopie bei Fehler löschen; alte eigene `lo-kopie-*` (Kennung, älter als Teststart) beim Start löschen; eigene soffice der Kopie per PID beenden; Löschfehler wirft (laut). | `T0776_Korrektur.LoKopie_watch` |
+| N-a | Wörtliches `\u` im Dateinamen bleibt wörtlich; alte Sicherung mit UTF-8-Umlaut-Vermerk wird weiter gelesen (Hinweis, Namen, Prüfen, „letzte Sicherung“). Dafür `Backup.NoteComment` öffentlich. | `T0776_Korrektur.Backup_note_literal_backslash_u`, `Backup_old_umlaut_note_still_read` |
+
+**Offener Punkt (Befund, keine Änderung, Folgeauftrag):** Trendo selbst startet LibreOffice im Produkt aus dem Trendo-Werkzeugordner (`DependencyManager.ResolvePath` → `%LOCALAPPDATA%\TrendoWerkzeuge\libreoffice\App\libreoffice\program\soffice.exe`) und ändert dort dabei die Ordnerzeiten von `program\opencl` und `share\uno_packages\cache` (LibreOffice legt dort kurz Einträge an). Das betrifft jede Umwandlung über LibreOffice im Produkt.

@@ -138,4 +138,111 @@ public class T0776_Korrektur
         Assert.Equal(Backup.Ascii(Backup.UnencryptedNotice + " " + Backup.EncryptAdvice), note.Hinweis);
         Assert.Equal("Tuer \"Schutz\" - aeoeuess", Backup.Ascii("Tür „Schutz“ – äöüß"));
     }
+
+    static string ZipWithComment(string dir, string comment)
+    {
+        var zip = Path.Combine(dir, "trendo-sicherung-20261120-100000.zip");
+        using (var z = ZipFile.Open(zip, ZipArchiveMode.Create))
+        {
+            using (var s = new StreamWriter(z.CreateEntry("a.txt").Open())) s.Write("Inhalt A");
+            z.Comment = comment;
+        }
+        return zip;
+    }
+
+    [Fact(DisplayName = "T-0776 Sicherung: ein wörtliches „\\u“ im Dateinamen bleibt im Vermerk wörtlich (wird nicht zum Zeichen) – neben einem echten Umlaut")]
+    public void Backup_note_literal_backslash_u()
+    {
+        var names = new[] { "ordner/a\\u00fcb.dat", "Bücher\\u.dat", "x\\\\u0041.dat" };
+        var comment = Backup.NoteComment(1, names.Length, names);
+        Assert.All(comment, c => Assert.True(c < 128, $"Nicht-ASCII im Vermerk: {c}"));
+        Assert.Contains("ordner/a\\\\u00fcb.dat", comment); // JSON: Backslash verdoppelt, „u00fc“ bleibt Text
+        Assert.Contains("B\\u00fccher\\\\u.dat", comment);   // echter Umlaut als \u-Folge, wörtliches \u verdoppelt
+        var dir = Tmp();
+        try
+        {
+            var zip = ZipWithComment(dir, comment);
+            var b = new Backup(dir, dir, new AuditLog(Path.Combine(dir, "audit.jsonl")));
+            var note = b.Describe(zip)!;
+            Assert.Equal(names, note.NotSaved);
+            Assert.False(note.Complete);
+        }
+        finally { Directory.Delete(dir, true); }
+    }
+
+    [Fact(DisplayName = "T-0776 Sicherung: eine alte Sicherung mit Umlaut-Vermerk (UTF-8, vor T-0776) wird weiter gelesen – Hinweis und nicht gesicherte Namen mit Umlauten bleiben, die Sicherung zählt")]
+    public void Backup_old_umlaut_note_still_read()
+    {
+        var dir = Tmp();
+        try
+        {
+            // so schrieb Trendo bis T-0776 den Vermerk: Umlaute direkt (UTF-8), nicht als \u-Folgen
+            var old = "trendo-sicherung-v1 {\"Saved\":1,\"NotSavedCount\":1,\"NotSaved\":[\"Bücher-Ü.dat\"],\"Hinweis\":\"" + Backup.UnencryptedNotice + " " + Backup.EncryptAdvice + "\"}";
+            var zip = ZipWithComment(dir, old);
+            var b = new Backup(dir, dir, new AuditLog(Path.Combine(dir, "audit.jsonl")));
+            var note = b.Describe(zip)!;
+            Assert.NotNull(note);
+            Assert.Equal(["Bücher-Ü.dat"], note.NotSaved);
+            Assert.Equal(Backup.UnencryptedNotice + " " + Backup.EncryptAdvice, note.Hinweis);
+            Assert.Contains("nicht verschlüsselt", note.Hinweis);
+            Assert.True(b.Verify(zip).Ok);
+            Assert.Equal(zip, b.Latest()?.FullName);
+        }
+        finally { Directory.Delete(dir, true); }
+    }
+
+    [Fact(DisplayName = "T-0776 LibreOffice-Kopie: alte eigene Kopien weg, fremde bleiben; Start nur aus der Kopie (Prozesspfade, Kindprozess außerhalb erkannt); fremder Zugriff aufs Original = „nicht prüfbar“, Änderung ohne fremden Zugriff = Hinweis; Aufräumen löscht die Kopie")]
+    public void LoKopie_watch()
+    {
+        if (!OperatingSystem.IsWindows()) { Ueberspringen.Weil("nur unter Windows (Prozessliste über Toolhelp)."); return; }
+        var root = Environment.GetEnvironmentVariable("T0776_WORK") is { Length: > 0 } w ? w : Path.Combine(TempDir.SystemTemp, "trendo-t0776-work");
+        Directory.CreateDirectory(root);
+        var alt = Path.Combine(root, "lo-kopie-alt" + Guid.NewGuid().ToString("N")[..4]); Directory.CreateDirectory(alt); File.WriteAllText(Path.Combine(alt, T0776_LoKopie.Marker), "alt");
+        Directory.SetCreationTimeUtc(alt, DateTime.UtcNow.AddDays(-1));
+        var fremd = Path.Combine(root, "lo-kopie-fremd" + Guid.NewGuid().ToString("N")[..4]); Directory.CreateDirectory(fremd); // ohne Kennung: nicht von diesem Test
+        Directory.SetCreationTimeUtc(fremd, DateTime.UtcNow.AddDays(-1));
+        var dir = Tmp();
+        try
+        {
+            // Ersatz-„Installation“: cmd.exe als program\soffice.exe – nur, um Start, Kindprozesse und fremden Zugriff zu beobachten
+            var inst = Path.Combine(dir, "libreoffice"); Directory.CreateDirectory(Path.Combine(inst, "program"));
+            var fake = Path.Combine(inst, "program", "soffice.exe"); File.Copy(Path.Combine(Environment.SystemDirectory, "cmd.exe"), fake);
+            var fx = new T0776_LoKopie();
+            Assert.False(Directory.Exists(alt)); Assert.True(Directory.Exists(fremd));
+            Assert.Contains("alte eigene Kopie entfernt", fx.CleanupNote);
+            var exe = fx.Exe(fake);
+            Assert.StartsWith(fx.CopyDir!, exe, StringComparison.OrdinalIgnoreCase);
+            Assert.True(File.Exists(Path.Combine(Path.GetDirectoryName(fx.CopyDir!)!, T0776_LoKopie.Marker)));
+            Assert.Same(exe, fx.Exe(fake)); // nur einmal kopiert
+            Assert.Throws<InvalidOperationException>(() => fx.Run(fake, ["/c", "exit", "0"])); // nie aus dem Original
+            // eigener Start aus der Kopie: der Kindprozess ping.exe liegt außerhalb der Kopie und wird gemeldet
+            fx.BeginCase();
+            var r = fx.Run(exe, ["/c", "ping -n 3 127.0.0.1 >nul"]);
+            Assert.Contains(r.Own, x => x.Contains("soffice.exe", StringComparison.OrdinalIgnoreCase) && x.Contains(fx.CopyDir!, StringComparison.OrdinalIgnoreCase));
+            Assert.Contains(r.OwnOutside, x => x.Contains("ping.exe", StringComparison.OrdinalIgnoreCase));
+            Assert.Empty(r.Foreign);
+            Assert.Equal("unverändert", fx.EndCase().Status);
+            // fremder Zugriff: ein soffice aus dem Original läuft während des Falls
+            fx.BeginCase();
+            using (var foreign = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(fake, "/c ping -n 8 127.0.0.1 >nul") { UseShellExecute = false, CreateNoWindow = true })!)
+            {
+                try
+                {
+                    var r2 = fx.Run(exe, ["/c", "ping -n 2 127.0.0.1 >nul"]);
+                    Assert.Contains(r2.Foreign, x => x.Contains($"PID {foreign.Id} "));
+                    var (st, rep) = fx.EndCase();
+                    Assert.Equal("nicht prüfbar (fremder Zugriff)", st); Assert.Contains("fremder Zugriff", rep);
+                }
+                finally { foreign.Kill(true); foreign.WaitForExit(10000); }
+            }
+            // Änderung am Original ohne fremden Prozess: deutlicher Hinweis, kein Fehler
+            fx.BeginCase(); File.WriteAllText(Path.Combine(inst, "program", "neu.txt"), "x");
+            var (st3, rep3) = fx.EndCase();
+            Assert.Equal("geändert", st3); Assert.StartsWith("HINWEIS", rep3); Assert.Contains("neu.txt", rep3);
+            var copyRoot = Path.GetDirectoryName(fx.CopyDir!)!;
+            fx.Dispose();
+            Assert.False(Directory.Exists(copyRoot));
+        }
+        finally { Directory.Delete(dir, true); try { Directory.Delete(fremd, true); } catch (IOException) { } }
+    }
 }

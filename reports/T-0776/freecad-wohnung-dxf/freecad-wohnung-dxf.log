@@ -1,16 +1,16 @@
-# T-0776 Fremdnachlauf freecad-wohnung-dxf – 2026-11-26 12:10:58 +01:00
+# T-0776 Fremdnachlauf freecad-wohnung-dxf – 2026-11-26 12:36:58 +01:00
 Vorlage wohnung-fremd.dxf: SHA-256 5f1d7242ce10cf7b9c3896b3f02e59d3ec9906fafda640ac8cfdd5d215bb3fd4; Trendo: 15 Wände, 1 Öffnungen
 Datei trendo-wohnung.dxf: 8711 Bytes, SHA-256 aa4d16dd30614024d1d6b112972b21e330d516265a098ecbaeeee39605233c01
 $ FreeCAD liest wohnung-bearbeitet.dxf
   freecadcmd.exe C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\tools\echtlauf\t0776\freecad_pruefe.py
-  Umgebung FREECAD_USER_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\plan-dxf-c2b954\freecad-profil\home
-  Umgebung FREECAD_USER_DATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\plan-dxf-c2b954\freecad-profil\daten
-  Umgebung FREECAD_USER_TEMP=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\plan-dxf-c2b954\freecad-profil\tmp
-  Umgebung USERPROFILE=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\plan-dxf-c2b954\freecad-profil\home
+  Umgebung FREECAD_USER_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\plan-dxf-8522b5\freecad-profil\home
+  Umgebung FREECAD_USER_DATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\plan-dxf-8522b5\freecad-profil\daten
+  Umgebung FREECAD_USER_TEMP=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\plan-dxf-8522b5\freecad-profil\tmp
+  Umgebung USERPROFILE=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\plan-dxf-8522b5\freecad-profil\home
   Umgebung T0776_ART=dxf
-  Umgebung T0776_IN=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\plan-dxf-c2b954\wohnung-bearbeitet.dxf
-  Umgebung T0776_OUT=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\plan-dxf-c2b954\wohnung-bearbeitet-freecad.json
-Exit 0 nach 1,8 s
+  Umgebung T0776_IN=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\plan-dxf-8522b5\wohnung-bearbeitet.dxf
+  Umgebung T0776_OUT=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\plan-dxf-8522b5\wohnung-bearbeitet-freecad.json
+Exit 0 nach 2,6 s
 {"freecad": ["1", "1", "4"], "art": "dxf", "importer": "Import.readDXF (C++)", "objekte": 124, "kanten": 116, "umriss": [-460.0, -7960.0, 0.0, 10300.12, 340.0, 0.0]}
 FreeCAD 1.1.4, Libs: 1.1.4R20260928 (Git shallow)
 (C) 2001-2026 FreeCAD contributors

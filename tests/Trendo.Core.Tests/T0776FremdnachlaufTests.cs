@@ -10,6 +10,7 @@ using Trendo.Core.Cad;
 using Trendo.Core.Kreativ;
 using Trendo.Core.Office;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Trendo.Core.Tests;
 
@@ -19,7 +20,7 @@ namespace Trendo.Core.Tests;
 /// Nichts ist ersetzt. Jedes Fremdprogramm läuft mit eigenem Profil im eigenen Temp-Ordner (Umgebung <c>T0776_WORK</c>, sonst Temp).
 /// Fehlt ein Werkzeug, meldet der Test „übersprungen“ (BLOCKIERT) – er besteht dann nicht still.
 /// Rohlog und SHA-256 je Fall: Ordner aus <c>TRENDO_BELEG_DIR</c> (sonst Temp), abgelegt unter <c>reports/T-0776/</c>.</summary>
-public class T0776_Fremdnachlauf(T0776_LoKopie loKopie) : IClassFixture<T0776_LoKopie>
+public class T0776_Fremdnachlauf(T0776_LoKopie loKopie, ITestOutputHelper output) : IClassFixture<T0776_LoKopie>
 {
     static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
     static readonly CultureInfo De = CultureInfo.GetCultureInfo("de-DE"); // LibreOffice schreibt Zahlen im CSV mit dem Gebietsschema des Dokuments
@@ -118,17 +119,38 @@ public class T0776_Fremdnachlauf(T0776_LoKopie loKopie) : IClassFixture<T0776_Lo
 
     // ---------- Fremdprogramme mit eigenem Profil ----------
 
-    /// <summary>LibreOffice ohne Fenster mit eigenem Profil (-env:UserInstallation) im Arbeitsordner.</summary>
-    static string LoConvert(Beleg b, string lo, string work, string file, string format, string ext, string? infilter = null)
+    /// <summary>LibreOffice ohne Fenster mit eigenem Profil (-env:UserInstallation) im Arbeitsordner – gestartet nur aus der Kopie (<see cref="T0776_LoKopie"/>);
+    /// hart geprüft: der gestartete Prozess und alle Kindprozesse laufen aus der Kopie.</summary>
+    string LoConvert(Beleg b, string lo, string work, string file, string format, string ext, string? infilter = null)
     {
         var outDir = Path.Combine(work, "lo-aus-" + Path.GetExtension(file).TrimStart('.') + "-" + ext); Directory.CreateDirectory(outDir);
         var args = new List<string> { "-env:UserInstallation=" + new Uri(Path.Combine(work, "lo-profil")).AbsoluteUri, "--headless", "--norestore", "--nolockcheck" };
         if (infilter is not null) args.Add("--infilter=" + infilter);
         args.AddRange(["--convert-to", format, "--outdir", outDir, file]);
-        var r = b.Run($"LibreOffice öffnet {Path.GetFileName(file)} und schreibt {ext}", lo, args);
+        b.Line($"$ LibreOffice öffnet {Path.GetFileName(file)} und schreibt {ext}");
+        b.Line($"  {Path.GetFileName(lo)} {string.Join(' ', args.Select(a => a.Contains(' ') ? $"\"{a}\"" : a))}");
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        var run = loKopie.Run(lo, args);
+        var r = run.Result;
+        b.Line($"Exit {r.Exit} nach {sw.Elapsed.TotalSeconds:0.0} s");
+        if (r.Out.Trim().Length > 0) b.Line(r.Out.Trim());
+        if (r.Err.Trim().Length > 0) b.Line("[stderr] " + r.Err.Trim());
+        b.Line($"  eigene Prozesse ({run.Own.Count}): {string.Join("; ", run.Own)}");
+        if (run.Foreign.Count > 0) b.Line($"  HINWEIS fremde soffice aus dem Original: {string.Join("; ", run.Foreign)}");
+        Assert.True(run.Own.Count >= 1, "Kein eigener LibreOffice-Prozess beobachtet.");
+        Assert.True(run.OwnOutside.Count == 0, "Ein eigener LibreOffice-Prozess lief nicht aus der Kopie: " + string.Join("; ", run.OwnOutside));
         var target = Path.Combine(outDir, Path.GetFileNameWithoutExtension(file) + "." + ext);
         Assert.True(r.Ok, $"LibreOffice Exit {r.Exit}: {r.Err}");
         return target;
+    }
+
+    /// <summary>Stand des Originals am Ende eines LibreOffice-Falls: nur Hinweis (Rohlog und Testausgabe), kein harter Fehler – andere Sitzungen dürfen
+    /// LibreOffice aus dem Trendo-Werkzeugordner benutzen.</summary>
+    void OriginalStatus(Beleg b)
+    {
+        var (status, bericht) = loKopie.EndCase();
+        b.Line(loKopie.Note); b.Line($"Original: {status}. {bericht}");
+        output.WriteLine($"Original im Trendo-Werkzeugordner: {status}. {bericht}");
     }
 
     static Dictionary<string, string> KritaEnv(string work)
@@ -166,7 +188,7 @@ public class T0776_Fremdnachlauf(T0776_LoKopie loKopie) : IClassFixture<T0776_Lo
     [Fact(DisplayName = "T-0776 echt: Texte (SYS-10) – Trendo schreibt DOCX und ODT, LibreOffice 26 öffnet beide und liefert Überschrift, Absätze, Liste und Tabelle als Text zurück")]
     public void Text_docx_odt_in_LibreOffice()
     {
-        var lo = loKopie.Exe(Need(NeedsFactAttribute.Tool("libreoffice"), "LibreOffice (soffice)"));
+        var lo = loKopie.Exe(Need(NeedsFactAttribute.Tool("libreoffice"), "LibreOffice (soffice)")); loKopie.BeginCase();
         var work = Work("text");
         using var b = new Beleg("libreoffice-text");
         var d = new TextDoc { Title = "Nachlauf" };
@@ -193,14 +215,14 @@ public class T0776_Fremdnachlauf(T0776_LoKopie loKopie) : IClassFixture<T0776_Lo
             b.Keep(pdf, "libreoffice-aus-" + ext + ".pdf"); b.Line($"LibreOffice-PDF aus {ext}: {pages} Seiten");
             Assert.Equal(2, pages);
         }
-        b.Line(loKopie.Note); var (gleich, bericht) = loKopie.CheckOriginal(); b.Line(bericht); Assert.True(gleich, bericht);
+        OriginalStatus(b);
         b.Line("ERGEBNIS: BESTANDEN");
     }
 
     [Fact(DisplayName = "T-0776 echt: Geld-Auswertung (SPEC-11) – Trendos XLSX öffnet in LibreOffice Calc mit drei Blättern; Calc rechnet die Formeln selbst nach (Überschuss 1035, Monatssumme 1297)")]
     public void Geld_xlsx_in_LibreOffice()
     {
-        var lo = loKopie.Exe(Need(NeedsFactAttribute.Tool("libreoffice"), "LibreOffice (soffice)"));
+        var lo = loKopie.Exe(Need(NeedsFactAttribute.Tool("libreoffice"), "LibreOffice (soffice)")); loKopie.BeginCase();
         var work = Work("geld");
         using var b = new Beleg("libreoffice-geld-xlsx");
         List<Entry> buch =
@@ -229,14 +251,14 @@ public class T0776_Fremdnachlauf(T0776_LoKopie loKopie) : IClassFixture<T0776_Lo
         Assert.Equal(1230.10m, decimal.Parse(summe[3], De));
         Assert.Equal(6, buchungen.Length); // Kopf + 5 Buchungen
         Assert.Contains(buchungen, r => r.Length > 1 && r[1] == "Kontoführung");
-        b.Line(loKopie.Note); var (gleich, bericht) = loKopie.CheckOriginal(); b.Line(bericht); Assert.True(gleich, bericht);
+        OriginalStatus(b);
         b.Line("ERGEBNIS: BESTANDEN");
     }
 
     [Fact(DisplayName = "T-0776 echt: Online verkaufen – Trendos Shopify-CSV (Artikel, Kunden, Bestellungen) öffnet in LibreOffice Calc: Spalten, Umlaute, Preise stimmen, Formel-Zelle bleibt Text")]
     public void Shop_csv_in_LibreOffice()
     {
-        var lo = loKopie.Exe(Need(NeedsFactAttribute.Tool("libreoffice"), "LibreOffice (soffice)"));
+        var lo = loKopie.Exe(Need(NeedsFactAttribute.Tool("libreoffice"), "LibreOffice (soffice)")); loKopie.BeginCase();
         var work = Work("shop");
         using var b = new Beleg("libreoffice-shop-csv");
         var s = new Shop(Path.Combine(work, "daten"), "i");
@@ -275,7 +297,7 @@ public class T0776_Fremdnachlauf(T0776_LoKopie loKopie) : IClassFixture<T0776_Lo
         Assert.Equal(("Erika", "Muster", "Hauptstraße 1", "10115", "Berlin"), (kunde[0], kunde[1], kunde[5], kunde[10], kunde[7]));
         var best = lists[2][1]; var oh = lists[2][0].ToList();
         Assert.Equal(("2", "Shirt Waldlauf – M"), (best[oh.IndexOf("Lineitem quantity")], best[oh.IndexOf("Lineitem name")]));
-        b.Line(loKopie.Note); var (gleich, bericht) = loKopie.CheckOriginal(); b.Line(bericht); Assert.True(gleich, bericht);
+        OriginalStatus(b);
         b.Line("ERGEBNIS: BESTANDEN");
     }
 
@@ -565,63 +587,170 @@ public class T0776_Fremdnachlauf(T0776_LoKopie loKopie) : IClassFixture<T0776_Lo
     }
 }
 
-/// <summary>T-0776 (Gegenprüfung M1): LibreOffice ändert trotz <c>-env:UserInstallation</c> Einträge im eigenen Programmordner (<c>program\opencl</c>,
-/// <c>share\uno_packages\cache</c>). Der Test startet LibreOffice deshalb aus einer Kopie im eigenen Temp-Ordner und prüft danach, dass sich im
-/// Trendo-Werkzeugordner kein Ordner und keine Datei geändert hat (Änderungszeiten, Anzahl). Die Kopie wird am Ende der Testklasse gelöscht.</summary>
+/// <summary>T-0776 (Gegenprüfung M1, Nachprüfung H1/M-a): LibreOffice ändert trotz <c>-env:UserInstallation</c> Einträge im eigenen Programmordner
+/// (<c>program\opencl</c>, <c>share\uno_packages\cache</c>). Der Test startet LibreOffice deshalb aus einer Kopie im eigenen Temp-Ordner.
+/// <list type="bullet">
+/// <item>Hart geprüft: Jeder gestartete LibreOffice-Prozess dieses Tests (samt Kindprozessen) läuft aus der Kopie (Pfad der Prozesse).</item>
+/// <item>Nur gemeldet: ob sich das Original während eines Falls geändert hat. Läuft vor oder während des Falls ein fremdes soffice aus dem Original
+/// (z. B. eine andere Sitzung), heißt es „Original nicht prüfbar (fremder Zugriff)“ – das ist kein Fehler dieses Tests.</item>
+/// <item>Kopie: nur einmal, mit 5 GB Reserve auf dem Laufwerk (sonst BLOCKIERT), Teilkopie bei Fehlschlag gelöscht; alte eigene Kopien (Kennung
+/// <see cref="Marker"/>, älter als der Teststart) werden beim Start entfernt; am Ende eigene soffice-Prozesse der Kopie per PID beendet, dann gelöscht –
+/// scheitert das, schlägt das Aufräumen laut fehl.</item>
+/// </list></summary>
 public sealed class T0776_LoKopie : IDisposable
 {
+    public const string Marker = ".t0776-lokopie";
+    const long Reserve = 5L * 1024 * 1024 * 1024;
     readonly object _lock = new();
-    string? _source, _copy, _exe;
-    Dictionary<string, (long Ticks, long Size)>? _before;
-    Dictionary<string, (long Ticks, long Size)>? _copyBefore;
+    readonly DateTime _start = System.Diagnostics.Process.GetCurrentProcess().StartTime.ToUniversalTime();
+    string? _source, _copyRoot, _copy, _exe;
+    Exception? _copyError;
+    bool _copyTried;
+    Dictionary<string, (long Ticks, long Size)>? _copyBefore, _caseBefore;
+    readonly List<string> _caseForeign = [];
     public string Note { get; private set; } = "";
+    public string CleanupNote { get; }
+    public string? CopyDir => _copy;
 
-    /// <summary>Programmdatei der Kopie (Konsolenfassung soffice.com, wenn vorhanden). Der erste Aufruf kopiert den Installationsordner.</summary>
+    public T0776_LoKopie()
+    {
+        var notes = new List<string>();
+        var root = WorkRoot();
+        if (Directory.Exists(root))
+            foreach (var d in Directory.GetDirectories(root, "lo-kopie-*"))
+            {
+                // nur eigene (Kennung) und nur ältere als dieser Testlauf – eine gleichzeitig laufende andere Instanz bleibt unberührt
+                if (!File.Exists(Path.Combine(d, Marker)) || Directory.GetCreationTimeUtc(d) >= _start) continue;
+                try { Directory.Delete(d, true); notes.Add($"alte eigene Kopie entfernt: {Path.GetFileName(d)}"); }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    var msg = $"WARNUNG: alte eigene LibreOffice-Kopie {Path.GetFileName(d)} ließ sich nicht löschen: {ex.Message}";
+                    notes.Add(msg); Console.Error.WriteLine(msg);
+                }
+            }
+        CleanupNote = notes.Count == 0 ? "Keine alte eigene LibreOffice-Kopie vorhanden." : string.Join("; ", notes);
+    }
+
+    static string WorkRoot() => Environment.GetEnvironmentVariable("T0776_WORK") is { Length: > 0 } w ? w : Path.Combine(TempDir.SystemTemp, "trendo-t0776-work");
+
+    /// <summary>Programmdatei der Kopie (Konsolenfassung soffice.com, wenn vorhanden). Kopiert genau einmal.</summary>
     public string Exe(string original)
     {
         lock (_lock)
         {
             if (_exe is not null) return _exe;
+            if (_copyTried) throw new InvalidOperationException("Die LibreOffice-Kopie ist schon einmal gescheitert: " + _copyError?.Message, _copyError);
+            _copyTried = true;
             var program = Path.GetDirectoryName(Path.GetFullPath(original))!;              // …\libreoffice\program
             _source = Path.GetDirectoryName(program)!;                                      // Installationsordner
-            _before = Snapshot(_source);
-            var root = Environment.GetEnvironmentVariable("T0776_WORK") is { Length: > 0 } w ? w : Path.Combine(TempDir.SystemTemp, "trendo-t0776-work");
-            _copy = Path.Combine(root, "lo-kopie-" + Guid.NewGuid().ToString("N")[..6], Path.GetFileName(_source));
+            var root = WorkRoot(); Directory.CreateDirectory(root);
+            long need = Directory.EnumerateFiles(_source, "*", SearchOption.AllDirectories).Sum(f => new FileInfo(f).Length);
+            var free = new DriveInfo(Path.GetPathRoot(Path.GetFullPath(root))!).AvailableFreeSpace;
+            if (free < need + Reserve)
+                Ueberspringen.Weil($"BLOCKIERT – zu wenig freier Platz für die LibreOffice-Kopie: frei {free / 1073741824.0:0.0} GB, nötig {need / 1073741824.0:0.0} GB + 5 GB Reserve.");
+            _copyRoot = Path.Combine(root, "lo-kopie-" + Guid.NewGuid().ToString("N")[..6]);
+            var copy = Path.Combine(_copyRoot, Path.GetFileName(_source));
             var sw = System.Diagnostics.Stopwatch.StartNew();
             long bytes = 0; var files = 0;
-            foreach (var d in Directory.EnumerateDirectories(_source, "*", SearchOption.AllDirectories)) Directory.CreateDirectory(Path.Combine(_copy, Path.GetRelativePath(_source, d)));
-            Directory.CreateDirectory(_copy);
-            foreach (var f in Directory.EnumerateFiles(_source, "*", SearchOption.AllDirectories))
+            try
             {
-                var to = Path.Combine(_copy, Path.GetRelativePath(_source, f)); File.Copy(f, to); bytes += new FileInfo(to).Length; files++;
+                Directory.CreateDirectory(_copyRoot);
+                File.WriteAllText(Path.Combine(_copyRoot, Marker), $"T-0776 LibreOffice-Kopie, Prozess {Environment.ProcessId}, {DateTime.Now:O}");
+                Directory.CreateDirectory(copy);
+                foreach (var d in Directory.EnumerateDirectories(_source, "*", SearchOption.AllDirectories)) Directory.CreateDirectory(Path.Combine(copy, Path.GetRelativePath(_source, d)));
+                foreach (var f in Directory.EnumerateFiles(_source, "*", SearchOption.AllDirectories))
+                {
+                    var to = Path.Combine(copy, Path.GetRelativePath(_source, f)); File.Copy(f, to); bytes += new FileInfo(to).Length; files++;
+                }
             }
+            catch (Exception ex)
+            {
+                _copyError = ex;
+                try { Directory.Delete(_copyRoot, true); } catch (Exception del) when (del is IOException or UnauthorizedAccessException) { throw new IOException($"LibreOffice-Kopie gescheitert ({ex.Message}); die Teilkopie {_copyRoot} ließ sich nicht löschen: {del.Message}", ex); }
+                throw;
+            }
+            _copy = copy;
             _copyBefore = Snapshot(_copy);
             var exe = Path.Combine(_copy, Path.GetRelativePath(_source, original));
             _exe = Path.ChangeExtension(exe, ".com") is var c && File.Exists(c) ? c : exe;
-            Note = $"LibreOffice läuft aus einer Kopie im eigenen Temp-Ordner ({files} Dateien, {bytes / 1048576.0:0} MB, kopiert in {sw.Elapsed.TotalSeconds:0.0} s); " +
-                   $"Original im Trendo-Werkzeugordner: {_before.Count} Einträge vor dem ersten Start erfasst.";
+            Note = $"LibreOffice läuft aus einer Kopie im eigenen Temp-Ordner ({files} Dateien, {bytes / 1048576.0:0} MB, kopiert in {sw.Elapsed.TotalSeconds:0.0} s; frei vorher {free / 1073741824.0:0.0} GB). {CleanupNote}";
             return _exe;
         }
     }
 
-    /// <summary>Hat sich im Original etwas geändert? (Änderungszeit jedes Ordners und jeder Datei, Größe, neue oder fehlende Einträge.)</summary>
-    public (bool Same, string Report) CheckOriginal()
+    /// <summary>Beginn eines Falls: Stand des Originals festhalten und nach fremden soffice-Prozessen aus dem Original sehen.</summary>
+    public void BeginCase()
     {
         lock (_lock)
         {
-            if (_source is null || _before is null) return (false, "LibreOffice-Kopie wurde nicht angelegt.");
+            _caseForeign.Clear();
+            if (_source is null) return;
+            _caseBefore = Snapshot(_source);
+            foreach (var p in Procs().Where(p => IsSoffice(p.Name) && Under(p.Path, _source))) _caseForeign.Add($"vor dem Fall: PID {p.Pid} {p.Name}");
+        }
+    }
+
+    public sealed record LoRun(Cli.Result Result, int Pid, List<string> Own, List<string> OwnOutside, List<string> Foreign);
+
+    /// <summary>Startet LibreOffice (nur aus der Kopie) und beobachtet währenddessen alle Prozesse: eigene (gestarteter Prozess und alle Nachkommen)
+    /// mit Pfad, fremde soffice aus dem Original.</summary>
+    public LoRun Run(string exe, IReadOnlyList<string> args, int timeoutMs = 300000)
+    {
+        if (_copy is null || !Under(exe, _copy)) throw new InvalidOperationException($"LibreOffice soll nur aus der Kopie starten, nicht aus {exe}.");
+        var pid = 0; var own = new Dictionary<int, (string Name, string? Path)>(); var foreign = new HashSet<string>(StringComparer.Ordinal);
+        using var stop = new CancellationTokenSource();
+        void Sample()
+        {
+            var all = Procs();
+            if (pid != 0)
+            {
+                var ids = new HashSet<int> { pid };
+                bool grew; do { grew = false; foreach (var p in all) if (ids.Contains(p.Parent) && ids.Add(p.Pid)) grew = true; } while (grew);
+                foreach (var p in all.Where(p => ids.Contains(p.Pid))) if (!own.TryGetValue(p.Pid, out var o) || o.Path is null) own[p.Pid] = (p.Name, p.Path ?? PathOf(p.Pid)); // jeden eigenen Prozess mit Pfad
+                foreach (var p in all.Where(p => !ids.Contains(p.Pid) && IsSoffice(p.Name) && _source is not null && Under(p.Path, _source))) foreign.Add($"während des Falls: PID {p.Pid} {p.Name}");
+            }
+        }
+        var watcher = Task.Run(async () => { while (!stop.IsCancellationRequested) { lock (own) Sample(); try { await Task.Delay(50, stop.Token); } catch (OperationCanceledException) { } } });
+        var r = Cli.RunStreamAsync(exe, args, null, null, CancellationToken.None, timeoutMs, p => pid = p, null, Encoding.UTF8).GetAwaiter().GetResult();
+        stop.Cancel(); watcher.Wait(); lock (own) Sample();
+        var ownList = own.OrderBy(kv => kv.Key).Select(kv => $"PID {kv.Key} {kv.Value.Name}: {kv.Value.Path ?? "(Pfad nicht lesbar)"}").ToList();
+        // Ausnahme nur der Konsolen-Host von Windows (conhost.exe), den Windows für jedes Konsolenprogramm ohne Fenster anlegt
+        var outside = own.Where(kv => kv.Value.Path is { } p && !Under(p, _copy) && !string.Equals(kv.Value.Name, "conhost.exe", StringComparison.OrdinalIgnoreCase))
+            .Select(kv => $"PID {kv.Key} {kv.Value.Name}: {kv.Value.Path}").ToList();
+        lock (_lock) _caseForeign.AddRange(foreign);
+        return new(r, pid, ownList, outside, [.. foreign]);
+    }
+
+    /// <summary>Ende eines Falls: Status des Originals – „unverändert“, „geändert“ (deutlicher Hinweis) oder „nicht prüfbar (fremder Zugriff)“.</summary>
+    public (string Status, string Report) EndCase()
+    {
+        lock (_lock)
+        {
+            if (_source is null || _caseBefore is null) return ("nicht prüfbar", "Original nicht prüfbar: LibreOffice-Kopie wurde nicht angelegt.");
+            foreach (var p in Procs().Where(p => IsSoffice(p.Name) && Under(p.Path, _source))) _caseForeign.Add($"nach dem Fall: PID {p.Pid} {p.Name}");
             var now = Snapshot(_source);
-            var diff = now.Where(kv => !_before.TryGetValue(kv.Key, out var o) || o != kv.Value).Select(kv => kv.Key)
-                .Concat(_before.Keys.Where(k => !now.ContainsKey(k))).Distinct().Order(StringComparer.Ordinal).ToList();
-            // Gegenstück: was LibreOffice in seiner Kopie verändert hat – genau das wäre sonst im Trendo-Werkzeugordner passiert
+            var diff = now.Where(kv => !_caseBefore.TryGetValue(kv.Key, out var o) || o != kv.Value).Select(kv => kv.Key)
+                .Concat(_caseBefore.Keys.Where(k => !now.ContainsKey(k))).Distinct().Order(StringComparer.Ordinal).ToList();
             var copyNow = _copy is not null && _copyBefore is not null ? Snapshot(_copy) : [];
             var inCopy = copyNow.Where(kv => _copyBefore is not null && (!_copyBefore.TryGetValue(kv.Key, out var o) || o != kv.Value)).Select(kv => kv.Key)
                 .Concat(_copyBefore?.Keys.Where(k => !copyNow.ContainsKey(k)) ?? []).Distinct().Order(StringComparer.Ordinal).ToList();
-            var copyText = $" In der Kopie hat LibreOffice {inCopy.Count} Einträge angelegt/geändert/entfernt: {(inCopy.Count == 0 ? "keine" : string.Join(", ", inCopy.Take(20)))}.";
-            return (diff.Count == 0, (diff.Count == 0
-                ? $"Trendo-Werkzeugordner (LibreOffice-Original): {now.Count} Einträge, keiner geändert, keiner neu, keiner fehlt."
-                : $"Trendo-Werkzeugordner (LibreOffice-Original) geändert: {string.Join(", ", diff.Take(20))}") + copyText);
+            var copyText = $" In der Kopie hat LibreOffice bisher {inCopy.Count} Einträge angelegt/geändert/entfernt: {(inCopy.Count == 0 ? "keine" : string.Join(", ", inCopy.Take(20)))}.";
+            var changed = diff.Count == 0 ? "" : $" Geändert: {string.Join(", ", diff.Take(20))}.";
+            if (_caseForeign.Count > 0)
+                return ("nicht prüfbar (fremder Zugriff)", $"HINWEIS: Original im Trendo-Werkzeugordner nicht prüfbar (fremder Zugriff) – ein fremdes soffice lief aus dem Original ({string.Join("; ", _caseForeign.Distinct())}).{changed}{copyText}");
+            if (diff.Count > 0)
+                return ("geändert", $"HINWEIS: Original im Trendo-Werkzeugordner hat sich während des Falls geändert, ohne dass ein fremdes soffice aus dem Original zu sehen war (eigene Prozesse liefen nur aus der Kopie).{changed}{copyText}");
+            return ("unverändert", $"Trendo-Werkzeugordner (LibreOffice-Original): {now.Count} Einträge, keiner geändert, keiner neu, keiner fehlt.{copyText}");
         }
+    }
+
+    static bool IsSoffice(string name) => name.StartsWith("soffice", StringComparison.OrdinalIgnoreCase);
+
+    static bool Under(string? path, string dir)
+    {
+        if (path is null) return false;
+        var d = Path.GetFullPath(dir).TrimEnd('\\', '/') + Path.DirectorySeparatorChar;
+        return Path.GetFullPath(path).StartsWith(d, StringComparison.OrdinalIgnoreCase);
     }
 
     static Dictionary<string, (long, long)> Snapshot(string dir)
@@ -632,9 +761,67 @@ public sealed class T0776_LoKopie : IDisposable
         return res;
     }
 
+    // ---------- Prozessliste mit Elternprozess (Toolhelp) und Programmpfad ----------
+
+    public sealed record Proc(int Pid, int Parent, string Name, string? Path);
+
+    [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential, CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+    struct ProcessEntry32
+    {
+        public uint dwSize, cntUsage, th32ProcessID; public IntPtr th32DefaultHeapID; public uint th32ModuleID, cntThreads, th32ParentProcessID; public int pcPriClassBase; public uint dwFlags;
+        [System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.ByValTStr, SizeConst = 260)] public string szExeFile;
+    }
+    [System.Runtime.InteropServices.DllImport("kernel32.dll", SetLastError = true)] static extern IntPtr CreateToolhelp32Snapshot(uint flags, uint pid);
+    [System.Runtime.InteropServices.DllImport("kernel32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)] static extern bool Process32FirstW(IntPtr snap, ref ProcessEntry32 e);
+    [System.Runtime.InteropServices.DllImport("kernel32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)] static extern bool Process32NextW(IntPtr snap, ref ProcessEntry32 e);
+    [System.Runtime.InteropServices.DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr h);
+    [System.Runtime.InteropServices.DllImport("kernel32.dll", SetLastError = true)] static extern IntPtr OpenProcess(uint access, bool inherit, int pid);
+    [System.Runtime.InteropServices.DllImport("kernel32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode, SetLastError = true)] static extern bool QueryFullProcessImageNameW(IntPtr h, int flags, StringBuilder name, ref int size);
+
+    static string? PathOf(int pid)
+    {
+        var h = OpenProcess(0x1000 /* PROCESS_QUERY_LIMITED_INFORMATION */, false, pid);
+        if (h == IntPtr.Zero) return null;
+        try { var sb = new StringBuilder(1024); var n = sb.Capacity; return QueryFullProcessImageNameW(h, 0, sb, ref n) ? sb.ToString(0, n) : null; }
+        finally { CloseHandle(h); }
+    }
+
+    public static List<Proc> Procs()
+    {
+        var res = new List<Proc>();
+        if (!OperatingSystem.IsWindows()) return res;
+        var snap = CreateToolhelp32Snapshot(0x2 /* TH32CS_SNAPPROCESS */, 0);
+        if (snap == new IntPtr(-1)) return res;
+        try
+        {
+            var e = new ProcessEntry32 { dwSize = (uint)System.Runtime.InteropServices.Marshal.SizeOf<ProcessEntry32>() };
+            for (var ok = Process32FirstW(snap, ref e); ok; ok = Process32NextW(snap, ref e))
+            {
+                var name = e.szExeFile ?? "";
+                res.Add(new((int)e.th32ProcessID, (int)e.th32ParentProcessID, name, IsSoffice(name) || name.StartsWith("python", StringComparison.OrdinalIgnoreCase) ? PathOf((int)e.th32ProcessID) : null));
+            }
+        }
+        finally { CloseHandle(snap); }
+        return res;
+    }
+
     public void Dispose()
     {
-        if (_copy is null) return;
-        try { Directory.Delete(Path.GetDirectoryName(_copy)!, true); } catch (IOException) { } catch (UnauthorizedAccessException) { }
+        if (_copyRoot is null || !Directory.Exists(_copyRoot)) return;
+        var problems = new List<string>();
+        // eigene LibreOffice-Prozesse der Kopie (nur dieser Test startet aus der Kopie) per PID beenden
+        foreach (var p in Procs().Where(p => _copy is not null && Under(p.Path, _copy)))
+            try { using var pr = System.Diagnostics.Process.GetProcessById(p.Pid); pr.Kill(true); pr.WaitForExit(10000); }
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or System.ComponentModel.Win32Exception) { problems.Add($"PID {p.Pid} {p.Name}: {ex.Message}"); }
+        for (var i = 0; ; i++)
+        {
+            try { Directory.Delete(_copyRoot, true); return; }
+            catch (Exception ex) when ((ex is IOException or UnauthorizedAccessException) && i < 5) { Thread.Sleep(1000); }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                throw new IOException($"T-0776: Die LibreOffice-Kopie {_copyRoot} (~900 MB) ließ sich nicht löschen: {ex.Message}" +
+                    (problems.Count > 0 ? " Prozesse: " + string.Join("; ", problems) : "") + " – bitte von Hand löschen.", ex);
+            }
+        }
     }
 }

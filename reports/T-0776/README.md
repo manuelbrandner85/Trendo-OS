@@ -25,3 +25,11 @@ Pfade ohne Benutzernamen (`C:\Users\<user>`). Prüfsummen aller Dateien: `SHA256
 | `tests/` | – | – | grün nach der Korrektur: T-0776 9/9, Künstler/CAD/Netz 45/45, App `Kuenstlerstudio_Ui` 6/6, `Studio3DMeshEditUiTests` 5/5; ohne Werkzeuge (leerer Werkzeugordner, leerer Programme-Ordner, kurzer PATH) 9/9 „übersprungen“ mit „BLOCKIERT – fehlt auf diesem PC: …“ |
 
 Neu erzeugen: `T0776_WORK=<eigener Temp-Ordner> TRENDO_BELEG_DIR=<Ordner> dotnet test tests/Trendo.Core.Tests -c Release --filter "FullyQualifiedName~T0776_Fremdnachlauf"`.
+**Nachprüfung (H1, M-a, N-a):** Eine Änderung am Original ist kein harter Fehler mehr. Jeder LibreOffice-Fall schreibt den Stand ins Rohlog und in die Testausgabe:
+„unverändert“, „geändert“ (deutlicher HINWEIS) oder „nicht prüfbar (fremder Zugriff)“, wenn vor, während oder nach dem Fall ein fremdes soffice aus dem Original lief
+(etwa eine andere Sitzung). Hart geprüft bleibt, dass der Test selbst nur aus der Kopie startet: `T0776_LoKopie.Run` verweigert jeden anderen Pfad und beobachtet
+alle 50 ms den gestarteten Prozess samt Kindprozessen (Toolhelp, Programmpfad). Liegt ein eigener Prozess außerhalb der Kopie, schlägt der Fall fehl; ausgenommen ist nur
+der Windows-Konsolenhost `conhost.exe`. Die Kopie wird einmal angelegt, und zwar nur, wenn 5 GB Reserve frei sind (sonst BLOCKIERT). Scheitert das Kopieren, wird die
+Teilkopie gelöscht. Alte eigene Kopien (Kennung `.t0776-lokopie`, älter als der Teststart) werden beim Start entfernt. Am Ende werden eigene soffice-Prozesse aus der Kopie
+per PID beendet; danach wird die Kopie gelöscht. Scheitert das Löschen, schlägt das Aufräumen laut fehl. Nachgewiesen mit einer Ersatz-„Installation“ (cmd.exe als
+`soffice.exe`) in `T0776_Korrektur.LoKopie_watch`: fremder Prozess erkannt, Kindprozess außerhalb erkannt, Aufräumen.
