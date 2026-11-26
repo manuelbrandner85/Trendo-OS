@@ -430,5 +430,131 @@
     "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
     "erzeugt": "2026-10-24",
     "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "STUDIO-BOOK-01": {
+    "datei": "src/Trendo.App/Assets/studios/STUDIO-BOOK-01.jpg",
+    "seed": 20261102,
+    "prompt": "an open handwritten manuscript notebook with a fountain pen, a stack of hardcover books and a cup of tea on a dark wooden writing desk, warm lamp light, no readable text, photorealistic photograph, shot on a full-frame camera with a 35mm lens at f/2.8, natural soft light with warm golden accent light, dark charcoal and black surroundings with subtle real gold details, shallow depth of field, realistic materials and textures, cinematic but believable, high detail, no text, no letters, no logos, no watermark, no screens with readable text",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0, ComfyUI lokal",
+    "erzeugt": "2026-11-26",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "60c1fae50d981d99ebbc57bbd53b5212675271ea59ed3a65a3a73a40e495741c"
+  },
+  "STUDIO-ANIM-01": {
+    "datei": "src/Trendo.App/Assets/studios/STUDIO-ANIM-01.jpg",
+    "seed": 20261103,
+    "prompt": "a graphics tablet with a stylus next to a small flipbook showing a bouncing ball in motion blur on a dark desk, soft colorful rim light, no text, photorealistic photograph, shot on a full-frame camera with a 35mm lens at f/2.8, natural soft light with warm golden accent light, dark charcoal and black surroundings with subtle real gold details, shallow depth of field, realistic materials and textures, cinematic but believable, high detail, no text, no letters, no logos, no watermark, no screens with readable text",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0, ComfyUI lokal",
+    "erzeugt": "2026-11-26",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "d84d145ad657172f27d8ca6068fc27fb4dbf6766b82c8485454d66743677a6d3"
+  },
+  "STUDIO-PHOTOS-01": {
+    "datei": "src/Trendo.App/Assets/studios/STUDIO-PHOTOS-01.jpg",
+    "seed": 20261726,
+    "prompt": "neatly arranged printed photographs in labeled wooden boxes and a vintage camera on a dark table, warm light, no readable text, no faces, photorealistic photograph, shot on a full-frame camera with a 35mm lens at f/2.8, natural soft light with warm golden accent light, dark charcoal and black surroundings with subtle real gold details, shallow depth of field, realistic materials and textures, cinematic but believable, high detail, no text, no letters, no logos, no watermark, no screens with readable text",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0, ComfyUI lokal",
+    "erzeugt": "2026-11-26",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "8fb5bd76e00995066bdf20892cf34bd2eb9c2712aec4c49e1d9b3e253b23f4b8"
+  },
+  "STUDIO-IMAGEAI-01": {
+    "datei": "src/Trendo.App/Assets/studios/STUDIO-IMAGEAI-01.jpg",
+    "seed": 20261105,
+    "prompt": "an artist easel with a canvas where a glowing landscape painting seems to emerge from soft light particles, dark studio, golden accent light, no text, photorealistic photograph, shot on a full-frame camera with a 35mm lens at f/2.8, natural soft light with warm golden accent light, dark charcoal and black surroundings with subtle real gold details, shallow depth of field, realistic materials and textures, cinematic but believable, high detail, no text, no letters, no logos, no watermark, no screens with readable text",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0, ComfyUI lokal",
+    "erzeugt": "2026-11-26",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "262a5fc67a0ffaa3a9e1bf8790c8d74dbebeccbc1f45594248ba160983a049ac"
+  },
+  "STUDIO-VIDEOAI-01": {
+    "datei": "src/Trendo.App/Assets/studios/STUDIO-VIDEOAI-01.jpg",
+    "seed": 20261326,
+    "prompt": "a small film camera on a tripod in front of a large monitor showing a cinematic landscape frame, film strip and storyboard cards on a dark desk, warm light, no readable text, no faces, photorealistic photograph, shot on a full-frame camera with a 35mm lens at f/2.8, natural soft light with warm golden accent light, dark charcoal and black surroundings with subtle real gold details, shallow depth of field, realistic materials and textures, cinematic but believable, high detail, no text, no letters, no logos, no watermark, no screens with readable text",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0, ComfyUI lokal",
+    "erzeugt": "2026-11-26",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "12e4e0cc91b6b54cf527d92a8dbe8f204332ccc187cf67e7903c569e5438a446"
+  },
+  "STUDIO-AGENTS-01": {
+    "datei": "src/Trendo.App/Assets/studios/STUDIO-AGENTS-01.jpg",
+    "seed": 20261107,
+    "prompt": "a tidy workbench with several small brass robot figurines connected by thin glowing threads to a notebook with a flow diagram, dark room, golden accent light, no readable text, photorealistic photograph, shot on a full-frame camera with a 35mm lens at f/2.8, natural soft light with warm golden accent light, dark charcoal and black surroundings with subtle real gold details, shallow depth of field, realistic materials and textures, cinematic but believable, high detail, no text, no letters, no logos, no watermark, no screens with readable text",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0, ComfyUI lokal",
+    "erzeugt": "2026-11-26",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "717a09b8ffe76a7e9a2dc30338922b4b39d4b27f2d9a3e9926e6420a47b4d3b3"
+  },
+  "STUDIO-MODELS-01": {
+    "datei": "src/Trendo.App/Assets/studios/STUDIO-MODELS-01.jpg",
+    "seed": 20261108,
+    "prompt": "three identical vintage scales side by side on a dark wooden table, each weighing a different glass sphere with soft inner light, warm light, no text, photorealistic photograph, shot on a full-frame camera with a 35mm lens at f/2.8, natural soft light with warm golden accent light, dark charcoal and black surroundings with subtle real gold details, shallow depth of field, realistic materials and textures, cinematic but believable, high detail, no text, no letters, no logos, no watermark, no screens with readable text",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0, ComfyUI lokal",
+    "erzeugt": "2026-11-26",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "378433f6fb816435fcecb9d1416111f333c4c1d36ea261286af6a232191c5276"
+  },
+  "STUDIO-TRAIN-01": {
+    "datei": "src/Trendo.App/Assets/studios/STUDIO-TRAIN-01.jpg",
+    "seed": 20261429,
+    "prompt": "a teacher desk with stacks of labeled index cards sorted into small wooden trays and a laptop showing a simple chart, dark study room, warm desk lamp, no readable text, photorealistic photograph, shot on a full-frame camera with a 35mm lens at f/2.8, natural soft light with warm golden accent light, dark charcoal and black surroundings with subtle real gold details, shallow depth of field, realistic materials and textures, cinematic but believable, high detail, no text, no letters, no logos, no watermark, no screens with readable text",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0, ComfyUI lokal",
+    "erzeugt": "2026-11-26",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "c31caae7895e0fa1c3e36c564e5947e00ed93f4d6b139e5076da4a1189db6ca8"
+  },
+  "STUDIO-CODEAI-01": {
+    "datei": "src/Trendo.App/Assets/studios/STUDIO-CODEAI-01.jpg",
+    "seed": 20261227,
+    "prompt": "a mechanical keyboard and a wide monitor with blurred colorful source code lines in a dark room, a coffee cup and a small brass lamp, warm accent light, no readable text, photorealistic photograph, shot on a full-frame camera with a 35mm lens at f/2.8, natural soft light with warm golden accent light, dark charcoal and black surroundings with subtle real gold details, shallow depth of field, realistic materials and textures, cinematic but believable, high detail, no text, no letters, no logos, no watermark, no screens with readable text",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0, ComfyUI lokal",
+    "erzeugt": "2026-11-26",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "f7aa66fec4397917de7b06198c9d8d79df374f3fc15cc70f15cb8a4931665952"
+  },
+  "STUDIO-VISION-01": {
+    "datei": "src/Trendo.App/Assets/studios/STUDIO-VISION-01.jpg",
+    "seed": 20261111,
+    "prompt": "a magnifying glass and a camera lens lying on a printed photograph of a forest on a dark desk, light reflections in the glass, warm light, no readable text, no faces, photorealistic photograph, shot on a full-frame camera with a 35mm lens at f/2.8, natural soft light with warm golden accent light, dark charcoal and black surroundings with subtle real gold details, shallow depth of field, realistic materials and textures, cinematic but believable, high detail, no text, no letters, no logos, no watermark, no screens with readable text",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0, ComfyUI lokal",
+    "erzeugt": "2026-11-26",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "3ebe15578762c77a82892a18f9b93483155f04459c1f12c5d85d9628cc79d4d2"
+  },
+  "STUDIO-CITE-01": {
+    "datei": "src/Trendo.App/Assets/studios/STUDIO-CITE-01.jpg",
+    "seed": 20261112,
+    "prompt": "open old books with colorful paper bookmarks and a card catalog drawer in a library reading room, dark wood, warm reading lamp, no readable text, photorealistic photograph, shot on a full-frame camera with a 35mm lens at f/2.8, natural soft light with warm golden accent light, dark charcoal and black surroundings with subtle real gold details, shallow depth of field, realistic materials and textures, cinematic but believable, high detail, no text, no letters, no logos, no watermark, no screens with readable text",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0, ComfyUI lokal",
+    "erzeugt": "2026-11-26",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "74596be0b82fc3c3c230c5fe06733cc8edeea6e193a1675094db0effa5300bbc"
+  },
+  "STUDIO-DAYPLAN-01": {
+    "datei": "src/Trendo.App/Assets/studios/STUDIO-DAYPLAN-01.jpg",
+    "seed": 20261231,
+    "prompt": "a paper day planner with time blocks colored by soft markers next to a brass alarm clock and a cup of tea on a dark desk at morning light, no readable text, photorealistic photograph, shot on a full-frame camera with a 35mm lens at f/2.8, natural soft light with warm golden accent light, dark charcoal and black surroundings with subtle real gold details, shallow depth of field, realistic materials and textures, cinematic but believable, high detail, no text, no letters, no logos, no watermark, no screens with readable text",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0, ComfyUI lokal",
+    "erzeugt": "2026-11-26",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "991806a8a51247a1dc7e0263086cfb10dcb051a7addcec67482b279283a30592"
+  },
+  "STUDIO-TUTOR-01": {
+    "datei": "src/Trendo.App/Assets/studios/STUDIO-TUTOR-01.jpg",
+    "seed": 20261114,
+    "prompt": "a school exercise book with handwritten fractions and arithmetic, a pencil, an eraser and a small desk lamp on a dark wooden desk, warm evening light, no readable text, no faces, photorealistic photograph, shot on a full-frame camera with a 35mm lens at f/2.8, natural soft light with warm golden accent light, dark charcoal and black surroundings with subtle real gold details, shallow depth of field, realistic materials and textures, cinematic but believable, high detail, no text, no letters, no logos, no watermark, no screens with readable text",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0, ComfyUI lokal",
+    "erzeugt": "2026-11-26",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "6ab0415ad4c95dc13e890e732c0d6fa027d690a052e138ea4858b8d0b921ceed"
+  },
+  "STUDIO-CODELEARN-01": {
+    "datei": "src/Trendo.App/Assets/studios/STUDIO-CODELEARN-01.jpg",
+    "seed": 20261428,
+    "prompt": "a laptop with abstract colorful program code lines out of focus on a dark desk, a paper notebook with hand drawn flowchart boxes and a pencil beside it, warm light, no readable text, no faces, photorealistic photograph, shot on a full-frame camera with a 35mm lens at f/2.8, natural soft light with warm golden accent light, dark charcoal and black surroundings with subtle real gold details, shallow depth of field, realistic materials and textures, cinematic but believable, high detail, no text, no letters, no logos, no watermark, no screens with readable text",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0, ComfyUI lokal",
+    "erzeugt": "2026-11-26",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "9d3c9c3ad422447960f5863916eae0dd66071c5ca757f42673b6f7e57a246fda"
   }
 }
