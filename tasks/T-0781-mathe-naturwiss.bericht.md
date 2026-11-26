@@ -116,6 +116,17 @@ Jeder Punkt hat einen Regressionstest; Rot-Läufe gegen 8a5e74012 in `reports/T-
 Tests: Core gezielt (T0781*, MatheKern, NaturKern, WissenAdapter, PromptAction, T0777Stille, KreativKits, Buero) 322 Tests: 321 bestanden, 1 übersprungen (PubChem-Abgleich); App `T0781Wissen_Ui` 16 bestanden, 2 übersprungen (FREMD, ECHT); App-Querklassen (26 Klassen, u. a. AssistChain, ClaudePrograms, DeadButton, PromptBar, StudioFolds, StudiosAlle) 364: 362 bestanden, 2 übersprungen. Kein Volltest.
 Ehrlich: Der Export (PDF/LaTeX/MD) rechnet noch synchron je Rechnung, aber mit der 3-s-Grenze des Kerns; meist liegen die Ergebnisse schon im Zwischenspeicher.
 
+## 3. Prüfrunde (Nachbesserung 3)
+Rot-Läufe gegen 0ab418a92 in `reports/T-0781/nachbesserung3/`.
+
+| Punkt | Änderung | Test |
+|---|---|---|
+| HOCH langsame Konvergenz | `Grenzwert` in `BestimmtesIntegral`: für c·x^a an der Stelle 0 die exakte Regel (konvergent genau für a > −1, sonst divergent); sonst F an p ± 10⁻² … 10⁻¹², Verhältnis aufeinanderfolgender Differenzen: < 0,9 und gleichmäßig → konvergent mit Aitken-Extrapolation, ≥ 0,98 → divergent, dazwischen „(unsicher – siehe Probe)“ mit gelber Probe. Gegenprobe (`ProbeUneigentlich`) rechnet nur mit f: Zehnerstücke zur Lücke hin, ausgesparter Rest aus drei Summen hochgerechnet | Core `T0781Runde3Tests.Konvergent` (∫x^(−2/3) −1..1 = 6, 0..1 = 3, ∫x^(−3/4) = 4, ∫x^(−0.9) = 10, ∫5x^(−3/4) = 20), `.Extrapolation_ohne_potenzregel` (∫x^(−2/3) + x^(1/3) = 15/4) – vorher alle „existiert nicht“; `.Divergent` (1/x, 1/x², x^(−1), x^(−1.5)) als Schutz, schon vorher grün |
+| MITTEL schnelle Folge | Verworfen wird nur eine ältere Fassung derselben Zeile (gleiches Dokument, gleiche Art, gleicher Text) – mit Meldung „Ältere Rechnung verworfen …“; eine andere ältere Rechnung wird angehängt | App `Veraltetes_ergebnis_verworfen` (jetzt: beide verschiedenen Rechnungen kommen an), `Gleiche_fassung_verworfen_mit_meldung` (Reihenfolge per zweitem Tor festgelegt) – beide vorher rot |
+| NIEDRIG schmale Lücke am Rand | Abtastung zusätzlich dicht an den Rändern (10⁻³ … 10⁻⁹ der Länge); `Grenzwert` meldet „undefiniert“, wenn f neben der Stelle keinen reellen Wert hat → „nicht überall definiert“ statt „divergiert“ | `.Schmale_luecke_am_rand` (√x ab −0,0001, ln x ab −10⁻⁶, √(1−x) bis 1,000001) – vorher „divergiert“ |
+
+Tests: Core gezielt 335 Tests: 334 bestanden, 1 übersprungen (PubChem-Abgleich); App `T0781Wissen_Ui` 19: 17 bestanden, 2 übersprungen (FREMD, ECHT); App-Querklassen (26 Klassen) 364: 362 bestanden, 2 übersprungen. Kein Volltest.
+
 ## ENTWICKLUNGSBERICHT
 - Projekt: Trendo OS / Sprachen: C# (.NET 10, Avalonia) / Rust eingesetzt: NEIN / Rust-Komponenten: keine
 - Grund der Sprachwahl: Rechenkern läuft im .NET-Prozess, Schulaufgaben in Millisekunden (200 Zufallsgleichungen + 81 weitere Core-Fälle in unter 1 s); Rust brächte FFI und zweite Toolchain ohne messbaren Vorteil

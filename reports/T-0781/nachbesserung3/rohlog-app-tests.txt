@@ -1,0 +1,53 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0781 Mathe-Helfer: KI übersetzt eine Textaufgabe – Vorschau ändert nichts, „Ja, behalten“ legt die vom Kern gerechnete Rechnung an (ein Rückgängig-Schritt), Rückgängig nimmt sie heraus (KI ersetzt) [STARTING]
+    T-0781 Mathe-Helfer: KI übersetzt eine Textaufgabe – Vorschau ändert nichts, „Ja, behalten“ legt die vom Kern gerechnete Rechnung an (ein Rückgängig-Schritt), Rückgängig nimmt sie heraus (KI ersetzt) [FINISHED] Time: 7,8661228s
+    T-0781 R3 Hintergrund: nur eine ältere Fassung derselben Zeile wird verworfen – mit Meldung „Ältere Rechnung verworfen“ [STARTING]
+    T-0781 R3 Hintergrund: nur eine ältere Fassung derselben Zeile wird verworfen – mit Meldung „Ältere Rechnung verworfen“ [FINISHED] Time: 1,8117307s
+    T-0781 Mathe-Helfer: Fehler verständlich, nichts wird angelegt; Entf und Rechtsklick „Kopieren“ wirken [STARTING]
+    T-0781 Mathe-Helfer: Fehler verständlich, nichts wird angelegt; Entf und Rechtsklick „Kopieren“ wirken [FINISHED] Time: 2,1417341s
+    T-0781 R2 Hintergrund: Ausnahme beim Rechnen im Hintergrund wird zur Meldung, kein Absturz, nichts angelegt [STARTING]
+    T-0781 R2 Hintergrund: Ausnahme beim Rechnen im Hintergrund wird zur Meldung, kein Absturz, nichts angelegt [FINISHED] Time: 1,2128239s
+    T-0781 Mathe-Helfer: Absturz vor dem Speichern – die automatische Sicherung (20-s-Takt der Hülle) bringt die Rechnungen zurück [STARTING]
+    T-0781 Mathe-Helfer: Absturz vor dem Speichern – die automatische Sicherung (20-s-Takt der Hülle) bringt die Rechnungen zurück [FINISHED] Time: 2,3610806s
+    T-0781 R2 Hintergrund: Aufgabenblatt wird im Hintergrund gerechnet (vorher synchron je Zeile) – Oberfläche bleibt bedienbar [STARTING]
+    T-0781 R2 Hintergrund: Aufgabenblatt wird im Hintergrund gerechnet (vorher synchron je Zeile) – Oberfläche bleibt bedienbar [FINISHED] Time: 0,9415273s
+    T-0781 Gegenprüfung (Einfrieren): Riesenaufgabe hält die Oberfläche nicht an – klare Meldung, nichts angelegt; unsichere Probe wird gelb („?“) angezeigt [STARTING]
+    T-0781 Gegenprüfung (Einfrieren): Riesenaufgabe hält die Oberfläche nicht an – klare Meldung, nichts angelegt; unsichere Probe wird gelb („?“) angezeigt [FINISHED] Time: 1,3696566s
+    T-0781 R2 Hintergrund: geschlossenes Dokument wird nicht angefasst; keine Zwangs-Navigation zurück zum Mathe-Helfer [STARTING]
+    T-0781 R2 Hintergrund: geschlossenes Dokument wird nicht angefasst; keine Zwangs-Navigation zurück zum Mathe-Helfer [FINISHED] Time: 1,0339415s
+    T-0781 FREMD: Aufgabenblatt aus LibreOffice (Text) über die Oberfläche einlesen, rechnen, als PDF/Markdown exportieren; Laborheft als CSV/PDF – Dateien für die Gegenprobe im Fremdprogramm (nur mit TRENDO_T0781_FREMD) [STARTING]
+    T-0781 FREMD: Aufgabenblatt aus LibreOffice (Text) über die Oberfläche einlesen, rechnen, als PDF/Markdown exportieren; Laborheft als CSV/PDF – Dateien für die Gegenprobe im Fremdprogramm (nur mit TRENDO_T0781_FREMD) [SKIP]
+      Nur mit TRENDO_T0781_FREMD=<Ordner mit aufgaben-libreoffice.txt aus LibreOffice>.
+    T-0781 FREMD: Aufgabenblatt aus LibreOffice (Text) über die Oberfläche einlesen, rechnen, als PDF/Markdown exportieren; Laborheft als CSV/PDF – Dateien für die Gegenprobe im Fremdprogramm (nur mit TRENDO_T0781_FREMD) [FINISHED] Time: 0,0016654s
+    T-0781 ECHT: lokale KI (Ollama) übersetzt Textaufgaben – Mathe-Helfer (Rechteck) und Naturwissenschaft (Glucose), gerechnet vom Kern, Rückgängig (nur mit TRENDO_T0781_ECHT) [STARTING]
+    T-0781 ECHT: lokale KI (Ollama) übersetzt Textaufgaben – Mathe-Helfer (Rechteck) und Naturwissenschaft (Glucose), gerechnet vom Kern, Rückgängig (nur mit TRENDO_T0781_ECHT) [SKIP]
+      Echtlauf nur mit TRENDO_T0781_ECHT=<Belegordner> (braucht Ollama mit Modell auf diesem PC).
+    T-0781 ECHT: lokale KI (Ollama) übersetzt Textaufgaben – Mathe-Helfer (Rechteck) und Naturwissenschaft (Glucose), gerechnet vom Kern, Rückgängig (nur mit TRENDO_T0781_ECHT) [FINISHED] Time: 0,0047527s
+    T-0781 R3 Hintergrund: schnelle Folge zweier verschiedener Rechnungen – beide kommen an, keine wird still verworfen [STARTING]
+    T-0781 R3 Hintergrund: schnelle Folge zweier verschiedener Rechnungen – beide kommen an, keine wird still verworfen [FINISHED] Time: 1,2310368s
+    T-0781 Mathe-Helfer: die KI darf kein Ergebnis liefern – „x = 5“ und direkt gesetzte Rechnungen werden abgelehnt, das Dokument bleibt unverändert (KI ersetzt) [STARTING]
+    T-0781 Mathe-Helfer: die KI darf kein Ergebnis liefern – „x = 5“ und direkt gesetzte Rechnungen werden abgelehnt, das Dokument bleibt unverändert (KI ersetzt) [FINISHED] Time: 0,5574145s
+    T-0781 Mathe-Helfer: Aufgabenblatt aus einer Fremddatei (Text) über „Aufgabenblatt öffnen …“ – jede Zeile gerechnet, Unverständliches übergangen, Datei unverändert [STARTING]
+    T-0781 Mathe-Helfer: Aufgabenblatt aus einer Fremddatei (Text) über „Aufgabenblatt öffnen …“ – jede Zeile gerechnet, Unverständliches übergangen, Datei unverändert [FINISHED] Time: 0,7557275s
+    T-0781 Mathe-Helfer: leeres Rechenblatt → Aufgabe tippen → „Rechnen“ → Ergebnis, Lösungsweg, Probe und Graph; Rückgängig; Export PDF, LaTeX, Markdown [STARTING]
+    T-0781 Mathe-Helfer: leeres Rechenblatt → Aufgabe tippen → „Rechnen“ → Ergebnis, Lösungsweg, Probe und Graph; Rückgängig; Export PDF, LaTeX, Markdown [FINISHED] Time: 2,2076595s
+    T-0781 Gegenprüfung (MITTEL): fertige Ergebnisse wie „x + 0 = 5“ und „1x = 5“ lehnt die Sperre ab; Löschen/Kopieren sind für die KI gesperrt (KI ersetzt) [STARTING]
+    T-0781 Gegenprüfung (MITTEL): fertige Ergebnisse wie „x + 0 = 5“ und „1x = 5“ lehnt die Sperre ab; Löschen/Kopieren sind für die KI gesperrt (KI ersetzt) [FINISHED] Time: 1,0311728s
+    T-0781 R2 Hintergrund: „Rechnen“ hält die Oberfläche nicht an; spätes Ergebnis lässt neu Getipptes stehen [STARTING]
+    T-0781 R2 Hintergrund: „Rechnen“ hält die Oberfläche nicht an; spätes Ergebnis lässt neu Getipptes stehen [FINISHED] Time: 0,5156923s
+    T-0781 Naturwissenschaft: Periodensystem anklicken → Steckbrief; Reaktion, Molmasse, Physik und Einheiten → „Ins Laborheft“; Export PDF und CSV [STARTING]
+    T-0781 Naturwissenschaft: Periodensystem anklicken → Steckbrief; Reaktion, Molmasse, Physik und Einheiten → „Ins Laborheft“; Export PDF und CSV [FINISHED] Time: 3,0573752s
+    T-0781 Naturwissenschaft: KI übersetzt „Wie lange fällt ein Stein aus 20 m?“ in die Formel – gerechnet vom Programm, ein Rückgängig-Schritt; Faktoren der KI werden abgelehnt (KI ersetzt) [STARTING]
+    T-0781 Naturwissenschaft: KI übersetzt „Wie lange fällt ein Stein aus 20 m?“ in die Formel – gerechnet vom Programm, ein Rückgängig-Schritt; Faktoren der KI werden abgelehnt (KI ersetzt) [FINISHED] Time: 1,1725192s
+    T-0781 Studios eingebunden: Katalog (Wissen & Lernen), Symbol, Profil, Team, Fähigkeiten, KI-Fachaktion, Bild [STARTING]
+    T-0781 Studios eingebunden: Katalog (Wissen & Lernen), Symbol, Profil, Team, Fähigkeiten, KI-Fachaktion, Bild [FINISHED] Time: 0,0070385s
+  Finished:    Trendo.App.Tests (ID = 'db5e32d100aee70e1aae2233f3728954318e0ce6005044391c126145a7cd8252')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 19, Errors: 0, Failed: 0, Skipped: 2, Not Run: 0, Time: 32,238s
+
+=== Querklassen (26 Klassen) ===
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 364, Errors: 0, Failed: 0, Skipped: 2, Not Run: 0, Time: 852,029s

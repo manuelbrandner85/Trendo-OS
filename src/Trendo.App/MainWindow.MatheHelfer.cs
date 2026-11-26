@@ -136,6 +136,9 @@ public partial class MainWindow
     readonly HashSet<string> _mhLaeuft = [];
     /// <summary>T-0781 (2. Prüfrunde): Stand je Dokument – jedes „Rechnen“ zählt hoch; ein spätes Ergebnis eines älteren Stands wird verworfen.</summary>
     readonly Dictionary<string, int> _mhGen = [];
+    /// <summary>T-0781 (3. Prüfrunde): neuester Stand je Fassung (Dokument + Art + Aufgabentext). Verworfen wird nur eine ältere Fassung derselben Zeile –
+    /// eine andere, ältere Rechnung wird angehängt, auch wenn sie später fertig wird.</summary>
+    readonly Dictionary<(string Doc, string Art, string Text), int> _mhNeueste = [];
 
     (Loesung? L, string? Fehler)? MhLoesungOderSpaeter(ProgramDocument d, int i)
     {
@@ -192,16 +195,18 @@ public partial class MainWindow
         var e = MhEintrag(art, text);
         var auftrag = MhAuftrag(e);
         var gen = _mhGen[d.Id] = _mhGen.GetValueOrDefault(d.Id) + 1;
+        var fassung = (d.Id, art, text);
+        _mhNeueste[fassung] = gen;
         if (MhRechneKurz(auftrag) is { } schnell) { MhUebernehmen(d, e, text, schnell); return; }
         _progMsg[MatheKey] = "Rechnet … (höchstens 3 Sekunden – du kannst weiterarbeiten)";
-        _ = MhRechnenSpaeter(d, e, text, gen, auftrag);
+        _ = MhRechnenSpaeter(d, e, text, gen, fassung, auftrag);
     }
 
     /// <summary>Für Tests: läuft gerade eine Rechnung im Hintergrund?</summary>
     public bool MhRechnetNoch => _mhSpaet > 0 || _mhLaeuft.Count > 0;
     int _mhSpaet;
 
-    async Task MhRechnenSpaeter(ProgramDocument d, JsonObject e, string text, int gen, MatheAuftrag auftrag)
+    async Task MhRechnenSpaeter(ProgramDocument d, JsonObject e, string text, int gen, (string, string, string) fassung, MatheAuftrag auftrag)
     {
         _mhSpaet++;
         try
@@ -210,7 +215,13 @@ public partial class MainWindow
             try { res = await Task.Run(() => MhRechneSicher(auftrag)); }
             catch (Exception ex) when (ex is not OutOfMemoryException) { res = (null, FriendlyError.Say(ex)); }
             if (!ProgramDocs(MatheKey).Contains(d)) return;            // Dokument inzwischen geschlossen: nichts anfassen
-            if (_mhGen.GetValueOrDefault(d.Id) != gen) return;         // inzwischen neu gerechnet: dieses Ergebnis ist veraltet
+            if (_mhNeueste.GetValueOrDefault(fassung) != gen)          // dieselbe Aufgabe wurde inzwischen neu abgeschickt: diese Fassung ist veraltet
+            {
+                _progMsg[MatheKey] = $"Ältere Rechnung verworfen: „{(text.Length > 30 ? text[..30] + "…" : text)}“ wurde inzwischen neu abgeschickt – es gilt die neuere Fassung.";
+                if (CurrentView == MatheKey) Show(MatheKey);
+                return;
+            }
+            _mhNeueste.Remove(fassung);
             try { MhUebernehmen(d, e, text, res); }
             catch (ArgumentException ex) { _progMsg[MatheKey] = ex.Message; }
             if (CurrentView == MatheKey) Show(MatheKey);

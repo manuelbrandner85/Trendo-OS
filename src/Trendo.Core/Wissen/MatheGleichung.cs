@@ -682,18 +682,21 @@ public static partial class MatheKern
         // T-0781 (2. Prüfrunde): ist f auf einem ganzen Stück nicht definiert (√x, ln x für x < 0), gibt es kein Integral über das Intervall
         {
             var undefiniert = new List<double>();
-            for (var i = 1; i < 400; i++)
+            // T-0781 (3. Prüfrunde): neben 399 gleichmäßigen Stellen auch dicht an den Rändern (schmale Lücke am Rand, z. B. √x ab −0,0001)
+            var stellen = Enumerable.Range(1, 399).Select(i => lo + (hi - lo) * i / 400.0).ToList();
+            foreach (var k in new[] { 1e-3, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9 }) { stellen.Add(lo + (hi - lo) * k); stellen.Add(hi - (hi - lo) * k); }
+            foreach (var v in stellen)
             {
-                var v = lo + (hi - lo) * i / 400.0;
                 if (luecken.Any(l => Math.Abs(l - v) < 1e-9 * Math.Max(1, Math.Abs(l)))) continue;
                 if (double.IsNaN(fw(v))) undefiniert.Add(v);
             }
+            undefiniert.Sort();
             if (undefiniert.Count > 0)
             {
                 var von2 = undefiniert.Min(); var bis2 = undefiniert.Max();
-                schritte.Add(new Schritt($"Die Funktion ist nicht auf dem ganzen Intervall definiert (etwa von {x} = {Zahlwort(Math.Round(von2, 3))} bis {Zahlwort(Math.Round(bis2, 3))} nicht reell) – das bestimmte Integral gibt es so nicht", "nicht definiert"));
+                schritte.Add(new Schritt($"Die Funktion ist nicht überall definiert (etwa von {x} = {Zahlwort(Math.Round(von2, 6))} bis {Zahlwort(Math.Round(bis2, 6))} nicht reell) – das bestimmte Integral gibt es so nicht", "nicht definiert"));
                 proben.Add(new Probe(true, $"✓ Gegenprobe: f({x} = {Zahlwort(Math.Round(undefiniert[undefiniert.Count / 2], 4))}) hat keinen reellen Wert."));
-                return (aufgabe, $"{kopf} ist nicht definiert auf dem ganzen Intervall (die Funktion hat dort keine reellen Werte)", $"\\int_{{{TermText.Latex(aT)}}}^{{{TermText.Latex(bT)}}} {TermText.Latex(f)}\\,d{x} \\text{{ nicht definiert}}");
+                return (aufgabe, $"{kopf} ist nicht definiert auf dem ganzen Intervall (die Funktion ist nicht überall definiert: keine reellen Werte etwa von {x} = {Zahlwort(Math.Round(von2, 6))} bis {Zahlwort(Math.Round(bis2, 6))})", $"\\int_{{{TermText.Latex(aT)}}}^{{{TermText.Latex(bT)}}} {TermText.Latex(f)}\\,d{x} \\text{{ nicht definiert}}");
             }
         }
         if (luecken.Count == 0)
@@ -712,28 +715,59 @@ public static partial class MatheKern
         // Uneigentliches Integral: an jeder Lücke Grenzwert von F
         var luText = string.Join(", ", luecken.Select(l => $"{x} = {Zahlwort(Math.Round(l, 10))}"));
         schritte.Add(new Schritt($"Achtung: Die Funktion ist im Intervall nicht überall definiert ({luText}) – uneigentliches Integral: an diesen Stellen den Grenzwert von F bilden", $"F({x}) = {A(F)}"));
-        double? Grenzwert(double p, int seite) // seite +1: von rechts, −1: von links
+        // T-0781 (3. Prüfrunde): vorher feste Schwelle (Abstand ≤ 10⁻³) – langsam konvergente Integrale wie ∫x^(−2/3) galten als divergent.
+        // Jetzt: für c·x^a an der Stelle 0 die exakte Regel (konvergent genau für a > −1), sonst Verhältnis aufeinanderfolgender Differenzen
+        // von F an p ± 10⁻², 10⁻⁴ … 10⁻¹² mit Aitken-Extrapolation; was weder klar konvergiert noch klar divergiert, ist „unsicher“.
+        var potenz = PotenzBeiNull(f, x);
+        (double? Wert, string Art) Grenzwert(double p, int seite) // seite +1: von rechts, −1: von links; Art: ok, divergent, unsicher, undefiniert
         {
-            var werte = new[] { 1e-4, 1e-6, 1e-8, 1e-10 }.Select(eps => Fw(p + seite * eps * Math.Max(1, Math.Abs(p)))).ToList();
-            if (werte.Any(v => !double.IsFinite(v))) return null;
-            var d1 = Math.Abs(werte[1] - werte[0]); var d2 = Math.Abs(werte[2] - werte[1]); var d3 = Math.Abs(werte[3] - werte[2]);
-            var skala = Math.Max(1, Math.Abs(werte[3]));
-            // konvergent: die Abstände schrumpfen deutlich (Faktor 2 je Schritt) und werden klein; sonst (z. B. ln|x|: gleich große Schritte) divergent
-            if (!(d3 <= 1e-3 * skala && d3 <= 0.5 * d2 + 1e-13 && d2 <= 0.5 * d1 + 1e-13)) return null;
-            var direkt = Fw(p);
-            var grenz = double.IsFinite(direkt) && Math.Abs(direkt - werte[3]) <= 10 * d3 + 1e-9 * skala ? direkt : werte[3];
-            var glatt = Bruch.Naeherung(grenz, 1000).AlsDouble(); // Rundungsrest des Grenzwerts (z. B. −2·10⁻⁹ statt 0) glätten
-            return Math.Abs(glatt - grenz) <= 10 * d3 + 1e-9 ? glatt : grenz;
+            var skalaP = Math.Max(1, Math.Abs(p));
+            if (p == 0 && potenz is { } ea)
+            {
+                if (ea <= -1) return (null, "divergent");
+                var d0 = Fw(0);
+                if (double.IsFinite(d0)) { schritte.Add(new Schritt($"Potenzregel an der Stelle 0: ∫ {x}^a konvergiert genau für a > −1 (hier a = {Zahlwort(Math.Round(ea, 6))}), F ist dort stetig", $"F(0) = {Zahlwort(Math.Round(d0, 10))}")); return (d0, "ok"); }
+            }
+            var eps = new[] { 1e-2, 1e-4, 1e-6, 1e-8, 1e-10, 1e-12 };
+            var werte = eps.Select(e => Fw(p + seite * e * skalaP)).ToList();
+            if (eps.Any(e => double.IsNaN(fw(p + seite * e * skalaP)))) return (null, "undefiniert");
+            if (werte.Any(double.IsNaN)) return (null, "unsicher");
+            if (werte.Any(double.IsInfinity)) return (null, "divergent");
+            var d = Enumerable.Range(0, werte.Count - 1).Select(i => werte[i + 1] - werte[i]).ToList();
+            var skala = Math.Max(1, Math.Abs(werte[^1]));
+            double Glatt(double grenz, double fehler)
+            {
+                var direkt = Fw(p);
+                if (double.IsFinite(direkt) && Math.Abs(direkt - grenz) <= 10 * fehler + 1e-9 * skala) grenz = direkt;
+                var glatt = Bruch.Naeherung(grenz, 1000).AlsDouble(); // Rundungsrest (z. B. −2·10⁻⁹ statt 0) glätten
+                return Math.Abs(glatt - grenz) <= 10 * fehler + 1e-9 ? glatt : grenz;
+            }
+            if (Math.Abs(d[^1]) <= 1e-12 * skala && Math.Abs(d[^2]) <= 1e-9 * skala) return (Glatt(werte[^1], Math.Abs(d[^1])), "ok"); // schon stehen geblieben
+            var q = Enumerable.Range(1, d.Count - 1).Select(i => Math.Abs(d[i - 1]) < 1e-300 ? 0 : Math.Abs(d[i]) / Math.Abs(d[i - 1])).ToList();
+            var gleichesVorzeichen = d.Skip(1).All(v => Math.Sign(v) == Math.Sign(d[^1]) || Math.Abs(v) <= 1e-12 * skala);
+            double qMax = q.Skip(1).Max(), qMin = q.Skip(1).Min(), qL = q[^1];
+            if (qMax < 0.9 && gleichesVorzeichen && qMax - qMin < 0.2)
+            {
+                var grenz = werte[^1] + d[^1] * qL / (1 - qL); // geometrischer Rest (Aitken)
+                return (Glatt(grenz, Math.Abs(d[^1]) * qL / (1 - qL) * 0.01 + 1e-12), "ok");
+            }
+            if (qMin >= 0.98) return (null, "divergent"); // gleich große (ln) oder wachsende Schritte (1/x)
+            return (null, "unsicher");
         }
         var punkte = new List<double> { lo }; punkte.AddRange(luecken.Where(l => l > lo && l < hi)); punkte.Add(hi);
-        var summe = 0.0; var divergent = new List<double>();
+        var summe = 0.0; var divergent = new List<double>(); var unsicherBei = new List<double>(); var undefiniertBei = new List<double>();
         for (var i = 0; i + 1 < punkte.Count; i++)
         {
             double l = punkte[i], r = punkte[i + 1];
-            double? Fl = luecken.Contains(l) ? Grenzwert(l, +1) : Fw(l);
-            double? Fr = luecken.Contains(r) ? Grenzwert(r, -1) : Fw(r);
-            if (Fl is null || !double.IsFinite(Fl.Value)) divergent.Add(l);
-            if (Fr is null || !double.IsFinite(Fr.Value)) divergent.Add(r);
+            double? Rand(double stelle, int seite)
+            {
+                if (!luecken.Contains(stelle)) { var v = Fw(stelle); if (!double.IsFinite(v)) divergent.Add(stelle); return double.IsFinite(v) ? v : null; }
+                var (w, art) = Grenzwert(stelle, seite);
+                if (art == "undefiniert") undefiniertBei.Add(stelle); else if (art == "unsicher") unsicherBei.Add(stelle); else if (w is null || !double.IsFinite(w.Value)) divergent.Add(stelle);
+                return w is { } ww && double.IsFinite(ww) ? ww : null;
+            }
+            double? Fl = Rand(l, +1);
+            double? Fr = Rand(r, -1);
             if (Fl is { } fl && Fr is { } fr && double.IsFinite(fl) && double.IsFinite(fr))
             {
                 summe += fr - fl;
@@ -741,18 +775,52 @@ public static partial class MatheKern
             }
         }
         if (a > b) summe = -summe;
+        var latexNein = $"\\int_{{{TermText.Latex(aT)}}}^{{{TermText.Latex(bT)}}} {TermText.Latex(f)}\\,d{x} \\text{{ existiert nicht}}";
+        if (undefiniertBei.Count > 0)
+        {
+            var bei = string.Join(", ", undefiniertBei.Distinct().Select(d => $"{x} = {Zahlwort(Math.Round(d, 10))}"));
+            schritte.Add(new Schritt($"Dicht neben {bei} hat die Funktion keine reellen Werte – sie ist im Intervall nicht überall definiert, einen Grenzwert gibt es dort nicht", "nicht definiert"));
+            proben.Add(new Probe(true, "✓ Gegenprobe: dicht neben der Lücke hat f keinen reellen Wert."));
+            return (aufgabe, $"{kopf} ist nicht definiert auf dem ganzen Intervall (die Funktion ist nicht überall definiert, keine reellen Werte bei {bei})", latexNein.Replace("existiert nicht", "nicht definiert"));
+        }
+        if (divergent.Count == 0 && unsicherBei.Count > 0)
+        {
+            var bei = string.Join(", ", unsicherBei.Distinct().Select(d => $"{x} = {Zahlwort(Math.Round(d, 10))}"));
+            schritte.Add(new Schritt($"Bei {bei} schrumpfen die Abstände von F weder klar (konvergent) noch bleiben sie gleich groß (divergent) – ob der Grenzwert existiert, lässt sich so nicht sicher sagen", "unsicher"));
+            var pr = ProbeDivergenz(fw, unsicherBei.Distinct().ToList(), lo, hi);
+            proben.Add(Probe.Gelb("Grenzwert von F unsicher. Gegenrechnung: " + pr.Text.TrimStart('✓', '⚠', ' ')));
+            return (aufgabe, $"{kopf} existiert vermutlich nicht (das Integral divergiert vermutlich bei {bei}) (unsicher – siehe Probe)", latexNein);
+        }
         if (divergent.Count > 0)
         {
             var bei = string.Join(", ", divergent.Distinct().Select(d => $"{x} = {Zahlwort(Math.Round(d, 10))}"));
             schritte.Add(new Schritt($"Der Grenzwert von F existiert nicht (F wächst über alle Grenzen bei {bei}) – das Integral divergiert", "existiert nicht"));
-            proben.Add(ProbeDivergenz(fw, divergent.Distinct().ToList(), lo, hi));
-            return (aufgabe, $"{kopf} existiert nicht (das Integral divergiert bei {bei})", $"\\int_{{{TermText.Latex(aT)}}}^{{{TermText.Latex(bT)}}} {TermText.Latex(f)}\\,d{x} \\text{{ existiert nicht}}");
+            var pd = ProbeDivergenz(fw, divergent.Distinct().ToList(), lo, hi);
+            proben.Add(pd);
+            return (aufgabe, $"{kopf} existiert nicht (das Integral divergiert bei {bei})" + (pd.Unsicher || unsicherBei.Count > 0 ? " (unsicher – siehe Probe)" : ""), $"\\int_{{{TermText.Latex(aT)}}}^{{{TermText.Latex(bT)}}} {TermText.Latex(f)}\\,d{x} \\text{{ existiert nicht}}");
         }
         var nahe = Bruch.Naeherung(summe, 1000);
         var text = Math.Abs(nahe.AlsDouble() - summe) < 1e-7 * Math.Max(1, Math.Abs(summe)) ? nahe + (nahe.IstGanz ? "" : " ≈ " + Zahlwort(Math.Round(summe, 8))) : "≈ " + Zahlwort(Math.Round(summe, 8));
         schritte.Add(new Schritt("Teilstücke addieren", $"{kopf} = {text}"));
         proben.Add(ProbeUneigentlich(fw, punkte, luecken, a > b ? -summe : summe));
         return (aufgabe, $"{kopf} = {text}", $"\\int_{{{TermText.Latex(aT)}}}^{{{TermText.Latex(bT)}}} {TermText.Latex(f)}\\,d{x} = {Zahlwort(Math.Round(summe, 8)).Replace(",", "{,}")}");
+    }
+
+    /// <summary>T-0781 (3. Prüfrunde): ist f = c·x^a (c, a feste Zahlen, a &lt; 0)? Dann gilt an der Stelle 0 die exakte Regel: konvergent genau für a &gt; −1.</summary>
+    static double? PotenzBeiNull(Term f, string x)
+    {
+        static double? Exp(Term t, string x) => t switch
+        {
+            Var v when v.Name == x => 1,
+            Potenz { Basis: Var v } w when v.Name == x && !w.Exponent.Variablen().Any() && ((w.Exponent as Zahl)?.Wert ?? Auswertung.Exakt(w.Exponent)) is { } e => e.AlsDouble(),
+            _ => null,
+        };
+        var a = f switch
+        {
+            Produkt p when p.Faktoren.Count(g => g.Variablen().Any()) == 1 && p.Faktoren.All(g => !g.Variablen().Any() || Exp(g, x) is not null) => Exp(p.Faktoren.First(g => g.Variablen().Any()), x),
+            _ => Exp(f, x),
+        };
+        return a is { } w2 && w2 < 0 ? w2 : null;
     }
 
     /// <summary>Adaptive Simpson-Regel (für die Gegenrechnung, rechnet nur mit f).</summary>
@@ -778,16 +846,41 @@ public static partial class MatheKern
 
     static Probe ProbeUneigentlich(Func<double, double> f, List<double> punkte, List<double> luecken, double wert)
     {
-        // Gegenrechnung mit f allein: an jeder Lücke ein kleines Stück aussparen (δ = 10⁻⁸ der Länge), adaptive Simpson-Regel
-        var sum = 0.0;
-        for (var i = 0; i + 1 < punkte.Count; i++)
+        // Gegenrechnung mit f allein: an jeder Lücke ein kleines Stück aussparen (δ = 10⁻⁴, 10⁻⁶, 10⁻⁸ der Länge), adaptive Simpson-Regel.
+        // T-0781 (3. Prüfrunde): bei langsamer Konvergenz (∫x^(−2/3): Rest 3·δ^(1/3)) den ausgesparten Rest aus den drei Summen geometrisch hochrechnen.
+        double Summe(double rel)
         {
-            double l = punkte[i], r = punkte[i + 1], d = 1e-8 * (r - l);
-            var ll = luecken.Contains(l) ? l + d : l; var rr = luecken.Contains(r) ? r - d : r;
-            sum += Simpson(f, ll, rr, 1e-10, 50);
+            var sum = 0.0;
+            for (var i = 0; i + 1 < punkte.Count; i++)
+            {
+                double l = punkte[i], r = punkte[i + 1], m = (l + r) / 2, laenge = r - l;
+                // zur Lücke hin in Zehnerstücke teilen (l + L·10⁻¹ … l + L·rel), damit Simpson auch steile Pole sauber schafft
+                double Seite(double von, double bis, bool lueckeBeiVon)
+                {
+                    if (!lueckeBeiVon) return Simpson(f, von, bis, 1e-11, 50);
+                    var t = 0.0; var richtung = Math.Sign(bis - von); var aussen = bis;
+                    for (var k = 0.5; k * laenge > rel * laenge * 1.0000001; k /= 10)
+                    {
+                        var innen = von + richtung * Math.Max(k / 10, rel) * laenge;
+                        t += Simpson(f, Math.Min(innen, aussen), Math.Max(innen, aussen), 1e-12, 50);
+                        aussen = innen;
+                    }
+                    return t;
+                }
+                sum += (luecken.Contains(l) ? Seite(l, m, true) : Simpson(f, l, m, 1e-11, 50)) + (luecken.Contains(r) ? Seite(r, m, true) : Simpson(f, m, r, 1e-11, 50));
+            }
+            return sum;
+        }
+        var s1 = Summe(1e-4); var s2 = Summe(1e-6); var s3 = Summe(1e-8);
+        var sum = s3;
+        var d1 = s2 - s1; var d2 = s3 - s2;
+        if (double.IsFinite(d1) && double.IsFinite(d2) && Math.Abs(d1) > 1e-12 && Math.Sign(d1) == Math.Sign(d2) && Math.Abs(d2 / d1) < 0.9)
+        {
+            var q = Math.Abs(d2 / d1);
+            sum = s3 + d2 * q / (1 - q);
         }
         var ok = double.IsFinite(sum) && Math.Abs(sum - wert) <= 1e-3 * Math.Max(1, Math.Abs(wert));
-        return ok ? new Probe(true, $"✓ Gegenrechnung ohne Stammfunktion (adaptive Simpson-Regel, Lücken ausgespart): {Zahlwort(Math.Round(sum, 6))}.")
+        return ok ? new Probe(true, $"✓ Gegenrechnung ohne Stammfunktion (adaptive Simpson-Regel, Lücken ausgespart{(sum != s3 ? ", ausgesparter Rest hochgerechnet" : "")}): {Zahlwort(Math.Round(sum, 6))}.")
                   : Probe.Gelb($"Die Gegenrechnung ohne Stammfunktion ergibt {Zahlwort(Math.Round(sum, 6))} – der Grenzwert ist unsicher.");
     }
 

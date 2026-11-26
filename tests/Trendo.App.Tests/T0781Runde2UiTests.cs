@@ -15,6 +15,8 @@ public partial class T0781Wissen_Ui
     sealed class LangsamerKern : IDisposable
     {
         public readonly ManualResetEventSlim Tor = new(false);
+        /// <summary>Wenn gesetzt: der zweite Aufruf im Hintergrund wartet auf dieses Tor (Reihenfolge der Ergebnisse festlegen).</summary>
+        public ManualResetEventSlim? TorZweiter;
         public Exception? Werfe;
         public int Hintergrund;
         public LangsamerKern()
@@ -22,13 +24,13 @@ public partial class T0781Wissen_Ui
             MainWindow.MhKernFuerTests = (a, zeit) =>
             {
                 if (zeit is not null) throw new OperationCanceledException("Zeitgrenze (nachgestellt)");
-                Interlocked.Increment(ref Hintergrund);
-                Assert.True(Tor.Wait(15000), "Tor nie geöffnet");
+                var nr = Interlocked.Increment(ref Hintergrund);
+                Assert.True((nr == 2 && TorZweiter is { } z ? z : Tor).Wait(15000), "Tor nie geöffnet");
                 if (Werfe is { } ex) throw ex;
                 return MatheKern.Rechne(a);
             };
         }
-        public void Dispose() { Tor.Set(); MainWindow.MhKernFuerTests = null; }
+        public void Dispose() { Tor.Set(); TorZweiter?.Set(); MainWindow.MhKernFuerTests = null; }
     }
 
     static void Klick(MainWindow w, string name) { var b = w.Find<Button>(name); b.BringIntoView(); Settle(); RealClick(w, b); Settle(); }
@@ -59,7 +61,7 @@ public partial class T0781Wissen_Ui
         finally { w.Close(); }
     }
 
-    [AvaloniaFact(DisplayName = "T-0781 R2 Hintergrund: veraltete Ergebnisse werden verworfen – nur der zuletzt abgeschickte Stand kommt an")]
+    [AvaloniaFact(DisplayName = "T-0781 R3 Hintergrund: schnelle Folge zweier verschiedener Rechnungen – beide kommen an, keine wird still verworfen")]
     public async Task Veraltetes_ergebnis_verworfen()
     {
         var (w, _, _) = Ui.Open();
@@ -73,9 +75,34 @@ public partial class T0781Wissen_Ui
             k.Tor.Set();
             await Until(() => !w.MhRechnetNoch);
             Settle();
-            Assert.Single(d.List("rechnungen"));
-            Assert.Equal("3x = 9", d.List("rechnungen")[0]!["eingabe"]!.GetValue<string>());
+            // T-0781 (3. Prüfrunde): vorher verschwand „2x = 4“ still – jetzt werden beide angehängt
+            Assert.Equal(2, d.List("rechnungen").Count);
+            Assert.Equal(["2x = 4", "3x = 9"], d.List("rechnungen").Select(r => r!["eingabe"]!.GetValue<string>()).Order().ToArray());
             Assert.Equal("", w.Find<TextBox>("mh-eingabe").Text ?? "");
+        }
+        finally { w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0781 R3 Hintergrund: nur eine ältere Fassung derselben Zeile wird verworfen – mit Meldung „Ältere Rechnung verworfen“")]
+    public async Task Gleiche_fassung_verworfen_mit_meldung()
+    {
+        var (w, _, _) = Ui.Open();
+        using var k = new LangsamerKern();
+        try
+        {
+            var d = OpenMathe(w);
+            k.TorZweiter = new ManualResetEventSlim(false);
+            Tippe(w, "mh-eingabe", "2x = 4"); Klick(w, "prog-cmd-mh-run-rechnen");
+            Tippe(w, "mh-eingabe", "2x = 4"); Klick(w, "prog-cmd-mh-run-rechnen");
+            await Until(() => Volatile.Read(ref k.Hintergrund) == 2);
+            k.TorZweiter.Set(); // die neuere Fassung wird zuerst fertig …
+            await Until(() => d.List("rechnungen").Count == 1);
+            k.Tor.Set();        // … die ältere gleiche Fassung danach: verworfen, mit Meldung
+            await Until(() => !w.MhRechnetNoch);
+            Settle();
+            Assert.Single(d.List("rechnungen"));
+            Assert.Equal("2x = 4", d.List("rechnungen")[0]!["eingabe"]!.GetValue<string>());
+            Assert.Contains("Ältere Rechnung verworfen", w.ProgramMessage(M));
         }
         finally { w.Close(); }
     }
