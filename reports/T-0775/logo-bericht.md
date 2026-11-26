@@ -1,6 +1,6 @@
 # T-0775 ECHT: Logos & Marken – „Ideen mit Claude“ färbt das Logo um
 
-Datum: 2026-11-26 10:54 · Claude Code: installiert=True, angemeldet=True, Anmeldung=claude.ai, Abo=max
+Datum: 2026-11-26 10:54 · Claude Code: installiert=True, angemeldet=True, Anmeldung=claude.ai
 Nichts ersetzt außer der Fensterdarstellung (headless): kein ClaudeRunOverride, kein ClaudeStatusOverride, kein Ersatz-KI-Dienst. API-Variablen und Token entfernt (ClaudeEnv).
 
 ## Ablauf

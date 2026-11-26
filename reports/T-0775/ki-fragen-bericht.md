@@ -1,6 +1,6 @@
 # T-0775 ECHT: KI fragen – Frage mit Anhang an Claude
 
-Datum: 2026-11-26 10:55 · Claude Code: installiert=True, angemeldet=True, Anmeldung=claude.ai, Abo=max
+Datum: 2026-11-26 10:55 · Claude Code: installiert=True, angemeldet=True, Anmeldung=claude.ai
 Nichts ersetzt außer der Fensterdarstellung (headless): kein ClaudeRunOverride, kein ClaudeStatusOverride, kein Ersatz-KI-Dienst. API-Variablen und Token entfernt (ClaudeEnv).
 
 ## Ablauf

@@ -49,8 +49,9 @@ public partial class MainWindow
 
     /// <summary>T-0775 Testschicht „echt“: Tests mit gesetztem TRENDO_ECHT_CLAUDE lassen im Testmodus (eigener Datenordner) das echte, bereits über das Abo
     /// angemeldete Claude Code zu – Anmeldestand und Läufe gehen dann durch denselben Code wie im Produkt (<see cref="ClaudeCheck"/>, <see cref="ClaudeRun"/>,
-    /// API-Variablen und Token entfernt), ohne <see cref="ClaudeRunOverride"/>. Trendo meldet dabei nie selbst an. Standard aus: Tests und Vorschaubilder starten Claude nie.</summary>
-    public static bool ClaudeEchtImTestmodus { get; set; }
+    /// API-Variablen und Token entfernt), ohne <see cref="ClaudeRunOverride"/>. Trendo meldet dabei nie selbst an. Standard aus: Tests und Vorschaubilder starten Claude nie.
+    /// Gilt nur für dieses eine Fenster (nicht statisch) – parallel laufende Tests mit eigenem Fenster bekommen nie echtes Claude.</summary>
+    public bool ClaudeEchtImTestmodus { get; set; }
     /// <summary>Darf dieses Fenster das echte Claude Code nutzen? Im Produkt immer, im Testmodus nur mit <see cref="ClaudeEchtImTestmodus"/>.</summary>
     bool ClaudeRealAllowed => !_opt.Isolated || ClaudeEchtImTestmodus;
 

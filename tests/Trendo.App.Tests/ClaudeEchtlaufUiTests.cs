@@ -50,36 +50,49 @@ public class ClaudeEchtlauf_Ui
     /// <summary>Fenster im Testmodus öffnen, das echte Claude zulassen und den echten Anmeldestand holen. Fehlt Claude oder die Anmeldung: BLOCKIERT.</summary>
     static async Task<MainWindow> OpenReal(string dir, string fall)
     {
-        MainWindow.ClaudeEchtImTestmodus = true;
         var (w, _, _) = Ui.Open();
-        var st = await w.ClaudeCheck(fresh: true);
+        ClaudeCode.Status st;
+        try
+        {
+            w.ClaudeEchtImTestmodus = true; // nur dieses Fenster – andere (auch parallel laufende) Tests bleiben ohne echtes Claude
+            st = await w.ClaudeCheck(fresh: true);
+        }
+        catch { Close(w); throw; }
         string? block = !st.Installed ? "Claude Code ist auf diesem PC nicht installiert. Schritt für die Person: Claude Code installieren (claude.ai/download bzw. „Claude Code“), danach den Test erneut starten."
             : !st.Ready ? "Claude Code ist nicht mit einem Claude-Abo angemeldet. Schritt für die Person: in einer Eingabeaufforderung „claude“ starten, „/login“ eingeben und mit dem eigenen Claude-Konto (Abo) anmelden – Trendo meldet nie selbst an."
             : null;
         if (block is not null)
         {
             File.WriteAllText(Path.Combine(dir, fall + "-BLOCKIERT.txt"), block + Environment.NewLine);
-            w.Close(); MainWindow.ClaudeEchtImTestmodus = false;
+            Close(w);
             Assert.Skip("BLOCKIERT – " + block);
         }
         return w;
     }
 
-    static void Close(MainWindow w) { MainWindow.ClaudeEchtImTestmodus = false; w.Close(); }
+    static void Close(MainWindow w) { w.ClaudeEchtImTestmodus = false; w.Close(); }
 
     /// <summary>Rohlog (Mitschrift von Claude Code, stream-json) aus dem Arbeitsordner übernehmen: Benutzername ersetzt; aus der Startzeile nur Technisches
-    /// (Modell, Version, Rechte, Anzahl der Werkzeuge) – keine Liste der Erweiterungen, Befehle und Skills der Person. Alle anderen Zeilen unverändert.</summary>
-    static string CopyRawLog(string runDir, string beleg, string fall)
+    /// (Modell, Version, Rechte, Anzahl der Werkzeuge) – keine Liste der Erweiterungen, Befehle und Skills der Person. Ohne Kontodaten: keine
+    /// <c>rate_limit_event</c>-Zeilen (Kontingent des Abos), keine Kosten- und Anmeldefelder (<see cref="AccountKeys"/>). Sonst unverändert.
+    /// Prüft, dass die Mitschrift aus diesem Lauf stammt: nach <paramref name="since"/> geschrieben, Start- und Ergebniszeile mit derselben Sitzung.</summary>
+    static string CopyRawLog(string runDir, string beleg, string fall, DateTime since)
     {
         var src = Path.Combine(runDir, ".trendo", "letzter-lauf.jsonl");
         Assert.True(File.Exists(src), "keine Mitschrift von Claude Code: " + src);
+        Assert.True(File.GetLastWriteTimeUtc(src) >= since.AddSeconds(-2), $"Mitschrift ist älter als dieser Lauf ({File.GetLastWriteTimeUtc(src):O} < {since:O}): " + src);
+        var lines = File.ReadAllLines(src);
+        var (start, end) = (RunSession(lines, true), RunSession(lines, false));
+        Assert.True(start is { Length: > 0 } && start == end, $"Mitschrift ist nicht ein vollständiger Lauf (Sitzung Start {start}, Ergebnis {end})");
         var sb = new StringBuilder();
-        foreach (var line in File.ReadAllLines(src))
+        foreach (var line in lines)
         {
             var l = line;
             try
             {
-                if (JsonNode.Parse(line) is JsonObject o && (string?)o["type"] == "system" && (string?)o["subtype"] == "init")
+                if (JsonNode.Parse(line) is JsonObject r && (string?)r["type"] == "rate_limit_event") continue; // Kontingent des Abos: Kontodaten, nicht in den Beleg
+                if (JsonNode.Parse(line) is JsonObject any && StripAccount(any)) l = any.ToJsonString();
+                if (JsonNode.Parse(l) is JsonObject o && (string?)o["type"] == "system" && (string?)o["subtype"] == "init")
                 {
                     var keep = new JsonObject();
                     foreach (var k in new[] { "type", "subtype", "session_id", "model", "claude_code_version", "permissionMode", "apiKeySource", "cwd", "output_style" })
@@ -87,7 +100,7 @@ public class ClaudeEchtlauf_Ui
                     if (o["tools"] is JsonArray tools) keep["tools_anzahl"] = tools.Count; // Werkzeugnamen enthalten Erweiterungen der Person – nur die Anzahl
                     l = keep.ToJsonString();
                 }
-                else if (JsonNode.Parse(line) is JsonObject c && (string?)c["type"] == "system" && (string?)c["subtype"] == "commands_changed")
+                else if (JsonNode.Parse(l) is JsonObject c && (string?)c["type"] == "system" && (string?)c["subtype"] == "commands_changed")
                 {
                     // Liste der Befehle und Skills der Person (eigene Erweiterungen) – im Beleg nur die Anzahl je Liste
                     var keep = new JsonObject { ["type"] = "system", ["subtype"] = "commands_changed" };
@@ -101,6 +114,34 @@ public class ClaudeEchtlauf_Ui
         var dst = Path.Combine(beleg, fall + "-rohlog.jsonl");
         File.WriteAllText(dst, sb.ToString(), new UTF8Encoding(false));
         return dst;
+    }
+
+    /// <summary>Sitzung der Start- (init) bzw. Ergebniszeile (result) einer Mitschrift.</summary>
+    static string? RunSession(IEnumerable<string> lines, bool init)
+    {
+        foreach (var l in lines)
+            try
+            {
+                if (JsonNode.Parse(l) is JsonObject o && (init ? (string?)o["subtype"] == "init" : (string?)o["type"] == "result")) return o["session_id"]?.ToString();
+            }
+            catch (System.Text.Json.JsonException) { }
+        return null;
+    }
+
+    /// <summary>Kosten- und Anmeldefelder des Kontos, die nicht in einen Beleg gehören.</summary>
+    internal static readonly string[] AccountKeys = ["credential_expires_at", "total_cost_usd", "costBasis", "costUSD"];
+
+    /// <summary>Kontofelder aus einem JSON-Objekt entfernen (rekursiv); true = etwas entfernt.</summary>
+    internal static bool StripAccount(JsonNode? n)
+    {
+        var removed = false;
+        if (n is JsonObject o)
+        {
+            foreach (var k in AccountKeys) removed |= o.Remove(k);
+            foreach (var kv in o.ToList()) removed |= StripAccount(kv.Value);
+        }
+        else if (n is JsonArray a) foreach (var x in a) removed |= StripAccount(x);
+        return removed;
     }
 
     static string Clean(string s)
@@ -126,7 +167,7 @@ public class ClaudeEchtlauf_Ui
     {
         var st = w.ClaudeState;
         log.AppendLine($"# T-0775 ECHT: {title}").AppendLine();
-        log.AppendLine($"Datum: {DateTime.Now:yyyy-MM-dd HH:mm} · Claude Code: installiert={st.Installed}, angemeldet={st.Ready}, Anmeldung={st.Method}, Abo={st.Plan}");
+        log.AppendLine($"Datum: {DateTime.Now:yyyy-MM-dd HH:mm} · Claude Code: installiert={st.Installed}, angemeldet={st.Ready}, Anmeldung={st.Method}");
         log.AppendLine("Nichts ersetzt außer der Fensterdarstellung (headless): kein ClaudeRunOverride, kein ClaudeStatusOverride, kein Ersatz-KI-Dienst. API-Variablen und Token entfernt (ClaudeEnv).").AppendLine();
     }
 
@@ -152,11 +193,11 @@ public class ClaudeEchtlauf_Ui
             var palBefore = VectorKit.Palette(MainWindow.LogoVec(doc));
             File.WriteAllText(Path.Combine(beleg, fall + "-vorher.tdoc"), File.ReadAllText(file));
             Assert.Equal(AssistRoute.Dokument, w.AssistRouteFor(K)); // Claude ist die KI der Kette ins offene Dokument
-            var sw = Stopwatch.StartNew();
+            var t0 = DateTime.UtcNow; var sw = Stopwatch.StartNew();
             RealClick(w, Visible<Button>(w, "prog-cmd-logo-claude")); Pump();
             await Until(() => w.AssistLastKey == K && w.AssistLast?.Phase is "vorschau" or "fehler" or "verworfen" || w.AssistProgramNote is not null);
             sw.Stop();
-            var raw = CopyRawLog(Path.Combine(Path.GetTempPath(), "trendo-claude-frage"), beleg, fall);
+            var raw = CopyRawLog(Path.Combine(Path.GetTempPath(), "trendo-claude-frage"), beleg, fall, t0);
             Assert.True(w.AssistLast?.Phase == "vorschau", $"keine Vorschau: {w.AssistLast?.Phase} – {w.AssistLast?.Message} – {w.AssistProgramNote} – Antwort: {w.AssistLastKiAnswer}");
             w.Show(K); Pump(); // Seite neu aufbauen – die Leiste übernimmt das Panel des Assistenten (AssistAttach)
             var source = w.Find<TextBlock>("assist-source").Text ?? "";
@@ -217,12 +258,12 @@ public class ClaudeEchtlauf_Ui
             var before = w.Letter.Body;
             File.WriteAllText(Path.Combine(beleg, fall + "-vorher.txt"), before);
             w.ClaudeDockToggle(MainWindow.LetterStudio); Pump();
-            var sw = Stopwatch.StartNew();
+            var t0 = DateTime.UtcNow; var sw = Stopwatch.StartNew();
             var send = w.ClaudeChatSend("Kürze den Text dieses Briefs auf höchstens drei kurze Sätze zwischen Anrede und Grußformel. Inhalt (Umzug, neue Anschrift, Kundennummer) bleibt, Betreff und Empfänger bleiben. Ändere dafür nur das Feld Body in Brief.json.");
             await Run(send);
             sw.Stop();
             var chat = w.ClaudeChatCurrent()!;
-            var raw = CopyRawLog(chat.Folder, beleg, fall);
+            var raw = CopyRawLog(chat.Folder, beleg, fall, t0);
             await Until(() => w.Letter.Body != before, 15_000);
             var after = w.Letter.Body;
             File.WriteAllText(Path.Combine(beleg, fall + "-nach-claude.txt"), after);
@@ -271,11 +312,11 @@ public class ClaudeEchtlauf_Ui
             var wall = FloorPlan.From(doc.Data).Walls.Where(x => Math.Abs(x.X1 - x.X2) < 0.5).OrderByDescending(x => x.X1).First(); // rechte senkrechte Wand
             var (x1, y1, x2, y2) = (wall.X1, wall.Y1, wall.X2, wall.Y2);
             w.ClaudeDockToggle("SPEC-01"); Pump();
-            var sw = Stopwatch.StartNew();
+            var t0 = DateTime.UtcNow; var sw = Stopwatch.StartNew();
             await Run(w.ClaudeChatSend($"Verschiebe im Grundriss die senkrechte Wand mit der id „{wall.Id}“ um 50 cm nach rechts: X1 und X2 dieser Wand jeweils um 50 erhöhen (Maße in cm), Y-Werte bleiben. Sonst nichts ändern."));
             sw.Stop();
             var chat = w.ClaudeChatCurrent()!;
-            var raw = CopyRawLog(chat.Folder, beleg, fall);
+            var raw = CopyRawLog(chat.Folder, beleg, fall, t0);
             Assert.Equal(K, w.CurrentView);
             doc = w.ProgramActive(K)!;
             await Until(() => FloorPlan.From(doc.Data).WallOf(wall.Id) is { } m && Math.Abs(m.X1 - x1) > 1, 15_000);
@@ -326,11 +367,11 @@ public class ClaudeEchtlauf_Ui
             var d = w.ProgramActive(K)!;
             w.CodeAiOpenFile(d, rechner); Pump();
             d.Set("wish", "Teilen durch null soll einen ValueError mit der Meldung „Durch null kann man nicht teilen.“ auslösen", "Wunsch"); Pump();
-            var sw = Stopwatch.StartNew();
+            var t0 = DateTime.UtcNow; var sw = Stopwatch.StartNew();
             w.Find<Button>("prog-cmd-ca-change").Press(); Pump();
             await Until(() => w.CodeAiClaudeTask is { IsCompleted: true });
             sw.Stop();
-            var raw = CopyRawLog(proj, beleg, fall);
+            var raw = CopyRawLog(proj, beleg, fall, t0);
             Assert.True(await w.CodeAiClaudeTask!, "Claude hat nichts geändert: " + w.ProgramMessage(K));
             var changed = File.ReadAllText(rechner);
             File.WriteAllText(Path.Combine(beleg, fall + "-rechner-nach-claude.py"), changed);
@@ -370,11 +411,11 @@ public class ClaudeEchtlauf_Ui
             var hint = w.Find<TextBlock>("ask-attach-hint").Text ?? "";
             Assert.Contains("Claude", hint); // die Seite sagt ehrlich, dass der Text an Claude geht
             w.Find<TextBox>("ask-input").Text = "Wie viele Kartons werden laut der angehängten Datei geliefert und an welchem Wochentag? Antworte in einem Satz.";
-            var sw = Stopwatch.StartNew();
+            var t0 = DateTime.UtcNow; var sw = Stopwatch.StartNew();
             RealClick(w, w.Find<Button>("ask-send"));
             await Until(() => w.TryFind<Border>("ask-msg-1") is not null && w.Find<Button>("ask-send").IsEnabled);
             sw.Stop();
-            var raw = CopyRawLog(Path.Combine(Path.GetTempPath(), "trendo-claude-frage"), beleg, fall);
+            var raw = CopyRawLog(Path.Combine(Path.GetTempPath(), "trendo-claude-frage"), beleg, fall, t0);
             var chat = w.Chats.Get(w.CurrentChatId!)!;
             var answer = chat.Messages[1].Content;
             var state = w.Find<TextBlock>("ask-state").Text ?? "";
@@ -399,10 +440,10 @@ public class ClaudeEchtlauf_Ui
     [AvaloniaFact(DisplayName = "T-0775: ohne Schalter startet der Testmodus nie das echte Claude – Anmeldestand „nicht installiert“, Lauf abgelehnt, Claude nicht Haupt-KI")]
     public async Task Switch_off_never_starts_claude()
     {
-        Assert.False(MainWindow.ClaudeEchtImTestmodus);
         var (w, _, _) = Ui.Open();
         try
         {
+            Assert.False(w.ClaudeEchtImTestmodus);
             var st = await w.ClaudeCheck(fresh: true);
             Assert.False(st.Installed); Assert.False(st.Ready);
             var e = await Assert.ThrowsAsync<InvalidOperationException>(() => w.ClaudeRun(["-p", "x"], Path.GetTempPath(), _ => { }, CancellationToken.None));
@@ -429,5 +470,130 @@ public class ClaudeEchtlauf_Ui
             Assert.Equal("Zweiter Stand.", w.Letter.Body);
         }
         finally { w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0775: der Echt-Schalter gilt nur für sein Fenster – ein zweites Fenster erbt ihn nicht und startet Claude nie")]
+    public async Task Switch_is_per_window()
+    {
+        var (a, _, _) = Ui.Open(); var (b, _, _) = Ui.Open();
+        try
+        {
+            a.ClaudeEchtImTestmodus = true; // nur gesetzt, kein Lauf
+            Assert.False(b.ClaudeEchtImTestmodus);
+            var st = await b.ClaudeCheck(fresh: true);
+            Assert.False(st.Installed);
+            var e = await Assert.ThrowsAsync<InvalidOperationException>(() => b.ClaudeRun(["-p", "x"], Path.GetTempPath(), _ => { }, CancellationToken.None));
+            Assert.Contains("Testmodus", e.Message);
+            Assert.False(b.ClaudeTakesStudioPrompts);
+            var (c, _, _) = Ui.Open(); // auch ein später geöffnetes Fenster nicht
+            try { Assert.False(c.ClaudeEchtImTestmodus); } finally { c.Close(); }
+        }
+        finally { a.ClaudeEchtImTestmodus = false; a.Close(); b.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0775: Strg+Z in einem Eingabefeld des Briefs bleibt beim Feld – der Brief springt nicht auf einen früheren Schritt")]
+    public void Letter_ctrl_z_in_field_stays_in_field()
+    {
+        var (w, _, _) = Ui.Open();
+        try
+        {
+            w.Show("brief"); Pump();
+            w.Letter.Body = "Erster Stand."; w.Show("brief"); Pump();
+            w.Letter.Body = "Zweiter Stand."; w.Show("brief"); Pump();
+            var field = w.GetLogicalDescendants().OfType<TextBox>().First(t => t.Name?.StartsWith("letter-", StringComparison.Ordinal) == true && t.IsEffectivelyVisible);
+            field.Focus(); Pump();
+            CtrlZ(w);
+            Assert.Equal("Zweiter Stand.", w.Letter.Body); // Rückgängig des Briefs nicht ausgelöst
+            Assert.True(w.LetterLink.CanUndo); // der frühere Schritt ist noch da
+            // Gegenprobe: außerhalb des Felds nimmt Strg+Z den Brief-Schritt zurück
+            Visible<Button>(w, "letter-undo").Focus(); Pump();
+            CtrlZ(w);
+            Assert.Equal("Erster Stand.", w.Letter.Body);
+        }
+        finally { w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0775: Claudes Brief übernehmen – vorher Getipptes wird eigener Rückgängig-Schritt; Foto/Unterschrift nur aus dem Claude-Projektordner")]
+    public void Claude_letter_sync_keeps_typing_and_limits_files()
+    {
+        var (w, _, root) = Ui.Open();
+        var folder = Path.Combine(root, "claude-projekt"); Directory.CreateDirectory(folder);
+        var outside = Path.Combine(root, "fremd"); Directory.CreateDirectory(outside);
+        try
+        {
+            var ownSig = Path.Combine(outside, "meine-unterschrift.png"); File.WriteAllBytes(ownSig, [1, 2, 3]);
+            var foreign = Path.Combine(outside, "fremdes-foto.png"); File.WriteAllBytes(foreign, [1, 2, 3]);
+            var inside = Path.Combine(folder, "foto.png"); File.WriteAllBytes(inside, [1, 2, 3]);
+            w.Show("brief"); Pump();
+            w.Letter.Body = "Stand vor dem Tippen."; w.Letter.SignatureFile = ownSig; w.Show("brief"); Pump();
+            w.Letter.Body = "Gerade getippt, noch nicht als Schritt gesichert."; // Tipp-Pause noch nicht vorbei
+            var file = Path.Combine(folder, MainWindow.LetterWorkFile);
+            void Claude(string photo, string sig)
+            {
+                var o = JsonNode.Parse(System.Text.Json.JsonSerializer.Serialize(w.Letter))!.AsObject();
+                o["Body"] = "Von Claude " + photo; o["Photo"] = photo; o["SignatureFile"] = sig;
+                File.WriteAllText(file, o.ToJsonString());
+                w.ClaudeSyncLetterForTest(file); Pump();
+            }
+            // fremdes Foto und fremde Unterschrift außerhalb des Projektordners: abgelehnt, eigene bleiben
+            Claude(foreign, foreign);
+            Assert.StartsWith("Von Claude", w.Letter.Body);
+            Assert.Equal("", w.Letter.Photo); Assert.Equal(ownSig, w.Letter.SignatureFile);
+            w.Show("brief"); Pump();
+            Assert.True(w.LetterUndo()); // ein Schritt zurück: das Getippte ist nicht verloren
+            Assert.Equal("Gerade getippt, noch nicht als Schritt gesichert.", w.Letter.Body);
+            // Foto im Projektordner (relativ angegeben): erlaubt
+            Claude("foto.png", ownSig);
+            Assert.Equal(Path.GetFullPath(inside), w.Letter.Photo, ignoreCase: true);
+            Assert.Equal(ownSig, w.Letter.SignatureFile);
+            // Ausbruch mit ..\ aus dem Projektordner: abgelehnt, das bisherige Foto bleibt
+            Claude(Path.Combine("..", "fremd", "fremdes-foto.png"), ownSig);
+            Assert.Equal(Path.GetFullPath(inside), w.Letter.Photo, ignoreCase: true);
+        }
+        finally { w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0775: Rohlog-Filter entfernt Kontodaten (Kosten, Anmeldeablauf) auch verschachtelt")]
+    public void Raw_log_filter_strips_account_data()
+    {
+        var o = JsonNode.Parse("""{"type":"result","total_cost_usd":0.2,"credential_expires_at":"x","modelUsage":{"m":{"costUSD":0.1,"costBasis":"y","inputTokens":3}},"result":"ok"}""")!;
+        Assert.True(StripAccount(o));
+        var s = o.ToJsonString();
+        foreach (var k in AccountKeys) Assert.DoesNotContain(k, s);
+        Assert.Contains("inputTokens", s); Assert.Contains("\"result\":\"ok\"", s);
+    }
+
+    [AvaloniaFact(DisplayName = "T-0775: „Ideen mit Claude“ – die Ideen der KI (Feld „hinweis“) stehen sichtbar in der Vorschau (KI ersetzt)")]
+    public async Task Logo_ideas_visible_in_preview()
+    {
+        var (w, _, _) = Ui.Open();
+        MainWindow.AssistStepDelayMs = 0;
+        var ki = new NoteKi();
+        try
+        {
+            w.KiBackendsOverride = () => [ki];
+            const string K = "logo-programm";
+            w.ProgramNew(K, "cafe"); w.Show(K); Pump();
+            RealClick(w, Visible<Button>(w, "prog-cmd-logo-claude")); Pump();
+            await Until(() => w.AssistLast?.Phase is "vorschau" or "fehler" or "verworfen" || w.AssistProgramNote is not null, 10_000);
+            Assert.Equal("vorschau", w.AssistLast?.Phase);
+            Assert.Contains("hinweis", ki.Last); // der Auftrag verlangt die Ideen als Text
+            w.Show(K); Pump();
+            Assert.Contains("Idee 1: Kaffeebohne", w.Find<TextBlock>("assist-ki-note").Text);
+        }
+        finally { MainWindow.AssistStepDelayMs = 140; w.KiBackendsOverride = null; w.Close(); }
+    }
+
+    sealed class NoteKi : IKiBackend
+    {
+        public string Last = "";
+        public string Name => "Ersatz-KI"; public string BaseUrl => "http://127.0.0.1:9";
+        public Task<bool> IsUpAsync(CancellationToken ct = default) => Task.FromResult(true);
+        public Task<IReadOnlyList<string>> ModelsAsync(CancellationToken ct = default) => Task.FromResult<IReadOnlyList<string>>(["ersatz"]);
+        public Task<string> ChatAsync(string model, IReadOnlyList<KiMessage> messages, CancellationToken ct = default)
+        {
+            Last = messages[^1].Content;
+            return Task.FromResult("""{"hinweis":"Idee 1: Kaffeebohne in Rotbraun – warm. Idee 2: Tasse als Schild. Idee 3: Wortmarke in Serifen.","steps":[{"action":"dokument.setzen","args":{"pfad":"primary","wert":"#8C2F1B"}}]}""");
+        }
     }
 }

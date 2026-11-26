@@ -43,6 +43,8 @@ public sealed class AssistPlan
     public List<AssistQuestion> Questions { get; } = [];
     public List<string> Unclear { get; } = [];
     public string Source { get; set; } = "Regeln";
+    /// <summary>T-0775: kurzer Text der KI zum Plan (Feld „hinweis“ der Antwort, z. B. Ideen mit Begründung) – sichtbar in der Vorschau; ändert nichts am Dokument.</summary>
+    public string? Note { get; set; }
     public bool Understood => Steps.Count > 0;
     public bool Ready => Steps.Count > 0 && Questions.Count == 0;
     public bool HasSideEffects => Steps.Any(s => s.Action.SideEffect);
@@ -276,6 +278,7 @@ public static partial class AssistPlanner
         try
         {
             if (JsonNode.Parse(answer[start..(end + 1)]) is not JsonObject root || root["steps"] is not JsonArray steps) return plan;
+            if (root["hinweis"] is JsonValue hv && hv.TryGetValue<string>(out var hint) && hint.Trim().Length > 0) plan.Note = hint.Trim().Length > 1500 ? hint.Trim()[..1500] + " …" : hint.Trim();
             foreach (var st in steps.OfType<JsonObject>().Take(12))
             {
                 if (actions.FirstOrDefault(a => a.Id == (string?)st["action"]) is not { } a) continue;

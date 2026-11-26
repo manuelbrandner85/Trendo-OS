@@ -116,6 +116,24 @@ public partial class MainWindow
 
     static string LetterToJson(LetterDraft d) => JsonSerializer.Serialize(d, LetterJsonOpts);
 
+    /// <summary>T-0775: Pfad einer Datei, die Claude in den Brief schreibt (Foto, Unterschrift): unverändert = der Pfad der Person bleibt; neu = nur eine vorhandene Datei
+    /// im Claude-Projektordner (relativ oder absolut), sonst <paramref name="fallback"/>.</summary>
+    static string ClaudeLetterFile(string value, string current, string folder, string fallback)
+    {
+        if (value.Length == 0) return "";
+        if (current.Length > 0 && string.Equals(value, current, StringComparison.OrdinalIgnoreCase)) return File.Exists(current) ? current : fallback;
+        try
+        {
+            var root = Path.GetFullPath(folder).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            var full = Path.GetFullPath(Path.IsPathRooted(value) ? value : Path.Combine(folder, value));
+            return full.StartsWith(root, StringComparison.OrdinalIgnoreCase) && File.Exists(full) ? full : fallback;
+        }
+        catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { return fallback; }
+    }
+
+    /// <summary>Für Tests: Claudes Brief.json übernehmen wie nach einem Lauf.</summary>
+    internal void ClaudeSyncLetterForTest(string file) => ClaudeSyncLetter(file);
+
     /// <summary>Claude hat „Brief.json“ geändert: Text und Design ins Brief-Programm übernehmen (Foto relativ zum Projektordner).</summary>
     void ClaudeSyncLetter(string file)
     {
@@ -124,11 +142,12 @@ public partial class MainWindow
             var fresh = JsonSerializer.Deserialize<LetterDraft>(File.ReadAllText(file), LetterJsonOpts);
             if (fresh is null) return;
             var folder = Path.GetDirectoryName(file)!;
-            if (fresh.Photo.Length > 0 && !Path.IsPathRooted(fresh.Photo)) fresh.Photo = Path.GetFullPath(Path.Combine(folder, fresh.Photo));
-            if (fresh.Photo.Length > 0 && !File.Exists(fresh.Photo)) fresh.Photo = "";
-            if (fresh.SignatureFile.Length > 0 && !File.Exists(fresh.SignatureFile)) fresh.SignatureFile = Letter.SignatureFile; // eigene Unterschrift bleibt
+            // T-0775: Foto und Unterschrift von Claude nur aus dem Claude-Projektordner; der schon gewählte eigene Pfad der Person bleibt erlaubt
+            fresh.Photo = ClaudeLetterFile(fresh.Photo, Letter.Photo, folder, Letter.Photo);
+            fresh.SignatureFile = ClaudeLetterFile(fresh.SignatureFile, Letter.SignatureFile, folder, Letter.SignatureFile); // eigene Unterschrift bleibt
             LetterDesigns.Normalize(fresh);
             if (LetterToJson(fresh) == LetterToJson(Letter)) return;
+            LetterCommit("Text geschrieben"); // T-0775: gerade Getipptes erst als eigenen Schritt sichern – sonst ginge es mit Claudes Stand verloren
             _letter = fresh; _letterGallery = false; _letterSaved = false;
             _letterMsg = "Claude hat den Brief geändert – Text und Design siehst du in der Vorschau.";
             if (CurrentView == "brief") Show("brief");

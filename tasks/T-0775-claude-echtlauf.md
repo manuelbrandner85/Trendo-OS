@@ -5,7 +5,7 @@
 **Grundlage:** `docs/audit/2026-11-26-neubewertung/restliste.md` Zeile Q2, Rang 2 (Code mit KI), Rang 5 (Logos & Marken), Rang 7 (KI fragen); `BERICHT.md`.
 **Dateien/Bereich:** Claude-Anbindung (`MainWindow.Claude.cs`, `MainWindow.ClaudeLos.cs`, `MainWindow.W2.cs`), Briefe (`MainWindow.W1Office.cs`), Logos (`MainWindow.KreativStudios.cs`), neue Testklasse `ClaudeEchtlauf_Ui`, Belege `reports/T-0775/`.
 **Fertig, wenn:**
-- [x] Kreativ: „Ideen mit Claude“ (Logos & Marken) färbt das offene Logo um, Vorschau → Ja → Datei → Strg+Z
+- [x] Kreativ: „Ideen mit Claude“ (Logos & Marken) färbt das offene Logo um, Vorschau → Ja → Datei → Strg+Z (Weg „Dokument“ im Testmodus; der Produkt-Standard „Claude ohne Klicks“ schreibt über die Brücke direkt, ohne Vorschau – nicht echt getestet)
 - [x] Büro: Claude kürzt den offenen Brief, Strg+Z stellt ihn her
 - [x] Technik: Claude verschiebt im Grundriss eine Wand, Strg+S-Datei, Strg+Z
 - [x] Zusatz: Code mit KI („Mit Claude ändern“ → Zurücknehmen), KI fragen mit Textanhang
