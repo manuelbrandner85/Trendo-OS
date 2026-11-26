@@ -207,8 +207,8 @@ public sealed class VectorEditor : DockPanel
         DockPanel.SetDock(ContextBar, Avalonia.Controls.Dock.Top);
         Children.Add(ContextBar);
         Children.Add(new Border { Name = _p + "-stage", MinHeight = 120, Background = Brush.Parse("#0B111C"), CornerRadius = new CornerRadius(8), ClipToBounds = true, Child = View });
-        if (State.FocusText) { State.FocusText = false; State.WantFocus = false; AttachedToVisualTree += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(FocusText); }
-        else if (State.WantFocus) AttachedToVisualTree += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(() => Surface.Focus());
+        if (State.FocusText) { State.FocusText = false; State.WantFocus = false; AttachedToVisualTree += (_, _) => Trendo.App.UiThread.Post(FocusText); }
+        else if (State.WantFocus) AttachedToVisualTree += (_, _) => Trendo.App.UiThread.Post(() => Surface.Focus());
     }
 
     static IBrush Checker() => new ConicGradientBrush { GradientStops = { new GradientStop(Color.Parse("#2A2F3A"), 0), new GradientStop(Color.Parse("#2A2F3A"), 0.25), new GradientStop(Color.Parse("#323846"), 0.25), new GradientStop(Color.Parse("#323846"), 0.5), new GradientStop(Color.Parse("#2A2F3A"), 0.5), new GradientStop(Color.Parse("#2A2F3A"), 0.75), new GradientStop(Color.Parse("#323846"), 0.75), new GradientStop(Color.Parse("#323846"), 1) }, SpreadMethod = GradientSpreadMethod.Repeat };

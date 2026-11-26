@@ -377,7 +377,7 @@ public partial class MainWindow
             if (File.Exists(jpg)) { using var fs = File.OpenRead(jpg); return Bitmap.DecodeToWidth(fs, width); }
             if (FilmFf is { } ff && _filmThumbBusy.Add(jpg))
                 _ = Task.Run(() => { Directory.CreateDirectory(dir); Cli.Run(ff, MediaStudio.FrameArgs(m.File, m.In + Math.Min(0.5, (m.Out - m.In) / 2), jpg), dir, 30000); })
-                    .ContinueWith(_ => Dispatcher.UIThread.Post(() => { if (CurrentView == FilmKey && File.Exists(jpg)) Show(FilmKey); }), TaskScheduler.Default);
+                    .ContinueWith(_ => Trendo.App.UiThread.Post(() => { if (CurrentView == FilmKey && File.Exists(jpg)) Show(FilmKey); }), TaskScheduler.Default);
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException) { }
         return null;
@@ -541,7 +541,7 @@ public partial class MainWindow
             }
             e.Handled = true;
         };
-        if (_filmFocusList) { _filmFocusList = false; Dispatcher.UIThread.Post(() => { if (root.IsAttachedToVisualTree()) root.Focus(); }, DispatcherPriority.Background); }
+        if (_filmFocusList) { _filmFocusList = false; Trendo.App.UiThread.Post(() => { if (root.IsAttachedToVisualTree()) root.Focus(); }, DispatcherPriority.Background); }
         return root;
     }
 

@@ -1,0 +1,22 @@
+== alt: Hintergrund-Thread greift auf Dispatcher.UIThread zu (5 Läufe)
+    [Test Case Cleanup Failure (DIAG 2: nächster Test)] System.InvalidOperationException
+      System.InvalidOperationException : The calling thread cannot access this object because a different thread owns it.
+   Trendo.App.Tests  Total: 3, Errors: 1, Failed: 0, Skipped: 0, Not Run: 0, Time: 9,796s
+    [Test Case Cleanup Failure (DIAG 2: nächster Test)] System.InvalidOperationException
+      System.InvalidOperationException : The calling thread cannot access this object because a different thread owns it.
+   Trendo.App.Tests  Total: 3, Errors: 1, Failed: 0, Skipped: 0, Not Run: 0, Time: 0,281s
+    [Test Case Cleanup Failure (DIAG 2: nächster Test)] System.InvalidOperationException
+      System.InvalidOperationException : The calling thread cannot access this object because a different thread owns it.
+   Trendo.App.Tests  Total: 3, Errors: 1, Failed: 0, Skipped: 0, Not Run: 0, Time: 0,274s
+    [Test Case Cleanup Failure (DIAG 2: nächster Test)] System.InvalidOperationException
+      System.InvalidOperationException : The calling thread cannot access this object because a different thread owns it.
+   Trendo.App.Tests  Total: 3, Errors: 1, Failed: 0, Skipped: 0, Not Run: 0, Time: 0,282s
+    [Test Case Cleanup Failure (DIAG 2: nächster Test)] System.InvalidOperationException
+      System.InvalidOperationException : The calling thread cannot access this object because a different thread owns it.
+   Trendo.App.Tests  Total: 3, Errors: 1, Failed: 0, Skipped: 0, Not Run: 0, Time: 0,279s
+== neu: Hintergrund-Thread stellt über UiThread.Post zu (5 Läufe)
+   Trendo.App.Tests  Total: 4, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 6,479s
+   Trendo.App.Tests  Total: 4, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 6,196s
+   Trendo.App.Tests  Total: 4, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 7,297s
+   Trendo.App.Tests  Total: 4, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 6,339s
+   Trendo.App.Tests  Total: 4, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 6,272s

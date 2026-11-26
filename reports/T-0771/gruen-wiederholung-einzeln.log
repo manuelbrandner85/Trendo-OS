@@ -1,0 +1,121 @@
+##### Lauf 1/5 (core T0763SystemAlltagTests.Load_probe_against_performance_counters) 04:02:18
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 15 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 2/5 (core T0763SystemAlltagTests.Load_probe_against_performance_counters) 04:03:03
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 16 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 3/5 (core T0763SystemAlltagTests.Load_probe_against_performance_counters) 04:03:22
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 15 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 4/5 (core T0763SystemAlltagTests.Load_probe_against_performance_counters) 04:03:40
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 15 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 5/5 (core T0763SystemAlltagTests.Load_probe_against_performance_counters) 04:03:58
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 15 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 1/5 (core T0754DateiRueckgaengigTests.Fremder_Ordner_Papierkorb_bleibt) 04:04:16
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 211 ms - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 2/5 (core T0754DateiRueckgaengigTests.Fremder_Ordner_Papierkorb_bleibt) 04:04:19
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 194 ms - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 3/5 (core T0754DateiRueckgaengigTests.Fremder_Ordner_Papierkorb_bleibt) 04:04:21
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 231 ms - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 4/5 (core T0754DateiRueckgaengigTests.Fremder_Ordner_Papierkorb_bleibt) 04:04:26
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 213 ms - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 5/5 (core T0754DateiRueckgaengigTests.Fremder_Ordner_Papierkorb_bleibt) 04:04:29
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 205 ms - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 1/5 (core T0766_Gegenpruefung2.N10_parallel) 04:04:32
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 142 ms - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 2/5 (core T0766_Gegenpruefung2.N10_parallel) 04:04:34
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 143 ms - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 3/5 (core T0766_Gegenpruefung2.N10_parallel) 04:04:37
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 139 ms - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 4/5 (core T0766_Gegenpruefung2.N10_parallel) 04:04:39
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 169 ms - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 5/5 (core T0766_Gegenpruefung2.N10_parallel) 04:04:42
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 136 ms - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 1/5 (core MusicProTests.Hook) 04:04:44
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 1 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 2/5 (core MusicProTests.Hook) 04:04:48
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 1 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 3/5 (core MusicProTests.Hook) 04:04:52
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 1 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 4/5 (core MusicProTests.Hook) 04:04:56
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 1 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 5/5 (core MusicProTests.Hook) 04:05:00
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 1 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 1/5 (core KiModelT0703Tests.Fallback_on_timeout_but_thinking_keeps_alive) 04:05:04
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 2 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 2/5 (core KiModelT0703Tests.Fallback_on_timeout_but_thinking_keeps_alive) 04:05:09
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 2 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 3/5 (core KiModelT0703Tests.Fallback_on_timeout_but_thinking_keeps_alive) 04:05:14
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 2 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 4/5 (core KiModelT0703Tests.Fallback_on_timeout_but_thinking_keeps_alive) 04:05:19
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 2 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 5/5 (core KiModelT0703Tests.Fallback_on_timeout_but_thinking_keeps_alive) 04:05:24
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 2 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 1/5 (core T0747_Fix2ZweitePruefung.Zigzag_speed_and_cancel) 04:05:29
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 3 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 2/5 (core T0747_Fix2ZweitePruefung.Zigzag_speed_and_cancel) 04:05:35
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 3 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 3/5 (core T0747_Fix2ZweitePruefung.Zigzag_speed_and_cancel) 04:05:40
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 3 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 4/5 (core T0747_Fix2ZweitePruefung.Zigzag_speed_and_cancel) 04:05:46
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 3 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 5/5 (core T0747_Fix2ZweitePruefung.Zigzag_speed_and_cancel) 04:05:51
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 3 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 1/5 (app Trendo.App.Tests.TonT0732_Ui.Record_until_stop) 04:05:57
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 6,843s
+exit 0
+##### Lauf 2/5 (app Trendo.App.Tests.TonT0732_Ui.Record_until_stop) 04:06:05
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 6,064s
+exit 0
+##### Lauf 3/5 (app Trendo.App.Tests.TonT0732_Ui.Record_until_stop) 04:06:12
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 7,449s
+exit 0
+##### Lauf 4/5 (app Trendo.App.Tests.TonT0732_Ui.Record_until_stop) 04:06:20
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 5,984s
+exit 0
+##### Lauf 5/5 (app Trendo.App.Tests.TonT0732_Ui.Record_until_stop) 04:06:27
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 6,069s
+exit 0
+##### Lauf 1/5 (app Trendo.App.Tests.WebDesignStufe3Teil2_Browser.Real_parser_round_trip) 04:06:34
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 3,756s
+exit 0
+##### Lauf 2/5 (app Trendo.App.Tests.WebDesignStufe3Teil2_Browser.Real_parser_round_trip) 04:06:38
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 2,142s
+exit 0
+##### Lauf 3/5 (app Trendo.App.Tests.WebDesignStufe3Teil2_Browser.Real_parser_round_trip) 04:06:41
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 2,107s
+exit 0
+##### Lauf 4/5 (app Trendo.App.Tests.WebDesignStufe3Teil2_Browser.Real_parser_round_trip) 04:06:44
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 2,108s
+exit 0
+##### Lauf 5/5 (app Trendo.App.Tests.WebDesignStufe3Teil2_Browser.Real_parser_round_trip) 04:06:47
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 2,119s
+exit 0
+ENDE

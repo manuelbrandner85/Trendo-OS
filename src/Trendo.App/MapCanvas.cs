@@ -62,7 +62,7 @@ public sealed class TileCache(string dir, bool online)
         {
             var bytes = await Http.GetByteArrayAsync($"https://tile.openstreetmap.org/{k.Z}/{k.X}/{k.Y}.png");
             Directory.CreateDirectory(Path.GetDirectoryName(file)!); await File.WriteAllBytesAsync(file, bytes);
-            Dispatcher.UIThread.Post(() => { try { using var ms = new MemoryStream(bytes); Remember(k, new Bitmap(ms)); } catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or NotSupportedException) { } Loaded?.Invoke(); });
+            Trendo.App.UiThread.Post(() => { try { using var ms = new MemoryStream(bytes); Remember(k, new Bitmap(ms)); } catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or NotSupportedException) { } Loaded?.Invoke(); });
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or IOException or UnauthorizedAccessException) { }
         finally { _gate.Release(); _loading.TryRemove(k, out _); }
@@ -103,7 +103,7 @@ public sealed class MapCanvas : Control
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e) { base.OnDetachedFromVisualTree(e); _tiles.Loaded -= InvalidateVisual; }
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e) { base.OnAttachedToVisualTree(e); if (_s.Focus) Dispatcher.UIThread.Post(() => Focus()); }
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e) { base.OnAttachedToVisualTree(e); if (_s.Focus) Trendo.App.UiThread.Post(() => Focus()); }
     /// <summary>Beim ersten Anzeigen alles einpassen – mit der echten Größe der Karte.</summary>
     protected override void OnSizeChanged(SizeChangedEventArgs e) { base.OnSizeChanged(e); if (!_s.Fitted && Bounds.Width > 10) { _s.Fitted = true; FitAll(); } }
 

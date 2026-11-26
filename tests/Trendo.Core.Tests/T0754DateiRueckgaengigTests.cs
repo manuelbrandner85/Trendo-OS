@@ -7,6 +7,11 @@ namespace Trendo.Core.Tests;
 
 /// <summary>T-0754 (CORE-01, audit-5): Dateiaktionen lassen sich rückgängig machen und wiederholen – mit echten Dateien in einem Temp-Ordner.
 /// Nie überschreiben, nie endgültig löschen; ehrliche Meldung, wenn es nicht mehr geht.</summary>
+/// <remarks>T-0771: nicht parallel zu anderen Tests – <see cref="Fremder_Ordner_Papierkorb_bleibt"/> setzt den Arbeitsordner des ganzen Testprozesses.
+/// Jeder Prozess, den ein parallel laufender Test in dieser Zeit startet (PowerShell der Lastprobe X-09, FFmpeg/ffprobe über Cli.Run ohne eigenen
+/// Ordner …), erbt diesen Ordner und hält ihn offen: Directory.Delete scheiterte dann mit IOException, und der andere Test lief im fremden
+/// Temp-Ordner.</remarks>
+[Collection("Prozess-Arbeitsordner")]
 public class T0754DateiRueckgaengigTests
 {
     static string NewRoot() { var r = Path.Combine(Path.GetTempPath(), "trendo-t0754-" + Guid.NewGuid().ToString("N")[..8]); Directory.CreateDirectory(r); return r; }
@@ -177,10 +182,22 @@ public class T0754DateiRueckgaengigTests
                 Assert.False(echt.IsTrashLocation(Path.Combine(root, ".Trash", "a.txt")));
             }
         }
-        finally { Environment.CurrentDirectory = cwd; Directory.Delete(root, true); }
+        finally { Environment.CurrentDirectory = cwd; DeleteWithRetry(root); }
     }
 
     static string CreateFile(string p) { File.WriteAllText(p, "x"); return p; }
+
+    /// <summary>T-0771: Aufräumen mit Wiederholung – der Windows-Papierkorb (Shell) und der Virenschutz geben eben benutzte Dateien unter Last oft erst
+    /// nach einem Moment frei. Höchstens 10 s, danach der echte Fehler.</summary>
+    static void DeleteWithRetry(string dir)
+    {
+        var until = DateTime.UtcNow.AddSeconds(10);
+        while (true)
+        {
+            try { if (Directory.Exists(dir)) Directory.Delete(dir, true); return; }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException && DateTime.UtcNow < until) { Thread.Sleep(200); }
+        }
+    }
 
     /// <summary>Befund 2: Laufwerk ohne Papierkorb – es wird nichts gelöscht, sondern abgelehnt (die Oberfläche fragt dann ausdrücklich). Echt mit SUBST.</summary>
     [Fact(DisplayName = "T-0754 Gegenprüfung 2: SUBST-Laufwerk hat keinen Papierkorb – Löschen bricht ohne Wirkung ab; Rückgängig nach endgültigem Löschen sagt „endgültig gelöscht“")]
@@ -319,3 +336,7 @@ public class T0754DateiRueckgaengigTests
         finally { Directory.Delete(root, true); }
     }
 }
+
+/// <summary>T-0771: Tests, die den Arbeitsordner des Testprozesses ändern, laufen allein (nicht parallel zu anderen Klassen).</summary>
+[CollectionDefinition("Prozess-Arbeitsordner", DisableParallelization = true)]
+public sealed class ProzessArbeitsordnerSammlung;

@@ -310,7 +310,7 @@ public partial class MainWindow
             var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
             timer.Tick += (_, _) => { timer.Stop(); Commit(); };
             t.TextChanged += (_, _) => { timer.Stop(); if ((t.Text ?? "") != shown) timer.Start(); };
-            t.LostFocus += (_, _) => { timer.Stop(); if (Commit()) Avalonia.Threading.Dispatcher.UIThread.Post(() => Show(LogoKey)); };
+            t.LostFocus += (_, _) => { timer.Stop(); if (Commit()) Trendo.App.UiThread.Post(() => Show(LogoKey)); };
             t.DetachedFromVisualTree += (_, _) => { timer.Stop(); Commit(); };
             sp.Children.Add(t);
         }

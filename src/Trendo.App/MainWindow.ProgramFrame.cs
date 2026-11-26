@@ -398,7 +398,7 @@ public partial class MainWindow
         }
         c.AttachedToVisualTree += (_, _) =>
         {
-            Dispatcher.UIThread.Post(Fit, DispatcherPriority.Loaded);
+            Trendo.App.UiThread.Post(Fit, DispatcherPriority.Loaded);
             if (Avalonia.VisualTree.VisualExtensions.FindAncestorOfType<ScrollViewer>(c) is { } sv) sv.SizeChanged += (_, _) => Fit();
         };
         return c;

@@ -114,7 +114,7 @@ public static class GlyphIcons
                 if ((auto & 2) != 0 || ToolTip.GetTip(b) is null) { ToolTip.SetTip(b, word); auto |= 2; }
                 b.SetValue(AutoNamedProperty, auto);
             }
-            Avalonia.Threading.Dispatcher.UIThread.Post(() => { if (Equals(b.Content, e.NewValue)) b.Content = path; });
+            Trendo.App.UiThread.Post(() => { if (Equals(b.Content, e.NewValue)) b.Content = path; });
         });
         // gesperrte Symbol-Knöpfe sichtbar blass (die Vorlage färbt nur Text, nicht das Symbol)
         Avalonia.Input.InputElement.IsEffectivelyEnabledProperty.Changed.AddClassHandler<Button>((b, _) =>

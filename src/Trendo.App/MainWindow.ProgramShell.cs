@@ -692,7 +692,7 @@ public partial class MainWindow
             var others = grid.Children.Where(c => !ReferenceEquals(c, menuBar) && Grid.GetRow(c) == 0 && c.IsVisible && Grid.GetColumn(c) != 4).ToList();
             MenuBarFit(menuBar, grid.Bounds.Width - others.Sum(c => c.DesiredSize.Width) - grid.ColumnSpacing * others.Count - 4);
         }
-        grid.SizeChanged += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(Fit, Avalonia.Threading.DispatcherPriority.Background);
+        grid.SizeChanged += (_, _) => Trendo.App.UiThread.Post(Fit, Avalonia.Threading.DispatcherPriority.Background);
     }
 
     /// <summary>V-01: so lange steht ein flüchtiger Hinweis („Vorlage … geöffnet.“) in der Kopfzeile.</summary>
@@ -774,7 +774,7 @@ public partial class MainWindow
     public void ProgramFirstFocus(ProgramDocument d, string field)
     {
         _progFirstDone.Add(d.Id);
-        Dispatcher.UIThread.Post(() =>
+        Trendo.App.UiThread.Post(() =>
         {
             if (ActivePageRoot?.GetLogicalDescendants().OfType<TextBox>().FirstOrDefault(t => t.Name == field) is { } box) { box.Focus(); box.SelectAll(); }
         }, DispatcherPriority.Background);

@@ -162,16 +162,31 @@ public class T0766_Gegenpruefung2(ITestOutputHelper log)
                   (drop (call $put (i32.const 100) (i32.const 10) (i32.const 65536) (i32.const 1048576)))
                   (br $l))))
             """);
+        // T-0771: Unter Volllast (Volltest, parallele Sitzungen) brauchen das Übersetzen und das Warten auf die Läufe davor (gleicher Datenordner:
+        // nacheinander) so lange, dass der Endlos-Lauf an der Zeitgrenze (10 s) oder am Übersetzungs-Kontingent endet, BEVOR er die Datenordner-Grenze
+        // erreicht – die geprüfte Lage (Überschreitung zwischen fremden Läufen) ist dann gar nicht entstanden. Solche Versuche zählen nicht als Runde
+        // und werden wiederholt (höchstens 5 je Runde). „Fremde Dateien bleiben“ und „Grenze eingehalten“ gelten für JEDEN Versuch; Zeitgrenze und
+        // Datenordner-Grenze sind unverändert.
+        string[] notReached = ["Zeitgrenze erreicht", ExtensionSandbox.CompileBusy, "läuft gerade noch"];
         for (var round = 0; round < 3; round++)
         {
-            foreach (var f in Directory.GetFiles(data)) File.Delete(f);
-            var results = new SandboxResult[5];
-            Parallel.For(0, 5, i => results[i] = i == 0 ? ExtensionSandbox.Run(loop, [], [], new(data), limits)
-                : ExtensionSandbox.Run(mb, [], Encoding.UTF8.GetBytes($"klein-{i}.bin"), new(data), limits));
-            Assert.Contains("Datenordner-Grenze", results[0].Error);
-            for (var i = 1; i < 5; i++)
-                if (results[i].Ok) Assert.True(File.Exists(Path.Combine(data, $"klein-{i}.bin")), $"Runde {round}: klein-{i}.bin wurde vom Aufräumen eines anderen Laufs gelöscht");
-            Assert.True(ExtensionSandbox.DirSize(data) <= limits.DataQuota);
+            for (var attempt = 1; ; attempt++)
+            {
+                foreach (var f in Directory.GetFiles(data)) File.Delete(f);
+                var results = new SandboxResult[5];
+                Parallel.For(0, 5, i => results[i] = i == 0 ? ExtensionSandbox.Run(loop, [], [], new(data), limits)
+                    : ExtensionSandbox.Run(mb, [], Encoding.UTF8.GetBytes($"klein-{i}.bin"), new(data), limits));
+                for (var i = 1; i < 5; i++)
+                    if (results[i].Ok) Assert.True(File.Exists(Path.Combine(data, $"klein-{i}.bin")), $"Runde {round}: klein-{i}.bin wurde vom Aufräumen eines anderen Laufs gelöscht");
+                Assert.True(ExtensionSandbox.DirSize(data) <= limits.DataQuota);
+                if (attempt < 5 && notReached.Any(n => results[0].Error.Contains(n, StringComparison.Ordinal)))
+                {
+                    log.WriteLine($"Runde {round}, Versuch {attempt}: Grenze nicht erreicht ({results[0].Error}) – Versuch zählt nicht");
+                    continue;
+                }
+                Assert.Contains("Datenordner-Grenze", results[0].Error);
+                break;
+            }
         }
     }
 

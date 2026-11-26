@@ -43,7 +43,7 @@ public sealed class CircuitCanvas : Control
     Point Screen(double x, double y) => new((x - _s.PanX) * _s.Zoom, (y - _s.PanY) * _s.Zoom);
     static (int X, int Y) Snap((double X, double Y) w) => ((int)Math.Round(w.X / G), (int)Math.Round(w.Y / G));
 
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e) { base.OnAttachedToVisualTree(e); if (_s.Focus) Avalonia.Threading.Dispatcher.UIThread.Post(() => Focus()); }
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e) { base.OnAttachedToVisualTree(e); if (_s.Focus) Trendo.App.UiThread.Post(() => Focus()); }
     protected override void OnSizeChanged(SizeChangedEventArgs e) { base.OnSizeChanged(e); if ((!_s.Fitted || !_s.UserView) && Bounds.Width > 10) { Fit(); _s.Fitted = true; } }
 
     public void Fit()

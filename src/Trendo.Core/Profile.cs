@@ -243,11 +243,42 @@ public static class ProfileRole
             // kein Eintrag: Ersteinrichtung (nichts da) → Besitzer; Stand vor dem Umbau → einmalig aus settings.json; sonst (Personen da, settings.json fehlt) → Kind
             var hasSettings = File.Exists(UserSettings.PathIn(dataRoot));
             var hasPersons = File.Exists(Path.Combine(baseRoot, "personen.json"));
-            var child = hasSettings ? mirror : hasPersons;
+            // T-0771 (Prüfer-N1): Ersteinrichtung nur in einem wirklich neuen Datenordner. Fehlen rolle.json, settings.json und personen.json, liegt aber
+            // noch irgendeine ältere Datei im Ordner (Protokoll, Projekte, Sicherheit …), hat jemand die Rollendateien gelöscht → Kind (fail-closed).
+            var child = hasSettings ? mirror : hasPersons || !FreshFolder(baseRoot);
             Write(baseRoot, child);
+            Decided[Path.GetFullPath(baseRoot)] = DateTime.UtcNow;
             return child;
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or JsonException or ArgumentException or NotSupportedException) { return true; }
+    }
+
+    /// <summary>T-0771: Zeitpunkt, zu dem dieser Prozess für einen Hauptordner zuletzt die Ersteinrichtung entschieden hat.</summary>
+    static readonly System.Collections.Concurrent.ConcurrentDictionary<string, DateTime> Decided = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>T-0771 (Prüfer-N1): Ist der Hauptordner wirklich neu? Ja, wenn keine Datei darin älter ist als der Start dieses Trendo-Prozesses
+    /// (bzw. als die letzte Entscheidung dieses Prozesses für denselben Ordner). Leere Ordner zählen nicht (ein früher angelegter, leerer
+    /// Datenordner verhindert keine echte Ersteinrichtung). Unlesbar → nicht neu (fail-closed).</summary>
+    /// <remarks>Grenze: Wer den GANZEN Datenordner bzw. alle Dateien darin löscht, löst wieder eine Ersteinrichtung aus – dabei gehen auch alle Daten
+    /// des Profils verloren.</remarks>
+    internal static bool FreshFolder(string baseRoot)
+    {
+        try
+        {
+            var since = ProcessStartUtc() - TimeSpan.FromSeconds(2);
+            if (Decided.TryGetValue(Path.GetFullPath(baseRoot), out var d) && d > since) since = d;
+            if (!Directory.Exists(baseRoot)) return true;
+            foreach (var f in new DirectoryInfo(baseRoot).EnumerateFiles("*", new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = false, AttributesToSkip = 0 }))
+                if (f.CreationTimeUtc < since) return false; // Erstellzeit, nicht Änderungszeit (entpackte Dateien tragen alte Änderungszeiten)
+            return true;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Security.SecurityException) { return false; }
+    }
+
+    static DateTime ProcessStartUtc()
+    {
+        try { return System.Diagnostics.Process.GetCurrentProcess().StartTime.ToUniversalTime(); }
+        catch (Exception e) when (e is InvalidOperationException or NotSupportedException or System.ComponentModel.Win32Exception) { return DateTime.UtcNow - TimeSpan.FromMinutes(10); }
     }
 
     /// <summary>Child aus settings.json (nur Spiegel). Unlesbar → false (verschärft dann nicht; die Rolle kommt aus der geschützten Quelle).</summary>

@@ -211,7 +211,7 @@ public partial class MainWindow
         _letter = draft; _letterGallery = false; _letterSaved = false; _letterStep = 3;
         _letterMsg = "Anschreiben aus „Bewerbung & Lebenslauf“ übernommen – hier Design, Unterschrift und Feinschliff. Versendet wird nichts.";
         _progMsg[CvKey] = "Anschreiben an „Briefe schreiben“ übergeben.";
-        Dispatcher.UIThread.Post(() => Show("brief")); // nach dem Neuzeichnen des Programms (ProgramRun) wechseln
+        Trendo.App.UiThread.Post(() => Show("brief")); // nach dem Neuzeichnen des Programms (ProgramRun) wechseln
     }
 
     async Task CvPickPhoto(ProgramDocument d)

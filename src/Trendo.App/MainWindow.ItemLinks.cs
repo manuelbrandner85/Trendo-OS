@@ -139,7 +139,7 @@ public partial class MainWindow
     void SaveOnPause(TextBox tb, Action save)
     {
         System.Threading.Timer? t = null; var pending = false;
-        void Due() => Dispatcher.UIThread.Post(() => { if (!pending) return; pending = false; save(); });
+        void Due() => Trendo.App.UiThread.Post(() => { if (!pending) return; pending = false; save(); });
         tb.TextChanged += (_, _) =>
         {
             if (!tb.IsFocused) return; // nur echtes Tippen (nicht das Füllen beim Aufbau)

@@ -222,7 +222,7 @@ public partial class MainWindow
             _podPan = at - b * PodZoom; ApplyTransform(); DrawOverlay(PodDesign.Items(d.Data)); e.Handled = true;
         };
         view.KeyDown += (_, e) => { if (PodKey_(d, e.Key, e.KeyModifiers, view)) e.Handled = true; };
-        view.AttachedToVisualTree += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(() => view.Focus());
+        view.AttachedToVisualTree += (_, _) => Trendo.App.UiThread.Post(() => view.Focus());
 
         _podView = view;
         TextBlock? zoomLabel = null;

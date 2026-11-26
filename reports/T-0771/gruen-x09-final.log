@@ -1,0 +1,30 @@
+##### Lauf 1/5 (core T0763SystemAlltagTests.Load_probe_against_performance_counters) 04:49:21
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 14 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 2/5 (core T0763SystemAlltagTests.Load_probe_against_performance_counters) 04:49:49
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 14 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 3/5 (core T0763SystemAlltagTests.Load_probe_against_performance_counters) 04:50:06
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 14 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 4/5 (core T0763SystemAlltagTests.Load_probe_against_performance_counters) 04:50:23
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 15 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 5/5 (core T0763SystemAlltagTests.Load_probe_against_performance_counters) 04:50:42
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 15 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+16
+== unter Last (16 PowerShell-Schleifen), 2 Läufe
+##### Lauf 1/2 (core T0763SystemAlltagTests.Load_probe_against_performance_counters) 04:51:06
+  Fehler X-09 (T-0763, echt): Lastprobe – Prozessorlast eines ausgelasteten Prozesses weicht höchstens 5 Prozentpunkte von den Windows-Leistungsindikatoren ab [36 m 21 s]
+   Keine drei gültigen Messfenster in 12 Versuchen – Dauer der Trendo-Messungen (s): 227,37/2,81 | 139,95/25,10 | 99,26/186,44 | 26,53/111,63 | 163,39/30,27 | 101,35/213,89 | 148,27/198,92 | 73,69/318,06 | 8,79/10,82 | 7,59/1,62 | 18,03/3,71
+     at Trendo.Core.Tests.T0763SystemAlltagTests.Load_probe_against_performance_counters() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0763SystemAlltagTests.cs:line 197
+Fehler!      : Fehler:     1, erfolgreich:     0, übersprungen:     0, gesamt:     1, Dauer: 36 m 21 s - Trendo.Core.Tests.dll (net10.0)
+exit 1
+##### Lauf 2/2 (core T0763SystemAlltagTests.Load_probe_against_performance_counters) 05:27:50
+  Fehler X-09 (T-0763, echt): Lastprobe – Prozessorlast eines ausgelasteten Prozesses weicht höchstens 5 Prozentpunkte von den Windows-Leistungsindikatoren ab [42 m 12 s]
+   Keine drei gültigen Messfenster in 12 Versuchen – Dauer der Trendo-Messungen (s): 106,92/31,65 | 401,50/207,97 | 103,20/6,73 | 245,37/59,10 | 233,31/7,90 | 2,65/167,30 | 54,78/213,09 | 32,87/105,83 | 102,25/53,36 | 23,94/18,78 | 57,37/83,87 | 54,27/104,94
+     at Trendo.Core.Tests.T0763SystemAlltagTests.Load_probe_against_performance_counters() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0763SystemAlltagTests.cs:line 197
+Fehler!      : Fehler:     1, erfolgreich:     0, übersprungen:     0, gesamt:     1, Dauer: 42 m 12 s - Trendo.Core.Tests.dll (net10.0)
+exit 1
+gestoppt

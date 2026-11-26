@@ -78,6 +78,7 @@ public sealed partial class MainWindow : Window
     public MainWindow(TrendoCore core, AppOptions opt, IToolProbe probe)
     {
         StartupTrace.Mark("window.ctor");
+        UiThread.Remember(); // T-0771: Hintergrund-Arbeit stellt über diesen Dispatcher zu (siehe UiThread)
         GlyphIcons.Enable(); // D3 (13.11.2026): Zeichen-Knöpfe zeigen Linien-Symbole
         SimpleWords.Enable(); // V3 (T-0663): in „Einfach“ tragen Symbol-Knöpfe ein Wort
         SimpleWords.IsSimple = c => Avalonia.LogicalTree.LogicalExtensions.FindLogicalAncestorOfType<MainWindow>(c) is { } mw && mw.SimpleWordsHere(c);

@@ -173,7 +173,7 @@ public partial class MainWindow
         _progMsg[EK] = "KiCad-Netzliste wird gelesen …";
         var task = Task.Run(() => CircuitReadKiCad(path));
         CircuitImportRunning = task;
-        task.ContinueWith(t => Dispatcher.UIThread.Post(() =>
+        task.ContinueWith(t => Trendo.App.UiThread.Post(() =>
         {
             if (CircuitImportRunning == t) CircuitImportRunning = null;
             ProgramRun(EK, () =>

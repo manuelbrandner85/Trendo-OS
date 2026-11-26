@@ -1,0 +1,272 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:03.84]     T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "\\fremd.example") [FAIL]
+[xUnit.net 00:00:03.87]     T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "%2F%2Ffremd.example") [FAIL]
+[xUnit.net 00:00:03.91]     T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "   //fremd.example") [FAIL]
+[xUnit.net 00:00:03.94]     T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "%6A%61vascript%3Aalert(1)") [FAIL]
+[xUnit.net 00:00:03.98]     T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "%00//fremd.example") [FAIL]
+[xUnit.net 00:00:04.01]     T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "/\\fremd.example") [FAIL]
+[xUnit.net 00:00:04.05]     T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "javascript%3Aalert(1)") [FAIL]
+[xUnit.net 00:00:04.08]     T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "&#x2F;&#x2F;fremd.example") [FAIL]
+[xUnit.net 00:00:04.12]     T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "/pfad/auf/der/wurzel") [FAIL]
+  Fehler T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "\\fremd.example") [95 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "#"
+Actual:   "\\fremd.example"
+           ↑ (pos 0)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0771Restpunkte.Fremde_ziele_werden_raute(String ziel) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0771RestpunkteTests.cs:line 34
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Fehler T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "%2F%2Ffremd.example") [32 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "#"
+Actual:   "%2F%2Ffremd.example"
+           ↑ (pos 0)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0771Restpunkte.Fremde_ziele_werden_raute(String ziel) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0771RestpunkteTests.cs:line 34
+   at InvokeStub_T0771Restpunkte.Fremde_ziele_werden_raute(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "   //fremd.example") [39 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "#"
+Actual:   "//fremd.example"
+           ↑ (pos 0)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0771Restpunkte.Fremde_ziele_werden_raute(String ziel) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0771RestpunkteTests.cs:line 34
+   at InvokeStub_T0771Restpunkte.Fremde_ziele_werden_raute(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "%6A%61vascript%3Aalert(1)") [31 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "#"
+Actual:   "%6A%61vascript%3Aalert(1)"
+           ↑ (pos 0)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0771Restpunkte.Fremde_ziele_werden_raute(String ziel) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0771RestpunkteTests.cs:line 34
+   at InvokeStub_T0771Restpunkte.Fremde_ziele_werden_raute(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "%00//fremd.example") [38 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "#"
+Actual:   "%00//fremd.example"
+           ↑ (pos 0)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0771Restpunkte.Fremde_ziele_werden_raute(String ziel) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0771RestpunkteTests.cs:line 34
+   at InvokeStub_T0771Restpunkte.Fremde_ziele_werden_raute(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "/\\fremd.example") [31 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "#"
+Actual:   "/\\fremd.example"
+           ↑ (pos 0)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0771Restpunkte.Fremde_ziele_werden_raute(String ziel) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0771RestpunkteTests.cs:line 34
+   at InvokeStub_T0771Restpunkte.Fremde_ziele_werden_raute(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "javascript%3Aalert(1)") [36 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "#"
+Actual:   "javascript%3Aalert(1)"
+           ↑ (pos 0)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0771Restpunkte.Fremde_ziele_werden_raute(String ziel) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0771RestpunkteTests.cs:line 34
+   at InvokeStub_T0771Restpunkte.Fremde_ziele_werden_raute(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "&#x2F;&#x2F;fremd.example") [35 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "#"
+Actual:   "&#x2F;&#x2F;fremd.example"
+           ↑ (pos 0)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0771Restpunkte.Fremde_ziele_werden_raute(String ziel) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0771RestpunkteTests.cs:line 34
+   at InvokeStub_T0771Restpunkte.Fremde_ziele_werden_raute(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "/pfad/auf/der/wurzel") [36 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "#"
+Actual:   "/pfad/auf/der/wurzel"
+           ↑ (pos 0)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0771Restpunkte.Fremde_ziele_werden_raute(String ziel) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0771RestpunkteTests.cs:line 34
+   at InvokeStub_T0771Restpunkte.Fremde_ziele_werden_raute(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:04.16]     T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "javascript&#58;alert(1)") [FAIL]
+[xUnit.net 00:00:04.20]     T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "%09//fremd.example") [FAIL]
+[xUnit.net 00:00:04.23]     T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "\\\\fremd.example\\x") [FAIL]
+[xUnit.net 00:00:04.26]     T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "%252F%252Ffremd.example") [FAIL]
+[xUnit.net 00:00:04.30]     T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "&#47;&#47;fremd.example") [FAIL]
+[xUnit.net 00:00:04.34]     T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "%20%2F%2Ffremd.example") [FAIL]
+[xUnit.net 00:00:04.37]     T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "%5C%5Cfremd.example") [FAIL]
+[xUnit.net 00:00:04.41]     T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "%2f%5cfremd.example") [FAIL]
+[xUnit.net 00:00:04.45]     T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "//fremd.example/x") [FAIL]
+  Fehler T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "javascript&#58;alert(1)") [38 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "#"
+Actual:   "javascript&#58;alert(1)"
+           ↑ (pos 0)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0771Restpunkte.Fremde_ziele_werden_raute(String ziel) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0771RestpunkteTests.cs:line 34
+   at InvokeStub_T0771Restpunkte.Fremde_ziele_werden_raute(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "%09//fremd.example") [37 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "#"
+Actual:   "%09//fremd.example"
+           ↑ (pos 0)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0771Restpunkte.Fremde_ziele_werden_raute(String ziel) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0771RestpunkteTests.cs:line 34
+   at InvokeStub_T0771Restpunkte.Fremde_ziele_werden_raute(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "\\\\fremd.example\\x") [33 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "#"
+Actual:   "\\\\fremd.example\\x"
+           ↑ (pos 0)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0771Restpunkte.Fremde_ziele_werden_raute(String ziel) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0771RestpunkteTests.cs:line 34
+   at InvokeStub_T0771Restpunkte.Fremde_ziele_werden_raute(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "%252F%252Ffremd.example") [30 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "#"
+Actual:   "%252F%252Ffremd.example"
+           ↑ (pos 0)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0771Restpunkte.Fremde_ziele_werden_raute(String ziel) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0771RestpunkteTests.cs:line 34
+   at InvokeStub_T0771Restpunkte.Fremde_ziele_werden_raute(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "&#47;&#47;fremd.example") [34 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "#"
+Actual:   "&#47;&#47;fremd.example"
+           ↑ (pos 0)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0771Restpunkte.Fremde_ziele_werden_raute(String ziel) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0771RestpunkteTests.cs:line 34
+   at InvokeStub_T0771Restpunkte.Fremde_ziele_werden_raute(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "%20%2F%2Ffremd.example") [41 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "#"
+Actual:   "%20%2F%2Ffremd.example"
+           ↑ (pos 0)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0771Restpunkte.Fremde_ziele_werden_raute(String ziel) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0771RestpunkteTests.cs:line 34
+   at InvokeStub_T0771Restpunkte.Fremde_ziele_werden_raute(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "%5C%5Cfremd.example") [33 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "#"
+Actual:   "%5C%5Cfremd.example"
+           ↑ (pos 0)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0771Restpunkte.Fremde_ziele_werden_raute(String ziel) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0771RestpunkteTests.cs:line 34
+   at InvokeStub_T0771Restpunkte.Fremde_ziele_werden_raute(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "%2f%5cfremd.example") [37 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "#"
+Actual:   "%2f%5cfremd.example"
+           ↑ (pos 0)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0771Restpunkte.Fremde_ziele_werden_raute(String ziel) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0771RestpunkteTests.cs:line 34
+   at InvokeStub_T0771Restpunkte.Fremde_ziele_werden_raute(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "//fremd.example/x") [33 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "#"
+Actual:   "//fremd.example/x"
+           ↑ (pos 0)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0771Restpunkte.Fremde_ziele_werden_raute(String ziel) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0771RestpunkteTests.cs:line 34
+   at InvokeStub_T0771Restpunkte.Fremde_ziele_werden_raute(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:04.48]     T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "\\/fremd.example") [FAIL]
+[xUnit.net 00:00:04.50]     T-0771 N2: ein Test-Bereich über einem dauerhaft freigegebenen Ort entfernt die dauerhafte Freigabe nicht [FAIL]
+[xUnit.net 00:00:04.65]     T-0771 Prüfer-N1: Kind-Hauptprofil löscht rolle.json, settings.json und personen.json – nächster Start ist KEINE Ersteinrichtung, bleibt Kind [FAIL]
+[xUnit.net 00:00:04.72]     T-0771 Prüfer-N1: im selben Trendo-Lauf gelöschte Rollendatei macht ebenfalls keinen Erwachsenen [FAIL]
+[xUnit.net 00:00:04.73]     T-0771 N2: Profil zweimal offen – Schließen des ersten Fensters nimmt dem zweiten die Freigabe nicht; erst der letzte Bereich beendet sie [FAIL]
+  Fehler T-0771 N-a: eingebettetes App-JSON – protokollrelative, Wurzel- und kodierte Ziele werden zu „#“(ziel: "\\/fremd.example") [34 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "#"
+Actual:   "\\/fremd.example"
+           ↑ (pos 0)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0771Restpunkte.Fremde_ziele_werden_raute(String ziel) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0771RestpunkteTests.cs:line 34
+   at InvokeStub_T0771Restpunkte.Fremde_ziele_werden_raute(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0771 N2: ein Test-Bereich über einem dauerhaft freigegebenen Ort entfernt die dauerhafte Freigabe nicht [18 ms]
+  Fehlermeldung:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0771Restpunkte.Bereich_entfernt_dauerhafte_freigabe_nicht() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0771RestpunkteTests.cs:line 84
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0771 Prüfer-N1: Kind-Hauptprofil löscht rolle.json, settings.json und personen.json – nächster Start ist KEINE Ersteinrichtung, bleibt Kind [36 ms]
+  Fehlermeldung:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0771Restpunkte.Kind_loescht_rollendateien_bleibt_kind() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0771RestpunkteTests.cs:line 106
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0771 Prüfer-N1: im selben Trendo-Lauf gelöschte Rollendatei macht ebenfalls keinen Erwachsenen [67 ms]
+  Fehlermeldung:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0771Restpunkte.Im_selben_lauf_geloescht_bleibt_kind() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0771RestpunkteTests.cs:line 126
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0771 N2: Profil zweimal offen – Schließen des ersten Fensters nimmt dem zweiten die Freigabe nicht; erst der letzte Bereich beendet sie [3 ms]
+  Fehlermeldung:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0771Restpunkte.Zaehler_bei_wieder_geoeffnetem_profil() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0771RestpunkteTests.cs:line 69
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+Fehler!      : Fehler:    23, erfolgreich:     2, übersprungen:     0, gesamt:    25, Dauer: 1 s - Trendo.Core.Tests.dll (net10.0)

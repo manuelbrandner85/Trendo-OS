@@ -29,7 +29,7 @@ public static class ChildWrite
     public static void AllowInside(string? dir)
     {
         if (string.IsNullOrWhiteSpace(dir)) return;
-        try { Inner[Norm(dir)] = 0; _roots = null; } catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { }
+        try { var k = Norm(dir); lock (ScopeLock) { PermanentInner[k] = 0; Inner[k] = 0; } _roots = null; } catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { }
     }
     static bool InnerOk(string root)
     {
@@ -85,7 +85,7 @@ public static class ChildWrite
     public static void Allow(string? dir)
     {
         if (string.IsNullOrWhiteSpace(dir)) return;
-        try { Extra[Norm(dir)] = 0; _roots = null; } catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { }
+        try { var k = Norm(dir); lock (ScopeLock) { PermanentExtra[k] = 0; Extra[k] = 0; } _roots = null; } catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { }
     }
 
     /// <summary>Die Freigabe-Wurzeln – bekannte Ordner des Kontos (aufgelöst) und die zusätzlichen Freigaben, jeweils nur zulässige.</summary>
@@ -106,10 +106,40 @@ public static class ChildWrite
     /// Danach ist sie wieder entfernt; der globale Zustand bleibt sauber.</summary>
     public static IDisposable TestScope(string root, bool inside = true)
     {
-        var key = Norm(root);
-        if (inside) AllowInside(root); else Allow(root);
-        return new Scope(() => { if (inside) Inner.TryRemove(key, out _); else Extra.TryRemove(key, out _); _roots = null; });
+        // T-0771 N2: Zähler je Ort statt „hinzufügen/entfernen“. Öffnet sich dasselbe Profil (derselbe Testordner) ein zweites Mal, nahm das Schließen
+        // des ersten Fensters die Freigabe auch dem noch offenen zweiten weg; eine dauerhafte Freigabe (AllowInside/Allow) entfernte ein Bereich ebenfalls.
+        // Jetzt: jeder Bereich zählt +1/−1, die Freigabe endet erst mit dem letzten Bereich – und nie, wenn derselbe Ort dauerhaft freigegeben ist.
+        string key;
+        try { key = Norm(root); } catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { return new Scope(() => { }); }
+        var map = inside ? Inner : Extra;
+        lock (ScopeLock)
+        {
+            ScopeCount[(inside, key)] = ScopeCount.GetValueOrDefault((inside, key)) + 1;
+            map[key] = 0; _roots = null;
+        }
+        return new Scope(() =>
+        {
+            lock (ScopeLock)
+            {
+                var n = ScopeCount.GetValueOrDefault((inside, key)) - 1;
+                if (n > 0) { ScopeCount[(inside, key)] = n; return; }
+                ScopeCount.Remove((inside, key));
+                if (!(inside ? PermanentInner : PermanentExtra).ContainsKey(key)) map.TryRemove(key, out _);
+                _roots = null;
+            }
+        });
     }
+    static readonly object ScopeLock = new();
+    static readonly Dictionary<(bool Inside, string Key), int> ScopeCount = new(new ScopeKeyComparer());
+    static readonly ConcurrentDictionary<string, byte> PermanentExtra = new(StringComparer.OrdinalIgnoreCase);
+    static readonly ConcurrentDictionary<string, byte> PermanentInner = new(StringComparer.OrdinalIgnoreCase);
+    sealed class ScopeKeyComparer : IEqualityComparer<(bool Inside, string Key)>
+    {
+        public bool Equals((bool Inside, string Key) a, (bool Inside, string Key) b) => a.Inside == b.Inside && StringComparer.OrdinalIgnoreCase.Equals(a.Key, b.Key);
+        public int GetHashCode((bool Inside, string Key) k) => HashCode.Combine(k.Inside, StringComparer.OrdinalIgnoreCase.GetHashCode(k.Key));
+    }
+    /// <summary>NUR FÜR TESTS: Anzahl offener Bereiche für einen Ort (0, wenn keiner offen ist).</summary>
+    public static int OpenScopes(string root, bool inside = true) { lock (ScopeLock) return ScopeCount.GetValueOrDefault((inside, Norm(root))); }
     sealed class Scope(Action done) : IDisposable { int _d; public void Dispose() { if (Interlocked.Exchange(ref _d, 1) == 0) done(); } }
 
     static IReadOnlyList<string> ComputeRoots()

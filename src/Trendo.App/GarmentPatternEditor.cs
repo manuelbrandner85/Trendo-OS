@@ -83,7 +83,7 @@ public sealed class GarmentPatternEditor : Canvas
         ContextMenu = Menu(); // Rechtsklick-Menü gibt es immer (auch in „Einfach“, wo die Leiste fehlt)
         PointerPressed += OnPress; PointerMoved += OnMove; PointerReleased += OnRelease; KeyDown += OnKey;
         // Fokus nur einmal zurückholen (nach eigener Änderung) – sonst zöge jeder Neuaufbau ihn aus Textfeldern ab (Gegenprüfung T-0745)
-        if (_st.WantFocus) AttachedToVisualTree += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(() => { if (!_st.WantFocus) return; _st.WantFocus = false; Focus(); });
+        if (_st.WantFocus) AttachedToVisualTree += (_, _) => Trendo.App.UiThread.Post(() => { if (!_st.WantFocus) return; _st.WantFocus = false; Focus(); });
     }
 
     /// <summary>Punkte des Teils (bearbeitet oder aus der Vorlage zerlegt).</summary>

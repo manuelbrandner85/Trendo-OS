@@ -394,8 +394,8 @@ public partial class MainWindow
         if (TitleFitHandlers.TryGetValue(g, out var old)) g.SizeChanged -= old;
         EventHandler<SizeChangedEventArgs> handler = OnSize;
         TitleFitHandlers.AddOrUpdate(g, handler); g.SizeChanged += handler;
-        Avalonia.Threading.Dispatcher.UIThread.Post(Fit, Avalonia.Threading.DispatcherPriority.Background);
-        void OnSize(object? _, SizeChangedEventArgs e) => Avalonia.Threading.Dispatcher.UIThread.Post(Fit, Avalonia.Threading.DispatcherPriority.Background);
+        Trendo.App.UiThread.Post(Fit, Avalonia.Threading.DispatcherPriority.Background);
+        void OnSize(object? _, SizeChangedEventArgs e) => Trendo.App.UiThread.Post(Fit, Avalonia.Threading.DispatcherPriority.Background);
     }
 
     /// <summary>T-0730: angemeldeter Größen-Handler je Titelleisten-Raster (schwach gehalten, verschwindet mit dem Raster).</summary>

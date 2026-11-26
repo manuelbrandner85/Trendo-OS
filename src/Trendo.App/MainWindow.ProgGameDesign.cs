@@ -44,7 +44,7 @@ public partial class MainWindow
         var focused = FocusManager?.GetFocusedElement() is TextBox { Name: { } n } box && n.StartsWith("game-", StringComparison.Ordinal) ? box : null; // Namen der Spiele-Seite gibt es in keinem anderen Fenster
         var (name, text, caret) = (focused?.Name, focused?.Text, focused?.CaretIndex ?? 0);
         Show(GK);
-        if (name is not null && this.GetLogicalDescendants().OfType<TextBox>().FirstOrDefault(t => t.Name == name) is { } again) { again.Text = text; again.CaretIndex = caret; Avalonia.Threading.Dispatcher.UIThread.Post(() => again.Focus(), Avalonia.Threading.DispatcherPriority.Background); } // erst nach dem Neuzeichnen, sonst geht der Fokus wieder verloren
+        if (name is not null && this.GetLogicalDescendants().OfType<TextBox>().FirstOrDefault(t => t.Name == name) is { } again) { again.Text = text; again.CaretIndex = caret; Trendo.App.UiThread.Post(() => again.Focus(), Avalonia.Threading.DispatcherPriority.Background); } // erst nach dem Neuzeichnen, sonst geht der Fokus wieder verloren
     }
 
     // ───────────── Ideen ─────────────

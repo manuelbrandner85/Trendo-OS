@@ -35,7 +35,7 @@ public sealed class PlaytestCanvas : Control
     {
         base.OnAttachedToVisualTree(e);
         _timer = new DispatcherTimer(TimeSpan.FromMilliseconds(16), DispatcherPriority.Render, (_, _) => Tick());
-        _timer.Start(); Dispatcher.UIThread.Post(() => Focus(), DispatcherPriority.Input);
+        _timer.Start(); Trendo.App.UiThread.Post(() => Focus(), DispatcherPriority.Input);
     }
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e) { base.OnDetachedFromVisualTree(e); _timer?.Stop(); _timer = null; }
 

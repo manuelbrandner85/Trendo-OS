@@ -135,7 +135,7 @@ public partial class MainWindow
         _letter = draft; _letterGallery = false; _letterSaved = false; _letterStep = 3;
         _letterMsg = $"Kündigung „{v.Name}“ aus dem Verträge-Ordner übernommen – Anschrift prüfen, unterschreiben, selbst abschicken (am besten per Einschreiben). Trendo versendet nichts.";
         _progMsg[ConKey] = "Kündigung an „Briefe schreiben“ übergeben.";
-        Avalonia.Threading.Dispatcher.UIThread.Post(() => Show("brief")); // nach dem Neuzeichnen des Programms (ProgramRun) wechseln
+        Trendo.App.UiThread.Post(() => Show("brief")); // nach dem Neuzeichnen des Programms (ProgramRun) wechseln
     }
 
     public string ConLetterPdfNow(ProgramDocument d)

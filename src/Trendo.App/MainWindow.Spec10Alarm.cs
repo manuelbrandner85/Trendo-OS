@@ -51,7 +51,7 @@ public partial class MainWindow
             Dictionary<string, double> vals = []; var at = DateTime.Now;
             try { hook?.Invoke("pc"); at = DateTime.Now; vals = pcc.Read(at); }
             catch (Exception e) when (e is not OutOfMemoryException) { vals = []; }
-            Dispatcher.UIThread.Post(() =>
+            Trendo.App.UiThread.Post(() =>
             {
                 _pccBusy = false;
                 if (_twClosed || vals.Count == 0) return; // Fenster inzwischen zu: nichts mehr anfassen
@@ -91,7 +91,7 @@ public partial class MainWindow
                         : e is HttpRequestException { StatusCode: { } code } ? $"Das Gerät antwortet mit Fehler {(int)code} – prüfe die Adresse (Pfad) im Gerät."
                         : "Das Gerät im eigenen Netz ist nicht erreichbar – ist es eingeschaltet und die Adresse richtig?";
                 }
-                Dispatcher.UIThread.Post(() =>
+                Trendo.App.UiThread.Post(() =>
                 {
                     _twHttpBusy.Remove(src.Id); if (_twClosed) return;
                     // Sammelstand 0.9.106 (N1): Quelle inzwischen entfernt oder per Rückgängig ersetzt → Ergebnis verwerfen (wie bei Dateien)
@@ -118,7 +118,7 @@ public partial class MainWindow
                 try { hook?.Invoke("datei"); res.Add((f, TwinFeed.ReadFile(f, now), "")); }
                 catch (Exception e) when (e is IOException or UnauthorizedAccessException) { res.Add((f, null, FriendlyError.Say(e))); }
             }
-            Dispatcher.UIThread.Post(() =>
+            Trendo.App.UiThread.Post(() =>
             {
                 _twFileBusy = false;
                 if (_twClosed) return;

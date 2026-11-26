@@ -70,8 +70,8 @@ public partial class MainWindow
         _mbCts = new CancellationTokenSource(); var ct = _mbCts.Token; _mbRunOut = outDir;
         _core.Audit.Append(Principal.LocalOwner.Name, "media.batch.start", $"{job.Id} n={todo.Count}");
         _w45Msg = $"Stapel läuft: {job.Label} für {todo.Count} Datei(en) …";
-        _mbTask = Task.Run(() => MediaBatch.RunAsync(ff, todo, job.Id, outDir, it => Dispatcher.UIThread.Post(() => MediaBatchPaint(it)), ct, _mediaStart, Math.Max(0.1, _mediaEnd - _mediaStart)))
-            .ContinueWith(t => Dispatcher.UIThread.Post(() => MediaBatchDone(job, todo, outDir, t.Exception)), TaskScheduler.Default);
+        _mbTask = Task.Run(() => MediaBatch.RunAsync(ff, todo, job.Id, outDir, it => Trendo.App.UiThread.Post(() => MediaBatchPaint(it)), ct, _mediaStart, Math.Max(0.1, _mediaEnd - _mediaStart)))
+            .ContinueWith(t => Trendo.App.UiThread.Post(() => MediaBatchDone(job, todo, outDir, t.Exception)), TaskScheduler.Default);
         if (CurrentView == MBK) Show(MBK);
         return _mbTask;
     }

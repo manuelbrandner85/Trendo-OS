@@ -88,6 +88,6 @@ public partial class MainWindow
         catch (FormatException) { _wdNote = "Das Standbild ließ sich nicht lesen."; }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException) { _wdNote = "Das Standbild ließ sich nicht speichern (kein Schreibrecht im Projekt)."; }
         catch (System.Text.Json.JsonException) { _wdNote = "Das Standbild ließ sich nicht lesen."; }
-        finally { Avalonia.Threading.Dispatcher.UIThread.Post(() => Show("dev")); }
+        finally { Trendo.App.UiThread.Post(() => Show("dev")); }
     }
 }

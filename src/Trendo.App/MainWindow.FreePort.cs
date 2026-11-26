@@ -219,7 +219,7 @@ public partial class MainWindow
         return FpChecks(d).FirstOrDefault(c => !c.Ok) is { } b ? "BLOCKIERT – " + b.Label : "Bereit zum Portieren";
     }
 
-    void FpRefresh() { if (Dispatcher.UIThread.CheckAccess()) Show(ConsoleKey); else Dispatcher.UIThread.Post(() => Show(ConsoleKey)); }
+    void FpRefresh() { if (Dispatcher.UIThread.CheckAccess()) Show(ConsoleKey); else Trendo.App.UiThread.Post(() => Show(ConsoleKey)); }
 
     /// <summary>Startet den ganzen Ablauf. null: läuft schon.</summary>
     public async Task<FreePort.Outcome?> FreePortStart(ProgramDocument d)

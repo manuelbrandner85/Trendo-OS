@@ -502,7 +502,7 @@ public partial class MainWindow
         public async Task ScrollAsync(double fx, double fy, double dy, bool desktop) => await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => w.PhoneScroll(fx, fy, dy, desktop));
         public byte[]? Icon() => PhoneIcon();
         public async Task<byte[]?> AppIconAsync(string id) => await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => w.PhoneAppIcon(id));
-        public void Started(string device) => Avalonia.Threading.Dispatcher.UIThread.Post(() => w.PhoneRemoteStarted(device));
+        public void Started(string device) => Trendo.App.UiThread.Post(() => w.PhoneRemoteStarted(device));
         public async Task<string> TvAsync(string cmd) => await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => w.TvRemote(cmd)); // TV-Fernbedienung vom Handy
     }
 }

@@ -422,15 +422,33 @@ public sealed class SitePage : IJsonOnDeserialized
     string EmbeddedJson() => JsonSerializer.Serialize(Model(embed: true), Compact);
 
     /// <summary>T-0768: Ziel eines Bausteins für das eingebettete JSON. Erlaubt sind Ziele ohne Doppelpunkt (Datei, „anzahl“), die internen Verweise
-    /// „seite:“/„summe:“ sowie http, https und mailto; alles andere („javascript:“, „data:“, „vbscript:“ …) wird zu „#“ wie im HTML.</summary>
+    /// „seite:“/„summe:“ sowie http, https und mailto; alles andere („javascript:“, „data:“, „vbscript:“ …) wird zu „#“ wie im HTML.
+    /// T-0771 N-a: Ziele, die mit „/“ oder „\“ beginnen („//fremd.example“, „\\fremd“, „/\fremd“ – protokollrelative Fremd-Links bzw. Wurzelpfade),
+    /// werden ebenfalls zu „#“ – auch nach Leerzeichen davor und in kodierter Form („%2F%2F…“, „&amp;#47;&amp;#47;…“, mehrfach kodiert). Ein kodierter
+    /// Doppelpunkt („javascript%3A…“) zählt wie ein echter.</summary>
     internal static string EmbedUrl(string u)
     {
         var t = (u ?? "").Trim();
         if (t.Length == 0) return t;
         if (t.Any(char.IsControl)) return "#";
         if (t.StartsWith("seite:", StringComparison.Ordinal) || t.StartsWith("summe:", StringComparison.Ordinal)) return t;
-        if (!t.Contains(':')) return t;
+        var d = Decoded(t);
+        if (d.Any(char.IsControl) || (d.Length > 0 && d[0] is '/' or '\\')) return "#";
+        if (!t.Contains(':') && !d.Contains(':')) return t;
         return Uri.TryCreate(t, UriKind.Absolute, out var x) && x.Scheme is "https" or "http" or "mailto" ? t : "#";
+    }
+
+    /// <summary>T-0771: Ziel nach Prozent- und HTML-Entschlüsselung (bis zu vier Runden, bis sich nichts mehr ändert), vorn und hinten ohne Leerraum.</summary>
+    static string Decoded(string t)
+    {
+        var d = t;
+        for (var i = 0; i < 4; i++)
+        {
+            var n = System.Net.WebUtility.HtmlDecode(Uri.UnescapeDataString(d)).Trim();
+            if (n == d) break;
+            d = n;
+        }
+        return d;
     }
 
     static List<Block> EmbedBlocks(List<Block> bs) => [.. bs.Select(b => b with { Url = EmbedUrl(b.Url) })];

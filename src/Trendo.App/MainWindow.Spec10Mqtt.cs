@@ -55,11 +55,11 @@ public partial class MainWindow
                     {
                         _mqttCount += n; // läuft im UI-Thread (siehe run)
                         _mqttMsg = $"Live: {_mqttCount} Werte empfangen (zuletzt „{topic}“, {DateTime.Now:HH:mm:ss})."; TwinCheckRulesThrottled(); if (CurrentView == "zwilling") Show("zwilling");
-                    }, user.Length > 0 ? user : null, password.Length > 0 ? password : null, run: a => Dispatcher.UIThread.Post(a));
+                    }, user.Length > 0 ? user : null, password.Length > 0 ? password : null, run: a => Trendo.App.UiThread.Post(a));
                 }
                 catch (Exception e) when (e is not OutOfMemoryException)
                 {
-                    Dispatcher.UIThread.Post(() => { _mqttCts = null; _mqttMsg = "⚠ MQTT: " + Trendo.Core.FriendlyError.Say(e); if (CurrentView == "zwilling") Show("zwilling"); });
+                    Trendo.App.UiThread.Post(() => { _mqttCts = null; _mqttMsg = "⚠ MQTT: " + Trendo.Core.FriendlyError.Say(e); if (CurrentView == "zwilling") Show("zwilling"); });
                 }
             }, ct);
         }

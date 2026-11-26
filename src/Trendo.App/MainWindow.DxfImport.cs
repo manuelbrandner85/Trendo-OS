@@ -39,7 +39,7 @@ public partial class MainWindow
         _drawCts = cts; _drawKey = key; _drawWhat = what;
         _progMsg[key] = what + " … Trendo bleibt bedienbar."; _progErr.Remove(key);
         var hold = DrawingImportHold;
-        _ = Task.Run(() => { hold?.Wait(ct); return work(ct); }, ct).ContinueWith(t => Dispatcher.UIThread.Post(() =>
+        _ = Task.Run(() => { hold?.Wait(ct); return work(ct); }, ct).ContinueWith(t => Trendo.App.UiThread.Post(() =>
         {
             _drawCts = null; _drawKey = null; _drawWhat = null; cts.Dispose();
             if (t.IsCanceled || t.Exception?.InnerException is OperationCanceledException) { _camQueue.Clear(); _importQueue.Clear(); _progMsg[key] = $"Vorgang abgebrochen – nichts geändert ({what})."; _progErr.Remove(key); Show(key); return; }

@@ -54,7 +54,16 @@ public class TonT0732_Ui
             while (w.AuRecSeconds < 3.2 && t.Elapsed < TimeSpan.FromSeconds(30)) { await Task.Delay(50); Settle(); }
             Assert.True(w.AuRecording, "läuft weiter, bis Stopp gedrückt wird");
             Assert.InRange(w.AuRecLevel, 0.05, 1);
-            Assert.Contains("0:03", V<TextBlock>(w, "au-rec-time").Text); // Zeit läuft sichtbar mit
+            // T-0771: Zeit und Pegelbalken zieht ein Zeitgeber der Oberfläche alle 100 ms nach (niedrige Priorität). Unter Last stand beim Lesen noch der
+            // vorige Takt („0:02,92“, obwohl die Aufnahme schon über 3,2 s lief). Darum warten, bis die Anzeige nachgezogen hat (höchstens 10 s). Geprüft
+            // wird dasselbe – die Zeit läuft sichtbar mit und zeigt mindestens 3 s – und zusätzlich, dass die Anzeige der Aufnahme nie vorausläuft.
+            static double Shown(string? s) => s is { } x && x.Split(':') is [var m, var sec] && int.TryParse(m, out var mi)
+                && double.TryParse(sec, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.GetCultureInfo("de-DE"), out var se) ? mi * 60 + se : -1;
+            t.Restart();
+            while ((Shown(V<TextBlock>(w, "au-rec-time").Text) < 3.0 || V<Border>(w, "au-rec-meter").Width <= 10) && t.Elapsed < TimeSpan.FromSeconds(10)) { await Task.Delay(20); Settle(); }
+            var shown = V<TextBlock>(w, "au-rec-time").Text;
+            Assert.InRange(Shown(shown), 3.0, w.AuRecSeconds + 0.05); // Zeit läuft sichtbar mit („0:03,…“ oder später), nie vor der Aufnahme
+            Assert.StartsWith("0:0", shown);
             Assert.True(V<Border>(w, "au-rec-meter").Width > 10, "Pegelbalken ausgeschlagen");
             RealClick(w, V<Button>(w, "au-rec-stop"));
             t.Restart(); while (w.AuRecording || w.ProgramActive("ton")!.List("ops").Count == 0) { if (t.Elapsed > TimeSpan.FromSeconds(30)) break; await Task.Delay(50); Settle(); }

@@ -272,7 +272,7 @@ public static class WebsitePreview
 
             async Task Run()
             {
-                var wsUrl = await PageSocket(http, port, timeout.Token);
+                var wsUrl = await PageSocket(http, port, process, timeout.Token);
                 socket = new ClientWebSocket();
                 await socket.ConnectAsync(new Uri(wsUrl), timeout.Token);
                 await work(new Cdp(socket) { OnEvent = onEvent }, timeout.Token);
@@ -321,9 +321,12 @@ public static class WebsitePreview
         try { if (!process.HasExited) process.Kill(true); } catch { /* schon zu */ }
     }
 
-    static async Task<string> PageSocket(HttpClient http, int port, CancellationToken ct)
+    /// <summary>Adresse des Debug-Kanals der Seite. T-0771: wartet, bis Chrome ihn öffnet – solange das Zeitbudget des Laufs (<paramref name="ct"/>) reicht
+    /// und Chrome noch läuft. Vorher waren es feste 40 Versuche (etwa 6 s, wenn Chrome die Verbindung sofort ablehnt): Unter Volllast startet Chrome
+    /// langsamer, der Lauf brach dann ab, obwohl noch fast das ganze Budget übrig war.</summary>
+    static async Task<string> PageSocket(HttpClient http, int port, Process chrome, CancellationToken ct)
     {
-        for (var i = 0; i < 40; i++)
+        while (!chrome.HasExited)
         {
             ct.ThrowIfCancellationRequested();
             try
@@ -339,7 +342,7 @@ public static class WebsitePreview
                 }
             }
             catch (HttpRequestException) { }
-            catch (TaskCanceledException) { }
+            catch (TaskCanceledException) when (!ct.IsCancellationRequested) { } // einzelne Anfrage zu langsam (2 s): noch einmal
             await Task.Delay(150, ct);
         }
         throw new InvalidOperationException("Chrome hat keinen Vorschau-Kanal geöffnet.");
@@ -401,7 +404,12 @@ public static class WebsitePreview
             while (true)
             {
                 var receive = socket.ReceiveAsync(buf, ct);
-                var finished = await Task.WhenAny(receive, Task.Delay(TimeSpan.FromSeconds(25)));
+                // T-0771: eine einzelne Antwort darf so lange brauchen, wie das Zeitbudget des Laufs reicht (höchstens 60 s statt fest 25 s) – unter
+                // Volllast brauchte Chrome für das Einlesen einer Seite mit GrapesJS länger als 25 s, obwohl das Budget (60 s) noch reichte. Läuft das
+                // Budget ab, endet das Warten sofort (vorher hing es dann bis zu 25 s weiter).
+                using var guard = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                var finished = await Task.WhenAny(receive, Task.Delay(TimeSpan.FromSeconds(60), guard.Token));
+                guard.Cancel();
                 if (finished != receive)
                 {
                     try { socket.Abort(); } catch { /* schon zu */ }

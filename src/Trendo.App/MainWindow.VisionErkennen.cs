@@ -218,7 +218,7 @@ public partial class MainWindow
         sp.Children.Add(H("Erkennung auf diesem PC", 13));
         var objects = ObjectsReady; var tess = VisionTesseract() is not null;
         var vlmTask = VisionLocalModel(); var vlm = vlmTask.IsCompleted ? vlmTask.Result : null;
-        if (!vlmTask.IsCompleted) _ = vlmTask.ContinueWith(_ => Avalonia.Threading.Dispatcher.UIThread.Post(() => Show(VisionKey)), TaskScheduler.Default);
+        if (!vlmTask.IsCompleted) _ = vlmTask.ContinueWith(_ => Trendo.App.UiThread.Post(() => Show(VisionKey)), TaskScheduler.Default);
         void Line(string name, bool ready, string text, Control? fix = null)
         {
             var row = new DockPanel { Name = name };
