@@ -28,6 +28,11 @@ public sealed record ProgramTool(string Name, string Icon, string Label, string 
 public sealed record ProgramPanel(string Title, Func<ProgramDocument, Control> Build, double Height = 180);
 /// <summary>T-0686 (V-02): der erste Schritt in einem leeren Dokument – die Hülle zeigt dafür einen großen Knopf mitten auf der Arbeitsfläche.
 /// <paramref name="Run"/> löst die echte Funktion aus (auch wenn die Eigenschaften-Spalte in „Einfach“ eingeklappt ist); <paramref name="Empty"/> sagt, ob das Dokument noch leer ist.</summary>
+/// <summary>T-0774 (Q1 „KI schreibt ins offene Dokument“): eine Fachaktion des Programms für die KI-Kette (<see cref="Trendo.Core.Programs.AssistChain"/>).
+/// <paramref name="Prepare"/> läuft schon in der Vorschau (nur Einstellungen im Dokument, prüft die Werte – wirft mit einem Satz für die Person);
+/// <paramref name="Produce"/> läuft erst bei „Ja, behalten“ am echten Dokument und erzeugt die echte Datei. Beides zusammen ist EIN Rückgängig-Schritt;
+/// Rückgängig legt die erzeugte Datei beiseite (Ordner „.rueckgaengig“), Wiederholen holt sie zurück.</summary>
+public sealed record ProgramKiAction(AssistAction Def, Action<ProgramDocument, IReadOnlyDictionary<string, string>> Prepare, Func<ProgramDocument, IReadOnlyList<string>> Produce);
 public sealed record ProgramFirstStep(string Label, string Hint, Action<ProgramDocument> Run, Func<ProgramDocument, bool> Empty);
 
 public sealed class ProgramSpec(string key, string studio, string title)
@@ -75,6 +80,10 @@ public sealed class ProgramSpec(string key, string studio, string title)
     /// <summary>T-0710: fachliche Einträge, die nicht im Menüband stehen (eigene Menüs oder Ergänzungen der Standardmenüs) – mit denselben Handlern wie die Programmfunktionen.
     /// Kürzel, die hier stehen, löst die Hülle im Programm aus.</summary>
     public Func<ProgramDocument, IEnumerable<MenuTop>>? Menus { get; init; }
+    /// <summary>T-0774: Fachaktionen für die KI (neue Datei im offenen Programm, ein Rückgängig-Schritt).</summary>
+    public List<ProgramKiAction> KiActions { get; init; } = [];
+    /// <summary>T-0774: Zusatz zur Rolle der KI – wann sie welche Fachaktion nimmt.</summary>
+    public string KiHint { get; init; } = "";
     public int LevelOf(ProgramCmd c) => Math.Max(c.Level, CmdLevels.GetValueOrDefault(c.Name));
 }
 

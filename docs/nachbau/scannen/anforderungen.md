@@ -31,9 +31,10 @@ Studio `STUDIO-DOCSCAN-01`, Seite `scannen-programm`, Kategorie Arbeiten & Büro
 | SC-09 | Ecken von Hand | im Original ziehen; Ecken zu dicht → Meldung | UI `Corners_by_hand` | Adobe Scan | 1 |
 | SC-10 | Ordner einlesen | alle Bilder, natürlich sortiert („2“ vor „10“) | UI `Folder_and_ocr_hint` | NAPS2 (Import) | 1 |
 | SC-11 | Texterkennung | ◐ nur mit eingerichtetem Tesseract: durchsuchbare PDF; ohne Tesseract klarer Einrichtungs-Hinweis, nichts wird geladen | UI `Folder_and_ocr_hint` | Adobe Scan OCR | 2 |
-| SC-12 | Scanner WIA/TWAIN | ◐ nicht gebaut – Hinweis „Scanner …“ | UI `Folder_and_ocr_hint` | NAPS2 | 3 |
+| SC-12 | Scanner WIA/TWAIN | ◐ nicht gebaut – Knopf heißt ehrlich „Hinweis: Papier-Scanner“ (T-0774) und nennt den Weg über Fotos | UI `Folder_and_ocr_hint`, `T0774KiDokument_Ui.Scanner_button_is_honest` | NAPS2 | 3 |
 | SC-13 | Kamera | ◐ nicht gebaut – Trendo hat keinen Foto-Aufnahmeweg; Handyfotos hinzufügen | – | Lens | 3 |
 | SC-14 | KI-Adapter | Titel/Datum/Modus → Scan-Auftrag mit Dateiname und Ordner, ohne Nebenwirkung | Core `Adapter` | Trendo-Kette | 1 |
+| SC-15 | KI im offenen Scan (T-0774) | Auftragszeile → KI-Plan „scan.pdf“ (Titel, Modus, optional Ordner) → Vorschau ohne Datei → „Ja, behalten“ → PDF „Datum Titel.pdf“, ein Rückgängig-Schritt, Rückgängig legt die PDF beiseite | UI `T0774KiDokument_Ui.Scan_photos_to_pdf_into_open_document`, Echtlauf `Real_local_ki` (`reports/T-0774/`) | Trendo-Kette | 1 |
 
 ## Bewusst nicht gebaut
 - Kein Hochladen in Cloud-Dienste, kein Versand per E-Mail.

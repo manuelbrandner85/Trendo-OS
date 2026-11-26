@@ -1,0 +1,36 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0774 Dokumente scannen: der Knopf heißt ehrlich „Hinweis: Papier-Scanner“ (kein Scanner angeschlossen) und gibt weiter den Weg über Fotos an [FAIL]
+      Assert.Contains() Failure: Sub-string not found
+      String:    "Scanner … Scanner …"
+      Not found: "Hinweis"
+      Stack Trace:
+        tests\Trendo.App.Tests\T0774KiDokumentUiTests.cs(184,0): at Trendo.App.Tests.T0774KiDokument_Ui.Scanner_button_is_honest()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    T-0774 Dokumente scannen: KI-Aktion „Fotos → PDF“ – Klick → Vorschau → Ja → PDF „Datum Titel.pdf“ mit 2 Seiten, EIN Rückgängig-Schritt, Rückgängig legt die PDF beiseite (KI ersetzt) [FAIL]
+      scannen-programm: kein Plan aus der KI-Antwort: {"steps":[{"action":"scan.pdf","args":{"titel":"Rechnung Stadtwerke","modus":"dokument"}}]}
+      Stack Trace:
+        tests\Trendo.App.Tests\T0774KiDokumentUiTests.cs(79,0): at Trendo.App.Tests.T0774KiDokument_Ui.Ask(MainWindow w, String key, String prompt, Int32 ms)
+        tests\Trendo.App.Tests\T0774KiDokumentUiTests.cs(153,0): at Trendo.App.Tests.T0774KiDokument_Ui.Scan_photos_to_pdf_into_open_document()
+        --- End of stack trace from previous location ---
+    T-0774 PDF-Werkstatt: „Seiten 1–3 heraus“ – Klick → KI-Plan → Vorschau ohne Datei → Ja → neue PDF mit 3 Seiten, EIN Rückgängig-Schritt, Rückgängig/Wiederholen bringen die Datei mit (KI ersetzt) [FAIL]
+      pdf-werkstatt-programm: kein Plan aus der KI-Antwort: {"steps":[{"action":"pdf.seiten_heraus","args":{"seiten":"1\u20133"}}]}
+      Stack Trace:
+        tests\Trendo.App.Tests\T0774KiDokumentUiTests.cs(79,0): at Trendo.App.Tests.T0774KiDokument_Ui.Ask(MainWindow w, String key, String prompt, Int32 ms)
+        tests\Trendo.App.Tests\T0774KiDokumentUiTests.cs(95,0): at Trendo.App.Tests.T0774KiDokument_Ui.Pdf_pages_out_into_open_program()
+        --- End of stack trace from previous location ---
+    T-0774 PDF-Werkstatt: falsche Seiten („Seite 9“ bei 5 Seiten) – Fehler schon in der Vorschau, keine Datei, Dokument unverändert (KI ersetzt) [FAIL]
+      Assert.True() Failure
+      Expected: True
+      Actual:   False
+      Stack Trace:
+        tests\Trendo.App.Tests\T0774KiDokumentUiTests.cs(37,0): at Trendo.App.Tests.T0774KiDokument_Ui.Until(Func`1 ok, Int32 ms)
+        tests\Trendo.App.Tests\T0774KiDokumentUiTests.cs(134,0): at Trendo.App.Tests.T0774KiDokument_Ui.Pdf_bad_pages_stop_in_preview()
+        --- End of stack trace from previous location ---
+  Finished:    Trendo.App.Tests (ID = '376738cb34d312fb94f4a131254f30b7f3d176bfdf848929a13549966dd2ea08')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 5, Errors: 0, Failed: 4, Skipped: 0, Not Run: 0, Time: 24,358s
+EXIT 1

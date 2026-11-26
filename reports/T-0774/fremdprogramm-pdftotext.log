@@ -1,0 +1,15 @@
+# T-0774 Fremdprogramm-Prüfung der KI-Ergebnisse – 2026-11-26 11:00:28
+Werkzeug: pdftotext version 4.06 [www.xpdfreader.com] (Xpdf-Werkzeug aus Git for Windows/mingw64, nicht Trendo)
+
+$ pdftotext -layout pdf-werkstatt-seiten-1-3.pdf -
+Seite eins
+Seite zwei
+Seite drei
+Exit 0
+
+$ pdftotext -layout scannen-fotos-zu-pdf.pdf -
+Exit 0
+
+$ pdftotext pdf-werkstatt-eingang.pdf - (Original, 5 Seiten)
+Seite eins  Seite zwei  Seite drei  Seite vier  Seite fuenf  
+Hinweis: die Scan-PDF enthält nur Seitenbilder (ohne Texterkennung) – leerer Text ist dort richtig; Seitenumbrüche: 2 (= 2 Seiten).

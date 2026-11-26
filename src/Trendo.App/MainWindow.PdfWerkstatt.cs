@@ -100,6 +100,10 @@ public partial class MainWindow
             new("pdf", "Ergebnis als PDF", ".pdf", (d, f) => PwRunTo(d, f)),
             new("vergleich", "Vergleich als Text (.txt)", ".txt", (d, f) => { var c = PwCompare(d); File.WriteAllText(f, PdfTools.CompareText(c.Result, c.A, c.B)); return f; }),
         ],
+        // T-0774 (Q1): die KI arbeitet mit denselben Fachaktionen wie die Knöpfe – „Seiten 1–3 heraus“ ergibt eine neue PDF im offenen Programm, ein Rückgängig-Schritt
+        KiActions = [PwKiPages, PwKiRun],
+        KiHint = "Eine neue PDF entsteht nur mit „pdf.seiten_heraus“ (Seiten wie „1-3“ oder „2,5-z“) oder „pdf.ausfuehren“ (Werkzeug auf die Dateiliste anwenden); "
+               + "„dokument.setzen“ ändert nur Einstellungen wie Wasserzeichen-Text oder Stempel und erzeugt keine Datei. Die Originale bleiben immer unverändert.",
         Tools = [.. PwTools.Select(t => new ProgramTool("pw-tool-" + t.Id, t.Icon, t.Name, t.What, d => PwSetTool(d, t.Id), () => ProgramActive(PwKey)?.Text("tool") == t.Id))],
         // T-0702 (V-02): leere Liste – erst Dateien holen
         FirstStep = new("Dateien hinzufügen …", "Wähl die PDFs (oder Bilder) oder zieh sie aus dem Explorer hierher – die Originale bleiben unverändert, jedes Ergebnis wird eine neue Datei.",
@@ -110,6 +114,44 @@ public partial class MainWindow
         Help = "Links das Werkzeug wählen, oben „Dateien hinzufügen“, Einstellungen im Kasten „Werkzeug“, dann „Ausführen“. Alles landet als neue Datei unter „Ergebnisse“ – "
              + "die Originale bleiben unverändert. Seiten ordnen: Seiten anklicken (Strg für mehrere), dann drehen, löschen oder verschieben. Schwärzen: Balken mit der Maus über die Stelle ziehen.",
     }, "pdf-werkstatt", "pdf zusammenfügen", "pdf teilen", "pdf komprimieren", "pdf verkleinern", "schwärzen", "wasserzeichen", "seitenzahlen", "pdf vergleichen", "bilder zu pdf", "pdf24", "pdfsam", "metadaten");
+
+    // ---------- T-0774: Fachaktionen für die KI ----------
+
+    /// <summary>„Seiten herausziehen“: Bereich aus jeder PDF der Liste als neue Datei (Werkzeug „Teilen“ mit genau einem Bereich).</summary>
+    ProgramKiAction PwKiPages => new(new AssistAction("pdf.seiten_heraus", "Seiten als neue PDF herausziehen", ["seiten", "heraus", "herausziehen", "herausnehmen", "extrahieren", "auszug", "neue", "pdf"],
+        [new AssistParam("seiten", "Seiten", Words: ["seiten", "seite"])]),
+        (d, a) =>
+        {
+            var spec = PwPageSpec(a.GetValueOrDefault("seiten") ?? "");
+            var pdfs = PwFiles(d).Where(f => !PwIsImage(f)).ToList();
+            if (pdfs.Count == 0) throw new InvalidOperationException("Es ist noch keine PDF in der Liste – erst „Dateien hinzufügen …“.");
+            foreach (var f in pdfs) { if (!File.Exists(f)) throw new FileNotFoundException("Datei nicht gefunden: " + Path.GetFileName(f)); PdfTools.ParsePages(spec, PdfView.PageCount(f)); } // prüft schon in der Vorschau
+            d.Edit("Seiten herausziehen", x => { x["tool"] = "teilen"; x["splitMode"] = "bereiche"; x["ranges"] = spec; });
+            _progMsg[PwKey] = $"Seiten {spec} werden bei „Ja, behalten“ eine neue PDF.";
+        },
+        d => PwRun(d));
+
+    /// <summary>„Werkzeug ausführen“: das gewählte (oder genannte) Werkzeug auf die Liste – wie der Knopf „Ausführen“.</summary>
+    ProgramKiAction PwKiRun => new(new AssistAction("pdf.ausfuehren", "Werkzeug ausführen (neue Datei)", ["ausfuehren", "anwenden", "zusammenfuegen", "komprimieren", "verkleinern", "wasserzeichen", "stempel", "seitenzahlen", "metadaten", "vergleichen", "bilder"],
+        [new AssistParam("werkzeug", "Werkzeug", AssistKind.Choice, [.. PwTools.Select(t => t.Id)], Required: false)]),
+        (d, a) =>
+        {
+            if (a.GetValueOrDefault("werkzeug") is { Length: > 0 } t && PwTools.Any(x => x.Id == t)) d.Edit("Werkzeug: " + PwTools.First(x => x.Id == t).Name, x => x["tool"] = t);
+            if (PwFiles(d).Count == 0) throw new InvalidOperationException("Es ist noch keine Datei in der Liste – erst „Dateien hinzufügen …“.");
+            if (d.Text("tool") == "passwort") throw new InvalidOperationException("Ein Passwort trägst du selbst im Kasten „Werkzeug“ ein – die KI setzt keine Passwörter.");
+            _progMsg[PwKey] = $"{PwToolName(d)} läuft bei „Ja, behalten“ – das Ergebnis wird eine neue Datei.";
+        },
+        d => PwRun(d));
+
+    /// <summary>Seitenangabe aus KI oder Alltagssprache: „1–3“, „1 bis 3“, „Seite 2 und 5“ → „1-3“ bzw. „2,5“. Wirft, wenn keine Seite darin steht.</summary>
+    public static string PwPageSpec(string raw)
+    {
+        var t = System.Text.RegularExpressions.Regex.Replace(raw.ToLowerInvariant().Replace('–', '-').Replace('—', '-'), @"\s*\bbis\b\s*", "-");
+        t = System.Text.RegularExpressions.Regex.Replace(t, @"\s*-\s*", "-");
+        var parts = System.Text.RegularExpressions.Regex.Matches(t, @"(?<![\w-])(\d{1,6}|z)(?:-(\d{1,6}|z))?(?![\w])").Select(m => m.Value).ToList();
+        if (parts.Count == 0) throw new ArgumentException("Welche Seiten? Zum Beispiel „1-3“ oder „2,5-z“.");
+        return string.Join(",", parts);
+    }
 
     // ---------- Modell ----------
 
