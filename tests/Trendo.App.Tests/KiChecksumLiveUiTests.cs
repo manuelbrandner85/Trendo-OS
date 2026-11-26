@@ -17,7 +17,7 @@ public class KiChecksumLive_Ui
     [AvaloniaFact(DisplayName = "T-0739 ECHT: echte Modelldatei laden und per Katalog-SHA-256 prüfen; veränderte Bytes werden verworfen (nur mit TRENDO_ECHT_PRUEFSUMME)")]
     public async Task Real_file_checked_and_tampered_rejected()
     {
-        if (Environment.GetEnvironmentVariable("TRENDO_ECHT_PRUEFSUMME") is not { Length: > 0 } dirEnv) return;
+        if (Environment.GetEnvironmentVariable("TRENDO_ECHT_PRUEFSUMME") is not { Length: > 0 } dirEnv) { Assert.Skip("Übersprungen – Echtlauf nur mit TRENDO_ECHT_PRUEFSUMME=<Belegordner> und Internet."); return; }
         var dir = Directory.CreateDirectory(dirEnv).FullName;
         var log = new StringBuilder();
         void Log(string s) => log.Append($"{DateTime.Now:HH:mm:ss} {s}\n");

@@ -95,7 +95,7 @@ public static class ProgramCatalog
         return e with
         {
             Engine = engine, Formats = formats, Dependencies = deps, Functions = functions, FunctionCatalog = fc, Rea = rea, ReaSummary = reaSum,
-            Tests = Tests(repo, e), SourceFiles = files.Select(f => Rel(repo, f)).ToList(), Status = Status(requirementsLines ?? ReadLines(Path.Combine(repo, "requirements.yaml")), e.Studio),
+            Tests = Tests(repo, e), SourceFiles = files.Select(f => Rel(repo, f)).ToList(), Status = Status(requirementsLines ?? ReadLines(Path.Combine(repo, "requirements.yaml")), e.Studio, repo),
             WindowsOnly = QualityLight.WindowsOnly(text),
         };
     }
@@ -189,11 +189,41 @@ public static class ProgramCatalog
         return names.ToList();
     }
 
-    static string Status(IReadOnlyList<string> req, string studio)
+    /// <summary>T-0777: siehe <see cref="StatusRules.RevokedPcVerified"/> (gilt für Katalog, Studio-Karten und Fortschritt gleich).</summary>
+    public static IReadOnlyDictionary<string, string> RevokedPcVerified => StatusRules.RevokedPcVerified;
+
+    /// <summary>T-0777: Teststand aus Belegen statt aus der bloßen Angabe im Register.
+    /// <list type="bullet">
+    /// <item>TESTED/PC_VERIFIED aus <c>requirements.yaml</c> zählt nur, wenn der eingetragene Rohbeleg unter <c>reports/</c> da ist und seine SHA-256 stimmt.</item>
+    /// <item>Mit einem Testlauf (TRX-Rohlog, <paramref name="outcomes"/>): ein fehlgeschlagener Test des Programms → FAIL; mindestens einer bestanden → TESTED
+    /// (PC_VERIFIED bleibt nur mit gültigem Beleg); übersprungene Tests zählen nie als bestanden.</item>
+    /// <item><see cref="RevokedPcVerified"/> nimmt PC_VERIFIED zurück.</item>
+    /// </list></summary>
+    public static string Status(IReadOnlyList<string> req, string studio, string? repo = null, IReadOnlyCollection<string>? tests = null, IReadOnlyDictionary<string, string>? outcomes = null)
     {
         var i = req.ToList().FindIndex(l => l.Trim() == $"- id: {studio}"); if (i < 0) return "nicht im Modulregister";
-        string? Val(string k) => req.Skip(i + 1).TakeWhile(l => !l.StartsWith("- id:")).FirstOrDefault(l => l.Trim().StartsWith(k + ":"))?.Split(':', 2)[1].Trim();
-        return $"{Val("implementation_status") ?? "?"} / Test {Val("test_status") ?? "?"}";
+        string? Val(string k) => req.Skip(i + 1).TakeWhile(l => !l.StartsWith("- id:")).FirstOrDefault(l => l.Trim().StartsWith(k + ":"))?.Split(':', 2)[1].Trim().Trim('\'', '"');
+        var impl = Val("implementation_status") ?? "?"; var reg = Val("test_status") ?? "?";
+        var ev = Val("evidence") is { Length: > 0 } path ? new EvidenceInfo(path, Val("evidence_sha256") is { Length: > 0 } sh ? sh : null, null) : null;
+        var notes = new List<string>();
+        var test = reg;
+        if (StatusRules.Tested(reg))
+        {
+            var state = Evidence.IsReportPath(ev?.Path) ? Evidence.Check(ev, repo) : ev is null ? EvidenceState.None : EvidenceState.Invalid; // T-0777: Testbeleg nur unter reports/
+            if (state != EvidenceState.Verified) { notes.Add($"Register {reg}, aber {Evidence.Label(state)}"); test = "NOT_RUN"; }
+            else if (reg == "PC_VERIFIED" && RevokedPcVerified.TryGetValue(studio, out var why)) { notes.Add("PC_VERIFIED zurückgenommen: " + why); test = "TESTED"; }
+            else notes.Add("Beleg " + ev!.Path);
+        }
+        if (outcomes is not null && tests is not null)
+        {
+            var o = tests.Select(t => outcomes.TryGetValue(t, out var x) ? NormalizeOutcome(x) : null).ToList();
+            int passed = o.Count(x => x == "Passed"), failed = o.Count(x => x == "Failed"), skipped = o.Count(x => x is "NotExecuted" or "Skipped"), missing = o.Count(x => x is null);
+            if (failed > 0) test = "FAIL";
+            else if (passed > 0 && !StatusRules.Tested(test)) test = "TESTED";
+            notes.Add($"Lauf: {passed} bestanden · {skipped} übersprungen · {failed} fehlgeschlagen · {missing} nicht im Lauf");
+        }
+        else if (!StatusRules.Tested(test)) notes.Add("kein Testlauf eingelesen");
+        return $"{impl} / Test {test}" + (notes.Count > 0 ? " (" + string.Join("; ", notes) + ")" : "");
     }
 
     // ---------- Ausgabe ----------
@@ -201,7 +231,8 @@ public static class ProgramCatalog
     {
         var sb = new StringBuilder("# Trendo OS – Programmkatalog\n\n");
         sb.Append("Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funktionskataloge, Vorbild-Analysen, Tests). ");
-        sb.Append("Nicht von Hand pflegen – neu erzeugen mit `TRENDO_KATALOG=. dotnet run --project tools/Trendo.Render -c Release`.\n\n");
+        sb.Append("Nicht von Hand pflegen – neu erzeugen mit `TRENDO_KATALOG=. TRENDO_KATALOG_TRX=<Ordner mit .trx> dotnet run --project tools/Trendo.Render -c Release`. ");
+        sb.Append("Der Teststand kommt aus Belegen: Register-Status nur mit gültigem Rohbeleg (SHA-256) unter `reports/`, dazu die Ergebnisse des eingelesenen Testlaufs (TRX); übersprungene Tests zählen nicht als bestanden.\n\n");
         sb.Append($"{all.Count} Programme in {all.Select(x => x.Studio).Distinct().Count()} Studios.\n\n");
         sb.Append("| Ampel | Programm | Studio | Bereich | Arbeitsfläche | Funktionen | Tests | Vorbild-Analyse | Öffnen (warm) | Trendo OS (Linux) | Modulstatus | Doku |\n|---|---|---|---|---|---|---|---|---|---|---|---|\n");
         foreach (var e in all)
@@ -223,7 +254,7 @@ public static class ProgramCatalog
         string H(string t) => string.Format(head, t);
         var d = new Dictionary<string, string>();
         d["README.md"] = H("Produktionspaket") +
-            $"Arbeitsfläche: {(e.Type.Count == 0 ? "keine eigene Arbeitsfläche erkannt (Seite aus Listen, Feldern und Knöpfen)" : string.Join(", ", e.Type))}  \nModulstatus (requirements.yaml): {e.Status}  \n" +
+            $"Arbeitsfläche: {(e.Type.Count == 0 ? "keine eigene Arbeitsfläche erkannt (Seite aus Listen, Feldern und Knöpfen)" : string.Join(", ", e.Type))}  \nModulstatus (Register, Belege, Testlauf): {e.Status}  \n" +
             $"Programm-Hülle (Dokumente, Rückgängig, Autosave, Bedienstufen): {(e.Shell ? "ja" : "nein – eigene Arbeitsseite")}\n\n## Inhalt\n" + L(DocFiles.Skip(1).Select(f => $"[{f}]({f})")) +
             "\nAlle Angaben sind aus Code, Katalogen und Tests abgeleitet. Was nicht belegt ist, steht als „nicht erfasst“ da.\n";
         d["ARCHITECTURE.md"] = H("Architektur") +
@@ -291,15 +322,40 @@ public static class ProgramCatalog
         return System.Text.RegularExpressions.Regex.Replace(text, @"([A-Za-z]:\\Users\\)(?!<user>)[^\\\s]+", "$1<user>");
     }
 
-    /// <summary>Testergebnisse aus TRX-Dateien (Name = DisplayName).</summary>
+    /// <summary>T-0777: TRX-Ergebnis auf drei Stufen bringen. Failed, Error, Timeout, Aborted und Inconclusive zählen als Fehlschlag;
+    /// NotExecuted, Skipped, NotRunnable u. ä. als übersprungen; nur Passed als bestanden.</summary>
+    public static string NormalizeOutcome(string? outcome) => outcome switch
+    {
+        "Passed" => "Passed",
+        "Failed" or "Error" or "Timeout" or "Aborted" or "Inconclusive" => "Failed",
+        _ => "NotExecuted",
+    };
+
+    static int Rank(string normalized) => normalized switch { "Failed" => 3, "Passed" => 2, _ => 1 };
+
+    // Theory-Fälle heißen im TRX „DisplayName(param: wert, …)“ – der Katalog kennt nur den DisplayName
+    static readonly Regex TheoryCase = new(@"^(?<name>.*?)\((?<p>[A-Za-z_]\w*: .*)\)$", RegexOptions.Singleline);
+
+    /// <summary>DisplayName ohne den Parameter-Teil eines Theory-Falls.</summary>
+    public static string TestBaseName(string trxName) => TheoryCase.Match(trxName) is { Success: true } m ? m.Groups["name"].Value : trxName;
+
+    /// <summary>Testergebnisse aus TRX-Dateien (Name = DisplayName). T-0777: Theory-Fälle werden ihrem DisplayName zugeordnet; gibt es mehrere
+    /// Ergebnisse für denselben Test (Theory-Fälle, mehrere TRX-Dateien), gewinnt der Fehlschlag vor bestanden vor übersprungen.
+    /// Error, Timeout, Aborted und Inconclusive zählen als Fehlschlag.</summary>
     public static Dictionary<string, string> ReadTrx(IEnumerable<string> files)
     {
         var d = new Dictionary<string, string>(StringComparer.Ordinal);
+        void Put(string name, string o) { if (!d.TryGetValue(name, out var old) || Rank(o) > Rank(old)) d[name] = o; }
         foreach (var f in files)
         {
             var x = System.Xml.Linq.XDocument.Load(f);
             foreach (var r in x.Descendants().Where(n => n.Name.LocalName == "UnitTestResult"))
-                if (r.Attribute("testName")?.Value is { } n) d[n] = r.Attribute("outcome")?.Value ?? "";
+                if (r.Attribute("testName")?.Value is { } n)
+                {
+                    var o = NormalizeOutcome(r.Attribute("outcome")?.Value);
+                    Put(n, o);
+                    var b = TestBaseName(n); if (b != n) Put(b, o);
+                }
         }
         return d;
     }

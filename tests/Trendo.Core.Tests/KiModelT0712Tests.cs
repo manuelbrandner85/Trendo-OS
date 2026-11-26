@@ -121,7 +121,7 @@ public class KiModelT0712Tests
     [Fact(DisplayName = "T-0712 ECHT: Modelle dieses PCs über das laufende Ollama und (getrennt) über die Manifeste finden, Standard = qwen3:14b (nur mit TRENDO_ECHT_MODELLE)")]
     public async Task Real_this_pc()
     {
-        if (Environment.GetEnvironmentVariable("TRENDO_ECHT_MODELLE") is not { Length: > 0 } dirVar) return;
+        if (Environment.GetEnvironmentVariable("TRENDO_ECHT_MODELLE") is not { Length: > 0 } dirVar) { Ueberspringen.Weil("Echtlauf nur mit TRENDO_ECHT_MODELLE=<Belegordner> und laufendem Ollama."); return; }
         var dir = Directory.CreateDirectory(dirVar).FullName;
         var log = new StringBuilder();
         string Anon(string s) => s.Replace(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @"C:\Users\<user>", StringComparison.OrdinalIgnoreCase);

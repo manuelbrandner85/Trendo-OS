@@ -23,7 +23,7 @@ public static class StudioCatalog
         ["SYS-02"] = new("Kleine Helfer & Musik", "Kleine Helfer: Rechner, Notizen, Bildschirmfoto, Musik und Videos abspielen.", "Arbeiten & Büro"),
         ["STUDIO-DECKDESIGN-01"] = new("Präsentationen gestalten", "Aus Stichpunkten eine fertig gestaltete Präsentation – Design, passende Folienarten, Sprechernotizen und Zeitplan.", "Arbeiten & Büro"),
         ["STUDIO-DOCSCAN-01"] = new("Dokumente scannen", "Fotos von Briefen, Rechnungen und Whiteboards zu sauberen Scans – entzerrt, als PDF mit Datum im Namen.", "Arbeiten & Büro"),
-        ["STUDIO-DAYPLAN-01"] = new("Tagesplaner", "Aufgaben um feste Termine herum in den Tag legen – mit Pausen und einer Liste für morgen.", "Arbeiten & Büro"),
+        ["STUDIO-DAYPLAN-01"] = new("Tagesplaner", "Aufgaben um feste Termine herum in den Tag legen – mit Pausen und einer Liste für morgen.", "KI & Automatik"), // T-0777: Nutzerentscheidung 26.11.2026 – Bereich KI & Automatik
         ["STUDIO-CV-01"] = new("Bewerbung & Lebenslauf", "Lebenslauf in mehreren Layouts, Anschreiben zur Stelle, Prüfung auf Lücken und eine fertige Bewerbungsmappe als PDF.", "Arbeiten & Büro"),
         ["STUDIO-CARDS-01"] = new("Karten & Einladungen", "Klappkarten und Postkarten für Geburtstag, Hochzeit und Feste – mit Gästeliste, Zu- und Absagen und Druck-PDF.", "Arbeiten & Büro"),
         ["STUDIO-CONTRACTS-01"] = new("Verträge-Ordner", "Alle Verträge mit Kosten und Kündigungsfrist – Ampel, Erinnerung im Kalender und Kündigungsschreiben als Entwurf.", "Arbeiten & Büro"),
@@ -76,7 +76,7 @@ public static class StudioCatalog
         ["SPEC-07"] = new("Texte übersetzen", "Texte mit der lokalen KI übersetzen.", "Wissen & Lernen"),
         ["CORE-10"] = new("Wissen merken", "Merkt sich, was du gelernt und gemacht hast.", "Wissen & Lernen"),
         ["SYS-08"] = new("Sicher recherchieren", "Sicher im Netz recherchieren – nur lesen.", "Wissen & Lernen"),
-        ["STUDIO-CITE-01"] = new("Recherche mit Quellen", "Quellen und Zitate sammeln, sauber zitieren (APA, Harvard, DIN) und als Literaturverzeichnis ausgeben.", "Wissen & Lernen"),
+        ["STUDIO-CITE-01"] = new("Recherche mit Quellen", "Quellen und Zitate sammeln, sauber zitieren (APA, Harvard, DIN) und als Literaturverzeichnis ausgeben.", "KI & Automatik"), // T-0777: Nutzerentscheidung 26.11.2026 – Bereich KI & Automatik
 
         ["CORE-02"] = new("KI fragen", "Dein Helfer, der Fragen beantwortet und Aufgaben erledigt.", "KI & Automatik"),
         ["CORE-03"] = new("KI-Team einsetzen", "Mehrere KI-Helfer arbeiten gemeinsam an einer Aufgabe (lokale KI nötig).", "KI & Automatik"),

@@ -55,7 +55,7 @@ public class RechteKernFix5
         Assert.NotEqual(SigState.Gueltig, Authenticode.CheckEmbeddedStrict(copy).State);
         Assert.False(ProgramTrust.SignedByExpected(copy));
         var code = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Microsoft VS Code", "Code.exe");
-        if (!File.Exists(code)) return; // VS Code nicht installiert – dieser Teil ist hier nicht prüfbar
+        if (!File.Exists(code)) { Ueberspringen.Weil("VS Code ist nicht installiert – Prüfung der echten Signatur nicht möglich."); return; } // VS Code nicht installiert – dieser Teil ist hier nicht prüfbar
         var s = Authenticode.CheckEmbeddedStrict(code);
         Assert.True(ProgramTrust.SignedByExpected(code), s.State + " " + s.Detail);
     }

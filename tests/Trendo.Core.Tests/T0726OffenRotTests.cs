@@ -110,7 +110,7 @@ public class T0726OffenRot(ITestOutputHelper output)
     public void Frames_real_ffmpeg()
     {
         var ffDir = EchtWerkzeuge.FfmpegDir() ?? (Cli.Find("ffmpeg") is { } f ? Path.GetDirectoryName(f) : null);
-        if (ffDir is null) { output.WriteLine("BLOCKIERT: kein FFmpeg auf diesem PC"); return; }
+        if (ffDir is null) { Ueberspringen.Weil("BLOCKIERT – kein FFmpeg auf diesem PC."); return; }
         var ff = Path.Combine(ffDir, OperatingSystem.IsWindows() ? "ffmpeg.exe" : "ffmpeg");
         var dir = Tmp();
         try

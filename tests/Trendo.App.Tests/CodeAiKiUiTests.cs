@@ -168,7 +168,7 @@ public class CodeAiKi_Ui
     [AvaloniaFact(DisplayName = "T-0723 ECHT: lokale KI (Ollama, bestes Modell nach T-0703) ergänzt im Python-Beispielprojekt eine Funktion mit Test → Diff → Ja → echtes unittest → Rückgängig (nur mit TRENDO_CODEKI_ECHT)")]
     public async Task Real_local_ki()
     {
-        if (Beleg() is not { } beleg) return; // ohne Belegordner kein Echtlauf (normale Läufe haben kein Modell)
+        if (Beleg() is not { } beleg) { Assert.Skip("Übersprungen – Echtlauf nur mit TRENDO_CODEKI_ECHT=<Belegordner> und laufendem Ollama."); return; } // ohne Belegordner kein Echtlauf (normale Läufe haben kein Modell)
         var (w, _, _) = Ui.Open();
         var log = new StringBuilder();
         try

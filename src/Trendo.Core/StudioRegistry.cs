@@ -12,6 +12,19 @@ public static class StatusRules
     public static bool Tested(string test) => test is "PASS" or "TESTED" or "TESTED_BOX" or "PC_VERIFIED";
     public static bool Done(string impl, string test) => Built(impl) && Tested(test);
     public static bool Started(string impl) => impl is "IN_PROGRESS" or "PC_VERIFIED_PARTIAL" || Built(impl);
+
+    /// <summary>T-0777 (Neubewertung T-0769, Bericht 3.6): Module, deren Kernweg nie echt lief (Werkzeug oder Gerät ersetzt). Das Register führt sie
+    /// noch als PC_VERIFIED; Katalog, Studio-Karten und Fortschritt zeigen höchstens „getestet“. Das Register selbst ändert nur der Nutzer.</summary>
+    public static readonly IReadOnlyDictionary<string, string> RevokedPcVerified = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        ["SYS-04"] = "kein echter winget-Lauf, Installieren nur mit ersetztem Werkzeug geprüft",
+        ["SYS-07"] = "echter Stick-Auswurf nie gelaufen",
+        ["CORE-04"] = "Gegenstelle (Pi, Handy) fehlt, nur nachgebaute Geräte",
+        ["X-08"] = "kein echtes Android-Gerät, adb und Bluetooth nachgebaut",
+    };
+
+    /// <summary>Teststand, wie er angezeigt wird: PC_VERIFIED eines zurückgenommenen Moduls gilt als TESTED.</summary>
+    public static string EffectiveTest(string id, string test) => test == "PC_VERIFIED" && RevokedPcVerified.ContainsKey(id) ? "TESTED" : test;
 }
 
 public sealed record StudioEntry(string Id, string Name, string ApprovalStatus, string ImplementationStatus,
@@ -35,7 +48,7 @@ public sealed class StudioRegistry
         return doc.Modules.Select(m =>
         {
             string S(string k) => m.TryGetValue(k, out var v) ? v?.ToString() ?? "" : "";
-            var id = S("id"); var appr = S("approval_status"); var impl = S("implementation_status"); var test = S("test_status");
+            var id = S("id"); var appr = S("approval_status"); var impl = S("implementation_status"); var test = StatusRules.EffectiveTest(id, S("test_status")); // T-0777: zurückgenommenes PC_VERIFIED
             Capability cap; string why;
             if (appr.StartsWith("REJECTED")) { cap = Capability.Rejected; why = "Erweiterung abgelehnt"; }
             else if (RequiredTools.TryGetValue(id, out var tool) && !probe.IsAvailable(tool))

@@ -16,7 +16,7 @@ public class T0755_Fix4
     {
         if (!OperatingSystem.IsWindows()) return;
         var src = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet", "dotnet.exe"); // eingebettet signiert
-        if (!File.Exists(src)) return;
+        if (!File.Exists(src)) { Ueberspringen.Weil("dotnet.exe fehlt unter Programme\\dotnet."); return; }
         var dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "trendo-t0755-test-" + Guid.NewGuid().ToString("N")[..8]);
         Directory.CreateDirectory(dir);
         try

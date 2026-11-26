@@ -165,3 +165,31 @@ Danach eine Etappe je Kategorie, Reihenfolge nach Lücke zum Soll und vorhandene
 - **Als erledigt zählen oder herauslösen:** Rechnungen & Angebote, Marktanalyse, 3D-Druck vorbereiten, Level-Editor und Webseiten messen gibt es weitgehend schon in einem bestehenden Studio. Sollen sie als eigene Studios herausgelöst werden (eigene Karte, eigener Ausbau)? Oder zählen sie als erledigt, dann sinkt die Zahl der fehlenden Studios auf 51.
 - **Unklarer Name:** Was ist mit „Mods für eigene Spiele“ gemeint?
 - **Umzug in KI & Automatik:** Sollen Tagesplaner und Recherche mit Quellen nach KI & Automatik umziehen, damit die Kategoriegrößen stimmen?
+
+## 5. Entscheidung des Nutzers vom 26.11.2026 (Nachtrag T-0777)
+
+Der Nutzer hat am 26.11.2026 die Fragen aus Abschnitt 4 so entschieden:
+
+- **Umzug: Ja.** Tagesplaner (`STUDIO-DAYPLAN-01`) und Recherche mit Quellen (`STUDIO-CITE-01`) stehen jetzt unter KI & Automatik (`src/Trendo.App/StudioCatalog.cs`, `src/Trendo.Core/PromptAction/CapabilityCatalog.cs`, umgesetzt in T-0777). Keine Funktion geht verloren: Seiten, Programme, Symbole, Vorlagen und KI-Aufträge bleiben gleich, nur der Bereich ändert sich.
+- **Als erledigt zählen: Ja.** Rechnungen & Angebote, Marktanalyse, 3D-Druck vorbereiten, Level-Editor und Webseiten messen zählen als erledigt. Sie bleiben Teil ihres bestehenden Studios (Geld & Rechnungen, Online verkaufen, 3D-Modelle erstellen, Spiele bauen, Webseite bauen) und werden nicht als eigene Studios herausgelöst.
+- **Damit fehlen noch 51** der 79 freigegebenen Studios (vorher 56).
+- **Erste Studio-Etappe danach: Wissen & Lernen.** Das weicht von der Reihenfolge in Abschnitt 4 ab (dort Business & Geld zuerst); es gilt die Entscheidung des Nutzers.
+- **Offen bleibt:** „Mods für eigene Spiele“ (Name unklar).
+
+**Zahlen je Kategorie nach der Entscheidung:**
+
+| Kategorie | Ist heute | freigegeben, fehlt | Ist nach Bau | Soll |
+|---|---|---|---|---|
+| Arbeiten & Büro | 12 | 0 | 12 | 12 |
+| Business & Geld | 3 | **9** | 12 | 14 |
+| Kreativ & Medien | 13 | 0 | 13 | 12 (1 zu viel, siehe Hinweis in Abschnitt 1) |
+| KI & Automatik | 12 | 0 | 12 | 12 |
+| 3D & Spiele | 4 | **6** | 10 | 12 |
+| Technik & Fachgebiete | 5 | **7** | 12 | 12 |
+| Wissen & Lernen | 4 | **10** | 14 | 14 |
+| Entwickeln | 2 | **11** | 13 | 14 |
+| System & Sicherheit | 6 | **8** | 14 | 14 |
+| **Summe** | **61** | **51** | **112** | 108–126 |
+
+- „Ist heute“ ist im Bild der Übersicht nach dem Umzug nachgezählt (Trendo.Render, Seite `studios`, Stand T-0777).
+- Ehrlich: Bei Business & Geld, 3D & Spiele und Entwickeln stecken die fünf als erledigt gezählten Studios in einem bestehenden Studio. Diese Kategorien bleiben deshalb nach dem Bau unter dem Soll, solange dort nichts herausgelöst oder neu vorgeschlagen wird.

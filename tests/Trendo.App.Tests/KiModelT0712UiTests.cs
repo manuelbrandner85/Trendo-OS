@@ -48,7 +48,7 @@ public class KiModelT0712_Ui
     [AvaloniaFact(DisplayName = "T-0712 ECHT: App-Weg mit dem echten Ollama dieses PCs wählt qwen3:14b (nur mit TRENDO_ECHT_MODELLE)")]
     public void Real_app_path()
     {
-        if (Environment.GetEnvironmentVariable("TRENDO_ECHT_MODELLE") is not { Length: > 0 } dirVar) return;
+        if (Environment.GetEnvironmentVariable("TRENDO_ECHT_MODELLE") is not { Length: > 0 } dirVar) { Assert.Skip("Übersprungen – Echtlauf nur mit TRENDO_ECHT_MODELLE=<Belegordner> und laufendem Ollama."); return; }
         var dir = Directory.CreateDirectory(dirVar).FullName;
         var (w, _, _) = Ui.Open();
         try

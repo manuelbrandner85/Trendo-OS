@@ -231,7 +231,7 @@ public class ModelsBatchLive_Ui
     [AvaloniaFact(DisplayName = "T-0739 ECHT: zehn Fragen aus Datei gegen zwei Ollama-Modelle in einem Durchgang, Tabelle, CSV/MD; Abbrechen und Fortsetzen echt (nur mit TRENDO_ECHT_MODELLE)")]
     public async Task Real_ollama_batch()
     {
-        if (Environment.GetEnvironmentVariable("TRENDO_ECHT_MODELLE") is not { Length: > 0 } dirEnv) return;
+        if (Environment.GetEnvironmentVariable("TRENDO_ECHT_MODELLE") is not { Length: > 0 } dirEnv) { Assert.Skip("Übersprungen – Echtlauf nur mit TRENDO_ECHT_MODELLE=<Belegordner> und laufendem Ollama."); return; }
         var dir = Directory.CreateDirectory(dirEnv).FullName;
         var ollama = new OllamaBackend();
         if (!await ollama.IsUpAsync()) { Assert.Skip("BLOCKIERT – Ollama läuft nicht auf 127.0.0.1:11434."); return; }

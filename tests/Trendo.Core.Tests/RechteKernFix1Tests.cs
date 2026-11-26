@@ -76,7 +76,7 @@ public class RechteKernFix1
         var junction = Path.Combine(f.Root, "verknuepft");
         var p = Process.Start(new ProcessStartInfo("cmd.exe", ["/c", "mklink", "/J", junction, target]) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true })!;
         p.WaitForExit(10_000);
-        if (!Directory.Exists(junction)) return; // Junction ließ sich hier nicht anlegen
+        if (!Directory.Exists(junction)) { Ueberspringen.Weil("Junction ließ sich hier nicht anlegen."); return; } // Junction ließ sich hier nicht anlegen
         var r = new WindowsDiskResolver();
         Assert.Equal(Path.GetFullPath(target), r.FinalPath(Path.Combine(junction)), ignoreCase: true);
         Assert.Equal(Path.Combine(Path.GetFullPath(target), "fehlt", "noch"), r.FinalPath(Path.Combine(junction, "fehlt", "noch")), ignoreCase: true);

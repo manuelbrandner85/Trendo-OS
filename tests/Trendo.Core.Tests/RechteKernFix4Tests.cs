@@ -119,7 +119,7 @@ public class RechteKernFix4
     {
         if (!OperatingSystem.IsWindows()) return;
         var code = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Microsoft VS Code", "Code.exe");
-        if (!File.Exists(code)) return; // VS Code nicht im Benutzerordner installiert – dieser Teil ist hier nicht prüfbar
+        if (!File.Exists(code)) { Ueberspringen.Weil("VS Code ist nicht im Benutzerordner installiert – Authenticode-Teil nicht prüfbar."); return; } // VS Code nicht im Benutzerordner installiert – dieser Teil ist hier nicht prüfbar
         Assert.True(ProgramTrust.InFixedLocation(code)); // echte Authenticode-Prüfung über WinVerifyTrust, Herausgeber Microsoft Corporation
     }
 

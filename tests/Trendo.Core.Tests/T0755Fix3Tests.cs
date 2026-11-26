@@ -17,7 +17,7 @@ public class T0755_Fix3
     {
         if (!OperatingSystem.IsWindows()) return;
         var dotnet = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet", "dotnet.exe");
-        if (!File.Exists(dotnet)) return;
+        if (!File.Exists(dotnet)) { Ueberspringen.Weil("dotnet.exe fehlt unter Programme\\dotnet."); return; }
         var f = SystemScan.Assess(Run($"\"{dotnet}\" C:\\ProgramData\\x\\evil.dll"), Ms);
         Assert.NotEqual(Ampel.Gruen, f.Light); Assert.Contains("ProgramData", f.Explanation);
         // gewöhnliches Programm mit Bibliothek aus ProgramData: mindestens gelb
