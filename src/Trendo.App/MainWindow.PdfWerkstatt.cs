@@ -127,9 +127,8 @@ public partial class MainWindow
             if (pdfs.Count == 0) throw new InvalidOperationException("Es ist noch keine PDF in der Liste – erst „Dateien hinzufügen …“.");
             foreach (var f in pdfs) { if (!File.Exists(f)) throw new FileNotFoundException("Datei nicht gefunden: " + Path.GetFileName(f)); PdfTools.ParsePages(spec, PdfView.PageCount(f)); } // prüft schon in der Vorschau
             d.Edit("Seiten herausziehen", x => { x["tool"] = "teilen"; x["splitMode"] = "bereiche"; x["ranges"] = spec; });
-            _progMsg[PwKey] = $"Seiten {spec} werden bei „Ja, behalten“ eine neue PDF.";
         },
-        d => PwRun(d));
+        PwKiProduce, _ => PwOutDir());
 
     /// <summary>„Werkzeug ausführen“: das gewählte (oder genannte) Werkzeug auf die Liste – wie der Knopf „Ausführen“.</summary>
     ProgramKiAction PwKiRun => new(new AssistAction("pdf.ausfuehren", "Werkzeug ausführen (neue Datei)", ["ausfuehren", "anwenden", "zusammenfuegen", "komprimieren", "verkleinern", "wasserzeichen", "stempel", "seitenzahlen", "metadaten", "vergleichen", "bilder"],
@@ -138,17 +137,39 @@ public partial class MainWindow
         {
             if (a.GetValueOrDefault("werkzeug") is { Length: > 0 } t && PwTools.Any(x => x.Id == t)) d.Edit("Werkzeug: " + PwTools.First(x => x.Id == t).Name, x => x["tool"] = t);
             if (PwFiles(d).Count == 0) throw new InvalidOperationException("Es ist noch keine Datei in der Liste – erst „Dateien hinzufügen …“.");
-            if (d.Text("tool") == "passwort") throw new InvalidOperationException("Ein Passwort trägst du selbst im Kasten „Werkzeug“ ein – die KI setzt keine Passwörter.");
-            _progMsg[PwKey] = $"{PwToolName(d)} läuft bei „Ja, behalten“ – das Ergebnis wird eine neue Datei.";
+            PwKiAllowed(d);
         },
-        d => PwRun(d));
+        PwKiProduce, _ => PwOutDir());
 
-    /// <summary>Seitenangabe aus KI oder Alltagssprache: „1–3“, „1 bis 3“, „Seite 2 und 5“ → „1-3“ bzw. „2,5“. Wirft, wenn keine Seite darin steht.</summary>
+    /// <summary>T-0774 (Gegenprüfung 2): KI-Pläne führen keine Passwort-Werkzeuge aus (weder schützen noch entsperren) – geprüft am Stand, der wirklich läuft.</summary>
+    static void PwKiAllowed(ProgramDocument d)
+    {
+        if (d.Text("tool") == "passwort") throw new InvalidOperationException("Passwörter setzt oder entfernt nur die Person selbst (Werkzeug „Passwort“) – die KI führt das nicht aus.");
+    }
+
+    /// <summary>Erzeugen bei „Ja, behalten“: dieselbe Prüfung noch einmal am echten Dokument, dann dieselbe Funktion wie der Knopf „Ausführen“.</summary>
+    List<string> PwKiProduce(ProgramDocument d) { PwKiAllowed(d); return PwRun(d); }
+
+    /// <summary>Füllwörter rund um eine Seitenangabe („Seiten 1 bis 3 als neue PDF heraus“) – alles andere ist eine unbekannte Angabe und wird gemeldet.</summary>
+    static readonly HashSet<string> PwSpecFill = ["seite", "seiten", "s", "und", "als", "neue", "neuen", "pdf", "datei", "heraus", "herausziehen", "herausnehmen", "raus", "aus", "der", "die", "das", "dem", "den", "von",
+        "nur", "bitte", "zieh", "ziehe", "nimm", "nehmen", "extrahieren", "mach", "mache", "daraus", "eine", "einer", "ein"];
+
+    /// <summary>Seitenangabe aus KI oder Alltagssprache: „1–3“, „1 bis 3“, „Seite 2 und 5“, „3 bis Ende“, „3-“ → „1-3“, „2,5“, „3-z“.
+    /// Wirft, wenn keine Seite darin steht oder ein Teil keine Seitenangabe ist (nichts wird still verworfen).</summary>
     public static string PwPageSpec(string raw)
     {
-        var t = System.Text.RegularExpressions.Regex.Replace(raw.ToLowerInvariant().Replace('–', '-').Replace('—', '-'), @"\s*\bbis\b\s*", "-");
-        t = System.Text.RegularExpressions.Regex.Replace(t, @"\s*-\s*", "-");
-        var parts = System.Text.RegularExpressions.Regex.Matches(t, @"(?<![\w-])(\d{1,6}|z)(?:-(\d{1,6}|z))?(?![\w])").Select(m => m.Value).ToList();
+        var t = raw.ToLowerInvariant().Replace('–', '-').Replace('—', '-');
+        t = System.Text.RegularExpressions.Regex.Replace(t, @"\b(?:zum\s+|bis\s+zum\s+|bis\s+)?(?:ende|schluss|letzten?\s+seite|letzte)\b", m => m.Value.StartsWith("bis") || m.Value.StartsWith("zum") ? "-z" : "z");
+        t = System.Text.RegularExpressions.Regex.Replace(t, @"\s*\bbis\b\s*", "-");
+        t = System.Text.RegularExpressions.Regex.Replace(t, @"\s*-\s*", "-").Replace("--", "-");
+        t = System.Text.RegularExpressions.Regex.Replace(t, @"(\d)-(?=$|[\s,;]|und\b)", "$1-z"); // „3-“ = bis zum Ende
+        var parts = new List<string>(); var unknown = new List<string>();
+        foreach (var tok in System.Text.RegularExpressions.Regex.Split(t, @"[\s,;:.]+").Where(x => x.Length > 0))
+        {
+            if (System.Text.RegularExpressions.Regex.IsMatch(tok, @"^(\d{1,6}|z)(-(\d{1,6}|z))?$")) parts.Add(tok);
+            else if (!PwSpecFill.Contains(tok)) unknown.Add(tok);
+        }
+        if (unknown.Count > 0) throw new ArgumentException($"Diese Seitenangabe verstehe ich nicht: „{string.Join(" ", unknown)}“. Beispiel: „1-3“, „2,5“ oder „3 bis Ende“.");
         if (parts.Count == 0) throw new ArgumentException("Welche Seiten? Zum Beispiel „1-3“ oder „2,5-z“.");
         return string.Join(",", parts);
     }

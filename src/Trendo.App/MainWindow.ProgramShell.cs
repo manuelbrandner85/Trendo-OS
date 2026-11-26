@@ -28,12 +28,14 @@ public sealed record ProgramTool(string Name, string Icon, string Label, string 
 public sealed record ProgramPanel(string Title, Func<ProgramDocument, Control> Build, double Height = 180);
 /// <summary>T-0686 (V-02): der erste Schritt in einem leeren Dokument – die Hülle zeigt dafür einen großen Knopf mitten auf der Arbeitsfläche.
 /// <paramref name="Run"/> löst die echte Funktion aus (auch wenn die Eigenschaften-Spalte in „Einfach“ eingeklappt ist); <paramref name="Empty"/> sagt, ob das Dokument noch leer ist.</summary>
+public sealed record ProgramFirstStep(string Label, string Hint, Action<ProgramDocument> Run, Func<ProgramDocument, bool> Empty);
+
 /// <summary>T-0774 (Q1 „KI schreibt ins offene Dokument“): eine Fachaktion des Programms für die KI-Kette (<see cref="Trendo.Core.Programs.AssistChain"/>).
 /// <paramref name="Prepare"/> läuft schon in der Vorschau (nur Einstellungen im Dokument, prüft die Werte – wirft mit einem Satz für die Person);
 /// <paramref name="Produce"/> läuft erst bei „Ja, behalten“ am echten Dokument und erzeugt die echte Datei. Beides zusammen ist EIN Rückgängig-Schritt;
-/// Rückgängig legt die erzeugte Datei beiseite (Ordner „.rueckgaengig“), Wiederholen holt sie zurück.</summary>
-public sealed record ProgramKiAction(AssistAction Def, Action<ProgramDocument, IReadOnlyDictionary<string, string>> Prepare, Func<ProgramDocument, IReadOnlyList<string>> Produce);
-public sealed record ProgramFirstStep(string Label, string Hint, Action<ProgramDocument> Run, Func<ProgramDocument, bool> Empty);
+/// Rückgängig legt die erzeugte Datei beiseite (Ordner „.rueckgaengig“), Wiederholen holt sie zurück.
+/// Höchstens eine Fachaktion je Auftrag, als letzter Schritt. <paramref name="OutDir"/>: Ausgabeordner – schlägt das Erzeugen fehl, werden dort neu entstandene Dateien zurückgenommen.</summary>
+public sealed record ProgramKiAction(AssistAction Def, Action<ProgramDocument, IReadOnlyDictionary<string, string>> Prepare, Func<ProgramDocument, IReadOnlyList<string>> Produce, Func<ProgramDocument, string?>? OutDir = null);
 
 public sealed class ProgramSpec(string key, string studio, string title)
 {
@@ -84,6 +86,8 @@ public sealed class ProgramSpec(string key, string studio, string title)
     public List<ProgramKiAction> KiActions { get; init; } = [];
     /// <summary>T-0774: Zusatz zur Rolle der KI – wann sie welche Fachaktion nimmt.</summary>
     public string KiHint { get; init; } = "";
+    /// <summary>T-0774: Felder, die nur die Person selbst setzt – „dokument.setzen“ der KI wird dort abgelehnt (z. B. Ablage-Ordner).</summary>
+    public IReadOnlyList<string> KiLocked { get; init; } = [];
     public int LevelOf(ProgramCmd c) => Math.Max(c.Level, CmdLevels.GetValueOrDefault(c.Name));
 }
 

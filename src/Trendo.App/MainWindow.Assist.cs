@@ -38,7 +38,7 @@ public interface IAssistSession
 }
 
 /// <summary>Programme der Programm-Hülle: Aktionen aus dem Menüband (ohne Ansicht, Abspielen, Bauen, Export), Arbeitskopie des Dokuments, Vorschau = echte Arbeitsfläche der Kopie.</summary>
-public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocument doc, Action<ProgramDocument, IReadOnlyList<string>>? produced = null) : IAssistTarget
+public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocument doc, Action<ProgramDocument, long, IReadOnlyList<string>>? produced = null) : IAssistTarget
 {
     static readonly string[] SkipGroups = ["Ansicht", "Datei", "Export", "Ausgabe", "Hilfe", "Werkzeug"];
     [GeneratedRegex(@"(play|run|export|build|zoom|fit|start$|end$|speed|reset|-v-|photo|2d3d|grid|dims|tiles|-100|open|save|print|import|close|share|send|claude)", RegexOptions.IgnoreCase)] private static partial Regex Risky(); // T-0707: KI-Befehle („… mit Claude“) sind Einstiege in die Kette, keine Schritte darin
@@ -61,7 +61,7 @@ public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocumen
 
     /// <summary>Vorschau-Lauf am echten Dokument mit Merken/Zurückrollen – so greifen auch Befehle, die das aktive Dokument direkt bearbeiten.
     /// Nach jedem Lauf steht das Original wieder exakt wie vorher (Daten und Rückgängig-Liste); erst „Übernehmen“ setzt das Ergebnis als einen Schritt.</summary>
-    sealed class Session(ProgramSpec spec, ProgramDocument doc, Action<ProgramDocument, IReadOnlyList<string>>? produced) : IAssistSession
+    sealed class Session(ProgramSpec spec, ProgramDocument doc, Action<ProgramDocument, long, IReadOnlyList<string>>? produced) : IAssistSession
     {
         readonly ProgramDocument.Mark _start = doc.Remember();
         string _after = doc.Data.ToJsonString();
@@ -74,6 +74,12 @@ public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocumen
             var ki = spec.KiActions.FirstOrDefault(k => k.Def.Id == step.Action.Id);
             // T-0707: „dokument.setzen“ aus dem KI-Plan schreibt geprüften Inhalt an eine Stelle (dieselbe Prüfung wie bei der Claude-Brücke); sonst ein Befehl des Menübands
             var cmd = step.Action.Id == AssistChain.EditAction || ki is not null ? null : spec.Ribbon.SelectMany(g => g.Cmds).First(c => c.Name == step.Action.Id);
+            // T-0774 (Gegenprüfung 1/2): höchstens EINE Fachaktion je Auftrag und nur als letzter Schritt – sonst liefe die Fachaktion auf einem anderen Stand
+            // als dem, den Vorschau und Prüfung gezeigt haben (z. B. „1-2“, dann „4-5“ → zweimal 4–5; Werkzeug danach auf „Passwort“ umgestellt)
+            if (_produce.Count > 0)
+                throw new InvalidOperationException($"Nach „{_produce[0].Def.Label}“ darf in einem Auftrag nichts mehr folgen – die KI erzeugt je Auftrag höchstens eine neue Datei, als letzten Schritt. Bitte den Auftrag aufteilen.");
+            if (ki is null && cmd is null && AssistChain.NormalizePath(step.Args.GetValueOrDefault("pfad") ?? "").Split('/')[0] is var field && spec.KiLocked.Contains(field, StringComparer.OrdinalIgnoreCase))
+                throw new InvalidOperationException($"„{field}“ legst du selbst fest – die KI ändert das nicht.");
             var before = doc.Remember();
             MainWindow.AssistQuiet++;
             try
@@ -101,17 +107,29 @@ public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocumen
             var mark = doc.Remember();
             Replace(JsonNode.Parse(_after)!.AsObject(), label);
             if (_produce.Count == 0) return;
-            // T-0774: die echte Fachaktion am echten Dokument; was sie dabei im Dokument ändert (Ergebnisliste …), gehört zum selben KI-Schritt
-            var files = new List<string>();
+            // T-0774: die echte Fachaktion am echten Dokument (genau der Stand der Vorschau, sie ist der letzte Schritt); was sie dabei im Dokument ändert
+            // (Ergebnisliste …), gehört zum selben KI-Schritt
+            var k = _produce[0];
+            var outDir = k.OutDir?.Invoke(doc);
+            var had = Listing(outDir);
+            IReadOnlyList<string> files;
             MainWindow.AssistQuiet++;
-            try { foreach (var k in _produce) files.AddRange(k.Produce(doc)); }
-            catch { doc.Rollback(mark); throw; } // nichts halb übernehmen
+            try { files = k.Produce(doc); }
+            catch
+            {
+                doc.Rollback(mark); // nichts halb übernehmen …
+                foreach (var f in Listing(outDir).Except(had, StringComparer.OrdinalIgnoreCase)) try { File.Delete(f); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } // … auch keine halb geschriebenen Dateien
+                throw;
+            }
             finally { MainWindow.AssistQuiet--; }
             var final = doc.Data.ToJsonString();
             doc.Rollback(mark);
             Replace(JsonNode.Parse(final)!.AsObject(), label); // genau EIN Rückgängig-Schritt „KI: …“
-            produced?.Invoke(doc, files);
+            produced?.Invoke(doc, doc.TopStep, files);
         }
+        /// <summary>Dateien im Ausgabeordner (ohne den Ordner „.rueckgaengig“) – vorher/nachher, damit ein Fehler beim Übernehmen nichts liegen lässt.</summary>
+        static HashSet<string> Listing(string? dir) => dir is null || !Directory.Exists(dir) ? [] :
+            Directory.EnumerateFiles(dir, "*", SearchOption.AllDirectories).Where(f => !f.Contains(Path.DirectorySeparatorChar + ".rueckgaengig" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)).ToHashSet(StringComparer.OrdinalIgnoreCase);
         void Replace(JsonObject after, string label) => doc.Edit(AssistChain.UndoPrefix + label, d => { d.Clear(); foreach (var (k, v) in after.ToList()) { after.Remove(k); d[k] = v; } });
     }
 }
@@ -386,40 +404,61 @@ public partial class MainWindow
 
 public partial class MainWindow
 {
-    /// <summary>T-0774: Dateien, die eine KI-Fachaktion erzeugt hat – je Dokument. Nimmt Rückgängig den Schritt zurück (die Datei steht nicht mehr im Dokument),
-    /// wandert die Datei in den Ordner „.rueckgaengig“ daneben; Wiederholen holt sie zurück. Gelöscht wird nichts.</summary>
-    readonly System.Runtime.CompilerServices.ConditionalWeakTable<ProgramDocument, Dictionary<string, string?>> _kiFiles = [];
+    /// <summary>T-0774: Dateien, die eine KI-Fachaktion erzeugt hat – je Dokument und je Rückgängig-Schritt. Nur echtes Rückgängig legt sie in den Ordner
+    /// „.rueckgaengig“ daneben, nur echtes Wiederholen holt sie zurück (<see cref="ProgramDocument.Stepped"/>); Vorschau-Läufe (Zurückrollen) bewegen nie eine Datei.
+    /// Gelöscht und überschrieben wird nichts.</summary>
+    sealed class KiFileStep(string program, List<string> files)
+    {
+        public string Program = program; public readonly List<string> Files = files; public readonly Dictionary<string, string> Away = new(StringComparer.OrdinalIgnoreCase);
+    }
+    readonly System.Runtime.CompilerServices.ConditionalWeakTable<ProgramDocument, Dictionary<long, KiFileStep>> _kiFiles = [];
 
     /// <summary>Wohin eine zurückgenommene KI-Datei gelegt wurde (null = sie liegt an ihrem Platz oder ist unbekannt).</summary>
-    public string? KiUndoPlace(ProgramDocument doc, string file) => _kiFiles.TryGetValue(doc, out var m) && m.TryGetValue(Path.GetFullPath(file), out var away) ? away : null;
+    public string? KiUndoPlace(ProgramDocument doc, string file) =>
+        _kiFiles.TryGetValue(doc, out var m) ? m.Values.Select(st => st.Away.GetValueOrDefault(Path.GetFullPath(file))).FirstOrDefault(a => a is not null) : null;
 
-    void KiTrackFiles(ProgramDocument doc, IReadOnlyList<string> files)
+    void KiTrackFiles(ProgramDocument doc, long step, IReadOnlyList<string> files)
     {
-        if (files.Count == 0) return;
-        if (!_kiFiles.TryGetValue(doc, out var map)) { map = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase); _kiFiles.Add(doc, map); doc.Restored += KiFilesRestored; }
-        foreach (var f in files) map[Path.GetFullPath(f)] = null;
+        if (files.Count == 0 || step == 0) return;
+        if (!_kiFiles.TryGetValue(doc, out var map)) { map = []; _kiFiles.Add(doc, map); doc.Stepped += KiFilesStepped; }
+        map[step] = new KiFileStep(Programs.Values.FirstOrDefault(p => ProgramActive(p.Key) == doc)?.Key ?? "", [.. files.Select(Path.GetFullPath)]);
     }
 
-    void KiFilesRestored(ProgramDocument doc)
+    void KiFilesStepped(ProgramDocument doc, (long From, long To, bool Undo) e)
     {
-        if (!_kiFiles.TryGetValue(doc, out var map)) return;
-        var json = doc.Data.ToJsonString();
-        foreach (var (f, away) in map.ToList())
-        {
-            var inDoc = json.Contains(JsonValue.Create(f).ToJsonString().Trim('"'), StringComparison.OrdinalIgnoreCase);
+        if (!_kiFiles.TryGetValue(doc, out var map) || !map.TryGetValue(e.From, out var st)) return;
+        if (!e.Undo) { map.Remove(e.From); map[e.To] = st; }
+        foreach (var f in st.Files)
             try
             {
-                if (!inDoc && File.Exists(f))
+                if (e.Undo && File.Exists(f))
                 {
                     var to = Trendo.Core.Sys.PdfTools.Free(Path.Combine(Path.GetDirectoryName(f)!, ".rueckgaengig", Path.GetFileName(f))); // nie etwas überschreiben
-                    Directory.CreateDirectory(Path.GetDirectoryName(to)!); File.Move(f, to); map[f] = to;
+                    Trendo.Core.Sys.ChildWrite.DemandMove(CurrentPrincipal, f, to, _core.Audit);
+                    Directory.CreateDirectory(Path.GetDirectoryName(to)!); File.Move(f, to); st.Away[f] = to;
                     _core.Audit.Append(Principal.LocalOwner.Name, "assist.datei.zurueck", Path.GetFileName(f));
                 }
-                else if (inDoc && !File.Exists(f) && away is not null && File.Exists(away)) { File.Move(away, f); map[f] = null; _core.Audit.Append(Principal.LocalOwner.Name, "assist.datei.wieder", Path.GetFileName(f)); }
+                else if (!e.Undo && st.Away.TryGetValue(f, out var away) && File.Exists(away))
+                {
+                    if (File.Exists(f)) // Name inzwischen belegt: nichts Fremdes treffen – melden statt verschieben
+                    {
+                        KiFileSay(st.Program, $"„{Path.GetFileName(f)}“ gibt es inzwischen wieder – die zurückgenommene Fassung bleibt in „.rueckgaengig“.");
+                        _core.Audit.Append(Principal.LocalOwner.Name, "assist.datei.belegt", Path.GetFileName(f));
+                        continue;
+                    }
+                    Trendo.Core.Sys.ChildWrite.DemandMove(CurrentPrincipal, away, f, _core.Audit);
+                    File.Move(away, f); st.Away.Remove(f);
+                    _core.Audit.Append(Principal.LocalOwner.Name, "assist.datei.wieder", Path.GetFileName(f));
+                }
             }
-            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { _core.Audit.Append(Principal.LocalOwner.Name, "assist.datei.fehler", $"{Path.GetFileName(f)} {e.Message}"); }
-        }
+            catch (Exception x) when (x is IOException or UnauthorizedAccessException)
+            {
+                KiFileSay(st.Program, $"„{Path.GetFileName(f)}“ ließ sich nicht verschieben: {Trendo.Core.FriendlyError.Say(x)}");
+                _core.Audit.Append(Principal.LocalOwner.Name, "assist.datei.fehler", $"{Path.GetFileName(f)} {x.Message}");
+            }
     }
+
+    void KiFileSay(string program, string text) { if (program.Length > 0) _progMsg[program] = text; }
 
     /// <summary>Eigene Anbindung eines Programms außerhalb der Programm-Hülle anmelden (Seite → Ziel).</summary>
     public void RegisterAssistAdapter(string key, Func<IAssistTarget?> target) => _assistAdapters[key] = target;

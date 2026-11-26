@@ -143,6 +143,8 @@ public static partial class AssistPlanner
             switch (p.Kind)
             {
                 case AssistKind.Choice:
+                    // T-0774: mit Words nur, wenn eines davon im Satz steht („Modus Foto“) – sonst würde „Fotos“ allein den Modus „foto“ setzen
+                    if (p.Words is { Count: > 0 } cw && !cw.SelectMany(Tokens).Select(Stem).Any(w => Tokens(clause).Select(Stem).Contains(w))) break;
                     v = (p.Options ?? []).FirstOrDefault(o => Tokens(o).Select(Stem).All(t => Tokens(clause).Select(Stem).Contains(t)));
                     break;
                 case AssistKind.YesNo:

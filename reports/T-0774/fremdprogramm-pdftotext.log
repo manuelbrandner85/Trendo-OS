@@ -1,4 +1,4 @@
-# T-0774 Fremdprogramm-Prüfung der KI-Ergebnisse – 2026-11-26 11:00:28
+# T-0774 Fremdprogramm-Prüfung der KI-Ergebnisse – 2026-11-26 11:27:51
 Werkzeug: pdftotext version 4.06 [www.xpdfreader.com] (Xpdf-Werkzeug aus Git for Windows/mingw64, nicht Trendo)
 
 $ pdftotext -layout pdf-werkstatt-seiten-1-3.pdf -

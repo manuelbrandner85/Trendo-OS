@@ -34,6 +34,20 @@ public class T0774KiDokument_Ui
     }
 
     static string Plan(string action, JsonObject args) => new JsonObject { ["steps"] = new JsonArray(new JsonObject { ["action"] = action, ["args"] = args }) }.ToJsonString();
+    static string Plans(params (string Action, JsonObject Args)[] steps) => new JsonObject { ["steps"] = new JsonArray([.. steps.Select(x => (JsonNode)new JsonObject { ["action"] = x.Action, ["args"] = x.Args })]) }.ToJsonString();
+    static JsonObject Set(string pfad, string wert) => new() { ["pfad"] = pfad, ["wert"] = wert };
+
+    /// <summary>Auftrag schicken und warten, bis die Kette steht (Vorschau oder Fehler). Gibt die Phase zurück.</summary>
+    static async Task<string> Send(MainWindow w, string prompt)
+    {
+        w.Find<TextBox>("auftrag-prompt").Text = prompt;
+        Tap(w, "auftrag-pruefen");
+        await Until(() => w.AssistLast?.Phase is "vorschau" or "fehler" or "verworfen");
+        return w.AssistLast!.Value.Phase;
+    }
+
+    /// <summary>Alle PDF-Dateien unter dem Ergebnis-Ordner der Werkstatt (ohne „.rueckgaengig“).</summary>
+    static List<string> OutPdfs(string root) => Directory.Exists(root) ? [.. Directory.GetFiles(root, "*.pdf", SearchOption.AllDirectories).Where(f => !f.Contains(".rueckgaengig") && f.Contains("Ergebnisse"))] : [];
     static async Task Until(Func<bool> ok, int ms = 10000) { for (var i = 0; i < ms / 20 && !ok(); i++) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); await Task.Delay(20); } Assert.True(ok()); }
     static void Tap(MainWindow w, string name) { var b = w.Find<Button>(name); b.BringIntoView(); Settle(); RealClick(w, b); Settle(); }
     static string Hash(string f) => Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(f))).ToLowerInvariant();
@@ -193,6 +207,177 @@ public class T0774KiDokument_Ui
         finally { w.Close(); }
     }
 
+    // ───────────── Gegenprüfung (Regressionen) ─────────────
+
+    [AvaloniaFact(DisplayName = "T-0774 Gegenprüfung 1: zwei Fachaktionen („1-2“, dann „4-5“) oder „dokument.setzen“ danach – deutlicher Fehler, keine Datei, Dokument unverändert")]
+    public async Task One_production_per_plan()
+    {
+        var (w, _, root) = Ui.Open(); MainWindow.AssistStepDelayMs = 0;
+        var answer = "";
+        try
+        {
+            w.KiBackendsOverride = () => [new FixedKi(_ => answer)];
+            var (d, _) = OpenPw(w, root);
+            var before = d.Data.ToJsonString();
+            answer = Plans(("pdf.seiten_heraus", new JsonObject { ["seiten"] = "1-2" }), ("pdf.seiten_heraus", new JsonObject { ["seiten"] = "4-5" }));
+            Assert.Equal("fehler", await Send(w, "Zieh die Seiten 1 bis 2 und danach 4 bis 5 als neue Dateien heraus"));
+            Assert.Contains("höchstens eine neue Datei", w.AssistLast!.Value.Message);
+            Assert.Equal(before, d.Data.ToJsonString()); Assert.Empty(OutPdfs(root)); Assert.Empty(Results(d));
+            Tap(w, "assist-close");
+            answer = Plans(("pdf.ausfuehren", new JsonObject { ["werkzeug"] = "wasserzeichen" }), ("dokument.setzen", Set("tool", "passwort")));
+            Assert.Equal("fehler", await Send(w, "Setz ein Wasserzeichen und stell danach das Werkzeug auf Passwort um bitte"));
+            Assert.Contains("höchstens eine neue Datei", w.AssistLast!.Value.Message);
+            Assert.Equal(before, d.Data.ToJsonString()); Assert.Empty(OutPdfs(root));
+        }
+        finally { MainWindow.AssistStepDelayMs = 140; w.KiBackendsOverride = null; w.PickOverride = null; w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0774 Gegenprüfung 2: KI-Plan mit Werkzeug „Passwort“ (entfernen) – abgelehnt, keine entsperrte Kopie")]
+    public async Task No_password_tools_from_ki()
+    {
+        var (w, _, root) = Ui.Open(); MainWindow.AssistStepDelayMs = 0;
+        try
+        {
+            w.KiBackendsOverride = () => [new FixedKi(_ => Plans(("dokument.setzen", Set("pwMode", "entfernen")), ("dokument.setzen", Set("tool", "passwort")), ("pdf.ausfuehren", new JsonObject())))];
+            var (d, _) = OpenPw(w, root);
+            w.PwPassword = "geheim";
+            var before = d.Data.ToJsonString();
+            Assert.Equal("fehler", await Send(w, "Entsperr die PDF mit dem bekannten Passwort und leg eine Kopie ab"));
+            Assert.Contains("Passwörter", w.AssistLast!.Value.Message);
+            Assert.Equal(before, d.Data.ToJsonString()); Assert.Empty(OutPdfs(root));
+            Tap(w, "assist-close");
+            w.KiBackendsOverride = () => [new FixedKi(_ => Plan("pdf.ausfuehren", new JsonObject { ["werkzeug"] = "passwort" }))];
+            Assert.Equal("fehler", await Send(w, "Schütz die PDF mit dem Passwort aus dem Kasten Werkzeug"));
+            Assert.Contains("Passwörter", w.AssistLast!.Value.Message); Assert.Empty(OutPdfs(root));
+            Tap(w, "assist-close");
+            // Umweg aus der Gegenprüfung: Vorschau zeigt „Wasserzeichen“, danach wird auf „Passwort entfernen“ umgestellt – vorher entstand eine entsperrte Kopie
+            w.KiBackendsOverride = () => [new FixedKi(_ => Plans(("pdf.ausfuehren", new JsonObject { ["werkzeug"] = "wasserzeichen" }), ("dokument.setzen", Set("pwMode", "entfernen")), ("dokument.setzen", Set("tool", "passwort"))))];
+            var phase = await Send(w, "Setz ein Wasserzeichen und entsperr danach die PDF mit dem Passwort");
+            if (phase == "vorschau") { Tap(w, "assist-apply"); await Until(() => w.AssistLast?.Phase is "fertig" or "fehler"); }
+            Assert.DoesNotContain(OutPdfs(root), f => f.Contains("entsperrt"));
+            Assert.Equal("fehler", w.AssistLast!.Value.Phase);
+            Assert.Equal(before, w.ProgramActive(Pw)!.Data.ToJsonString());
+        }
+        finally { MainWindow.AssistStepDelayMs = 140; w.KiBackendsOverride = null; w.PickOverride = null; w.PwPassword = ""; w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0774 Gegenprüfung 3: Vorschau-Zurückrollen bewegt keine KI-Datei – nach „Ergebnisliste leeren“ und neuer Vorschau mit „Nein“ liegt die PDF noch da")]
+    public async Task Preview_rollback_never_moves_files()
+    {
+        var (w, _, root) = Ui.Open(); MainWindow.AssistStepDelayMs = 0;
+        var answer = Plan("pdf.seiten_heraus", new JsonObject { ["seiten"] = "1-3" });
+        try
+        {
+            w.KiBackendsOverride = () => [new FixedKi(_ => answer)];
+            var (d, _) = OpenPw(w, root);
+            Assert.Equal("vorschau", await Send(w, "Zieh aus der PDF die Seiten 1 bis 3 als neue Datei heraus"));
+            Tap(w, "assist-apply"); await Until(() => w.AssistLast?.Phase == "fertig");
+            var made = Results(d).Single(); Assert.True(File.Exists(made));
+            Tap(w, "assist-close");
+            Tap(w, "prog-cmd-pw-results-clear"); // die Person leert die Liste – die Datei bleibt
+            Assert.Empty(Results(w.ProgramActive(Pw)!)); Assert.True(File.Exists(made));
+            answer = Plan("dokument.setzen", Set("wmText", "ENTWURF"));
+            Assert.Equal("vorschau", await Send(w, "Stell den Text vom Wasserzeichen auf ENTWURF um bitte"));
+            Assert.True(File.Exists(made), "Vorschau hat die KI-PDF verschoben");
+            Tap(w, "assist-discard");
+            Assert.True(File.Exists(made), "„Nein“ hat die KI-PDF verschoben");
+            Assert.Null(w.KiUndoPlace(w.ProgramActive(Pw)!, made));
+        }
+        finally { MainWindow.AssistStepDelayMs = 140; w.KiBackendsOverride = null; w.PickOverride = null; w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0774 Gegenprüfung 4: KI setzt keinen Ablage-Ordner (absolut/UNC) für Scans – abgelehnt, keine PDF außerhalb")]
+    public async Task Ki_cannot_set_scan_folder()
+    {
+        var (w, _, root) = Ui.Open(); MainWindow.AssistStepDelayMs = 0;
+        var outside = Path.Combine(root, "fremd"); Directory.CreateDirectory(outside);
+        try
+        {
+            w.KiBackendsOverride = () => [new FixedKi(_ => Plans(("dokument.setzen", Set("folder", outside)), ("scan.pdf", new JsonObject { ["titel"] = "Brief" })))];
+            var (d, _) = OpenScan(w, root);
+            var before = d.Data.ToJsonString();
+            Assert.Equal("fehler", await Send(w, "Leg die Fotos als PDF in meinem anderen Ordner ab bitte"));
+            Assert.Contains("legst du selbst fest", w.AssistLast!.Value.Message);
+            Assert.Equal(before, d.Data.ToJsonString()); Assert.Empty(Directory.GetFiles(outside));
+            Tap(w, "assist-close");
+            w.KiBackendsOverride = () => [new FixedKi(_ => Plan("scan.pdf", new JsonObject { ["ordner"] = @"\\server\\fotos" }))];
+            Assert.Equal("fehler", await Send(w, "Hol die Fotos vom Server und mach eine PDF daraus"));
+            Assert.Contains("Netzwerk", w.AssistLast!.Value.Message);
+        }
+        finally { MainWindow.AssistStepDelayMs = 140; w.KiBackendsOverride = null; w.PickOverride = null; w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0774 Gegenprüfung 5: Fehler beim Übernehmen (zweite PDF kaputt) – schon geschriebene Dateien werden zurückgenommen, Dokument unverändert")]
+    public async Task Failed_apply_leaves_no_files()
+    {
+        var (w, _, root) = Ui.Open(); MainWindow.AssistStepDelayMs = 0;
+        try
+        {
+            w.KiBackendsOverride = () => [new FixedKi(_ => Plan("pdf.ausfuehren", new JsonObject { ["werkzeug"] = "wasserzeichen" }))];
+            var (d, _) = OpenPw(w, root);
+            var second = PdfWerkstatt_Ui.TextPdf(Path.Combine(root, "eingang", "zweite.pdf"), "Eins", "Zwei");
+            w.PickOverride = _ => Task.FromResult<string[]?>([second]); Tap(w, "prog-cmd-pw-add");
+            Assert.Equal(2, d.List("files").Count);
+            var before = d.Data.ToJsonString(); var history = d.History.Count;
+            Assert.Equal("vorschau", await Send(w, "Setz auf alle PDFs in der Liste ein Wasserzeichen VERTRAULICH"));
+            File.WriteAllText(second, "kaputt – keine PDF mehr"); // nach der Vorschau beschädigt
+            Tap(w, "assist-apply");
+            await Until(() => w.AssistLast?.Phase is "fertig" or "fehler");
+            Assert.Equal("fehler", w.AssistLast!.Value.Phase);
+            Assert.Empty(OutPdfs(root)); // die schon geschriebene Wasserzeichen-PDF der ersten Datei ist wieder weg
+            Assert.Equal(before, d.Data.ToJsonString()); Assert.Equal(history, d.History.Count);
+        }
+        finally { MainWindow.AssistStepDelayMs = 140; w.KiBackendsOverride = null; w.PickOverride = null; w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0774 Gegenprüfung 6: Wiederholen bei belegtem Namen trifft keine fremde Datei – Meldung, beiseitegelegte Fassung bleibt")]
+    public async Task Redo_never_overwrites()
+    {
+        var (w, _, root) = Ui.Open(); MainWindow.AssistStepDelayMs = 0;
+        try
+        {
+            w.KiBackendsOverride = () => [new FixedKi(_ => Plan("pdf.seiten_heraus", new JsonObject { ["seiten"] = "1-3" }))];
+            var (d, _) = OpenPw(w, root);
+            Assert.Equal("vorschau", await Send(w, "Zieh aus der PDF die Seiten 1 bis 3 als neue Datei heraus"));
+            Tap(w, "assist-apply"); await Until(() => w.AssistLast?.Phase == "fertig");
+            var made = Results(d).Single();
+            Tap(w, "assist-undo");
+            var doc = w.ProgramActive(Pw)!;
+            var away = w.KiUndoPlace(doc, made); Assert.True(away is not null && File.Exists(away));
+            File.WriteAllText(made, "fremde Datei mit gleichem Namen");
+            Assert.True(doc.Redo());
+            Assert.Equal("fremde Datei mit gleichem Namen", File.ReadAllText(made));
+            Assert.True(File.Exists(away));
+            Assert.Contains("gibt es inzwischen wieder", w.ProgramMessage(Pw));
+        }
+        finally { MainWindow.AssistStepDelayMs = 140; w.KiBackendsOverride = null; w.PickOverride = null; w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0774 Gegenprüfung 8–10: „3 bis Ende“ → 3-z, Unbekanntes gemeldet; nach „Nein“ keine Meldung stehen; Regel-Planer setzt Modus „foto“ nicht ungefragt")]
+    public async Task Small_fixes()
+    {
+        Assert.Equal("3-z", MainWindow.PwPageSpec("3 bis Ende"));
+        Assert.Equal("3-z", MainWindow.PwPageSpec("3-"));
+        Assert.Equal("1-3", MainWindow.PwPageSpec("Seiten 1 bis 3 als neue PDF heraus"));
+        Assert.Contains("kaffee", Assert.Throws<ArgumentException>(() => MainWindow.PwPageSpec("1-3 und Kaffee")).Message, StringComparison.OrdinalIgnoreCase);
+        var (w, _, root) = Ui.Open(); MainWindow.AssistStepDelayMs = 0;
+        try
+        {
+            w.KiBackendsOverride = () => [new FixedKi(_ => Plan("scan.pdf", new JsonObject { ["titel"] = "Brief", ["modus"] = "grau" }))];
+            var (d, _) = OpenScan(w, root);
+            var msg = w.ProgramMessage(Scan);
+            Assert.Equal("vorschau", await Send(w, "Mach aus den Fotos eine PDF mit dem Titel Brief in Graustufen"));
+            Tap(w, "assist-discard");
+            Assert.Equal(msg, w.ProgramMessage(Scan));
+            var actions = w.AssistTargetFor(Scan)!.Actions;
+            var plain = AssistPlanner.Plan("Fotos als PDF ablegen", actions);
+            Assert.Equal("scan.pdf", plain.Steps.Single().Action.Id); Assert.False(plain.Steps[0].Args.ContainsKey("modus"));
+            var asked = AssistPlanner.Plan("Fotos als PDF ablegen im Modus Foto", actions);
+            Assert.Equal("foto", asked.Steps.Single().Args["modus"]);
+        }
+        finally { MainWindow.AssistStepDelayMs = 140; w.KiBackendsOverride = null; w.PickOverride = null; w.Close(); }
+    }
+
     // ───────────── Echtlauf mit der KI auf diesem PC ─────────────
 
     static string? Beleg() => Environment.GetEnvironmentVariable("TRENDO_T0774_ECHT") is { Length: > 0 } d ? Directory.CreateDirectory(d).FullName : null;
@@ -200,7 +385,7 @@ public class T0774KiDokument_Ui
     [AvaloniaFact(DisplayName = "T-0774 ECHT: lokale KI (Ollama) – PDF-Werkstatt „Seiten 1–3 heraus“ und Scannen „Fotos → PDF“ im offenen Programm, echte PDFs, Rückgängig (nur mit TRENDO_T0774_ECHT)")]
     public async Task Real_local_ki()
     {
-        if (Beleg() is not { } beleg) return; // ohne Belegordner kein Echtlauf (normale Läufe haben kein Modell)
+        if (Beleg() is not { } beleg) { Assert.Skip("Echtlauf nur mit TRENDO_T0774_ECHT=<Belegordner> (braucht Ollama mit Modell auf diesem PC)."); return; }
         var (w, _, root) = Ui.Open(); MainWindow.AssistStepDelayMs = 0;
         var log = new StringBuilder();
         void L(string s) => log.AppendLine(s);

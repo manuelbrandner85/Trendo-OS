@@ -2,13 +2,33 @@
 
 **Auftrag:** `tasks/T-0774-ki-dokument.md` (Freigabe 26.11.2026, Etappe 0.9.112) · **Branch:** `claude/T-0774-ki-dokument` (Basis main 0.9.111 = 2b1ffa923) · eigene Kopie in `%TEMP%\trendo-auftrag-T-0774`.
 
+## Nachbesserung nach der Gegenprüfung („nicht freigabefähig“)
+| Nr. | Befund | Behebung | Regressionstest (rot auf 6588330f8 → grün) |
+|---|---|---|---|
+| 1 (hoch) | Mehrere Fachaktionen liefen auf dem Endstand („1-2“, dann „4-5“ → zweimal 4–5) | Höchstens eine Fachaktion je Auftrag, nur als letzter Schritt; jeder weitere Schritt bricht mit deutlicher Meldung ab („… höchstens eine neue Datei …, bitte den Auftrag aufteilen“). Die Fachaktion läuft damit genau auf dem Stand der Vorschau | `One_production_per_plan` |
+| 2 (hoch) | Vorschau zeigte „Wasserzeichen“, danach `tool=passwort`/`pwMode=entfernen` → entsperrte Kopie | Folgt aus 1 (nichts nach der Fachaktion); zusätzlich prüft `PwKiAllowed` vor der Vorschau **und** beim Erzeugen am echten Dokument: KI-Pläne führen „Passwort“ (schützen/entfernen) nie aus | `No_password_tools_from_ki` (alter Stand erzeugte `…-entsperrt.pdf`) |
+| 3 (hoch) | `KiFilesRestored` hing an `Restored` und verschob Dateien auch bei Vorschau-Zurückrollen (Textsuche) | Neues Ereignis `ProgramDocument.Stepped` nur bei echtem `Undo()`/`Redo()` (nie bei `Rollback`), Zuordnung über die Schrittnummer (`TopStep`), Wiederholen-Liste behält die Nummer | `Preview_rollback_never_moves_files` (Ergebnisliste leeren + neue Vorschau + „Nein“ → Datei bleibt) |
+| 4 (mittel) | KI konnte `folder` (absolut/UNC) für Scans setzen | `ProgramSpec.KiLocked = ["folder"]` – `dokument.setzen` dort abgelehnt; Fotos-Ordner der KI: Netzwerkpfade abgelehnt | `Ki_cannot_set_scan_folder` |
+| 5 (mittel) | Fehler beim Übernehmen ließ schon geschriebene Dateien liegen | `ProgramKiAction.OutDir`: Dateiliste vorher/nachher, bei Fehler neu entstandene Dateien gelöscht, Dokument zurückgerollt | `Failed_apply_leaves_no_files` (zweite PDF nach der Vorschau beschädigt) |
+| 6 (mittel) | Wiederholen konnte gleichnamige fremde Datei treffen | Name belegt → nicht verschieben, Meldung im Programm, Protokoll `assist.datei.belegt` | `Redo_never_overwrites` |
+| 7 (mittel) | `SHA256.txt` passte nicht zum Rohlog (Zeilenende-Umwandlung) | `.gitattributes`: `reports/T-0774/** -text`; Echtlauf neu, Rohlog nennt Befehl und Testnamen, Liste neu erzeugt | Prüfung `sha256sum -c` vor dem Commit |
+| 8 (niedrig) | „3 bis Ende“/„3-“, Unbekanntes still verworfen | → `3-z`; unbekannte Wörter werden gemeldet | `Small_fixes` |
+| 9 (niedrig) | Meldung blieb nach „Nein“ stehen | Vorbereitungen setzen keine Programm-Meldung mehr bzw. stellen sie wieder her | `Small_fixes` |
+| 10 (niedrig) | Regel-Planer setzte Modus „foto“ bei „Fotos“ | `AssistParam.Words` gilt jetzt auch für Auswahl-Parameter (nur wenn angegeben, nur `scan.pdf` nutzt es): Modus nur bei „Modus …“ | `Small_fixes` |
+| 11 (niedrig) | Echtlauf ohne Variable meldete „bestanden“ | `Assert.Skip` mit Grund | Testlauf zeigt „Skipped: 1“ |
+| 12 (niedrig) | Verschieben ohne Kinderschutz-Prüfung | `ChildWrite.DemandMove` vor jedem Verschieben | – (Erwachsene unverändert) |
+| 13 (niedrig) | Kommentar hing am falschen Typ | Doku von `ProgramFirstStep` wieder an seinem Typ, `ProgramKiAction` mit eigener Doku | – |
+
+Rot-Lauf: `reports/T-0774/rot-gegenpruefung.txt` – neue Testdatei gegen den Code von 6588330f8: 7 von 12 rot (Echtlauf übersprungen). Grün auf dem Endstand: 11 bestanden, 1 übersprungen (Echtlauf ohne Variable), zweimal hintereinander.
+Neu berührt: `src/Trendo.Core/Programs/ProgramDocument.cs` (Ereignis `Stepped`, `TopStep`), `src/Trendo.Core/Programs/Assist.cs` (Words bei Auswahl), `.gitattributes`.
+
 ## Was war → was ist
 | Punkt | Vorher (Beleg) | Jetzt | Nachweis |
 |---|---|---|---|
 | PDF-Werkstatt K4 | KI schrieb nur `pdf-auftrag.txt` (`BueroPdfPromptAdapters.cs:90`); die Kette kannte nur `dokument.setzen` (Einstellungen), „Ausführen“ (`pw-run`) war für die KI gesperrt (Filter `Risky`) | Fachaktionen `pdf.seiten_heraus` (Seiten wie „1-3“) und `pdf.ausfuehren` (Werkzeug) an der vorhandenen `AssistChain`: Vorschau bereitet nur vor und prüft die Seiten, „Ja, behalten“ ruft dieselbe Funktion wie der Knopf „Ausführen“ → neue PDF unter „Ergebnisse“, genau **ein** Rückgängig-Schritt „KI: …“ | `T0774KiDokument_Ui.Pdf_pages_out_into_open_program`, `Pdf_bad_pages_stop_in_preview` (KI ersetzt); Echtlauf qwen3:14b `Real_local_ki` |
 | Dokumente scannen K4 | Adapter schrieb nur `scan-auftrag.txt` (`DeckScanPromptAdapters.cs:91`), „Als PDF ablegen“ für die KI gesperrt | Fachaktion `scan.pdf` „Fotos als PDF ablegen“ (Titel, Modus, optional Ordner mit Fotos) → dieselbe Ablage wie „Als PDF ablegen“ („Datum Titel.pdf“, Ordner nach Art), ein Rückgängig-Schritt | `Scan_photos_to_pdf_into_open_document` (KI ersetzt); Echtlauf qwen3:14b |
 | Knopf „Scanner …“ | sah aus wie eine Scanner-Anbindung, war nur ein Hinweis | heißt „Hinweis: Papier-Scanner“, Text unverändert (WIA/TWAIN nicht angeschlossen, Weg über Fotos) | `Scanner_button_is_honest`; Bild geprüft (Profi-Stufe, Dunkel-Gold, Menüband „Ablegen“) |
-| Rückgängig und Datei | – | Rückgängig (Knopf oder Strg+Z) legt die von der KI erzeugte PDF in `.rueckgaengig` daneben (nichts gelöscht, nichts überschrieben), Wiederholen holt sie zurück | Tests prüfen Datei weg/beiseite/zurück |
+| Rückgängig und Datei | – | nur echtes Rückgängig (Knopf oder Strg+Z) legt die von der KI erzeugte PDF in `.rueckgaengig` daneben (nichts gelöscht, nichts überschrieben), nur echtes Wiederholen holt sie zurück; Vorschau-Läufe bewegen keine Datei | Tests prüfen Datei weg/beiseite/zurück |
 
 Gemeinsamer Baustein (kein neuer KI-Kern): `ProgramSpec.KiActions` (`ProgramKiAction` = Vorbereiten in der Vorschau + Erzeugen bei „Ja, behalten“) und `KiHint`; `ProgramAssistTarget` nimmt sie als Aktionen auf, `Session.Apply` fasst Daten + Fachaktion zu einem Schritt zusammen (bei Fehler wird alles zurückgerollt).
 Nebenbefund behoben: Die Live-Vorschau beim Tippen lief nach einem Rückgängig noch einmal und leerte „Wiederholen“ – für Fachaktionen läuft sie jetzt nicht mehr (zeigt nur den Plan-Text). Für normale Menüband-Befehle besteht das Verhalten weiter (offener Punkt).
@@ -49,6 +69,7 @@ Neue Testklasse auf dem alten Stand (2b1ffa923, eigener Worktree, danach entfern
 - `src/Trendo.App/MainWindow.PdfWerkstatt.cs` (pdf.seiten_heraus, pdf.ausfuehren, PwPageSpec)
 - `src/Trendo.App/MainWindow.DocScan.cs` (scan.pdf, Knopf umbenannt)
 - `tests/Trendo.App.Tests/T0774KiDokumentUiTests.cs` (neu)
+- `src/Trendo.Core/Programs/ProgramDocument.cs`, `src/Trendo.Core/Programs/Assist.cs`, `.gitattributes` (Nachbesserung)
 - `docs/nachbau/pdf-werkstatt/anforderungen.md` (PW-14), `docs/nachbau/scannen/anforderungen.md` (SC-12, SC-15)
 - `reports/T-0774/*`, `tasks/T-0774-ki-dokument.md`, `tasks/T-0774-ki-dokument.bericht.md`
 

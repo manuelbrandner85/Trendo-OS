@@ -73,6 +73,7 @@ public partial class MainWindow
         ],
         // T-0774 (Q1): KI-Aktion „Fotos → PDF“ – im offenen Scan, die PDF entsteht bei „Ja, behalten“, ein Rückgängig-Schritt
         KiActions = [ScanKiPdf],
+        KiLocked = ["folder"], // T-0774 (Gegenprüfung 4): den Ablage-Ordner wählt nur die Person – die KI legt nie außerhalb der Scan-Ablage ab
         KiHint = "Eine PDF aus den Fotos entsteht nur mit „scan.pdf“ (optional mit titel, modus und ordner mit weiteren Fotos); „dokument.setzen“ ändert nur Angaben wie Titel oder Datum "
                + "und erzeugt keine Datei. Die Fotos selbst bleiben unverändert, ein Scanner wird nicht angesteuert.",
         Exports =
@@ -100,21 +101,27 @@ public partial class MainWindow
     /// <summary>„Fotos als PDF ablegen“: optional Fotos aus einem Ordner dazu, Titel und Modus setzen (Vorschau), dann dieselbe Ablage wie „Als PDF ablegen“.</summary>
     ProgramKiAction ScanKiPdf => new(new AssistAction("scan.pdf", "Fotos als PDF ablegen", ["fotos", "foto", "pdf", "scan", "ablegen", "speichern", "scannen", "zusammenfassen"],
         [new AssistParam("titel", "Titel", Required: false, Words: ["titel", "name", "heißen"]),
-         new AssistParam("modus", "Modus", AssistKind.Choice, [.. DocScan.Modes.Select(m => m.Id)], Required: false),
+         // Words: der Regel-Planer setzt den Modus nur, wenn er genannt ist („Modus Foto“) – „Fotos“ allein heißt nicht Modus „foto“
+         new AssistParam("modus", "Modus", AssistKind.Choice, [.. DocScan.Modes.Select(m => m.Id)], Required: false, Words: ["modus"]),
          new AssistParam("ordner", "Ordner mit Fotos", Required: false, Words: ["ordner"])]),
         (d, a) =>
         {
-            if (a.GetValueOrDefault("ordner") is { Length: > 0 } dir)
+            var note = _progMsg.GetValueOrDefault(ScanKey); // Vorschau: keine Meldung bleibt stehen (auch nicht nach „Nein“)
+            try
             {
-                if (!Path.IsPathRooted(dir) || !Directory.Exists(dir)) throw new DirectoryNotFoundException("Den Ordner mit Fotos gibt es nicht: " + Path.GetFileName(dir.TrimEnd('/', '\\')));
-                ScanAddFolder(d, dir);
+                if (a.GetValueOrDefault("ordner") is { Length: > 0 } dir)
+                {
+                    if (dir.StartsWith(@"\\", StringComparison.Ordinal) || dir.StartsWith("//", StringComparison.Ordinal)) throw new InvalidOperationException("Fotos aus Netzwerk-Ordnern holt die KI nicht – bitte selbst mit „Fotos hinzufügen …“ wählen.");
+                    if (!Path.IsPathRooted(dir) || !Directory.Exists(dir)) throw new DirectoryNotFoundException("Den Ordner mit Fotos gibt es nicht: " + Path.GetFileName(dir.TrimEnd('/', '\\')));
+                    ScanAddFolder(d, dir);
+                }
+                if (ScanPages(d).Count == 0) throw new InvalidOperationException("Es gibt noch keine Seite – erst „Fotos hinzufügen …“ (oder der KI einen Ordner mit Fotos nennen).");
+                if (a.GetValueOrDefault("titel") is { Length: > 0 } title && title.Trim() != d.Text("title")) d.Set("title", title.Trim().Length > 120 ? title.Trim()[..120] : title.Trim(), "Titel");
+                if (a.GetValueOrDefault("modus") is { Length: > 0 } mode && DocScan.Modes.Any(m => m.Id == mode)) ScanSetModeAll(d, mode);
             }
-            if (ScanPages(d).Count == 0) throw new InvalidOperationException("Es gibt noch keine Seite – erst „Fotos hinzufügen …“ (oder der KI einen Ordner mit Fotos nennen).");
-            if (a.GetValueOrDefault("titel") is { Length: > 0 } title && title.Trim() != d.Text("title")) d.Set("title", title.Trim().Length > 120 ? title.Trim()[..120] : title.Trim(), "Titel");
-            if (a.GetValueOrDefault("modus") is { Length: > 0 } mode && DocScan.Modes.Any(m => m.Id == mode)) ScanSetModeAll(d, mode);
-            _progMsg[ScanKey] = $"Bei „Ja, behalten“ wird daraus „{DocScan.FileName(ScanDate(d), d.Text("title"))}“.";
+            finally { if (note is null) _progMsg.Remove(ScanKey); else _progMsg[ScanKey] = note; }
         },
-        d => [ScanSavePdf(d)]);
+        d => [ScanSavePdf(d)], ScanFolder);
 
     // ---------- Modell (öffentlich für Tests und die KI) ----------
 
