@@ -782,7 +782,7 @@ public static partial class CiteKit
                     break;
                 }
         }
-        return string.Join(" ", parts.Where(p => p.Length > 0)).Replace("**", "");
+        return string.Join(" ", parts.Where(p => p.Length > 0)).Replace("**", "").Replace("o. J..", "o. J."); // T-0780: kein doppelter Punkt nach „o. J.“
     }
 
     /// <summary>Ohne Markdown-Sternchen (für Text und Zwischenablage).</summary>

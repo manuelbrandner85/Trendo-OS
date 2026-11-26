@@ -1,0 +1,32 @@
+# T-0780 Rot-Lauf: neue Testdateien (WissenStudiosTests, T0780FremdnachlaufTests, WissenStudiosUiTests) gegen main 184fcbbfc in eigenem Worktree
+# Befehl: dotnet build <Testprojekt> -c Release
+
+## tests/Trendo.Core.Tests: Exit 1, 23 verschiedene Übersetzungsfehler (rot)
+tests\Trendo.Core.Tests\T0780FremdnachlaufTests.cs(7,19): error CS0234: Der Typ- oder Namespacename "Wissen" ist im Namespace "Trendo.Core" nicht vorhanden. (Möglicherweise fehlt ein Assemblyverweis.)
+tests\Trendo.Core.Tests\WissenStudiosTests.cs(22,39): error CS0103: Der Name "DatePrecision" ist im aktuellen Kontext nicht vorhanden.
+tests\Trendo.Core.Tests\WissenStudiosTests.cs(23,54): error CS0103: Der Name "DatePrecision" ist im aktuellen Kontext nicht vorhanden.
+tests\Trendo.Core.Tests\WissenStudiosTests.cs(24,57): error CS0103: Der Name "DatePrecision" ist im aktuellen Kontext nicht vorhanden.
+tests\Trendo.Core.Tests\WissenStudiosTests.cs(25,49): error CS0103: Der Name "DatePrecision" ist im aktuellen Kontext nicht vorhanden.
+tests\Trendo.Core.Tests\WissenStudiosTests.cs(26,47): error CS0103: Der Name "DatePrecision" ist im aktuellen Kontext nicht vorhanden.
+tests\Trendo.Core.Tests\WissenStudiosTests.cs(27,54): error CS0103: Der Name "DatePrecision" ist im aktuellen Kontext nicht vorhanden.
+tests\Trendo.Core.Tests\WissenStudiosTests.cs(28,50): error CS0103: Der Name "DatePrecision" ist im aktuellen Kontext nicht vorhanden.
+tests\Trendo.Core.Tests\WissenStudiosTests.cs(29,65): error CS0103: Der Name "DatePrecision" ist im aktuellen Kontext nicht vorhanden.
+tests\Trendo.Core.Tests\WissenStudiosTests.cs(30,46): error CS0103: Der Name "DatePrecision" ist im aktuellen Kontext nicht vorhanden.
+tests\Trendo.Core.Tests\WissenStudiosTests.cs(31,48): error CS0103: Der Name "DatePrecision" ist im aktuellen Kontext nicht vorhanden.
+tests\Trendo.Core.Tests\WissenStudiosTests.cs(32,47): error CS0103: Der Name "DatePrecision" ist im aktuellen Kontext nicht vorhanden.
+tests\Trendo.Core.Tests\WissenStudiosTests.cs(33,43): error CS0103: Der Name "DatePrecision" ist im aktuellen Kontext nicht vorhanden.
+tests\Trendo.Core.Tests\WissenStudiosTests.cs(34,44): error CS0103: Der Name "DatePrecision" ist im aktuellen Kontext nicht vorhanden.
+tests\Trendo.Core.Tests\WissenStudiosTests.cs(35,43): error CS0103: Der Name "DatePrecision" ist im aktuellen Kontext nicht vorhanden.
+tests\Trendo.Core.Tests\WissenStudiosTests.cs(36,49): error CS0103: Der Name "DatePrecision" ist im aktuellen Kontext nicht vorhanden.
+tests\Trendo.Core.Tests\WissenStudiosTests.cs(37,53): error CS0103: Der Name "DatePrecision" ist im aktuellen Kontext nicht vorhanden.
+tests\Trendo.Core.Tests\WissenStudiosTests.cs(38,59): error CS0103: Der Name "DatePrecision" ist im aktuellen Kontext nicht vorhanden.
+tests\Trendo.Core.Tests\WissenStudiosTests.cs(39,60): error CS0103: Der Name "DatePrecision" ist im aktuellen Kontext nicht vorhanden.
+tests\Trendo.Core.Tests\WissenStudiosTests.cs(40,38): error CS0103: Der Name "DatePrecision" ist im aktuellen Kontext nicht vorhanden.
+tests\Trendo.Core.Tests\WissenStudiosTests.cs(41,61): error CS0246: Der Typ- oder Namespacename "DatePrecision" wurde nicht gefunden (möglicherweise fehlt eine using-Direktive oder ein Assemblyverweis).
+tests\Trendo.Core.Tests\WissenStudiosTests.cs(8,19): error CS0234: Der Typ- oder Namespacename "Wissen" ist im Namespace "Trendo.Core" nicht vorhanden. (Möglicherweise fehlt ein Assemblyverweis.)
+tests\Trendo.Core.Tests\WissenStudiosTests.cs(86,12): error CS0246: Der Typ- oder Namespacename "Timeline" wurde nicht gefunden (möglicherweise fehlt eine using-Direktive oder ein Assemblyverweis).
+
+## tests/Trendo.App.Tests: Exit 1, 3 verschiedene Übersetzungsfehler (rot)
+tests\Trendo.App.Tests\WissenStudiosUiTests.cs(15,19): error CS0234: Der Typ- oder Namespacename "Wissen" ist im Namespace "Trendo.Core" nicht vorhanden. (Möglicherweise fehlt ein Assemblyverweis.)
+tests\Trendo.App.Tests\WissenStudiosUiTests.cs(27,35): error CS0117: "MainWindow" enthält keine Definition für "RefKey".
+tests\Trendo.App.Tests\WissenStudiosUiTests.cs(27,59): error CS0117: "MainWindow" enthält keine Definition für "TlKey".

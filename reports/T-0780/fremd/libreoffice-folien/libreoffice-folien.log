@@ -1,0 +1,79 @@
+# T-0780 Fremdnachlauf libreoffice-folien – 2026-11-26 17:58:57 +01:00
+Trendo-Folien: 6 – Wasser sparen im eigenen Garten | Gliederung | 1 Einleitung | 2 Wege zum Wassersparen | 3 Fazit | Quellen
+Datei trendo-vortrag.pptx: 19581 Bytes, SHA-256 dfb7bdc007e460cd3e454ed6defe1d0792f5d32889620675712fed969a617c7d
+$ LibreOffice öffnet vortrag.pptx und schreibt pdf
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-t0780-work/eb5f8084/folien-9fed22/lo-profil --headless --norestore --nolockcheck --convert-to pdf --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\eb5f8084\folien-9fed22\lo-aus-pptx-pdf C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\eb5f8084\folien-9fed22\vortrag.pptx
+Exit 0 nach 11,6 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\eb5f8084\folien-9fed22\vortrag.pptx as a Impress document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\eb5f8084\folien-9fed22\lo-aus-pptx-pdf\vortrag.pdf using filter : impress_pdf_Export
+[stderr] Could not find platform independent libraries <prefix>
+  eigene Prozesse (6): PID 1964 conhost.exe: C:\Windows\System32\conhost.exe; PID 30668 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-15cfc3\libreoffice\program\soffice.bin; PID 47124 soffice.com: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-15cfc3\libreoffice\program\soffice.com; PID 51384 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-15cfc3\libreoffice\program\soffice.bin; PID 61804 opencltest.exe: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-15cfc3\libreoffice\program\opencltest.exe; PID 69100 conhost.exe: C:\Windows\System32\conhost.exe
+Datei libreoffice-aus-pptx.pdf: 65915 Bytes, SHA-256 5b32f4f38e224b0c7499abb65b891f7c1a38ca74fba5b6d2f3e81fdfaf9531d7
+LibreOffice-PDF aus pptx: 6 Seiten
+$ pdftotext liest das Impress-PDF aus pptx
+  pdftotext.exe -enc UTF-8 C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\eb5f8084\folien-9fed22\lo-aus-pptx-pdf\vortrag.pdf -
+Exit 0 nach 0,0 s
+Wasser sparen im eigenen Garten
+Möglichkeiten und Grenzen · Erika Muster · 26. November 2026
+
+Gliederung
+• 1 Einleitung • 2 Wege zum Wassersparen • 3 Fazit
+
+1 Einleitung
+• Gärten brauchen im Sommer viel Wasser (MUSTER und BEISPIEL 2024, S. 12). • Diese Arbeit zeigt Wege zum Sparen.
+
+2 Wege zum Wassersparen
+• Regenwasser sammeln • Boden verbessern
+
+3 Fazit
+• Mit wenigen Mitteln lässt sich viel Wasser sparen.
+
+Quellen
+• MUSTER, Erika, 2023. Boden und Klima. Zeitschrift für Gartenbau. 12(3), S. 45–67. • MUSTER, Erika und Max BEISPIEL, 2024. Gärten für Einsteiger. Musterstadt: Grünverlag.
+$ LibreOffice öffnet vortrag.pptx und schreibt odp
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-t0780-work/eb5f8084/folien-9fed22/lo-profil --headless --norestore --nolockcheck --convert-to odp --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\eb5f8084\folien-9fed22\lo-aus-pptx-odp C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\eb5f8084\folien-9fed22\vortrag.pptx
+Exit 0 nach 1,6 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\eb5f8084\folien-9fed22\vortrag.pptx as a Impress document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\eb5f8084\folien-9fed22\lo-aus-pptx-odp\vortrag.odp using filter : impress8
+[stderr] Could not find platform independent libraries <prefix>
+  eigene Prozesse (3): PID 42956 conhost.exe: C:\Windows\System32\conhost.exe; PID 46568 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-15cfc3\libreoffice\program\soffice.bin; PID 61244 soffice.com: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-15cfc3\libreoffice\program\soffice.com
+Datei libreoffice-pptx-als-odp.odp: 16757 Bytes, SHA-256 470274d32f77420879faa48b11acb6ccb0371b5b3d17164c1f97619c9b07757d
+Trendo liest die Impress-Fassung (.odp): 6 Folien – Wasser sparen im eigenen Garten | Gliederung | 1 Einleitung | 2 Wege zum Wassersparen | 3 Fazit | Quellen
+Datei trendo-vortrag.odp: 3787 Bytes, SHA-256 d76641bc964a52081e0f4a57a24611de03a0f527ffe7ff559efe8e239d79c2b6
+$ LibreOffice öffnet vortrag.odp und schreibt pdf
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-t0780-work/eb5f8084/folien-9fed22/lo-profil --headless --norestore --nolockcheck --convert-to pdf --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\eb5f8084\folien-9fed22\lo-aus-odp-pdf C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\eb5f8084\folien-9fed22\vortrag.odp
+Exit 0 nach 1,7 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\eb5f8084\folien-9fed22\vortrag.odp as a Impress document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\eb5f8084\folien-9fed22\lo-aus-odp-pdf\vortrag.pdf using filter : impress_pdf_Export
+[stderr] Could not find platform independent libraries <prefix>
+  eigene Prozesse (3): PID 52880 soffice.com: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-15cfc3\libreoffice\program\soffice.com; PID 63284 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-15cfc3\libreoffice\program\soffice.bin; PID 65248 conhost.exe: C:\Windows\System32\conhost.exe
+Datei libreoffice-aus-odp.pdf: 60241 Bytes, SHA-256 899d1437089d3e194318a76fb456c690e00699f6aa6932d060ffbcc146130154
+LibreOffice-PDF aus odp: 6 Seiten
+$ pdftotext liest das Impress-PDF aus odp
+  pdftotext.exe -enc UTF-8 C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\eb5f8084\folien-9fed22\lo-aus-odp-pdf\vortrag.pdf -
+Exit 0 nach 0,1 s
+Wasser sparen im eigenen Garten
+Möglichkeiten und Grenzen · Erika Muster · 26. November 2026
+
+Gliederung
+• 1 Einleitung • 2 Wege zum Wassersparen • 3 Fazit
+
+1 Einleitung
+• Gärten brauchen im Sommer viel Wasser (MUSTER und BEISPIEL 2024, S. 12). • Diese Arbeit zeigt Wege zum Sparen.
+
+2 Wege zum Wassersparen
+• Regenwasser sammeln • Boden verbessern
+
+3 Fazit
+• Mit wenigen Mitteln lässt sich viel Wasser sparen.
+
+Quellen
+• MUSTER, Erika, 2023. Boden und Klima. Zeitschrift für Gartenbau. 12(3), S. 45–67. • MUSTER, Erika und Max BEISPIEL, 2024. Gärten für Einsteiger. Musterstadt: Grünverlag.
+$ LibreOffice öffnet vortrag.odp und schreibt pptx
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-t0780-work/eb5f8084/folien-9fed22/lo-profil --headless --norestore --nolockcheck --convert-to pptx --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\eb5f8084\folien-9fed22\lo-aus-odp-pptx C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\eb5f8084\folien-9fed22\vortrag.odp
+Exit 0 nach 1,6 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\eb5f8084\folien-9fed22\vortrag.odp as a Impress document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\eb5f8084\folien-9fed22\lo-aus-odp-pptx\vortrag.pptx using filter : Impress Office Open XML
+[stderr] Could not find platform independent libraries <prefix>
+  eigene Prozesse (3): PID 23316 conhost.exe: C:\Windows\System32\conhost.exe; PID 63636 soffice.com: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-15cfc3\libreoffice\program\soffice.com; PID 66904 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-15cfc3\libreoffice\program\soffice.bin
+Datei libreoffice-odp-als-pptx.pptx: 22312 Bytes, SHA-256 b3b39beb44b8d484b924687ca02e0a136c70595b4b8b643923a3b6c234c02a7c
+Trendo liest die Impress-Fassung (.pptx): 6 Folien – Wasser sparen im eigenen Garten | Gliederung | 1 Einleitung | 2 Wege zum Wassersparen | 3 Fazit | Quellen
+LibreOffice läuft aus einer Kopie im eigenen Temp-Ordner (14745 Dateien, 882 MB, kopiert in 20,4 s; frei vorher 19,8 GB). Keine alte eigene LibreOffice-Kopie vorhanden.
+Original: unverändert. Trendo-Werkzeugordner (LibreOffice-Original): 15933 Einträge, keiner geändert, keiner neu, keiner fehlt. In der Kopie hat LibreOffice bisher 2 Einträge angelegt/geändert/entfernt: program\opencl, share\uno_packages\cache.
+ERGEBNIS: BESTANDEN

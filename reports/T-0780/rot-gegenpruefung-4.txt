@@ -1,0 +1,43 @@
+# T-0780 4. Gegenprüfung – Rot-Lauf gegen 3817e61b0 (eigener Worktree, neue Testdateien hineinkopiert)
+## Core: T0780GegenpruefungTests
+  Fehler T-0780 M (4. Gegenprüfung): Quelle „Muster, Erika 2024“ – nur der ganze Nachname mit falschem Jahr sperrt; Teil des Namens oder Vorname ist ein Hinweis(text: "Gute Erde ist wichtig (Muster 1999).", blocks: True)
+  Fehler T-0780 M (4. Gegenprüfung): Quelle „Muster, Erika 2024“ – nur der ganze Nachname mit falschem Jahr sperrt; Teil des Namens oder Vorname ist ein Hinweis(text: "Gute Erde ist wichtig (Erfunden 2021).", blocks: False)
+  Fehler T-0780 M (4. Gegenprüfung): Quelle „Muster, Erika 2024“ – nur der ganze Nachname mit falschem Jahr sperrt; Teil des Namens oder Vorname ist ein Hinweis(text: "Guter Boden (Beispiel 2020).", blocks: True)
+  Fehler T-0780 M (4. Gegenprüfung): Quelle „Muster, Erika 2024“ – nur der ganze Nachname mit falschem Jahr sperrt; Teil des Namens oder Vorname ist ein Hinweis(text: "Wie Muster (1999) zeigt, ist Erde wichtig.", blocks: True)
+  Fehler T-0780 M (4. Gegenprüfung): strenge Formen sind immer gesperrt – auch mit Zeit-, Orts- oder Ereigniswort und auch in der Fußnote mit Ort(text: "Das ist belegt (Berlin & Wien 2020).")
+  Fehler T-0780 M (4. Gegenprüfung): strenge Formen sind immer gesperrt – auch mit Zeit-, Orts- oder Ereigniswort und auch in der Fußnote mit Ort(text: "Das ist belegt (Winter 2020: 5).")
+  Fehler T-0780 M (4. Gegenprüfung): strenge Formen sind immer gesperrt – auch mit Zeit-, Orts- oder Ereigniswort und auch in der Fußnote mit Ort(text: "Mulch hilft.\n¹ Erfunden, Hans: Titel. Berlin 2021"···)
+  Fehler T-0780 M (4. Gegenprüfung): strenge Formen sind immer gesperrt – auch mit Zeit-, Orts- oder Ereigniswort und auch in der Fußnote mit Ort(text: "Siehe Erfunden, Titel, Wien: Grünverlag, 2021.")
+  Fehler T-0780 M (4. Gegenprüfung): strenge Formen sind immer gesperrt – auch mit Zeit-, Orts- oder Ereigniswort und auch in der Fußnote mit Ort(text: "Das ist belegt (Juli und August 2021).")
+  Fehler T-0780 M (4. Gegenprüfung): strenge Formen sind immer gesperrt – auch mit Zeit-, Orts- oder Ereigniswort und auch in der Fußnote mit Ort(text: "Das ist belegt (Sommer, 2019, S. 4).")
+  Fehler T-0780 M (4. Gegenprüfung): strenge Formen sind immer gesperrt – auch mit Zeit-, Orts- oder Ereigniswort und auch in der Fußnote mit Ort(text: "Das ist belegt (Stand, 2021).")
+  Fehler T-0780 M (4. Gegenprüfung): strenge Formen sind immer gesperrt – auch mit Zeit-, Orts- oder Ereigniswort und auch in der Fußnote mit Ort(text: "Wie Olympia (2024: 5) zeigt, ist das so.")
+  Fehler T-0780 M (4. Gegenprüfung): strenge Formen sind immer gesperrt – auch mit Zeit-, Orts- oder Ereigniswort und auch in der Fußnote mit Ort(text: "Das ist belegt (Wahl et al. 2020).")
+  Fehler T-0780 M (4. Gegenprüfung): strenge Formen sind immer gesperrt – auch mit Zeit-, Orts- oder Ereigniswort und auch in der Fußnote mit Ort(text: "Das ist belegt (Mai 2021a).")
+  Fehler T-0780 M (4. Gegenprüfung): strenge Formen sind immer gesperrt – auch mit Zeit-, Orts- oder Ereigniswort und auch in der Fußnote mit Ort(text: "Die Zahl stieg deutlich (Deutschland, 2023).")
+  Fehler T-0780 M (4. Gegenprüfung): lose Formen mit Ort oder Ereignis sind nur ein Hinweis – 14 Fälle plus „(Berlin 2019)“, keine Sperre(text: "Danach war alles anders (Wiedervereinigung 1990).")
+  Fehler T-0780 M (4. Gegenprüfung): lose Formen mit Ort oder Ereignis sind nur ein Hinweis – 14 Fälle plus „(Berlin 2019)“, keine Sperre(text: "Die Spiele (Olympia 2024) fanden in Paris statt.")
+  Fehler T-0780 M (4. Gegenprüfung): lose Formen mit Ort oder Ereignis sind nur ein Hinweis – 14 Fälle plus „(Berlin 2019)“, keine Sperre(text: "Die Zahl wurde neu erhoben (Zensus 2011).")
+  Fehler T-0780 M (4. Gegenprüfung): lose Formen mit Ort oder Ereignis sind nur ein Hinweis – 14 Fälle plus „(Berlin 2019)“, keine Sperre(text: "In Deutschland (2023) regnete es wenig.")
+  Fehler T-0780 M (4. Gegenprüfung): lose Formen mit Ort oder Ereignis sind nur ein Hinweis – 14 Fälle plus „(Berlin 2019)“, keine Sperre(text: "Das Unglück veränderte alles (Fukushima 2011).")
+  Fehler T-0780 M (4. Gegenprüfung): lose Formen mit Ort oder Ereignis sind nur ein Hinweis – 14 Fälle plus „(Berlin 2019)“, keine Sperre(text: "Viele blieben zu Hause (Corona 2020).")
+  Fehler T-0780 M (4. Gegenprüfung): lose Formen mit Ort oder Ereignis sind nur ein Hinweis – 14 Fälle plus „(Berlin 2019)“, keine Sperre(text: "Die Stadt trauerte (Paris 2015).")
+  Fehler T-0780 M (4. Gegenprüfung): lose Formen mit Ort oder Ereignis sind nur ein Hinweis – 14 Fälle plus „(Berlin 2019)“, keine Sperre(text: "Europa wurde neu geordnet (Wien 1815).")
+  Fehler T-0780 M (4. Gegenprüfung): lose Formen mit Ort oder Ereignis sind nur ein Hinweis – 14 Fälle plus „(Berlin 2019)“, keine Sperre(text: "Danach war alles anders (Mauerfall 1989).")
+  Fehler T-0780 M (4. Gegenprüfung): lose Formen mit Ort oder Ereignis sind nur ein Hinweis – 14 Fälle plus „(Berlin 2019)“, keine Sperre(text: "Das Wasser stieg hoch (Hamburg 1962).")
+  Fehler T-0780 M (4. Gegenprüfung): lose Formen mit Ort oder Ereignis sind nur ein Hinweis – 14 Fälle plus „(Berlin 2019)“, keine Sperre(text: "Es regnete wenig (Deutschland 2023).")
+  Fehler T-0780 M (4. Gegenprüfung): lose Formen mit Ort oder Ereignis sind nur ein Hinweis – 14 Fälle plus „(Berlin 2019)“, keine Sperre(text: "Die EU wuchs stark (Osterweiterung 2004).")
+  Fehler T-0780 M (4. Gegenprüfung): lose Formen mit Ort oder Ereignis sind nur ein Hinweis – 14 Fälle plus „(Berlin 2019)“, keine Sperre(text: "Viele gingen wählen (Bundestagswahl 2021).")
+  Fehler T-0780 M (4. Gegenprüfung): lose Formen mit Ort oder Ereignis sind nur ein Hinweis – 14 Fälle plus „(Berlin 2019)“, keine Sperre(text: "Die Mauer stand noch (Berlin 2019).")
+  Fehler T-0780 M (4. Gegenprüfung): lose Formen mit Ort oder Ereignis sind nur ein Hinweis – 14 Fälle plus „(Berlin 2019)“, keine Sperre(text: "Danach war alles anders (Brexit 2016).")
+  Fehler T-0780 M (4. Gegenprüfung): lose Formen mit Ort oder Ereignis sind nur ein Hinweis – 14 Fälle plus „(Berlin 2019)“, keine Sperre(text: "Das Unglück veränderte alles (Tschernobyl 1986).")
+Fehler!      : Fehler:    31, erfolgreich:    80, übersprungen:     0, gesamt:   111, Dauer: 730 ms - Trendo.Core.Tests.dll (net10.0)
+
+## App: Tdoc_sync_guarded, Help_is_honest
+    T-0780 (4. Gegenprüfung): Hilfe des Studios verspricht nicht mehr, als die Prüfung hält – nur echte Quellen im Verzeichnis, eindeutige Formen gesperrt, lose Klammern nur markiert [FAIL]
+      Assert.Contains() Failure: Sub-string not found
+    T-0780 (4. Gegenprüfung): Claude schreibt die Studio-.tdoc im Projektordner – neue Quelle oder erfundener Beleg wird nicht übernommen, die Datei steht wieder auf dem alten Stand, Claude bekommt die Meldung, Protokolleintrag; erlaubte Änderung wird übernommen [FAIL]
+      Assert.Equal() Failure: Strings differ
+      Expected: ···","accessed":"2026-11-03"}]}"
+      Actual:   ···","accessed":"2026-11-03"},{"id":"q-neu","kind":"bu"···
+   Trendo.App.Tests  Total: 2, Errors: 0, Failed: 2, Skipped: 0, Not Run: 0, Time: 8,085s

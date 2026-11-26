@@ -107,6 +107,10 @@ public static class StudioCatalog
         ["X-08"] = new("Handy verbinden", "Verbindet Trendo mit deinem Handy per Kabel, WLAN oder Bluetooth.", "System & Sicherheit"),
         ["CORE-04"] = new("PC, Pi & Handy verbinden", "PC mit Raspberry Pi und Handy koppeln (Gegenstellen in Arbeit).", "System & Sicherheit"),
         ["X-09"] = new("Leistung anzeigen", "Zeigt, was Speicher und Prozessor gerade tun.", "System & Sicherheit"),
+
+        // T-0780 (Etappe 0.9.113 „Wissen & Lernen“, Freigabe 26.11.2026)
+        ["STUDIO-REFERAT-01"] = new("Referate & Hausarbeiten", "Vom Thema zur fertigen Arbeit: Gliederung, Text, Zitate aus deinen Quellen, Literaturverzeichnis und Folien – als Word, PDF und PowerPoint.", "Wissen & Lernen"),
+        ["STUDIO-TIMELINE-01"] = new("Zeitleisten", "Ereignisse und Epochen auf einer Zeitachse – auch vor Christus und ungefähr, in Spuren, mit Bildern; als SVG, PNG oder PDF.", "Wissen & Lernen"),
     };
 
     /// <summary>Studio-Liste mit den alltagsnahen Namen (gilt dann überall: Karten, Kacheln, Startmenü, Fenstertitel).</summary>

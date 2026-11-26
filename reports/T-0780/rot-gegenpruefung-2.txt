@@ -1,0 +1,13 @@
+# T-0780 2. Gegenprüfung – Rot-Lauf gegen b256e1859 (eigener Worktree)
+## Core: dotnet build
+T0780GegenpruefungTests.cs(64,36): error CS0117: "ReferatKit" enthält keine Definition für "CitationHits". 
+T0780GegenpruefungTests.cs(79,33): error CS0117: "ReferatKit" enthält keine Definition für "CitationHits". 
+## App: Testklasse T0780Gegenpruefung_Ui auf dem alten Stand
+    0 Fehler
+    T-0780 H1 (2. Gegenprüfung): Claude-Brücke – „befehl“, „klicken“ und „feld_setzen“ kommen an Quellen-Sperre, Zitatprüfung und Ordner-Sperre nicht vorbei; Schritt wird zurückgerollt und Claude bekommt den Fehler [FAIL]
+      Assert.True() Failure
+      Expected: True
+      Actual:   False
+    T-0780 M2 (2. Gegenprüfung): unechtes PNG mit gültigem Kopf – Import verwirft und meldet es, PNG-Export und Zeichenfläche laufen weiter [FAIL]
+      System.ArgumentNullException : Value cannot be null. (Parameter 'codec')
+   Trendo.App.Tests  Total: 6, Errors: 0, Failed: 2, Skipped: 0, Not Run: 0, Time: 33,119s

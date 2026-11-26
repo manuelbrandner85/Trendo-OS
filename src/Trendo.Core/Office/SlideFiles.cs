@@ -40,7 +40,7 @@ public static partial class SlideFiles
         }
     }
 
-    static string X(string s) => SecurityElement.Escape(s) ?? "";
+    static string X(string s) => XmlSafe.Escape(s); // T-0780: Steuerzeichen raus (M2)
     static long E(double cm) => (long)Math.Round(cm * Emu);
     static string Hex(string c) => c.TrimStart('#').ToUpperInvariant() is var h && h.Length == 8 ? h[2..] : h;
     static string RoleName(string? role, ShapeKind k) => role switch { "title" => "Titel", "sub" => "Untertitel", "body" => "Inhalt", "body2" => "Inhalt 2", "pic" => "Bildplatzhalter", _ => k switch { ShapeKind.Bild => "Bild", ShapeKind.Tabelle => "Tabelle", ShapeKind.Diagramm => "Diagramm", ShapeKind.Medien => "Medien", ShapeKind.Text => "Textfeld", _ => "Form" } };

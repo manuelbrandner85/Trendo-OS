@@ -16,7 +16,12 @@ namespace Trendo.App;
 /// Menüband (Datei, Bearbeiten, Studio-Gruppen, Export), Arbeitsfläche, Eigenschaften rechts, Statusleiste, Tastenkürzel, automatisches Sichern.</summary>
 public sealed record ProgramTemplate(string Id, string Name, string Hint, Func<JsonObject> Create);
 /// <summary><paramref name="Level"/>: ab welcher Bedienstufe das Werkzeug erscheint (0 Einfach, 1 Erweitert, 2 Profi – siehe <see cref="UserLevel"/>).</summary>
-public sealed record ProgramCmd(string Name, string Label, Action<ProgramDocument> Run, bool Primary = false, string? Tip = null, int Level = 0);
+public sealed record ProgramCmd(string Name, string Label, Action<ProgramDocument> Run, bool Primary = false, string? Tip = null, int Level = 0)
+{
+    /// <summary>T-0780 (Befund Echtlauf qwen3:14b): Befehl nicht als Schritt für die KI anbieten – z. B. „Ereignis“, das ohne Angaben einen leeren Eintrag anlegt;
+    /// die KI nimmt dafür die Fachaktion des Programms. Für die Person bleibt der Befehl unverändert.</summary>
+    public bool NoKi { get; init; }
+}
 public sealed record ProgramExport(string Name, string Label, string Extension, Func<ProgramDocument, string, string> Write);
 /// <summary>Paket F (A1 Profi-Bauplan): ein Werkzeug der Werkzeugleiste links – Zeichen, Name, Hinweis; <paramref name="Active"/> markiert das gewählte.</summary>
 public sealed record ProgramTool(string Name, string Icon, string Label, string Tip, Action<ProgramDocument> Select, Func<bool> Active)
@@ -36,7 +41,11 @@ public sealed record ProgramFirstStep(string Label, string Hint, Action<ProgramD
 /// Rückgängig legt die erzeugte Datei beiseite (Ordner „.rueckgaengig“), Wiederholen holt sie zurück.
 /// Höchstens eine Fachaktion je Auftrag, als letzter Schritt. <paramref name="Produce"/> meldet über den zweiten Wert jede Datei, die es selbst anlegt (vor dem Schreiben) –
 /// schlägt das Erzeugen fehl, werden genau diese Dateien beiseitegelegt („.rueckgaengig“); fremde Dateien im selben Ordner bleiben unberührt.</summary>
-public sealed record ProgramKiAction(AssistAction Def, Action<ProgramDocument, IReadOnlyDictionary<string, string>> Prepare, Func<ProgramDocument, Action<string>, IReadOnlyList<string>> Produce);
+public sealed record ProgramKiAction(AssistAction Def, Action<ProgramDocument, IReadOnlyDictionary<string, string>> Prepare, Func<ProgramDocument, Action<string>, IReadOnlyList<string>> Produce)
+{
+    /// <summary>T-0780: Hinweis in der Vorschau, was bei „Ja, behalten“ geschieht – für Fachaktionen, die nur das Dokument ändern und keine Datei erzeugen. null = Standardsatz (neue Datei).</summary>
+    public string? OnApplyNote { get; init; }
+}
 
 public sealed class ProgramSpec(string key, string studio, string title)
 {
@@ -89,6 +98,9 @@ public sealed class ProgramSpec(string key, string studio, string title)
     public string KiHint { get; init; } = "";
     /// <summary>T-0774: Felder, die nur die Person selbst setzt – „dokument.setzen“ der KI wird dort abgelehnt (z. B. Ablage-Ordner).</summary>
     public IReadOnlyList<string> KiLocked { get; init; } = [];
+    /// <summary>T-0780 (Gegenprüfung H1/H2): Prüfung nach jeder Änderung durch eine KI – Assistent (Fachaktion, „dokument.setzen“, Befehle) und Claude-Brücke.
+    /// Bekommt die Daten vorher und nachher; Rückgabe null = in Ordnung, sonst ein Satz für die Person (die Änderung wird dann nicht übernommen).</summary>
+    public Func<JsonObject, JsonObject, string?>? KiCheck { get; init; }
     public int LevelOf(ProgramCmd c) => Math.Max(c.Level, CmdLevels.GetValueOrDefault(c.Name));
 }
 

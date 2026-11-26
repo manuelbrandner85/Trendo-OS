@@ -287,7 +287,7 @@ public static class DocxFormat
         return sb.Append("</w:r>").ToString();
     }
 
-    static string Esc(string s) => SecurityElement.Escape(s) ?? "";
+    static string Esc(string s) => XmlSafe.Escape(s); // T-0780: Steuerzeichen raus (M2)
     static void Add(ZipArchive z, string n, string c) { using var w = new StreamWriter(z.CreateEntry(n).Open(), new UTF8Encoding(false)); w.Write(c); }
 
     static string StyleDef(string id, string name, int halfPt, bool bold, string? color = null, bool italic = false, int outline = -1) =>

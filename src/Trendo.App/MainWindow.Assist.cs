@@ -48,7 +48,7 @@ public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocumen
     public string Title => spec.Title;
     public string Role => ($"Du bist erfahrene Fachkraft für „{spec.Title}“ in Trendo OS. {spec.Sentence} " + spec.KiHint).Trim();
     /// <summary>T-0774: zuerst die Fachaktionen des Programms (echte Datei), dann die Befehle des Menübands.</summary>
-    public IReadOnlyList<AssistAction> Actions { get; } = [.. spec.KiActions.Select(k => k.Def), .. spec.Ribbon.Where(g => !SkipGroups.Contains(g.Group)).SelectMany(g => g.Cmds.Where(c => !Risky().IsMatch(c.Name))
+    public IReadOnlyList<AssistAction> Actions { get; } = [.. spec.KiActions.Select(k => k.Def), .. spec.Ribbon.Where(g => !SkipGroups.Contains(g.Group)).SelectMany(g => g.Cmds.Where(c => !Risky().IsMatch(c.Name) && !c.NoKi)
         .Select(c => new AssistAction(c.Name, Symbols().Replace(c.Label, "").Trim() is { Length: > 0 } l ? l : c.Name, [.. Symbols().Replace(c.Label + " " + g.Group + " " + (c.Tip ?? ""), " ").Split(' ', StringSplitOptions.RemoveEmptyEntries)])))];
 
     public IAssistSession Begin() => new Session(spec, doc, produced, setAside);
@@ -59,6 +59,8 @@ public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocumen
     /// <summary>T-0707: das offene Dokument (für den KI-Plan der einen Kette, <see cref="AssistChain"/>).</summary>
     public ProgramDocument Document => doc;
     public IEnumerable<AssistSuggestion> Hints() => [];
+    /// <summary>T-0780 (Gegenprüfung H3): dieselbe Sperr-Prüfung für die Claude-Brücke – ein klar abgegrenzter Aufruf (Session.LockedField aus T-0779).</summary>
+    internal static string? LockedFieldFor(IReadOnlyList<string> locked, string pfad, string wert) => Session.LockedField(locked, pfad, wert);
     public bool Undo() => doc.CanUndo && (doc.UndoLabel?.StartsWith("KI: ", StringComparison.Ordinal) ?? false) && doc.Undo();
 
     /// <summary>Vorschau-Lauf am echten Dokument mit Merken/Zurückrollen – so greifen auch Befehle, die das aktive Dokument direkt bearbeiten.
@@ -81,8 +83,9 @@ public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocumen
             if (_produce.Count > 0)
                 throw new InvalidOperationException($"Nach „{_produce[0].Def.Label}“ darf in einem Auftrag nichts mehr folgen – die KI erzeugt je Auftrag höchstens eine neue Datei, als letzten Schritt. Bitte den Auftrag aufteilen.");
             // 2. Gegenprüfung H1: dieselbe Zerlegung wie CheckEdit/DocPath (Rand-Leerzeichen, Tabs, Groß/klein) – „ folder“ ist „folder“
-            if (ki is null && cmd is null && AssistChain.PathParts(AssistChain.NormalizePath(step.Args.GetValueOrDefault("pfad") ?? "")).FirstOrDefault() is { } field
-                && spec.KiLocked.Contains(field, StringComparer.OrdinalIgnoreCase))
+            // T-0779 (Gegenprüfung M2): gesperrt ist ein Feld an jeder Stelle des Pfads („kurs/…/bloecke/0/bild“) und auch, wenn der geschriebene Wert es enthält
+            // (ganzes „kurs“-Objekt mit „lernende“) – vorher zählte nur das erste Segment
+            if (ki is null && cmd is null && spec.KiLocked.Count > 0 && LockedField(spec.KiLocked, step.Args.GetValueOrDefault("pfad") ?? "", step.Args.GetValueOrDefault("wert") ?? "") is { } field)
                 throw new InvalidOperationException($"„{field}“ legst du selbst fest – die KI ändert das nicht.");
             var before = doc.Remember();
             MainWindow.AssistQuiet++;
@@ -92,11 +95,28 @@ public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocumen
                 if (ki is not null) { ki.Prepare(doc, step.Args); _produce.Add(ki); }
                 else if (cmd is null) doc.Edit(AssistChain.UndoPrefix + "Inhalt", d => AssistChain.ApplyEdit(d, step.Args.GetValueOrDefault("pfad") ?? "", step.Args.GetValueOrDefault("wert") ?? ""));
                 else for (var i = 0; i < step.Times; i++) cmd.Run(doc);
+                if (spec.KiCheck is { } check && check(JsonNode.Parse(_start.Data)!.AsObject(), doc.Data) is { } why) throw new InvalidOperationException(why); // T-0780: gemeinsame Prüfung jeder KI-Änderung
                 _after = doc.Data.ToJsonString();
                 _preview = null;
             }
             finally { doc.Rollback(_start); MainWindow.AssistQuiet--; }
         }
+        /// <summary>T-0779 M2: erstes gesperrtes Feld im Pfad (jede Stelle) oder als Schlüssel im geschriebenen JSON-Wert (jede Tiefe) – null, wenn nichts gesperrt ist.</summary>
+        internal static string? LockedField(IReadOnlyList<string> locked, string pfad, string wert)
+        {
+            bool Is(string k) => locked.Contains(k.Trim(), StringComparer.OrdinalIgnoreCase);
+            if (AssistChain.PathParts(AssistChain.NormalizePath(pfad)).FirstOrDefault(Is) is { } p) return p.Trim();
+            JsonNode? node = null;
+            try { if (wert.TrimStart().StartsWith('{') || wert.TrimStart().StartsWith('[')) node = JsonNode.Parse(wert); } catch (System.Text.Json.JsonException) { }
+            string? Walk(JsonNode? n) => n switch
+            {
+                JsonObject o => o.Select(kv => Is(kv.Key) ? kv.Key : Walk(kv.Value)).FirstOrDefault(x => x is not null),
+                JsonArray a => a.Select(Walk).FirstOrDefault(x => x is not null),
+                _ => null,
+            };
+            return Walk(node);
+        }
+
         public Control? Preview()
         {
             if (_preview is not null) return _preview;
@@ -105,7 +125,7 @@ public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocumen
             finally { doc.Rollback(_start); MainWindow.AssistQuiet--; } // … und sofort zurück
         }
         public bool Changed => _after != _start.Data || _produce.Count > 0;
-        public string? OnApply => _produce.Count == 0 ? null : "Die neue Datei entsteht erst bei „Ja, behalten“ – das Original bleibt unverändert.";
+        public string? OnApply => _produce.Count == 0 ? null : _produce[0].OnApplyNote ?? "Die neue Datei entsteht erst bei „Ja, behalten“ – das Original bleibt unverändert.";
         public void Apply(string label, IReadOnlyList<AssistStep> sideEffects)
         {
             var mark = doc.Remember();

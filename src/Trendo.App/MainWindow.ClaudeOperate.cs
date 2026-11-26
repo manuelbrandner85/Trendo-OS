@@ -176,20 +176,28 @@ public partial class MainWindow
         var opMark = doc?.Remember(); // T-0728: dieser Plan wird EIN Rückgängig-Schritt
         var before = doc?.Data.ToJsonString();
         var done = new List<string>(); var failed = new List<string>();
+        string? stopped = null;
         foreach (var s in plan.Steps)
         {
             var root = ActivePageRoot;
             var target = root is null ? null : PageControls(root).FirstOrDefault(c => c.Name == s.Target && !InsideClaude(c));
             if (target is not null) { ClaudeFlash(target); if (ClaudeStepDelay > 0) await Task.Delay(ClaudeStepDelay); } // Claude zeigt, wo es arbeitet
             var text = ClaudeActions.Describe(s, plan.State);
-            switch (s.Kind, target)
+            // T-0780 (3. Gegenprüfung): jeder Plan-Schritt durch denselben Wächter wie die MCP-Brücke (Quellen-Sperre, Zitatprüfung, gesperrte Felder) – Verstoß: zurück und Plan endet
+            var ok = false;
+            var why = await KiStepGuarded(plan.Page, async () =>
             {
-                case ("feld", TextBox tb) when tb.IsEffectivelyEnabled: tb.Text = s.Value; done.Add(text); break;
-                case ("wahl", ComboBox cb) when cb.IsEffectivelyEnabled && cb.Items.FirstOrDefault(i => ItemText(i).Equals(s.Value, StringComparison.OrdinalIgnoreCase)) is { } item: cb.SelectedItem = item; done.Add(text); break;
-                case ("klick", Button b) when b.IsEffectivelyEnabled: b.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); done.Add(text); break;
-                default: if (ClaudeApplyExtra(plan.Page, s) || ClaudeMusicApply(plan.Page, s)) done.Add(text); else failed.Add(text); break;
-            }
-            await _ui.InvokeAsync(() => { }, DispatcherPriority.Background); // Seite zeichnet sich nach jedem Schritt neu
+                switch (s.Kind, target)
+                {
+                    case ("feld", TextBox tb) when tb.IsEffectivelyEnabled: tb.Focus(); tb.Text = s.Value; ok = true; break; // wie getippt – beim Verlassen übernimmt das Programm
+                    case ("wahl", ComboBox cb) when cb.IsEffectivelyEnabled && cb.Items.FirstOrDefault(i => ItemText(i).Equals(s.Value, StringComparison.OrdinalIgnoreCase)) is { } item: cb.SelectedItem = item; ok = true; break;
+                    case ("klick", Button b) when b.IsEffectivelyEnabled: b.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); ok = true; break;
+                    default: ok = ClaudeApplyExtra(plan.Page, s) || ClaudeMusicApply(plan.Page, s); break;
+                }
+                await _ui.InvokeAsync(() => { }, DispatcherPriority.Background); // Seite zeichnet sich nach jedem Schritt neu
+            });
+            if (why is not null) { failed.Add(text + " – zurückgenommen: " + why); stopped = why; break; }
+            if (ok) done.Add(text); else failed.Add(text);
         }
         if (doc is not null)
         {
@@ -197,7 +205,9 @@ public partial class MainWindow
             else _claudeChanges.Remove(plan.Page);
         }
         _core.Audit.Append(Principal.LocalOwner.Name, "claude.bedient", $"{plan.Page} · {done.Count} Schritte" + (plan.Steps.Any(s => ClaudeActions.StepRisky(s, plan.State)) ? " · mit Wirkung nach außen" : ""));
-        var msg = "Im Programm erledigt:\n" + string.Join("\n", done.Select(d => "- " + d)) + (failed.Count > 0 ? "\n\n⚠ Nicht möglich (Element nicht mehr da oder gesperrt):\n" + string.Join("\n", failed.Select(f => "- " + f)) : "");
+        var msg = "Im Programm erledigt:\n" + string.Join("\n", done.Select(d => "- " + d)) + (failed.Count > 0 ? "\n\n⚠ Nicht möglich (Element nicht mehr da oder gesperrt):\n" + string.Join("\n", failed.Select(f => "- " + f)) : "")
+            + (stopped is not null ? "\n\nDer Plan wurde an dieser Stelle beendet." : "");
+        if (stopped is not null) _core.Audit.Append(Principal.LocalOwner.Name, "claude.plan.zurueckgerollt", $"{plan.Page} {stopped}");
         CChats.Add(ChatStudio(dock), plan.ChatId, new ClaudeChats.Msg("assistant", msg, [], DateTimeOffset.Now));
         if (CurrentView == plan.Page) Show(plan.Page);
         RenderChat(dock);

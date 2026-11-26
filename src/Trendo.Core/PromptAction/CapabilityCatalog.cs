@@ -98,6 +98,9 @@ public static class CapabilityCatalog
         P("X-08", "Handy verbinden", "System & Sicherheit", "MobileBridge", "adb-Liste, wenn adb schon da ist", "keine", "Liste", "Nur „adb devices -l“. Kein Spiegel, kein Foto, keine Installation."),
         P("CORE-04", "PC, Pi & Handy verbinden", "System & Sicherheit", "FusionStore", "Verbund nur zeigen", "keine", "Liste", "Nur die gespeicherten Geräte. Es wird nichts gekoppelt."),
         P("X-09", "Leistung anzeigen", "System & Sicherheit", "ResourceMonitor, SystemMetrics", "Messwerte lesen", "keine", "Messwert", "Nur die gelesenen Messwerte. Es wird kein Programm beendet."),
+        // T-0780 (Etappe 0.9.113 „Wissen & Lernen“)
+        P("STUDIO-REFERAT-01", "Referate & Hausarbeiten", "Wissen & Lernen", "ReferatKit, CiteKit, TextDoc (DOCX/ODT/PDF), SlideDoc (PPTX/ODP)", "Gliederung anlegen", "Thema, Punkte des Hauptteils", "Gliederung (MD), im Studio Arbeit als DOCX/ODT/PDF und Folien als PPTX/ODP", "Über den Auftrag nur das Gliederungs-Gerüst. Text und Zitate entstehen im Studio; zitiert wird nur aus den eigenen Quellen, nichts wird abgegeben."),
+        P("STUDIO-TIMELINE-01", "Zeitleisten", "Wissen & Lernen", "TimelineKit, HistDate", "Ereignisse als Tabelle", "Zeilen mit Datum, Titel und Spur", "Tabelle (CSV), im Studio Zeitleiste als SVG, PNG und PDF", "Über den Auftrag nur die geprüfte Tabelle. Daten werden nicht geraten; unlesbare Zeilen werden genannt."),
     ];
 
     private static StudioProfile P(string id, string title, string area, string existing, string action, string inputs, string outputs, string blocker) =>
