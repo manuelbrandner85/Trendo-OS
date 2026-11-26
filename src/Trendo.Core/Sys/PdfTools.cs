@@ -147,7 +147,8 @@ public static partial class PdfTools
         {
             using var t = new PdfDocument();
             for (var i = k * every; i < Math.Min(src.PageCount, (k + 1) * every); i++) t.AddPage(src.Pages[i]);
-            var f = Path.Combine(outDir, $"{stem}-{(k + 1).ToString(CultureInfo.InvariantCulture).PadLeft(digits, '0')}.pdf");
+            // T-0774 (PW-12): freier Name wie bei SplitRanges – ein zweites Teilen überschreibt nie die Teile eines früheren Laufs
+            var f = Free(Path.Combine(outDir, $"{stem}-{(k + 1).ToString(CultureInfo.InvariantCulture).PadLeft(digits, '0')}.pdf"));
             Guard(f, input); created?.Invoke(f); Save(t, f); files.Add(f);
         }
         audit?.Append("app", "pdf.split", $"{Path.GetFileName(input)} → {files.Count} Dateien");

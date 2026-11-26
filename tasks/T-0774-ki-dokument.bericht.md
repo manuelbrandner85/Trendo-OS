@@ -2,6 +2,12 @@
 
 **Auftrag:** `tasks/T-0774-ki-dokument.md` (Freigabe 26.11.2026, Etappe 0.9.112) · **Branch:** `claude/T-0774-ki-dokument` (Basis main 0.9.111 = 2b1ffa923) · eigene Kopie in `%TEMP%\trendo-auftrag-T-0774`.
 
+## 4. Nachbesserung (PW-12 beim Teilen „alle n Seiten“)
+- Befund: `PdfTools.Split` vergab `name-01.pdf` ohne `Free(...)` – ein zweites Teilen überschrieb alte Ergebnisse (Knopf „Ausführen“, Trendo PDF und KI); mit dem Rückgängig von T-0774 wurden so Dateien eines früheren Schritts verschoben.
+- Behebung: `Split` nutzt freie Namen wie `SplitRanges` („name-01 (2).pdf“).
+- Tests (rot auf be84a2574, grün jetzt; `reports/T-0774/rot-gegenpruefung-4.txt`): Core `T0223_TrendoPdf.Split_twice_keeps_old_parts`, App `T0774KiDokument_Ui.Two_split_runs_undo_second_keeps_first` (zwei KI-Teilläufe, Rückgängig des zweiten – Dateien des ersten bleiben mit gleichem SHA-256).
+- Mitgelaufen: Core T0223/PdfTools/PdfWerkstatt 27 bestanden, 2 übersprungen (T8 Rechtschreibung, T1 nur mit TRENDO_LO_ABGLEICH – vorhandene Bedingungen); App T0223_TrendoPdfUi 3/3, T0223_TrendoTextUi 3/3, PdfWerkstatt_Ui 8/8, BueroAusbau_Ui 12/12, AssistChain_Ui 6/6, DocScan_Ui 4/4, BueroEchtlauf_Ui 6/6, T0774KiDokument_Ui 19 bestanden + 1 übersprungen. Der Echtlauf wurde nicht wiederholt (er nutzt `SplitRanges`, nicht `Split`).
+
 ## 3. Nachbesserung (dritte Gegenprüfung: freigabefähig, zwei Rückschritte in der Bedienung)
 | Nr. | Befund | Behebung | Test (rot auf 4269aefdc → grün) |
 |---|---|---|---|

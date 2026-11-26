@@ -562,6 +562,38 @@ public class T0774KiDokument_Ui
         finally { MainWindow.AssistStepDelayMs = 140; w.KiBackendsOverride = null; w.PickOverride = null; w.Close(); }
     }
 
+    [AvaloniaFact(DisplayName = "T-0774 (PW-12): zwei KI-Teilläufe „alle n Seiten“ nacheinander, dann Rückgängig des zweiten – die Dateien des ersten Laufs bleiben unverändert liegen")]
+    public async Task Two_split_runs_undo_second_keeps_first()
+    {
+        var (w, _, root) = Ui.Open(); MainWindow.AssistStepDelayMs = 0;
+        try
+        {
+            w.KiBackendsOverride = () => [new FixedKi(_ => Plans(("dokument.setzen", Set("splitMode", "alle")), ("dokument.setzen", Set("every", "2")), ("pdf.ausfuehren", new JsonObject { ["werkzeug"] = "teilen" })))];
+            var (d, _) = OpenPw(w, root);
+            async Task<List<string>> Run()
+            {
+                Assert.Equal("vorschau", await Send(w, "Teil die PDF bitte in Stücke zu je zwei Seiten auf"));
+                Tap(w, "assist-apply"); await Until(() => w.AssistLast?.Phase is "fertig" or "fehler");
+                Assert.Equal("fertig", w.AssistLast!.Value.Phase);
+                var files = Results(w.ProgramActive(Pw)!).ToList();
+                Tap(w, "assist-close");
+                return files;
+            }
+            var first = await Run();
+            Assert.Equal(3, first.Count);
+            var hashes = first.Select(Hash).ToList();
+            var all = await Run();
+            var second = all.Except(first).ToList();
+            Assert.Equal(3, second.Count); // neue Namen, nichts überschrieben
+            for (var i = 0; i < first.Count; i++) Assert.Equal(hashes[i], Hash(first[i]));
+            var doc = w.ProgramActive(Pw)!;
+            Assert.True(doc.Undo()); // Rückgängig des zweiten Laufs
+            Assert.All(second, f => Assert.False(File.Exists(f)));
+            for (var i = 0; i < first.Count; i++) { Assert.True(File.Exists(first[i]), first[i]); Assert.Equal(hashes[i], Hash(first[i])); }
+        }
+        finally { MainWindow.AssistStepDelayMs = 140; w.KiBackendsOverride = null; w.PickOverride = null; w.Close(); }
+    }
+
     // ───────────── Echtlauf mit der KI auf diesem PC ─────────────
 
     static string? Beleg() => Environment.GetEnvironmentVariable("TRENDO_T0774_ECHT") is { Length: > 0 } d ? Directory.CreateDirectory(d).FullName : null;
