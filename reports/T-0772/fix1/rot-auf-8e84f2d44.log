@@ -1,0 +1,22 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0772-v1\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:02.78]     T-0772-fix1: Gravur der Länge 0 (auch drei gleiche Punkte, 1e-12) neben einem Loch – beide ausgelassen wie in 0.9.110(len: 0, points: 2) [FAIL]
+[xUnit.net 00:00:02.78]     T-0772-fix1: Gravur der Länge 0 (auch drei gleiche Punkte, 1e-12) neben einem Loch – beide ausgelassen wie in 0.9.110(len: 0, points: 3) [FAIL]
+  Fehler T-0772-fix1: Gravur der Länge 0 (auch drei gleiche Punkte, 1e-12) neben einem Loch – beide ausgelassen wie in 0.9.110(len: 0, points: 2) [4 ms]
+  Fehlermeldung:
+   Assert.Single() Failure: The collection contained 2 items
+Collection: [CamPath { Kind = auf, Pts = System.Collections.Generic.List`1[System.ValueTuple`2[System.Double,System.Double]], Closed = True, Source = 0, Layer = 0, TabsAllowed = True }, CamPath { Kind = auf, Pts = System.Collections.Generic.List`1[System.ValueTuple`2[System.Double,System.Double]], Closed = False, Source = 2, Layer = 0, TabsAllowed = True }]
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0772Fix1Tests.Null_gravur_neben_loch(Double len, Int32 points) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0772-v1\tests\Trendo.Core.Tests\T0772Fix1Tests.cs:line 28
+   at InvokeStub_T0772Fix1Tests.Null_gravur_neben_loch(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0772-fix1: Gravur der Länge 0 (auch drei gleiche Punkte, 1e-12) neben einem Loch – beide ausgelassen wie in 0.9.110(len: 0, points: 3) [1 ms]
+  Fehlermeldung:
+   Assert.Single() Failure: The collection contained 2 items
+Collection: [CamPath { Kind = auf, Pts = System.Collections.Generic.List`1[System.ValueTuple`2[System.Double,System.Double]], Closed = True, Source = 0, Layer = 0, TabsAllowed = True }, CamPath { Kind = auf, Pts = System.Collections.Generic.List`1[System.ValueTuple`2[System.Double,System.Double]], Closed = False, Source = 2, Layer = 0, TabsAllowed = True }]
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0772Fix1Tests.Null_gravur_neben_loch(Double len, Int32 points) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0772-v1\tests\Trendo.Core.Tests\T0772Fix1Tests.cs:line 28
+   at InvokeStub_T0772Fix1Tests.Null_gravur_neben_loch(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+Fehler!      : Fehler:     2, erfolgreich:     3, übersprungen:     0, gesamt:     5, Dauer: 135 ms - Trendo.Core.Tests.dll (net10.0)

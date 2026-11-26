@@ -13,6 +13,7 @@ var gravur = args.Length > 1 && Path.GetFileName(args[1]).Contains("gravur");
 CncJob Job() => new() { ToolD = 6, Depth = 3, StepDown = 1, CamMode = gravur ? "auf" : "auto" };
 var mode = args[0]; var f = args[1];
 if (mode == "--batch") { Batch.Run(f, int.Parse(args[2])); return; }
+if (mode == "--zufall") { Zufall.Run(int.Parse(f), int.Parse(args[2])); return; }
 if (mode == "--perf")
 {
     var secs = int.Parse(args[2]); var j = Job(); var sw = Stopwatch.StartNew();
@@ -64,6 +65,42 @@ static class Batch
             try { var r = j.ImportDrawing(f, cts.Token); res = "ok " + Hx(r.Gcode) + " " + Hx(string.Join("\n", r.Warnings)) + " " + r.Paths.Count; }
             catch (Exception e) { res = e.GetType().Name + " " + Hx(e.Message); }
             Console.WriteLine($"{Path.GetFileName(f)}\t{res}\t{sw.ElapsedMilliseconds}");
+        }
+    }
+    static string Hx(string s) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(s)))[..16];
+}
+static class Zufall
+{
+    // --zufall <anzahl> <sek>: zufällige Konturlisten direkt an CncCam.Generate (wie CncJob.From), auch entartete Strecken
+    public static void Run(int n, int secs)
+    {
+        for (var seed = 0; seed < n; seed++)
+        {
+            var r = new Random(seed); var cs = new List<Trendo.Core.Cad.CadContour>();
+            List<(double X, double Y)> Circ(double x, double y, double rr, int k) => Enumerable.Range(0, k).Select(i => (x + rr * Math.Cos(2 * Math.PI * i / k), y + rr * Math.Sin(2 * Math.PI * i / k))).ToList();
+            if (r.Next(4) > 0) cs.Add(new([(0, 0), (200, 0), (200, 150), (0, 150)], true, "0"));
+            for (var i = r.Next(30); i > 0; i--) cs.Add(new(Circ(r.NextDouble() * 200, r.NextDouble() * 150, r.Next(1, 6), 16 + r.Next(64)), true, "0"));
+            for (var i = r.Next(10); i > 0; i--) cs.Add(new([(r.NextDouble() * 200, 0), (r.NextDouble() * 200, 150)], false, "0"));
+            for (var i = r.Next(8); i > 0; i--)
+            {
+                var (x, y) = (Math.Round(r.NextDouble() * 200, r.Next(2) == 0 ? 0 : 3), Math.Round(r.NextDouble() * 150, 1));
+                cs.Add(r.Next(6) switch
+                {
+                    0 => new([(x, y), (x, y)], false, "0"),
+                    1 => new([(x, y), (x, y), (x, y)], false, "0"),
+                    2 => new([(x, y), (x + 1e-12, y)], false, "0"),
+                    3 => new([(x, y), (x, y), (x + 5, y), (x + 5, y)], false, "0"),
+                    4 => new([(x, y), (x + 1e-9, y + 1e-9), (x + 3, y)], false, "0"),
+                    _ => new([(x, y), (x, y), (x, y)], true, "0"),
+                });
+            }
+            if (r.Next(5) == 0) for (var i = 0; i < 70; i++) { var xx = 10 + 60 * r.NextDouble(); cs.Add(new([(0, 0), (xx - 0.0004, 0), (xx, r.Next(2) == 0 ? 0.0005 : 0.5), (xx + 0.0004, 0), (100, 0), (100, 100), (0, 100)], true, "0")); }
+            var modes = new[] { "auto", "auf", "aussen", "innen" };
+            var set = new CamSettings { ToolD = new[] { 1.0, 3, 6 }[r.Next(3)], Mode = modes[r.Next(4)] };
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(secs)); string res;
+            try { var g = CncCam.Generate(cs, set, cts.Token); res = "ok " + Hx(g.Gcode) + " " + Hx(string.Join("\n", g.Warnings)) + " " + g.Paths.Count; }
+            catch (Exception e) { res = e.GetType().Name + " " + Hx(e.Message); }
+            Console.WriteLine($"{seed}\t{res}");
         }
     }
     static string Hx(string s) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(s)))[..16];

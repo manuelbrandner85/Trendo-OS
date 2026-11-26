@@ -1,4 +1,11 @@
-56c4b0fb4ddc4dda4d9ef920f8bca610ac929dd1902b5166ce7945aa89c3d29b *./BELEG.md
+3f43b34cdd8160762b3bb80cde211e2727e2dfb083b1c998b5cd23aadcf8d27f *./BELEG.md
+b031897c6ac9fb2e43174e93e93f88866489d2193b0c6c985f4aa40393a28c36 *./fix1/gruen-T0772.log
+fef3c737621783cf160f28d0fcf3c71530936947889a75eb044b209bdc4def6e *./fix1/gruen-auf-main-542dc1ce7.log
+554fd06a093a5c83ad3a7aabe7b70c4e65f25fae9c8592823634de4cd3495300 *./fix1/rot-auf-8e84f2d44.log
+d3094057456f5d3ceeb30a82666a758d0d832f6d9d6521d402a36841f0be5cd7 *./fix1/zufall-8e84f2d44.tsv
+f7e8af47d25261b98f25ac1e9e4c0df7ad8f9b482d3769697220b82fb1b67c67 *./fix1/zufall-ergebnis.txt
+a510b50ce093524f80b58dff2ab5c5e8f241c4a5194a0c9c10477db0e9a95910 *./fix1/zufall-main-542dc1ce7.tsv
+a510b50ce093524f80b58dff2ab5c5e8f241c4a5194a0c9c10477db0e9a95910 *./fix1/zufall-neu.tsv
 29771ef7d32734dfb52a7ca45e7b335c2a23790630027f68e39b79b590b7366d *./messung/punkt1-rohlog.txt
 caf1bd110ac69a15886f6a39e68bd92f34e877da2ed9b7454cc541593c94811d *./messung/punkt2-rohlog.txt
 140c2b26ed125bf098b8c925365ed9fdeb22c1ccab943a30b1ec386e3550856f *./messung/punkt3-rohlog.txt
@@ -7,11 +14,13 @@ fcff7212ec72cb28e9cc9f7c242caa562adee9dd64e19df9af382aa45f0a2ac2 *./punkt4/REGIO
 4f7f049cfbf5c85c7506956ab1a0e98eafb9c0649d278e09cd6d27fe9b2bb1c2 *./punkt5/gruen-core.log
 60bafe4b67acaaf690baf839660171732683b649b0a31a705a8a5b68cebe153b *./punkt5/rot-auf-main-542dc1ce7.log
 082069b2834af2ddf30d1d9ef6812688e394439c2e455118e1a35c53af9ec852 *./tests/gruen-T0772.log
+47084bb3d76a7ff66f29d06627c0d77cf66048226e2155dd21ddc5f14bafe2d5 *./tests/gruen-app-endstand.log
 4883f80bfc40f6667168ae30b1c176dac7c3f3f73fe1629e5a995f658548ade3 *./tests/gruen-app.log
 f2634fb508d4490d4c5dc70d88f953fa1770b4bd506f622a6d07e239f4fd38c1 *./tests/gruen-core-betroffen.log
+0443a9dfaccf269b504c3f4b797643d6f24cebbf16adde443ee22c3b4407482b *./tests/gruen-core-endstand.log
 8caafc80f4bc5c8524c62a748f701d601a5807a12684137bb314d14e26e3eb30 *./tests/gruen-core-fraesen.log
-09cb0129315c4e1932a42d518ee26cfa7d0f1566aeadb51b100d67d1ed552b97 *./tests/gruen-core.log
 7615a418c2f4b2d90400c7034bd5f06f82cc361434336c29d59eb8c3a5b94794 *./tests/grundriss-zeit-alt-neu.log
+09cb0129315c4e1932a42d518ee26cfa7d0f1566aeadb51b100d67d1ed552b97 *./tests/zwischenstand-vor-endstand-core.log
 c453d9df4a6e90aab0a904a1c620e39728ae0fa88fedd53d3da7fbd5560564dc *./vergleich/alt_k5_2000_30000_phasen.log
 45a8909ee0280a506e342154b2065e5a733859e5a43e3e54bd79215bf3b32c18 *./vergleich/alt_k5b_2000_30000_50_cancel.log
 ae883b418615cc44c230802962c8a4fe8f067207c91e8e57b51b1bdbc7719719 *./vergleich/alt_k5b_2000_30000_50_phasen.log
@@ -20,6 +29,6 @@ ae883b418615cc44c230802962c8a4fe8f067207c91e8e57b51b1bdbc7719719 *./vergleich/al
 f24374575e0f08bcfefb450865f19f3f40b139a7674232608ad0661da3040138 *./vergleich/korpus_neu.tsv
 52f3d449fc6127f40cf31081b09f0d7f0c4a9ff5cf400ee7eecdb3f23c926588 *./werkzeuge/erzeuge772.py
 f5ec7e5f3bcbe78531e9a52b0235fec8daa2bcb14222cc78db0e3a862b5c2dbc *./werkzeuge/h772.csproj
-539fc8aab9afdb0d19efe71e92b6bff0e1cb26bc52bf1ff0252d77b0ec6c120a *./werkzeuge/harness_Program.cs
+14d13781ff98f841e944e6255c2b2bda81d6849a558c6c29722be668b892711e *./werkzeuge/harness_Program.cs
 02df5e8883f51757ed2a0def7b93bbc14c4d3288edde9415618c70c92408bc99 *./werkzeuge/korpus772.py
 5bcc5abc76480d0b5bfdf1015569f8d7e1916b7809b08deafbc0ce54cf3e1a11 *./werkzeuge/messen.sh

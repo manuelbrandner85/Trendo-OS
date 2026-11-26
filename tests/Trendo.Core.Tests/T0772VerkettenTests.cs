@@ -22,7 +22,20 @@ public class T0772VerkettenTests(ITestOutputHelper output)
         double Snap(double v) => r.Next(3) == 0 ? Math.Round(v / tol) * tol : v; // Raster: gleich weite Spalten
         for (var i = 0; i < n; i++)
         {
-            var kind = r.Next(6);
+            var kind = r.Next(7);
+            if (kind == 6) // T-0772-fix1: entartete Stücke – Länge 0, doppelte Punkte, 1e-12, selten NaN
+            {
+                var (x, y) = (Snap(r.NextDouble() * 12), Snap(r.NextDouble() * 12));
+                res.Add(r.Next(5) switch
+                {
+                    0 => new([(x, y), (x, y)], false, Lay()),
+                    1 => new([(x, y), (x, y), (x, y)], false, Lay()),
+                    2 => new([(x, y), (x + 1e-12, y)], false, Lay()),
+                    3 => new([(x, y), (x, y), (x + 1, y), (x + 1, y)], false, Lay()),
+                    _ => r.Next(8) == 0 ? new([(x, double.NaN), (x + 1, y)], false, Lay()) : new([(x, y), (x + tol, y + tol)], false, Lay()),
+                });
+                continue;
+            }
             if (kind == 0) // Rechteck aus vier Linien mit gleich großen Spalten
             {
                 var (x, y, w, h, g) = (r.Next(40) * 3.0, r.Next(40) * 3.0, 1 + r.Next(3), 1 + r.Next(3), tol * (r.Next(4) * 0.25));
@@ -47,7 +60,7 @@ public class T0772VerkettenTests(ITestOutputHelper output)
         return res;
     }
 
-    [Fact(DisplayName = "T-0772: Verketten gleich wie 0.9.110 – 1200 Zufallszeichnungen, mit und ohne Stoß-Erkennung, Ketten, Meldungen, Reihenfolge")]
+    [Fact(DisplayName = "T-0772: Verketten gleich wie 0.9.110 – 1200 Zufallszeichnungen (auch Stücke der Länge 0, doppelte Punkte, 1e-12, NaN), mit und ohne Stoß-Erkennung")]
     public void Gleiches_ergebnis_wie_bisher()
     {
         int rounds = 0, exact = 0, cases = 0, notesSeen = 0, bridged = 0;

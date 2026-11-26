@@ -129,7 +129,7 @@ public static partial class CadContours
                             if (e >> 1 == x >> 1 || layer[e >> 1] != lay) continue;
                             var key = e < x ? (e, x) : (x, e);
                             var dist = Dist(P(key.Item1), P(key.Item2));
-                            if (dist > lim || pairs.ContainsKey(key)) continue;
+                            if (!(dist <= lim) || pairs.ContainsKey(key)) continue; // T-0772-fix1: NaN wie bisher kein Paar
                             var ke = rank[key.Item1 >> 1] < rank[key.Item2 >> 1] ? key.Item1 : key.Item2;
                             var kp = P(ke);
                             var ob = ke == key.Item1 ? key.Item2 : key.Item1; var (ca0, cb0) = (C(kp), C(P(ob)));
@@ -161,7 +161,7 @@ public static partial class CadContours
         void Kill(int c) { alive[c] = false; DropEnd(2 * c); DropEnd(2 * c + 1); }
         bool TryClose(int c, bool placed)
         {
-            if (count[c] < 3 || Dist(first[c], last[c]) > lim) return false;
+            if (count[c] < 3 || !(Dist(first[c], last[c]) <= lim)) return false; // T-0772-fix1: NaN schließt nicht (wie bisher)
             closedOrder.Add(c);
             if (!placed) { alive[c] = false; return true; } // Runde 0: Enden noch nicht eingetragen
             var at = new[] { first[c], last[c] };

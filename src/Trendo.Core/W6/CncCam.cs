@@ -921,7 +921,14 @@ public static partial class CncCam
             Par(nb, ct, k =>
             {
                 var sb = new StringBuilder(); var w = new List<string>();
-                try { Path(order[b0 + k], sb, w); txt[k] = sb.ToString(); } catch (Exception e) when (e is not OperationCanceledException) { err[k] = e; }
+                try
+                {
+                    Path(order[b0 + k], sb, w);
+                    if (sb.Length + 16L > MaxGcodeChars) throw GcodeTooBig(); // T-0772-fix1: eine einzelne riesige Bahn
+                    txt[k] = sb.ToString();
+                }
+                catch (Exception e) when (e is OutOfMemoryException or ArgumentOutOfRangeException && sb.Length > 1_000_000) { err[k] = GcodeTooBig(); } // Speicher bzw. Grenze des StringBuilder
+                catch (Exception e) when (e is not OperationCanceledException) { err[k] = e; }
                 tw[k] = w;
             });
             for (var k = 0; k < nb; k++)
@@ -929,7 +936,7 @@ public static partial class CncCam
                 n++; warn.AddRange(tw[k]!);
                 if (err[k] is { } e) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(e).Throw();
                 if ((long)g.Length + txt[k]!.Length + 16 > MaxGcodeChars) // T-0772: sonst Absturz (Speicher) statt Meldung
-                    throw new InvalidOperationException($"Der G-Code würde zu groß (über {MaxGcodeChars / 1_000_000:N0} Millionen Zeichen, rund {MaxGcodeChars / 500_000_000.0:0.#} GB im Speicher) – das kann Trendo nicht schreiben und keine Steuerung verarbeiten. Bitte die Zeichnung aufteilen und in mehreren Aufträgen fräsen.");
+                    throw GcodeTooBig();
                 g.Append(txt[k]); txt[k] = null;
             }
         }
@@ -1305,6 +1312,7 @@ public static partial class CncCam
     public const double DupTol = 0.001;
     /// <summary>T-0772: längster G-Code (Zeichen) – die Grenze einer .NET-Zeichenkette; darüber gab es bisher einen Absturz wegen Speicher.</summary>
     public const int MaxGcodeChars = 0x3FFFFFDF;
+    static InvalidOperationException GcodeTooBig() => new InvalidOperationException($"Der G-Code würde zu groß (über {MaxGcodeChars / 1_000_000:N0} Millionen Zeichen, rund {MaxGcodeChars / 500_000_000.0:0.#} GB im Speicher) – das kann Trendo nicht schreiben und keine Steuerung verarbeiten. Bitte die Zeichnung aufteilen und in mehreren Aufträgen fräsen.");
 
     /// <summary>T-0747-fix4: Sind zwei geschlossene Züge deckungsgleich (jeder Punkt des einen höchstens <paramref name="tol"/> vom anderen Zug,
     /// in beide Richtungen, auch Stückmitten)? Richtung und Startecke spielen keine Rolle.</summary>
@@ -1340,6 +1348,7 @@ public static partial class CncCam
             var n = 0;
             foreach (var j in near) if (!_added[j]) { if ((++n & 255) == 0) ct.ThrowIfCancellationRequested(); Add(cs, j); }
             var d = DupTol + 1e-9; var pts = cs[i].Pts;
+            if (pts.Any(q => !double.IsFinite(q.X) || !double.IsFinite(q.Y) || Math.Abs(q.X) > 1e12 || Math.Abs(q.Y) > 1e12)) return null; // T-0772-fix1: wie bisher
             foreach (var q in TestPoints(pts).OrderBy(q => _density.GetValueOrDefault(K(q))).Take(4))
             {
                 var tags = new HashSet<int>(); var tooMany = false;
@@ -1913,7 +1922,7 @@ public static partial class CncCam
         void Along((double X, double Y) a, (double X, double Y) b, double limit, Func<int, bool> orig, Func<int, bool> visit, SegGrid.Cursor cur)
         {
             var len = Math.Sqrt((b.X - a.X) * (b.X - a.X) + (b.Y - a.Y) * (b.Y - a.Y)); var step = 16 * Fine.CellSize;
-            var n = (int)Math.Min(1 << 20, Math.Ceiling(len / step));
+            var n = (int)Math.Max(1, Math.Min(1 << 20, Math.Ceiling(len / step))); // T-0772-fix1: Länge 0 (a = b) ist ein Stück, nicht keins
             var m = limit + 1e-9 * (1 + Math.Abs(a.X) + Math.Abs(a.Y) + Math.Abs(b.X) + Math.Abs(b.Y) + len); // Reserve gegen Rundung der Teilpunkte
             for (var k = 0; k < n; k++)
             {
@@ -1950,7 +1959,12 @@ public static partial class CncCam
         /// <summary>T-0772: Strecken, die das Rechteck berühren können (Obermenge): kurze über das feine Raster, lange über <see cref="AlongIndex"/>.
         /// Sehr große Rechtecke wie bisher über <see cref="SegGrid.Any(SegGrid.Cursor, double, double, double, double, Func{int, bool})"/>.</summary>
         /// <summary>T-0772: Gibt es eine Strecke mit <paramref name="pred"/>, die das Rechteck berühren kann? (Obermenge – „nein“ ist sicher)</summary>
-        public bool AnyInRect(double minX, double minY, double maxX, double maxY, Func<int, bool> pred, SegGrid.Cursor? cur = null) => Rect(cur ?? Fine.Own, minX, minY, maxX, maxY, pred);
+        public bool AnyInRect(double minX, double minY, double maxX, double maxY, Func<int, bool> pred, SegGrid.Cursor? cur = null) =>
+            !Plain(minX, minY, maxX, maxY) || Rect(cur ?? Fine.Own, minX, minY, maxX, maxY, pred); // T-0772-fix1: nicht endlich – „vielleicht“, dann prüft der bisherige Weg
+        /// <summary>T-0772-fix1: endliches Rechteck in vernünftiger Größe (sonst Zellnummern ohne Sinn) – nur dann der neue Weg.</summary>
+        static bool Plain(double minX, double minY, double maxX, double maxY) =>
+            double.IsFinite(minX) && double.IsFinite(minY) && double.IsFinite(maxX) && double.IsFinite(maxY) && minX <= maxX && minY <= maxY
+            && Math.Max(Math.Max(Math.Abs(minX), Math.Abs(maxX)), Math.Max(Math.Abs(minY), Math.Abs(maxY))) < 1e12;
         bool Rect(SegGrid.Cursor cur, double minX, double minY, double maxX, double maxY, Func<int, bool> visit)
         {
             if (Fine.CellCount(minX, minY, maxX, maxY) > 4096) return Fine.Any(cur, minX, minY, maxX, maxY, visit);
@@ -1975,6 +1989,7 @@ public static partial class CncCam
         public bool AnyNear((double X, double Y) a, (double X, double Y) b, double limit, double expand, Func<int, bool> pred, SegGrid.Cursor? cur = null)
         {
             double minX = Math.Min(a.X, b.X) - limit, minY = Math.Min(a.Y, b.Y) - limit, maxX = Math.Max(a.X, b.X) + limit, maxY = Math.Max(a.Y, b.Y) + limit;
+            if (!Plain(minX, minY, maxX, maxY)) return Any(minX, minY, maxX, maxY, expand, pred, cur); // T-0772-fix1: nicht endlich – genau wie bisher
             var hit = false;
             Along(a, b, limit, Orig(minX, minY, maxX, maxY, _same ? 0 : expand), j => hit = pred(j), cur ?? Fine.Own);
             return hit;
@@ -1984,6 +1999,7 @@ public static partial class CncCam
         public (int J, double D) MinNear((double X, double Y) a, (double X, double Y) b, double limit, double expand, Func<int, double> score, SegGrid.Cursor? cur = null)
         {
             double minX = Math.Min(a.X, b.X) - limit, minY = Math.Min(a.Y, b.Y) - limit, maxX = Math.Max(a.X, b.X) + limit, maxY = Math.Max(a.Y, b.Y) + limit;
+            if (!Plain(minX, minY, maxX, maxY)) return Min(minX, minY, maxX, maxY, expand, score, cur); // T-0772-fix1: nicht endlich – genau wie bisher
             long qx0 = R(minX), qy0 = R(minY);
             var bj = -1; var bd = double.MaxValue; (long X, long Y) bk = default;
             (long X, long Y) Key(int j) { var (p, q, _) = Fine.Segs[j]; return (Math.Max(R(Math.Min(p.X, q.X)), qx0), Math.Max(R(Math.Min(p.Y, q.Y)), qy0)); }

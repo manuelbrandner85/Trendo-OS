@@ -25,6 +25,18 @@ Rust: **nicht eingesetzt** – die Messung zeigte Algorithmusfehler (quadratisch
 - Core CncCam/CncSim/DxfElemente/FraesenSonderfaelle/T0757/T0755/T0754/OsBehavior/W7/NoFixedUser/Cad: 180, 176 bestanden, 4 übersprungen, 0 Fehler (`tests/gruen-core-betroffen.log`).
 - App `SPEC14_Ui`, `T0747_DxfUi`, `T0747_Fix3RaceUi`, `T0747_Fix4RaceUi`, `T0747_FixUi`: 14/14 (`tests/gruen-app.log`).
 
+## Korrekturrunde nach Gegenprüfung (fix1)
+
+| Befund | Ursache | Lösung | Beleg |
+|---|---|---|---|
+| HOCH 1: Bahnstrecke der Länge 0 (Null-Gravur neben Loch, auch drei gleiche Punkte) fand kein Hindernis und wurde gefräst | `RefGrid.Along`: Stückzahl `Ceiling(0 / step)` = 0 → keine Abfrage | Mindestens ein Stück; nicht endliche oder riesige Rechtecke (NaN, ±∞, > 1e12) laufen über den bisherigen Weg (`Plain`), ebenso die schnelle Absage in `Nearest` und die Doppel-Vorauswahl. Beim Durchsehen zusätzlich gefunden: im neuen Überbrücken galten NaN-Abstände als „nah“ (`dist > lim` statt `!(dist <= lim)`) – Paar und Schließen jetzt wie bisher | `T0772Fix1Tests` (Länge 0 mit 2 und 3 Punkten, 1e-12, 1e-9, freie Null-Gravur): grün auf main, **rot auf 8e84f2d44** (2 Fehler), grün jetzt (`fix1/`). Zufallsvergleich `Generate` mit entarteten Strecken (Länge 0, doppelte Punkte, 1e-12, 1e-9) über 2000 Fälle: main gegen neu 2000 gleich, main gegen 8e84f2d44 99 abweichend (`fix1/zufall-*.tsv`). `T0772VerkettenTests` um Länge 0, doppelte Punkte, 1e-12 und NaN erweitert – fand den NaN-Fehler, jetzt 2400 gleich |
+| MITTEL 2: Belege ohne `-text` | `.gitattributes` | `reports/T-0772/** -text`, Belege byte-genau neu eingecheckt, SHA256SUMS neu und gegen `git show HEAD:<datei>` geprüft | `SHA256SUMS.txt` |
+| MITTEL 3: `tests/gruen-core.log` war ein Zwischenstand mit 3 Fehlern | – | umbenannt in `tests/zwischenstand-vor-endstand-core.log`; echter Lauf des Endstands daneben `tests/gruen-core-endstand.log`, `tests/gruen-app-endstand.log` | siehe unten |
+| NIEDRIG 5: einzelne riesige Bahn | `sb.ToString()` im Parallelteil | Längenprüfung vor `ToString`, Speicher-/Grenzfehler dort → Meldung „G-Code würde zu groß“ | Code (`GcodeTooBig`), nicht mit echter Riesenbahn getestet |
+| NIEDRIG 6 / 4 | – | Beschreibung `CadContoursAlt.cs` und Messung gleich weiter Spalten ergänzt | oben |
+
+Endstand-Tests: Core T0772*, T0747*, T0754*, T0755*, T0757*, T0758*, T0759*, T0760*, T0266, NoFixedUser: **232 bestanden, 0 Fehler** (`tests/gruen-core-endstand.log`; auch `Big_dxf_fast` und der Papierkorb-Test T-0754 grün). App `SPEC14_Ui`, `T0747_DxfUi`: 4/4 (`tests/gruen-app-endstand.log`).
+
 ## Abnahmekriterien
 1 Leere Vorlage → Ergebnis: NICHT GETESTET (nicht Gegenstand). 2 Fremddatei → Export im Fremdprogramm: NICHT GETESTET (nur eigene Nachbau-Dateien; Original-Prüfdateien fehlen). 3 Abbruch ≤ 30 s Verlust: TEILWEISE (Abbruch beim Einlesen jetzt < 0,1 s; Wiederherstellung nicht berührt). 4 KI: NICHT GETESTET. 5 Klick bis Datei: TEILWEISE (Weg `CncJob.ImportDrawing` wie die Oberfläche, nicht über die Oberfläche). 6 Bedienung: nicht berührt.
 
@@ -37,14 +49,14 @@ Rust: **nicht eingesetzt** – die Messung zeigte Algorithmusfehler (quadratisch
 ## Offene Punkte
 - b2 20 000: Abstandsprüfung und Tiefe bei 20 000 übereinanderliegenden Umrissen bleiben quadratisch (≈ 4 min).
 - z1 100 000 / e0 100 000: kein Algorithmusgewinn gefunden; e0 100 000 bricht jetzt mit Meldung ab.
-- Viele exakt gleich lange Spalten (Rasterzeichnungen) laufen über die genaue Runde (lineare Nachbildung der Sortierung je Runde) – schneller als bisher, aber nicht so schnell wie der schnelle Weg.
+- Viele exakt gleich lange Spalten (Rasterzeichnungen) laufen über die genaue Runde (Nachbildung der Sortierung, nur so weit nötig). Messung der Gegenprüfung: 2000 Rechtecke aus Linien mit gleich großen Spalten 19,8 s → 1,0–1,5 s; ab etwa 15 000 solchen Rechtecken greift die Arbeitsgrenze (Meldung, keine weiteren Spalten).
 - REGION: echte Dateien und ein Gegenprüf-Programm nötig; ezdxf-Rundreise braucht `pip install ezdxf` durch den Nutzer.
 
 ## Berührte Dateien
 - `src/Trendo.Core/Cad/CadContours.cs` (partial, Schritt 3 ausgelagert), neu `src/Trendo.Core/Cad/CadContoursBridge.cs`
 - `src/Trendo.Core/W6/CncCam.cs` (DupSelector, Nearest-Absage, RefGrid.AnyNear/MinNear/AnyInRect/Along, SegGrid.AnyMixed/BigList/CellCount, MaxGcodeChars)
 - `src/Trendo.Core/Sys/Gefahren.cs` (eine Regex)
-- neu `tests/Trendo.Core.Tests/T0772VerkettenTests.cs`, `T0772FraesenTests.cs`, `T0772GefahrenTests.cs`, `CadContoursAlt.cs`
+- neu `tests/Trendo.Core.Tests/T0772VerkettenTests.cs`, `T0772FraesenTests.cs`, `T0772GefahrenTests.cs`, `T0772Fix1Tests.cs`, `CadContoursAlt.cs` (Vergleich: `Chain` samt Hilfsfunktionen `Junctions`, `Dist`, `DupTol` unverändert aus 0.9.110 kopiert, die übrigen Teile von `CadContours` entfernt)
 - `installer/neuerungen/0.9.111.md` (neu, nur dieser Abschnitt), `tasks/T-0772-*`, `reports/T-0772/`
 
 **Status:** umgesetzt und gezielt getestet; Punkte 1, 3, 5 erledigt; Punkt 2 teilweise; Punkt 4 begründet gemeldet.

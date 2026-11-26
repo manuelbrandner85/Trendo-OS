@@ -29,3 +29,9 @@ Punkt 4: `punkt4/` (Werkzeugprüfung, Begründung). Punkt 5: `punkt5/` (Rot auf 
 Rust: nicht eingesetzt. Die Zeit ging in quadratischen Algorithmen verloren (jede Verkettungsrunde alles neu, jedes Paar fast gleicher Umrisse mit zwei Rastern, lange Linien als Kandidat in jeder Abfrage) – das hilft keine andere Sprache.
 
 Prüfsummen: `SHA256SUMS.txt`.
+
+## Korrekturrunde fix1
+
+- `fix1/`: Rot-Grün für Strecken der Länge 0 (`T0772Fix1Tests`: grün auf main, rot auf 8e84f2d44, grün jetzt) und Zufallsvergleich `CncCam.Generate` mit entarteten Strecken, 2000 Fälle: main gegen neu 2000 gleich, main gegen 8e84f2d44 99 abweichend.
+- `tests/zwischenstand-vor-endstand-core.log` ist ein Zwischenstand (3 Fehler, vor dem Endstand von 8e84f2d44); maßgeblich: `tests/gruen-core-endstand.log` (232/232) und `tests/gruen-app-endstand.log` (4/4).
+- Seit fix1 gilt `reports/T-0772/** -text`: Dateien liegen byte-genau im Repo, `SHA256SUMS.txt` passt zu `git show HEAD:<datei>`.
