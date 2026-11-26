@@ -1,7 +1,8 @@
 # Bericht T-0770: Abnahme Installieren, Update, Deinstallieren, Leistung
 
 Basis main 542dc1ce7 (Release 0.9.110) · Zweig `claude/T-0770-abnahme-installation` · PC: Windows 11 (10.0.26340), 16 Kerne, 32 GB.
-Belege: `reports/T-0770/rohlogs/lauf2/` (gültiger Gesamtlauf), `reports/T-0770/rohlogs/lauf1-vor-fix/` (erster Lauf, deckte den Sicherungsfehler auf), Prüfsummen in `reports/T-0770/SHA256SUMS.txt`.
+Belege: `reports/T-0770/rohlogs/lauf3/` (Gesamtlauf nach der Korrekturrunde, eigene Id `TrendoOSAbnahme3`), `reports/T-0770/rohlogs/lauf2/` (Gesamtlauf vor der Korrekturrunde), `reports/T-0770/rohlogs/lauf1-vor-fix/` (erster Lauf, deckte den Sicherungsfehler auf), `reports/T-0770/rohlogs/korrektur/` (Rot-Grün und Proben der Korrekturrunde). Prüfsummen in `reports/T-0770/SHA256SUMS.txt` gelten für die eingecheckten Bytes (`reports/T-0770/** -text`, ohne Zeilenende-Umwandlung). Hinweis: lauf1/lauf2 wurden beim ersten Einchecken noch auf LF normalisiert; maßgeblich sind die Bytes im Repo.
+Der Abschnitt „Korrekturrunde“ am Ende geht den Abschnitten davor vor.
 Wiederholen: `powershell -NoProfile -ExecutionPolicy Bypass -File tools/abnahme/lebenszyklus.ps1 -Repo <Repo> -Work <eigener leerer Ordner> [-Phase Alles|Bauen,Installieren,Update,Leistung,Gross,Deinstallieren]`.
 
 ## Abschottung (harte Grenze)
@@ -70,7 +71,7 @@ Reste nach dem Deinstallieren und Bewertung:
 
 ## Tests
 - Rot auf altem Code: `rohlogs/rot-alter-code.log` (Instanz-Pfade fehlen), `rohlogs/rot-sicherung-alter-code.log` (Sicherung nach dem Laden).
-- Grün: Core `T0770AbnahmeInstanzTests` + `DataLocation_And_Model` 8/8; App `T0770UpdateSicherungUiTests`, `T0770UpdateQuelleTests`, `UpdatesUiTests`, `UninstallPromptTests`, `RechteKernFix2UiTests` 15/15 (`rohlogs/gruen-app-tests.log`). Kein Volltest (macht die Hauptsitzung).
+- Grün (erste Runde): Core `T0770AbnahmeInstanzTests` + `DataLocation_And_Model` 8/8; App `T0770UpdateSicherungUiTests` 1, `T0770UpdateQuelleTests` 2, `UpdatesUiTests` 4, `UninstallPromptTests` 8 = 15/15 (`rohlogs/gruen-app-tests.log`). Korrektur M2: Die dort genannte Klasse „RechteKernFix2UiTests“ gibt es nicht (sie heißt `RechteKernFix2Ui`) und lief damals nicht mit; jetzt mitgelaufen, siehe Korrekturrunde.
 - Echter Beleg: kompletter Lebenszyklus Lauf 2, 0 Fehler.
 
 ## Berührte Dateien
@@ -81,3 +82,57 @@ Reste nach dem Deinstallieren und Bewertung:
 - Grund: Änderungen sind wenige Zeilen in bestehendem C#; Abnahme-Skript braucht Windows-APIs (PowerShell). Rust brächte keinen Vorteil.
 - Gemessene Verbesserung: Sicherung für U5 entsteht jetzt (vorher nie).
 - Offene Probleme: B2, B4, B5, B6, MSIX-Sicht, Code-Signing.
+
+## Korrekturrunde (Gegenprüfung: 6× MITTEL, 2× NIEDRIG)
+| Punkt | Erledigt | Beleg / Test |
+|---|---|---|
+| M1 Prüfsummen | `reports/T-0770/** -text` in `.gitattributes`. Arbeitsdateien byte-genau aus den eingecheckten Blobs neu geschrieben. `SHA256SUMS.txt` neu erzeugt und jede Zeile gegen `git show HEAD:<datei> \| sha256sum` geprüft (0 Abweichungen). | `reports/T-0770/SHA256SUMS.txt` |
+| M2 Testzahl | Die Klasse heißt `RechteKernFix2Ui` (5 Tests) und ist jetzt mitgelaufen. | `korrektur/gruen-app-je-klasse.log` |
+| M3 Testquelle | `TRENDO_UPDATE_QUELLE` wirkt nur zusammen mit einer gültigen `TRENDO_INSTANZ`; eine normale Installation ignoriert sie. Netzpfade (`\\server`, `//server`) werden abgelehnt. In „Trendo-Updates“ steht dann „Achtung, Prüfbetrieb: Updates kommen aus einer Testquelle (…)“, der Satz „nur aus den offiziellen …“ entfällt. Jede Suche schreibt `update.quelle.test` ins Protokoll. | `T0770KorrekturUiTests.Local_source_needs_instance`, `.Test_source_visible_and_logged` (rot: `korrektur/rot-app.log`), Bild `korrektur/updates-testquelle.png` |
+| M4 Instanz-Pfade | `TRENDO_INSTANZ` wird abgelehnt, wenn der Ordner gleich einem echten Trendo-Ordner (`%LOCALAPPDATA%\TrendoOS`, `%APPDATA%\TrendoOS`, `%LOCALAPPDATA%\TrendoWerkzeuge`) ist, darüber liegt (also auch `%LOCALAPPDATA%`, `%APPDATA%`, Benutzerordner, Laufwerk) oder darunter, und bei Netzpfaden. | `T0770KorrekturTests` – Verhaltens-Rot auf altem Code 13 von 14 (`korrektur/rot-core-m4-verhalten.log`), grün danach |
+| M5a atomar | `VelopackUpdater.ReplaceBackup`: Platz prüfen, vollständig in eine Zwischendatei kopieren, Größe prüfen, atomar umbenennen und erst danach ältere Sicherungen löschen. Bei Fehlern bleibt die alte Sicherung und keine Zwischendatei liegen. | `T0770KorrekturUiTests.Replace_backup_atomic` |
+| M5b Speicher | Zu wenig frei (Paketgröße + min(512 MB, 2× Paket)) → alte Sicherung bleibt. Die Meldung steht in der Updates-Ansicht und im Protokoll (`update.sicherung.fehlt`). | `.Replace_backup_low_space` |
+| M5c gute Sicherung | `BootGuard.MayReplaceBackup`: Ist die laufende Version noch nicht als gut markiert und gibt es schon eine Sicherung, wird nicht ersetzt (weder vor dem Laden noch beim Installieren). | Core `T0770KorrekturTests.Unverified_version_keeps_good_backup`, App `.Unverified_keeps_good_backup` |
+| M6 -Work | Abbruch mit Code 90 vor jedem anderen Schritt, wenn `-Work` ein echter Ordner ist, darin liegt oder darüber. Probe mit `%LOCALAPPDATA%`, `%APPDATA%`, Benutzerordner, `C:\`, `…\TrendoOS`, `…\TrendoOS\abnahme`, `…\TrendoWerkzeuge\x`: alle sofort Exit 90, nichts gestartet oder beendet, kein Ordner angelegt. | `korrektur/m6-probe.log` |
+| N1 tiefer Vergleich | Rekursive Liste mit relativem Pfad, Größe und Zeitstempel, daraus SHA-256. Die vollen Listen werden gespeichert, abweichende Einträge namentlich ausgegeben. | Lauf 3, siehe unten |
+| N2 Kaltstart-Bild | Das Skript wartet auf die Zeile `first.frame`, statt nur auf die Datei. In Lauf 3 stehen alle 3 Werte in `leistung.json`. | `lauf3/leistung.json` |
+| Neuerungen | `installer/neuerungen/0.9.111.md`, eigener Abschnitt T-0770 | – |
+
+**Tests:**
+- Core `T0770|DataLocation_And_Model|BootGuard|Update`: 32/32 (`korrektur/gruen-core.log`).
+- App: `T0770KorrekturUiTests` 5, `T0770UpdateSicherungUiTests` 1, `T0770UpdateQuelleTests` 2, `UpdatesUiTests` 4, `UninstallPromptTests` 8, `RechteKernFix2Ui` 5 = **25/25** (`korrektur/gruen-app.log`, je Klasse `korrektur/gruen-app-je-klasse.log`).
+- Kein Volltest.
+- `T0770UpdateQuelleTests` habe ich an die neue Regel angepasst: Die Quelle braucht jetzt eine Instanz.
+
+**Lauf 3 (neue Id `TrendoOSAbnahme3`, weil M3/M5 den Update-Weg ändern):**
+- 1 Fehler – nur der tiefe Vergleich der echten Ordner (N1) schlug an. Alle anderen Prüfungen bestanden:
+  - Setup still, Start A, Render-Beleg
+  - Update A→B über den App-Weg mit Testquelle; Sicherung `vorherige-version` vorhanden (SHA-256 dbc90655…)
+  - B läuft, Testdateien byte-gleich
+  - Deinstallation ohne Reste der eigenen Id
+- Der N1-Fehler: In `%LOCALAPPDATA%\TrendoWerkzeuge` haben sich zwei Ordner-Zeitstempel geändert, Anzahl (297.372) und Bytes blieben gleich:
+  - `libreoffice\…\program\opencl` (06:17:18)
+  - `libreoffice\…\share\uno_packages\cache` (06:17:16)
+- Zu dieser Zeit lief nur Trendo.Render (Bildmessung). Dieselben Render-Messungen erneut ausgeführt änderten nichts. Gleichzeitig liefen parallele Sitzungen (T-0771, T-0772). Bewertung: sehr wahrscheinlich fremd, **nicht bewiesen** (`korrektur/n1-werkzeuge-probe.log`). Die anderen echten Ordner, Verknüpfungen, der HKCU-Eintrag und die Prozesse waren unverändert.
+- Last: Parallele Sitzungen bauten zur selben Zeit. Ein Release-Build dauerte 583–665 s statt rund 37 s. Die Zahlen aus Lauf 3 sind deshalb unter Last gemessen. Lauf 2 (ohne Fremdlast) bleibt die Referenz.
+
+**Zahlen Lauf 3 (unter Last):**
+
+| Messung | Werte | Median |
+|---|---|---|
+| Kaltstart, Fenster | 3139 / 3114 / 2814 ms | 3114 ms |
+| Kaltstart, erstes Bild | 3097 / 3026 / 2732 ms | 3026 ms |
+| Warmstart, Fenster | 2704 / 3016 / 3311 ms | 3016 ms |
+| Warmstart, erstes Bild | 2727 / 2925 / 3291 ms | 2925 ms |
+| Text 500 Seiten, bis bearbeitbar | 6893 / 2946 / 2191 ms | 2946 ms |
+| Tabelle 100.000 Zeilen, bis bearbeitbar | 4772 / 3003 / 3384 ms | 3384 ms |
+| Bild 8000×8000, bis bearbeitbar | 11262 / 9714 / 6671 ms | 9714 ms |
+
+- Speicher: Leerlauf 223 MB Working Set (449 MB privat), nach 5 Programmen 266 MB (519 MB privat, Spitze 268 MB).
+- Bild 8000×8000: Zauberstab 13,2–17,4 s, Working Set 1,69 GB, Spitze 1,94 GB.
+- Keine Messung über 4 GB oder 30 s.
+- B5 bestätigt: Installations-Hook 21,1 s (Velopack-Grenze 30 s), erster Start nach der Installation 38,6 s.
+
+**Weiter offen:** B2, B4, B5, B6, Registry-Sicht wegen MSIX-Container, Code-Signing (nicht bestanden/nicht geprüft). Der tiefe Vergleich (N1) dauert auf diesem PC wegen 297.000 Dateien im Werkzeugordner je Seite bis zu 30 Minuten.
+
+**Berührte Dateien (Korrekturrunde):** `.gitattributes`, `src/Trendo.Core/DataLocation.cs`, `src/Trendo.Core/Updates.cs`, `src/Trendo.App/TrendoUpdater.cs`, `src/Trendo.App/MainWindow.Updates.cs`, `tools/abnahme/lebenszyklus.ps1`, `tests/Trendo.Core.Tests/T0770KorrekturTests.cs`, `tests/Trendo.App.Tests/T0770KorrekturUiTests.cs`, `tests/Trendo.App.Tests/T0770UpdateQuelleTests.cs`, `installer/neuerungen/0.9.111.md`, `reports/T-0770/**`, `tasks/T-0770-abnahme.bericht.md`.

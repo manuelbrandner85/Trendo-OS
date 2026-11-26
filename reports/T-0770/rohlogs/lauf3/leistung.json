@@ -1,0 +1,40 @@
+﻿{
+    "version":  "0.9.110-abnahme2",
+    "hinweis":  "Kaltstart = neuer, leerer Datenordner (erster Start eines Nutzers); Dateicache von Windows nicht geleert (dafuer braeuchte es Adminrechte).",
+    "kaltstart_fenster_ms":  [
+                                 3139,
+                                 3114,
+                                 2814
+                             ],
+    "kaltstart_fenster_median_ms":  3114,
+    "kaltstart_erstesbild_ms":  [
+                                    3097,
+                                    3026,
+                                    2732
+                                ],
+    "kaltstart_erstesbild_median_ms":  3026,
+    "warmstart_fenster_ms":  [
+                                 2704,
+                                 3016,
+                                 3311
+                             ],
+    "warmstart_fenster_median_ms":  3016,
+    "warmstart_erstesbild_ms":  [
+                                    2727,
+                                    2925,
+                                    3291
+                                ],
+    "warmstart_erstesbild_median_ms":  2925,
+    "leerlauf_ws_mb":  223,
+    "leerlauf_privat_mb":  449,
+    "fuenf_programme":  [
+                            "text",
+                            "tabelle",
+                            "praesentation",
+                            "pdf",
+                            "bild"
+                        ],
+    "fuenf_ws_mb":  266,
+    "fuenf_privat_mb":  519,
+    "fuenf_spitze_ws_mb":  268
+}

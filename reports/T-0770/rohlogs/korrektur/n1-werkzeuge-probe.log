@@ -1,0 +1,8 @@
+N1-Befund Lauf 3: Liste-SHA256 von %LOCALAPPDATA%\TrendoWerkzeuge vorher != nachher (gleiche Anzahl 297372 Eintraege, gleiche Bytes 139840966273).
+Geaendert laut Zeitstempel (nur lesend ermittelt, 06:21):
+  \TrendoWerkzeuge\libreoffice\App\libreoffice\program\opencl              26.11.2026 06:17:18
+  \TrendoWerkzeuge\libreoffice\App\libreoffice\share\uno_packages\cache    26.11.2026 06:17:16
+Zu dieser Zeit lief die Phase Gross (Trendo.Render, Bild 8000x8000, Lauf 2: 06:16:52-06:17:22); die Abnahme-App war nicht gestartet.
+Gegenprobe 06:2x: dieselben drei Trendo.Render-Messungen (docx, csv, png) mit TRENDO_INSTANZ erneut ausgefuehrt -> beide Zeitstempel unveraendert (06:17:18 / 06:17:16).
+Gleichzeitig liefen parallele Sitzungen (Arbeitsordner trendo-auftrag-T-0771*, T-0772*), die LibreOffice aus dem Werkzeugordner nutzen koennen.
+Bewertung: Aenderung kommt sehr wahrscheinlich von einer parallelen Sitzung, nicht von der Abnahme; bewiesen ist das nicht. Das Skript speichert ab jetzt die vollen Listen und nennt die abweichenden Eintraege.

@@ -1,0 +1,47 @@
+﻿[
+    {
+        "Datei":  "gross-500-seiten.docx",
+        "Lauf":  1,
+        "Zeile":  "GROSS datei=gross-500-seiten.docx programm=text oeffnen_ms=3157 anzeigen_ms=3736 bis_bearbeitbar_ms=6893 bearbeiten_ms=1557 (erste 5 Zeichen fett) gesamt_ms=8449 ws_mb=238 spitze_ws_mb=267 privat_mb=150"
+    },
+    {
+        "Datei":  "gross-500-seiten.docx",
+        "Lauf":  2,
+        "Zeile":  "GROSS datei=gross-500-seiten.docx programm=text oeffnen_ms=1193 anzeigen_ms=1753 bis_bearbeitbar_ms=2946 bearbeiten_ms=1290 (erste 5 Zeichen fett) gesamt_ms=4236 ws_mb=242 spitze_ws_mb=275 privat_mb=153"
+    },
+    {
+        "Datei":  "gross-500-seiten.docx",
+        "Lauf":  3,
+        "Zeile":  "GROSS datei=gross-500-seiten.docx programm=text oeffnen_ms=908 anzeigen_ms=1283 bis_bearbeitbar_ms=2191 bearbeiten_ms=1590 (erste 5 Zeichen fett) gesamt_ms=3781 ws_mb=231 spitze_ws_mb=263 privat_mb=144"
+    },
+    {
+        "Datei":  "gross-100000-zeilen.csv",
+        "Lauf":  1,
+        "Zeile":  "GROSS datei=gross-100000-zeilen.csv programm=tabelle oeffnen_ms=2055 anzeigen_ms=2717 bis_bearbeitbar_ms=4772 bearbeiten_ms=1750 (Zelle A1 geändert) gesamt_ms=6522 ws_mb=405 spitze_ws_mb=422 privat_mb=324"
+    },
+    {
+        "Datei":  "gross-100000-zeilen.csv",
+        "Lauf":  2,
+        "Zeile":  "GROSS datei=gross-100000-zeilen.csv programm=tabelle oeffnen_ms=1575 anzeigen_ms=1428 bis_bearbeitbar_ms=3003 bearbeiten_ms=1318 (Zelle A1 geändert) gesamt_ms=4321 ws_mb=407 spitze_ws_mb=425 privat_mb=325"
+    },
+    {
+        "Datei":  "gross-100000-zeilen.csv",
+        "Lauf":  3,
+        "Zeile":  "GROSS datei=gross-100000-zeilen.csv programm=tabelle oeffnen_ms=1368 anzeigen_ms=2016 bis_bearbeitbar_ms=3384 bearbeiten_ms=1174 (Zelle A1 geändert) gesamt_ms=4558 ws_mb=417 spitze_ws_mb=434 privat_mb=334"
+    },
+    {
+        "Datei":  "gross-8000x8000.png",
+        "Lauf":  1,
+        "Zeile":  "GROSS datei=gross-8000x8000.png programm=bild oeffnen_ms=713 anzeigen_ms=10549 bis_bearbeitbar_ms=11262 bearbeiten_ms=17447 (Zauberstab-Auswahl bei 100/100) gesamt_ms=28709 ws_mb=1695 spitze_ws_mb=1941 privat_mb=1616"
+    },
+    {
+        "Datei":  "gross-8000x8000.png",
+        "Lauf":  2,
+        "Zeile":  "GROSS datei=gross-8000x8000.png programm=bild oeffnen_ms=466 anzeigen_ms=9247 bis_bearbeitbar_ms=9714 bearbeiten_ms=13344 (Zauberstab-Auswahl bei 100/100) gesamt_ms=23058 ws_mb=1695 spitze_ws_mb=1940 privat_mb=1616"
+    },
+    {
+        "Datei":  "gross-8000x8000.png",
+        "Lauf":  3,
+        "Zeile":  "GROSS datei=gross-8000x8000.png programm=bild oeffnen_ms=272 anzeigen_ms=6400 bis_bearbeitbar_ms=6671 bearbeiten_ms=13180 (Zauberstab-Auswahl bei 100/100) gesamt_ms=19851 ws_mb=1693 spitze_ws_mb=1932 privat_mb=1613"
+    }
+]

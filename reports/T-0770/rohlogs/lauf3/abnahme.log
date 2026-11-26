@@ -1,0 +1,100 @@
+﻿05:09:10 Abnahme T-0770 2026-11-26 05:09:10 Phase Alles, Paket-Id TrendoOSAbnahme3, Arbeitsordner C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme3
+05:09:12 PowerShell 5.1.26100.9843, Windows 10.0.26340.0, CPU-Kerne 16, RAM 32 GB
+05:39:29 == Bauen: TrendoOSAbnahme3 0.9.110-abnahme1 und 0.9.110-abnahme2 ==
+05:49:13 PASS  Release-Build 0.9.110-abnahme1 veroeffentlicht - 583 s
+05:49:59 PASS  Velopack-Paket 0.9.110-abnahme1 gepackt
+06:01:05 PASS  Release-Build 0.9.110-abnahme2 veroeffentlicht - 665 s
+06:02:54 PASS  Velopack-Paket 0.9.110-abnahme2 gepackt
+06:03:00   8efca62ff5450936c584a599c65b9dbe6d9bd29a7044a9037fce2e794806a707  315  assets.win.json
+06:03:00   9ec05a6bf8b1408abcb5982fb9a4229782f14089f976fe2690fba4a6978bb6b2  194  RELEASES
+06:03:00   63454de2553dfcc60997697193caf37d1f0101eda91ebfb41a3f0c45b58f2258  842  releases.win.json
+06:03:00   dbc90655c8e50d689ece2a0481b1974c676d3f895af7d2c6e6b2f14dcafc0821  135625437  TrendoOSAbnahme3-0.9.110-abnahme1-full.nupkg
+06:03:00   da3e015741d7425c8fb5120fcb1c4846cb8e39ebb608440e775a0e90364b2278  237334  TrendoOSAbnahme3-0.9.110-abnahme2-delta.nupkg
+06:03:00   ca83b5a75857bfa507299cfabd9436f3204663e7aa079dc5df10428d26f8acbf  135625445  TrendoOSAbnahme3-0.9.110-abnahme2-full.nupkg
+06:03:00   5b10bd79a1d0da103f9fb7189edf68ddc5f9952435213247d829669b65ba509a  135531895  TrendoOSAbnahme3-win-Portable.zip
+06:03:00   4d2f5260f9653ab7f5933c39d25a819c6e38df1abd9a9cac9e51b3481bc3962e  143232741  TrendoOSAbnahme3-win-Setup.exe
+06:03:00   ba06716a993162380f7f20476102fb0975f5dc718bc3555e194198549e416c3e  143232733  Setup-0.9.110-abnahme1.exe
+06:03:00   4d2f5260f9653ab7f5933c39d25a819c6e38df1abd9a9cac9e51b3481bc3962e  143232741  Setup-0.9.110-abnahme2.exe
+06:03:01 == Installieren: Setup 0.9.110-abnahme1 still nach eigenem Ordner ==
+06:03:59 PASS  Setup still beendet (Exitcode 0) - 58.4 s
+06:03:59 PASS  Installationsordner liegt unter dem eigenen Ordner - C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme3\installiert
+06:03:59 PASS  Programm vorhanden (current\TrendoOS.exe)
+06:03:59 PASS  installierte Version ist 0.9.110-abnahme1 - 0.9.110-abnahme1
+06:03:59   424 Dateien, 418 MB im Installationsordner
+06:03:59   Inhalt: current
+06:03:59   Inhalt: packages
+06:03:59   Inhalt: Trendo OS Abnahme 3.exe
+06:03:59   Inhalt: Update.exe
+06:03:59   Verknuepfung: C:\Users\<user>\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Trendo OS Abnahme 3.lnk
+06:03:59   Verknuepfung: C:\Users\<user>\Desktop\Trendo OS Abnahme 3.lnk
+06:04:00 PASS  eigene Verknuepfungen angelegt - 2
+06:04:00 PASS  HKCU-Uninstall-Eintrag der eigenen Id - DisplayName=Trendo OS Abnahme 3 DisplayVersion=0.9.110 InstallLocation=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme3\installiert
+06:04:30   Setup hat die App nicht selbst gestartet.
+06:05:09 PASS  Start A: Prozess laeuft und Hauptfenster erscheint - PID 20116, 38588 ms, Titel 'Trendo OS'
+06:05:15 PASS  Render-Beleg A (Fensterbild nicht leer) - 1292x684, 87 % nicht schwarz
+06:05:27 PASS  Start A sauber per PID beendet
+06:05:27 PASS  Daten liegen in der Pruef-Instanz - C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme3\instanz\TrendoOS
+06:05:27 == Update 0.9.110-abnahme1 -> 0.9.110-abnahme2 ueber den Update-Weg der App (Quelle: lokaler Ordner) ==
+06:05:27 PASS  Ausgangslage: 0.9.110-abnahme1 installiert - 0.9.110-abnahme1
+06:05:27   Testdateien angelegt: fa0d87d82da11200570c8367dcecff93b9bc3b424db2286fc674ef942ce4b8bf / 128caa5b119eae6f118971f64171f33f00161e76706906aff88701a5e910f16d
+06:05:31 PASS  A gestartet (PID 57364) - Titel 'Trendo OS'
+06:06:58 PASS  Sicherung der alten Version fuer die Rueckkehr (U5) vorhanden - TrendoOSAbnahme3-0.9.110-abnahme1-full.nupkg, 135625437 Bytes, SHA-256 dbc90655c8e50d689ece2a0481b1974c676d3f895af7d2c6e6b2f14dcafc0821
+06:06:59 PASS  A hat sich beendet (Update angewendet) - nach 68 s
+06:06:59 PASS  installierte Version ist jetzt 0.9.110-abnahme2 - 0.9.110-abnahme2
+06:06:59   neu gestartet: PID 50216, Befehl: "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme3\installiert\current\TrendoOS.exe" --nach-update
+06:07:18 PASS  B laeuft nach dem Update mit Hauptfenster - PID 50216, Titel 'Trendo OS'
+06:07:23   Bild vom Fenster: 1292x684, 98 % nicht schwarz
+06:07:29 PASS  B sauber per PID beendet
+06:07:29 PASS  Testdatei im Datenordner unveraendert
+06:07:29 PASS  Projektdatei im Datenordner unveraendert
+06:07:29 PASS  Einstellungen vorhanden - von der App fortgeschrieben
+06:07:29   Protokoll: {"Seq":12,"At":"2026-11-26T06:05:48.9272606+01:00","Actor":"app","Action":"update.downloaded","Detail":"0.9.110-abnahme2","PrevHash":"CED2EB9C22DF0E045F04641FF20FB81F7A03A40682C998380FEA08AEAD317B3D",
+06:07:29   Protokoll: {"Seq":13,"At":"2026-11-26T06:05:48.9366129+01:00","Actor":"app","Action":"update.countdown","Detail":"0.9.110-abnahme2","PrevHash":"D389EB5BC5BD4B358BF67AC3E32382DDD3E1D8686F4875E6C98C0ED2B52F37F1","
+06:07:29   Protokoll: {"Seq":14,"At":"2026-11-26T06:06:23.0501599+01:00","Actor":"lokaler-besitzer","Action":"update.apply","Detail":"0.9.110-abnahme2","PrevHash":"B391F11B29A7CAE88E969FE23DFD936D1A933630CF9B953A402D1FA908
+06:07:29   Update-Ordner: \updates\start.json 70 Bytes
+06:07:29   Update-Ordner: \updates\vorherige-version\TrendoOSAbnahme3-0.9.110-abnahme1-full.nupkg 135625437 Bytes
+06:07:30 == Leistung (Release-Build 0.9.110-abnahme2, installiert) ==
+06:07:34   kaltstart 1: Fenster sichtbar nach 3139 ms, erstes Bild (App-Messung) 3097 ms, PID 36524
+06:07:58   kaltstart 2: Fenster sichtbar nach 3114 ms, erstes Bild (App-Messung) 3026 ms, PID 22544
+06:08:21   kaltstart 3: Fenster sichtbar nach 2814 ms, erstes Bild (App-Messung) 2732 ms, PID 44668
+06:08:41 PASS  kaltstart: 3 Laeufe mit Fenster - Median Fenster 3114 ms, Median erstes Bild 3026 ms
+06:09:05   warmstart 1: Fenster sichtbar nach 2704 ms, erstes Bild (App-Messung) 2727 ms, PID 66628
+06:09:24   warmstart 2: Fenster sichtbar nach 3016 ms, erstes Bild (App-Messung) 2925 ms, PID 61900
+06:09:45   warmstart 3: Fenster sichtbar nach 3311 ms, erstes Bild (App-Messung) 3291 ms, PID 4916
+06:10:03 PASS  warmstart: 3 Laeufe mit Fenster - Median Fenster 3016 ms, Median erstes Bild 2925 ms
+06:10:37   Leerlauf (30 s nach Start): Working Set 223 MB, privat 449 MB
+06:11:11   Bild: 1292x684, 89 % nicht schwarz
+06:11:11 PASS  fuenf Programme geoeffnet (Wiederherstellungsdatei verbraucht)
+06:11:11   nach 5 Programmen (text, tabelle, praesentation, pdf, bild): Working Set 266 MB, privat 519 MB, Spitze 268 MB
+06:11:26 == Grosse Dateien (Release-Build, Avalonia headless ueber tools/Trendo.Render) ==
+06:11:37 PASS  grosse Testdateien erzeugt
+06:11:37   gross-100000-zeilen.csv: 4,7 MB, SHA-256 423f6aca34fc9236c65f4229bd05f65de636cbe74b7bc02d6a27a9ee61393b92
+06:11:37   gross-500-seiten.docx: 0,0 MB, SHA-256 3b25c3e43700732eae7393d175795a24cba4f760b8ba1780a6555914119c938d
+06:11:37   gross-8000x8000.png: 1,4 MB, SHA-256 62191fab4642c4754df36a54bf8c611ce3fdd44d27dc945e2d872ff03ec9471f
+06:14:59 PASS  Trendo.Render (Release) gebaut
+06:15:17   Lauf 1 (17.9 s Prozess): GROSS datei=gross-500-seiten.docx programm=text oeffnen_ms=3157 anzeigen_ms=3736 bis_bearbeitbar_ms=6893 bearbeiten_ms=1557 (erste 5 Zeichen fett) gesamt_ms=8449 ws_mb=238 spitze_ws_mb=267 privat_mb=150
+06:15:27   Lauf 2 (10.7 s Prozess): GROSS datei=gross-500-seiten.docx programm=text oeffnen_ms=1193 anzeigen_ms=1753 bis_bearbeitbar_ms=2946 bearbeiten_ms=1290 (erste 5 Zeichen fett) gesamt_ms=4236 ws_mb=242 spitze_ws_mb=275 privat_mb=153
+06:15:36   Lauf 3 (9.1 s Prozess): GROSS datei=gross-500-seiten.docx programm=text oeffnen_ms=908 anzeigen_ms=1283 bis_bearbeitbar_ms=2191 bearbeiten_ms=1590 (erste 5 Zeichen fett) gesamt_ms=3781 ws_mb=231 spitze_ws_mb=263 privat_mb=144
+06:15:52   Lauf 1 (16 s Prozess): GROSS datei=gross-100000-zeilen.csv programm=tabelle oeffnen_ms=2055 anzeigen_ms=2717 bis_bearbeitbar_ms=4772 bearbeiten_ms=1750 (Zelle A1 geändert) gesamt_ms=6522 ws_mb=405 spitze_ws_mb=422 privat_mb=324
+06:16:05   Lauf 2 (12.9 s Prozess): GROSS datei=gross-100000-zeilen.csv programm=tabelle oeffnen_ms=1575 anzeigen_ms=1428 bis_bearbeitbar_ms=3003 bearbeiten_ms=1318 (Zelle A1 geändert) gesamt_ms=4321 ws_mb=407 spitze_ws_mb=425 privat_mb=325
+06:16:17   Lauf 3 (11.5 s Prozess): GROSS datei=gross-100000-zeilen.csv programm=tabelle oeffnen_ms=1368 anzeigen_ms=2016 bis_bearbeitbar_ms=3384 bearbeiten_ms=1174 (Zelle A1 geändert) gesamt_ms=4558 ws_mb=417 spitze_ws_mb=434 privat_mb=334
+06:16:52   Lauf 1 (35.7 s Prozess): GROSS datei=gross-8000x8000.png programm=bild oeffnen_ms=713 anzeigen_ms=10549 bis_bearbeitbar_ms=11262 bearbeiten_ms=17447 (Zauberstab-Auswahl bei 100/100) gesamt_ms=28709 ws_mb=1695 spitze_ws_mb=1941 privat_mb=1616
+06:17:22   Lauf 2 (29.3 s Prozess): GROSS datei=gross-8000x8000.png programm=bild oeffnen_ms=466 anzeigen_ms=9247 bis_bearbeitbar_ms=9714 bearbeiten_ms=13344 (Zauberstab-Auswahl bei 100/100) gesamt_ms=23058 ws_mb=1695 spitze_ws_mb=1940 privat_mb=1616
+06:17:47   Lauf 3 (25 s Prozess): GROSS datei=gross-8000x8000.png programm=bild oeffnen_ms=272 anzeigen_ms=6400 bis_bearbeitbar_ms=6671 bearbeiten_ms=13180 (Zauberstab-Auswahl bei 100/100) gesamt_ms=19851 ws_mb=1693 spitze_ws_mb=1932 privat_mb=1613
+06:17:47 == Deinstallieren ueber Update.exe (still) ==
+06:17:47 PASS  Update.exe vorhanden
+06:17:54 PASS  Update.exe --uninstall --silent beendet (Exitcode 0) - 7.2 s
+06:17:59   Hook: 2026-11-26 06:17:48 Deinstallation: Programme entfernen, Frage nach Daten.
+06:17:59   Hook: 2026-11-26 06:17:49 Windows-Aufgaben der Abläufe entfernt: 0
+06:17:59   Hook: 2026-11-26 06:17:50 Stille Deinstallation: Daten bleiben.
+06:17:59 PASS  Installationsordner leer oder entfernt - Ordner entfernt
+06:17:59 PASS  eigene Verknuepfungen entfernt
+06:17:59 PASS  HKCU-Uninstall-Eintrag der eigenen Id entfernt
+06:18:00 PASS  keine weiteren HKCU-Schluessel mit der eigenen Id
+06:18:00 PASS  kein Ordner %LOCALAPPDATA%\TrendoOSAbnahme3 (Standardort)
+06:18:00   Datenordner der Instanz nach dem Deinstallieren: 16 Eintraege (Absicht: stille Deinstallation behaelt Daten)
+06:18:00 PASS  Nutzerdaten bleiben bei stiller Deinstallation (Absicht)
+06:18:00 PASS  keine eigenen Prozesse mehr
+06:19:03 FAIL  echte Installation unveraendert (Ordnerstand, Verknuepfungen, HKCU-Eintrag, Prozesse; nur lesend verglichen)
+06:19:03   geaendert: C:\Users\<user>\AppData\Local\TrendoWerkzeuge :: 297372 Eintraege rekursiv, 139840966273 Bytes, Ordner 2026-11-07T14:22:07.7860016Z, Liste-SHA256 77977bc504ee5cc7b2755ddd2055c4df813d0480284991aee0c97ec032a482a0 -> 297372 Eintraege rekursiv, 139840966273 Bytes, Ordner 2026-11-07T14:22:07.7860016Z, Liste-SHA256 012ade0665bdfd705be825b817e523245376ccde0e6fcd69c5bcb9c6aae73f72
+06:19:03 Ende Phase Alles - Fehler: 1

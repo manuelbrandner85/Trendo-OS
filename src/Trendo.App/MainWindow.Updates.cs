@@ -22,6 +22,7 @@ public partial class MainWindow
     DispatcherTimer? _updateTimer;
     bool _updateBusy;
     bool _updateBackedUp;
+    string? _updateBackupNote;
     public string? UpdateReady => _updateReady;
     public BootGuard Boot => new(_core.DataRoot);
     string WindowRestoreFile => Path.Combine(_core.DataRoot, "updates", "fenster.json");
@@ -89,13 +90,21 @@ public partial class MainWindow
         try
         {
             _updateMsg = "Suche nach Updates …";
+            if (Updater.TestSource is { } testSrc) _core.Audit.Append("app", "update.quelle.test", testSrc); // T-0770 (M3): Fremdquelle protokollieren
             var found = await Updater.CheckAsync();
             if (found is not { } u) { _updateMsg = $"Trendo ist aktuell (Version {Updater.Current})."; _updateInfo = $"Aktuell (v{Updater.Current})"; return false; }
             _updateMsg = $"Version {u.Version} wird im Hintergrund geladen …";
             // T-0770 (Abnahme): Velopack löscht beim Laden das Paket der laufenden Version – die Sicherung für die Rückkehr (U5)
             // muss deshalb VOR dem Laden entstehen, sonst ist beim Installieren nichts mehr zum Sichern da.
+            // T-0770 (M5c): läuft diese Version noch nicht als gut, bleibt die Sicherung der letzten guten Version stehen
             var backupDir = Boot.BackupDir;
-            _updateBackedUp = await Task.Run(() => Updater.BackupCurrent(backupDir));
+            if (!Boot.MayReplaceBackup(Updater.Current)) { _updateBackedUp = true; _updateBackupNote = "Die Sicherung der letzten guten Version bleibt erhalten (die laufende Version ist noch nicht bestätigt)."; }
+            else
+            {
+                _updateBackedUp = await Task.Run(() => Updater.BackupCurrent(backupDir));
+                _updateBackupNote = _updateBackedUp ? null : Updater.BackupNote;
+                if (_updateBackupNote is { } bn) _core.Audit.Append("app", "update.sicherung.fehlt", bn);
+            }
             await Updater.DownloadAsync(p => _ui.Post(() => { _updateMsg = $"Version {u.Version} wird geladen … {p} %"; if (CurrentView == "updates") Show("updates"); }), CancellationToken.None);
             ReleaseNotes.Save(_core.DataRoot, u.Version, u.Notes);
             _updateReady = u.Version;
@@ -136,7 +145,7 @@ public partial class MainWindow
     {
         if (_updateReady is not { } v) return;
         _core.Audit.Append(Principal.LocalOwner.Name, "update.apply", v);
-        if (!_updateBackedUp) Updater.BackupCurrent(Boot.BackupDir); // T-0770: meist schon vor dem Laden gesichert
+        if (!_updateBackedUp && Boot.MayReplaceBackup(Updater.Current)) Updater.BackupCurrent(Boot.BackupDir); // T-0770: meist schon vor dem Laden gesichert
         try
         {
             Directory.CreateDirectory(Path.GetDirectoryName(WindowRestoreFile)!);
@@ -156,7 +165,10 @@ public partial class MainWindow
     Control UpdatesView()
     {
         var sp = new StackPanel { Spacing = 10 };
-        sp.Children.Add(P($"Du hast Trendo OS {Updater.Current}. Trendo sucht selbst nach neuen Versionen, lädt sie leise im Hintergrund und installiert sie, wann du willst. Updates kommen nur aus den offiziellen, geprüften Veröffentlichungen.", Text, 13));
+        sp.Children.Add(P($"Du hast Trendo OS {Updater.Current}. Trendo sucht selbst nach neuen Versionen, lädt sie leise im Hintergrund und installiert sie, wann du willst. " +
+            (Updater.TestSource is not null ? "" : "Updates kommen nur aus den offiziellen, geprüften Veröffentlichungen."), Text, 13));
+        if (Updater.TestSource is { } src) sp.Children.Add(new TextBlock { Name = "upd-testquelle", Text = $"Achtung, Prüfbetrieb: Updates kommen aus einer Testquelle ({src}), nicht aus den offiziellen Veröffentlichungen.", Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
+        if (_updateBackupNote is { } note) sp.Children.Add(new TextBlock { Name = "upd-sicherung", Text = note, Foreground = Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap });
         if (_updateMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "upd-msg", Text = _updateMsg, Foreground = Text, FontSize = 13, TextWrapping = TextWrapping.Wrap });
         var auto = new CheckBox { Name = "upd-auto", Content = "Automatisch nach Updates suchen und laden", IsChecked = _settings.AutoUpdate, Foreground = Text, IsEnabled = !_roleChild }; // T-0764 (14.): Updates stellt ein Erwachsener ein
         auto.IsCheckedChanged += (_, _) => { if (_roleChild) return; _settings.AutoUpdate = auto.IsChecked == true; SaveSettings(); };

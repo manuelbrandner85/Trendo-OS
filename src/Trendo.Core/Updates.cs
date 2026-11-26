@@ -49,6 +49,14 @@ public sealed class BootGuard(string dataRoot)
     public string? LastGood => Load() is { } s ? (s.Ok ? s.Version : s.LastGood) : null;
     public int Attempts => Load()?.Attempts ?? 0;
 
+    /// <summary>Korrektur T-0770 (M5c): Darf die Sicherung durch die laufende Version ersetzt werden? Nicht, solange diese Version noch
+    /// nicht als gut gilt (vor <see cref="MarkOk"/>) und schon eine Sicherung da ist – sonst ginge die letzte gute Version verloren.</summary>
+    public bool MayReplaceBackup(string currentVersion)
+    {
+        var hasBackup = Directory.Exists(BackupDir) && Directory.GetFiles(BackupDir, "*.nupkg").Length > 0;
+        return !hasBackup || Load() is { Ok: true } s && s.Version == currentVersion;
+    }
+
     /// <summary>Ordner für die Sicherung der laufenden Version vor einem Update.</summary>
     public string BackupDir => Path.Combine(dataRoot, "updates", "vorherige-version");
 }

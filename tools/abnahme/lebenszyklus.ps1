@@ -22,12 +22,23 @@ param(
 $ErrorActionPreference = 'Stop'
 $Repo = (Resolve-Path $Repo).Path
 if ($PackId -ieq 'TrendoOS') { throw 'Abbruch: Die Paket-Id der echten Installation (TrendoOS) ist verboten.' }
-New-Item -ItemType Directory -Force $Work | Out-Null
-$Work = (Resolve-Path $Work).Path
 $realLocal = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'TrendoOS'
 $realData = Join-Path ([Environment]::GetFolderPath('ApplicationData')) 'TrendoOS'
 $realTools = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'TrendoWerkzeuge'
-foreach ($r in @($realLocal, $realData, $realTools)) { if ($Work.StartsWith($r, [StringComparison]::OrdinalIgnoreCase)) { throw "Abbruch: -Work liegt in einem Ordner der echten Installation ($r)." } }
+# Schutz (Korrektur M6): -Work darf weder ein echter Ordner sein noch darin noch darueber liegen (sonst wuerde z. B. -Work %LOCALAPPDATA%
+# die echte Installation einschliessen). Geprueft wird VOR dem Anlegen und vor jedem anderen Schritt.
+function Test-WorkSafe([string]$w) {
+    $full = [IO.Path]::GetFullPath($w).TrimEnd('\', '/') + '\'
+    foreach ($r in @($realLocal, $realData, $realTools)) {
+        $rr = [IO.Path]::GetFullPath($r).TrimEnd('\', '/') + '\'
+        if ($full.StartsWith($rr, [StringComparison]::OrdinalIgnoreCase) -or $rr.StartsWith($full, [StringComparison]::OrdinalIgnoreCase)) { return $r }
+    }
+    return $null
+}
+$bad = Test-WorkSafe $Work
+if ($bad) { Write-Output "Abbruch: -Work ist ein echter Ordner, liegt darin oder darueber ($bad). Nichts wurde gestartet oder beendet."; exit 90 }
+New-Item -ItemType Directory -Force $Work | Out-Null
+$Work = (Resolve-Path $Work).Path
 
 $Feed = Join-Path $Work 'feed'; $Pakete = Join-Path $Work 'pakete'; $Inst = Join-Path $Work 'installiert'
 $Instanz = Join-Path $Work 'instanz'; $Tmp = Join-Path $Work 'tmp'; $LogDir = Join-Path $Work 'log'; $Gross = Join-Path $Work 'gross'
@@ -66,13 +77,22 @@ public static class AbnWin {
 Add-Type -AssemblyName System.Drawing
 
 # --- echte Installation: nur lesend festhalten ---
-function RealState() {
+function RealState([string]$name = '') {
     $o = [ordered]@{}
+    # Korrektur N1: rekursiv jede Datei und jeder Ordner mit relativem Pfad, Groesse und Zeitstempel; daraus eine SHA-256 der Liste
     foreach ($p in @($realLocal, $realData, $realTools)) {
         if (Test-Path $p) {
-            $items = @(Get-ChildItem -Force $p -ErrorAction SilentlyContinue)
-            $newest = ($items | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1)
-            $o[(Anon $p)] = "{0} Eintraege, Ordner {1:o}, neuester Eintrag {2:o}" -f $items.Count, (Get-Item -Force $p).LastWriteTimeUtc, $(if ($newest) { $newest.LastWriteTimeUtc } else { $null })
+            $lines = New-Object System.Collections.Generic.List[string]
+            $bytes = [long]0
+            foreach ($i in @(Get-ChildItem -Force -Recurse $p -ErrorAction SilentlyContinue)) {
+                $rel = $i.FullName.Substring($p.Length)
+                if ($i.PSIsContainer) { $lines.Add(("D {0} {1:o}" -f $rel, $i.LastWriteTimeUtc)) } else { $bytes += $i.Length; $lines.Add(("F {0} {1} {2:o}" -f $rel, $i.Length, $i.LastWriteTimeUtc)) }
+            }
+            $lines.Sort([StringComparer]::OrdinalIgnoreCase)
+            if ($name) { [IO.File]::WriteAllLines((Join-Path $LogDir ("echte-liste-{0}-{1}-{2}.txt" -f $name, (Split-Path (Split-Path $p -Parent) -Leaf), (Split-Path $p -Leaf))), $lines) } # relative Pfade, fuer den Vergleich
+            $text = [string]::Join("`n", $lines)
+            $sha = [BitConverter]::ToString([Security.Cryptography.SHA256]::Create().ComputeHash([Text.Encoding]::UTF8.GetBytes($text))).Replace('-', '').ToLowerInvariant()
+            $o[(Anon $p)] = "{0} Eintraege rekursiv, {1} Bytes, Ordner {2:o}, Liste-SHA256 {3}" -f $lines.Count, $bytes, (Get-Item -Force $p).LastWriteTimeUtc, $sha
         } else { $o[(Anon $p)] = 'fehlt' }
     }
     $desk = [Environment]::GetFolderPath('Desktop'); $sm = Join-Path ([Environment]::GetFolderPath('Programs')) ''
@@ -84,7 +104,7 @@ function RealState() {
     $o['Prozesse der echten Installation'] = (ProcsUnder $realLocal).Count
     return $o
 }
-function SaveRealState([string]$name) { $s = RealState; ($s | ConvertTo-Json) | Set-Content -Encoding UTF8 (Join-Path $LogDir "echte-installation-$name.json"); return $s }
+function SaveRealState([string]$name) { $s = RealState $name; ($s | ConvertTo-Json) | Set-Content -Encoding UTF8 (Join-Path $LogDir "echte-installation-$name.json"); return $s }
 
 # --- eigene Prozesse ---
 function ProcsUnder([string]$dir) { $pat = $dir.TrimEnd('\').Replace('\', '\\') + '\\%'; @(Get-CimInstance Win32_Process -Filter "ExecutablePath LIKE '$pat'" -ErrorAction SilentlyContinue | ForEach-Object { Get-Process -Id $_.ProcessId -ErrorAction SilentlyContinue } | Where-Object { $_ -and $_.Path -and $_.Path.StartsWith($dir, [StringComparison]::OrdinalIgnoreCase) }) }
@@ -139,7 +159,7 @@ function Phase-Bauen {
         $pub = Join-Path $Pakete "publish-$v"
         if (Test-Path $pub) { Remove-Item -Recurse -Force $pub }
         $sw = [Diagnostics.Stopwatch]::StartNew()
-        & dotnet publish (Join-Path $Repo 'src\Trendo.App\Trendo.App.csproj') -c Release -r win-x64 --self-contained true "-p:Version=$v" -o $pub *> (Join-Path $LogDir "publish-$v.log")
+        & dotnet publish (Join-Path $Repo 'src\Trendo.App\Trendo.App.csproj') -c Release -r win-x64 --self-contained true --disable-build-servers "-p:Version=$v" -o $pub *> (Join-Path $LogDir "publish-$v.log")
         Check "Release-Build $v veroeffentlicht" ($LASTEXITCODE -eq 0 -and (Test-Path (Join-Path $pub 'TrendoOS.exe'))) "$([math]::Round($sw.Elapsed.TotalSeconds)) s"
         & vpk pack -u $PackId -v $v -p $pub -e TrendoOS.exe -i $ico --packTitle $Title --packAuthors 'Trendo OS Projekt' -o $Feed --yes *> (Join-Path $LogDir "vpk-$v.log")
         $setup = Join-Path $Feed "$PackId-win-Setup.exe"
@@ -386,7 +406,14 @@ finally {
     $after = SaveRealState "nachher-$Phase"
     $same = ($before | ConvertTo-Json) -eq ($after | ConvertTo-Json)
     Check 'echte Installation unveraendert (Ordnerstand, Verknuepfungen, HKCU-Eintrag, Prozesse; nur lesend verglichen)' $same
-    if (-not $same) { foreach ($k in $before.Keys) { if ("$($before[$k])" -ne "$($after[$k])") { Say "  geaendert: $k :: $($before[$k]) -> $($after[$k])" } } }
+    if (-not $same) {
+        foreach ($k in $before.Keys) { if ("$($before[$k])" -ne "$($after[$k])") { Say "  geaendert: $k :: $($before[$k]) -> $($after[$k])" } }
+        foreach ($f in @(Get-ChildItem $LogDir -Filter "echte-liste-vorher-$Phase-*.txt" -ErrorAction SilentlyContinue)) {
+            $leaf = $f.Name.Substring(("echte-liste-vorher-$Phase-").Length) -replace '\.txt$', ''
+            $n = Join-Path $LogDir "echte-liste-nachher-$Phase-$leaf.txt"
+            if (Test-Path $n) { Compare-Object (Get-Content $f.FullName) (Get-Content $n) | Select-Object -First 20 | ForEach-Object { Say ("  Unterschied {0} {1}: {2}" -f $leaf, $_.SideIndicator, $_.InputObject) } }
+        }
+    }
     Say "Ende Phase $Phase - Fehler: $script:fails"
 }
 exit $script:fails

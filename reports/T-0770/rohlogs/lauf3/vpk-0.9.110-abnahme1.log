@@ -1,0 +1,23 @@
+[05:49:14 INF] Velopack CLI 1.2.161, for distributing applications.
+[05:49:17 INF] Beginning to package Velopack release 0.9.110-abnahme1.
+[05:49:17 INF] Releases Directory: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme3\feed
+[05:49:17 INF] Starting: Pre-process steps
+[05:49:18 INF] Verified VelopackApp.Run() in 'System.Int32 Trendo.App.Program::Main(System.String)'.
+[05:49:19 INF] Shortcuts: Desktop,StartMenuRoot
+[05:49:20 WRN] No architecture specified with --runtime, defaulting to x86. If this was not intended please specify via the --runtime parameter
+[05:49:21 WRN] No architecture specified with --runtime, defaulting to x86. If this was not intended please specify via the --runtime parameter
+[05:49:21 INF] Complete: Pre-process steps
+[05:49:21 INF] Starting: Code-sign application
+[05:49:21 WRN] No signing parameters provided, 395 file(s) will not be signed.
+[05:49:21 INF] Complete: Code-sign application
+[05:49:21 INF] Starting: Building portable package
+[05:49:21 INF] Starting: Building release 0.9.110-abnahme1
+[05:49:55 INF] Complete: Building portable package
+[05:49:55 INF] Complete: Building release 0.9.110-abnahme1
+[05:49:55 INF] Starting: Building setup package
+[05:49:57 INF] Setup bundle created 'TrendoOSAbnahme3-win-Setup.exe'.
+[05:49:57 WRN] No signing parameters provided, 1 file(s) will not be signed.
+[05:49:57 INF] Complete: Building setup package
+[05:49:57 INF] Starting: Post-process steps
+[05:49:58 INF] Complete: Post-process steps
+[05:49:58 INF] Finished in 00:00:41.1003785.

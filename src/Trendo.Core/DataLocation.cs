@@ -10,11 +10,26 @@ public static class DataLocation
     /// vollständigen Pfad gesetzt, liegen Daten, Werkzeuge und der Altordner darunter – auch in den Installations-/Deinstallations-Hooks,
     /// die Velopack ohne Kommandozeile der App startet. Für Endnutzer ohne Wirkung, solange die Variable fehlt.</summary>
     public const string InstanceVar = "TRENDO_INSTANZ";
-    /// <summary>Wurzel der Prüf-Instanz oder null (keine/ungültige Angabe: dann gelten die normalen Ordner).</summary>
+    /// <summary>Wurzel der Prüf-Instanz oder null (keine/ungültige Angabe: dann gelten die normalen Ordner).
+    /// Korrektur T-0770 (M4): abgelehnt werden Netzpfade und jeder Ordner, der gleich einem echten Trendo-Ordner ist, darüber liegt
+    /// (z. B. %LOCALAPPDATA%, %APPDATA%, Benutzerordner, Laufwerk) oder darunter – eine Prüf-Instanz darf die echte Installation nie berühren.</summary>
     public static string? Instance(string? value = null)
     {
         var v = (value ?? Environment.GetEnvironmentVariable(InstanceVar))?.Trim().Trim('"');
-        return string.IsNullOrEmpty(v) || !Path.IsPathFullyQualified(v) ? null : Path.GetFullPath(v);
+        if (string.IsNullOrEmpty(v) || !Path.IsPathFullyQualified(v) || v.StartsWith(@"\\", StringComparison.Ordinal) || v.StartsWith("//", StringComparison.Ordinal)) return null;
+        var full = Path.TrimEndingDirectorySeparator(Path.GetFullPath(v));
+        return RealRoots().Any(r => Related(full, r)) ? null : full;
+    }
+
+    /// <summary>Die echten Ordner einer normalen Installation (ohne Prüf-Instanz).</summary>
+    public static IReadOnlyList<string> RealRoots() => [LegacyIn(null), DefaultIn(null), ToolsRootIn(null)];
+
+    /// <summary>Gleich, darüber oder darunter (ohne Groß-/Kleinschreibung, ganze Ordnernamen).</summary>
+    static bool Related(string a, string b)
+    {
+        a = Path.TrimEndingDirectorySeparator(Path.GetFullPath(a)); b = Path.TrimEndingDirectorySeparator(Path.GetFullPath(b));
+        bool Under(string x, string y) => x.StartsWith(y.EndsWith(Path.DirectorySeparatorChar) ? y : y + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+        return string.Equals(a, b, StringComparison.OrdinalIgnoreCase) || Under(a, b) || Under(b, a);
     }
 
     public static string Legacy() => LegacyIn(Instance());
