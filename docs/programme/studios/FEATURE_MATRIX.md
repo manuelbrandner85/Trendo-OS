@@ -1,6 +1,6 @@
 # Alle Studios – Funktionsmatrix
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `studios` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `studios` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 
@@ -41,14 +41,15 @@ Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 ## Werkzeuge der Oberfläche
 - KI ▾
 - Claude
+- Ausblenden
 - Alle
-- Arbeiten & Büro (13)
+- Arbeiten & Büro (12)
 - Business & Geld (3)
 - Kreativ & Medien (13)
 - 3D & Spiele (4)
 - Technik & Fachgebiete (5)
-- Wissen & Lernen (5)
-- KI & Automatik (10)
+- Wissen & Lernen (4)
+- KI & Automatik (12)
 - Entwickeln (2)
 - System & Sicherheit (6)
 - studio-card-CORE-11

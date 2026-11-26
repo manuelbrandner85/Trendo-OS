@@ -1,10 +1,10 @@
 # Trendo PDF – Testergebnisse
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 28 · Fehlgeschlagen 0 · Übersprungen 2 · nicht im Lauf 0
+Bestanden 29 · Fehlgeschlagen 0 · Übersprungen 2 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -38,3 +38,4 @@ Bestanden 28 · Fehlgeschlagen 0 · Übersprungen 2 · nicht im Lauf 0
 | T-0303: Miniatur springt zur Seite; Seiten ordnen: Ziehen verschiebt, Drehen, Löschen, leere Seite, PDF einfügen, Rückgängig, Kopie speichern – Original bleibt | ✓ bestanden |
 | T-0711 PDF „Seiten ordnen“: Rückgängig und jetzt auch Wiederholen über die Hülle, Notsicherung, Karte öffnet die PDF wieder im Ordnen-Modus | ✓ bestanden |
 | T-0714 PDF-Formular: Werte tippen und ankreuzen → Rückgängig/Wiederholen; Fenster ohne Speichern geschlossen → Karte öffnet die PDF mit den Werten; „Ausgefüllt speichern“ schreibt sie und räumt die Sicherung weg | ✓ bestanden |
+| T-0776 echt: Texte (SYS-10) – Trendo schreibt DOCX und ODT, LibreOffice 26 öffnet beide und liefert Überschrift, Absätze, Liste und Tabelle als Text zurück | ✓ bestanden |

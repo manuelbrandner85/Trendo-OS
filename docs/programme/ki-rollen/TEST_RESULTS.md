@@ -1,10 +1,10 @@
 # KI-Rollen und Teams – Testergebnisse
 
-Studio: KI-Team einsetzen (CORE-03) · Bereich: KI & Automatik · Seite: `ki-rollen` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: KI-Team einsetzen (CORE-03) · Bereich: KI & Automatik · Seite: `ki-rollen` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 11 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 10 · Fehlgeschlagen 0 · Übersprungen 1 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -16,6 +16,6 @@ Bestanden 11 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | T-0698 UI +5: KI-Team – Rollen geben Dateien weiter, Prüfer gibt zurück, Ergebnis-Dateien im Projekt | ✓ bestanden |
 | T-0717 KI-Rollen: Auftrag – Rückgängig/Wiederholen, Notsicherung, Karte, Zurückholen | ✓ bestanden |
 | T-0717 KI-Rollen: neue eigene Rolle – Rückgängig/Wiederholen, Notsicherung, Karte öffnet das Formular wieder | ✓ bestanden |
-| T-0741 ECHT Ollama: KI-Team über die Oberfläche – Stopp, Zwischenstand, Fortsetzen (nur mit TRENDO_TEAM_ECHT) | ✓ bestanden |
+| T-0741 ECHT Ollama: KI-Team über die Oberfläche – Stopp, Zwischenstand, Fortsetzen (nur mit TRENDO_TEAM_ECHT) | übersprungen |
 | T-0741 UI +1: Fortschritt je Rolle live, Stopp mitten im Lauf, Zwischenstand speichern, Team-Lauf fortsetzen bis fertig | ✓ bestanden |
 | T-0741 UI +2: Rechercheur fragt vor dem Internet-Abruf – erst nach „Zustimmen“ wird gelesen, Ergebnis landet in der Übergabe-Datei | ✓ bestanden |

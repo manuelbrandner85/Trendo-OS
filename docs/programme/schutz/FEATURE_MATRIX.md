@@ -1,6 +1,6 @@
 # Schutz & Datenschutz – Funktionsmatrix
 
-Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `schutz` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `schutz` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -17,7 +17,7 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - settings-nav-sicherung
 - Mehr Einstellungen (22)
 - Mehr
-- Ansehen
+- Jetzt sichern
 - restic einrichten (ca. 11 MB)
 - Ordner wählen …
 - Ordner prüfen

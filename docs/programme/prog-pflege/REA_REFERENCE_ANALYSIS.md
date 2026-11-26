@@ -1,6 +1,6 @@
 # Pflegen – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `prog-pflege` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `prog-pflege` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Analyse: [Vorbild-Analyse Programme: Microsoft Store, WinGet/UniGetUI, GNOME Software, Flathub (Clean-Room)](../../../docs/claude/vorbilder/programme-winget-appcenter.md)
 

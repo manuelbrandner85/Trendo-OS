@@ -1,10 +1,10 @@
 # Downloads & Links – Testergebnisse
 
-Studio: Downloads & Links (SYS-03) · Bereich: System & Sicherheit · Seite: `downloads` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Downloads & Links (SYS-03) · Bereich: System & Sicherheit · Seite: `downloads` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 17 · Fehlgeschlagen 0 · Übersprungen 1 · nicht im Lauf 2
+Bestanden 19 · Fehlgeschlagen 0 · Übersprungen 1 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -20,10 +20,10 @@ Bestanden 17 · Fehlgeschlagen 0 · Übersprungen 1 · nicht im Lauf 2
 | SYS-03-P14: PDF-Befehl für Chrome/Edge (A4-Prüfung über pdfinfo) | ✓ bestanden |
 | SYS-03-P14: Seite als PDF – A4, Prüfsumme im Protokoll (nur wenn Chrome/Edge da) | übersprungen |
 | SYS-03-P15/P16: Echte Adressen bleiben ohne Warnung; Ziel wird erklärt | ✓ bestanden |
-| SYS-03-P15/P16: Warnzeichen bei Phishing-Adressen | nicht im Lauf |
+| SYS-03-P15/P16: Warnzeichen bei Phishing-Adressen | ✓ bestanden |
 | SYS-03-P17: Formular-Hinweise (IBAN, Karte, Passwort, http) – nie Absenden | ✓ bestanden |
 | SYS-03-P18/P19/P20/P21/P24: Downloads sortieren + rückgängig, Quarantäne, Defender-Auswertung, Webnotiz, Proxy | ✓ bestanden |
-| SYS-03: Adressen werden sicher normalisiert (nur http/https, sonst Suche oder Ablehnung) | nicht im Lauf |
+| SYS-03: Adressen werden sicher normalisiert (nur http/https, sonst Suche oder Ablehnung) | ✓ bestanden |
 | SYS-03: Browser werden über bekannte Pfade gefunden; riskante und unfertige Downloads erkannt | ✓ bestanden |
 | SYS-03: Dock-Symbol öffnet „Downloads & Links“; Adresse öffnet im Standard-Browser, javascript: abgelehnt; offline gesperrt | ✓ bestanden |
 | T-0755 SYS-03 UI: „Downloads & Links“ – echter HTTP-Download (lokaler Testserver) zeigt SHA-256, vergleicht mit der Angabe, Anhalten/Fortsetzen, Verlauf bleibt; Links sammeln und im Standard-Browser öffnen | ✓ bestanden |

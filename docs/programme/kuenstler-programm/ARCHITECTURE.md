@@ -1,6 +1,6 @@
 # Künstlerstudio – Architektur
 
-Studio: Künstlerstudio (STUDIO-ART-01) · Bereich: Kreativ & Medien · Seite: `kuenstler-programm` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Künstlerstudio (STUDIO-ART-01) · Bereich: Kreativ & Medien · Seite: `kuenstler-programm` · Stand: 0.9.112 (Stand d6f9fcd)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)

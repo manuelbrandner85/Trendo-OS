@@ -1,6 +1,6 @@
 # Start – Funktionsmatrix
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Quelle: `docs/spec/kataloge/SYS-10_KATALOG.md`
 
@@ -61,4 +61,13 @@ Quelle: `docs/spec/kataloge/SYS-10_KATALOG.md`
 - doku-tpl-praesentation-vortrag
 - doku-tpl-praesentation-projekt
 - doku-tpl-praesentation-fotoalbum
-- Mehr anzeigen: Zuletzt benutzt
+- Alle
+- Text
+- Tabelle
+- Präsentation
+- Jederzeit
+- Heute
+- 7 Tage
+- 30 Tage
+- doku-file-0
+- doku-file-1

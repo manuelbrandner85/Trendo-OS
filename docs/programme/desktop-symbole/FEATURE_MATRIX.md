@@ -1,6 +1,6 @@
 # Desktop-Symbole – Funktionsmatrix
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `desktop-symbole` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `desktop-symbole` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 
@@ -60,8 +60,16 @@ Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 - desk-toggle-SYS-02
 - desk-toggle-STUDIO-DECKDESIGN-01
 - desk-toggle-STUDIO-DOCSCAN-01
+- desk-toggle-STUDIO-CV-01
+- Alle 12 Einträge zeigen
 - desk-toggle-STUDIO-DAYPLAN-01
-- Alle 13 Einträge zeigen
+- desk-toggle-STUDIO-SUMMARY-01
+- desk-toggle-STUDIO-IMAGEAI-01
+- desk-toggle-STUDIO-VIDEOAI-01
+- desk-toggle-STUDIO-AGENTS-01
+- desk-toggle-STUDIO-MODELS-01
+- desk-toggle-STUDIO-TRAIN-01
+- desk-toggle-STUDIO-CITE-01
 - desk-toggle-STUDIO-ONLINE-BUSINESS-01
 - desk-toggle-STUDIO-POD-01
 - desk-toggle-SPEC-11
@@ -73,16 +81,7 @@ Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 - desk-toggle-STUDIO-LOGO-01
 - desk-toggle-STUDIO-PODCAST-01
 - desk-toggle-STUDIO-COMIC-01
-- desk-toggle-STUDIO-SUMMARY-01
-- desk-toggle-STUDIO-IMAGEAI-01
-- desk-toggle-STUDIO-VIDEOAI-01
-- desk-toggle-STUDIO-AGENTS-01
-- desk-toggle-STUDIO-MODELS-01
-- desk-toggle-STUDIO-TRAIN-01
-- desk-toggle-CORE-02
-- desk-toggle-SYS-05
-- desk-toggle-STUDIO-CODEAI-01
-- desk-toggle-STUDIO-VISION-01
+- Alle 13 Einträge zeigen
 - desk-toggle-CORE-05
 - desk-toggle-STUDIO-CONSOLE-01
 - desk-toggle-CORE-06
@@ -96,6 +95,7 @@ Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 - desk-toggle-SPEC-06
 - desk-toggle-CORE-10
 - desk-toggle-SYS-08
-- desk-toggle-STUDIO-CITE-01
 - desk-toggle-CORE-07
 - desk-toggle-X-04
+- desk-toggle-CORE-11
+- desk-toggle-SPEC-12

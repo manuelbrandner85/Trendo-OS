@@ -1,6 +1,6 @@
 # Apps – Funktionsmatrix
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `apps` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `apps` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Quelle: `docs/spec/kataloge/SYS-11_KATALOG.md`
 
@@ -44,5 +44,6 @@ Quelle: `docs/spec/kataloge/SYS-11_KATALOG.md`
 - settings-nav-geraete
 - settings-nav-sicherung
 - Mehr Einstellungen (22)
+- Ausblenden
 - Installieren …
-- Alle 15 Einträge zeigen
+- Alle 35 Einträge zeigen

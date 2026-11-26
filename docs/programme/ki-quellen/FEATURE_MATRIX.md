@@ -1,6 +1,6 @@
 # KI-Quellen – Funktionsmatrix
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-quellen` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-quellen` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -22,6 +22,7 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - ki-nav-verbindungen
 - ki-nav-keys
 - Mehr
+- Ausblenden
 - KI-Quellen
 - KI-Bibliothek
 - Kostenlose Internet-KIs
@@ -39,4 +40,9 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Herunterladen & einrichten
 - Ausschalten
 - Herstellerseite
-- Mehr anzeigen: Freie Modelle, Zum Laden der Modelle muss Ollama laufen
+- Ollama jetzt starten
+- Programme einrichten …
+- Freie Modelle (Apache-2.0, MIT) automatisch laden, passend zu diesem PC
+- Jetzt laden (sonst automatisch)
+- Lizenz „Llama 3.2 Community“ bestätigen & laden
+- Lizenz „Gemma Terms“ bestätigen & laden

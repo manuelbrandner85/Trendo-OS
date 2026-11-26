@@ -1,9 +1,9 @@
 # Filme machen – Produktionspaket
 
-Studio: Filme machen (STUDIO-FILM-01) · Bereich: Kreativ & Medien · Seite: `film-programm` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Filme machen (STUDIO-FILM-01) · Bereich: Kreativ & Medien · Seite: `film-programm` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Arbeitsfläche: keine eigene Arbeitsfläche erkannt (Seite aus Listen, Feldern und Knöpfen)  
-Modulstatus (requirements.yaml): IN_PROGRESS / Test NOT_RUN  
+Modulstatus (Register, Belege, Testlauf): IN_PROGRESS / Test TESTED (Lauf: 7 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  
 Programm-Hülle (Dokumente, Rückgängig, Autosave, Bedienstufen): ja
 
 ## Inhalt

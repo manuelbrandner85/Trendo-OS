@@ -1,6 +1,6 @@
 # Eigene KI trainieren – Testplan
 
-Studio: Eigene KI trainieren (STUDIO-TRAIN-01) · Bereich: KI & Automatik · Seite: `ki-trainieren-programm` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Eigene KI trainieren (STUDIO-TRAIN-01) · Bereich: KI & Automatik · Seite: `ki-trainieren-programm` · Stand: 0.9.112 (Stand d6f9fcd)
 
 13 Tests sprechen dieses Programm an.
 

@@ -1,10 +1,10 @@
 # Briefe schreiben – Testergebnisse
 
-Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 32 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 35 · Fehlgeschlagen 0 · Übersprungen 1 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -37,6 +37,10 @@ Bestanden 32 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | T-0708 Briefe: Fenster ohne Speichern geschlossen → nach dem Neustart Wiederherstellen-Karte, Brief zurück; Speichern räumt die Sicherung weg; Verwerfen löscht | ✓ bestanden |
 | T-0708 Briefe: tippen, Rückgängig über mehrere Schritte und Wiederholen über die Knöpfe links oben | ✓ bestanden |
 | T-0764 M1: Kind – Öffnen zeigt Trendos eigene Auswahl (nur eigene Ordner, nicht weiter nach oben); Speichern lehnt Programm-Namen ab | ✓ bestanden |
+| T-0775 ECHT Büro: Claude kürzt im Programm „Briefe schreiben“ den offenen Brief – Änderung im Brief, Strg+Z stellt ihn wieder her (nur mit TRENDO_ECHT_CLAUDE) | übersprungen |
+| T-0775: Claudes Brief übernehmen – vorher Getipptes wird eigener Rückgängig-Schritt; Foto/Unterschrift nur aus dem Claude-Projektordner | ✓ bestanden |
+| T-0775: Strg+Z / Strg+Y im Programm „Briefe schreiben“ – nimmt den letzten Schritt zurück und wiederholt ihn (wie die Programm-Hülle) | ✓ bestanden |
+| T-0775: Strg+Z in einem Eingabefeld des Briefs bleibt beim Feld – der Brief springt nicht auf einen früheren Schritt | ✓ bestanden |
 | Wie GNOME: schwarze Leiste mit Aktivitäten und Uhr in der Mitte, Übersicht mit Suche und Dash, nur Schließen-Knopf im Fenster, Dateien mit „Andere Orte“ | ✓ bestanden |
 | Wie Windows 11: Taskleiste mit Start/Suche/Uhr, Startmenü mit Angeheftet und Suche (Trendo KI), Widgets mit allen Trendo-Karten, eckige Fensterknöpfe, Datei-Explorer mit „Dieser PC“ | ✓ bestanden |
 | Wie macOS: Menüleiste mit Menüs und Uhr, Dock mit Launchpad und Papierkorb, Spotlight, Ampel-Knöpfe, ⌘W schließt, Finder mit Seitenleiste und Symbolansicht | ✓ bestanden |

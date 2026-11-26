@@ -1,6 +1,6 @@
 # Trendo Präsentation – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `praesentation` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `praesentation` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Analyse: [Vorbild-Analyse Trendo Präsentation: Microsoft PowerPoint, LibreOffice Impress (Clean-Room)](../../../docs/claude/vorbilder/praesentation-powerpoint-impress.md)
 

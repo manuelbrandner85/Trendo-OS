@@ -1,10 +1,10 @@
 # Spiele bauen – Testergebnisse
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D & Spiele · Seite: `spiele-programm` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D & Spiele · Seite: `spiele-programm` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 105 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
+Bestanden 106 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -77,7 +77,7 @@ Bestanden 105 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
 | Referenz (Messung): Studio öffnet unter 1,5 Sekunden | ✓ bestanden |
 | Referenz (Messung): Vom Start zur ersten sinnvollen Aktion genügt ein Klick | ✓ bestanden |
 | Referenz: Alle Befehle sind in jeder Stufe erreichbar, in Einfach über „Mehr“ und über Claude | ✓ bestanden |
-| Referenz: Auftrag in Alltagssprache führt zur passenden Aufgabe | nicht im Lauf |
+| Referenz: Auftrag in Alltagssprache führt zur passenden Aufgabe | ✓ bestanden |
 | Referenz: Bauen erzeugt echte Spieldateien mit Titel und Level des Dokuments | ✓ bestanden |
 | Referenz: Bei Not-Stopp arbeitet Claude nicht weiter und bekommt den Grund genannt | ✓ bestanden |
 | Referenz: Claude bekommt das passende Fachwissen zum Auftrag; unbekanntes Studio wird abgelehnt | ✓ bestanden |

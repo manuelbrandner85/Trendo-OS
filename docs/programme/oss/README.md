@@ -1,9 +1,9 @@
 # Open Source – Produktionspaket
 
-Studio: Projekte von GitHub holen (X-06) · Bereich: Entwickeln · Seite: `oss` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Projekte von GitHub holen (X-06) · Bereich: Entwickeln · Seite: `oss` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Arbeitsfläche: Programm-Store (Kategorien, Treffer, Eingerichtetes – wie Flathub)  
-Modulstatus (requirements.yaml): IMPLEMENTED / Test NOT_RUN  
+Modulstatus (Register, Belege, Testlauf): IMPLEMENTED / Test TESTED (Lauf: 26 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  
 Programm-Hülle (Dokumente, Rückgängig, Autosave, Bedienstufen): nein – eigene Arbeitsseite
 
 ## Inhalt

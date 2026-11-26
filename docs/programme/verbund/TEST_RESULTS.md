@@ -1,10 +1,10 @@
 # Geräteverbund (PC, Pi, Android) – Testergebnisse
 
-Studio: PC, Pi & Handy verbinden (CORE-04) · Bereich: System & Sicherheit · Seite: `verbund` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: PC, Pi & Handy verbinden (CORE-04) · Bereich: System & Sicherheit · Seite: `verbund` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 9 · Fehlgeschlagen 0 · Übersprungen 5 · nicht im Lauf 0
+Bestanden 11 · Fehlgeschlagen 0 · Übersprungen 5 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -22,3 +22,5 @@ Bestanden 9 · Fehlgeschlagen 0 · Übersprungen 5 · nicht im Lauf 0
 | CORE-04 UI: mit echtem Begleiter koppeln (Code vom Gerät), Details holen, Erreichbarkeit, Aufgabe zuordnen, entfernen | übersprungen |
 | CORE-04: Aufgaben laufen lokal zuerst, sonst auf erreichbarem Gerät; nicht erreichbar wird ehrlich gemeldet | ✓ bestanden |
 | CORE-04: Gekoppeltes Gerät nur mit Heimnetz-Adresse speichern; Token nie in der Gerätedatei; Entfernen | ✓ bestanden |
+| T-0777 Katalog: im echten Register stehen SYS-04, SYS-07, CORE-04 und X-08 nicht mehr als PC_VERIFIED im Katalog | ✓ bestanden |
+| T-0777 Nachbesserung: Studio-Karten und Fortschritt zeigen SYS-04, SYS-07, CORE-04, X-08 nicht mehr als „auf dem PC geprüft“ (Register unverändert) | ✓ bestanden |

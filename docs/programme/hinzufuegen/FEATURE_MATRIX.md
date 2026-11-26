@@ -1,6 +1,6 @@
 # Hinzufügen – Funktionsmatrix
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `hinzufuegen` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `hinzufuegen` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Quelle: `docs/spec/kataloge/SYS-11_KATALOG.md`
 
@@ -51,4 +51,9 @@ Quelle: `docs/spec/kataloge/SYS-11_KATALOG.md`
 - GitHub
 - Erweiterungen
 - Meine Installationen
-- Mehr anzeigen: Apps
+- Installieren
+- Alle 6 zeigen
+- Alle 45 zeigen
+- Öffnen
+- Alle 14 zeigen
+- Freie Programme auf GitHub suchen

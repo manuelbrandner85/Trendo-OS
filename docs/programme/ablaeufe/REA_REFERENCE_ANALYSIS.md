@@ -1,6 +1,6 @@
 # Abläufe (Automatisch erledigen) – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Analyse: [Vorbild-Analyse Abläufe: Power Automate, n8n, Kurzbefehle (Clean-Room)](../../../docs/claude/vorbilder/ablaeufe-power-automate-n8n.md)
 

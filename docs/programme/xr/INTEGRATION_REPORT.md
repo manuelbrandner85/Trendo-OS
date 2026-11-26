@@ -1,6 +1,6 @@
 # 3D-Modelle ansehen – Einbindung in Trendo OS
 
-Studio: 3D-Modelle ansehen (SPEC-04) · Bereich: 3D & Spiele · Seite: `xr` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: 3D-Modelle ansehen (SPEC-04) · Bereich: 3D & Spiele · Seite: `xr` · Stand: 0.9.112 (Stand d6f9fcd)
 
 - Seite `xr` im Studio „3D-Modelle ansehen“ (3D & Spiele) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

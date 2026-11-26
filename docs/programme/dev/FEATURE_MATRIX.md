@@ -1,6 +1,6 @@
 # Webseite bauen – Funktionsmatrix
 
-Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -10,6 +10,7 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - kie.ai
 - Auftragszeile zeigen
 - Mehr
+- Ausblenden
 - Webseite bauen
 - Code-Editor
 - Klar
@@ -64,4 +65,3 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Änderung ansehen
 - Paket vorbereiten
 - Genaue Barrierefreiheitsprüfung einrichten (axe-core, kostenlos)
-- Anlegen

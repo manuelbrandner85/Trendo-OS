@@ -1,9 +1,9 @@
 # Downloads & Links – Produktionspaket
 
-Studio: Downloads & Links (SYS-03) · Bereich: System & Sicherheit · Seite: `downloads` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Downloads & Links (SYS-03) · Bereich: System & Sicherheit · Seite: `downloads` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Arbeitsfläche: Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)  
-Modulstatus (requirements.yaml): IMPLEMENTED / Test NOT_RUN  
+Modulstatus (Register, Belege, Testlauf): IMPLEMENTED / Test TESTED (Lauf: 19 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  
 Programm-Hülle (Dokumente, Rückgängig, Autosave, Bedienstufen): nein – eigene Arbeitsseite
 
 ## Inhalt

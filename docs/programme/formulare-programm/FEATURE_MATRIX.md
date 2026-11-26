@@ -1,6 +1,6 @@
 # Formulare ausfüllen – Funktionsmatrix
 
-Studio: Formulare ausfüllen (STUDIO-FORMS-01) · Bereich: Arbeiten & Büro · Seite: `formulare-programm` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Formulare ausfüllen (STUDIO-FORMS-01) · Bereich: Arbeiten & Büro · Seite: `formulare-programm` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

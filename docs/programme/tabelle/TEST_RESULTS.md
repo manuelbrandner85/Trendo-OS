@@ -1,10 +1,10 @@
 # Trendo Tabelle – Testergebnisse
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `tabelle` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `tabelle` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 41 · Fehlgeschlagen 0 · Übersprungen 2 · nicht im Lauf 0
+Bestanden 42 · Fehlgeschlagen 0 · Übersprungen 2 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -49,5 +49,6 @@ Bestanden 41 · Fehlgeschlagen 0 · Übersprungen 2 · nicht im Lauf 0
 | T-0714 Tabelle: Werte und Formel eingetippt, Fenster ohne Speichern geschlossen → Karte → Wiederherstellen bringt die Mappe; Speichern räumt weg | ✓ bestanden |
 | T-0714 Umzug: Sicherungen der früheren Notsicherung (wiederherstellen/text.docx, cad.tcad, tabelle.xlsx) werden beim ersten Start angeboten, mit Zeitpunkt; Zurückholen und Verwerfen gehen | ✓ bestanden |
 | T-0724 Leistung: Tabelle mit 100 000 Zellen öffnen – alle Werte kommen an (Zeit wird nur gemessen) | ✓ bestanden |
+| T-0776 echt: Texte (SYS-10) – Trendo schreibt DOCX und ODT, LibreOffice 26 öffnet beide und liefert Überschrift, Absätze, Liste und Tabelle als Text zurück | ✓ bestanden |
 | Tabelle F3: Autofilter – Knopf unter „Daten“, rechts je Spalte Werte mit Anzahl, Haken weg blendet Zeilen aus, „Alle“ und „Autofilter aus“ | ✓ bestanden |
 | Tabelle F3: Pivot – „⊞ Pivot“ öffnet den Bauer rechts mit Vorschlag (Kategorie/Betrag), erstellt ein neues Blatt mit Formeln, das mitrechnet | ✓ bestanden |

@@ -1,6 +1,6 @@
 # Code mit KI – Lizenzen
 
-Studio: Code mit KI (STUDIO-CODEAI-01) · Bereich: KI & Automatik · Seite: `code-ki-programm` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Code mit KI (STUDIO-CODEAI-01) · Bereich: KI & Automatik · Seite: `code-ki-programm` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

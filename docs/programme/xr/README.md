@@ -1,9 +1,9 @@
 # 3D-Modelle ansehen – Produktionspaket
 
-Studio: 3D-Modelle ansehen (SPEC-04) · Bereich: 3D & Spiele · Seite: `xr` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: 3D-Modelle ansehen (SPEC-04) · Bereich: 3D & Spiele · Seite: `xr` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Arbeitsfläche: 3D-Ansicht  
-Modulstatus (requirements.yaml): Studio entfernt, nicht mehr angeboten – kein gültiger Prüfstand (Register: IMPLEMENTED / Test NOT_RUN)  
+Modulstatus (Register, Belege, Testlauf): Studio entfernt, nicht mehr angeboten – kein gültiger Prüfstand (Register: IMPLEMENTED / Test TESTED (Lauf: 16 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf))  
 Programm-Hülle (Dokumente, Rückgängig, Autosave, Bedienstufen): nein – eigene Arbeitsseite
 
 ## Inhalt

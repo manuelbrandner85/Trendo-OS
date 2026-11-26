@@ -1,6 +1,6 @@
 # KI-Bibliothek – Testplan
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-bibliothek` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-bibliothek` · Stand: 0.9.112 (Stand d6f9fcd)
 
 9 Tests sprechen dieses Programm an.
 

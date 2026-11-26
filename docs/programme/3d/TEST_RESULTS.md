@@ -1,10 +1,10 @@
 # 3D – Testergebnisse
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D & Spiele · Seite: `3d` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D & Spiele · Seite: `3d` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 55 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 2
+Bestanden 59 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -17,7 +17,7 @@ Bestanden 55 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 2
 | 3D: OBJ, STL und GLB speichern, Datei öffnen, Projekt wieder öffnen | ✓ bestanden |
 | 3D: Satz wird zum Vorschlag und erst nach Übernehmen gebaut | ✓ bestanden |
 | 3D: Teil hinzufügen, ändern, Vorschau, löschen, rückgängig | ✓ bestanden |
-| 3D: Vorschau und Export sind bei üblichen Fenstergrößen ohne Scrollen sichtbar | nicht im Lauf |
+| 3D: Vorschau und Export sind bei üblichen Fenstergrößen ohne Scrollen sichtbar | ✓ bestanden |
 | 3D: ohne Blender einmal fragen, mit Blender das aktuelle Objekt öffnen | ✓ bestanden |
 | B4 UI: Kinderprofil – Rolle Benutzer aus dem Profil, keine Rückfrage, Kern lehnt ab, Freigaben-Seite gesperrt, nichts installiert | ✓ bestanden |
 | B4 UI: Klick auf „assimp einrichten“ allein installiert nichts – erst eigene Rückfrage; Abbrechen lehnt ab, erst „Einrichten“ gibt frei und löst genau einmal im Kern aus | ✓ bestanden |
@@ -58,8 +58,10 @@ Bestanden 55 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 2
 | T-0708 V-14: CAD, 3D-Modelle und Code-Editor haben Speichern · Rückgängig · Wiederholen (· Exportieren) links oben; Rückgängig wirkt über mehrere Schritte | ✓ bestanden |
 | T-0714 3D: zwei Grundformen hinzugefügt, Fenster ohne Speichern geschlossen → Karte → Wiederherstellen bringt die Szene vollständig; Speichern im Projekt räumt weg | ✓ bestanden |
 | T-0724 Leistung: 3D-Szene mit 40 000 Dreiecken öffnen – alle Dreiecke kommen an (Zeit wird nur gemessen) | ✓ bestanden |
-| T-0727 B3: 3D-Ansicht im Programmfenster wird nie unter ihre Mindesthöhe gedrückt – die Seite lässt sich stattdessen verschieben | nicht im Lauf |
+| T-0727 B3: 3D-Ansicht im Programmfenster wird nie unter ihre Mindesthöhe gedrückt – die Seite lässt sich stattdessen verschieben | ✓ bestanden |
 | T-0730 3D: Szene aus neuerer Fassung – Sicherung bleibt erhalten und angeboten | ✓ bestanden |
+| T-0776 echt: CAD-DXF (CORE-05) – fremde DXF in Trendo bearbeitet und als DXF geschrieben; FreeCAD 1.1 liest Ebenen, Linien, Kreise, Bogen und Polylinie mit den Trendo-Maßen | ✓ bestanden |
+| T-0776 echt: CAD-STEP (CORE-05) – FreeCAD 1.1 liest Trendos STEP als gültigen geschlossenen Körper: Volumen 6000 mm³ bzw. Winkel, Umriss und Name stimmen | ✓ bestanden |
 | Teams: jedes Studio (außer dem abgelehnten SPEC-07) hat ein Profi-Team; „Team“ im 3D-Studio öffnet „KI einsetzen“ mit dem 3D-Team; eigene Rolle nur mit Studio | ✓ bestanden |
 | V4: im Fokusmodus und in „Erweitert“ bleibt 3D wie bisher – „Programme hinzufügen“ ist erreichbar | ✓ bestanden |
 | Vorschlag 36: Studios zeigen „Freie KI hier“ – 3D-Studio schlägt „3D aus Bild“ vor, der Klick öffnet die KI-Bibliothek (geladen wird erst dort); jede Studio-Zuordnung gibt es wirklich | ✓ bestanden |

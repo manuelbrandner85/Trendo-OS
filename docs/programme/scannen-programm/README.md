@@ -1,9 +1,9 @@
 # Dokumente scannen – Produktionspaket
 
-Studio: Dokumente scannen (STUDIO-DOCSCAN-01) · Bereich: Arbeiten & Büro · Seite: `scannen-programm` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Dokumente scannen (STUDIO-DOCSCAN-01) · Bereich: Arbeiten & Büro · Seite: `scannen-programm` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Arbeitsfläche: Bildansicht  
-Modulstatus (requirements.yaml): IN_PROGRESS / Test NOT_RUN  
+Modulstatus (Register, Belege, Testlauf): IN_PROGRESS / Test TESTED (Lauf: 28 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  
 Programm-Hülle (Dokumente, Rückgängig, Autosave, Bedienstufen): ja
 
 ## Inhalt

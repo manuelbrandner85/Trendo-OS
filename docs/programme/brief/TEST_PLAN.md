@@ -1,8 +1,8 @@
 # Briefe schreiben – Testplan
 
-Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.112 (Stand d6f9fcd)
 
-32 Tests sprechen dieses Programm an.
+36 Tests sprechen dieses Programm an.
 
 - Bedienstil: in den Einstellungen wählbar; Mac setzt runde Ampel-Knöpfe links (Schließen zuerst), Linux runde Knöpfe rechts – Knöpfe funktionieren weiter
 - Brief-Assistent: 1 Was? → Vorlage springt zu 2 An wen? → 3 Text & Design → Fertig speichert; „Alles leeren“ mit Rückgängig
@@ -33,6 +33,10 @@ Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seit
 - T-0708 Briefe: Fenster ohne Speichern geschlossen → nach dem Neustart Wiederherstellen-Karte, Brief zurück; Speichern räumt die Sicherung weg; Verwerfen löscht
 - T-0708 Briefe: tippen, Rückgängig über mehrere Schritte und Wiederholen über die Knöpfe links oben
 - T-0764 M1: Kind – Öffnen zeigt Trendos eigene Auswahl (nur eigene Ordner, nicht weiter nach oben); Speichern lehnt Programm-Namen ab
+- T-0775 ECHT Büro: Claude kürzt im Programm „Briefe schreiben“ den offenen Brief – Änderung im Brief, Strg+Z stellt ihn wieder her (nur mit TRENDO_ECHT_CLAUDE)
+- T-0775: Claudes Brief übernehmen – vorher Getipptes wird eigener Rückgängig-Schritt; Foto/Unterschrift nur aus dem Claude-Projektordner
+- T-0775: Strg+Z / Strg+Y im Programm „Briefe schreiben“ – nimmt den letzten Schritt zurück und wiederholt ihn (wie die Programm-Hülle)
+- T-0775: Strg+Z in einem Eingabefeld des Briefs bleibt beim Feld – der Brief springt nicht auf einen früheren Schritt
 - Wie GNOME: schwarze Leiste mit Aktivitäten und Uhr in der Mitte, Übersicht mit Suche und Dash, nur Schließen-Knopf im Fenster, Dateien mit „Andere Orte“
 - Wie Windows 11: Taskleiste mit Start/Suche/Uhr, Startmenü mit Angeheftet und Suche (Trendo KI), Widgets mit allen Trendo-Karten, eckige Fensterknöpfe, Datei-Explorer mit „Dieser PC“
 - Wie macOS: Menüleiste mit Menüs und Uhr, Dock mit Launchpad und Papierkorb, Spotlight, Ampel-Knöpfe, ⌘W schließt, Finder mit Seitenleiste und Symbolansicht

@@ -1,6 +1,6 @@
 # Medien bearbeiten – Funktionsmatrix
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `kreativ-medien` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `kreativ-medien` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Quelle: `docs/spec/kataloge/CORE-08_KATALOG.md`
 
@@ -57,6 +57,7 @@ Quelle: `docs/spec/kataloge/CORE-08_KATALOG.md`
 - Foto aufhellen und zuschneiden
 - Untertitel erzeugen
 - Mehr
+- Ausblenden
 - Medien bearbeiten
 - Videoschnitt
 - Bildbearbeitung

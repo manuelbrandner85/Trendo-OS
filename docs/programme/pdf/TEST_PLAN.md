@@ -1,8 +1,8 @@
 # Trendo PDF – Testplan
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` · Stand: 0.9.112 (Stand d6f9fcd)
 
-30 Tests sprechen dieses Programm an.
+31 Tests sprechen dieses Programm an.
 
 - Klick-Audit 01.11.2026: „PDF öffnen …“ mit einer Datei, die keine PDF ist – Hinweis statt Absturz
 - PDF F3: Texterkennung – ohne Tesseract ehrlicher Hinweis; mit Tesseract wird ein Bild-Scan zur durchsuchbaren PDF und die Seite als Text erkannt
@@ -34,3 +34,4 @@ Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` �
 - T-0303: Miniatur springt zur Seite; Seiten ordnen: Ziehen verschiebt, Drehen, Löschen, leere Seite, PDF einfügen, Rückgängig, Kopie speichern – Original bleibt
 - T-0711 PDF „Seiten ordnen“: Rückgängig und jetzt auch Wiederholen über die Hülle, Notsicherung, Karte öffnet die PDF wieder im Ordnen-Modus
 - T-0714 PDF-Formular: Werte tippen und ankreuzen → Rückgängig/Wiederholen; Fenster ohne Speichern geschlossen → Karte öffnet die PDF mit den Werten; „Ausgefüllt speichern“ schreibt sie und räumt die Sicherung weg
+- T-0776 echt: Texte (SYS-10) – Trendo schreibt DOCX und ODT, LibreOffice 26 öffnet beide und liefert Überschrift, Absätze, Liste und Tabelle als Text zurück

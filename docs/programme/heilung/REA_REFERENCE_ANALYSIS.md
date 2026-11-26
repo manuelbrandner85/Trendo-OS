@@ -1,6 +1,6 @@
 # Selbstheilung – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Einrichten & Reparieren (X-02) · Bereich: System & Sicherheit · Seite: `heilung` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Einrichten & Reparieren (X-02) · Bereich: System & Sicherheit · Seite: `heilung` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Analyse: [Vorbild-Analyse Schutz: Windows-Sicherheit, Dateiversionsverlauf/Time Machine, TCPView, Bitwarden-Bericht (Clean-Room)](../../../docs/claude/vorbilder/schutz-windows-sicherheit-timemachine.md)
 

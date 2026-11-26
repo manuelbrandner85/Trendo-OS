@@ -1,6 +1,6 @@
 # Videos mit KI – Testplan
 
-Studio: Videos mit KI (STUDIO-VIDEOAI-01) · Bereich: KI & Automatik · Seite: `video-ki-programm` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Videos mit KI (STUDIO-VIDEOAI-01) · Bereich: KI & Automatik · Seite: `video-ki-programm` · Stand: 0.9.112 (Stand d6f9fcd)
 
 6 Tests sprechen dieses Programm an.
 

@@ -1,6 +1,6 @@
 # Lernen mit Karteikarten – Einbindung in Trendo OS
 
-Studio: Lernen mit Karteikarten (SPEC-06) · Bereich: Wissen & Lernen · Seite: `lernen` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Lernen mit Karteikarten (SPEC-06) · Bereich: Wissen & Lernen · Seite: `lernen` · Stand: 0.9.112 (Stand d6f9fcd)
 
 - Seite `lernen` im Studio „Lernen mit Karteikarten“ (Wissen & Lernen) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

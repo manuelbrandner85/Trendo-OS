@@ -1,10 +1,10 @@
 # Geräte & Laufwerke – Testergebnisse
 
-Studio: Geräte erkennen (SYS-07) · Bereich: System & Sicherheit · Seite: `geraete` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Geräte erkennen (SYS-07) · Bereich: System & Sicherheit · Seite: `geraete` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 10 · Fehlgeschlagen 0 · Übersprungen 1 · nicht im Lauf 0
+Bestanden 12 · Fehlgeschlagen 0 · Übersprungen 1 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -19,3 +19,5 @@ Bestanden 10 · Fehlgeschlagen 0 · Übersprungen 1 · nicht im Lauf 0
 | SYS-07 UI: Geräte suchen zeigt Gruppen | ✓ bestanden |
 | SYS-07: Linux-/sys wird gelesen; Neues und Verschwundenes wird erkannt | ✓ bestanden |
 | SYS-07: Windows-Geräteliste (PnP) wird gelesen, Probleme erkannt, Systemeinträge ausgeblendet | ✓ bestanden |
+| T-0777 Katalog: im echten Register stehen SYS-04, SYS-07, CORE-04 und X-08 nicht mehr als PC_VERIFIED im Katalog | ✓ bestanden |
+| T-0777 Nachbesserung: Studio-Karten und Fortschritt zeigen SYS-04, SYS-07, CORE-04, X-08 nicht mehr als „auf dem PC geprüft“ (Register unverändert) | ✓ bestanden |

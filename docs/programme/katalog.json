@@ -75,10 +75,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Bewerbung.cs"
     ],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 8 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
-    "WarmMs": 54,
+    "WarmMs": 55,
     "WindowsOnly": []
   },
   {
@@ -254,6 +254,7 @@
       "letter-export",
       "letter-pdf",
       "letter-send",
+      "Ausblenden",
       "1 Absender",
       "2 Empfänger",
       "3 Inhalt",
@@ -298,8 +299,7 @@
       "Brief prüfen",
       "Text von der KI verbessern lassen",
       "Neuer Brief",
-      "letter-design-style-klassisch",
-      "letter-design-style-modern"
+      "letter-design-style-klassisch"
     ],
     "Formats": [],
     "Dependencies": [],
@@ -344,15 +344,19 @@
       "T-0708 Briefe: Fenster ohne Speichern geschlossen → nach dem Neustart Wiederherstellen-Karte, Brief zurück; Speichern räumt die Sicherung weg; Verwerfen löscht",
       "T-0708 Briefe: tippen, Rückgängig über mehrere Schritte und Wiederholen über die Knöpfe links oben",
       "T-0764 M1: Kind – Öffnen zeigt Trendos eigene Auswahl (nur eigene Ordner, nicht weiter nach oben); Speichern lehnt Programm-Namen ab",
+      "T-0775 ECHT Büro: Claude kürzt im Programm „Briefe schreiben“ den offenen Brief – Änderung im Brief, Strg+Z stellt ihn wieder her (nur mit TRENDO_ECHT_CLAUDE)",
+      "T-0775: Claudes Brief übernehmen – vorher Getipptes wird eigener Rückgängig-Schritt; Foto/Unterschrift nur aus dem Claude-Projektordner",
+      "T-0775: Strg+Z / Strg+Y im Programm „Briefe schreiben“ – nimmt den letzten Schritt zurück und wiederholt ihn (wie die Programm-Hülle)",
+      "T-0775: Strg+Z in einem Eingabefeld des Briefs bleibt beim Feld – der Brief springt nicht auf einen früheren Schritt",
       "Wie GNOME: schwarze Leiste mit Aktivitäten und Uhr in der Mitte, Übersicht mit Suche und Dash, nur Schließen-Knopf im Fenster, Dateien mit „Andere Orte“",
       "Wie Windows 11: Taskleiste mit Start/Suche/Uhr, Startmenü mit Angeheftet und Suche (Trendo KI), Widgets mit allen Trendo-Karten, eckige Fensterknöpfe, Datei-Explorer mit „Dieser PC“",
       "Wie macOS: Menüleiste mit Menüs und Uhr, Dock mit Launchpad und Papierkorb, Spotlight, Ampel-Knöpfe, ⌘W schließt, Finder mit Seitenleiste und Symbolansicht"
     ],
     "SourceFiles": [],
-    "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test PC_VERIFIED (Beleg reports/w1/pc/README.md; Lauf: 35 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 136,
+    "WarmMs": 103,
     "WindowsOnly": []
   },
   {
@@ -378,7 +382,7 @@
       "Als PDF ablegen (Ablegen)",
       "Durchsuchbare PDF (Ablegen)",
       "In Trendo PDF öffnen (Ablegen)",
-      "Scanner … (Ablegen)",
+      "Hinweis: Papier-Scanner (Ablegen)",
       "PDF (alle Seiten) (Exportieren)",
       "Aktuelle Seite als PNG (Exportieren)"
     ],
@@ -409,13 +413,33 @@
       "T-0705 Absturz in allen sieben Büro-Studios: Änderung per Klick, Sicherungstakt (≤ 20 s), Fenster stirbt ohne Speichern – das neue Fenster bietet „Wiederherstellen“ an und bringt jede Änderung zurück",
       "T-0705 Echtlauf Scannen: Seitenbild von LibreOffice ablegen, „Durchsuchbare PDF“ mit dem echten Tesseract – qpdf prüft, die Textebene enthält den Brieftext",
       "T-0705 Klick bis Datei – Scannen: keine Seite, „Fotos hinzufügen …“, Blatt gefunden, „Als PDF ablegen“ ergibt eine PDF mit der Seite",
-      "T-0705 Scannen: Fotos auf den ersten Schritt ziehen, zweite Seite mit der Maus nach vorn ziehen, Rechtsklick „Drehen“ und „Seite entfernen“"
+      "T-0705 Scannen: Fotos auf den ersten Schritt ziehen, zweite Seite mit der Maus nach vorn ziehen, Rechtsklick „Drehen“ und „Seite entfernen“",
+      "T-0774 (PW-12): zwei KI-Teilläufe „alle n Seiten“ nacheinander, dann Rückgängig des zweiten – die Dateien des ersten Laufs bleiben unverändert liegen",
+      "T-0774 2. Gegenprüfung H1: gesperrte Stelle „folder“ auch mit Leerzeichen, Tab und anderer Groß-/Kleinschreibung – abgelehnt, nichts geschrieben",
+      "T-0774 2. Gegenprüfung M1: Fehler beim Übernehmen – eine fremde Datei, die währenddessen im Ergebnis-Ordner entsteht, bleibt liegen; nur eigene Dateien werden beiseitegelegt",
+      "T-0774 2. Gegenprüfung N1: Rückgängig mit gesperrter KI-Datei wirft nicht – Schritt zurückgenommen, Meldung im Programm",
+      "T-0774 2. Gegenprüfung N2: „pdf.ausfuehren“ ohne Werkzeug nach „tool=passwort“ fällt nicht still weg – deutlicher Fehler",
+      "T-0774 3. Gegenprüfung M-a: Regel-Plan ohne KI mit unverstandenem Teil – Hinweis „Nicht verstanden und ausgelassen“, Ausführung läuft weiter bis zur PDF",
+      "T-0774 3. Gegenprüfung M-b: Auswahlwerte ohne Rücksicht auf Groß-/Kleinschreibung („Komprimieren“, „Zusammenfügen“, „Dokument“) – zugeordnet statt Abbruch",
+      "T-0774 3. Gegenprüfung N-a/N-b: Teilen meldet jedes Teil vor dem Schreiben; scheitert der Lauf, bleibt kein leerer, selbst angelegter „-teile“-Ordner zurück",
+      "T-0774 Dokumente scannen: KI-Aktion „Fotos → PDF“ – Klick → Vorschau → Ja → PDF „Datum Titel.pdf“ mit 2 Seiten, EIN Rückgängig-Schritt, Rückgängig legt die PDF beiseite (KI ersetzt)",
+      "T-0774 Dokumente scannen: der Knopf heißt ehrlich „Hinweis: Papier-Scanner“ (kein Scanner angeschlossen) und gibt weiter den Weg über Fotos an",
+      "T-0774 ECHT: lokale KI (Ollama) – PDF-Werkstatt „Seiten 1–3 heraus“ und Scannen „Fotos → PDF“ im offenen Programm, echte PDFs, Rückgängig (nur mit TRENDO_T0774_ECHT)",
+      "T-0774 Gegenprüfung 1: zwei Fachaktionen („1-2“, dann „4-5“) oder „dokument.setzen“ danach – deutlicher Fehler, keine Datei, Dokument unverändert",
+      "T-0774 Gegenprüfung 2: KI-Plan mit Werkzeug „Passwort“ (entfernen) – abgelehnt, keine entsperrte Kopie",
+      "T-0774 Gegenprüfung 3: Vorschau-Zurückrollen bewegt keine KI-Datei – nach „Ergebnisliste leeren“ und neuer Vorschau mit „Nein“ liegt die PDF noch da",
+      "T-0774 Gegenprüfung 4: KI setzt keinen Ablage-Ordner (absolut/UNC) für Scans – abgelehnt, keine PDF außerhalb",
+      "T-0774 Gegenprüfung 5: Fehler beim Übernehmen (zweite PDF kaputt) – schon geschriebene Dateien werden zurückgenommen, Dokument unverändert",
+      "T-0774 Gegenprüfung 6: Wiederholen bei belegtem Namen trifft keine fremde Datei – Meldung, beiseitegelegte Fassung bleibt",
+      "T-0774 Gegenprüfung 8–10: „3 bis Ende“ → 3-z, Unbekanntes gemeldet; nach „Nein“ keine Meldung stehen; Regel-Planer setzt Modus „foto“ nicht ungefragt",
+      "T-0774 PDF-Werkstatt: falsche Seiten („Seite 9“ bei 5 Seiten) – Fehler schon in der Vorschau, keine Datei, Dokument unverändert (KI ersetzt)",
+      "T-0774 PDF-Werkstatt: „Seiten 1–3 heraus“ – Klick → KI-Plan → Vorschau ohne Datei → Ja → neue PDF mit 3 Seiten, EIN Rückgängig-Schritt, Rückgängig/Wiederholen bringen die Datei mit (KI ersetzt)"
     ],
     "SourceFiles": [],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 28 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
-    "WarmMs": 18,
+    "WarmMs": 20,
     "WindowsOnly": []
   },
   {
@@ -569,8 +593,8 @@
       "T-0307: Adressbuch – Neuer Kontakt bearbeiten/speichern, Karte, Gruppe, Favorit, Suche, Doppelte Nein/Ja, Geburtstage in den Kalender, E-Mail schreiben, Löschen Nein/Ja"
     ],
     "SourceFiles": [],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 8 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
     "WarmMs": 12,
     "WindowsOnly": []
@@ -722,10 +746,10 @@
       "Vorschläge UI: Kalender plant fällige Aufgabe ein (Ja, Rückgängig), Aufgaben aus E-Mails (Nein bleibt gemerkt), Abläufe, Videoschnitt-Stille"
     ],
     "SourceFiles": [],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 11 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 22,
     "WindowsOnly": []
   },
   {
@@ -930,10 +954,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Pim.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 26 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 23,
+    "WarmMs": 28,
     "WindowsOnly": []
   },
   {
@@ -1095,10 +1119,10 @@
       "Vorschläge UI: Kalender plant fällige Aufgabe ein (Ja, Rückgängig), Aufgaben aus E-Mails (Nein bleibt gemerkt), Abläufe, Videoschnitt-Stille"
     ],
     "SourceFiles": [],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 12 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 42,
+    "WarmMs": 36,
     "WindowsOnly": []
   },
   {
@@ -1247,10 +1271,10 @@
       "T-0689 Mailprogramm schreiben: Strg+N, Anhang, Blindkopie, formatiert → Rückfrage → echte Zustellung (SMTP) und Kopie in „Gesendet“ → Antwort mit Zitat und Bezug → Entwurf sichert sich selbst, übersteht den Neustart, liegt auch im Postfach"
     ],
     "SourceFiles": [],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 12 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 19,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -1305,10 +1329,10 @@
       "T-0705 Klick bis Datei – Formulare: kein Formular, „Formular öffnen …“, Felder auf der Seite ausgefüllt, gespeichert (Felder bleiben) und fertig geglättet (Werte fest in der Seite)"
     ],
     "SourceFiles": [],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 9 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
-    "WarmMs": 15,
+    "WarmMs": 18,
     "WindowsOnly": []
   },
   {
@@ -1371,10 +1395,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Karten.cs"
     ],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 7 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
-    "WarmMs": 16,
+    "WarmMs": 20,
     "WindowsOnly": []
   },
   {
@@ -1531,6 +1555,7 @@
       "KI ▾",
       "Claude",
       "kie.ai",
+      "Ausblenden",
       "Werkzeuge",
       "Medien",
       "Fotos",
@@ -1616,10 +1641,10 @@
       "src/Trendo.App/MainWindow.Helfer.cs",
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 31 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -1874,10 +1899,10 @@
       "src/Trendo.App/MainWindow.Helfer.cs",
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 24 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -2034,6 +2059,7 @@
       "KI ▾",
       "Claude",
       "kie.ai",
+      "Ausblenden",
       "Werkzeuge",
       "Medien",
       "＋ Notiz",
@@ -2111,10 +2137,10 @@
       "src/Trendo.App/MainWindow.Helfer.cs",
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 24 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 18,
     "WindowsOnly": []
   },
   {
@@ -2208,10 +2234,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.W4Suite.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 10 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 25,
+    "WarmMs": 22,
     "WindowsOnly": []
   },
   {
@@ -2269,11 +2295,31 @@
       "T-0705 Absturz in allen sieben Büro-Studios: Änderung per Klick, Sicherungstakt (≤ 20 s), Fenster stirbt ohne Speichern – das neue Fenster bietet „Wiederherstellen“ an und bringt jede Änderung zurück",
       "T-0705 Echtlauf PDF-Werkstatt: LibreOffice-PDF (3 Seiten) ablegen, Seite 3 nach vorn ziehen, drehen, Seite löschen, Ausführen – qpdf prüft Struktur, Seitenzahl und Drehung, LibreOffice öffnet das Ergebnis",
       "T-0705 Klick bis Datei – PDF-Werkstatt: leere Liste, „Dateien hinzufügen …“, Ausführen fügt zusammen; Ergebnis hat alle Seiten in Reihenfolge",
-      "T-0705 PDF-Werkstatt: PDFs aus dem Explorer auf den ersten Schritt ziehen, Seite 4 mit der Maus an den Anfang ziehen, Rechtsklick „Nach rechts drehen“ und „Seite löschen“; Ausführen schreibt genau diese Reihenfolge"
+      "T-0705 PDF-Werkstatt: PDFs aus dem Explorer auf den ersten Schritt ziehen, Seite 4 mit der Maus an den Anfang ziehen, Rechtsklick „Nach rechts drehen“ und „Seite löschen“; Ausführen schreibt genau diese Reihenfolge",
+      "T-0774 (PW-12): zwei KI-Teilläufe „alle n Seiten“ nacheinander, dann Rückgängig des zweiten – die Dateien des ersten Laufs bleiben unverändert liegen",
+      "T-0774 2. Gegenprüfung H1: gesperrte Stelle „folder“ auch mit Leerzeichen, Tab und anderer Groß-/Kleinschreibung – abgelehnt, nichts geschrieben",
+      "T-0774 2. Gegenprüfung M1: Fehler beim Übernehmen – eine fremde Datei, die währenddessen im Ergebnis-Ordner entsteht, bleibt liegen; nur eigene Dateien werden beiseitegelegt",
+      "T-0774 2. Gegenprüfung N1: Rückgängig mit gesperrter KI-Datei wirft nicht – Schritt zurückgenommen, Meldung im Programm",
+      "T-0774 2. Gegenprüfung N2: „pdf.ausfuehren“ ohne Werkzeug nach „tool=passwort“ fällt nicht still weg – deutlicher Fehler",
+      "T-0774 3. Gegenprüfung M-a: Regel-Plan ohne KI mit unverstandenem Teil – Hinweis „Nicht verstanden und ausgelassen“, Ausführung läuft weiter bis zur PDF",
+      "T-0774 3. Gegenprüfung M-b: Auswahlwerte ohne Rücksicht auf Groß-/Kleinschreibung („Komprimieren“, „Zusammenfügen“, „Dokument“) – zugeordnet statt Abbruch",
+      "T-0774 3. Gegenprüfung N-a/N-b: Teilen meldet jedes Teil vor dem Schreiben; scheitert der Lauf, bleibt kein leerer, selbst angelegter „-teile“-Ordner zurück",
+      "T-0774 Dokumente scannen: KI-Aktion „Fotos → PDF“ – Klick → Vorschau → Ja → PDF „Datum Titel.pdf“ mit 2 Seiten, EIN Rückgängig-Schritt, Rückgängig legt die PDF beiseite (KI ersetzt)",
+      "T-0774 Dokumente scannen: der Knopf heißt ehrlich „Hinweis: Papier-Scanner“ (kein Scanner angeschlossen) und gibt weiter den Weg über Fotos an",
+      "T-0774 ECHT: lokale KI (Ollama) – PDF-Werkstatt „Seiten 1–3 heraus“ und Scannen „Fotos → PDF“ im offenen Programm, echte PDFs, Rückgängig (nur mit TRENDO_T0774_ECHT)",
+      "T-0774 Gegenprüfung 1: zwei Fachaktionen („1-2“, dann „4-5“) oder „dokument.setzen“ danach – deutlicher Fehler, keine Datei, Dokument unverändert",
+      "T-0774 Gegenprüfung 2: KI-Plan mit Werkzeug „Passwort“ (entfernen) – abgelehnt, keine entsperrte Kopie",
+      "T-0774 Gegenprüfung 3: Vorschau-Zurückrollen bewegt keine KI-Datei – nach „Ergebnisliste leeren“ und neuer Vorschau mit „Nein“ liegt die PDF noch da",
+      "T-0774 Gegenprüfung 4: KI setzt keinen Ablage-Ordner (absolut/UNC) für Scans – abgelehnt, keine PDF außerhalb",
+      "T-0774 Gegenprüfung 5: Fehler beim Übernehmen (zweite PDF kaputt) – schon geschriebene Dateien werden zurückgenommen, Dokument unverändert",
+      "T-0774 Gegenprüfung 6: Wiederholen bei belegtem Namen trifft keine fremde Datei – Meldung, beiseitegelegte Fassung bleibt",
+      "T-0774 Gegenprüfung 8–10: „3 bis Ende“ → 3-z, Unbekanntes gemeldet; nach „Nein“ keine Meldung stehen; Regel-Planer setzt Modus „foto“ nicht ungefragt",
+      "T-0774 PDF-Werkstatt: falsche Seiten („Seite 9“ bei 5 Seiten) – Fehler schon in der Vorschau, keine Datei, Dokument unverändert (KI ersetzt)",
+      "T-0774 PDF-Werkstatt: „Seiten 1–3 heraus“ – Klick → KI-Plan → Vorschau ohne Datei → Ja → neue PDF mit 3 Seiten, EIN Rückgängig-Schritt, Rückgängig/Wiederholen bringen die Datei mit (KI ersetzt)"
     ],
     "SourceFiles": [],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 33 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
     "WarmMs": 13,
     "WindowsOnly": []
@@ -2339,96 +2385,8 @@
       "T-0705 Präsentation gestalten: Folie in der Leiste mit der Maus nach vorn ziehen verschiebt den Abschnitt der Gliederung; Rechtsklick „Nach hinten“ und „Folie entfernen“; PowerPoint-Datei auf die Fläche ziehen übernimmt ihre Folien"
     ],
     "SourceFiles": [],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
-    "Shell": true,
-    "WarmMs": 15,
-    "WindowsOnly": []
-  },
-  {
-    "Id": "tagesplaner-programm",
-    "Name": "Tagesplaner",
-    "Studio": "STUDIO-DAYPLAN-01",
-    "StudioName": "Tagesplaner",
-    "Area": "Arbeiten & Büro",
-    "Type": [],
-    "Functions": [],
-    "Engine": [
-      "CiteKit",
-      "CodeAiKit",
-      "DayPlanner",
-      "VisionKit",
-      "KreativSafe",
-      "ClaudeCode",
-      "CodeProject",
-      "FolderSnapshot",
-      "VisionTags",
-      "RealProcessRunner"
-    ],
-    "Tools": [
-      "Tag planen (Planen)",
-      "Termine aus dem Kalender (Planen)",
-      "Offene Aufgaben übernehmen (Planen)",
-      "Heute (Tag)",
-      "Unerledigtes auf morgen (Tag)",
-      "Kalenderdatei mit Terminen (Tag)",
-      "Kalenderdatei (.ics) (Exportieren)",
-      "Tagesplan (.txt) (Exportieren)"
-    ],
-    "Formats": [
-      ".ics",
-      ".tdoc",
-      ".txt"
-    ],
-    "Dependencies": [
-      "Blender (optional, 3D-Fotos/Render)",
-      "Unreal Engine (optional)",
-      "Ollama – lokale KI (optional)",
-      "FFmpeg",
-      "LibreOffice (optional)",
-      "qpdf",
-      "Krita (optional)",
-      "Inkscape (optional)",
-      "Tesseract OCR",
-      "PDFsharp (MIT)",
-      "Hunspell-Wörterbücher",
-      "Git",
-      "OBS Studio (optional)",
-      "mpv (optional)",
-      "Python (optional)",
-      "Node.js (optional)"
-    ],
-    "Ui": [
-      "Menüband",
-      "Eigenschaften",
-      "Statusleiste",
-      "Dokument-Reiter"
-    ],
-    "Tabs": [
-      "Tagesplaner"
-    ],
-    "Tests": [
-      "T-0707 ECHT: lokale KI (Ollama, bestes Modell nach T-0703) ändert in drei Programmen das offene Dokument, Datei auf der Platte, Rückgängig (nur mit TRENDO_ASSIST_ECHT)",
-      "T-0707: Drei Programme aus drei Fächern – Auftrag → KI-Plan → Vorschau → Ja → ein Rückgängig-Schritt im offenen Dokument → echte Datei → Rückgängig (KI ersetzt)",
-      "T-0707: KI liefert nicht reparierbares JSON – die Kette fragt einmal nach und arbeitet mit der Korrektur weiter",
-      "T-0707: KI-Befehl im Menüband („Weiterschreiben mit Claude“) ohne Claude – vorher still nichts, jetzt dieselbe Kette ins offene Dokument",
-      "T-0707: Programme außerhalb der Hülle (Text, Tabelle, Geld …) – einheitlich „Noch nicht im Dokument möglich“, Liste aus dem Katalog",
-      "T-0707: Rechte in der Kette – beim Not-Stopp ändert die KI nichts; Claude-Brücke prüft mit derselben Regel (Text bleibt Text)",
-      "T-0719 Karten: GPX im Garmin-Aufbau auf die Karte ziehen – jede Spur/Route einzeln, ein Rückgängig-Schritt; alte Karten-Datei öffnen und bearbeiten; Assistenzweg schreibt einen Wegpunkt ins Dokument",
-      "T-0719 Karten: leere Karte → erster Schritt → Route mit der Maus, Punkt ziehen, Punkt aus der Mitte einfügen, Rechtsklick löschen, Wegpunkt setzen/ziehen/umbenennen, Rückgängig je Schritt, GPX-Datei",
-      "T-0719 Tagesplaner: alte Datei (Plan mit Termin-Kopien) öffnen – Zeitleiste zeigt alles, Termin ziehen hält Plan und Termin gleich; Assistenzweg schreibt einen Block, der in der Zeitleiste steht",
-      "T-0719 Tagesplaner: leerer Tag → erster Block, im Block benennen, ziehen (verschieben), Kante ziehen (Dauer), Doppelklick neu, Rechtsklick Termin/länger, Pfeiltaste, Entf, Rückgängig je Schritt, Kalenderdatei mit Ical.Net geprüft",
-      "T-0728 C3: Claude ändert über die Brücke in drei Zügen – am Ende des Laufs ist es EIN Rückgängig-Schritt „Claude-Auftrag“; Strg+Z nimmt alles zurück (Claude selbst ersetzt durch die Werkzeugaufrufe)",
-      "T-0730 Tagesplaner: beim Umbenennen im Block verschieben Pfeil hoch/runter den Block nicht, Entf/F2 wirken nur im Textfeld, Enter übernimmt den Namen",
-      "T-0730 Vektor: Strg+G und „Gruppieren“ mit nur einer Form werfen nicht, ändern nichts und geben einen Hinweis; zwei Formen werden gruppiert",
-      "Tagesplaner: Beispieltag planen, Pause und Morgen-Liste, abhaken, Kalenderdatei, Termine und Aufgaben aus dem Kalender, auf morgen schieben",
-      "V-01: der kurze Hinweis („Vorlage … geöffnet.“) steht in der Kopfzeile; lange Ergebnisse und Fehler bleiben eine Karte; „?“ zeigt die Hilfe; ab zwei Dokumenten erscheinen die Reiter"
-    ],
-    "SourceFiles": [
-      "src/Trendo.App/MainWindow.KreativStudios4.cs"
-    ],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 10 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
     "WarmMs": 13,
     "WindowsOnly": []
@@ -2610,7 +2568,16 @@
       "doku-tpl-praesentation-vortrag",
       "doku-tpl-praesentation-projekt",
       "doku-tpl-praesentation-fotoalbum",
-      "Mehr anzeigen: Zuletzt benutzt"
+      "Alle",
+      "Text",
+      "Tabelle",
+      "Präsentation",
+      "Jederzeit",
+      "Heute",
+      "7 Tage",
+      "30 Tage",
+      "doku-file-0",
+      "doku-file-1"
     ],
     "Formats": [
       ".csv",
@@ -2670,15 +2637,16 @@
       "SYS-10-P20: Suche in Dokumenten mit Fundstelle (DOCX, TXT, PDF)",
       "SYS-10-P22: Unterschrift als Bild in DOCX (Kopie, mit Hinweis „nicht rechtsverbindlich“)",
       "SYS-10-P23: PDF-Formular lesen und ausfüllen (Kopie, inkrementell, Original unverändert)",
-      "SYS-10-P25: Barrierefreiheits-Bericht listet Mängel"
+      "SYS-10-P25: Barrierefreiheits-Bericht listet Mängel",
+      "T-0776 echt: Texte (SYS-10) – Trendo schreibt DOCX und ODT, LibreOffice 26 öffnet beide und liefert Überschrift, Absätze, Liste und Tabelle als Text zurück"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 22 bestanden · 2 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 16,
+    "WarmMs": 22,
     "WindowsOnly": []
   },
   {
@@ -2905,16 +2873,17 @@
       "T-0223 P3–P5 UI: Markieren in einer Kopie (Original bleibt), Seiten auswählen, Passwort setzen und wieder öffnen",
       "T-0303: Miniatur springt zur Seite; Seiten ordnen: Ziehen verschiebt, Drehen, Löschen, leere Seite, PDF einfügen, Rückgängig, Kopie speichern – Original bleibt",
       "T-0711 PDF „Seiten ordnen“: Rückgängig und jetzt auch Wiederholen über die Hülle, Notsicherung, Karte öffnet die PDF wieder im Ordnen-Modus",
-      "T-0714 PDF-Formular: Werte tippen und ankreuzen → Rückgängig/Wiederholen; Fenster ohne Speichern geschlossen → Karte öffnet die PDF mit den Werten; „Ausgefüllt speichern“ schreibt sie und räumt die Sicherung weg"
+      "T-0714 PDF-Formular: Werte tippen und ankreuzen → Rückgängig/Wiederholen; Fenster ohne Speichern geschlossen → Karte öffnet die PDF mit den Werten; „Ausgefüllt speichern“ schreibt sie und räumt die Sicherung weg",
+      "T-0776 echt: Texte (SYS-10) – Trendo schreibt DOCX und ODT, LibreOffice 26 öffnet beide und liefert Überschrift, Absätze, Liste und Tabelle als Text zurück"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Pdf.cs",
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 29 bestanden · 2 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 18,
     "WindowsOnly": []
   },
   {
@@ -3174,16 +3143,17 @@
       "T-0682: ODT wie DOCX geschützt; ODS und ODP kann Trendo nicht zurückschreiben – nur „Als Kopie speichern“ (XLSX/PPTX), Strg+S lässt das Original; ältere Sicherung wird nicht überschrieben",
       "T-0701 Präsentation: fremde PPTX – Design der Datei als eigene Kachel; im Textfeld auf der Folie ein Wort markieren und Strg+B/Strg+I nur dort; Strg+S behält Design, Animation und alle Textformate",
       "T-0714 Präsentation: Titel geschrieben und Folie dupliziert, Fenster ohne Speichern geschlossen → Karte → Wiederherstellen bringt die Folien; Speichern räumt weg",
-      "T-0714 Text und Präsentation: 100 Rückgängig-Schritte wie die Hülle (vorher 80)"
+      "T-0714 Text und Präsentation: 100 Rückgängig-Schritte wie die Hülle (vorher 80)",
+      "T-0776 echt: Texte (SYS-10) – Trendo schreibt DOCX und ODT, LibreOffice 26 öffnet beide und liefert Überschrift, Absätze, Liste und Tabelle als Text zurück"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Praesentation.cs",
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 30 bestanden · 2 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 21,
+    "WarmMs": 22,
     "WindowsOnly": []
   },
   {
@@ -3459,6 +3429,7 @@
       "T-0714 Tabelle: Werte und Formel eingetippt, Fenster ohne Speichern geschlossen → Karte → Wiederherstellen bringt die Mappe; Speichern räumt weg",
       "T-0714 Umzug: Sicherungen der früheren Notsicherung (wiederherstellen/text.docx, cad.tcad, tabelle.xlsx) werden beim ersten Start angeboten, mit Zeitpunkt; Zurückholen und Verwerfen gehen",
       "T-0724 Leistung: Tabelle mit 100 000 Zellen öffnen – alle Werte kommen an (Zeit wird nur gemessen)",
+      "T-0776 echt: Texte (SYS-10) – Trendo schreibt DOCX und ODT, LibreOffice 26 öffnet beide und liefert Überschrift, Absätze, Liste und Tabelle als Text zurück",
       "Tabelle F3: Autofilter – Knopf unter „Daten“, rechts je Spalte Werte mit Anzahl, Haken weg blendet Zeilen aus, „Alle“ und „Autofilter aus“",
       "Tabelle F3: Pivot – „⊞ Pivot“ öffnet den Bauer rechts mit Vorschlag (Kategorie/Betrag), erstellt ein neues Blatt mit Formeln, das mitrechnet"
     ],
@@ -3466,8 +3437,8 @@
       "src/Trendo.App/MainWindow.Sys10.cs",
       "src/Trendo.App/MainWindow.Tabelle.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 42 bestanden · 2 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
     "WarmMs": 26,
     "WindowsOnly": []
@@ -3793,6 +3764,7 @@
       "T-0730 Text: lesbare Sicherung wird nach der Prüfung wie bisher übernommen",
       "T-0730 Umzug: liegengebliebene „text.docx.uebernahme-<PID>“ eines beendeten Prozesses wird wieder angeboten",
       "T-0747-fix 6: Windows-1252 (€), Sonderzeichen nur in fremden DXF, kaputter SVG-Pfad mit verständlicher Meldung",
+      "T-0776 echt: Texte (SYS-10) – Trendo schreibt DOCX und ODT, LibreOffice 26 öffnet beide und liefert Überschrift, Absätze, Liste und Tabelle als Text zurück",
       "Text F3: 1.-Liste, Enter und Tab rückt ein (a), Tab noch einmal (i.), Umschalt+Tab zurück; ⇤/⇥-Knöpfe; Rückgängig; Tab ohne Liste ändert nichts",
       "Text F3: „Formatierung löschen“ – erst nur das Markierte, ohne Markierung der ganze Absatz (Absatzart, Ausrichtung zurück)",
       "Unterlagen: nur Freigegebenes geht an Claude (als Datei im Projekt); passende Unterlagen werden vorgeschlagen – erst nach Ja",
@@ -3807,10 +3779,10 @@
       "src/Trendo.App/MainWindow.Sys10.cs",
       "src/Trendo.App/MainWindow.Text.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 102 bestanden · 2 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 23,
+    "WarmMs": 36,
     "WindowsOnly": []
   },
   {
@@ -3873,8 +3845,8 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Vertraege.cs"
     ],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 7 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
     "WarmMs": 14,
     "WindowsOnly": []
@@ -3979,15 +3951,16 @@
       "T-0694 UI: Kontoauszug öffnen (CAMT.053) → Vorschau mit Kontrolle der Salden und Vorschlag „Rechnung bezahlt“ → Ja übernimmt Buchungen und markiert die Rechnung; MT940 derselben Buchungen wird als doppelt erkannt; unbekannte CSV fragt nach den Spalten",
       "T-0694 UI: leeres Programm → Meine Firma → neue Rechnung mit zwei Steuersätzen → fehlende Pflichtangabe wird genau benannt → festschreiben → PDF, ZUGFeRD-PDF und XRechnung als echte Dateien; Zahlung zuordnen; Rückgängig und Wiederholen",
       "T-0698 Werkzeug Studio: Studio-Aktion über den vorhandenen Studio-Ablauf (echter Adapter SPEC-11) legt eine Rechnung im Projekt an, bucht nichts",
+      "T-0776 echt: Geld-Auswertung (SPEC-11) – Trendos XLSX öffnet in LibreOffice Calc mit drei Blättern; Calc rechnet die Formeln selbst nach (Überschuss 1035, Monatssumme 1297)",
       "§ 19 UStG (UI): Kleinunternehmer-Prüfung auf Geld- und Business-Seite"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.W5Finance.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 18 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 60,
+    "WarmMs": 51,
     "WindowsOnly": []
   },
   {
@@ -4139,10 +4112,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.W5Business.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 13 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -4209,10 +4182,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.PodStudio.cs"
     ],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 19 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
-    "WarmMs": 14,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -4282,10 +4255,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.KreativStudios2.cs"
     ],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 6 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
-    "WarmMs": 13,
+    "WarmMs": 21,
     "WindowsOnly": []
   },
   {
@@ -4372,10 +4345,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.KreativStudios2.cs"
     ],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 15 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
-    "WarmMs": 14,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -4471,10 +4444,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.ComicStudio.cs"
     ],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 10 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
-    "WarmMs": 15,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -4543,10 +4516,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.FilmStudio.cs"
     ],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 7 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
-    "WarmMs": 15,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -4606,10 +4579,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.KreativStudios2.cs"
     ],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 2 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
-    "WarmMs": 13,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -4780,10 +4753,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.W4Assets.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 17 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -4997,8 +4970,8 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.ProgMode.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 47 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
     "WarmMs": 12,
     "WindowsOnly": []
@@ -5071,10 +5044,10 @@
       "T-0733 Tasten: Bildbearbeitung V B E M T Z im Menü „Werkzeuge“ und im Tooltip, ohne Konflikt; Z + Klick zoomt an der Stelle, Alt+Klick zurück; Künstlerstudio M = Auswahl"
     ],
     "SourceFiles": [],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 9 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
-    "WarmMs": 14,
+    "WarmMs": 18,
     "WindowsOnly": []
   },
   {
@@ -5339,10 +5312,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Spec15.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 36 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 89,
+    "WarmMs": 98,
     "WindowsOnly": []
   },
   {
@@ -5407,15 +5380,17 @@
       "Logo aus leerer Vorlage mit der Maus: Stern zeichnen, verschieben, drehen, skalieren, Strg+Z; Zeichenstift-Pfad mit Bézier-Rundung schließen, Punkt ziehen; Entf, Strg+D, Rechtsklick-Menü, Raster",
       "Logo-Exporte echt geprüft: SVG in Chrome gerendert und Pixel mit der Vorschau verglichen, PDF mit PDFium gezeichnet, PNG 512/1024/2048, Favicon, Paket mit hell/dunkel/einfarbig/negativ",
       "Logo: fremdes SVG hineinziehen und umfärben, PNG einsetzen; Vorschlag erzeugen ersetzt nur mit Rückgängig; Namensfeld ändert den Text in der Zeichnung",
-      "Logos: Vorschau hell und dunkel, Form wechseln, falsche Farbe wird gemeldet, SVG-Export ist gültig"
+      "Logos: Vorschau hell und dunkel, Form wechseln, falsche Farbe wird gemeldet, SVG-Export ist gültig",
+      "T-0775 ECHT Kreativ: „Ideen mit Claude“ in Logos & Marken färbt das offene Logo um – Vorschau, Ja, Datei, Strg+Z (nur mit TRENDO_ECHT_CLAUDE)",
+      "T-0775: „Ideen mit Claude“ – die Ideen der KI (Feld „hinweis“) stehen sichtbar in der Vorschau (KI ersetzt)"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.KreativStudios.cs"
     ],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 7 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
-    "WarmMs": 13,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -5489,10 +5464,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.PodcastStudio.cs"
     ],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 11 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
-    "WarmMs": 15,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -5801,10 +5776,10 @@
       "Y1: YouTube-Link → Titel/Interpret per oEmbed (kein Download), Stil aus dem Web, Titel vorgeschlagen, Profi-Modus; falscher Link = Hinweis"
     ],
     "SourceFiles": [],
-    "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test PC_VERIFIED (Beleg reports/echtlauf/2026-11-16/acestep.log; Lauf: 70 bestanden · 2 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 33,
+    "WarmMs": 58,
     "WindowsOnly": []
   },
   {
@@ -5861,10 +5836,10 @@
       "streamlink-Oberfläche: Mediathek-Seite zeigt Das Erste und arte; Klick löst den Stream auf und wechselt zum Player"
     ],
     "SourceFiles": [],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 15 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -6237,10 +6212,10 @@
       "src/Trendo.App/MainWindow.VideoSchnitt.cs",
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 25 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
-    "WarmMs": 15,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -6571,10 +6546,10 @@
       "src/Trendo.App/MainWindow.VideoSchnitt.cs",
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 18 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
-    "WarmMs": 13,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -6852,6 +6827,7 @@
       "Foto aufhellen und zuschneiden",
       "Untertitel erzeugen",
       "Mehr",
+      "Ausblenden",
       "Medien bearbeiten",
       "Videoschnitt",
       "Bildbearbeitung",
@@ -6917,10 +6893,10 @@
       "src/Trendo.App/MainWindow.VideoSchnitt.cs",
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 14 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 60,
+    "WarmMs": 63,
     "WindowsOnly": []
   },
   {
@@ -7281,10 +7257,10 @@
       "src/Trendo.App/MainWindow.VideoSchnitt.cs",
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 41 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
-    "WarmMs": 13,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -7480,10 +7456,10 @@
       "src/Trendo.App/MainWindow.Library3D.cs",
       "src/Trendo.App/MainWindow.Spec04.cs"
     ],
-    "Status": "Studio entfernt, nicht mehr angeboten – kein gültiger Prüfstand (Register: IMPLEMENTED / Test NOT_RUN)",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "Studio entfernt, nicht mehr angeboten – kein gültiger Prüfstand (Register: IMPLEMENTED / Test TESTED (Lauf: 16 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf))",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 46,
+    "WarmMs": 52,
     "WindowsOnly": []
   },
   {
@@ -7757,6 +7733,7 @@
       "kie.ai",
       "Programme hinzufügen …",
       "Mehr",
+      "Ausblenden",
       "Speichern",
       "Rückgängig",
       "Wiederholen",
@@ -7810,8 +7787,7 @@
       "Spiegeln",
       "Aushöhlen",
       "Teile vorschlagen",
-      "Jetzt einrichten",
-      "In Blender bauen (sichtbar)"
+      "Jetzt einrichten"
     ],
     "Formats": [
       ".fbx",
@@ -7889,6 +7865,8 @@
       "T-0724 Leistung: 3D-Szene mit 40 000 Dreiecken öffnen – alle Dreiecke kommen an (Zeit wird nur gemessen)",
       "T-0727 B3: 3D-Ansicht im Programmfenster wird nie unter ihre Mindesthöhe gedrückt – die Seite lässt sich stattdessen verschieben",
       "T-0730 3D: Szene aus neuerer Fassung – Sicherung bleibt erhalten und angeboten",
+      "T-0776 echt: CAD-DXF (CORE-05) – fremde DXF in Trendo bearbeitet und als DXF geschrieben; FreeCAD 1.1 liest Ebenen, Linien, Kreise, Bogen und Polylinie mit den Trendo-Maßen",
+      "T-0776 echt: CAD-STEP (CORE-05) – FreeCAD 1.1 liest Trendos STEP als gültigen geschlossenen Körper: Volumen 6000 mm³ bzw. Winkel, Umriss und Name stimmen",
       "Teams: jedes Studio (außer dem abgelehnten SPEC-07) hat ein Profi-Team; „Team“ im 3D-Studio öffnet „KI einsetzen“ mit dem 3D-Team; eigene Rolle nur mit Studio",
       "V4: im Fokusmodus und in „Erweitert“ bleibt 3D wie bisher – „Programme hinzufügen“ ist erreichbar",
       "Vorschlag 36: Studios zeigen „Freie KI hier“ – 3D-Studio schlägt „3D aus Bild“ vor, der Klick öffnet die KI-Bibliothek (geladen wird erst dort); jede Studio-Zuordnung gibt es wirklich",
@@ -7898,10 +7876,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 59 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 63,
+    "WarmMs": 34,
     "WindowsOnly": []
   },
   {
@@ -8248,16 +8226,18 @@
       "CORE-05: Szenenbaum – Teile in Gruppen ordnen, Gruppe auswählen bewegt alle ihre Teile, Ausblenden nimmt Teile aus Ansicht und Render, Material für die ganze Gruppe",
       "CORE-05: Umrisse: Würfelschnitt ergibt einen geschlossenen Umriss (Umfang 80 mm, Fläche 400 mm²); zwei Körper zwei Umrisse",
       "CORE-05: Unbekannte Formate und Formen werden abgewiesen",
-      "N24: Drucker eintragen (Zugangscode geschützt), mit nachgebautem Drucker verbinden, Status sehen; Druck nur nach Bestätigung"
+      "N24: Drucker eintragen (Zugangscode geschützt), mit nachgebautem Drucker verbinden, Status sehen; Druck nur nach Bestätigung",
+      "T-0776 echt: CAD-DXF (CORE-05) – fremde DXF in Trendo bearbeitet und als DXF geschrieben; FreeCAD 1.1 liest Ebenen, Linien, Kreise, Bogen und Polylinie mit den Trendo-Maßen",
+      "T-0776 echt: CAD-STEP (CORE-05) – FreeCAD 1.1 liest Trendos STEP als gültigen geschlossenen Körper: Volumen 6000 mm³ bzw. Winkel, Umriss und Name stimmen"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Print3D.cs",
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 32 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -8634,16 +8614,18 @@
       "T-0708 V-14: CAD, 3D-Modelle und Code-Editor haben Speichern · Rückgängig · Wiederholen (· Exportieren) links oben; Rückgängig wirkt über mehrere Schritte",
       "T-0714 CAD: Quader und Maß geändert, Fenster ohne Speichern geschlossen → Karte → Wiederherstellen bringt das Bauteil (mit Versionsfeld); Speichern räumt weg",
       "T-0714 Umzug: Sicherungen der früheren Notsicherung (wiederherstellen/text.docx, cad.tcad, tabelle.xlsx) werden beim ersten Start angeboten, mit Zeitpunkt; Zurückholen und Verwerfen gehen",
-      "T-0730 CAD: Bauteil aus neuerer Fassung – Sicherung bleibt erhalten und angeboten"
+      "T-0730 CAD: Bauteil aus neuerer Fassung – Sicherung bleibt erhalten und angeboten",
+      "T-0776 echt: CAD-DXF (CORE-05) – fremde DXF in Trendo bearbeitet und als DXF geschrieben; FreeCAD 1.1 liest Ebenen, Linien, Kreise, Bogen und Polylinie mit den Trendo-Maßen",
+      "T-0776 echt: CAD-STEP (CORE-05) – FreeCAD 1.1 liest Trendos STEP als gültigen geschlossenen Körper: Volumen 6000 mm³ bzw. Winkel, Umriss und Name stimmen"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Cad.cs",
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 39 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 73,
+    "WarmMs": 74,
     "WindowsOnly": []
   },
   {
@@ -8855,10 +8837,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 30 bestanden · 2 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -9071,8 +9053,8 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 27 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
     "WarmMs": 14,
     "WindowsOnly": []
@@ -9165,10 +9147,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.ConsolePort.cs"
     ],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 12 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
-    "WarmMs": 14,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -9572,10 +9554,10 @@
       "src/Trendo.App/MainWindow.ProgGame.cs",
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 106 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
-    "WarmMs": 17,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -9921,10 +9903,10 @@
       "src/Trendo.App/MainWindow.ProgGame.cs",
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 36 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 44,
+    "WarmMs": 57,
     "WindowsOnly": []
   },
   {
@@ -10131,10 +10113,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Spec14.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 26 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
-    "WarmMs": 14,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -10362,10 +10344,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Spec10.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 25 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 64,
+    "WarmMs": 60,
     "WindowsOnly": []
   },
   {
@@ -10570,10 +10552,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Spec13.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 22 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
-    "WarmMs": 14,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -10759,10 +10741,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Spec02.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 19 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
-    "WarmMs": 15,
+    "WarmMs": 19,
     "WindowsOnly": []
   },
   {
@@ -10954,10 +10936,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Spec03.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 26 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
-    "WarmMs": 15,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -11153,15 +11135,17 @@
       "T-0747-fix UI: Fräser-Ø/Vorschub geändert → Bahnen aus der Zeichnung neu (ein Schritt); geht es nicht, ist der Export gesperrt",
       "T-0747-fix UI: große DXF (12 000 Linien) im Hintergrund – Karte mit Abbrechen, Ergebnis als ein Schritt; Abbrechen ändert nichts",
       "T-0747-fix2 UI: Trendo CAD zeigt, dass eine Zoll-DXF in mm umgerechnet wurde",
+      "T-0775 ECHT Technik: Claude verschiebt im Programm „Grundriss & Wohnen“ eine Wand im offenen Plan – Strg+Z nimmt es zurück (nur mit TRENDO_ECHT_CLAUDE)",
+      "T-0776 echt: Wohnung planen (SPEC-01) – fremde Wohnungs-DXF in Trendo bearbeitet und als DXF exportiert; FreeCAD 1.1 liest Wände und Umriss in Plangröße",
       "Wohnung UI: Uhrzeit und Monat gehen als echter Sonnenstand in die Szene, ohne Wahl bleibt das Licht wie bisher"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Spec01.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 31 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
-    "WarmMs": 27,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -11341,10 +11325,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Spec06.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 18 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -11540,101 +11524,8 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Spec05.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
-    "Shell": true,
-    "WarmMs": 11,
-    "WindowsOnly": []
-  },
-  {
-    "Id": "quellen-programm",
-    "Name": "Recherche mit Quellen",
-    "Studio": "STUDIO-CITE-01",
-    "StudioName": "Recherche mit Quellen",
-    "Area": "Wissen & Lernen",
-    "Type": [],
-    "Functions": [],
-    "Engine": [
-      "CiteKit",
-      "CodeAiKit",
-      "DayPlanner",
-      "VisionKit",
-      "KreativSafe",
-      "ClaudeCode",
-      "CodeProject",
-      "FolderSnapshot",
-      "VisionTags",
-      "RealProcessRunner"
-    ],
-    "Tools": [
-      "Buch (Quelle)",
-      "Artikel (Quelle)",
-      "Webseite (Quelle)",
-      "Aus der Recherche übernehmen (Quelle)",
-      "BibTeX/RIS einlesen … (Quelle)",
-      "Aus DOI ergänzen (Quelle)",
-      "APA 7 (Stil)",
-      "Harvard (Stil)",
-      "DIN ISO 690 (nah) (Stil)",
-      "Doppelte suchen (Prüfen)",
-      "Mit Claude prüfen (Prüfen)",
-      "Im Recherche-Studio lesen (Prüfen)",
-      "Literaturverzeichnis (.md) (Exportieren)",
-      "BibTeX (.bib) (Exportieren)",
-      "Nur Text (.txt) (Exportieren)",
-      "RIS für Zotero, Citavi, EndNote (.ris) (Exportieren)",
-      "CSL-JSON für Zotero und Pandoc (.json) (Exportieren)"
-    ],
-    "Formats": [
-      ".bib",
-      ".json",
-      ".md",
-      ".ris",
-      ".tdoc",
-      ".txt"
-    ],
-    "Dependencies": [
-      "Blender (optional, 3D-Fotos/Render)",
-      "Unreal Engine (optional)",
-      "Ollama – lokale KI (optional)",
-      "FFmpeg",
-      "LibreOffice (optional)",
-      "qpdf",
-      "Krita (optional)",
-      "Inkscape (optional)",
-      "Tesseract OCR",
-      "PDFsharp (MIT)",
-      "Hunspell-Wörterbücher",
-      "Git",
-      "OBS Studio (optional)",
-      "mpv (optional)",
-      "Python (optional)",
-      "Node.js (optional)"
-    ],
-    "Ui": [
-      "Menüband",
-      "Eigenschaften",
-      "Statusleiste",
-      "Dokument-Reiter"
-    ],
-    "Tabs": [
-      "Recherche mit Quellen"
-    ],
-    "Tests": [
-      "Recherche mit Quellen: Beispiel, Stil wechseln, Quelle anlegen und ausfüllen, Doppelte, Zitat mit Seite, BibTeX hin und zurück, aus der Recherche übernehmen",
-      "STUDIO-CITE-01 (UI): DOI eintippen füllt die Quelle mit Herkunft, Rückgängig nimmt sie weg; RIS und CSL-JSON aus, RIS wieder ein (Netz ersetzt)",
-      "STUDIO-CITE-01 echt: DOI 10.1038/nature14539 bei Crossref über den echten Lese-Weg (übersprungen nur ohne Internet)",
-      "SYS-08 (UI): Suchen zeigt Treffer mit Herkunft, Klick liest im Lesemodus; Sammlung behalten übersteht den Neustart (Netz ersetzt)",
-      "SYS-08 echt: Wikipedia-Suche und Lesen des ersten Treffers über den echten Lese-Weg (übersprungen nur ohne Internet)",
-      "SYS-08: Sammlung behalten ausschalten fragt vorher; Fehler beim Verschieben zeigt eine Meldung ohne halben Zustand",
-      "SYS-08: ohne Sammlung behalten beginnt jede Sitzung leer (wie bisher)",
-      "X-07 echt: KI-Auftrag „Quelle holen“ lädt nach Freigabe ein HDRI von Poly Haven mit Beleg je Datei (übersprungen nur ohne Internet)"
-    ],
-    "SourceFiles": [
-      "src/Trendo.App/MainWindow.KreativStudios4.cs"
-    ],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 27 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
     "WarmMs": 14,
     "WindowsOnly": []
@@ -11694,10 +11585,10 @@
       "T-0711 Recherche: Notizfeld – bleibt beim Neuzeichnen, Rückgängig, Notsicherung, Karte, Zurückholen"
     ],
     "SourceFiles": [],
-    "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test PC_VERIFIED (Beleg reports/pc-t0003/UEBERSICHT.md; Lauf: 14 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 21,
+    "WarmMs": 22,
     "WindowsOnly": []
   },
   {
@@ -11759,10 +11650,10 @@
       "Wochenrückblick UI: Knopf öffnet den Rückblick mit Kacheln und Lerntagen, KI-Zusammenfassung (ersetzt) erscheint, „Als Seite speichern“ legt die Seite an"
     ],
     "SourceFiles": [],
-    "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test PC_VERIFIED (Beleg reports/pc-t0003/UEBERSICHT.md; Lauf: 11 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -11888,10 +11779,10 @@
       "X-01 (UI): Ohne Angaben gesperrt; Plan freigeben → Ja → alle Schritte ✓"
     ],
     "SourceFiles": [],
-    "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test PC_VERIFIED (Beleg reports/pc-t0003/UEBERSICHT.md; Lauf: 22 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 21,
+    "WarmMs": 20,
     "WindowsOnly": []
   },
   {
@@ -11973,10 +11864,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.KreativStudios4.cs"
     ],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 4 bestanden · 3 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
-    "WarmMs": 13,
+    "WarmMs": 24,
     "WindowsOnly": []
   },
   {
@@ -12051,8 +11942,8 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.KreativStudios2.cs"
     ],
-    "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test PC_VERIFIED (Beleg reports/echtlauf/2026-11-16/sdcli.log; Lauf: 4 bestanden · 2 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
     "WarmMs": 12,
     "WindowsOnly": []
@@ -12136,13 +12027,14 @@
       "T-0723: Projektgrenzen, Not-Stopp und keine Freigabe – nichts außerhalb des Projekts, KI nicht gefragt, kein Testlauf ohne Ja (KI ersetzt)",
       "T-0728 C2: „Los“ in der Auftragszeile von „Code mit KI“ geht über „Mit KI ändern“ – Plan mit Dateiblöcken, Vorschau als Unterschied, nichts geändert vor dem Ja (KI ersetzt)",
       "T-0764 M1: Kind – „Code mit KI“ mit eingetipptem Autostart-Ordner legt keine start.bat an; Erwachsene wie bisher",
-      "T-0764 M2: Kind – „Viele Dateien umbenennen“: spiel → spiel.cmd nicht (auch nicht in der Vorschau), nichts außerhalb der Freigabe; Muster ohne neue Endung geht; Erwachsene wie bisher"
+      "T-0764 M2: Kind – „Viele Dateien umbenennen“: spiel → spiel.cmd nicht (auch nicht in der Vorschau), nichts außerhalb der Freigabe; Muster ohne neue Endung geht; Erwachsene wie bisher",
+      "T-0775 ECHT Code mit KI: „Mit Claude ändern“ ändert im Projektordner eine Python-Datei, Diff, „Zurücknehmen“ stellt sie her (nur mit TRENDO_ECHT_CLAUDE)"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.KreativStudios4.cs"
     ],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 9 bestanden · 2 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
     "WarmMs": 14,
     "WindowsOnly": []
@@ -12219,10 +12111,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.KreativStudios3.cs"
     ],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 13 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
-    "WarmMs": 13,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -12259,6 +12151,7 @@
       "ki-nav-verbindungen",
       "ki-nav-keys",
       "Mehr",
+      "Ausblenden",
       "Abläufe über mehrere Studios",
       "＋ Neues Großprojekt",
       "Anlegen"
@@ -12303,10 +12196,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.W5Fusion.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 15 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 26,
     "WindowsOnly": []
   },
   {
@@ -12337,6 +12230,7 @@
       "ki-nav-produktion",
       "ki-nav-verbindungen",
       "ki-nav-keys",
+      "Ausblenden",
       "Modell",
       "Fragen",
       "Verbindungen",
@@ -12369,10 +12263,10 @@
       "T-0728 C7: „Trendo KI (lokal)“ – lange Modell-Knöpfe brechen um und bleiben in der Spalte (nichts abgeschnitten)"
     ],
     "SourceFiles": [],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 10 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 27,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -12457,13 +12351,14 @@
       "T-0734 Gegenprüfung: während einer laufenden Antwort abgelegte Datei bleibt für die nächste Frage; nur die gesendeten Anhänge verschwinden",
       "T-0734: Antwort wächst sichtbar in der Sprechblase; Stopp beendet in unter 2 s und das Geschriebene bleibt mit „(abgebrochen)“ im Gespräch",
       "T-0734: Bild ohne Bildmodell → klare Meldung statt erfundener Antwort, Anhang bleibt; Hinweis sagt, dass Bilder auf dem PC bleiben",
-      "T-0734: „Datei anhängen“ (Auswahl) → Karte mit Name und Hinweis „bleibt auf diesem PC“; Frage enthält den Dateitext, Gespräch zeigt \uD83D\uDCCE; falsche Art wird abgelehnt"
+      "T-0734: „Datei anhängen“ (Auswahl) → Karte mit Name und Hinweis „bleibt auf diesem PC“; Frage enthält den Dateitext, Gespräch zeigt \uD83D\uDCCE; falsche Art wird abgelehnt",
+      "T-0775 ECHT KI fragen: Frage mit angehängter Textdatei geht an Claude (Abo), Antwort nennt den Inhalt der Datei (nur mit TRENDO_ECHT_CLAUDE)"
     ],
     "SourceFiles": [],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 16 bestanden · 2 übersprungen · 0 fehlgeschlagen · 1 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 21,
+    "WarmMs": 38,
     "WindowsOnly": []
   },
   {
@@ -12538,10 +12433,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 5 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -12576,6 +12471,7 @@
       "ki-nav-ablaeufe",
       "ki-nav-produktion",
       "ki-nav-verbindungen",
+      "Ausblenden",
       "Schlüssel holen",
       "Prüfen & speichern",
       "Als Ersatz-KI nutzen (Fragen gehen dann an OpenRouter)",
@@ -12604,10 +12500,10 @@
       "T-0225 UI: Schlüssel holen öffnet die Anbieterseite, Ersatz-KI erst mit gültigem Schlüssel, springt nur ein, wenn die lokale KI schweigt"
     ],
     "SourceFiles": [],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 7 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 29,
+    "WarmMs": 27,
     "WindowsOnly": []
   },
   {
@@ -12711,10 +12607,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Connections.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 6 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 20,
+    "WarmMs": 21,
     "WindowsOnly": []
   },
   {
@@ -12785,10 +12681,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.KreativStudios3.cs"
     ],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 6 bestanden · 2 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
-    "WarmMs": 15,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -12854,10 +12750,10 @@
       "T-0740 KI-Anweisungen: Vorlage als .md speichern, ändern, einlesen → Rückfrage → Ersetzen (neue Version) und Als Kopie; Alle als .json; Ablegen"
     ],
     "SourceFiles": [],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 8 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 19,
+    "WarmMs": 18,
     "WindowsOnly": []
   },
   {
@@ -12898,7 +12794,8 @@
       "＋ Eigener Skill",
       "Datei wählen …",
       "Ansehen",
-      "Mitgeliefert: alle 13 zeigen"
+      "Mitgeliefert: alle 16 zeigen",
+      "Liste holen"
     ],
     "Formats": [
       ".html",
@@ -12933,10 +12830,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 8 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 39,
+    "WarmMs": 28,
     "WindowsOnly": []
   },
   {
@@ -13003,10 +12900,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.KreativStudios3.cs"
     ],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 5 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
-    "WarmMs": 13,
+    "WarmMs": 20,
     "WindowsOnly": []
   },
   {
@@ -13080,10 +12977,10 @@
       "T-0741 UI +2: Rechercheur fragt vor dem Internet-Abruf – erst nach „Zustimmen“ wird gelesen, Ergebnis landet in der Übergabe-Datei"
     ],
     "SourceFiles": [],
-    "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test PC_VERIFIED (Beleg reports/pc-t0003/UEBERSICHT.md; Lauf: 10 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 24,
+    "WarmMs": 30,
     "WindowsOnly": []
   },
   {
@@ -13126,6 +13023,7 @@
       "ki-nav-verbindungen",
       "ki-nav-keys",
       "Mehr",
+      "Ausblenden",
       "KI-Quellen",
       "KI-Bibliothek",
       "Kostenlose Internet-KIs",
@@ -13189,10 +13087,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.KiLibrary.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 8 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -13224,6 +13122,7 @@
       "ki-nav-verbindungen",
       "ki-nav-keys",
       "Mehr",
+      "Ausblenden",
       "KI-Quellen",
       "KI-Bibliothek",
       "Kostenlose Internet-KIs",
@@ -13241,7 +13140,12 @@
       "Herunterladen & einrichten",
       "Ausschalten",
       "Herstellerseite",
-      "Mehr anzeigen: Freie Modelle, Zum Laden der Modelle muss Ollama laufen"
+      "Ollama jetzt starten",
+      "Programme einrichten …",
+      "Freie Modelle (Apache-2.0, MIT) automatisch laden, passend zu diesem PC",
+      "Jetzt laden (sonst automatisch)",
+      "Lizenz „Llama 3.2 Community“ bestätigen & laden",
+      "Lizenz „Gemma Terms“ bestätigen & laden"
     ],
     "Formats": [],
     "Dependencies": [],
@@ -13277,10 +13181,10 @@
       "Übrige Seiten, Einfach: Rest hinter „Mehr anzeigen“ und nach einem Klick wieder da; Erweitert zeigt alles sofort"
     ],
     "SourceFiles": [],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 21 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 21,
+    "WarmMs": 36,
     "WindowsOnly": []
   },
   {
@@ -13346,10 +13250,191 @@
       "X-05: Zähler „ins Internet“ – zählt nur den heutigen Tag, am nächsten Tag wieder bei 0, keine Inhalte gespeichert"
     ],
     "SourceFiles": [],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 8 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 20,
+    "WarmMs": 22,
+    "WindowsOnly": []
+  },
+  {
+    "Id": "quellen-programm",
+    "Name": "Recherche mit Quellen",
+    "Studio": "STUDIO-CITE-01",
+    "StudioName": "Recherche mit Quellen",
+    "Area": "KI & Automatik",
+    "Type": [],
+    "Functions": [],
+    "Engine": [
+      "CiteKit",
+      "CodeAiKit",
+      "DayPlanner",
+      "VisionKit",
+      "KreativSafe",
+      "ClaudeCode",
+      "CodeProject",
+      "FolderSnapshot",
+      "VisionTags",
+      "RealProcessRunner"
+    ],
+    "Tools": [
+      "Buch (Quelle)",
+      "Artikel (Quelle)",
+      "Webseite (Quelle)",
+      "Aus der Recherche übernehmen (Quelle)",
+      "BibTeX/RIS einlesen … (Quelle)",
+      "Aus DOI ergänzen (Quelle)",
+      "APA 7 (Stil)",
+      "Harvard (Stil)",
+      "DIN ISO 690 (nah) (Stil)",
+      "Doppelte suchen (Prüfen)",
+      "Mit Claude prüfen (Prüfen)",
+      "Im Recherche-Studio lesen (Prüfen)",
+      "Literaturverzeichnis (.md) (Exportieren)",
+      "BibTeX (.bib) (Exportieren)",
+      "Nur Text (.txt) (Exportieren)",
+      "RIS für Zotero, Citavi, EndNote (.ris) (Exportieren)",
+      "CSL-JSON für Zotero und Pandoc (.json) (Exportieren)"
+    ],
+    "Formats": [
+      ".bib",
+      ".json",
+      ".md",
+      ".ris",
+      ".tdoc",
+      ".txt"
+    ],
+    "Dependencies": [
+      "Blender (optional, 3D-Fotos/Render)",
+      "Unreal Engine (optional)",
+      "Ollama – lokale KI (optional)",
+      "FFmpeg",
+      "LibreOffice (optional)",
+      "qpdf",
+      "Krita (optional)",
+      "Inkscape (optional)",
+      "Tesseract OCR",
+      "PDFsharp (MIT)",
+      "Hunspell-Wörterbücher",
+      "Git",
+      "OBS Studio (optional)",
+      "mpv (optional)",
+      "Python (optional)",
+      "Node.js (optional)"
+    ],
+    "Ui": [
+      "Menüband",
+      "Eigenschaften",
+      "Statusleiste",
+      "Dokument-Reiter"
+    ],
+    "Tabs": [
+      "Recherche mit Quellen"
+    ],
+    "Tests": [
+      "Recherche mit Quellen: Beispiel, Stil wechseln, Quelle anlegen und ausfüllen, Doppelte, Zitat mit Seite, BibTeX hin und zurück, aus der Recherche übernehmen",
+      "STUDIO-CITE-01 (UI): DOI eintippen füllt die Quelle mit Herkunft, Rückgängig nimmt sie weg; RIS und CSL-JSON aus, RIS wieder ein (Netz ersetzt)",
+      "STUDIO-CITE-01 echt: DOI 10.1038/nature14539 bei Crossref über den echten Lese-Weg (übersprungen nur ohne Internet)",
+      "SYS-08 (UI): Suchen zeigt Treffer mit Herkunft, Klick liest im Lesemodus; Sammlung behalten übersteht den Neustart (Netz ersetzt)",
+      "SYS-08 echt: Wikipedia-Suche und Lesen des ersten Treffers über den echten Lese-Weg (übersprungen nur ohne Internet)",
+      "SYS-08: Sammlung behalten ausschalten fragt vorher; Fehler beim Verschieben zeigt eine Meldung ohne halben Zustand",
+      "SYS-08: ohne Sammlung behalten beginnt jede Sitzung leer (wie bisher)",
+      "X-07 echt: KI-Auftrag „Quelle holen“ lädt nach Freigabe ein HDRI von Poly Haven mit Beleg je Datei (übersprungen nur ohne Internet)"
+    ],
+    "SourceFiles": [
+      "src/Trendo.App/MainWindow.KreativStudios4.cs"
+    ],
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 8 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Shell": true,
+    "WarmMs": 11,
+    "WindowsOnly": []
+  },
+  {
+    "Id": "tagesplaner-programm",
+    "Name": "Tagesplaner",
+    "Studio": "STUDIO-DAYPLAN-01",
+    "StudioName": "Tagesplaner",
+    "Area": "KI & Automatik",
+    "Type": [],
+    "Functions": [],
+    "Engine": [
+      "CiteKit",
+      "CodeAiKit",
+      "DayPlanner",
+      "VisionKit",
+      "KreativSafe",
+      "ClaudeCode",
+      "CodeProject",
+      "FolderSnapshot",
+      "VisionTags",
+      "RealProcessRunner"
+    ],
+    "Tools": [
+      "Tag planen (Planen)",
+      "Termine aus dem Kalender (Planen)",
+      "Offene Aufgaben übernehmen (Planen)",
+      "Heute (Tag)",
+      "Unerledigtes auf morgen (Tag)",
+      "Kalenderdatei mit Terminen (Tag)",
+      "Kalenderdatei (.ics) (Exportieren)",
+      "Tagesplan (.txt) (Exportieren)"
+    ],
+    "Formats": [
+      ".ics",
+      ".tdoc",
+      ".txt"
+    ],
+    "Dependencies": [
+      "Blender (optional, 3D-Fotos/Render)",
+      "Unreal Engine (optional)",
+      "Ollama – lokale KI (optional)",
+      "FFmpeg",
+      "LibreOffice (optional)",
+      "qpdf",
+      "Krita (optional)",
+      "Inkscape (optional)",
+      "Tesseract OCR",
+      "PDFsharp (MIT)",
+      "Hunspell-Wörterbücher",
+      "Git",
+      "OBS Studio (optional)",
+      "mpv (optional)",
+      "Python (optional)",
+      "Node.js (optional)"
+    ],
+    "Ui": [
+      "Menüband",
+      "Eigenschaften",
+      "Statusleiste",
+      "Dokument-Reiter"
+    ],
+    "Tabs": [
+      "Tagesplaner"
+    ],
+    "Tests": [
+      "T-0707 ECHT: lokale KI (Ollama, bestes Modell nach T-0703) ändert in drei Programmen das offene Dokument, Datei auf der Platte, Rückgängig (nur mit TRENDO_ASSIST_ECHT)",
+      "T-0707: Drei Programme aus drei Fächern – Auftrag → KI-Plan → Vorschau → Ja → ein Rückgängig-Schritt im offenen Dokument → echte Datei → Rückgängig (KI ersetzt)",
+      "T-0707: KI liefert nicht reparierbares JSON – die Kette fragt einmal nach und arbeitet mit der Korrektur weiter",
+      "T-0707: KI-Befehl im Menüband („Weiterschreiben mit Claude“) ohne Claude – vorher still nichts, jetzt dieselbe Kette ins offene Dokument",
+      "T-0707: Programme außerhalb der Hülle (Text, Tabelle, Geld …) – einheitlich „Noch nicht im Dokument möglich“, Liste aus dem Katalog",
+      "T-0707: Rechte in der Kette – beim Not-Stopp ändert die KI nichts; Claude-Brücke prüft mit derselben Regel (Text bleibt Text)",
+      "T-0719 Karten: GPX im Garmin-Aufbau auf die Karte ziehen – jede Spur/Route einzeln, ein Rückgängig-Schritt; alte Karten-Datei öffnen und bearbeiten; Assistenzweg schreibt einen Wegpunkt ins Dokument",
+      "T-0719 Karten: leere Karte → erster Schritt → Route mit der Maus, Punkt ziehen, Punkt aus der Mitte einfügen, Rechtsklick löschen, Wegpunkt setzen/ziehen/umbenennen, Rückgängig je Schritt, GPX-Datei",
+      "T-0719 Tagesplaner: alte Datei (Plan mit Termin-Kopien) öffnen – Zeitleiste zeigt alles, Termin ziehen hält Plan und Termin gleich; Assistenzweg schreibt einen Block, der in der Zeitleiste steht",
+      "T-0719 Tagesplaner: leerer Tag → erster Block, im Block benennen, ziehen (verschieben), Kante ziehen (Dauer), Doppelklick neu, Rechtsklick Termin/länger, Pfeiltaste, Entf, Rückgängig je Schritt, Kalenderdatei mit Ical.Net geprüft",
+      "T-0728 C3: Claude ändert über die Brücke in drei Zügen – am Ende des Laufs ist es EIN Rückgängig-Schritt „Claude-Auftrag“; Strg+Z nimmt alles zurück (Claude selbst ersetzt durch die Werkzeugaufrufe)",
+      "T-0730 Tagesplaner: beim Umbenennen im Block verschieben Pfeil hoch/runter den Block nicht, Entf/F2 wirken nur im Textfeld, Enter übernimmt den Namen",
+      "T-0730 Vektor: Strg+G und „Gruppieren“ mit nur einer Form werfen nicht, ändern nichts und geben einen Hinweis; zwei Formen werden gruppiert",
+      "Tagesplaner: Beispieltag planen, Pause und Morgen-Liste, abhaken, Kalenderdatei, Termine und Aufgaben aus dem Kalender, auf morgen schieben",
+      "V-01: der kurze Hinweis („Vorlage … geöffnet.“) steht in der Kopfzeile; lange Ergebnisse und Fehler bleiben eine Karte; „?“ zeigt die Hilfe; ab zwei Dokumenten erscheinen die Reiter"
+    ],
+    "SourceFiles": [
+      "src/Trendo.App/MainWindow.KreativStudios4.cs"
+    ],
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 14 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Shell": true,
+    "WarmMs": 29,
     "WindowsOnly": []
   },
   {
@@ -13404,10 +13489,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.KreativStudios.cs"
     ],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 3 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
-    "WarmMs": 14,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -13483,10 +13568,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.KreativStudios3.cs"
     ],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 4 bestanden · 2 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": true,
-    "WarmMs": 12,
+    "WarmMs": 18,
     "WindowsOnly": []
   },
   {
@@ -13608,10 +13693,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.W4Builder.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 21 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 19,
     "WindowsOnly": []
   },
   {
@@ -13685,10 +13770,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.W5CleanRoom.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 15 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -13787,10 +13872,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.W4Oss.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 26 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -13869,10 +13954,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.W5Ext.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 11 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -13898,6 +13983,7 @@
       "kie.ai",
       "Auftragszeile zeigen",
       "Mehr",
+      "Ausblenden",
       "Webseite bauen",
       "Code-Editor",
       "Klar",
@@ -13951,8 +14037,7 @@
       "Jetzt beheben",
       "Änderung ansehen",
       "Paket vorbereiten",
-      "Genaue Barrierefreiheitsprüfung einrichten (axe-core, kostenlos)",
-      "Anlegen"
+      "Genaue Barrierefreiheitsprüfung einrichten (axe-core, kostenlos)"
     ],
     "Formats": [
       ".gltf",
@@ -14057,10 +14142,10 @@
       "src/Trendo.App/MainWindow.CodeEditor.cs",
       "src/Trendo.App/MainWindow.W4Dev.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 67 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 59,
+    "WarmMs": 35,
     "WindowsOnly": [
       "cmd.exe"
     ]
@@ -14117,10 +14202,10 @@
       "Y4/Y7/Y11/Y14: Gefahren prüfen, Teilen, Qualität und Geräteverbund als Werkzeug-Karten mit Symbol; Geräteverbund ohne Geräte mit Leerzustand"
     ],
     "SourceFiles": [],
-    "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test PC_VERIFIED (Beleg reports/pc-t0003/UEBERSICHT.md; Lauf: 10 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 35,
+    "WarmMs": 26,
     "WindowsOnly": []
   },
   {
@@ -14145,7 +14230,8 @@
       "settings-nav-updates",
       "settings-nav-geraete",
       "settings-nav-sicherung",
-      "Mehr Einstellungen (22)"
+      "Mehr Einstellungen (22)",
+      "Ausblenden"
     ],
     "Formats": [],
     "Dependencies": [],
@@ -14172,10 +14258,10 @@
       "T-0754 Gegenprüfung 4: Studienwissen CORE-11 verspricht keine Passwortverwaltung"
     ],
     "SourceFiles": [],
-    "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test PC_VERIFIED (Beleg reports/pc-t0003/UEBERSICHT.md; Lauf: 12 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -14203,7 +14289,7 @@
       "settings-nav-sicherung",
       "Mehr Einstellungen (22)",
       "Mehr",
-      "Ansehen",
+      "Jetzt sichern",
       "restic einrichten (ca. 11 MB)",
       "Ordner wählen …",
       "Ordner prüfen"
@@ -14233,8 +14319,8 @@
       "restic-Karte: ohne Einrichtung Einrichten-Knopf; sichern legt Ablage an, Passwort nur in der Umgebung; Stände anzeigen; Wiederherstellen in neuen Ordner"
     ],
     "SourceFiles": [],
-    "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test PC_VERIFIED (Beleg reports/pc-t0003/UEBERSICHT.md; Lauf: 11 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
     "WarmMs": 17,
     "WindowsOnly": []
@@ -14246,8 +14332,7 @@
     "StudioName": "Daten schützen",
     "Area": "System & Sicherheit",
     "Type": [
-      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)",
-      "Sicherungs-Zeitleiste"
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
     ],
     "Functions": [],
     "Engine": [],
@@ -14262,22 +14347,16 @@
       "settings-nav-updates",
       "settings-nav-geraete",
       "Mehr Einstellungen (23)",
+      "Ausblenden",
       "Ordner öffnen",
-      "Jetzt sichern",
-      "Geändert",
-      "Seither gelöscht",
-      "Seither neu",
-      "Alle",
-      "backup-file-0",
-      "Wiederherstellen"
+      "Jetzt sichern"
     ],
     "Formats": [],
     "Dependencies": [],
     "Rea": "docs/claude/vorbilder/schutz-windows-sicherheit-timemachine.md",
     "ReaSummary": "Vorbild-Analyse Schutz: Windows-Sicherheit, Dateiversionsverlauf/Time Machine, TCPView, Bitwarden-Bericht (Clean-Room)",
     "Ui": [
-      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)",
-      "Sicherungs-Zeitleiste"
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
     ],
     "Tabs": [
       "Sicherung"
@@ -14297,10 +14376,10 @@
       "T-0764 (14.): Kind – „Sicherung wiederherstellen“ ist gesperrt (Rolle und Dateien bleiben); Erwachsene stellen wieder her"
     ],
     "SourceFiles": [],
-    "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test PC_VERIFIED (Beleg reports/pc-t0003/UEBERSICHT.md; Lauf: 12 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 20,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -14505,14 +14584,15 @@
     "Tools": [
       "KI ▾",
       "Claude",
+      "Ausblenden",
       "Alle",
-      "Arbeiten & Büro (13)",
+      "Arbeiten & Büro (12)",
       "Business & Geld (3)",
       "Kreativ & Medien (13)",
       "3D & Spiele (4)",
       "Technik & Fachgebiete (5)",
-      "Wissen & Lernen (5)",
-      "KI & Automatik (10)",
+      "Wissen & Lernen (4)",
+      "KI & Automatik (12)",
       "Entwickeln (2)",
       "System & Sicherheit (6)",
       "studio-card-CORE-11",
@@ -14576,10 +14656,10 @@
       "T-0107: Sparsam – keine Hintergrund-Unschärfe, keine Schatten und Effekte, keine Übergänge; Auswahl in den Einstellungen"
     ],
     "SourceFiles": [],
-    "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test PC_VERIFIED (Beleg reports/w1/pc/README.md; Lauf: 19 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 19,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -14828,10 +14908,10 @@
       "T-0754 Zweitprüfung 4: Gemischte Auswahl – Rückfrage nennt, was endgültig gelöscht wird und was in den Papierkorb geht"
     ],
     "SourceFiles": [],
-    "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test PC_VERIFIED (Beleg reports/w1/pc/README.md; Lauf: 13 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 16,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -15055,8 +15135,16 @@
       "desk-toggle-SYS-02",
       "desk-toggle-STUDIO-DECKDESIGN-01",
       "desk-toggle-STUDIO-DOCSCAN-01",
+      "desk-toggle-STUDIO-CV-01",
+      "Alle 12 Einträge zeigen",
       "desk-toggle-STUDIO-DAYPLAN-01",
-      "Alle 13 Einträge zeigen",
+      "desk-toggle-STUDIO-SUMMARY-01",
+      "desk-toggle-STUDIO-IMAGEAI-01",
+      "desk-toggle-STUDIO-VIDEOAI-01",
+      "desk-toggle-STUDIO-AGENTS-01",
+      "desk-toggle-STUDIO-MODELS-01",
+      "desk-toggle-STUDIO-TRAIN-01",
+      "desk-toggle-STUDIO-CITE-01",
       "desk-toggle-STUDIO-ONLINE-BUSINESS-01",
       "desk-toggle-STUDIO-POD-01",
       "desk-toggle-SPEC-11",
@@ -15068,16 +15156,7 @@
       "desk-toggle-STUDIO-LOGO-01",
       "desk-toggle-STUDIO-PODCAST-01",
       "desk-toggle-STUDIO-COMIC-01",
-      "desk-toggle-STUDIO-SUMMARY-01",
-      "desk-toggle-STUDIO-IMAGEAI-01",
-      "desk-toggle-STUDIO-VIDEOAI-01",
-      "desk-toggle-STUDIO-AGENTS-01",
-      "desk-toggle-STUDIO-MODELS-01",
-      "desk-toggle-STUDIO-TRAIN-01",
-      "desk-toggle-CORE-02",
-      "desk-toggle-SYS-05",
-      "desk-toggle-STUDIO-CODEAI-01",
-      "desk-toggle-STUDIO-VISION-01",
+      "Alle 13 Einträge zeigen",
       "desk-toggle-CORE-05",
       "desk-toggle-STUDIO-CONSOLE-01",
       "desk-toggle-CORE-06",
@@ -15091,9 +15170,10 @@
       "desk-toggle-SPEC-06",
       "desk-toggle-CORE-10",
       "desk-toggle-SYS-08",
-      "desk-toggle-STUDIO-CITE-01",
       "desk-toggle-CORE-07",
-      "desk-toggle-X-04"
+      "desk-toggle-X-04",
+      "desk-toggle-CORE-11",
+      "desk-toggle-SPEC-12"
     ],
     "Formats": [],
     "Dependencies": [],
@@ -15118,10 +15198,10 @@
       "Desktop: anfangs keine Symbole; über Startmenü, Seite „Desktop-Symbole“ und Studio Manager hinzufügen; Rechtsklick entfernt; bleibt gespeichert"
     ],
     "SourceFiles": [],
-    "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test PC_VERIFIED (Beleg reports/w1/pc/README.md; Lauf: 10 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 20,
+    "WarmMs": 31,
     "WindowsOnly": []
   },
   {
@@ -15360,10 +15440,10 @@
       "T-0764 M: Kind – kein Einrichtungsassistent (auch nicht über die Seitenadresse), Projektordner außerhalb der Freigabe gilt nicht; Erwachsene: Assistent wie bisher"
     ],
     "SourceFiles": [],
-    "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test PC_VERIFIED (Beleg reports/w1/pc/README.md; Lauf: 14 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -15570,6 +15650,7 @@
       "KI ▾",
       "Claude",
       "kie.ai",
+      "Ausblenden",
       "＋ Projekt anlegen",
       "Trendo im Browser öffnen"
     ],
@@ -15605,10 +15686,10 @@
       "T-0766 (UI): Werkstatt → bauen → ZIP → installieren (leerer Datenordner) → Rechte im eigenen Schritt → Knopf im Studio „Projekte“ → Tabelle im Projekt → Rückgängig → Rechte entziehen"
     ],
     "SourceFiles": [],
-    "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test PC_VERIFIED (Beleg reports/w1/pc/README.md; Lauf: 19 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -15872,15 +15953,18 @@
       "Startseite: die neun bekannten Studios öffnen aus dem Startmenü per echtem Mausklick eine eigene Seite",
       "T-0107: Sparsam – keine Hintergrund-Unschärfe, keine Schatten und Effekte, keine Übergänge; Auswahl in den Einstellungen",
       "T-0316: Studio – „Claude“ immer in der Auftragsleiste; das Claude-Projekt des Studios trägt seine Rolle, kein Terminal",
+      "T-0770 M3: aktive Testquelle steht sichtbar in der Updates-Ansicht und im Protokoll",
+      "T-0770 M5c: ungeprüfte Version ersetzt die Sicherung der letzten guten Version nicht",
+      "T-0770: Sicherung der laufenden Version entsteht vor dem Laden des Updates – beim Installieren ist sie da",
       "V-19: jedes Symbol der Leiste am unteren Rand trägt ein Wort",
       "Viele Studiofenster: das erste bleibt, Hinweis statt stillem Schließen",
       "W0B-02/03 (UI): Rechtsklick-Menü öffnet Einstellungen; Hintergrund wählen, Farbe passend zum Hintergrund"
     ],
     "SourceFiles": [],
-    "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test PC_VERIFIED (Beleg reports/w1/pc/README.md; Lauf: 38 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -16041,6 +16125,7 @@
       "settings-nav-geraete",
       "settings-nav-sicherung",
       "Mehr Einstellungen (22)",
+      "Ausblenden",
       "Herunterladen",
       "Im Standard-Browser öffnen",
       "In Microsoft Edge",
@@ -16049,7 +16134,7 @@
       "Ordner öffnen",
       "Öffnen",
       "Ordner",
-      "Mehr anzeigen (34 weitere Funktionen)"
+      "Alle 21 Einträge zeigen"
     ],
     "Formats": [
       ".csv",
@@ -16114,10 +16199,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 19 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 23,
+    "WarmMs": 22,
     "WindowsOnly": []
   },
   {
@@ -16353,10 +16438,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 18 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 19,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -16410,10 +16495,10 @@
       "X-02: Verändertes Protokoll wird gemeldet, aber bewusst nicht „repariert“"
     ],
     "SourceFiles": [],
-    "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test PC_VERIFIED (Beleg reports/pc-t0003/UEBERSICHT.md; Lauf: 11 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 20,
     "WindowsOnly": []
   },
   {
@@ -16462,13 +16547,15 @@
       "SYS-07 T-0764: nur Wechseldatenträger bekommen „Auswerfen“; neu eingesteckte Sticks sind als Menge erkennbar",
       "SYS-07 UI: Geräte suchen zeigt Gruppen",
       "SYS-07: Linux-/sys wird gelesen; Neues und Verschwundenes wird erkannt",
-      "SYS-07: Windows-Geräteliste (PnP) wird gelesen, Probleme erkannt, Systemeinträge ausgeblendet"
+      "SYS-07: Windows-Geräteliste (PnP) wird gelesen, Probleme erkannt, Systemeinträge ausgeblendet",
+      "T-0777 Katalog: im echten Register stehen SYS-04, SYS-07, CORE-04 und X-08 nicht mehr als PC_VERIFIED im Katalog",
+      "T-0777 Nachbesserung: Studio-Karten und Fortschritt zeigen SYS-04, SYS-07, CORE-04, X-08 nicht mehr als „auf dem PC geprüft“ (Register unverändert)"
     ],
     "SourceFiles": [],
-    "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (PC_VERIFIED zurückgenommen: echter Stick-Auswurf nie gelaufen; Lauf: 12 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -16525,6 +16612,8 @@
       "Handy-App: Apps-Liste, App öffnet in Handy-Größe auf dem Handy (nicht am PC), Navigation bleibt auf dem Handy, Zurück zum Start",
       "T-0767 (UI): Kabel-Weg mit dem echten adb dieses PCs – Anzeige „möglich“, „Handy suchen“ läuft echt (ohne Handy: leere Liste)",
       "T-0767 (UI): Lauf aufzeichnen → „Datei senden …“ an ein Handy → Entfernen → Aufzeichnung speichern; Kabel-Weg ehrlich",
+      "T-0777 Katalog: im echten Register stehen SYS-04, SYS-07, CORE-04 und X-08 nicht mehr als PC_VERIFIED im Katalog",
+      "T-0777 Nachbesserung: Studio-Karten und Fortschritt zeigen SYS-04, SYS-07, CORE-04, X-08 nicht mehr als „auf dem PC geprüft“ (Register unverändert)",
       "Updates: nach dem Neustart kommen die Fenster zurück und „Was ist neu?“ erscheint einmal",
       "X-08 Android-Seite: Modell/Version/Akku per adb, Bildschirmfoto und neuestes Foto nur mit Zustimmung, Handy-Temp gelöscht",
       "X-08 UI: Bildschirm, Apps und Überschriften über die WLAN-Adresse, scrcpy nur nach Frage",
@@ -16541,10 +16630,10 @@
       "X-08: bekanntes Handy nur nach Zustimmung, mDNS vor der alten Adresse, ohne Code in der Datei"
     ],
     "SourceFiles": [],
-    "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (PC_VERIFIED zurückgenommen: kein echtes Android-Gerät, adb und Bluetooth nachgebaut; Lauf: 21 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 45,
+    "WarmMs": 41,
     "WindowsOnly": []
   },
   {
@@ -16572,6 +16661,7 @@
       "settings-nav-sicherung",
       "Mehr Einstellungen (22)",
       "Mehr",
+      "Ausblenden",
       "Leistung",
       "Prozesse",
       "Speicher",
@@ -16599,10 +16689,10 @@
       "X-09: Prozesse werden nach Namen gruppiert, nach Speicher sortiert und Studios zugeordnet"
     ],
     "SourceFiles": [],
-    "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test PC_VERIFIED (Beleg reports/w1/pc/README.md; Lauf: 8 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -16657,13 +16747,15 @@
       "CORE-04 Begleiter: nur Heimnetz-/Loopback-Absender werden bedient",
       "CORE-04 UI: mit echtem Begleiter koppeln (Code vom Gerät), Details holen, Erreichbarkeit, Aufgabe zuordnen, entfernen",
       "CORE-04: Aufgaben laufen lokal zuerst, sonst auf erreichbarem Gerät; nicht erreichbar wird ehrlich gemeldet",
-      "CORE-04: Gekoppeltes Gerät nur mit Heimnetz-Adresse speichern; Token nie in der Gerätedatei; Entfernen"
+      "CORE-04: Gekoppeltes Gerät nur mit Heimnetz-Adresse speichern; Token nie in der Gerätedatei; Entfernen",
+      "T-0777 Katalog: im echten Register stehen SYS-04, SYS-07, CORE-04 und X-08 nicht mehr als PC_VERIFIED im Katalog",
+      "T-0777 Nachbesserung: Studio-Karten und Fortschritt zeigen SYS-04, SYS-07, CORE-04, X-08 nicht mehr als „auf dem PC geprüft“ (Register unverändert)"
     ],
     "SourceFiles": [],
-    "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (PC_VERIFIED zurückgenommen: Gegenstelle (Pi, Handy) fehlt, nur nachgebaute Geräte; Lauf: 11 bestanden · 5 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 16,
+    "WarmMs": 23,
     "WindowsOnly": []
   },
   {
@@ -16723,13 +16815,15 @@
       "T-0755 SYS-04 (ERSETZT: Testprogramm statt winget): Installieren mit Protokoll, Rückgabewert und Nachprüfung; Entfernen prüft nach; Fehler wird erkannt",
       "T-0755 SYS-04 UI (ERSETZT: Testprogramm statt winget): Rückfrage zeigt den Befehl; Lauf zeigt Befehl, Fortschritt und Ausgabe live, schreibt ein Protokoll und prüft nach; Abbrechen beendet den Lauf",
       "T-0755 SYS-04: Fortschritt, Ausgabezeilen und Nachprüfung werden aus winget-Ausgaben gelesen (nachgebildete Ausgabe)",
+      "T-0777 Katalog: im echten Register stehen SYS-04, SYS-07, CORE-04 und X-08 nicht mehr als PC_VERIFIED im Katalog",
+      "T-0777 Nachbesserung: Studio-Karten und Fortschritt zeigen SYS-04, SYS-07, CORE-04, X-08 nicht mehr als „auf dem PC geprüft“ (Register unverändert)",
       "Y3/Y6: Sicherheitszentrale mit Schutz-Ring und Ampel-Karten je Prüfung; Programme verwalten mit App-Regal – Klick sucht, installiert nichts ohne „Installieren“"
     ],
     "SourceFiles": [],
-    "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (PC_VERIFIED zurückgenommen: kein echter winget-Lauf, Installieren nur mit ersetztem Werkzeug geprüft; Lauf: 12 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 17,
+    "WarmMs": 22,
     "WindowsOnly": []
   },
   {
@@ -16887,8 +16981,9 @@
       "settings-nav-geraete",
       "settings-nav-sicherung",
       "Mehr Einstellungen (22)",
+      "Ausblenden",
       "Installieren …",
-      "Alle 15 Einträge zeigen"
+      "Alle 35 Einträge zeigen"
     ],
     "Formats": [
       ".csv",
@@ -16956,10 +17051,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 20 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 20,
+    "WarmMs": 28,
     "WindowsOnly": []
   },
   {
@@ -17124,7 +17219,12 @@
       "GitHub",
       "Erweiterungen",
       "Meine Installationen",
-      "Mehr anzeigen: Apps"
+      "Installieren",
+      "Alle 6 zeigen",
+      "Alle 45 zeigen",
+      "Öffnen",
+      "Alle 14 zeigen",
+      "Freie Programme auf GitHub suchen"
     ],
     "Formats": [
       ".csv",
@@ -17191,10 +17291,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 19 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -17436,10 +17536,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 25 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 19,
+    "WarmMs": 18,
     "WindowsOnly": []
   },
   {
@@ -17597,9 +17697,14 @@
       "settings-nav-geraete",
       "settings-nav-sicherung",
       "Mehr Einstellungen (22)",
+      "Ausblenden",
       "Fehlende Programme von GitHub nachladen",
       "Zustimmen & fehlende kostenlose Programme installieren",
-      "Mehr anzeigen: Mitgeliefert mit Trendo OS, Automatisch pro Benutzer und 2 weitere"
+      "Aus dem Vollpaket einrichten",
+      "Installieren",
+      "Installieren (offiziell)",
+      "Programme auf GitHub finden",
+      "Neu prüfen"
     ],
     "Formats": [
       ".csv",
@@ -17679,10 +17784,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 31 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 16,
+    "WarmMs": 22,
     "WindowsOnly": []
   },
   {
@@ -17905,10 +18010,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 18 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -18069,7 +18174,8 @@
       "settings-nav-updates",
       "settings-nav-geraete",
       "settings-nav-sicherung",
-      "Mehr Einstellungen (23)"
+      "Mehr Einstellungen (23)",
+      "Ausblenden"
     ],
     "Formats": [
       ".jpg",
@@ -18126,10 +18232,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 19 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 30,
+    "WarmMs": 36,
     "WindowsOnly": []
   },
   {
@@ -18345,10 +18451,10 @@
       "src/Trendo.App/MainWindow.Hardware.cs",
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 19 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 27,
+    "WarmMs": 30,
     "WindowsOnly": []
   },
   {
@@ -18509,7 +18615,8 @@
       "settings-nav-updates",
       "settings-nav-geraete",
       "settings-nav-sicherung",
-      "Mehr Einstellungen (22)"
+      "Mehr Einstellungen (22)",
+      "Ausblenden"
     ],
     "Formats": [
       ".jpg",
@@ -18612,10 +18719,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 65 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -18776,7 +18883,8 @@
       "settings-nav-updates",
       "settings-nav-geraete",
       "settings-nav-sicherung",
-      "Mehr Einstellungen (22)"
+      "Mehr Einstellungen (22)",
+      "Ausblenden"
     ],
     "Formats": [
       ".jpg",
@@ -18834,10 +18942,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
-    "Status": "IMPLEMENTED / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 20 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -18994,6 +19102,7 @@
       "settings-nav-sicherung",
       "Mehr Einstellungen (23)",
       "Mehr",
+      "Ausblenden",
       "settings-nav-aussehen",
       "settings-nav-farbe",
       "settings-nav-hintergrund",
@@ -19041,8 +19150,7 @@
       "KI-Helfer bei der Arbeit",
       "Studios auf dem Desktop",
       "Freie Programme",
-      "Erdkugel mit Überblick (Dein Trendo)",
-      "Schnellaktionen über dem Desktop"
+      "Erdkugel mit Überblick (Dein Trendo)"
     ],
     "Formats": [
       ".json"
@@ -19106,8 +19214,8 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 44 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
     "WarmMs": 147,
     "WindowsOnly": []
@@ -19325,10 +19433,10 @@
       "src/Trendo.App/MainWindow.Lizenz.cs",
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 17 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 29,
+    "WarmMs": 25,
     "WindowsOnly": []
   },
   {
@@ -19523,10 +19631,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 17 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -19737,10 +19845,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 18 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -19929,15 +20037,17 @@
       "SYS-12-P25: Bericht listet Befunde je Seite",
       "SYS-12: Anzeigegröße wird auf erlaubte Stufen begrenzt",
       "SYS-12: Anzeigegröße „Sehr groß“ wird gespeichert; F1 zeigt die Hilfe",
+      "T-0770 M-B: v2 frisch vor MarkOk gesichert, v3 läuft – Rückkehr geht zur gesicherten v2, Abweichung zu „zuletzt gut“ steht da",
+      "T-0770 M3: aktive Testquelle steht sichtbar in der Updates-Ansicht und im Protokoll",
       "Updates: suchen und im Hintergrund laden; „beim nächsten Start“ installiert beim Beenden, „sofort“ mit Einrichtungsbildschirm, Sicherung und Fenstern"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
-    "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 17 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 27,
     "WindowsOnly": []
   },
   {
@@ -19983,10 +20093,10 @@
       "SYS-01: Modus aus echten Merkmalen, Fähigkeiten ehrlich (Blockiert statt vorgetäuscht), USB nur Anleitung"
     ],
     "SourceFiles": [],
-    "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IN_PROGRESS / Test PC_VERIFIED (Beleg reports/pc-0.9.1/tests-pc-7092ce1.txt; Lauf: 4 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 18,
     "WindowsOnly": []
   },
   {
@@ -20043,10 +20153,10 @@
       "YARA-Karte: ohne Einrichtung Einrichten-Knopf; mit yara-x Treffer als Warnung mit deutscher Art; nichts wird verändert; fehlender Ordner verständlich"
     ],
     "SourceFiles": [],
-    "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.110 (Stand 0eb9d52)",
+    "Status": "IMPLEMENTED / Test PC_VERIFIED (Beleg reports/pc-t0003/UEBERSICHT.md; Lauf: 11 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.112 (Stand d6f9fcd)",
     "Shell": false,
-    "WarmMs": 19,
+    "WarmMs": 15,
     "WindowsOnly": []
   }
 ]

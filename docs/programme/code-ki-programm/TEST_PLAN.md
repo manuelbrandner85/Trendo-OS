@@ -1,8 +1,8 @@
 # Code mit KI – Testplan
 
-Studio: Code mit KI (STUDIO-CODEAI-01) · Bereich: KI & Automatik · Seite: `code-ki-programm` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Code mit KI (STUDIO-CODEAI-01) · Bereich: KI & Automatik · Seite: `code-ki-programm` · Stand: 0.9.112 (Stand d6f9fcd)
 
-10 Tests sprechen dieses Programm an.
+11 Tests sprechen dieses Programm an.
 
 - Code mit KI: Ordner öffnen, Datei bearbeiten und speichern, Schnappschuss und Zeilen-Diff, Tests erst nach zweitem Klick, Exporte
 - T-0688 Code mit KI: ohne Claude-Anmeldung klare Meldung, keine Datei geändert, keine Sicherung offen
@@ -14,3 +14,4 @@ Studio: Code mit KI (STUDIO-CODEAI-01) · Bereich: KI & Automatik · Seite: `cod
 - T-0728 C2: „Los“ in der Auftragszeile von „Code mit KI“ geht über „Mit KI ändern“ – Plan mit Dateiblöcken, Vorschau als Unterschied, nichts geändert vor dem Ja (KI ersetzt)
 - T-0764 M1: Kind – „Code mit KI“ mit eingetipptem Autostart-Ordner legt keine start.bat an; Erwachsene wie bisher
 - T-0764 M2: Kind – „Viele Dateien umbenennen“: spiel → spiel.cmd nicht (auch nicht in der Vorschau), nichts außerhalb der Freigabe; Muster ohne neue Endung geht; Erwachsene wie bisher
+- T-0775 ECHT Code mit KI: „Mit Claude ändern“ ändert im Projektordner eine Python-Datei, Diff, „Zurücknehmen“ stellt sie her (nur mit TRENDO_ECHT_CLAUDE)

@@ -1,10 +1,10 @@
 # Logos & Marken – Testergebnisse
 
-Studio: Logos & Marken (STUDIO-LOGO-01) · Bereich: Kreativ & Medien · Seite: `logo-programm` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Logos & Marken (STUDIO-LOGO-01) · Bereich: Kreativ & Medien · Seite: `logo-programm` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 6 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 7 · Fehlgeschlagen 0 · Übersprungen 1 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -14,3 +14,5 @@ Bestanden 6 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | Logo-Exporte echt geprüft: SVG in Chrome gerendert und Pixel mit der Vorschau verglichen, PDF mit PDFium gezeichnet, PNG 512/1024/2048, Favicon, Paket mit hell/dunkel/einfarbig/negativ | ✓ bestanden |
 | Logo: fremdes SVG hineinziehen und umfärben, PNG einsetzen; Vorschlag erzeugen ersetzt nur mit Rückgängig; Namensfeld ändert den Text in der Zeichnung | ✓ bestanden |
 | Logos: Vorschau hell und dunkel, Form wechseln, falsche Farbe wird gemeldet, SVG-Export ist gültig | ✓ bestanden |
+| T-0775 ECHT Kreativ: „Ideen mit Claude“ in Logos & Marken färbt das offene Logo um – Vorschau, Ja, Datei, Strg+Z (nur mit TRENDO_ECHT_CLAUDE) | übersprungen |
+| T-0775: „Ideen mit Claude“ – die Ideen der KI (Feld „hinweis“) stehen sichtbar in der Vorschau (KI ersetzt) | ✓ bestanden |

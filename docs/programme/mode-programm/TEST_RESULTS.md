@@ -1,10 +1,10 @@
 # Kleidung & Produkte – Testergebnisse
 
-Studio: Kleidung & Produkte entwerfen (SPEC-08) · Bereich: Kreativ & Medien · Seite: `mode-programm` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Kleidung & Produkte entwerfen (SPEC-08) · Bereich: Kreativ & Medien · Seite: `mode-programm` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 46 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
+Bestanden 47 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -23,7 +23,7 @@ Bestanden 46 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
 | Gegenprüfung T-0745 (7): Pfeil-Schritte am selben Punkt innerhalb 1 s sind EIN Rückgängig-Schritt; Pause oder andere Änderung trennt | ✓ bestanden |
 | Kleidung: Anprobe schreibt einen vollständigen Auftrag, zeigt Bilder; Fehler von Blender werden gemeldet | ✓ bestanden |
 | Kleidung: Farbe aus der Palette und eigene Farbe; Muster mit Größe und zweiter Farbe landen im Auftrag; falsche Farbe wird gemeldet | ✓ bestanden |
-| Kleidung: Produktionsdateien werden geschrieben | nicht im Lauf |
+| Kleidung: Produktionsdateien werden geschrieben | ✓ bestanden |
 | Kleidung: Schnittteile mit Kurven, Zuschnitt und Kosten erscheinen; Stoff und Schnitt lassen sich wechseln | ✓ bestanden |
 | Profi-Stufe: Befehlssuche führt Befehle aus, Verlauf springt zurück, Projektdaten – falsches JSON wird abgelehnt, richtiges übernommen und rückgängig machbar | ✓ bestanden |
 | Programm: Startseite → Vorlage → bearbeiten → Rückgängig → Speichern → Zuletzt → wieder öffnen; Reiter für zwei Dokumente | ✓ bestanden |

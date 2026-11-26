@@ -1,6 +1,6 @@
 # Videoschnitt – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `schnitt` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `schnitt` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Analyse: [Vorbild-Analyse Video: Kdenlive, Shotcut, DaVinci Resolve (Clean-Room)](../../../docs/claude/vorbilder/video-kdenlive-resolve.md)
 

@@ -1,10 +1,10 @@
 # Programme verwalten – Testergebnisse
 
-Studio: Programme installieren (SYS-04) · Bereich: System & Sicherheit · Seite: `appcenter` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Programme installieren (SYS-04) · Bereich: System & Sicherheit · Seite: `appcenter` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 10 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 12 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -17,4 +17,6 @@ Bestanden 10 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | T-0755 SYS-04 (ERSETZT: Testprogramm statt winget): Installieren mit Protokoll, Rückgabewert und Nachprüfung; Entfernen prüft nach; Fehler wird erkannt | ✓ bestanden |
 | T-0755 SYS-04 UI (ERSETZT: Testprogramm statt winget): Rückfrage zeigt den Befehl; Lauf zeigt Befehl, Fortschritt und Ausgabe live, schreibt ein Protokoll und prüft nach; Abbrechen beendet den Lauf | ✓ bestanden |
 | T-0755 SYS-04: Fortschritt, Ausgabezeilen und Nachprüfung werden aus winget-Ausgaben gelesen (nachgebildete Ausgabe) | ✓ bestanden |
+| T-0777 Katalog: im echten Register stehen SYS-04, SYS-07, CORE-04 und X-08 nicht mehr als PC_VERIFIED im Katalog | ✓ bestanden |
+| T-0777 Nachbesserung: Studio-Karten und Fortschritt zeigen SYS-04, SYS-07, CORE-04, X-08 nicht mehr als „auf dem PC geprüft“ (Register unverändert) | ✓ bestanden |
 | Y3/Y6: Sicherheitszentrale mit Schutz-Ring und Ampel-Karten je Prüfung; Programme verwalten mit App-Regal – Klick sucht, installiert nichts ohne „Installieren“ | ✓ bestanden |

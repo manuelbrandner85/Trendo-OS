@@ -1,6 +1,6 @@
 # Audio bearbeiten – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `ton` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `ton` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Analyse: [Vorbild-Analyse Audio: Audacity, Adobe Audition, iZotope RX (Clean-Room)](../../../docs/claude/vorbilder/audio-audacity-audition-rx.md)
 

@@ -1,10 +1,10 @@
 # Trendo-Updates – Testergebnisse
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `updates` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `updates` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 15 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 17 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -22,4 +22,6 @@ Bestanden 15 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | SYS-12-P25: Bericht listet Befunde je Seite | ✓ bestanden |
 | SYS-12: Anzeigegröße wird auf erlaubte Stufen begrenzt | ✓ bestanden |
 | SYS-12: Anzeigegröße „Sehr groß“ wird gespeichert; F1 zeigt die Hilfe | ✓ bestanden |
+| T-0770 M-B: v2 frisch vor MarkOk gesichert, v3 läuft – Rückkehr geht zur gesicherten v2, Abweichung zu „zuletzt gut“ steht da | ✓ bestanden |
+| T-0770 M3: aktive Testquelle steht sichtbar in der Updates-Ansicht und im Protokoll | ✓ bestanden |
 | Updates: suchen und im Hintergrund laden; „beim nächsten Start“ installiert beim Beenden, „sofort“ mit Einrichtungsbildschirm, Sicherung und Fenstern | ✓ bestanden |

@@ -1,16 +1,16 @@
 # Startbildschirm – Testergebnisse
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 34 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
+Bestanden 38 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
 | Apps: WhatsApp installieren → Desktop und Startmenü, öffnet als App-Fenster mit eigenem Speicher, Entfernen löscht die Anmeldung | ✓ bestanden |
 | CORE-01: Dateisuche begrenzt Tiefe und Anzahl | ✓ bestanden |
-| CORE-01: Desktop im Windows-, Mac- und GNOME-Stil ohne verschwommene Glasfläche über dem Hintergrund | nicht im Lauf |
+| CORE-01: Desktop im Windows-, Mac- und GNOME-Stil ohne verschwommene Glasfläche über dem Hintergrund | ✓ bestanden |
 | CORE-01: Desktop-Symbole – Seite schaltet jedes Symbol hin und zurück (Knopftext folgt), doppeltes Hinzufügen legt kein zweites Symbol an | ✓ bestanden |
 | CORE-01: Desktop-Symbole – Studio und Kernfunktion gleichzeitig, Reihenfolge wie hinzugefügt, Klick öffnet das Studio | ✓ bestanden |
 | CORE-01: Desktop-Symbole – unbekannte oder nicht installierte Einträge erscheinen nicht als Symbol, der Desktop bleibt aufgeräumt | ✓ bestanden |
@@ -40,6 +40,9 @@ Bestanden 34 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
 | Startseite: die neun bekannten Studios öffnen aus dem Startmenü per echtem Mausklick eine eigene Seite | ✓ bestanden |
 | T-0107: Sparsam – keine Hintergrund-Unschärfe, keine Schatten und Effekte, keine Übergänge; Auswahl in den Einstellungen | ✓ bestanden |
 | T-0316: Studio – „Claude“ immer in der Auftragsleiste; das Claude-Projekt des Studios trägt seine Rolle, kein Terminal | ✓ bestanden |
+| T-0770 M3: aktive Testquelle steht sichtbar in der Updates-Ansicht und im Protokoll | ✓ bestanden |
+| T-0770 M5c: ungeprüfte Version ersetzt die Sicherung der letzten guten Version nicht | ✓ bestanden |
+| T-0770: Sicherung der laufenden Version entsteht vor dem Laden des Updates – beim Installieren ist sie da | ✓ bestanden |
 | V-19: jedes Symbol der Leiste am unteren Rand trägt ein Wort | ✓ bestanden |
 | Viele Studiofenster: das erste bleibt, Hinweis statt stillem Schließen | ✓ bestanden |
 | W0B-02/03 (UI): Rechtsklick-Menü öffnet Einstellungen; Hintergrund wählen, Farbe passend zum Hintergrund | ✓ bestanden |

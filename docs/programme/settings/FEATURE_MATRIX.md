@@ -1,6 +1,6 @@
 # Einstellungen – Funktionsmatrix
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Quelle: `docs/spec/kataloge/SYS-12_KATALOG.md`
 
@@ -44,6 +44,7 @@ Quelle: `docs/spec/kataloge/SYS-12_KATALOG.md`
 - settings-nav-sicherung
 - Mehr Einstellungen (23)
 - Mehr
+- Ausblenden
 - settings-nav-aussehen
 - settings-nav-farbe
 - settings-nav-hintergrund
@@ -92,4 +93,3 @@ Quelle: `docs/spec/kataloge/SYS-12_KATALOG.md`
 - Studios auf dem Desktop
 - Freie Programme
 - Erdkugel mit Überblick (Dein Trendo)
-- Schnellaktionen über dem Desktop

@@ -1,9 +1,9 @@
 # Texte zusammenfassen – Produktionspaket
 
-Studio: Texte zusammenfassen (STUDIO-SUMMARY-01) · Bereich: KI & Automatik · Seite: `zusammenfassen-programm` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Texte zusammenfassen (STUDIO-SUMMARY-01) · Bereich: KI & Automatik · Seite: `zusammenfassen-programm` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Arbeitsfläche: Texteditor  
-Modulstatus (requirements.yaml): IN_PROGRESS / Test NOT_RUN  
+Modulstatus (Register, Belege, Testlauf): IN_PROGRESS / Test TESTED (Lauf: 3 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  
 Programm-Hülle (Dokumente, Rückgängig, Autosave, Bedienstufen): ja
 
 ## Inhalt

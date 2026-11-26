@@ -1,6 +1,6 @@
 # 3D-Modelle ansehen – Funktionsmatrix
 
-Studio: 3D-Modelle ansehen (SPEC-04) · Bereich: 3D & Spiele · Seite: `xr` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: 3D-Modelle ansehen (SPEC-04) · Bereich: 3D & Spiele · Seite: `xr` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Quelle: `docs/w6-katalog/SPEC-04.md`
 

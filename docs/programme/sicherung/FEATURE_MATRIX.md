@@ -1,6 +1,6 @@
 # Sicherung – Funktionsmatrix
 
-Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `sicherung` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `sicherung` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -15,11 +15,6 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - settings-nav-updates
 - settings-nav-geraete
 - Mehr Einstellungen (23)
+- Ausblenden
 - Ordner öffnen
 - Jetzt sichern
-- Geändert
-- Seither gelöscht
-- Seither neu
-- Alle
-- backup-file-0
-- Wiederherstellen

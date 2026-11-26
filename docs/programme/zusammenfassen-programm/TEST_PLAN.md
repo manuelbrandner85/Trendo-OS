@@ -1,6 +1,6 @@
 # Texte zusammenfassen – Testplan
 
-Studio: Texte zusammenfassen (STUDIO-SUMMARY-01) · Bereich: KI & Automatik · Seite: `zusammenfassen-programm` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Texte zusammenfassen (STUDIO-SUMMARY-01) · Bereich: KI & Automatik · Seite: `zusammenfassen-programm` · Stand: 0.9.112 (Stand d6f9fcd)
 
 3 Tests sprechen dieses Programm an.
 

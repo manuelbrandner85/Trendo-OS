@@ -1,6 +1,6 @@
 # Tagesplaner – Arbeitsabläufe
 
-Studio: Tagesplaner (STUDIO-DAYPLAN-01) · Bereich: Arbeiten & Büro · Seite: `tagesplaner-programm` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Tagesplaner (STUDIO-DAYPLAN-01) · Bereich: KI & Automatik · Seite: `tagesplaner-programm` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Die Abläufe unten sind die Oberflächentests, die das Programm über den echten Eingabeweg bedienen (Klicks, Tastatur).
 

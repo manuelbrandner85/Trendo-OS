@@ -1,6 +1,6 @@
 # Downloads & Links – Funktionsmatrix
 
-Studio: Downloads & Links (SYS-03) · Bereich: System & Sicherheit · Seite: `downloads` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Downloads & Links (SYS-03) · Bereich: System & Sicherheit · Seite: `downloads` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Quelle: `docs/spec/kataloge/SYS-03_KATALOG.md`
 
@@ -44,6 +44,7 @@ Quelle: `docs/spec/kataloge/SYS-03_KATALOG.md`
 - settings-nav-geraete
 - settings-nav-sicherung
 - Mehr Einstellungen (22)
+- Ausblenden
 - Herunterladen
 - Im Standard-Browser öffnen
 - In Microsoft Edge
@@ -52,4 +53,4 @@ Quelle: `docs/spec/kataloge/SYS-03_KATALOG.md`
 - Ordner öffnen
 - Öffnen
 - Ordner
-- Mehr anzeigen (34 weitere Funktionen)
+- Alle 21 Einträge zeigen

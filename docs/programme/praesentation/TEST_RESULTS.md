@@ -1,10 +1,10 @@
 # Trendo Präsentation – Testergebnisse
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `praesentation` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `praesentation` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 29 · Fehlgeschlagen 0 · Übersprungen 2 · nicht im Lauf 0
+Bestanden 30 · Fehlgeschlagen 0 · Übersprungen 2 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -39,3 +39,4 @@ Bestanden 29 · Fehlgeschlagen 0 · Übersprungen 2 · nicht im Lauf 0
 | T-0701 Präsentation: fremde PPTX – Design der Datei als eigene Kachel; im Textfeld auf der Folie ein Wort markieren und Strg+B/Strg+I nur dort; Strg+S behält Design, Animation und alle Textformate | ✓ bestanden |
 | T-0714 Präsentation: Titel geschrieben und Folie dupliziert, Fenster ohne Speichern geschlossen → Karte → Wiederherstellen bringt die Folien; Speichern räumt weg | ✓ bestanden |
 | T-0714 Text und Präsentation: 100 Rückgängig-Schritte wie die Hülle (vorher 80) | ✓ bestanden |
+| T-0776 echt: Texte (SYS-10) – Trendo schreibt DOCX und ODT, LibreOffice 26 öffnet beide und liefert Überschrift, Absätze, Liste und Tabelle als Text zurück | ✓ bestanden |

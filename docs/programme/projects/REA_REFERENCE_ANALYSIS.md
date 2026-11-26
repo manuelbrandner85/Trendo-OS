@@ -1,6 +1,6 @@
 # Projekte – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `projects` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `projects` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Analyse: [Vorbild-Analyse Desktop: Windows 11, GNOME Shell, macOS Launchpad, VS Code Arbeitsbereiche (Clean-Room)](../../../docs/claude/vorbilder/desktop-windows11-gnome-shell.md)
 

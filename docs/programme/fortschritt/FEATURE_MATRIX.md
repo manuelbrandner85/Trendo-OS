@@ -1,6 +1,6 @@
 # Fortschritt – Funktionsmatrix
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `fortschritt` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `fortschritt` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Quelle: `docs/spec/kataloge/SYS-13_KATALOG.md`
 
@@ -44,3 +44,4 @@ Quelle: `docs/spec/kataloge/SYS-13_KATALOG.md`
 - settings-nav-geraete
 - settings-nav-sicherung
 - Mehr Einstellungen (23)
+- Ausblenden

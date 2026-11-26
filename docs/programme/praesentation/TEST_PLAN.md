@@ -1,8 +1,8 @@
 # Trendo Präsentation – Testplan
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `praesentation` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `praesentation` · Stand: 0.9.112 (Stand d6f9fcd)
 
-31 Tests sprechen dieses Programm an.
+32 Tests sprechen dieses Programm an.
 
 - SYS-02/SYS-10: Dateiregal filtert nach Art, neueste zuerst, ohne Office-Sperrdateien
 - SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt
@@ -35,3 +35,4 @@ Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `praese
 - T-0701 Präsentation: fremde PPTX – Design der Datei als eigene Kachel; im Textfeld auf der Folie ein Wort markieren und Strg+B/Strg+I nur dort; Strg+S behält Design, Animation und alle Textformate
 - T-0714 Präsentation: Titel geschrieben und Folie dupliziert, Fenster ohne Speichern geschlossen → Karte → Wiederherstellen bringt die Folien; Speichern räumt weg
 - T-0714 Text und Präsentation: 100 Rückgängig-Schritte wie die Hülle (vorher 80)
+- T-0776 echt: Texte (SYS-10) – Trendo schreibt DOCX und ODT, LibreOffice 26 öffnet beide und liefert Überschrift, Absätze, Liste und Tabelle als Text zurück

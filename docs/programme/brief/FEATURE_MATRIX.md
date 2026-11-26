@@ -1,6 +1,6 @@
 # Briefe schreiben – Funktionsmatrix
 
-Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Quelle: `docs/spec/kataloge/STUDIO-LETTER-01_KATALOG.md`
 
@@ -46,6 +46,7 @@ Quelle: `docs/spec/kataloge/STUDIO-LETTER-01_KATALOG.md`
 - letter-export
 - letter-pdf
 - letter-send
+- Ausblenden
 - 1 Absender
 - 2 Empfänger
 - 3 Inhalt
@@ -91,4 +92,3 @@ Quelle: `docs/spec/kataloge/STUDIO-LETTER-01_KATALOG.md`
 - Text von der KI verbessern lassen
 - Neuer Brief
 - letter-design-style-klassisch
-- letter-design-style-modern

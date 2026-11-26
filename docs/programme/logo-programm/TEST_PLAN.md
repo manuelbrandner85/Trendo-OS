@@ -1,8 +1,8 @@
 # Logos & Marken – Testplan
 
-Studio: Logos & Marken (STUDIO-LOGO-01) · Bereich: Kreativ & Medien · Seite: `logo-programm` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Logos & Marken (STUDIO-LOGO-01) · Bereich: Kreativ & Medien · Seite: `logo-programm` · Stand: 0.9.112 (Stand d6f9fcd)
 
-6 Tests sprechen dieses Programm an.
+8 Tests sprechen dieses Programm an.
 
 - Animation mit echtem FFmpeg, vom Klick bis zur Datei: erste Form, auf der Bühne ziehen setzt Schlüssel bei 0 s und 2 s, Raute in der Zeitleiste ziehen und Strg+Z, Kurve per Rechtsklick; MP4 (ffprobe) zeigt die Form bei t=0 links und am Ende rechts; GIF und animiertes SVG
 - Animation: alte Ebenen-Dokumente öffnen weiter, Hochformat 1080×1920, Text und SVG auf der Bühne, Farbe als Schlüssel
@@ -10,3 +10,5 @@ Studio: Logos & Marken (STUDIO-LOGO-01) · Bereich: Kreativ & Medien · Seite: `
 - Logo-Exporte echt geprüft: SVG in Chrome gerendert und Pixel mit der Vorschau verglichen, PDF mit PDFium gezeichnet, PNG 512/1024/2048, Favicon, Paket mit hell/dunkel/einfarbig/negativ
 - Logo: fremdes SVG hineinziehen und umfärben, PNG einsetzen; Vorschlag erzeugen ersetzt nur mit Rückgängig; Namensfeld ändert den Text in der Zeichnung
 - Logos: Vorschau hell und dunkel, Form wechseln, falsche Farbe wird gemeldet, SVG-Export ist gültig
+- T-0775 ECHT Kreativ: „Ideen mit Claude“ in Logos & Marken färbt das offene Logo um – Vorschau, Ja, Datei, Strg+Z (nur mit TRENDO_ECHT_CLAUDE)
+- T-0775: „Ideen mit Claude“ – die Ideen der KI (Feld „hinweis“) stehen sichtbar in der Vorschau (KI ersetzt)

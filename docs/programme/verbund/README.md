@@ -1,9 +1,9 @@
 # Geräteverbund (PC, Pi, Android) – Produktionspaket
 
-Studio: PC, Pi & Handy verbinden (CORE-04) · Bereich: System & Sicherheit · Seite: `verbund` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: PC, Pi & Handy verbinden (CORE-04) · Bereich: System & Sicherheit · Seite: `verbund` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Arbeitsfläche: Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)  
-Modulstatus (requirements.yaml): IN_PROGRESS / Test PC_VERIFIED  
+Modulstatus (Register, Belege, Testlauf): IN_PROGRESS / Test TESTED (PC_VERIFIED zurückgenommen: Gegenstelle (Pi, Handy) fehlt, nur nachgebaute Geräte; Lauf: 11 bestanden · 5 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  
 Programm-Hülle (Dokumente, Rückgängig, Autosave, Bedienstufen): nein – eigene Arbeitsseite
 
 ## Inhalt

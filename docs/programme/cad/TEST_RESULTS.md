@@ -1,10 +1,10 @@
 # Trendo CAD – Testergebnisse
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D & Spiele · Seite: `cad` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D & Spiele · Seite: `cad` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 37 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 39 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -45,3 +45,5 @@ Bestanden 37 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | T-0714 CAD: Quader und Maß geändert, Fenster ohne Speichern geschlossen → Karte → Wiederherstellen bringt das Bauteil (mit Versionsfeld); Speichern räumt weg | ✓ bestanden |
 | T-0714 Umzug: Sicherungen der früheren Notsicherung (wiederherstellen/text.docx, cad.tcad, tabelle.xlsx) werden beim ersten Start angeboten, mit Zeitpunkt; Zurückholen und Verwerfen gehen | ✓ bestanden |
 | T-0730 CAD: Bauteil aus neuerer Fassung – Sicherung bleibt erhalten und angeboten | ✓ bestanden |
+| T-0776 echt: CAD-DXF (CORE-05) – fremde DXF in Trendo bearbeitet und als DXF geschrieben; FreeCAD 1.1 liest Ebenen, Linien, Kreise, Bogen und Polylinie mit den Trendo-Maßen | ✓ bestanden |
+| T-0776 echt: CAD-STEP (CORE-05) – FreeCAD 1.1 liest Trendos STEP als gültigen geschlossenen Körper: Volumen 6000 mm³ bzw. Winkel, Umriss und Name stimmen | ✓ bestanden |

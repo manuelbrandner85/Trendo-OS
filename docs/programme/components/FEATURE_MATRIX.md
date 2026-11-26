@@ -1,6 +1,6 @@
 # Zusatzprogramme – Funktionsmatrix
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `components` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `components` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Quelle: `docs/spec/kataloge/SYS-11_KATALOG.md`
 
@@ -44,6 +44,11 @@ Quelle: `docs/spec/kataloge/SYS-11_KATALOG.md`
 - settings-nav-geraete
 - settings-nav-sicherung
 - Mehr Einstellungen (22)
+- Ausblenden
 - Fehlende Programme von GitHub nachladen
 - Zustimmen & fehlende kostenlose Programme installieren
-- Mehr anzeigen: Mitgeliefert mit Trendo OS, Automatisch pro Benutzer und 2 weitere
+- Aus dem Vollpaket einrichten
+- Installieren
+- Installieren (offiziell)
+- Programme auf GitHub finden
+- Neu prüfen

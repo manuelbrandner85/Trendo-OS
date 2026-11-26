@@ -1,10 +1,10 @@
 # Abläufe (Automatisch erledigen) – Testergebnisse
 
-Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 23 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 22 · Fehlgeschlagen 0 · Übersprungen 1 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -23,7 +23,7 @@ Bestanden 23 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | T-0698 UI +4: Abläufe – Baustein „Agent ausführen“ anhängen und Agent wählen (Zeitplan/Auslöser ohne zweiten Scheduler) | ✓ bestanden |
 | T-0717 Abläufe: Bausteine ändern – Rückgängig/Wiederholen der Hülle (vorher 50 ohne Wiederholen), gespeichert nach dem Schließen, keine Karte | ✓ bestanden |
 | T-0717 Abläufe: neuer Ablauf (Name, Schritte) – Rückgängig/Wiederholen, Notsicherung, Karte, Zurückholen; Speichern legt den Ablauf an und räumt weg | ✓ bestanden |
-| T-0742 ECHT: Satz → Claude → Ablauf → Windows-Aufgabe startet TrendoOS.exe ohne Fenster → Datei entsteht (nur mit TRENDO_T0742_ECHT) | ✓ bestanden |
+| T-0742 ECHT: Satz → Claude → Ablauf → Windows-Aufgabe startet TrendoOS.exe ohne Fenster → Datei entsteht (nur mit TRENDO_T0742_ECHT) | übersprungen |
 | T-0742 Gegenprüfung: Gibt es den Ablauf nicht mehr, entfernt die Aufgabe sich selbst; im offenen Trendo zeigt ein Ablauf mit KI-Schritt „nur bei offenem Trendo“ und bietet das Entfernen an | ✓ bestanden |
 | T-0742 Gegenprüfung: Lässt sich die Windows-Aufgabe beim Löschen nicht entfernen, bleibt der Ablauf mit Hinweis bestehen | ✓ bestanden |
 | T-0742 UI: Satz → KI → echter Ablauf im Editor (aus), ändern, Rückgängig/Wiederholen, Einschalten nur nach Ja, Lauf schreibt Datei | ✓ bestanden |

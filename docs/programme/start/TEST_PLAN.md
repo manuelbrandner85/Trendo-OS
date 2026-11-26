@@ -1,8 +1,8 @@
 # Startbildschirm – Testplan
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.112 (Stand d6f9fcd)
 
-35 Tests sprechen dieses Programm an.
+38 Tests sprechen dieses Programm an.
 
 - Apps: WhatsApp installieren → Desktop und Startmenü, öffnet als App-Fenster mit eigenem Speicher, Entfernen löscht die Anmeldung
 - CORE-01: Dateisuche begrenzt Tiefe und Anzahl
@@ -36,6 +36,9 @@ Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `
 - Startseite: die neun bekannten Studios öffnen aus dem Startmenü per echtem Mausklick eine eigene Seite
 - T-0107: Sparsam – keine Hintergrund-Unschärfe, keine Schatten und Effekte, keine Übergänge; Auswahl in den Einstellungen
 - T-0316: Studio – „Claude“ immer in der Auftragsleiste; das Claude-Projekt des Studios trägt seine Rolle, kein Terminal
+- T-0770 M3: aktive Testquelle steht sichtbar in der Updates-Ansicht und im Protokoll
+- T-0770 M5c: ungeprüfte Version ersetzt die Sicherung der letzten guten Version nicht
+- T-0770: Sicherung der laufenden Version entsteht vor dem Laden des Updates – beim Installieren ist sie da
 - V-19: jedes Symbol der Leiste am unteren Rand trägt ein Wort
 - Viele Studiofenster: das erste bleibt, Hinweis statt stillem Schließen
 - W0B-02/03 (UI): Rechtsklick-Menü öffnet Einstellungen; Hintergrund wählen, Farbe passend zum Hintergrund

@@ -1,6 +1,6 @@
 # Handy verbinden – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Handy verbinden (X-08) · Bereich: System & Sicherheit · Seite: `handy` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Handy verbinden (X-08) · Bereich: System & Sicherheit · Seite: `handy` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Analyse: [Vorbild-Analyse Geräte und Handy: Smartphone-Link, KDE Connect, Windows Geräte-Manager, Raspberry Pi Connect (Clean-Room)](../../../docs/claude/vorbilder/geraete-phonelink-kdeconnect.md)
 

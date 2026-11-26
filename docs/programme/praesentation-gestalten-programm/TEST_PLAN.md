@@ -1,6 +1,6 @@
 # Präsentationen gestalten – Testplan
 
-Studio: Präsentationen gestalten (STUDIO-DECKDESIGN-01) · Bereich: Arbeiten & Büro · Seite: `praesentation-gestalten-programm` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Präsentationen gestalten (STUDIO-DECKDESIGN-01) · Bereich: Arbeiten & Büro · Seite: `praesentation-gestalten-programm` · Stand: 0.9.112 (Stand d6f9fcd)
 
 10 Tests sprechen dieses Programm an.
 

@@ -1,6 +1,6 @@
 # 3D – Funktionsmatrix
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D & Spiele · Seite: `3d` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D & Spiele · Seite: `3d` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Quelle: `docs/spec/kataloge/CORE-05_KATALOG.md`
 
@@ -54,6 +54,7 @@ Quelle: `docs/spec/kataloge/CORE-05_KATALOG.md`
 - kie.ai
 - Programme hinzufügen …
 - Mehr
+- Ausblenden
 - Speichern
 - Rückgängig
 - Wiederholen
@@ -108,4 +109,3 @@ Quelle: `docs/spec/kataloge/CORE-05_KATALOG.md`
 - Aushöhlen
 - Teile vorschlagen
 - Jetzt einrichten
-- In Blender bauen (sichtbar)

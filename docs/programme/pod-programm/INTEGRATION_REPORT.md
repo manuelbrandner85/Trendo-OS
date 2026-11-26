@@ -1,6 +1,6 @@
 # Print on Demand – Einbindung in Trendo OS
 
-Studio: Print on Demand (STUDIO-POD-01) · Bereich: Business & Geld · Seite: `pod-programm` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Print on Demand (STUDIO-POD-01) · Bereich: Business & Geld · Seite: `pod-programm` · Stand: 0.9.112 (Stand d6f9fcd)
 
 - Seite `pod-programm` im Studio „Print on Demand“ (Business & Geld) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: ja (Dokumente .tdoc, Zuletzt, Wiederherstellen, Bedienstufen)

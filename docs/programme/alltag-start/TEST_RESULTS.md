@@ -1,10 +1,10 @@
 # Übersicht – Testergebnisse
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `alltag-start` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `alltag-start` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 22 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 2
+Bestanden 24 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -30,5 +30,5 @@ Bestanden 22 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 2
 | SYS-02/SYS-10: Dateiregal filtert nach Art, neueste zuerst, ohne Office-Sperrdateien | ✓ bestanden |
 | SYS-02: Notiz-Schnelltool öffnet Werkzeuge; Notiz wird gespeichert; Rechner rechnet bei Enter | ✓ bestanden |
 | SYS-02: Notizen werden gespeichert, geändert und gelöscht | ✓ bestanden |
-| SYS-02: Rechner lehnt Unsinn ab statt zu raten | nicht im Lauf |
-| SYS-02: Rechner rechnet korrekt (Punkt vor Strich, Klammern, Komma, Prozent, Potenz) | nicht im Lauf |
+| SYS-02: Rechner lehnt Unsinn ab statt zu raten | ✓ bestanden |
+| SYS-02: Rechner rechnet korrekt (Punkt vor Strich, Klammern, Komma, Prozent, Potenz) | ✓ bestanden |

@@ -1,6 +1,6 @@
 # Medien bearbeiten – Einbindung in Trendo OS
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `kreativ-medien` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `kreativ-medien` · Stand: 0.9.112 (Stand d6f9fcd)
 
 - Seite `kreativ-medien` im Studio „Videos & Fotos bearbeiten“ (Kreativ & Medien) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

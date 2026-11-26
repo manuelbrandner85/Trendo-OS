@@ -1,6 +1,6 @@
 # Dokumente scannen – Funktionsmatrix
 
-Studio: Dokumente scannen (STUDIO-DOCSCAN-01) · Bereich: Arbeiten & Büro · Seite: `scannen-programm` · Stand: 0.9.110 (Stand 0eb9d52)
+Studio: Dokumente scannen (STUDIO-DOCSCAN-01) · Bereich: Arbeiten & Büro · Seite: `scannen-programm` · Stand: 0.9.112 (Stand d6f9fcd)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -16,6 +16,6 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Als PDF ablegen (Ablegen)
 - Durchsuchbare PDF (Ablegen)
 - In Trendo PDF öffnen (Ablegen)
-- Scanner … (Ablegen)
+- Hinweis: Papier-Scanner (Ablegen)
 - PDF (alle Seiten) (Exportieren)
 - Aktuelle Seite als PNG (Exportieren)
