@@ -1,0 +1,107 @@
+{
+  "format": "tdoc",
+  "version": 1,
+  "studio": "STUDIO-QUIZ-01",
+  "title": "Unbenannt",
+  "created": "2026-11-26T16:06:05.3727777\u002B01:00",
+  "changed": "2026-11-26T16:12:54.5739917\u002B01:00",
+  "data": {
+    "quelle": "Die Photosynthese findet in den Chloroplasten der Pflanzenzellen statt. Dabei nutzen Pflanzen Lichtenergie, um aus Kohlenstoffdioxid und Wasser Traubenzucker herzustellen. Als Nebenprodukt entsteht Sauerstoff, den die Pflanze an die Luft abgibt. Der gr\u00FCne Farbstoff Chlorophyll f\u00E4ngt das Licht ein. Nachts findet keine Photosynthese statt, weil das Licht fehlt.",
+    "quiz": {
+      "titel": "Neues Quiz",
+      "beschreibung": "",
+      "fragen": [
+        {
+          "id": "56fa0217",
+          "typ": "auswahl",
+          "text": "Wo findet die Photosynthese statt?",
+          "antworten": [
+            {
+              "text": "in den Chloroplasten der Pflanzenzellen",
+              "richtig": true
+            },
+            {
+              "text": "in den Mitochondrien",
+              "richtig": false
+            },
+            {
+              "text": "in der Zellmembran",
+              "richtig": false
+            },
+            {
+              "text": "im Zellkern",
+              "richtig": false
+            }
+          ],
+          "paare": [],
+          "punkte": 1,
+          "sekunden": 0,
+          "erklaerung": ""
+        },
+        {
+          "id": "a18f21ab",
+          "typ": "auswahl",
+          "text": "Welches Nebenprodukt entsteht bei der Photosynthese?",
+          "antworten": [
+            {
+              "text": "Sauerstoff",
+              "richtig": true
+            },
+            {
+              "text": "Kohlenstoffdioxid",
+              "richtig": false
+            },
+            {
+              "text": "Wasser",
+              "richtig": false
+            },
+            {
+              "text": "Traubenzucker",
+              "richtig": false
+            }
+          ],
+          "paare": [],
+          "punkte": 1,
+          "sekunden": 0,
+          "erklaerung": ""
+        },
+        {
+          "id": "862b4762",
+          "typ": "luecke",
+          "text": "Der gr\u00FCne Farbstoff [Chlorophyll] f\u00E4ngt das Licht ein.",
+          "antworten": [],
+          "paare": [],
+          "punkte": 1,
+          "sekunden": 0,
+          "erklaerung": ""
+        },
+        {
+          "id": "77b924ba",
+          "typ": "wahrfalsch",
+          "text": "Die Photosynthese findet nachts statt.",
+          "antworten": [
+            {
+              "text": "Wahr",
+              "richtig": false
+            },
+            {
+              "text": "Falsch",
+              "richtig": true
+            }
+          ],
+          "paare": [],
+          "punkte": 1,
+          "sekunden": 0,
+          "erklaerung": ""
+        }
+      ],
+      "sekunden": 0,
+      "fragenMischen": true,
+      "antwortenMischen": true,
+      "bestehen": 60,
+      "tempoBonus": false,
+      "maxPunkte": 4
+    },
+    "sel": 0
+  }
+}

@@ -1,0 +1,14 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0779 Rot-Grün: „Quiz erstellen“ und „Kurse erstellen“ sind Programme der Hülle in „Wissen & Lernen“ mit Vorlagen, Ausgaben und KI-Fachaktion [FAIL]
+      quiz-programm fehlt
+      Stack Trace:
+        tests\Trendo.App.Tests\T0779RotTests.cs(18,0): at Trendo.App.Tests.T0779_Rot.Studios_exist()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Finished:    Trendo.App.Tests (ID = '66d1073b1606ff198a1a476971cd8e886d897e2a3c1c2f469803c05509eb9257')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 1, Skipped: 0, Not Run: 0, Time: 4,975s
+Exit 1

@@ -1226,6 +1226,38 @@ public static class StudioKnowledgeBase
             ["Original bleibt unverändert", "IBAN nur maskiert, nie im Dokument", "Abschicken macht die Person selbst"],
             ["STUDIO-PDFTOOLS-01", "SYS-10", "STUDIO-LETTER-01"],
             true),
+        ["STUDIO-QUIZ-01"] = new("STUDIO-QUIZ-01", // T-0779
+            "Quiz erstellen wie in Kahoot, Quizlet oder dem Moodle-Test: Auswahl, Mehrfachauswahl, Wahr/Falsch, Lückentext und Zuordnen mit Punkten, Zeit je Frage, Mischen, Tempo-Bonus und Spielmodus mit Auswertung; Ausgabe als eigenständiges HTML-Quiz, Druck-PDF mit Lösungen und GIFT für Moodle.",
+            [
+                T("fragen", "Fragen aus Text", "Die KI macht Fragen aus deinem Text", "Mach 5 Fragen aus dem Text", ["fragen aus", "aus dem text", "erzeug", "generier"], "Text"),
+                T("luecke", "Lückentext", "Fachwörter als Lücken", "Schreib einen Lückentext zu: ", ["lücke", "lückentext", "ergänz"], "Thema"),
+                T("spiel", "Spiel-Quiz", "Mit Zeit und Tempo-Bonus", "Mach daraus ein Spiel-Quiz mit 20 Sekunden je Frage", ["spiel", "zeit", "klasse", "kahoot"], "Quiz"),
+                T("moodle", "Für Moodle", "Als GIFT ausgeben", "Gib das Quiz für Moodle aus", ["moodle", "gift", "lernplattform"], "Quiz"),
+            ],
+            [],
+            ["Fragen und Antworten", "Text für die KI (.txt, .md)", "Karteikarten", "GIFT-Datei"],
+            ["HTML-Quiz zum Weitergeben", "PDF mit Lösungsblatt", "GIFT für Moodle", "Fragen als Text"],
+            [".tdoc", ".html", ".pdf", ".txt", ".gift"],
+            ["Fragen anlegen oder aus Text erzeugen → prüfen → spielen → als HTML, PDF oder GIFT ausgeben"],
+            ["Genau eine richtige Antwort bei Auswahl", "Lücken in [eckigen Klammern]", "Nur Fakten aus dem Text", "Nichts veröffentlichen"],
+            ["SPEC-06", "STUDIO-COURSE-01", "STUDIO-SUMMARY-01"],
+            true),
+        ["STUDIO-COURSE-01"] = new("STUDIO-COURSE-01", // T-0779
+            "Online-Kurse bauen wie mit Articulate Rise, Moodle oder Teachable: Kapitel und Lektionen aus Bausteinen (Text, Überschrift, Liste, Hinweis, Bild, Quiz), Kursansicht zum Durcharbeiten mit Fortschritt je Person, Ausgabe als Webseite und SCORM-1.2-Paket.",
+            [
+                T("lektion", "Lektion schreiben", "Lerntext mit Überschriften und Merksätzen", "Schreib eine Lektion über: ", ["lektion", "lerntext", "erklär"], "Thema"),
+                T("gliederung", "Kurs gliedern", "Kapitel und Lektionen", "Gliedere einen Kurs über: ", ["gliederung", "kapitel", "aufbau"], "Thema"),
+                T("quiz", "Quiz einbinden", "Quiz aus „Quiz erstellen“", "Bind das offene Quiz in die Lektion ein", ["quiz", "test", "prüfung"], "Quiz"),
+                T("scorm", "Für Lernplattformen", "SCORM-Paket ausgeben", "Gib den Kurs als SCORM-Paket aus", ["scorm", "moodle", "ilias", "lernplattform"], "Kurs"),
+            ],
+            [],
+            ["Kursziel", "Lerntexte", "Bilder", "Quiz-Dateien", "Namen der Lernenden"],
+            ["Kurs als Webseite (HTML)", "SCORM-1.2-Paket (ZIP)", "Fortschritt (CSV)"],
+            [".tdoc", ".html", ".zip", ".csv"],
+            ["Gliederung anlegen → Lektionen füllen → Quiz einbinden → Kursansicht prüfen → als Webseite oder SCORM ausgeben"],
+            ["Kurze Lektionen mit einem Lernziel", "Quiz am Ende einer Lektion", "Nur eigene oder freie Bilder", "Nichts hochladen ohne die Person"],
+            ["STUDIO-QUIZ-01", "SPEC-06", "STUDIO-DECKDESIGN-01"],
+            true),
     };
 
     /// <summary>Wissen zu einem Studio. Ohne ausführliche Beschreibung wird es ehrlich aus dem Fachprofil abgeleitet und ist dann als nicht ausführlich markiert.</summary>

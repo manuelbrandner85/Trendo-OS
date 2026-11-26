@@ -98,6 +98,8 @@ public static class CapabilityCatalog
         P("X-08", "Handy verbinden", "System & Sicherheit", "MobileBridge", "adb-Liste, wenn adb schon da ist", "keine", "Liste", "Nur „adb devices -l“. Kein Spiegel, kein Foto, keine Installation."),
         P("CORE-04", "PC, Pi & Handy verbinden", "System & Sicherheit", "FusionStore", "Verbund nur zeigen", "keine", "Liste", "Nur die gespeicherten Geräte. Es wird nichts gekoppelt."),
         P("X-09", "Leistung anzeigen", "System & Sicherheit", "ResourceMonitor, SystemMetrics", "Messwerte lesen", "keine", "Messwert", "Nur die gelesenen Messwerte. Es wird kein Programm beendet."),
+        P("STUDIO-QUIZ-01", "Quiz erstellen", "Wissen & Lernen", "QuizKit, QuizText, QuizGift, QuizHtml, QuizPdf, LearnBox", "Quiz anlegen", "Fragen im Fragen-Format, Titel, Zeit", "Quiz als HTML, im Studio auch PDF mit Lösungen und GIFT für Moodle", "Veröffentlicht nichts; das Quiz gibst du selbst weiter. Ein Moodle-Import wurde hier nicht geprüft."), // T-0779
+        P("STUDIO-COURSE-01", "Kurse erstellen", "Wissen & Lernen", "KursKit, KursHtml, Quiz aus STUDIO-QUIZ-01", "Kurs aus Gliederung", "Titel, Gliederung mit Kapiteln und Lektionen", "Kurs als Webseite (HTML), im Studio auch SCORM-1.2-Paket und Fortschritt (CSV)", "Lädt nichts auf eine Lernplattform hoch; das SCORM-Paket lädst du selbst hoch."), // T-0779
     ];
 
     private static StudioProfile P(string id, string title, string area, string existing, string action, string inputs, string outputs, string blocker) =>

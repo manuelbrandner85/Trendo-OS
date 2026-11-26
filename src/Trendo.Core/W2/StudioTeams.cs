@@ -306,6 +306,12 @@ public static class StudioTeams
         T("STUDIO-PDFTOOLS-01", "PDF-Team",
             R("pdfw-sachb", "Sachbearbeiterin", "ordnet, teilt und fügt Dateien zusammen", "Original bleibt, klare Dateinamen", true),
             R("pdfw-pruef", "Prüfer", "kontrolliert Ergebnis, Größe und Schwärzungen", "nichts Verdecktes bleibt lesbar")),
+        T("STUDIO-QUIZ-01", "Quiz-Team", // T-0779
+            R("quiz-autor", "Quiz-Autorin", "schreibt Fragen und falsche Antworten", "eindeutig, aus dem Text, nichts erfinden", true),
+            R("quiz-pruef", "Prüfer", "prüft Lösungen und Schwierigkeit", "genau eine richtige Antwort, keine Fangfragen")),
+        T("STUDIO-COURSE-01", "Kurs-Team", // T-0779
+            R("course-design", "Kursgestalterin", "gliedert Kapitel und Lektionen", "Lernziel je Lektion, kurze Einheiten", true),
+            R("course-text", "Lehrtexterin", "schreibt verständliche Lerntexte", "kurze Sätze, Beispiele, Merksätze")),
         T("STUDIO-FORMS-01", "Formular-Team",
             R("forms-hilfe", "Formularhelferin", "füllt Felder aus und erklärt Amtsdeutsch", "nur eigene Angaben, nichts erfinden", true),
             R("forms-pruef", "Prüfer", "achtet auf Pflichtfelder und Unterschrift", "vor dem Abschicken alles vollständig")),

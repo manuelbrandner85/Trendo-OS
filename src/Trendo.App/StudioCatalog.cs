@@ -77,6 +77,8 @@ public static class StudioCatalog
         ["CORE-10"] = new("Wissen merken", "Merkt sich, was du gelernt und gemacht hast.", "Wissen & Lernen"),
         ["SYS-08"] = new("Sicher recherchieren", "Sicher im Netz recherchieren – nur lesen.", "Wissen & Lernen"),
         ["STUDIO-CITE-01"] = new("Recherche mit Quellen", "Quellen und Zitate sammeln, sauber zitieren (APA, Harvard, DIN) und als Literaturverzeichnis ausgeben.", "KI & Automatik"), // T-0777: Nutzerentscheidung 26.11.2026 – Bereich KI & Automatik
+        ["STUDIO-QUIZ-01"] = new("Quiz erstellen", "Quiz mit Auswahl, Lückentext und Zuordnen – mit Zeit, Punkten und Spielmodus, zum Weitergeben als HTML, Drucken als PDF oder für Moodle.", "Wissen & Lernen"), // T-0779
+        ["STUDIO-COURSE-01"] = new("Kurse erstellen", "Online-Kurse aus Kapiteln, Lektionen und Quizzen – mit Fortschritt je Person, als Webseite oder SCORM-Paket für Lernplattformen.", "Wissen & Lernen"), // T-0779
 
         ["CORE-02"] = new("KI fragen", "Dein Helfer, der Fragen beantwortet und Aufgaben erledigt.", "KI & Automatik"),
         ["CORE-03"] = new("KI-Team einsetzen", "Mehrere KI-Helfer arbeiten gemeinsam an einer Aufgabe (lokale KI nötig).", "KI & Automatik"),

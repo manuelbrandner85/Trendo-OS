@@ -105,7 +105,7 @@ public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocumen
             finally { doc.Rollback(_start); MainWindow.AssistQuiet--; } // … und sofort zurück
         }
         public bool Changed => _after != _start.Data || _produce.Count > 0;
-        public string? OnApply => _produce.Count == 0 ? null : "Die neue Datei entsteht erst bei „Ja, behalten“ – das Original bleibt unverändert.";
+        public string? OnApply => _produce.Count == 0 || !_produce[0].MakesFile ? null : "Die neue Datei entsteht erst bei „Ja, behalten“ – das Original bleibt unverändert.";
         public void Apply(string label, IReadOnlyList<AssistStep> sideEffects)
         {
             var mark = doc.Remember();
