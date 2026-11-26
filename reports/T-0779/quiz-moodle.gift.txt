@@ -1,0 +1,13 @@
+// Europa-Quiz – erstellt mit Trendo OS (Quiz erstellen), Format GIFT für Moodle
+$CATEGORY: $course$/top/Europa-Quiz
+
+::Frage 1::Hauptstadt von Frankreich? (<!-- ist hier kein Kommentar) { =Paris ~Lyon ~Nizza }
+
+::Frage 2::Nachbarn von Deutschland? { ~%50%Polen ~%50%Österreich ~%-100%Spanien }
+
+::Frage 3::Die Donau mündet ins Schwarze Meer. {TRUE}
+
+::Frage 4::Der höchste Berg Deutschlands ist die { =Zugspitze }.
+
+::Frage 5::Hauptstädte { =Italien -> Rom =Spanien -> Madrid =Polen -> Warschau }
+

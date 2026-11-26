@@ -1,0 +1,14 @@
+# Rot-Lauf 2. Gegenprüfung: neue Tests auf c6d5c409a
+[xUnit.net 00:00:16.39]     T-0779 2. Gegenprüfung: CSV entschärft auch Tab und CR am Zellanfang [FAIL]
+[xUnit.net 00:00:16.55]     T-0779 2. Gegenprüfung: Bilder im Kurs am Inhalt geprüft (PNG/JPG/GIF/WEBP-Kennung, SVG mit Wurzel svg) – falsche Inhalte sind Fehler und werden nicht eingebettet [FAIL]
+  Fehler T-0779 2. Gegenprüfung: CSV entschärft auch Tab und CR am Zellanfang [178 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Sub-string not found
+String:    "Name;Erledigt;Lektionen;Fortschritt %;Qui"···
+--
+  Fehlermeldung:
+   C:\Users\<user>\AppData\Local\Temp\trendo-testlauf-69684-6b086c8b\trendo-t0779-bild-600b6153\falsch.png
+  Stapelverfolgung:
+--
+Fehler!      : Fehler:     2, erfolgreich:     2, übersprungen:     0, gesamt:     4, Dauer: 394 ms - Trendo.Core.Tests.dll (net10.0)
+SPEC06_Ui auf c6d5c409a laut Gegenprüfung rot (LearnUiTests.cs:66, dox/dog); auf dem neuen Stand grün (rohlog-app-tests.txt).

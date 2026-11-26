@@ -31,7 +31,7 @@ public partial class MainWindow
 
     public static readonly string[] RefSteps = ["Thema", "Gliederung", "Text", "Literatur", "Folien"];
 
-    private void InitWissenStudios() { InitReferate(); InitZeitleisten(); }
+    private void InitReferateZeitleisten() { InitReferate(); InitZeitleisten(); } // T-0784: eindeutiger Name (T-0779 hat InitQuizKurse)
 
     static JsonObject RefDoc(string title = "") => new()
     {

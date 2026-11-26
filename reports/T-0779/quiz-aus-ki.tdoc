@@ -1,0 +1,99 @@
+{
+  "format": "tdoc",
+  "version": 1,
+  "studio": "STUDIO-QUIZ-01",
+  "title": "Unbenannt",
+  "created": "2026-11-26T17:36:23.0893154\u002B01:00",
+  "changed": "2026-11-26T17:37:42.5796175\u002B01:00",
+  "data": {
+    "quelle": "Die Photosynthese findet in den Chloroplasten der Pflanzenzellen statt. Dabei nutzen Pflanzen Lichtenergie, um aus Kohlenstoffdioxid und Wasser Traubenzucker herzustellen. Als Nebenprodukt entsteht Sauerstoff, den die Pflanze an die Luft abgibt. Der gr\u00FCne Farbstoff Chlorophyll f\u00E4ngt das Licht ein. Nachts findet keine Photosynthese statt, weil das Licht fehlt.",
+    "quiz": {
+      "titel": "Neues Quiz",
+      "beschreibung": "",
+      "fragen": [
+        {
+          "id": "1b77dcb4",
+          "typ": "auswahl",
+          "text": "Wo findet die Photosynthese statt?",
+          "antworten": [
+            {
+              "text": "in den Chloroplasten der Pflanzenzellen",
+              "richtig": true
+            },
+            {
+              "text": "in den Mitochondrien der Pflanzenzellen",
+              "richtig": false
+            },
+            {
+              "text": "in den Zellkernen der Pflanzenzellen",
+              "richtig": false
+            }
+          ],
+          "paare": [],
+          "punkte": 1,
+          "sekunden": 0,
+          "erklaerung": ""
+        },
+        {
+          "id": "ded50351",
+          "typ": "auswahl",
+          "text": "Welches Gas entsteht als Nebenprodukt der Photosynthese?",
+          "antworten": [
+            {
+              "text": "Sauerstoff",
+              "richtig": true
+            },
+            {
+              "text": "Kohlenstoffdioxid",
+              "richtig": false
+            },
+            {
+              "text": "Wasserstoff",
+              "richtig": false
+            }
+          ],
+          "paare": [],
+          "punkte": 1,
+          "sekunden": 0,
+          "erklaerung": ""
+        },
+        {
+          "id": "2244938a",
+          "typ": "luecke",
+          "text": "Pflanzen nutzen Lichtenergie, um aus [Kohlenstoffdioxid] und [Wasser] [Traubenzucker] herzustellen.",
+          "antworten": [],
+          "paare": [],
+          "punkte": 1,
+          "sekunden": 0,
+          "erklaerung": ""
+        },
+        {
+          "id": "2c53c6eb",
+          "typ": "wahrfalsch",
+          "text": "Nachts findet keine Photosynthese statt, weil das Licht fehlt.",
+          "antworten": [
+            {
+              "text": "Wahr",
+              "richtig": true
+            },
+            {
+              "text": "Falsch",
+              "richtig": false
+            }
+          ],
+          "paare": [],
+          "punkte": 1,
+          "sekunden": 0,
+          "erklaerung": ""
+        }
+      ],
+      "sekunden": 0,
+      "fragenMischen": true,
+      "antwortenMischen": true,
+      "bestehen": 60,
+      "tempoBonus": false,
+      "maxPunkte": 4
+    },
+    "sel": 0
+  }
+}

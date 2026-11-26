@@ -45,6 +45,8 @@ public sealed record ProgramKiAction(AssistAction Def, Action<ProgramDocument, I
 {
     /// <summary>T-0780: Hinweis in der Vorschau, was bei „Ja, behalten“ geschieht – für Fachaktionen, die nur das Dokument ändern und keine Datei erzeugen. null = Standardsatz (neue Datei).</summary>
     public string? OnApplyNote { get; init; }
+    /// <summary>T-0779: false = die Fachaktion schreibt nur ins offene Dokument (z. B. Fragen ins Quiz) und erzeugt keine eigene Datei – die Vorschau kündigt dann keine neue Datei an.</summary>
+    public bool MakesFile { get; init; } = true;
 }
 
 public sealed class ProgramSpec(string key, string studio, string title)

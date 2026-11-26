@@ -50,6 +50,7 @@ public static class PromptActions
             new PdfWerkstattAdapter(), new FormularZuordnenAdapter(),
             new ReferatGliederungAdapter(), new ZeitleisteZeilenAdapter(), // T-0780
             new MatheLoesungAdapter(), new NaturRechnungAdapter(), // T-0781 Wissen & Lernen
+            new QuizAnlegenAdapter(), new KursGliederungAdapter(), // T-0779
             ..SystemActions.Create()
         ];
 }

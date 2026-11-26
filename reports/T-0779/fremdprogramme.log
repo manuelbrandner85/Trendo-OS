@@ -1,0 +1,225 @@
+# T-0779 Fremdprogramme – 2026-11-26 17:36
+
+Dateien (von Trendo erzeugt):
+- quiz.html: 12879 Bytes, SHA-256 6844b658f8ccd28b7e68c1110972b6b70fe60297ed352f6a7792469e3125d65f
+- quiz.pdf: 86889 Bytes, SHA-256 6ae81566977d120c28e183b6e57580dc1816ba3534b7c9cc115490beb257563a
+- quiz-moodle.gift.txt: 519 Bytes, SHA-256 566f507f61e6a7701187a7be0177bf1015a59880fedb4abf8d379747d38b78af
+- kurs.html: 20805 Bytes, SHA-256 38060b8bc49b1aba30544115620cd8d5ee9bbd9dfb33db8336fd1842704d2985
+- kurs-scorm.zip: 8076 Bytes, SHA-256 68606b3d1ea7c2f8a4f3ea5a529ab5fe1583c2f059d4ae3112c30b838f03d6c9
+
+## Google Chrome (headless) – HTML-Quiz mit #selbsttest
+$ chrome.exe --headless=new --disable-gpu --no-first-run --no-default-browser-check --user-data-dir=<temp>\edge-5aa36d --virtual-time-budget=15000 --dump-dom file:///C:/Users/<user>/AppData/Local/Temp/trendo-auftrag-T-0779/reports/T-0779/quiz.html#selbsttest
+Exit 0
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="generator" content="Trendo OS – Quiz erstellen"><title>Europa-Quiz</title><style>:root{--bg:#14110d;--card:#1f1a14;--line:#3a3024;--gold:#c9a227;--gold2:#e8c75a;--text:#f3ead7;--muted:#b7a98f;--ok:#4ade80;--bad:#f87171;--warn:#fbbf24}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 "Segoe UI",system-ui,sans-serif}
+.tq-wrap{max-width:760px;margin:0 auto;padding:24px 16px}.tq-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;margin:0 0 14px}
+h1,h2,h3{margin:0 0 10px;line-height:1.25}h1{font-size:28px}h2{font-size:22px}.tq-muted{color:var(--muted);font-size:14px}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:#2a2218;color:var(--text);padding:10px 16px}
+button.tq-main{background:var(--gold);border-color:var(--gold);color:#1a1408;font-weight:600}button:disabled{opacity:.45;cursor:default}
+.tq-opts{display:grid;gap:8px;margin:14px 0}.tq-opt{text-align:left;display:flex;gap:10px;align-items:center}.tq-opt.on{border-color:var(--gold);background:#3a2f1a}
+.tq-opt.right{border-color:var(--ok)}.tq-opt.wrong{border-color:var(--bad)}input[type=text],select{font:inherit;background:#120f0b;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+.tq-gap{width:9em;margin:0 4px}.tq-pair{display:flex;gap:10px;align-items:center;margin:6px 0}.tq-pair span{flex:1}
+.tq-bar{height:6px;background:#2a2218;border-radius:4px;overflow:hidden;margin:8px 0}.tq-bar i{display:block;height:100%;background:var(--gold);width:100%}
+.tq-fb{margin:12px 0;padding:10px 12px;border-radius:10px;background:#18140f;border:1px solid var(--line)}.tq-fb.ok{border-color:var(--ok)}.tq-fb.bad{border-color:var(--bad)}.tq-fb.part{border-color:var(--warn)}
+table{border-collapse:collapse;width:100%;font-size:14px}td,th{border-bottom:1px solid var(--line);padding:6px;text-align:left}.tq-big{font-size:42px;font-weight:700;color:var(--gold2)}
+.tq-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}</style></head>
+<body data-tq-result="100"><main class="tq-wrap" id="tq" data-tq-result="100" data-tq-passed="1"><div class="tq-card" id="tq-result"><h2>Auswertung</h2><div class="tq-big">100 %</div><p>8 von 8 Punkten + 4 Tempo-Bonus · Bestanden</p><table><tr><th>Frage</th><th>Punkte</th><th>Zeit</th><th>Lösung</th></tr><tr><td>Hauptstadt von Frankreich? (&lt;!-- ist hier kein Kommentar)</td><td>1.5 / 1</td><td>0 s</td><td>Paris</td></tr><tr><td>Nachbarn von Deutschland?</td><td>3 / 2</td><td>0 s</td><td>Polen, Österreich</td></tr><tr><td>Der höchste Berg Deutschlands ist die ___.</td><td>1.5 / 1</td><td>0 s</td><td>Zugspitze</td></tr><tr><td>Hauptstädte</td><td>4.5 / 3</td><td>0 s</td><td>Italien → Rom; Spanien → Madrid; Polen → Warschau</td></tr><tr><td>Die Donau mündet ins Schwarze Meer.</td><td>1.5 / 1</td><td>0 s</td><td>Wahr</td></tr></table><div class="tq-row"><button id="tq-again">Nochmal spielen</button></div></div></main>
+<script id="tq-data" type="application/json">{"titel":"Europa-Quiz","beschreibung":"Beleg T-0779","fragen":[{"id":"ca0a7876","typ":"auswahl","text":"Hauptstadt von Frankreich? (\u003C!-- ist hier kein Kommentar)","antworten":[{"text":"Paris","richtig":true},{"text":"Lyon","richtig":false},{"text":"Nizza","richtig":false}],"paare":[],"punkte":1,"sekunden":0,"erklaerung":""},{"id":"679afc6d","typ":"mehrfach","text":"Nachbarn von Deutschland?","antworten":[{"text":"Polen","richtig":true},{"text":"Österreich","richtig":true},{"text":"Spanien","richtig":false}],"paare":[],"punkte":2,"sekunden":0,"erklaerung":""},{"id":"af4ab8bf","typ":"wahrfalsch","text":"Die Donau mündet ins Schwarze Meer.","antworten":[{"text":"Wahr","richtig":true},{"text":"Falsch","richtig":false}],"paare":[],"punkte":1,"sekunden":0,"erklaerung":""},{"id":"8f219765","typ":"luecke","text":" …(gekürzt)
+→ Ergebnis im DOM: data-tq-result="100", „Auswertung“, „Bestanden“ (Fragetext mit „<!--“ fehlerfrei gelesen)
+
+## Google Chrome (headless) – Lückenregel des Spielers (#regeln) gegen Trendo (LearnBox.CheckTyped)
+$ chrome.exe --headless=new --disable-gpu --no-first-run --no-default-browser-check --user-data-dir=<temp>\edge-9f376d --virtual-time-budget=15000 --dump-dom file:///C:/Users/<user>/AppData/Local/Temp/trendo-auftrag-T-0779/reports/T-0779/quiz.html#regeln
+Exit 0
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="generator" content="Trendo OS – Quiz erstellen"><title>Europa-Quiz</title><style>:root{--bg:#14110d;--card:#1f1a14;--line:#3a3024;--gold:#c9a227;--gold2:#e8c75a;--text:#f3ead7;--muted:#b7a98f;--ok:#4ade80;--bad:#f87171;--warn:#fbbf24}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 "Segoe UI",system-ui,sans-serif}
+.tq-wrap{max-width:760px;margin:0 auto;padding:24px 16px}.tq-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;margin:0 0 14px}
+h1,h2,h3{margin:0 0 10px;line-height:1.25}h1{font-size:28px}h2{font-size:22px}.tq-muted{color:var(--muted);font-size:14px}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:#2a2218;color:var(--text);padding:10px 16px}
+button.tq-main{background:var(--gold);border-color:var(--gold);color:#1a1408;font-weight:600}button:disabled{opacity:.45;cursor:default}
+.tq-opts{display:grid;gap:8px;margin:14px 0}.tq-opt{text-align:left;display:flex;gap:10px;align-items:center}.tq-opt.on{border-color:var(--gold);background:#3a2f1a}
+.tq-opt.right{border-color:var(--ok)}.tq-opt.wrong{border-color:var(--bad)}input[type=text],select{font:inherit;background:#120f0b;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+.tq-gap{width:9em;margin:0 4px}.tq-pair{display:flex;gap:10px;align-items:center;margin:6px 0}.tq-pair span{flex:1}
+.tq-bar{height:6px;background:#2a2218;border-radius:4px;overflow:hidden;margin:8px 0}.tq-bar i{display:block;height:100%;background:var(--gold);width:100%}
+.tq-fb{margin:12px 0;padding:10px 12px;border-radius:10px;background:#18140f;border:1px solid var(--line)}.tq-fb.ok{border-color:var(--ok)}.tq-fb.bad{border-color:var(--bad)}.tq-fb.part{border-color:var(--warn)}
+table{border-collapse:collapse;width:100%;font-size:14px}td,th{border-bottom:1px solid var(--line);padding:6px;text-align:left}.tq-big{font-size:42px;font-weight:700;color:var(--gold2)}
+.tq-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}</style></head>
+<body data-tq-rules="00000111"><main class="tq-wrap" id="tq"><div class="tq-card"><h1>Europa-Quiz</h1><p>Beleg T-0779</p><p class="tq-muted">5 Fragen · 30 Sekunden je Frage · bestanden ab 60 % · Tempo-Bonus</p><button class="tq-main" id="tq-start">Los geht’s</button></div></main>
+<script id="tq-data" type="application/json">{"titel":"Europa-Quiz","beschreibung":"Beleg T-0779","fragen":[{"id":"ca0a7876","typ":"auswahl","text":"Hauptstadt von Frankreich? (\u003C!-- ist hier kein Kommentar)","antworten":[{"text":"Paris","richtig":true},{"text":"Lyon","richtig":false},{"text":"Nizza","richtig":false}],"paare":[],"punkte":1,"sekunden":0,"erklaerung":""},{"id":"679afc6d","typ":"mehrfach","text":"Nachbarn von Deutschland?","antworten":[{"text":"Polen","richtig":true},{"text":"Österreich","richtig":true},{"text":"Spanien","richtig":false}],"paare":[],"punkte":2,"sekunden":0,"erklaerung":""},{"id":"af4ab8bf","typ":"wahrfalsch","text":"Die Donau mündet ins Schwarze Meer.","antworten":[{"text":"Wahr","richtig":true},{"text":"Falsch","richtig":false}],"paare":[],"punkte":1,"sekunden":0,"erklaerung":""},{"id":"8f219765","typ":"luecke","text":"Der höchste Berg Deutschlands ist die [Zugspitze].","antworten":[],"paare":[],"punkte":1,"sekunden":0,"erklaerung":""},{"id":"bcd91d5f","typ":"zuordnen","text":"Hauptstädte","antworten":[],"paare":[{"links":"Italien","rechts":"Rom"},{"links":"Spanien","rechts":"Madrid"},{"links":"Polen","rechts":"Warschau"}],"punkte":3,"sekunden":0,"erklaerung":""}],"sekunden":30,"fragenMischen":true,"antwortenMischen":true,"bestehen":60,"tempoBonus":true,"maxPunkte":8}</script>
+<script>function tqEl(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;}
+function tqGaps(t){var r=[],m,re=/\[([^\[\]]+)\]/g;while((m=re …(gekürzt)
+→ data-tq-rules="00000111" – gleich wie in Trendo (Fälle: 1989/1988, 3/4, Ost/Ast, A/B, Baujahr 1989/Baujahr 1988, elephant/elephat, Zugspitze/zugspitz, House/ house )
+
+## Google Chrome (headless) – Kurs-Webseite mit #selbsttest
+$ chrome.exe --headless=new --disable-gpu --no-first-run --no-default-browser-check --user-data-dir=<temp>\edge-a4e31b --virtual-time-budget=15000 --dump-dom file:///C:/Users/<user>/AppData/Local/Temp/trendo-auftrag-T-0779/reports/T-0779/kurs.html#selbsttest
+Exit 0
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="generator" content="Trendo OS – Kurse erstellen"><title>Europa kennenlernen</title><style>:root{--bg:#14110d;--card:#1f1a14;--line:#3a3024;--gold:#c9a227;--gold2:#e8c75a;--text:#f3ead7;--muted:#b7a98f;--ok:#4ade80;--bad:#f87171;--warn:#fbbf24}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 "Segoe UI",system-ui,sans-serif}
+.tq-wrap{max-width:760px;margin:0 auto;padding:24px 16px}.tq-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;margin:0 0 14px}
+h1,h2,h3{margin:0 0 10px;line-height:1.25}h1{font-size:28px}h2{font-size:22px}.tq-muted{color:var(--muted);font-size:14px}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:#2a2218;color:var(--text);padding:10px 16px}
+button.tq-main{background:var(--gold);border-color:var(--gold);color:#1a1408;font-weight:600}button:disabled{opacity:.45;cursor:default}
+.tq-opts{display:grid;gap:8px;margin:14px 0}.tq-opt{text-align:left;display:flex;gap:10px;align-items:center}.tq-opt.on{border-color:var(--gold);background:#3a2f1a}
+.tq-opt.right{border-color:var(--ok)}.tq-opt.wrong{border-color:var(--bad)}input[type=text],select{font:inherit;background:#120f0b;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+.tq-gap{width:9em;margin:0 4px}.tq-pair{display:flex;gap:10px;align-items:center;margin:6px 0}.tq-pair span{flex:1}
+.tq-bar{height:6px;background:#2a2218;border-radius:4px;overflow:hidden;margin:8px 0}.tq-bar i{display:block;height:100%;background:var(--gold);width:100%}
+.tq-fb{margin:12px 0;padding:10px 12px;border-radius:10px;background:#18140f;border:1px solid var(--line)}.tq-fb.ok{border-color:var(--ok)}.tq-fb.bad{border-color:var(--bad)}.tq-fb.part{border-color:var(--warn)}
+table{border-collapse:collapse;width:100%;font-size:14px}td,th{border-bottom:1px solid var(--line);padding:6px;text-align:left}.tq-big{font-size:42px;font-weight:700;color:var(--gold2)}
+.tq-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.k-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}.k-grid{display:grid;grid-template-columns:260px 1fr;gap:16px;max-width:1100px;margin:0 auto;padding:20px 16px}
+@media(max-width:760px){.k-grid{grid-template-columns:1fr}}.k-nav{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;align-self:start}
+.k-nav h3{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:12px 0 6px}.k-nav button{display:block;width:100%;text-align:left;margin:3px 0;padding:8px 10px;font-size:14px}
+.k-nav button.cur{border-color:var(--gold)}.k-nav button.done::before{content:"✓ ";color:var(--ok)}.k-nav button.lock{opacity:.5}.k-prog{height:8px;background:#2a2218;border-radius:4px;overflow:hidden;margin:6px 0}
+.k-prog i{display:block;height:100%;background:var(--gold)}.k-note{border-left:4px solid var(--gold);background:#231c12;padding:10px 14px;border-radius:8px;margin:12px 0}.k-body img{max-width:100%;border-radius:10px}
+.k-body p{margin:0 0 12px}.k-body ul{margin:0 0 12px 20px}</style></head>
+<body data-k-done="2" data-k-selftest="fertig"><div class="k-grid"><nav class="k-nav" id="k-nav"><div class="tq-muted">Selbsttest · 2 von 2 Lektionen</div><div class="k-prog"><i style="width: 100%;"></i></div><h3>Grundlagen</h3><button class="done " data-l="aea2ae22">Länder</button><h3>Prüfung</h3><button class="cur done " data-l="e10c40eb">Quiz</button></nav><main id="k-main"><div class="tq-card k-body"><div class="tq-muted">Prüfung · etwa 5 Minuten</div><h1>Quiz</h1><div class="k-note">Mindestens 60 %.</div><div class="k-quiz" data-b="bfc0203e" data-tq-result="100" data-tq-passed="1"><div class="tq-card" id="tq-result"><h2>Auswertung</h2><div class="tq-big">100 %</div><p>8 von 8 Pun …(gekürzt)
+→ Ergebnis im DOM: data-k-selftest="fertig", data-k-done="2" (beide Lektionen erledigt, Quiz bestanden)
+
+## 7-Zip – SCORM-Paket prüfen und entpacken
+$ 7z.exe t <beleg>\kurs-scorm.zip
+Exit 0
+
+7-Zip 26.05 (x64) : Copyright (c) 1999-2026 Igor Pavlov : 2026-10-21
+
+Scanning the drive for archives:
+1 file, 8076 bytes (8 KiB)
+
+Testing archive: <beleg>\kurs-scorm.zip
+--
+Path = <beleg>\kurs-scorm.zip
+Type = zip
+Physical Size = 8076
+
+Everything is Ok
+
+Files: 2
+Size:       21928
+Compressed: 8076
+
+$ 7z.exe x <beleg>\kurs-scorm.zip -o<temp>\scorm -y
+Exit 0
+
+7-Zip 26.05 (x64) : Copyright (c) 1999-2026 Igor Pavlov : 2026-10-21
+
+Scanning the drive for archives:
+1 file, 8076 bytes (8 KiB)
+
+Extracting archive: <beleg>\kurs-scorm.zip
+--
+Path = <beleg>\kurs-scorm.zip
+Type = zip
+Physical Size = 8076
+
+Everything is Ok
+
+Files: 2
+Size:       21928
+Compressed: 8076
+
+## Google Chrome (headless) – entpackte SCORM-index.html ohne Lernplattform (Seite läuft auch ohne SCORM-API)
+$ chrome.exe --headless=new --disable-gpu --no-first-run --no-default-browser-check --user-data-dir=<temp>\edge-dc6c52 --virtual-time-budget=15000 --dump-dom file:///C:/Users/<user>/AppData/Local/Temp/trendo-testlauf-4536-6b085ffa/trendo-t0779-fremd-215408c0/scorm/index.html#selbsttest
+Exit 0
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="generator" content="Trendo OS – Kurse erstellen"><title>Europa kennenlernen</title><style>:root{--bg:#14110d;--card:#1f1a14;--line:#3a3024;--gold:#c9a227;--gold2:#e8c75a;--text:#f3ead7;--muted:#b7a98f;--ok:#4ade80;--bad:#f87171;--warn:#fbbf24}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 "Segoe UI",system-ui,sans-serif}
+.tq-wrap{max-width:760px;margin:0 auto;padding:24px 16px}.tq-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;margin:0 0 14px}
+h1,h2,h3{margin:0 0 10px;line-height:1.25}h1{font-size:28px}h2{font-size:22px}.tq-muted{color:var(--muted);font-size:14px}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:#2a2218;color:var(--text);padding:10px 16px}
+button.tq-main{background:var(--gold);border-color:var(--gold);color:#1a1408;font-weight:600}button:disabled{opacity:.45;cursor:default}
+.tq-opts{display:grid;gap:8px;margin:14px 0}.tq-opt{text-align:left;display:flex;gap:10px;align-items:center}.tq-opt.on{border-color:var(--gold);background:#3a2f1a}
+.tq-opt.right{border-color:var(--ok)}.tq-opt.wrong{border-color:var(--bad)}input[type=text],select{font:inherit;background:#120f0b;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+.tq-gap{width:9em;margin:0 4px}.tq-pair{display:flex;gap:10px;align-items:center;margin:6px 0}.tq-pair span{flex:1}
+.tq-bar{height:6px;background:#2a2218;border-radius:4px;overflow:hidden;margin:8px 0}.tq-bar i{display:block;height:100%;background:var(--gold);width:100%}
+.tq-fb{margin:12px 0;padding:10px 12px;border-radius:10px;background:#18140f;border:1px solid var(--line)}.tq-fb.ok{border-color:var(--ok)}.tq-fb.bad{border-color:var(--bad)}.tq-fb.part{border-color:var(--warn)}
+table{border-collapse:collapse;width:100%;font-size:14px}td,th{border-bottom:1px solid var(--line);padding:6px;text-align:left}.tq-big{font-size:42px;font-weight:700;color:var(--gold2)}
+.tq-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.k-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}.k-grid{display:grid;grid-template-columns:260px 1fr;gap:16px;max-width:1100px;margin:0 auto;padding:20px 16px}
+@media(max-width:760px){.k-grid{grid-template-columns:1fr}}.k-nav{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;align-self:start}
+.k-nav h3{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:12px 0 6px}.k-nav button{display:block;width:100%;text-align:left;margin:3px 0;padding:8px 10px;font-size:14px}
+.k-nav button.cur{border-color:var(--gold)}.k-nav button.done::before{content:"✓ ";color:var(--ok)}.k-nav button.lock{opacity:.5}.k-prog{height:8px;background:#2a2218;border-radius:4px;overflow:hidden;margin:6px 0}
+.k-prog i{display:block;height:100%;background:var(--gold)}.k-note{border-left:4px solid var(--gold);background:#231c12;padding:10px 14px;border-radius:8px;margin:12px 0}.k-body img{max-width:100%;border-radius:10px}
+.k-body p{margin:0 0 12px}.k-body ul{margin:0 0 12px 20px}</style></head>
+<body data-k-done="2" data-k-selftest="fertig"><div class="k-grid"><nav class="k-nav" id="k-nav"><div class="tq-muted">Selbsttest · 2 von 2 Lektionen</div><div class="k-prog"><i style="width: 100%;"></i></div><h3>Grundlagen</h3><button class="done " data-l="aea2ae22">Länder</button><h3>Prüfung</h3><button class="cur done " data-l="e10c40eb">Quiz</button></nav><main id="k-main"><div class="tq-card k-body"><div class="tq-muted">Prüfung · etwa 5 Minuten</div><h1>Quiz</h1><div class="k-note">Mindestens 60 %.</div><div class="k-quiz" data-b="bfc0203e" data-tq-result="100" data-tq-passed="1"><div class="tq-card" id="tq-result"><h2>Auswertung</h2><div class="tq-big">100 %</div><p>8 von 8 Pun …(gekürzt)
+→ data-k-selftest="fertig"
+
+## pdftotext (Xpdf aus Git für Windows) – Druck-PDF lesen
+$ pdftotext.exe -enc UTF-8 <beleg>\quiz.pdf <temp>\quiz.txt
+Exit 0
+
+→ Text enthält „Hauptstadt von Frankreich?“, „Lösungen“, „Zugspitze“:
+Europa-Quiz
+Beleg T-0779 5 Fragen · 8 Punkte · bestanden ab 60 % · 30 Sekunden je Frage
+Name: ______________________________ Datum: ______________
+
+1. Hauptstadt von Frankreich? (<!-- ist hier kein Kommentar)
+
+1 P.
+
+Lyon
+
+Paris
+
+Nizza
+
+2. Nachbarn von Deutschland?
+
+2 P.
+
+Mehrere Antworten können richtig sein.
+
+Spanien
+
+Österreich
+
+Polen
+
+3. Die Donau mündet ins Schwarze Meer.
+
+1 P.
+
+Wahr
+
+Falsch
+
+4. Ergänze die Lücken.
+
+1 P.
+
+Der höchste Berg Deutschlands ist die ______________.
+
+5. Hauptstädte 1. Italien ____ 2. Spanien ____ 3. Polen ____
+
+3 P.
+A) Warschau B) Rom C) Madrid
+
+Europa-Quiz · Seite 1 von 2
+
+Lösungen – Europa-Quiz
+1. Paris 2. Polen, Österreich 3. Wahr 4. Der höchste Berg Deutschlands ist die Zugspitze. 5. 1 → B, 2 → C, 3 → A
+Europa-Quiz · Seite 2 von 2
+
+
+## qpdf – Aufbau des PDF prüfen
+$ qpdf.exe --check <beleg>\quiz.pdf
+Exit 3
+checking <beleg>\quiz.pdf
+PDF Version: 1.7
+File is not encrypted
+File is not linearized
+WARNING: <beleg>\quiz.pdf (offset 669): input stream is complete but output may still be valid
+WARNING: <beleg>\quiz.pdf (offset 3606): input stream is complete but output may still be valid
+WARNING: <beleg>\quiz.pdf (offset 2543): input stream is complete but output may still be valid
+WARNING: <beleg>\quiz.pdf (offset 3772): input stream is complete but output may still be valid
+WARNING: <beleg>\quiz.pdf (offset 2854): input stream is complete but output may still be valid
+WARNING: <beleg>\quiz.pdf (offset 3955): input stream is complete but output may still be valid
+WARNING: <beleg>\quiz.pdf (offset 39585): input stream is complete but output may still be valid
+WARNING: <beleg>\quiz.pdf (offset 669): input stream is complete but output may still be valid
+WARNING: <beleg>\quiz.pdf (offset 3606): input stream is complete but output may still be valid
+WARNING: <beleg>\quiz.pdf (offset 2543): input stream is complete but output may still be valid
+WARNING: <beleg>\quiz.pdf (offset 3772): input stream is complete but output may still be valid
+qpdf: operation succeeded with warnings
+
+→ qpdf: lesbar, keine Fehler; Warnungen zu den Datenströmen (PDFsharp-Flate), siehe oben
+
+Nicht geprüft (kein Programm auf diesem PC): GIFT-Import in Moodle, SCORM-Lauf in einer Lernplattform (Moodle, ILIAS, SCORM Cloud).
+Ergebnis: alle Fremdprogramm-Prüfungen bestanden.
