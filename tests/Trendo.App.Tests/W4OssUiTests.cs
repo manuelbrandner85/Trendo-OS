@@ -23,6 +23,8 @@ public class W4_X06_Ui
     public async Task Live()
     {
         try { Assert.NotEmpty(await MainWindow.OssSearchHttp(new HttpClient { Timeout = TimeSpan.FromSeconds(15) }, "avalonia", ct: TestContext.Current.CancellationToken)); }
-        catch (HttpRequestException) { } catch (TaskCanceledException) { } catch (InvalidOperationException) { }
+        catch (HttpRequestException e) { Assert.Skip("Übersprungen – keine Verbindung zu GitHub: " + e.Message); }
+        catch (TaskCanceledException) { Assert.Skip("Übersprungen – GitHub antwortet nicht rechtzeitig."); }
+        catch (InvalidOperationException e) { Assert.Skip("Übersprungen – GitHub-Antwort nicht lesbar (z. B. Abfragegrenze): " + e.Message); }
     }
 }

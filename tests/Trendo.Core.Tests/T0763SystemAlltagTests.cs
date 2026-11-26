@@ -220,7 +220,7 @@ public class T0763SystemAlltagTests
     {
         var real = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TrendoOS");
         var app = Path.Combine(real, "current");
-        if (InstallIntegrity.Installed(app) is not var (id, ver) || InstallIntegrity.FindPackage(app, id, ver) is not { } pkg) return; // kein installiertes Trendo: nichts zu prüfen
+        if (InstallIntegrity.Installed(app) is not var (id, ver) || InstallIntegrity.FindPackage(app, id, ver) is not { } pkg) { Ueberspringen.Weil("kein installiertes Trendo mit Paket auf diesem PC."); return; } // kein installiertes Trendo: nichts zu prüfen
         var sw = Stopwatch.StartNew();
         var r = InstallIntegrity.Check(app); // nur lesen – an der echten Installation ändert der Test nichts
         Assert.Empty(r.Extra); Assert.Empty(r.Links); // Fix M3/F4: die echte Installation darf nicht fälschlich „nicht aus dem Paket“ oder „Verknüpfung“ melden

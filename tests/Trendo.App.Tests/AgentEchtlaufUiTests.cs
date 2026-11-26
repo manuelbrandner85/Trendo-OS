@@ -56,7 +56,7 @@ public class AgentEchtlauf_Ui
     [AvaloniaFact(DisplayName = "T-0698 ECHT Ollama: Agent mit lokalem Modell legt Datei an, liest sie, ergänzt sie (nur mit TRENDO_AGENT_ECHT)")]
     public void Real_ollama()
     {
-        if (Beleg() is not { } dir) return; // ohne Belegordner kein Echtlauf (kein Netz/Modell in normalen Läufen)
+        if (Beleg() is not { } dir) { Assert.Skip("Übersprungen – Echtlauf nur mit TRENDO_AGENT_ECHT=<Belegordner> und laufendem Ollama."); return; } // ohne Belegordner kein Echtlauf (kein Netz/Modell in normalen Läufen)
         var model = Environment.GetEnvironmentVariable("TRENDO_AGENT_MODELL") is { Length: > 0 } m ? m : "qwen3:14b";
         var (w, _, _) = Ui.Open();
         try
@@ -76,9 +76,9 @@ public class AgentEchtlauf_Ui
     [AvaloniaFact(DisplayName = "T-0698 ECHT Claude: Agent mit Claude über das eigene Abo (nur mit TRENDO_AGENT_ECHT und angemeldetem Claude Code)")]
     public void Real_claude()
     {
-        if (Beleg() is not { } dir) return;
+        if (Beleg() is not { } dir) { Assert.Skip("Übersprungen – Echtlauf nur mit TRENDO_AGENT_ECHT=<Belegordner> und angemeldetem Claude Code."); return; }
         var exe = Environment.GetEnvironmentVariable("TRENDO_CLAUDE_EXE") is { Length: > 0 } e ? e : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "bin", "claude.exe");
-        if (!File.Exists(exe)) { File.WriteAllText(Path.Combine(dir, "claude-BLOCKIERT.txt"), "Claude Code nicht gefunden."); return; }
+        if (!File.Exists(exe)) { File.WriteAllText(Path.Combine(dir, "claude-BLOCKIERT.txt"), "Claude Code nicht gefunden."); Assert.Skip("BLOCKIERT – Claude Code nicht gefunden (TRENDO_CLAUDE_EXE oder ~/.local/bin/claude.exe)."); return; }
         var (w, _, _) = Ui.Open();
         var oldRun = MainWindow.ClaudeRunOverride; var oldStatus = MainWindow.ClaudeStatusOverride;
         try

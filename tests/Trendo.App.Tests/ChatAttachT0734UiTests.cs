@@ -262,7 +262,7 @@ public class ChatAttachT0734_Ui
     [AvaloniaFact(DisplayName = "T-0734 ECHT: Ollama liest eine angehängte Datei, Antwort wächst sichtbar, Folgefrage kennt die Datei; Bildmodell erkennt die Farbe eines Bildes (nur mit TRENDO_ECHT_KIFRAGEN)")]
     public async Task Real_ollama_attachment_and_stream()
     {
-        if (Environment.GetEnvironmentVariable("TRENDO_ECHT_KIFRAGEN") is not { Length: > 0 } dirEnv) return;
+        if (Environment.GetEnvironmentVariable("TRENDO_ECHT_KIFRAGEN") is not { Length: > 0 } dirEnv) { Assert.Skip("Übersprungen – Echtlauf nur mit TRENDO_ECHT_KIFRAGEN=<Belegordner> und laufendem Ollama."); return; }
         var dir = Directory.CreateDirectory(dirEnv).FullName;
         var tags = await new OllamaBackend().ModelsAsync();
         if (tags.Count == 0) { Assert.Skip("BLOCKIERT – Ollama läuft nicht auf 127.0.0.1:11434."); return; }

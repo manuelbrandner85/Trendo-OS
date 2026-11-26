@@ -106,7 +106,7 @@ public class T0742_Ui
     [AvaloniaFact(DisplayName = "T-0742 UI: Windows-Aufgabe nur nach Ja, sichtbar, ein Klick entfernt sie; Löschen des Ablaufs entfernt sie mit; „neue Datei“ zeigt deutlich „nur bei offenem Trendo“")]
     public async Task Windows_Aufgabe_nur_mit_Zustimmung()
     {
-        if (!WorkflowTaskPlan.Supported) return; // Linux: dort gibt es keine Aufgabenplanung (Hinweis prüft der Kern-Test)
+        if (!WorkflowTaskPlan.Supported) { Assert.Skip("Übersprungen – keine Windows-Aufgabenplanung auf diesem System."); return; } // Linux: dort gibt es keine Aufgabenplanung (Hinweis prüft der Kern-Test)
         var (w, _, root) = Ui.Open();
         var home = Path.Combine(root, "heim"); Directory.CreateDirectory(home); MainWindow.WorkflowHome = home;
         var exe = Path.Combine(root, "TrendoOS.exe"); File.WriteAllText(exe, ""); MainWindow.WfTaskExe = exe;
@@ -173,7 +173,7 @@ public class T0742_Gegenpruefung_Ui
     [AvaloniaFact(DisplayName = "T-0742 Gegenprüfung: Start durch eine Aufgabe mit fehlendem Datenordner legt ihn nicht an und entfernt die eigene Aufgabe; ungültige Id wird abgelehnt")]
     public void Fehlender_Datenordner_wird_nicht_angelegt()
     {
-        if (!WorkflowTaskPlan.Supported) return;
+        if (!WorkflowTaskPlan.Supported) { Assert.Skip("Übersprungen – keine Windows-Aufgabenplanung auf diesem System."); return; }
         var root = Path.Combine(Path.GetTempPath(), "trendo-t0742-weg-" + Guid.NewGuid().ToString("N"));
         var calls = new List<string>();
         var plan = new WorkflowTaskPlan { Run = a => { calls.Add(string.Join(" ", a)); return (0, ""); } };
@@ -187,7 +187,7 @@ public class T0742_Gegenpruefung_Ui
     [AvaloniaFact(DisplayName = "T-0742 Gegenprüfung: Gibt es den Ablauf nicht mehr, entfernt die Aufgabe sich selbst; im offenen Trendo zeigt ein Ablauf mit KI-Schritt „nur bei offenem Trendo“ und bietet das Entfernen an")]
     public void Ablauf_weg_oder_KI_Schritt()
     {
-        if (!WorkflowTaskPlan.Supported) return;
+        if (!WorkflowTaskPlan.Supported) { Assert.Skip("Übersprungen – keine Windows-Aufgabenplanung auf diesem System."); return; }
         var (w, _, root) = Ui.Open();
         var home = Path.Combine(root, "heim"); Directory.CreateDirectory(home); MainWindow.WorkflowHome = home;
         var calls = new List<string>(); var exists = true;
@@ -216,7 +216,7 @@ public class T0742_Gegenpruefung_Ui
     {
         var repo = AppContext.BaseDirectory; while (repo is not null && !File.Exists(Path.Combine(repo, "Trendo.sln"))) repo = Path.GetDirectoryName(repo);
         var exe = repo is null ? "" : Path.Combine(repo, "src", "Trendo.App", "bin", "Release", "net10.0", OperatingSystem.IsWindows() ? "TrendoOS.exe" : "TrendoOS");
-        if (!File.Exists(exe)) return; // nicht gebaut: dieser Nachweis braucht das gebaute Programm
+        if (!File.Exists(exe)) { Assert.Skip("Übersprungen – TrendoOS.exe ist nicht gebaut (dotnet build Trendo.sln -c Release)."); return; } // nicht gebaut: dieser Nachweis braucht das gebaute Programm
         var (w, _, root) = Ui.Open();
         var home = Path.Combine(root, "heim"); Directory.CreateDirectory(home); MainWindow.WorkflowHome = home;
         try
@@ -253,7 +253,7 @@ public class T0742_Gegenpruefung_Ui
     [AvaloniaFact(DisplayName = "T-0742 Gegenprüfung: Lässt sich die Windows-Aufgabe beim Löschen nicht entfernen, bleibt der Ablauf mit Hinweis bestehen")]
     public void Loeschen_ohne_entfernte_Aufgabe_behaelt_Ablauf()
     {
-        if (!WorkflowTaskPlan.Supported) return;
+        if (!WorkflowTaskPlan.Supported) { Assert.Skip("Übersprungen – keine Windows-Aufgabenplanung auf diesem System."); return; }
         var (w, _, root) = Ui.Open();
         var home = Path.Combine(root, "heim"); Directory.CreateDirectory(home); MainWindow.WorkflowHome = home;
         w.WfTasks.Run = a => a[0] == "/Delete" ? (1, "Zugriff verweigert") : (0, ""); // Aufgabe da, Entfernen scheitert
@@ -295,14 +295,14 @@ public class T0742_Echtlauf_Ui
     [AvaloniaFact(DisplayName = "T-0742 ECHT: Satz → Claude → Ablauf → Windows-Aufgabe startet TrendoOS.exe ohne Fenster → Datei entsteht (nur mit TRENDO_T0742_ECHT)")]
     public void Echtlauf()
     {
-        if (Beleg() is not { } dir) return;
+        if (Beleg() is not { } dir) { Assert.Skip("Übersprungen – Echtlauf nur mit TRENDO_T0742_ECHT=<Belegordner> und angemeldetem Claude Code."); return; }
         var log = new StringBuilder();
         void L(string s) => log.Append($"{DateTime.Now:HH:mm:ss} {s}\n");
         var claude = Environment.GetEnvironmentVariable("TRENDO_CLAUDE_EXE") is { Length: > 0 } e ? e : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "bin", "claude.exe");
-        if (!File.Exists(claude)) { File.WriteAllText(Path.Combine(dir, "BLOCKIERT.txt"), "Claude Code nicht gefunden.\n"); return; }
+        if (!File.Exists(claude)) { File.WriteAllText(Path.Combine(dir, "BLOCKIERT.txt"), "Claude Code nicht gefunden.\n"); Assert.Skip("BLOCKIERT – Claude Code nicht gefunden."); return; }
         var repo = AppContext.BaseDirectory; while (repo is not null && !File.Exists(Path.Combine(repo, "Trendo.sln"))) repo = Path.GetDirectoryName(repo.TrimEnd(Path.DirectorySeparatorChar));
         var exe = Path.Combine(repo!, "src", "Trendo.App", "bin", "Release", "net10.0", "TrendoOS.exe");
-        if (!File.Exists(exe)) { File.WriteAllText(Path.Combine(dir, "BLOCKIERT.txt"), "TrendoOS.exe nicht gebaut (dotnet build Trendo.sln -c Release).\n"); return; }
+        if (!File.Exists(exe)) { File.WriteAllText(Path.Combine(dir, "BLOCKIERT.txt"), "TrendoOS.exe nicht gebaut (dotnet build Trendo.sln -c Release).\n"); Assert.Skip("BLOCKIERT – TrendoOS.exe nicht gebaut."); return; }
         var (w, _, root) = Ui.Open();
         var home = Path.Combine(root, "heim"); Directory.CreateDirectory(home); MainWindow.WorkflowHome = home; MainWindow.WfTaskExe = exe;
         var oldRun = MainWindow.ClaudeRunOverride; var oldStatus = MainWindow.ClaudeStatusOverride;
@@ -327,7 +327,7 @@ public class T0742_Echtlauf_Ui
                 return MainWindow.ClaudeRunProcess(psi, d, line, ct);
             };
             var st = w.ClaudeCheck(fresh: true); WaitFor(() => st.IsCompleted, 30_000);
-            if (!st.Result.Ready) { File.WriteAllText(Path.Combine(dir, "BLOCKIERT.txt"), "Claude Code ist nicht über ein Abo angemeldet – Trendo meldet nie selbst an.\n"); return; }
+            if (!st.Result.Ready) { File.WriteAllText(Path.Combine(dir, "BLOCKIERT.txt"), "Claude Code ist nicht über ein Abo angemeldet – Trendo meldet nie selbst an.\n"); Assert.Skip("BLOCKIERT – Claude Code ist nicht über ein Abo angemeldet."); return; }
             w.KiBackendsOverride = () => [new ClaudeKiBackend(w, () => "")];
 
             // 1. Satz über die Oberfläche

@@ -297,7 +297,7 @@ public class MailRoundtripTests
     [Fact(DisplayName = "T-0689 Beleg: gebaute Nachricht für den Fremdleser schreiben (nur mit TRENDO_MAIL_BELEG)")]
     public void Write_beleg()
     {
-        if (Environment.GetEnvironmentVariable("TRENDO_MAIL_BELEG") is not { Length: > 0 } dir) return;
+        if (Environment.GetEnvironmentVariable("TRENDO_MAIL_BELEG") is not { Length: > 0 } dir) { Ueberspringen.Weil("Beleg nur mit TRENDO_MAIL_BELEG=<Belegordner>."); return; }
         Directory.CreateDirectory(dir);
         var bin = new byte[40_000]; new Random(4711).NextBytes(bin);
         var f1 = Path.Combine(dir, "Übersicht März – Größe.bin"); File.WriteAllBytes(f1, bin);

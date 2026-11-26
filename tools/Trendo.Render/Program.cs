@@ -358,9 +358,12 @@ if (Environment.GetEnvironmentVariable("TRENDO_KATALOG") is { Length: > 0 } repo
         // T-0687: Tests je Test; Programme der Programm-Hülle, die sich eine Quelldatei mit anderen teilen, nennen nur ihre eigenen Exportformate
         // (die Formate der ganzen Datei gehören nicht einem Programm); entfernte Studios gelten nicht mehr als geprüft.
         var sharedFile = e.Shell && full.SourceFiles.Sum(sf => System.Text.RegularExpressions.Regex.Matches(File.ReadAllText(Path.Combine(repo, sf)), @"new ProgramSpec\(").Count) > 1;
+        var katalogTestsOfFull = KatalogTestsOf(full);
+        // T-0777: Teststand aus Belegen – Register nur mit gültigem Rohbeleg, dazu die Ergebnisse des eingelesenen TRX-Laufs für genau diese Tests
+        full = full with { Status = Trendo.Core.Programs.ProgramCatalog.Status(req, full.Studio, repo, katalogTestsOfFull, outcomes) };
         full = full with
         {
-            Tests = KatalogTestsOf(full),
+            Tests = katalogTestsOfFull,
             Formats = sharedFile ? e.Formats.Distinct().OrderBy(x => x, StringComparer.Ordinal).ToList() : full.Formats,
             Status = Trendo.App.StudioCatalog.Removed.Contains(full.Studio) ? "Studio entfernt, nicht mehr angeboten – kein gültiger Prüfstand (Register: " + full.Status + ")" : full.Status,
         };

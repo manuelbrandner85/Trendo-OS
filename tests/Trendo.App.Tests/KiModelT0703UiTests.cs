@@ -120,7 +120,7 @@ public class KiModelT0703_Ui
     [AvaloniaFact(DisplayName = "T-0703 ECHT: „Was ist 17 + 25?“ an das automatisch gewählte Modell über das echte Ollama ergibt 42 (nur mit TRENDO_ECHT_KI)")]
     public async Task Real_auto_model_answers_42()
     {
-        if (Dir("TRENDO_ECHT_KI") is not { } dir) return;
+        if (Dir("TRENDO_ECHT_KI") is not { } dir) { Assert.Skip("Übersprungen – Echtlauf nur mit TRENDO_ECHT_KI=<Belegordner> und laufendem Ollama."); return; }
         if ((await OllamaTags()).Count == 0) { Assert.Skip("BLOCKIERT – Ollama läuft nicht auf 127.0.0.1:11434."); return; }
         var (w, _, _) = Ui.Open();
         try
@@ -158,7 +158,7 @@ public class KiModelT0703_Ui
     [AvaloniaFact(DisplayName = "T-0703 ECHT: Bildverstehens-Modell über die KI-Bibliothek wirklich laden (nur mit TRENDO_ECHT_VLM_PULL)")]
     public async Task Real_pull_vision_model()
     {
-        if (Dir("TRENDO_ECHT_VLM_PULL") is not { } dir) return;
+        if (Dir("TRENDO_ECHT_VLM_PULL") is not { } dir) { Assert.Skip("Übersprungen – Echtlauf nur mit TRENDO_ECHT_VLM_PULL=<Belegordner> und laufendem Ollama."); return; }
         if ((await OllamaTags()).Count == 0) { Assert.Skip("BLOCKIERT – Ollama läuft nicht auf 127.0.0.1:11434."); return; }
         var (w, _, _) = Ui.Open();
         var m = KiLibrary.Models.Single(x => x.Id == "qwen2.5vl-7b");
@@ -191,7 +191,7 @@ public class KiModelT0703_Ui
     [AvaloniaFact(DisplayName = "T-0703 ECHT: „Bilder erkennen“ beschreibt ein Foto lokal mit dem Bildverstehens-Modell (nur mit TRENDO_ECHT_VLM)")]
     public async Task Real_vision_describes_photo()
     {
-        if (Dir("TRENDO_ECHT_VLM") is not { } dir) return;
+        if (Dir("TRENDO_ECHT_VLM") is not { } dir) { Assert.Skip("Übersprungen – Echtlauf nur mit TRENDO_ECHT_VLM=<Belegordner> und laufendem Ollama."); return; }
         if (!(await OllamaTags()).Contains("qwen2.5vl:7b")) { Assert.Skip("BLOCKIERT – qwen2.5vl:7b ist in Ollama nicht vorhanden."); return; }
         var photo = Path.Combine(global::Trendo.Core.TempDir.SystemTemp, "trendo-tools-b", "yolox", "dog.jpg");
         if (!File.Exists(photo)) { Assert.Skip("Testfoto fehlt (%TEMP%/trendo-tools-b/yolox/dog.jpg)."); return; }

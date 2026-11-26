@@ -168,7 +168,7 @@ public class MeshEditTests
     public void Gltf_passes_validator()
     {
         var exe = EchtWerkzeuge.GltfValidator();
-        if (exe is null) return; // nicht eingerichtet – Beleg unter reports/T-0691 nennt den Stand
+        if (exe is null) { Ueberspringen.Weil("glTF-Validator ist auf diesem PC nicht eingerichtet."); return; } // nicht eingerichtet – Beleg unter reports/T-0691 nennt den Stand
         var dir = Tmp();
         try
         {

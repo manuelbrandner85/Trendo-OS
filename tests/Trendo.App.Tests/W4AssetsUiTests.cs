@@ -34,7 +34,8 @@ public class W4_X07_Ui
             var dir = await w.AssetFetch(list.OrderBy(h => h.Id).First());
             Assert.NotNull(dir); Assert.Single(Directory.GetFiles(dir!, "*.hdr"));
         }
-        catch (HttpRequestException) { } catch (TaskCanceledException) { }
-        w.Close();
+        catch (HttpRequestException e) { Assert.Skip("Übersprungen – keine Verbindung zu Poly Haven: " + e.Message); }
+        catch (TaskCanceledException) { Assert.Skip("Übersprungen – Poly Haven antwortet nicht rechtzeitig."); }
+        finally { w.Close(); }
     }
 }

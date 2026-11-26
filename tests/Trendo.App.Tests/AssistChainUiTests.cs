@@ -205,7 +205,7 @@ public class AssistChain_Ui
     [AvaloniaFact(DisplayName = "T-0707 ECHT: lokale KI (Ollama, bestes Modell nach T-0703) ändert in drei Programmen das offene Dokument, Datei auf der Platte, Rückgängig (nur mit TRENDO_ASSIST_ECHT)")]
     public async Task Real_local_ki()
     {
-        if (Beleg() is not { } beleg) return; // ohne Belegordner kein Echtlauf (normale Läufe haben kein Modell)
+        if (Beleg() is not { } beleg) { Assert.Skip("Übersprungen – Echtlauf nur mit TRENDO_ASSIST_ECHT=<Belegordner> und laufendem Ollama."); return; } // ohne Belegordner kein Echtlauf (normale Läufe haben kein Modell)
         var (w, _, _) = Ui.Open(); var dir = TempDir();
         MainWindow.AssistStepDelayMs = 0;
         var log = new StringBuilder();

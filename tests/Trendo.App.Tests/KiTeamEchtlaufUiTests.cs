@@ -21,7 +21,7 @@ public class KiTeamEchtlauf_Ui
     [AvaloniaFact(DisplayName = "T-0741 ECHT Ollama: KI-Team über die Oberfläche – Stopp, Zwischenstand, Fortsetzen (nur mit TRENDO_TEAM_ECHT)")]
     public void Real_ollama_team_stop_resume()
     {
-        if (Environment.GetEnvironmentVariable("TRENDO_TEAM_ECHT") is not { Length: > 0 } d) return; // ohne Belegordner kein Echtlauf
+        if (Environment.GetEnvironmentVariable("TRENDO_TEAM_ECHT") is not { Length: > 0 } d) { Assert.Skip("Übersprungen – Echtlauf nur mit TRENDO_TEAM_ECHT=<Belegordner> und laufendem Ollama."); return; } // ohne Belegordner kein Echtlauf
         var dir = Directory.CreateDirectory(d).FullName;
         var model = Environment.GetEnvironmentVariable("TRENDO_TEAM_MODELL") is { Length: > 0 } m ? m : "qwen3:14b";
         var (w, _, _) = Ui.Open();
