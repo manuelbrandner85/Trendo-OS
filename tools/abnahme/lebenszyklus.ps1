@@ -27,10 +27,41 @@ $realData = Join-Path ([Environment]::GetFolderPath('ApplicationData')) 'TrendoO
 $realTools = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'TrendoWerkzeuge'
 # Schutz (Korrektur M6): -Work darf weder ein echter Ordner sein noch darin noch darueber liegen (sonst wuerde z. B. -Work %LOCALAPPDATA%
 # die echte Installation einschliessen). Geprueft wird VOR dem Anlegen und vor jedem anderen Schritt.
+# Korrektur 2 (M-A): Verknuepfungen (Junction, symbolischer Link) in der Kette aufloesen, Netzordner ablehnen.
+function Resolve-Final([string]$p) {
+    $full = [IO.Path]::GetFullPath($p).TrimEnd('\', '/')
+    for ($hop = 0; $hop -lt 32; $hop++) {
+        $root = [IO.Path]::GetPathRoot($full)
+        $parts = @($full.Substring($root.Length).Split([char[]]@('\', '/'), [StringSplitOptions]::RemoveEmptyEntries))
+        $cur = $root.TrimEnd('\', '/'); $redir = $false
+        for ($i = 0; $i -lt $parts.Count; $i++) {
+            $next = $cur + '\' + $parts[$i]
+            $rest = @($parts | Select-Object -Skip ($i + 1))
+            $it = Get-Item -LiteralPath $next -Force -ErrorAction SilentlyContinue
+            if (-not $it) { $cur = (@($next) + $rest) -join '\'; break }
+            if ($it.LinkType -in @('Junction', 'SymbolicLink')) {
+                $t = @($it.Target)[0]; if (-not $t) { return $null }
+                if (-not [IO.Path]::IsPathRooted($t)) { $t = Join-Path (Split-Path $next -Parent) $t }
+                $full = (@([IO.Path]::GetFullPath($t).TrimEnd('\', '/')) + $rest) -join '\'; $redir = $true; break
+            }
+            $cur = $next
+        }
+        if (-not $redir) { return $cur.TrimEnd('\', '/') }
+    }
+    return $null
+}
+function Test-Network([string]$p) {
+    if ($p.StartsWith('\\') -or $p.StartsWith('//')) { return $true }
+    try { return ([IO.DriveInfo]::new([IO.Path]::GetPathRoot($p)).DriveType -eq [IO.DriveType]::Network) } catch { return $true }
+}
 function Test-WorkSafe([string]$w) {
-    $full = [IO.Path]::GetFullPath($w).TrimEnd('\', '/') + '\'
+    if (Test-Network $w) { return "Netzordner $w" }
+    $f = Resolve-Final $w
+    if (-not $f -or (Test-Network $f)) { return "nicht aufloesbar oder Netzordner: $w" }
+    $full = $f + '\'
     foreach ($r in @($realLocal, $realData, $realTools)) {
-        $rr = [IO.Path]::GetFullPath($r).TrimEnd('\', '/') + '\'
+        $rf = Resolve-Final $r; if (-not $rf) { $rf = $r }
+        $rr = $rf.TrimEnd('\', '/') + '\'
         if ($full.StartsWith($rr, [StringComparison]::OrdinalIgnoreCase) -or $rr.StartsWith($full, [StringComparison]::OrdinalIgnoreCase)) { return $r }
     }
     return $null

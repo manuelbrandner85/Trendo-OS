@@ -136,3 +136,34 @@ Reste nach dem Deinstallieren und Bewertung:
 **Weiter offen:** B2, B4, B5, B6, Registry-Sicht wegen MSIX-Container, Code-Signing (nicht bestanden/nicht geprüft). Der tiefe Vergleich (N1) dauert auf diesem PC wegen 297.000 Dateien im Werkzeugordner je Seite bis zu 30 Minuten.
 
 **Berührte Dateien (Korrekturrunde):** `.gitattributes`, `src/Trendo.Core/DataLocation.cs`, `src/Trendo.Core/Updates.cs`, `src/Trendo.App/TrendoUpdater.cs`, `src/Trendo.App/MainWindow.Updates.cs`, `tools/abnahme/lebenszyklus.ps1`, `tests/Trendo.Core.Tests/T0770KorrekturTests.cs`, `tests/Trendo.App.Tests/T0770KorrekturUiTests.cs`, `tests/Trendo.App.Tests/T0770UpdateQuelleTests.cs`, `installer/neuerungen/0.9.111.md`, `reports/T-0770/**`, `tasks/T-0770-abnahme.bericht.md`.
+
+## Korrekturrunde 2 (2. Prüfung: 2× MITTEL, 3× NIEDRIG)
+| Punkt | Erledigt | Test (Rot → Grün) |
+|---|---|---|
+| M-A Verknüpfungen | `DataLocation.FinalPath` löst jede vorhandene Verknüpfung (Junction, symbolischer Link) in der Kette auf (`ResolveLinkTarget(returnFinalTarget:true)`). `Instance()` vergleicht aufgelöste Pfade mit den aufgelösten echten Ordnern. `IsNetwork` lehnt UNC und verbundene Netzlaufwerke (`DriveType.Network`) ab, auch in `LocalSourceDir`. `Guard`/`RemovableTools`/`RemoveTools`/`RemoveUserData` lehnen eine Verknüpfung irgendwo in der Elternkette ab. `lebenszyklus.ps1`: `Resolve-Final` und `Test-Network` vor dem Vergleich. | `T0770Korrektur2Tests.Junction_to_real_folders_rejected`, `.Removable_tools_rejects_reparse_parent` – echte Junctions per `mklink /J` im Temp, danach nur die Verknüpfung entfernt. Verhaltens-Rot auf altem Code (`korrektur2/rot-core.log`). Skript-Probe mit echten Junctions: `korrektur2/m-a-skript-probe.log` |
+| M-B Sicherung ↔ LastGood | `BootGuard.BackupVersion` (Version aus dem Dateinamen der Sicherung) und `RollbackTarget`: Die Rückkehr geht immer zur tatsächlich gesicherten Version – beim Knopf und bei der automatischen Rückkehr nach drei Fehlstarts (`Program.cs`). Der Knopf zeigt die gesicherte Version. Weicht „zuletzt gut“ ab, erscheint der Hinweis „Als zuletzt gut gilt X, gesichert ist Y …“ (bei der automatischen Rückkehr im Absturzprotokoll). | `T0770Korrektur2UiTests.Rollback_uses_backed_up_version` (v1 gut, v2 frisch vor MarkOk gesichert, v3 läuft). Verhaltens-Rot: `korrektur2/rot-app.log` |
+| N-a Zwischendateien | `ReplaceBackup` räumt `*.nupkg.neu-*` vor jedem Sichern weg, auch wenn das Sichern danach scheitert. | `.Leftover_temp_files_cleaned`, Verhaltens-Rot in `rot-app.log` |
+| N-b start.json | Entscheidung: Fehlt `start.json` oder ist sie unlesbar, darf die Sicherung erneuert werden. Begründung: Ohne Zustand gibt es kein Wissen, dass die vorhandene Sicherung „gut“ ist. Blockieren hieße, für immer eine beliebig alte Sicherung zu behalten. Sobald es einen Zustand gibt, gilt wieder M5c. | `T0770Korrektur2Tests.Missing_or_broken_state_does_not_block`, Verhaltens-Rot in `rot-core.log` |
+| N-c Katalogpfade | `DependencyManager.ExpandPath`: `%LOCALAPPDATA%\TrendoWerkzeuge\…` zeigt in einer Prüf-Instanz auf `DataLocation.ToolsRootIn(instanz)`. Ohne Instanz bleibt es genau `Environment.ExpandEnvironmentVariables`. | `T0770Korrektur2PfadTests` – nur Kompilier-Rot (neue reine Funktion), Verhalten ohne Variable im Test verglichen |
+
+**Mitgefunden:**
+- Die Wächterprüfung `RechteKernFix12` (Schreibziele) schlug seit der ersten Korrekturrunde an, weil `TrendoUpdater.ReplaceBackup` Dateien schreibt. Damals lief die Klasse nicht mit.
+- Ich habe den Eintrag mit Begründung in die vorgesehene Ausnahmeliste aufgenommen („Sicherung der laufenden Version in Trendos Update-Ordner, Aufrufer BackupCurrent“), so wie `BackupCurrent` und `RollbackTo`.
+
+**Probe-Panne (ehrlich):**
+- Die Skript-Probe „Junction auf %LOCALAPPDATA% + `\abnahme`“ ergibt aufgelöst `%LOCALAPPDATA%\abnahme`. Das ist ein Geschwister der echten Ordner und nach der Regel erlaubt.
+- Das Skript startete dort einen Build; Setup oder Installation liefen nicht. Ich habe ihn per eigener PID beendet und den Ordner entfernt. Die echten Ordner waren danach unverändert (siehe Probe-Log).
+
+**Tests:**
+- Core 390/390, Filter: Dependencies_Core, ToolCheck_Core, QpdfDepTests, Model3DPreviewTests, PhotoScanTests, SPEC15_LiveStream, (No)VollpaketTests, RechteKern*, FreigabenKern, T0713FreigabenNachtrag, Paket44_Fachprogramme, T0203_ExternalApps, ConnectionsTests, HardwareCompatTests, KiModelT0703Tests, T0770*, DataLocation_And_Model, BootGuard, Update* (`korrektur2/gruen-core.log`).
+- App: `T0770Korrektur2UiTests` 2, `T0770KorrekturUiTests` 5, `T0770UpdateSicherungUiTests` 1, `T0770UpdateQuelleTests` 2, `UpdatesUiTests` 4, `UninstallPromptTests` 8, `RechteKernFix2Ui` 5 = 27/27 (`korrektur2/gruen-app-je-klasse.log`).
+- Kein Volltest. Kein neuer Lebenszyklus-Lauf (laut Vorgabe nicht nötig).
+
+**Nicht geprüft:** Ein echtes verbundenes Netzlaufwerk (keins vorhanden; `IsNetwork` ist nur über die UNC-Fälle getestet).
+
+**Berührte Dateien (Runde 2):**
+- `src/Trendo.Core/DataLocation.cs`, `src/Trendo.Core/Updates.cs`, `src/Trendo.Core/Dependencies.cs`
+- `src/Trendo.App/TrendoUpdater.cs`, `src/Trendo.App/MainWindow.Updates.cs`, `src/Trendo.App/Program.cs`
+- `tools/abnahme/lebenszyklus.ps1`
+- `tests/Trendo.Core.Tests/T0770Korrektur2Tests.cs`, `tests/Trendo.Core.Tests/T0770Korrektur2PfadTests.cs`, `tests/Trendo.App.Tests/T0770Korrektur2UiTests.cs`, `tests/Trendo.Core.Tests/RechteKernFix12Tests.cs` (ein Ausnahmeeintrag)
+- `installer/neuerungen/0.9.111.md`, `reports/T-0770/**`, `tasks/T-0770-abnahme.bericht.md`

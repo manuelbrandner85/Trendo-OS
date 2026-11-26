@@ -76,7 +76,12 @@ class Program
             {
                 var guard = new BootGuard(crashRoot);
                 var updater = new VelopackUpdater();
-                if (updater.IsInstalled && guard.Begin(updater.Current) is { } good && updater.RollbackTo(guard.BackupDir, good)) return 0;
+                // Korrektur 2 (M-B): nach drei Fehlstarts zur tatsächlich gesicherten Version, nicht blind zu „zuletzt gut“
+                if (updater.IsInstalled && guard.Begin(updater.Current) is not null && guard.RollbackTarget(updater.Current) is { Version: { } target } rt)
+                {
+                    if (rt.Note is { } note) try { CrashLog.Write(crashRoot, new InvalidOperationException(note), "Rückkehr zur alten Version"); } catch { }
+                    if (updater.RollbackTo(guard.BackupDir, target)) return 0;
+                }
             }
             catch (Exception ex) when (ex is IOException or InvalidOperationException or UnauthorizedAccessException) { try { CrashLog.Write(crashRoot, ex, "Rückkehr zur alten Version"); } catch { } }
         }

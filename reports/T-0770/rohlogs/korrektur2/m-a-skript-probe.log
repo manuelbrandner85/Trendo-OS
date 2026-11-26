@@ -1,0 +1,13 @@
+﻿Work=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_jprobe\auf-localappdata (Junction) -> Exit 90 nach 523 ms; Abbruch: -Work ist ein echter Ordner, liegt darin oder darueber (C:\Users\<user>\AppData\Local\TrendoOS). Nichts wurde gestartet oder beendet.; Unterordner angelegt: False
+Work=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_jprobe\auf-localappdata\abnahme (Junction) -> Exit -1 nach 204382 ms; 06:42:10 Abnahme T-0770 2026-11-26 06:42:10 Phase Alles, Paket-Id TrendoOSAbnahme, Arbeitsordner C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_jprobe\auf-localappdata\abnahme
+06:42:10 PowerShell 5.1.26100.9843, Windows 10.0.26340.0, CPU-Kerne 16, RAM 32 GB
+06:43:02 == Bauen: TrendoOSAbnahme 0.9.110-abnahme1 und 0.9.110-abnahme2 ==
+06:44:49 PASS  Release-Build 0.9.110-abnahme1 veroeffentlicht - 107 s
+06:45:07 PASS  Velopack-Paket 0.9.110-abnahme1 gepackt; Unterordner angelegt: True
+Work=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_jprobe\auf-trendoos (Junction) -> Exit 90 nach 541 ms; Abbruch: -Work ist ein echter Ordner, liegt darin oder darueber (C:\Users\<user>\AppData\Local\TrendoOS). Nichts wurde gestartet oder beendet.; Unterordner angelegt: True
+Work=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_jprobe\auf-trendoos\x (Junction) -> Exit 90 nach 548 ms; Abbruch: -Work ist ein echter Ordner, liegt darin oder darueber (C:\Users\<user>\AppData\Local\TrendoOS). Nichts wurde gestartet oder beendet.; Unterordner angelegt: True
+Junctions entfernt: True True; Ziele vorhanden: True True
+Bewertung: Junction auf %LOCALAPPDATA% selbst sowie Junctions auf/in %LOCALAPPDATA%\TrendoOS werden aufgeloest und abgelehnt (Exit 90).
+Die Probe "...\auf-localappdata\abnahme" loest auf %LOCALAPPDATA%\abnahme auf - ein Geschwister der echten Ordner, nach der Regel (gleich/darin/darueber) erlaubt.
+Das Skript hat dort einen Build begonnen (kein Setup, keine Installation). Ich habe den Lauf per eigener PID beendet und %LOCALAPPDATA%\abnahme (nur eigene Build-Dateien, keine Verknuepfungen darin) entfernt.
+Echte Ordner danach: %LOCALAPPDATA%\TrendoOS 4 Eintraege (Stand 23.11.2026 23:36), %APPDATA%\TrendoOS 49, %LOCALAPPDATA%\TrendoWerkzeuge 29 - unveraendert. Die "Unterordner angelegt: True" in den Zeilen 3-4 meint diesen Ordner aus Probe 2.

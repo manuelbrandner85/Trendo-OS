@@ -51,10 +51,43 @@ public sealed class BootGuard(string dataRoot)
 
     /// <summary>Korrektur T-0770 (M5c): Darf die Sicherung durch die laufende Version ersetzt werden? Nicht, solange diese Version noch
     /// nicht als gut gilt (vor <see cref="MarkOk"/>) und schon eine Sicherung da ist – sonst ginge die letzte gute Version verloren.</summary>
+    // Korrektur 2 (N-b): Fehlt start.json oder ist sie unlesbar, gibt es kein Wissen darüber, ob die vorhandene Sicherung „gut“ ist – dann
+    // wird nicht dauerhaft blockiert (sonst bliebe für immer eine beliebig alte Sicherung stehen), die Sicherung darf erneuert werden.
     public bool MayReplaceBackup(string currentVersion)
     {
         var hasBackup = Directory.Exists(BackupDir) && Directory.GetFiles(BackupDir, "*.nupkg").Length > 0;
-        return !hasBackup || Load() is { Ok: true } s && s.Version == currentVersion;
+        if (!hasBackup) return true;
+        var s = Load();
+        return s is null || s is { Ok: true } && s.Version == currentVersion;
+    }
+
+    /// <summary>Korrektur 2 (M-B): Version der tatsächlich vorhandenen Sicherung (aus dem Dateinamen „&lt;Id&gt;-&lt;Version&gt;-full.nupkg“), sonst null.</summary>
+    public string? BackupVersion
+    {
+        get
+        {
+            var files = Directory.Exists(BackupDir) ? Directory.GetFiles(BackupDir, "*-full.nupkg") : [];
+            return files.Length == 1 ? VersionOfPackage(Path.GetFileName(files[0])) : null;
+        }
+    }
+
+    /// <summary>„TrendoOS-0.9.110-abnahme1-full.nupkg“ → „0.9.110-abnahme1“: Version beginnt nach dem ersten „-“, dem eine Ziffer folgt.</summary>
+    public static string? VersionOfPackage(string fileName)
+    {
+        if (!fileName.EndsWith("-full.nupkg", StringComparison.OrdinalIgnoreCase)) return null;
+        var core = fileName[..^"-full.nupkg".Length];
+        for (var i = 0; i + 1 < core.Length; i++) if (core[i] == '-' && char.IsDigit(core[i + 1])) return core[(i + 1)..];
+        return null;
+    }
+
+    /// <summary>Korrektur 2 (M-B): Wohin geht die Rückkehr? Immer zur tatsächlich gesicherten Version (nie zur laufenden). Passt „zuletzt gut“
+    /// nicht dazu, sagt <c>Note</c> das ehrlich.</summary>
+    public (string? Version, string? Note) RollbackTarget(string currentVersion)
+    {
+        var bv = BackupVersion;
+        if (bv is null || bv == currentVersion) return (null, null);
+        var good = LastGood;
+        return (bv, good is not null && good != bv ? $"Als zuletzt gut gilt {good}, gesichert ist {bv}. Zurück geht nur zur gesicherten Version {bv}." : null);
     }
 
     /// <summary>Ordner für die Sicherung der laufenden Version vor einem Update.</summary>

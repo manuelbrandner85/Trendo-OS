@@ -51,8 +51,9 @@ public sealed class VelopackUpdater : ITrendoUpdater
     public static string? LocalSourceDir(string? value, string? instance)
     {
         var v = value?.Trim().Trim('"');
-        if (instance is null || string.IsNullOrEmpty(v) || !Path.IsPathFullyQualified(v) || v.StartsWith(@"\\", StringComparison.Ordinal) || v.StartsWith("//", StringComparison.Ordinal)) return null;
-        return Directory.Exists(v) ? Path.GetFullPath(v) : null;
+        if (instance is null || string.IsNullOrEmpty(v) || !Path.IsPathFullyQualified(v) || DataLocation.IsNetwork(v)) return null;
+        // Korrektur 2 (M-A): endgültigen Pfad nehmen – auch eine Verknüpfung auf einen Netzordner zählt als Netz
+        return Directory.Exists(v) && DataLocation.FinalPath(v) is { } fin && !DataLocation.IsNetwork(fin) ? fin : null;
     }
     public string? TestSource => LocalSourceDir();
     public string? BackupNote { get; private set; }
@@ -103,6 +104,8 @@ public sealed class VelopackUpdater : ITrendoUpdater
         string? tmp = null;
         try
         {
+            // Korrektur 2 (N-a): Zwischendateien eines abgebrochenen Laufs (Absturz, Strom weg) zuerst wegräumen
+            if (Directory.Exists(dir)) foreach (var rest in Directory.GetFiles(dir, "*.nupkg.neu-*")) File.Delete(rest);
             if (!File.Exists(source)) { note = "Das Paket der laufenden Version fehlt – die bisherige Sicherung bleibt."; return false; }
             Directory.CreateDirectory(dir);
             var need = new FileInfo(source).Length;

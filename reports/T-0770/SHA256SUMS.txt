@@ -8,6 +8,11 @@ d8de330b09ad55be4c8a6b93ba0cb2a0e9877e02a25c840ad355360dd317f9a1 *./rohlogs/korr
 841c169a77d3e16886ad366af0f32d73bac4787e960910dbe7ceb23d444c011a *./rohlogs/korrektur/rot-core-m4-verhalten.log
 819e3aacf422c8e2ea15ca11eeb36243a9774be24217cc50d0c308ec4fe631bb *./rohlogs/korrektur/rot-core.log
 e4fdeb3d3830118735e6c91c23ba5002c353cc5f6b3b7d659cb94e29a629908f *./rohlogs/korrektur/updates-testquelle.png
+45022c69eb9baa90dfe7b1545b94241c22b7871c382bf49ce62c468fbd168c53 *./rohlogs/korrektur2/gruen-app-je-klasse.log
+80495f3146972f6102480ccffd776cb367cc4af0f56a664c7b9fc5b8294a8fbf *./rohlogs/korrektur2/gruen-core.log
+23fc6608675b06018a63648353306fbce70a40e19167c4d87a9c2a29e59123e3 *./rohlogs/korrektur2/m-a-skript-probe.log
+338869532f8dbbb1e798620c111257c8fd3674f36714aafbc5a1bdff345934a2 *./rohlogs/korrektur2/rot-app.log
+82d45a89ca7c1c4fcd168251af6aebb362b67e8fad8f5d551ea7e88beb63a374 *./rohlogs/korrektur2/rot-core.log
 bf6fd30465b0b9882003f7a2523acd6ed76de4282e9238c985e34dd27a4bbb83 *./rohlogs/lauf1-vor-fix/abnahme.log
 0d027a236ef69f7e1035356a6bc6c6d4c9d1bf15eaacba696d832e9fead64095 *./rohlogs/lauf1-vor-fix/fenster-a.png
 89f599b44903ad7dc59eb06bde07fcaea8e4181d53502617787e2e0a1892986f *./rohlogs/lauf1-vor-fix/pakete-sha256.txt

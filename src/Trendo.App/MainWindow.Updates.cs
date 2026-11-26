@@ -201,13 +201,15 @@ public partial class MainWindow
         back.Children.Add(H("Sicherheitsnetz", 14));
         var good = Boot.LastGood;
         back.Children.Add(P($"Vor jedem Update sichert Trendo die laufende Version. Startet eine neue Version dreimal nicht richtig, kehrt Trendo von selbst zur letzten guten Version zurück{(good is null ? "." : $" (zuletzt gut: {good}).")}", Text, 12.5));
-        var hasBackup = Directory.Exists(Boot.BackupDir) && Directory.GetFiles(Boot.BackupDir, "*.nupkg").Length > 0;
-        if (hasBackup && good is not null && good != Updater.Current)
+        // Korrektur 2 (M-B): Die Rückkehr geht zur tatsächlich gesicherten Version (Dateiname der Sicherung), nicht blind zu „zuletzt gut“
+        var (target, mismatch) = Boot.RollbackTarget(Updater.Current);
+        if (target is not null)
         {
-            var rb = new Button { Name = "upd-rollback", Content = $"Zurück zu Version {good}", IsEnabled = CanManageSoftware };
+            var rb = new Button { Name = "upd-rollback", Content = $"Zurück zu Version {target}", IsEnabled = CanManageSoftware };
             if (!CanManageSoftware) ToolTip.SetTip(rb, Rbac.NurErwachseneSoftware);
-            rb.Click += (_, _) => RollbackNow(good);
+            rb.Click += (_, _) => RollbackNow(target);
             back.Children.Add(rb);
+            if (mismatch is not null) back.Children.Add(new TextBlock { Name = "upd-rollback-hinweis", Text = mismatch, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap });
         }
         sp.Children.Add(WCard(back));
         return Page("Trendo-Updates", sp);

@@ -51,6 +51,7 @@ public class RechteKernFix12
         ["ScreenGrab.SavePng"] = "Aufrufer: Bildschirmfoto mit festem Namen im Bilder-Ordner",
         ["TrendoUpdater.BackupCurrent"] = "Update (nur Erwachsene)",
         ["TrendoUpdater.RollbackTo"] = "Update (nur Erwachsene)",
+        ["TrendoUpdater.ReplaceBackup"] = "T-0770: Sicherung der laufenden Version in Trendos Update-Ordner (Boot.BackupDir), Aufrufer BackupCurrent – Update-Weg",
         ["VollpaketStart.RememberFromInstaller"] = "Einrichtung (nur Erwachsene)",
     };
 

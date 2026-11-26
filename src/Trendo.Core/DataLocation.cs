@@ -16,9 +16,59 @@ public static class DataLocation
     public static string? Instance(string? value = null)
     {
         var v = (value ?? Environment.GetEnvironmentVariable(InstanceVar))?.Trim().Trim('"');
-        if (string.IsNullOrEmpty(v) || !Path.IsPathFullyQualified(v) || v.StartsWith(@"\\", StringComparison.Ordinal) || v.StartsWith("//", StringComparison.Ordinal)) return null;
-        var full = Path.TrimEndingDirectorySeparator(Path.GetFullPath(v));
-        return RealRoots().Any(r => Related(full, r)) ? null : full;
+        if (string.IsNullOrEmpty(v) || !Path.IsPathFullyQualified(v) || IsNetwork(v)) return null;
+        // Korrektur 2 (M-A): Verknüpfungen (Junction, symbolischer Link) auflösen – sonst ginge eine Junction auf %LOCALAPPDATA% durch
+        var full = FinalPath(v);
+        if (full is null || IsNetwork(full)) return null;
+        return RealRoots().Any(r => Related(full, FinalPath(r) ?? r)) ? null : full;
+    }
+
+    /// <summary>Netzpfad (\\server, //server) oder ein auf einen Laufwerksbuchstaben verbundener Netzordner.</summary>
+    public static bool IsNetwork(string path)
+    {
+        if (path.StartsWith(@"\\", StringComparison.Ordinal) || path.StartsWith("//", StringComparison.Ordinal)) return true;
+        if (!OperatingSystem.IsWindows() || Path.GetPathRoot(path) is not { Length: > 0 } root) return false;
+        try { return new DriveInfo(root).DriveType == DriveType.Network; }
+        catch (Exception e) when (e is ArgumentException or IOException or UnauthorizedAccessException) { return true; } // im Zweifel ablehnen
+    }
+
+    /// <summary>Endgültiger Pfad: jeder vorhandene Ordner der Kette wird aufgelöst, wenn er eine Verknüpfung ist (Junction, symbolischer Link);
+    /// nicht vorhandene Teile werden angehängt. Null, wenn die Kette nicht auflösbar ist (z. B. Schleife).</summary>
+    public static string? FinalPath(string path)
+    {
+        var full = Path.TrimEndingDirectorySeparator(Path.GetFullPath(path));
+        for (var hop = 0; hop < 32; hop++)
+        {
+            var root = Path.GetPathRoot(full) ?? "";
+            var parts = full[root.Length..].Split([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar], StringSplitOptions.RemoveEmptyEntries);
+            var cur = root; var redirected = false;
+            for (var i = 0; i < parts.Length; i++)
+            {
+                var next = Path.Combine(cur, parts[i]);
+                FileSystemInfo info = new DirectoryInfo(next);
+                if (!info.Exists) { info = new FileInfo(next); if (!info.Exists) { cur = Path.Combine([next, .. parts[(i + 1)..]]); break; } }
+                if (info.LinkTarget is not null)
+                {
+                    FileSystemInfo? target;
+                    try { target = info.ResolveLinkTarget(returnFinalTarget: true); }
+                    catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return null; }
+                    if (target is null) return null;
+                    full = Path.TrimEndingDirectorySeparator(Path.Combine([Path.GetFullPath(target.FullName), .. parts[(i + 1)..]]));
+                    redirected = true; break;
+                }
+                cur = next;
+            }
+            if (!redirected) return Path.TrimEndingDirectorySeparator(cur);
+        }
+        return null;
+    }
+
+    /// <summary>Liegt in der Kette über <paramref name="full"/> (ohne Laufwerk) eine Verknüpfung?</summary>
+    static bool ReparseInChain(string full)
+    {
+        for (var d = new DirectoryInfo(full).Parent; d is not null && d.Parent is not null; d = d.Parent)
+            if (d.Exists && (d.Attributes.HasFlag(FileAttributes.ReparsePoint) || d.LinkTarget is not null)) return true;
+        return false;
     }
 
     /// <summary>Die echten Ordner einer normalen Installation (ohne Prüf-Instanz).</summary>
@@ -107,6 +157,7 @@ public static class DataLocation
         if (!nameOk(Path.GetFileName(full))) return null;
         var dir = new DirectoryInfo(full);
         if (!dir.Exists || dir.Attributes.HasFlag(FileAttributes.ReparsePoint) || dir.LinkTarget is not null) return null;
+        if (ReparseInChain(full)) return null; // Korrektur 2 (M-A): auch keine Verknüpfung in der Elternkette
         var forbidden = new[] { Environment.SpecialFolder.UserProfile, Environment.SpecialFolder.ApplicationData, Environment.SpecialFolder.LocalApplicationData,
             Environment.SpecialFolder.MyDocuments, Environment.SpecialFolder.Desktop, Environment.SpecialFolder.Windows, Environment.SpecialFolder.ProgramFiles }
             .Select(Environment.GetFolderPath).Where(p => p.Length > 0 && Path.IsPathFullyQualified(p)).Select(Norm);
