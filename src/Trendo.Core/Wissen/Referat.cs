@@ -158,45 +158,57 @@ public static partial class ReferatKit
     /// <summary>„(ebd.)“, „(ebd., S. 4)“, „(a. a. O., S. 5)“ – nur zulässig, wenn davor ein echter Verweis steht.</summary>
     [GeneratedRegex(@"\(\s*(?:ebd\.|ebenda|a\.\s*a\.\s*O\.)(?:\s*,?\s*(?:S\.|p\.)?\s*\d+(?:\s*[–\-]\s*\d+)?)?\s*\)")] private static partial Regex IbidRx();
 
-    /// <summary>Wörter vor einer Jahreszahl, die keine Namen sind („(Stand, 2021)“, „(Juli 2021)“, „(Deutschland, 2023)“, „(Olympia 2024)“) – kein Fehlalarm.</summary>
+    /// <summary>Zeitwörter vor einer Jahreszahl („(Stand 2021)“, „(Juli 2021)“, „Im Sommer (2019)“). T-0780 (4. Gegenprüfung): unterdrücken NUR den Hinweis bei losen Formen –
+    /// eine strenge Belegform (Komma, Seite, „et al.“, „vgl.“ …) wird trotzdem gesperrt. Orte und Ereignisse („(Berlin 2019)“, „(Brexit 2016)“) bleiben ein Hinweis.</summary>
     static readonly HashSet<string> NotNames = new(StringComparer.OrdinalIgnoreCase)
     {
         "Stand", "Seit", "Ab", "Bis", "Ende", "Anfang", "Mitte", "Jahr", "Jahre", "Frühjahr", "Sommer", "Herbst", "Winter", "Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August",
         "September", "Oktober", "November", "Dezember", "Ca", "Etwa", "Rund", "Um", "Im", "In", "Nach", "Vor", "Gegründet", "Geboren", "Gestorben", "Erschienen", "Ausgabe", "Auflage", "Version", "Stichtag", "Quartal",
-        // 3. Gegenprüfung (niedrig): häufige Orte und Ereignisse in Klammern mit Jahr
-        "Deutschland", "Österreich", "Schweiz", "Europa", "EU", "USA", "China", "Frankreich", "Italien", "Spanien", "Polen", "Russland", "Japan", "Bayern", "Berlin", "Wien", "Hamburg", "München",
-        "Olympia", "WM", "EM", "Corona", "Covid", "Census", "Zensus", "Wahl", "Bundestagswahl",
     };
 
     public sealed record CiteHit(string Text, bool Blocks);
 
-    /// <summary>Belege im Text, die nicht als Verweis <c>[@kennung]</c> geschrieben sind. <see cref="CiteHit.Blocks"/>: eindeutige Belegform (KI-Text wird abgelehnt), sonst Hinweis.
-    /// Mit <paramref name="sources"/>: „(Name 2021)“ ist gesperrt, wenn der Name zu keiner Quelle passt, sonst nur Hinweis „als [@kennung] setzen“. Ehrlich: eine Erkennung über Muster.</summary>
+    /// <summary>Belege im Text, die nicht als Verweis <c>[@kennung]</c> geschrieben sind (T-0780, 4. Gegenprüfung – eine Regel):
+    /// strenge Formen (Klammer mit Jahr und Komma, Seitenangabe, „et al.“, „&amp;“/„und“, Buchstabe am Jahr, „vgl.“, „ebd.“/„a. a. O.“ ohne Verweis davor, Fußnote mit Ort oder Verlag)
+    /// sind immer gesperrt (<see cref="CiteHit.Blocks"/>) – ohne Ausnahmeliste. Lose Formen „(Wort Jahr)“ und „Wort (Jahr)“ sind nur ein Hinweis; gesperrt nur, wenn das Wort der ganze Nachname
+    /// einer vorhandenen Quelle ist, das Jahr aber zu keiner Quelle dieses Namens passt. Die Liste der Zeitwörter unterdrückt nur den Hinweis. Ehrlich: eine Erkennung über Muster –
+    /// lose Klammern mit Jahr werden markiert, nicht sicher als Beleg erkannt.</summary>
     public static List<CiteHit> CitationHits(string text, IReadOnlyList<CiteKit.Source>? sources = null)
     {
         var raw = text ?? "";
         var t = CiteRx().Replace(raw, m => new string(' ', m.Length)); // gleiche Länge – Stellen bleiben vergleichbar
         var hits = new List<CiteHit>();
         bool Known(string v) => hits.Any(h => h.Text.Contains(v, StringComparison.Ordinal) || v.Contains(h.Text, StringComparison.Ordinal));
-        string FirstWord(string v) => Regex.Match(v, @"\p{L}[\p{L}'’\-]*").Value;
-        foreach (Match m in StrictParenRx().Matches(t)) { var w = FirstWord(m.Value); if (w is "vgl" or "siehe" || !NotNames.Contains(w)) hits.Add(new(m.Value, true)); }
+        // streng: immer gesperrt
+        foreach (Match m in StrictParenRx().Matches(t)) hits.Add(new(m.Value, true));
         foreach (Match m in NoYearRx().Matches(t)) if (!Known(m.Value)) hits.Add(new(m.Value, true));
         foreach (Match m in VglRx().Matches(t)) if (!Known(m.Value)) hits.Add(new(m.Value.Trim(), true));
-        foreach (Match m in FootRx().Matches(t)) if (!Known(m.Value) && !NotNames.Contains(FirstWord(m.Value))) hits.Add(new(m.Value, true));
-        foreach (Match m in NarrativeStrictRx().Matches(t)) if (!Known(m.Value.Trim()) && !NotNames.Contains(FirstWord(m.Value))) hits.Add(new(m.Value.Trim(), true));
+        foreach (Match m in FootRx().Matches(t)) if (!Known(m.Value)) hits.Add(new(m.Value, true));
+        foreach (Match m in NarrativeStrictRx().Matches(t)) if (!Known(m.Value.Trim())) hits.Add(new(m.Value.Trim(), true));
         foreach (Match m in IbidRx().Matches(t)) if (!CiteRx().IsMatch(raw[..m.Index])) hits.Add(new(m.Value, true)); // „ebd.“ ohne echten Verweis davor
-        foreach (Match m in LooseParenRx().Matches(t))
+        // lose: Hinweis – außer Nachname einer Quelle mit falschem Jahr
+        foreach (Match m in LooseParenRx().Matches(t)) Loose(m.Value, m.Groups["n"].Value, Regex.Match(m.Value, @"\d{3,4}\s*\)$").Value.TrimEnd(')', ' '));
+        foreach (Match m in NarrativeRx().Matches(t))
         {
-            var n = m.Groups["n"].Value.Trim().TrimEnd('.');
-            if (Known(m.Value) || NotNames.Contains(n)) continue;
-            var lower = char.IsLower(n[0]);
-            var matchesSource = sources?.Any(s => s.Authors.Contains(n, StringComparison.OrdinalIgnoreCase)) ?? true;
-            hits.Add(new(m.Value, sources is not null && !lower && !matchesSource));
+            var v = m.Value.Trim(); var cut = v.IndexOf('(');
+            Loose(v, v[..cut], Regex.Match(v[cut..], @"\d{3,4}").Value);
         }
-        foreach (Match m in NarrativeRx().Matches(t)) if (!Known(m.Value) && !NotNames.Contains(FirstWord(m.Value))) hits.Add(new(m.Value.Trim(), false));
         foreach (Match m in FootLineRx().Matches(t)) if (!Known(m.Value.Trim())) hits.Add(new(m.Value.Trim(), false));
         return hits;
+
+        void Loose(string value, string name, string year)
+        {
+            var n = Bare(name);
+            if (Known(value) || n.Length == 0 || NotNames.Contains(n)) return;
+            var same = sources?.Where(s => Surnames(s).Contains(n, StringComparer.OrdinalIgnoreCase)).ToList() ?? [];
+            hits.Add(new(value, same.Count > 0 && same.All(s => Regex.Match(s.Year ?? "", @"\d{3,4}").Value != year)));
+        }
     }
+
+    /// <summary>Name ohne Namenszusatz („von“, „van“ …) und Schlusspunkt – verglichen wird der ganze Nachname.</summary>
+    static string Bare(string name) => Regex.Replace(name.Trim().TrimEnd('.').Trim(), @"^(?:(?:van|von|de|der|den|du|la|le|zu|ten|ter|da|di)\s+)+", "", RegexOptions.IgnoreCase);
+    /// <summary>Nachnamen einer Quelle („Muster, Erika; Beispiel, Max“ → Muster, Beispiel; eine Einrichtung ohne Komma ganz).</summary>
+    static IEnumerable<string> Surnames(CiteKit.Source s) => (s.Authors ?? "").Split(';').Select(a => Bare(a.Split(',')[0])).Where(a => a.Length > 0);
 
     /// <summary>Eindeutige Belegformen (für KI-Texte gesperrt); mit <paramref name="sources"/> zusätzlich „(Name Jahr)“ ohne passende Quelle.</summary>
     public static List<string> FreeCitations(string text, IReadOnlyList<CiteKit.Source>? sources = null) => [.. CitationHits(text, sources).Where(h => h.Blocks).Select(h => h.Text).Distinct()];

@@ -371,17 +371,27 @@ public partial class MainWindow
         return BridgeAfterStep(guarded) is { } fail ? fail.Text.Replace("Zurückgenommen: ", "") : null;
     }
 
+    /// <summary>T-0780 (4. Gegenprüfung): die eine Prüfung eines KI-Ergebnisses gegen den Stand davor – für jedes Programm mit KiLocked oder KiCheck und auf jedem Weg
+    /// (MCP-Brücke, Plan im Chat, Claudes .tdoc im Projektordner; später auch Brief und Code). null = in Ordnung, sonst der Grund.</summary>
+    static string? KiDataProblem(ProgramSpec spec, JsonObject before, JsonObject after)
+    {
+        if (spec.KiLocked.Count > 0 && LockedValues(before, spec.KiLocked) != LockedValues(after, spec.KiLocked))
+            return $"„{string.Join("“, „", spec.KiLocked)}“ legt die Person selbst fest – Claude ändert das nicht.";
+        return spec.KiCheck?.Invoke(before, after);
+    }
+
+    /// <summary>T-0780 (4. Gegenprüfung): Wächter für Daten, die nicht über einen Schritt in Trendo kommen (Claudes .tdoc): Vorab-Ablehnung, dann <see cref="KiDataProblem"/>.</summary>
+    string? KiDataGuard(string page, JsonObject before, JsonObject after) =>
+        !Programs.TryGetValue(page, out var spec) || spec.KiLocked.Count == 0 && spec.KiCheck is null && KiStepPreReject(page) is null ? null
+        : KiStepPreReject(page) ?? KiDataProblem(spec, before, after);
+
     McpResult? BridgeAfterStep(List<(ProgramSpec Spec, ProgramDocument Doc, ProgramDocument.Mark Before)> guarded)
     {
         foreach (var (spec, doc, before) in guarded)
         {
             var now = doc.Data.ToJsonString();
             if (now == before.Data) continue;
-            var old = JsonNode.Parse(before.Data)!.AsObject();
-            string? why = null;
-            if (spec.KiLocked.Count > 0 && LockedValues(old, spec.KiLocked) != LockedValues(doc.Data, spec.KiLocked))
-                why = $"„{string.Join("“, „", spec.KiLocked)}“ legt die Person selbst fest – Claude ändert das nicht.";
-            why ??= spec.KiCheck?.Invoke(old, doc.Data);
+            var why = KiDataProblem(spec, JsonNode.Parse(before.Data)!.AsObject(), doc.Data);
             if (why is null) continue;
             doc.Rollback(before);
             if (_claudeChanges.TryGetValue(spec.Key, out var c) && c.DocId == doc.Id && c.Before.Data == before.Data) _claudeChanges.Remove(spec.Key);

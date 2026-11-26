@@ -201,6 +201,75 @@ public class T0780Gegenpruefung_Ui
         finally { MainWindow.ClaudeStatusOverride = null; MainWindow.ClaudeRunOverride = null; MainWindow.ClaudeStepDelay = 350; w.Close(); }
     }
 
+    [AvaloniaFact(DisplayName = "T-0780 (4. Gegenprüfung): Claude schreibt die Studio-.tdoc im Projektordner – neue Quelle oder erfundener Beleg wird nicht übernommen, die Datei steht wieder auf dem alten Stand, Claude bekommt die Meldung, Protokolleintrag; erlaubte Änderung wird übernommen")]
+    public async Task Tdoc_sync_guarded()
+    {
+        var (w, _, _) = Ui.Open();
+        var mode = 0; var prompts = new List<string>(); string? tdoc = null;
+        var liveDelay = MainWindow.LiveStepDelay; MainWindow.LiveStepDelay = 0;
+        MainWindow.ClaudeStatusOverride = () => Task.FromResult(new ClaudeCode.Status(true, true, "claude.ai", "max", @"C:\x\claude.exe"));
+        MainWindow.ClaudeStepDelay = 0;
+        MainWindow.ClaudeRunOverride = (args, dir, line, _) =>
+        {
+            static string J(object o) => System.Text.Json.JsonSerializer.Serialize(o);
+            prompts.Add(string.Join("\n", args));
+            tdoc = Directory.GetFiles(dir, "*.tdoc").Single(); // so schreibt Claude: die Datei im Projektordner direkt
+            var o = JsonNode.Parse(File.ReadAllText(tdoc))!.AsObject(); var data = o["data"]!.AsObject();
+            if (mode == 1) data["sources"]!.AsArray().Add(new JsonObject { ["id"] = "q-neu", ["kind"] = "buch", ["authors"] = "Erfunden, Hans", ["title"] = "Erfunden", ["year"] = "2021" });
+            if (mode == 2) data["sections"]![3]!["text"] = "Mulch spart 70 % Wasser (vgl. Erfunden 2021: 5).";
+            if (mode == 3) data["sections"]![3]!["text"] = "Mulch hält den Boden feucht [@q-buch, S. 20].";
+            if (mode != 0)
+            {
+                line(J(new { type = "assistant", message = new { content = new object[] { new { type = "tool_use", name = "Write", input = new { file_path = tdoc, content = "…" } } } } }));
+                File.WriteAllText(tdoc, o.ToJsonString());
+                line(J(new { type = "user", message = new { content = new object[] { new { type = "tool_result", content = "ok", is_error = false } } } }));
+            }
+            mode = 0; // der Prüfdurchgang danach ändert nichts mehr
+            line(J(new { type = "result", subtype = "success", is_error = false, result = "Fertig.\n" + TrendoMcp.FinishMark, session_id = "s1", num_turns = 1 }));
+            return Task.FromResult(0);
+        };
+        try
+        {
+            await Pump(w.ClaudeCheck(true));
+            w.Width = 1600; w.Height = 1100; w.ProgramSetLevel(UserLevel.Profi);
+            w.Show(MainWindow.RefKey); Settle(); RealClick(w, w.Find<Button>("prog-tpl-beispiel")); Settle();
+            var d = w.ProgramActive(MainWindow.RefKey)!; d.Set("subtitle", "Eigene Arbeit", "Untertitel");
+            w.ClaudeDockToggle(MainWindow.RefStudio); Settle();
+            string DiskData() => JsonNode.Parse(File.ReadAllText(tdoc!))!["data"]!.ToJsonString();
+            foreach (var (m, expect) in new[] { (1, "sources"), (2, "Erfunden 2021") })
+            {
+                var before = w.ProgramActive(MainWindow.RefKey)!.Data.ToJsonString(); var audits = w.Core.Audit.ReadAll().Count(a => a.Action == "claude.tdoc.zurueckgewiesen");
+                mode = m; prompts.Clear();
+                await Pump(w.ClaudeChatSend("Ergänze den Abschnitt Mulchen"));
+                for (var i = 0; i < 50; i++) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); await Task.Delay(10); }
+                Assert.Equal(before, w.ProgramActive(MainWindow.RefKey)!.Data.ToJsonString()); // nichts übernommen
+                Assert.Equal(before, DiskData()); // .tdoc wieder auf dem alten Stand
+                Assert.True(w.Core.Audit.ReadAll().Count(a => a.Action == "claude.tdoc.zurueckgewiesen") > audits);
+                Assert.True(prompts.Count >= 2, "Claude bekam keine Meldung"); Assert.Contains("nicht übernommen", prompts[1]); Assert.Contains(expect, prompts[1]);
+                Assert.Contains(w.ClaudeChatCurrent()!.Messages, x => x.Role == "check" && x.Text.Contains("nicht übernommen") && x.Text.Contains(expect));
+            }
+            mode = 3;
+            await Pump(w.ClaudeChatSend("Ergänze den Abschnitt Mulchen mit meinem Gartenbuch"));
+            for (var i = 0; i < 50; i++) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); await Task.Delay(10); }
+            Assert.Equal("Mulch hält den Boden feucht [@q-buch, S. 20].", MainWindow.RefSections(w.ProgramActive(MainWindow.RefKey)!)[3].Text);
+        }
+        finally { MainWindow.ClaudeStatusOverride = null; MainWindow.ClaudeRunOverride = null; MainWindow.ClaudeStepDelay = 350; MainWindow.LiveStepDelay = liveDelay; w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0780 (4. Gegenprüfung): Hilfe des Studios verspricht nicht mehr, als die Prüfung hält – nur echte Quellen im Verzeichnis, eindeutige Formen gesperrt, lose Klammern nur markiert")]
+    public void Help_is_honest()
+    {
+        var (w, _, _) = Ui.Open();
+        try
+        {
+            var help = MainWindow.Programs[MainWindow.RefKey].Help;
+            Assert.Contains("Literaturverzeichnis enthält nur Quellen, die du selbst angelegt hast", help);
+            Assert.Contains("Eindeutige Belegformen ohne Quelle", help);
+            Assert.Contains("nur als Hinweis", help); Assert.Contains("nicht sicher", help);
+        }
+        finally { w.Close(); }
+    }
+
     [AvaloniaFact(DisplayName = "T-0780 M2 (2. Gegenprüfung): unechtes PNG mit gültigem Kopf – Import verwirft und meldet es, PNG-Export und Zeichenfläche laufen weiter")]
     public void Fake_png_does_not_break()
     {

@@ -11,3 +11,5 @@ Benutzerpfade sind durch `C:\Users\<user>` ersetzt, der Rechnername durch `<pc>`
 | `ki/echtlauf-lokale-ki.md`, `ki/rohlog-testlauf.txt` | Echtlauf mit lokaler KI (Ollama, qwen3:14b) über die Oberfläche: Gliederung, Abschnitt, Ereignisse aus Text; Rückgängig |
 | `rot-alter-stand.txt` | Rot-Lauf: neue Testdateien gegen main 184fcbbfc – übersetzen nicht (Typen fehlen) |
 | `core-klassen.txt` | Ergebnis der betroffenen Core-Testklassen (Endstand) |
+| `rot-gegenpruefung-4.txt` | 4. Gegenprüfung: Rot-Lauf gegen 3817e61b0 (Core 31 Fälle rot, App `Tdoc_sync_guarded` und `Help_is_honest` rot) |
+| `core-klassen-g4.txt`, `app-klassen-g4.txt` | 4. Gegenprüfung: betroffene Core-Klassen und 23 App-Klassen (Endstand) |

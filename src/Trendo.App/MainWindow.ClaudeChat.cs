@@ -570,7 +570,15 @@ public partial class MainWindow
         // Echt testen, bis es läuft: Trendo prüft mit den Fachregeln, startet das Ergebnis (Browser unsichtbar, Syntaxprüfung) und zeigt Claude ein Bildschirmfoto –
         // Befunde gehen automatisch zurück an Claude, höchstens bis Durchgang ClaudeProbe.Rounds
         var rounds = ClaudeRounds;
-        if (bridged && error is null && !finished && round + 1 < rounds && !_core.Approvals.Halted)
+        // T-0780 (4. Gegenprüfung): abgelehnte .tdoc-Änderung → Claude bekommt die Meldung (als Prüfdurchgang), sonst sieht sie die Person im Chat
+        var refused = _tdocRefused.Remove(dock.Page, out var rl) ? string.Join("\n", rl) + "\nArbeite ohne diese Änderung weiter – was die Person selbst festlegt, änderst du nicht." : null;
+        if (refused is not null && round + 1 < rounds && !_core.Approvals.Halted)
+        {
+            _core.Audit.Append(Principal.LocalOwner.Name, "claude.chat.pruefung", $"tdoc abgelehnt · Durchgang {round + 1}");
+            await ClaudeChatSend(dock, refused, check: true, round: round + 1);
+        }
+        else if (refused is not null) { chats.Add(studio, chat.Id, new ClaudeChats.Msg("check", refused, [], DateTimeOffset.Now)); RenderChat(dock); }
+        else if (bridged && error is null && !finished && round + 1 < rounds && !_core.Approvals.Halted)
         {
             _core.Audit.Append(Principal.LocalOwner.Name, "claude.chat.weiter", $"Durchgang {round + 2}");
             await ClaudeChatSend(dock, TrendoMcp.ContinuePrompt, check: true, round: round + 1);
@@ -815,6 +823,33 @@ public partial class MainWindow
     /// ist das keine „Änderung von außen“ – sonst würde das nächste Speichern nachfragen.</summary>
     static void ClaudeDocSeen(ProgramDocument doc, string file) { if (doc.Path is { } p && ProgramDocument.SameFile(p, file)) doc.AcceptDisk(); }
 
+    /// <summary>T-0780 (4. Gegenprüfung): abgelehnte .tdoc-Änderungen je Programm – gehen nach der Antwort als Prüfmeldung an Claude.</summary>
+    readonly Dictionary<string, List<string>> _tdocRefused = [];
+
+    /// <summary>T-0780 (4. Gegenprüfung): Claudes .tdoc vor dem Übernehmen gegen den aktuellen Stand prüfen (KiLocked, KiCheck, Vorab-Ablehnung). Bei Verstoß wird nichts übernommen,
+    /// die Datei steht wieder auf dem alten Stand, Claude bekommt die Meldung und das Protokoll einen Eintrag. true = abgelehnt.</summary>
+    bool ClaudeTdocRefused(ClaudeDock dock, ProgramDocument doc, string file, string target, System.Text.Json.Nodes.JsonObject fresh)
+    {
+        var before = System.Text.Json.Nodes.JsonNode.Parse(target)!.AsObject();
+        if (KiDataGuard(dock.Page, before, fresh) is not { } why) return false;
+        var restored = true;
+        try
+        {
+            var root = System.Text.Json.Nodes.JsonNode.Parse(doc.Serialize())!.AsObject(); root["data"] = before; // Endstand, auch wenn gerade live eingespielt wird
+            AtomicFile.WriteAllText(file, root.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+            ClaudeDocSeen(doc, file);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { restored = false; }
+        var name = Path.GetFileName(file);
+        var text = $"Trendo hat deine Änderung an „{name}“ nicht übernommen: {why}" + (restored ? $" „{name}“ steht wieder auf dem Stand davor." : "");
+        if (!_tdocRefused.TryGetValue(dock.Page, out var list)) _tdocRefused[dock.Page] = list = [];
+        if (!list.Contains(text)) list.Add(text);
+        _claudeMsg = text;
+        _core.Audit.Append(Principal.LocalOwner.Name, "claude.tdoc.zurueckgewiesen", $"{dock.Page} {why}");
+        if (!dock.Max) Show(CurrentView);
+        return true;
+    }
+
     void ClaudeSyncProgram(ClaudeDock dock, string file)
     {
         if (ProgramActive(dock.Page) is not { } doc) return;
@@ -822,7 +857,9 @@ public partial class MainWindow
         {
             var fresh = ProgramDocument.Load(file);
             ClaudeDocSeen(doc, file);
-            if (fresh.Data.ToJsonString() == LiveTarget(dock.Page, doc)) return; // schon übernommen (oder wird gerade live eingespielt)
+            var target = LiveTarget(dock.Page, doc);
+            if (fresh.Data.ToJsonString() == target) return; // schon übernommen (oder wird gerade live eingespielt)
+            if (ClaudeTdocRefused(dock, doc, file, target, fresh.Data)) return; // T-0780 (4. Gegenprüfung): derselbe Wächter wie Brücke und Plan
             ClaudeApplyLive(dock, doc, fresh.Data); // live – viele neue Teile erscheinen nacheinander
         }
         catch (InvalidDataException e) { _claudeMsg = "Claudes Änderung ließ sich nicht übernehmen: " + Trendo.Core.FriendlyError.Say(e); }

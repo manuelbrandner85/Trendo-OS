@@ -408,7 +408,9 @@ public partial class MainWindow
         Status = d => { var f = ReferatKit.Check(d.Data); var bl = f.Count(x => x.Blocks); return $"{RefSections(d).Count} Abschnitte · {ReferatKit.Words(d.Data)} Wörter · {RefSources(d).Count} Quellen · {CiteKit.Styles.First(s => s.Id == ReferatKit.Style(d.Data)).Label}" + (bl > 0 ? $" · ✗ {bl} Verweis(e) ohne Quelle" : f.Count > 0 ? $" · ⚠ {f.Count} Hinweise" : " · ✓ bereit"); },
         Help = "Oben die Schritte: Thema (Deckblatt), Gliederung, Text, Literatur, Folien. Links steht die Gliederung – Abschnitte anklicken, mit der Maus an eine andere Stelle ziehen, Rechtsklick für mehr. "
              + "Zitieren: unter „Text“ eine Quelle anklicken, dann steht ein Verweis wie [@q-buch, S. 12] im Text; beim Ausgeben wird daraus der Kurzbeleg im gewählten Stil, und das Literaturverzeichnis entsteht von selbst. "
-             + "Quellen übernimmst du aus „Recherche mit Quellen“ oder liest BibTeX/RIS aus Zotero und Citavi ein (auch per Ziehen auf die Arbeitsfläche). Ausgabe als Word, PDF, OpenDocument und Folien für PowerPoint oder Impress.",
+             + "Quellen übernimmst du aus „Recherche mit Quellen“ oder liest BibTeX/RIS aus Zotero und Citavi ein (auch per Ziehen auf die Arbeitsfläche). Ausgabe als Word, PDF, OpenDocument und Folien für PowerPoint oder Impress. "
+             + "KI und Quellen: Das Literaturverzeichnis enthält nur Quellen, die du selbst angelegt hast – eine KI legt keine an. Eindeutige Belegformen ohne Quelle (z. B. mit Komma und Jahr, Seitenangabe, „et al.“, „vgl.“, „ebd.“) "
+             + "nimmt Trendo aus KI-Text nicht an. Lose Klammern mit Jahr wie „(Mauerfall 1989)“ markiert Trendo nur als Hinweis – ob dort ein Beleg gemeint ist, erkennt Trendo nicht sicher. Lies solche Stellen selbst nach.",
     }, "referat", "hausarbeit", "facharbeit", "seminararbeit", "gliederung", "deckblatt", "inhaltsverzeichnis", "literaturverzeichnis", "zitieren", "citavi", "scrivener", "vortrag");
 
 

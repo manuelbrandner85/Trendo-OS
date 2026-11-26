@@ -65,16 +65,12 @@ public class T0780GegenpruefungTests
     [Theory(DisplayName = "T-0780 M1 (Tabelle, Gegenproben): normaler Text mit Zahlen und Jahren – weder Sperre noch Hinweis")]
     [InlineData("Im Jahr 2021 war der Sommer sehr trocken.")]
     [InlineData("Die Regentonne (Stand 2021) fasst 300 Liter.")]
-    [InlineData("Die Regentonne (Stand, 2021) fasst 300 Liter.")]
     [InlineData("Im Juli (2021) regnete es kaum.")]
     [InlineData("Ein guter Boden braucht Zeit [@q-buch, S. 12].")]
     [InlineData("Seit 2019 sammeln wir Regenwasser, 2021 kam eine zweite Tonne dazu.")]
     [InlineData("Mehr dazu (vgl. Abschnitt 2).")]
     [InlineData("Die Tabelle (siehe Seite 4) zeigt es.")]
     [InlineData("Das kostet (rund 300 Euro) im Jahr.")]
-    [InlineData("Die Spiele (Olympia 2024) fanden in Paris statt.")]
-    [InlineData("In Deutschland (2023) regnete es wenig.")]
-    [InlineData("Die Zahl stieg deutlich (Deutschland, 2023).")]
     [InlineData("Ergebnis: Deutschland gewann die WM, 2014 war das.")]
     [InlineData("Hinweis: Große Ernte, 2021 im Herbst war sie gut.")]
     public void No_false_alarm(string text)
@@ -92,11 +88,86 @@ public class T0780GegenpruefungTests
     [InlineData("Wie Erfunden (2021: 5) zeigt, ist das so.")]
     [InlineData("Wie Erfunden et al. (2021) zeigen, ist das so.")]
     [InlineData("Wie Erfunden (2021b) zeigt, ist das so.")]
-    [InlineData("Das ist belegt (Erfunden 2021).")]
     [InlineData("Das ist belegt (ebd.).")]
     [InlineData("Das ist belegt (ebd., S. 4).")]
     [InlineData("Das ist belegt (a. a. O., S. 5).")]
     public void Blocked_round3(string text) => Assert.NotNull(ReferatKit.KiTextProblem(text, Src));
+
+    // ---------------- 4. Gegenprüfung: eine Regel für streng und lose ----------------
+
+    [Theory(DisplayName = "T-0780 M (4. Gegenprüfung): strenge Formen sind immer gesperrt – auch mit Zeit-, Orts- oder Ereigniswort und auch in der Fußnote mit Ort")]
+    [InlineData("Das ist belegt (Sommer, 2019, S. 4).")]
+    [InlineData("Das ist belegt (Winter 2020: 5).")]
+    [InlineData("Das ist belegt (Wahl et al. 2020).")]
+    [InlineData("Das ist belegt (Stand, 2021).")]
+    [InlineData("Die Zahl stieg deutlich (Deutschland, 2023).")]
+    [InlineData("Das ist belegt (Berlin & Wien 2020).")]
+    [InlineData("Das ist belegt (Juli und August 2021).")]
+    [InlineData("Das ist belegt (Mai 2021a).")]
+    [InlineData("Das ist belegt (vgl. Juli 2021).")]
+    [InlineData("Das ist belegt, vgl. Sommer, 2019, S. 4.")]
+    [InlineData("Wie Olympia (2024: 5) zeigt, ist das so.")]
+    [InlineData("Mulch hilft.\n¹ Erfunden, Hans: Titel. Berlin 2021, S. 3.")]
+    [InlineData("Siehe Erfunden, Titel, Wien: Grünverlag, 2021.")]
+    [InlineData("Das ist belegt (ebd.).")]
+    [InlineData("Das ist belegt (a. a. O., S. 5).")]
+    public void Strict_always_blocked(string text)
+    {
+        Assert.Contains(ReferatKit.CitationHits(text), h => h.Blocks);
+        Assert.Contains(ReferatKit.CitationHits(text, Src), h => h.Blocks);
+        Assert.NotNull(ReferatKit.KiTextProblem(text, Src));
+    }
+
+    [Theory(DisplayName = "T-0780 M (4. Gegenprüfung): lose Formen mit Ort oder Ereignis sind nur ein Hinweis – 14 Fälle plus „(Berlin 2019)“, keine Sperre")]
+    [InlineData("Danach war alles anders (Mauerfall 1989).")]
+    [InlineData("Danach war alles anders (Brexit 2016).")]
+    [InlineData("Danach war alles anders (Wiedervereinigung 1990).")]
+    [InlineData("Die Spiele (Olympia 2024) fanden in Paris statt.")]
+    [InlineData("Viele blieben zu Hause (Corona 2020).")]
+    [InlineData("Es regnete wenig (Deutschland 2023).")]
+    [InlineData("Europa wurde neu geordnet (Wien 1815).")]
+    [InlineData("Die Stadt trauerte (Paris 2015).")]
+    [InlineData("Das Unglück veränderte alles (Tschernobyl 1986).")]
+    [InlineData("Das Unglück veränderte alles (Fukushima 2011).")]
+    [InlineData("Das Wasser stieg hoch (Hamburg 1962).")]
+    [InlineData("Die EU wuchs stark (Osterweiterung 2004).")]
+    [InlineData("Die Zahl wurde neu erhoben (Zensus 2011).")]
+    [InlineData("Viele gingen wählen (Bundestagswahl 2021).")]
+    [InlineData("Die Mauer stand noch (Berlin 2019).")]
+    [InlineData("In Deutschland (2023) regnete es wenig.")]
+    public void Loose_place_or_event_hint(string text)
+    {
+        var hits = ReferatKit.CitationHits(text, Src);
+        Assert.NotEmpty(hits); Assert.All(hits, h => Assert.False(h.Blocks));
+        Assert.Null(ReferatKit.KiTextProblem(text, Src));
+    }
+
+    [Theory(DisplayName = "T-0780 M (4. Gegenprüfung): Quelle „Muster, Erika 2024“ – nur der ganze Nachname mit falschem Jahr sperrt; Teil des Namens oder Vorname ist ein Hinweis")]
+    [InlineData("Gute Erde ist wichtig (Muster 1999).", true)]
+    [InlineData("Wie Muster (1999) zeigt, ist Erde wichtig.", true)]
+    [InlineData("Gute Erde ist wichtig (Muster 2024).", false)]
+    [InlineData("Wie Muster (2024) zeigt, ist Erde wichtig.", false)]
+    [InlineData("Gute Erde ist wichtig (Mus 2021).", false)]
+    [InlineData("Gute Erde ist wichtig (Erika 2021).", false)]
+    [InlineData("Gute Erde ist wichtig (Erfunden 2021).", false)]
+    [InlineData("Guter Boden (Beispiel 2020).", true)]
+    public void Loose_surname_rule(string text, bool blocks)
+    {
+        var hits = ReferatKit.CitationHits(text, Src);
+        Assert.Single(hits); Assert.Equal(blocks, hits[0].Blocks);
+        Assert.Equal(blocks, ReferatKit.KiTextProblem(text, Src) is not null);
+        Assert.False(ReferatKit.CitationHits(text)[0].Blocks); // ohne Quellenliste: nie gesperrt
+    }
+
+    [Theory(DisplayName = "T-0780 M (4. Gegenprüfung): Zeitwörter unterdrücken nur den Hinweis bei losen Formen")]
+    [InlineData("Die Regentonne (Stand 2021) fasst 300 Liter.")]
+    [InlineData("Es war heiß (Juli 2021).")]
+    [InlineData("Im Sommer (2019) war es trocken.")]
+    public void Time_words_no_hint(string text)
+    {
+        Assert.Empty(ReferatKit.CitationHits(text, Src));
+        Assert.Null(ReferatKit.KiTextProblem(text, Src));
+    }
 
     [Fact(DisplayName = "T-0780 M (3. Gegenprüfung): „(Name 2021)“ mit passender Quelle und „ebd.“ nach echtem Verweis – nur Hinweis bzw. gar nichts")]
     public void Allowed_round3()
