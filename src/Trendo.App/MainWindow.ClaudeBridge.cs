@@ -72,7 +72,7 @@ public partial class MainWindow
 
     IReadOnlyList<McpTool> BridgeTools(BridgeRun run)
     {
-        McpTool T(string name, string text, JsonObject schema, Func<JsonObject, Task<McpResult>> body) => new(name, text, schema, a => BridgeLocalOnlyRefusal(run, name, a) is { } no ? Task.FromResult(no) : BridgeUi(run, name, body, a));
+        McpTool T(string name, string text, JsonObject schema, Func<JsonObject, Task<McpResult>> body) => new(name, text, schema, a => BridgeUi(run, name, body, a));
         McpTool S(string name, string text, JsonObject schema, Func<JsonObject, McpResult> body) => T(name, text, schema, a => Task.FromResult(body(a)));
         var programArg = ("programm", "string", "Kennung des Programms; ohne Angabe das zuletzt benutzte", false);
         return
@@ -307,6 +307,9 @@ public partial class MainWindow
 
     async Task<McpResult> BridgeUi(BridgeRun run, string name, Func<JsonObject, Task<McpResult>> body, JsonObject a)
     {
+        // T-0784: Reihenfolge LocalOnly-Ablehnung (T-0782, kennt das Argument „programm“) → BridgeGuard → Stand merken → Werkzeug → Felder verlassen → AfterStep (T-0780).
+        // Die Ablehnung schreibt ihre eigene Protokollzeile („claude.bruecke.lokal“) – keine zweite Zeile „claude.werkzeug · abgelehnt“.
+        if (await _ui.InvokeAsync(() => BridgeLocalOnlyRefusal(run, name, a)) is { } localOnly) return localOnly;
         var result = await _ui.InvokeAsync(async () =>
         {
             if (_core.Approvals.Halted) return McpResult.Fail("Nicht bestätigt: Der Not-Stopp ist aktiv. " + _core.Approvals.HaltReason);
@@ -363,7 +366,7 @@ public partial class MainWindow
     /// <summary>Nach dem Claude-Schritt: gesperrtes Feld geändert oder KiCheck findet einen Fehler → Dokument auf den Stand davor zurück (samt Rückgängig-Liste) und Fehler an Claude.</summary>
     /// <summary>T-0780 (3. Gegenprüfung): Vorab-Ablehnung eines KI-Schritts, bevor er läuft – klar abgegrenzte Stelle für weitere Regeln
     /// (z. B. T-0782: Programme, die nur lokale KI zulassen). null = Schritt darf laufen, sonst der Grund für die Person/Claude.</summary>
-    string? KiStepPreReject(string? page) => null;
+    string? KiStepPreReject(string? page) => LocalOnlyRefusal(page); // T-0784: T-0782 eingehängt – Programme nur mit lokaler KI lehnen jeden KI-Schritt ab
 
     /// <summary>T-0780 (3. Gegenprüfung): gemeinsamer Wächter für jeden KI-Schritt (MCP-Brücke und Plan-Weg im Chat): Vorab-Ablehnung → Stand der Dokumente mit KiLocked/KiCheck merken →
     /// Schritt → Felder verlassen (übernehmen) → prüfen; bei Verstoß Daten und Rückgängig-Liste zurück. Auch wenn der Schritt mit einem Fehler endet, wird geprüft und zurückgerollt

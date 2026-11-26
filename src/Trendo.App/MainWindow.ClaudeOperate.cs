@@ -170,10 +170,10 @@ public partial class MainWindow
     {
         if (!_chatUis.TryGetValue(dock, out var ui) || ui.Plan is not { } plan) return;
         ui.Plan = null;
-        if (LocalOnlyRefusal(plan.Page) is { } why) // T-0782 (H1b): Plan-Zeilen nie in Programmen nur mit lokaler KI
+        if (KiStepPreReject(plan.Page) is { } refusal) // T-0782 (H1b): Plan-Zeilen nie in Programmen nur mit lokaler KI – T-0784: dieselbe Vorab-Ablehnung wie im Wächter, einmal vorab mit EINER Protokollzeile (der Wächter je Schritt protokolliert nichts dazu)
         {
             _core.Audit.Append(Principal.LocalOwner.Name, "claude.plan.lokal", plan.Page);
-            CChats.Add(ChatStudio(dock), plan.ChatId, new ClaudeChats.Msg("assistant", "✕ Nicht ausgeführt: " + why, [], DateTimeOffset.Now));
+            CChats.Add(ChatStudio(dock), plan.ChatId, new ClaudeChats.Msg("assistant", "✕ Nicht ausgeführt: " + refusal, [], DateTimeOffset.Now));
             RenderChat(dock); return;
         }
         if (CurrentView != plan.Page) Show(plan.Page);
