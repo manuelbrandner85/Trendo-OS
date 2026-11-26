@@ -1,0 +1,5 @@
+error CS0117: "DataLocation" enthält keine Definition für "DefaultIn". [C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+error CS0117: "DataLocation" enthält keine Definition für "Instance". [C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+error CS0117: "DataLocation" enthält keine Definition für "InstanceVar". [C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+error CS0117: "DataLocation" enthält keine Definition für "LegacyIn". [C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+error CS0117: "DataLocation" enthält keine Definition für "ToolsRootIn". [C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]

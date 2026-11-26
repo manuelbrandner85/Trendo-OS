@@ -33,11 +33,22 @@ public sealed class VelopackUpdater : ITrendoUpdater
         get
         {
             if (_umCache is not null || _umFailed) return _umCache;
-            try { _umCache = new(new Velopack.Sources.GithubSource(Repo, null, true)); } catch (Exception) { _umFailed = true; }
+            try { _umCache = new(Source()); } catch (Exception) { _umFailed = true; }
             return _umCache;
         }
     }
     Velopack.UpdateManager _um => Um ?? throw new InvalidOperationException("Nur in der installierten Version");
+
+    /// <summary>T-0770: Umgebungsvariable für Abnahmen – ein lokaler Ordner mit Velopack-Paketen (releases.win.json + .nupkg) statt GitHub.
+    /// Nur ein vorhandener Ordner mit vollständigem Pfad zählt; ohne Variable bleibt es bei den offiziellen GitHub-Releases (U6).</summary>
+    public const string LocalSourceVar = "TRENDO_UPDATE_QUELLE";
+    public static string? LocalSourceDir(string? value = null)
+    {
+        var v = (value ?? Environment.GetEnvironmentVariable(LocalSourceVar))?.Trim().Trim('"');
+        return string.IsNullOrEmpty(v) || !Path.IsPathFullyQualified(v) || !Directory.Exists(v) ? null : Path.GetFullPath(v);
+    }
+    static Velopack.Sources.IUpdateSource Source() =>
+        LocalSourceDir() is { } dir ? new Velopack.Sources.SimpleFileSource(new DirectoryInfo(dir)) : new Velopack.Sources.GithubSource(Repo, null, true);
 
     public bool IsInstalled { get { try { return Um?.IsInstalled == true; } catch (Exception) { return false; } } }
     public string Current { get { try { return Um?.CurrentVersion?.ToString() ?? CrashLog.AppVersion(); } catch (Exception) { return CrashLog.AppVersion(); } } }
@@ -76,7 +87,7 @@ public sealed class VelopackUpdater : ITrendoUpdater
     {
         var file = Directory.Exists(dir) ? Directory.GetFiles(dir, $"*-{version}-full.nupkg").FirstOrDefault() : null;
         if (file is null) return false;
-        var um = new Velopack.UpdateManager(new Velopack.Sources.GithubSource(Repo, null, true), new Velopack.UpdateOptions { AllowVersionDowngrade = true });
+        var um = new Velopack.UpdateManager(Source(), new Velopack.UpdateOptions { AllowVersionDowngrade = true });
         var root = Path.GetDirectoryName(Path.TrimEndingDirectorySeparator(AppContext.BaseDirectory));
         var pkgs = root is null ? null : Path.Combine(root, "packages");
         if (pkgs is null) return false;

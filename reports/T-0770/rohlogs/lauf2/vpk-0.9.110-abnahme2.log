@@ -1,0 +1,27 @@
+[04:00:14 INF] Velopack CLI 1.2.161, for distributing applications.
+[04:00:14 INF] Beginning to package Velopack release 0.9.110-abnahme2.
+[04:00:14 INF] Releases Directory: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0770\_abnahme\feed
+[04:00:14 INF] Starting: Pre-process steps
+[04:00:14 INF] Verified VelopackApp.Run() in 'System.Int32 Trendo.App.Program::Main(System.String)'.
+[04:00:14 INF] Shortcuts: Desktop,StartMenuRoot
+[04:00:15 WRN] No architecture specified with --runtime, defaulting to x86. If this was not intended please specify via the --runtime parameter
+[04:00:15 WRN] No architecture specified with --runtime, defaulting to x86. If this was not intended please specify via the --runtime parameter
+[04:00:15 INF] Complete: Pre-process steps
+[04:00:15 INF] Starting: Code-sign application
+[04:00:15 WRN] No signing parameters provided, 395 file(s) will not be signed.
+[04:00:15 INF] Complete: Code-sign application
+[04:00:15 INF] Starting: Building portable package
+[04:00:15 INF] Starting: Building release 0.9.110-abnahme2
+[04:00:27 INF] Complete: Building portable package
+[04:00:27 INF] Complete: Building release 0.9.110-abnahme2
+[04:00:27 INF] Starting: Building setup package
+[04:00:27 INF] Starting: Building delta 0.9.110-abnahme1 -> 0.9.110-abnahme2
+[04:00:27 INF] Creating delta for 0.9.110-abnahme1 -> 0.9.110-abnahme2 with 8 parallel threads.
+[04:00:27 INF] Setup bundle created 'TrendoOSAbnahme-win-Setup.exe'.
+[04:00:27 WRN] No signing parameters provided, 1 file(s) will not be signed.
+[04:00:27 INF] Complete: Building setup package
+[04:00:31 INF] Delta processed 0422 files. 0007 patched, 0415 unchanged, 0000 new, 0000 removed
+[04:00:31 INF] Complete: Building delta 0.9.110-abnahme1 -> 0.9.110-abnahme2
+[04:00:31 INF] Starting: Post-process steps
+[04:00:32 INF] Complete: Post-process steps
+[04:00:32 INF] Finished in 00:00:17.4577699.

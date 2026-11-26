@@ -969,6 +969,26 @@ else if (shot == "seite")
         win.PodExportPng(pd, podFile); win.Show("pod-programm");
     }
     if (Environment.GetEnvironmentVariable("TRENDO_AUDIO") is { Length: > 0 } au) { win.AuOpen(au); win.AuSel = (20, 34); win.AuSpectro = Environment.GetEnvironmentVariable("TRENDO_AUDIO_SPEKTRO") is { Length: > 0 }; win.Show("ton"); } // Audio-Editor mit echter Datei zeigen
+    if (Environment.GetEnvironmentVariable("TRENDO_GROSS") is { Length: > 0 } gross && File.Exists(gross)) // T-0770: große Datei öffnen – Zeit bis bearbeitbar und Speicher messen
+    {
+        var me = System.Diagnostics.Process.GetCurrentProcess();
+        double Mb(long b) => Math.Round(b / 1048576.0);
+        var swAll = System.Diagnostics.Stopwatch.StartNew();
+        var ext = Path.GetExtension(gross).ToLowerInvariant();
+        var shown = ext is ".docx" or ".odt" or ".txt" or ".md" ? "text" : ext is ".xlsx" or ".ods" or ".csv" ? "tabelle" : "bild";
+        var sw1 = System.Diagnostics.Stopwatch.StartNew();
+        if (shown == "bild") { win.Show("bild"); win.ImgAddImage(gross); } else win.OpenOfficeDoc(gross);
+        var openMs = sw1.Elapsed.TotalMilliseconds;
+        sw1.Restart(); win.Show(shown); win.UpdateLayout(); Dispatcher.UIThread.RunJobs(); var showMs = sw1.Elapsed.TotalMilliseconds;
+        sw1.Restart();
+        string edit;
+        if (shown == "text") { win.TextSelect(0, 0, 5); win.TextToggle(Trendo.Core.Office.Fmt.Bold); edit = "erste 5 Zeichen fett"; }
+        else if (shown == "tabelle") { win.SheetSetCell("A1", "geändert"); edit = "Zelle A1 geändert"; }
+        else { win.ImgWandAt(win.ProgramActive("bild")!, 100, 100); edit = "Zauberstab-Auswahl bei 100/100"; }
+        win.Show(shown); win.UpdateLayout(); Dispatcher.UIThread.RunJobs(); var editMs = sw1.Elapsed.TotalMilliseconds;
+        me.Refresh();
+        Console.WriteLine(FormattableString.Invariant($"GROSS datei={Path.GetFileName(gross)} programm={shown} oeffnen_ms={openMs:0} anzeigen_ms={showMs:0} bis_bearbeitbar_ms={openMs + showMs:0} bearbeiten_ms={editMs:0} ({edit}) gesamt_ms={swAll.Elapsed.TotalMilliseconds:0} ws_mb={Mb(me.WorkingSet64)} spitze_ws_mb={Mb(me.PeakWorkingSet64)} privat_mb={Mb(me.PrivateMemorySize64)}"));
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_PROFIL") is { Length: > 0 } prof) // Öffnungszeit messen: jede Seite 40× öffnen (für dotnet-trace)
     {
         foreach (var pk in prof.Split(','))

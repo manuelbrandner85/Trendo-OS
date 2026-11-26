@@ -6,8 +6,22 @@ public static class DataLocation
     /// <summary>Einträge im alten Ordner, die zu Velopack gehören und NICHT migriert werden.</summary>
     public static readonly string[] InstallerEntries = ["current", "packages", "Update.exe", ".portable", "sq.version", "app.ico", "velopack.log"];
 
-    public static string Legacy() => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TrendoOS");
-    public static string Default() => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TrendoOS");
+    /// <summary>T-0770: Umgebungsvariable für eine abgeschottete Prüf-Instanz (Abnahme neben einer echten Installation). Ist sie auf einen
+    /// vollständigen Pfad gesetzt, liegen Daten, Werkzeuge und der Altordner darunter – auch in den Installations-/Deinstallations-Hooks,
+    /// die Velopack ohne Kommandozeile der App startet. Für Endnutzer ohne Wirkung, solange die Variable fehlt.</summary>
+    public const string InstanceVar = "TRENDO_INSTANZ";
+    /// <summary>Wurzel der Prüf-Instanz oder null (keine/ungültige Angabe: dann gelten die normalen Ordner).</summary>
+    public static string? Instance(string? value = null)
+    {
+        var v = (value ?? Environment.GetEnvironmentVariable(InstanceVar))?.Trim().Trim('"');
+        return string.IsNullOrEmpty(v) || !Path.IsPathFullyQualified(v) ? null : Path.GetFullPath(v);
+    }
+
+    public static string Legacy() => LegacyIn(Instance());
+    public static string Default() => DefaultIn(Instance());
+    /// <summary>Altordner (v0.3–v0.5): in einer Prüf-Instanz ein eigener, damit nie aus der echten Installation verschoben wird.</summary>
+    public static string LegacyIn(string? instance) => instance is not null ? Path.Combine(instance, "TrendoOS-alt") : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TrendoOS");
+    public static string DefaultIn(string? instance) => Path.Combine(instance ?? Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TrendoOS");
 
     /// <summary>Verschiebt alte Benutzerdaten (v0.3–v0.5) in den neuen Ordner. Überschreibt nichts. Gibt Anzahl verschobener Einträge zurück.</summary>
     public static int MigrateLegacy(string legacyRoot, string newRoot)
@@ -46,7 +60,8 @@ public static class DataLocation
 
     /// <summary>Ordner der von Trendo geladenen Zusatzprogramme (portabel, nur für diesen Benutzer, z. B. COLMAP, qpdf).</summary>
     public const string ToolsFolderName = "TrendoWerkzeuge";
-    public static string ToolsRoot() => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ToolsFolderName);
+    public static string ToolsRoot() => ToolsRootIn(Instance());
+    public static string ToolsRootIn(string? instance) => Path.Combine(instance ?? Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ToolsFolderName);
 
     /// <summary>Programme (Unterordner) und Größe im Werkzeugordner, ohne Verknüpfungen zu folgen. Null, wenn nichts da ist.</summary>
     public static (IReadOnlyList<string> Programs, long Bytes)? ToolsSummary(string root)

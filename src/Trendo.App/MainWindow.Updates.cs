@@ -21,6 +21,7 @@ public partial class MainWindow
     string _updateMsg = "";
     DispatcherTimer? _updateTimer;
     bool _updateBusy;
+    bool _updateBackedUp;
     public string? UpdateReady => _updateReady;
     public BootGuard Boot => new(_core.DataRoot);
     string WindowRestoreFile => Path.Combine(_core.DataRoot, "updates", "fenster.json");
@@ -91,6 +92,10 @@ public partial class MainWindow
             var found = await Updater.CheckAsync();
             if (found is not { } u) { _updateMsg = $"Trendo ist aktuell (Version {Updater.Current})."; _updateInfo = $"Aktuell (v{Updater.Current})"; return false; }
             _updateMsg = $"Version {u.Version} wird im Hintergrund geladen …";
+            // T-0770 (Abnahme): Velopack löscht beim Laden das Paket der laufenden Version – die Sicherung für die Rückkehr (U5)
+            // muss deshalb VOR dem Laden entstehen, sonst ist beim Installieren nichts mehr zum Sichern da.
+            var backupDir = Boot.BackupDir;
+            _updateBackedUp = await Task.Run(() => Updater.BackupCurrent(backupDir));
             await Updater.DownloadAsync(p => _ui.Post(() => { _updateMsg = $"Version {u.Version} wird geladen … {p} %"; if (CurrentView == "updates") Show("updates"); }), CancellationToken.None);
             ReleaseNotes.Save(_core.DataRoot, u.Version, u.Notes);
             _updateReady = u.Version;
@@ -131,7 +136,7 @@ public partial class MainWindow
     {
         if (_updateReady is not { } v) return;
         _core.Audit.Append(Principal.LocalOwner.Name, "update.apply", v);
-        Updater.BackupCurrent(Boot.BackupDir);
+        if (!_updateBackedUp) Updater.BackupCurrent(Boot.BackupDir); // T-0770: meist schon vor dem Laden gesichert
         try
         {
             Directory.CreateDirectory(Path.GetDirectoryName(WindowRestoreFile)!);
