@@ -31,23 +31,21 @@ Kein Lauf übersprungen, keiner fehlgeschlagen. Kein Volltest (macht die Hauptsi
 
 ## Ergebnis
 - **16.11.2026, 83 Studios:** 2 VOLLWERTIG, 78 TEILWEISE, 1 FEHLT, 1 NICHT GETESTET, 1 abgelehnt.
-- **26.11.2026, 80 Studios:** 0 VOLLWERTIG, 79 TEILWEISE (davon 4 Grenzfälle), 0 FEHLT, 1 NICHT GETESTET (Konsolenspiele, BLOCKIERT).
+- **26.11.2026, 80 Studios:** 0 VOLLWERTIG, 79 TEILWEISE (davon 5 Grenzfälle), 0 FEHLT, 1 NICHT GETESTET (Konsolenspiele, BLOCKIERT).
 - **Warum 0 statt 2:** Heute werden die 6 Kriterien streng angelegt. Die PDF-Werkstatt scheitert nur an K4, „Dateien teilen“ an K4 und K6.
 - **Fortschritt:**
   - K1 (Ergebnis aus leerer Vorlage) ist bei 66 von 80 Studios belegt.
   - K5 (Klick bis Datei mit echtem Werkzeug) ist bei 62 von 80 belegt.
   - „Filme machen“ steigt von FEHLT auf TEILWEISE.
 - **Engpässe:**
-  - K4 (KI im Dokument): nur 4 ✓.
+  - K4 (KI im Dokument): nur 5 ✓.
   - K2 (Fremdprogramm): nur 8 ✓.
   - K6 (Bedienung): nur 14 ✓.
 - **Fehlende Studios:** 56 von 79 freigegebenen fehlen. Je Kategorie: Business 11, 3D 8, Technik 7, Wissen 10, Entwickeln 12, System 8.
 
 ## Befunde nebenbei (nicht behoben, nur gemeldet)
-- **Beleg T-0698:** Die SHA-256 von `reports/T-0698/claude-lauf.md` und `.json` stimmt nicht.
-- **Stille Tests:**
-  - `AssistChain_Ui.Real_local_ki` zählt ohne Beleg still als bestanden (`AssistChainUiTests.cs:208`).
-  - `W4_X07_Ui.Live` schluckt Netzfehler (`W4AssetsUiTests.cs:36`).
+- **Belege:** In `reports/T-0698`, `T-0703`, `T-0707` und `T-0723` stimmen die Ergebnisdateien per SHA-256, einzelne Beschreibungs- und Rohlog-Dateien nicht (u. a. `claude-lauf.md`; `claude-lauf.json` stimmt).
+- **Stille Tests:** Rund 30 Stellen kehren ohne Voraussetzung mit `return` zurück oder schlucken Netzfehler (Liste in `BERICHT.md` 3.7). Kein ✓ hängt allein daran, jedes hat einen Rohlog.
 - **Katalog:** `docs/programme/katalog.json` führt 97 von 123 Programmen als „Test NOT_RUN“. SYS-04, SYS-07, CORE-04 und X-08 stehen auf `PC_VERIFIED`, obwohl ihr Kernweg ersetzt ist.
 - **LibreOffice:** Die Berichte T-0692, T-0694 und T-0753 nennen LibreOffice „nicht installiert“. Es liegt aber im Trendo-Werkzeugordner und lief bei dieser Prüfung.
 - **Gestaltung:** mehrere goldene Hauptaktionen in Tagesplaner, KI fragen und Qualität prüfen; der Knopf „Scanner …“ ist nur ein Hinweis.
@@ -69,3 +67,17 @@ Kein Lauf übersprungen, keiner fehlgeschlagen. Kein Volltest (macht die Hauptsi
 
 ## Status
 Bewertung fertig, Dokumente im Zweig. Kein Produktcode geändert, kein Merge, kein Release.
+
+## Korrekturrunde nach Gegenprüfung (26.11.2026)
+- **Bücher schreiben:** K4 von ◐ auf ✓ (`reports/T-0707`, echte lokale KI, `.tdoc` stimmt per SHA). Damit sind es 5 Grenzfälle und K4 hat 5 ✓.
+- **Logos und Animation:** K4-Begründung korrigiert: Die Knöpfe laufen über `AssistFromProgram` ins Dokument. Es bleibt ◐, weil kein Test sie auslöst.
+- **Stille Tests:** vollständig aufgelistet und gegen die Urteile geprüft; keine Herabstufung nötig.
+- **T-0698:** `claude-lauf.json` stimmt, nur `claude-lauf.md` nicht; weitere SHA-Abweichungen in T-0703, T-0707 und T-0723 nachgetragen.
+- **Werkzeuge:** Krita, Inkscape und 7-Zip im Trendo-Werkzeugordner nachgetragen (Künstlerstudio K2, Q3).
+- **K4-Regel vereinheitlicht:** Eine KI-Aktion, die nur eine Projektdatei schreibt oder nur etwas anzeigt, zählt ◐. ✗ nur ohne KI-Aktion (jetzt nur noch SPEC-12, gesperrt).
+- **Kleinere Korrekturen:**
+  - Zahl der Grenzfälle in `fehlende-studios.md`
+  - Ablegen-Aussage (echte DragEnter/DragOver/Drop-Ereignisse in Büro-Tests)
+  - Kreativ & Medien 13 statt 12 erklärt
+  - Schreibweise der Urteile vereinheitlicht
+- **Zahlen per Skript neu gezählt:** K1 66/13/1/0, K2 8/61/7/4, K3 39/34/0/7, K4 5/74/1/0, K5 62/16/2/0, K6 14/52/14/0 (✓/◐/✗/–).

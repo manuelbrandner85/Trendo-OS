@@ -36,6 +36,7 @@ Am 09.11.2026 hat der Nutzer 79 neue Studios freigegeben, in zwei Runden zu 48 u
 - **Folge:** Daher stehen heute bei KI & Automatik 2 Studios zu wenig und bei Arbeiten & Büro und Wissen & Lernen je 1 zu viel. Es fehlt kein freigegebenes KI-Studio.
 - **Was der Nutzer entscheidet:** ob die beiden Studios umziehen oder ob KI & Automatik zwei neue Vorschläge (Ja/Nein) bekommt.
 - **Ehrlich:** Vier KI-Studios sind in „KI fragen“ bzw. „Neues Projekt“ eingegliedert: KI-Team, Kostenlose KI, KI-Anweisungen, Großprojekte. Zählte man sie mit, hätte KI & Automatik 14.
+- **Kreativ & Medien 13 statt 12:** 7 vorhandene Studios (Videos & Fotos bearbeiten, Live streamen, Trendo Musik, TV & Live, Filme machen, Künstlerstudio, Kleidung & Produkte) plus 6 freigegebene ergeben 13. Die Freigabe ging von 12 aus. Vermutlich wurde ein vorhandenes Studio am 09.11. nicht mitgezählt; die Ursache ist nicht eindeutig. Es fehlt nichts, ein Studio zu viel ist innerhalb von 12 bis 14 zulässig.
 - **Gesamtzahl:** Die gemerkte Zahl 116 und die hier gezählte 117 weichen um 1 ab. Vermutlich liegt das an der Zählung der vorhandenen Studios am 09.11. (37 gemerkt, 38 aus heutiger Sicht).
 
 ## 2. Gebaut (23 von 79)
@@ -47,7 +48,7 @@ Am 09.11.2026 hat der Nutzer 79 neue Studios freigegeben, in zwei Runden zu 48 u
 | KI & Automatik (8) | Bilder mit KI, Texte zusammenfassen, Eigene KI trainieren, KI-Agenten bauen, Videos mit KI, KI-Modelle vergleichen, Code mit KI, Bilder erkennen |
 | Wissen & Lernen (1) | Recherche mit Quellen |
 
-Alle 23 sind nach der Neubewertung TEILWEISE, drei davon Grenzfälle. Details stehen in `BERICHT.md`.
+Alle 23 sind nach der Neubewertung TEILWEISE, fünf davon Grenzfälle (PDF-Werkstatt, Dokumente scannen, Tagesplaner, Logos & Marken, Bücher schreiben). Details stehen in `BERICHT.md`.
 
 ## 3. Fehlend (56), mit Teilabdeckung im heutigen Code und Bau-Reihenfolge
 
