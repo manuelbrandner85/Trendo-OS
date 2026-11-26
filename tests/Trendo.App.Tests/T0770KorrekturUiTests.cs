@@ -82,7 +82,7 @@ public class T0770KorrekturUiTests
         var root = Directory.CreateTempSubdirectory("trendo-t0770-sich-").FullName;
         try
         {
-            var dir = Path.Combine(root, "vorherige-version"); Directory.CreateDirectory(dir);
+            var dir = Path.Combine(root, "updates", "vorherige-version"); Directory.CreateDirectory(dir);
             File.WriteAllText(Path.Combine(dir, "TrendoOS-1.0-full.nupkg"), "alt");
             var src = Path.Combine(root, "TrendoOS-1.1-full.nupkg"); File.WriteAllText(src, "neu");
             // Kopieren scheitert (Quelle fehlt): alte Sicherung bleibt, keine Reste
@@ -104,7 +104,7 @@ public class T0770KorrekturUiTests
         var root = Directory.CreateTempSubdirectory("trendo-t0770-platz-").FullName;
         try
         {
-            var dir = Path.Combine(root, "vorherige-version"); Directory.CreateDirectory(dir);
+            var dir = Path.Combine(root, "updates", "vorherige-version"); Directory.CreateDirectory(dir);
             File.WriteAllText(Path.Combine(dir, "TrendoOS-1.0-full.nupkg"), "alt");
             var src = Path.Combine(root, "TrendoOS-1.1-full.nupkg"); File.WriteAllText(src, new string('x', 4096));
             Assert.False(VelopackUpdater.ReplaceBackup(src, dir, _ => 1000, out var note));

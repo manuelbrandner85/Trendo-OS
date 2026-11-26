@@ -1,0 +1,9 @@
+  Fehler T-0770 M-2: MigrateLegacy verschiebt nichts, wenn der Altordner eine Verknüpfung ist oder in einer liegt [179 ms]
+   Assert.Equal() Failure: Values differ
+Expected: 0
+Actual:   2
+  Fehler T-0770 M-1: FinalPath löst ein subst-Laufwerk auf den echten Ordner auf [173 ms]
+   Assert.Equal() Failure: Strings differ
+Expected: "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-"···
+Actual:   "W:\\TrendoOS"
+Fehler!      : Fehler:     2, erfolgreich:     0, übersprungen:     0, gesamt:     2, Dauer: 353 ms - Trendo.Core.Tests.dll (net10.0)

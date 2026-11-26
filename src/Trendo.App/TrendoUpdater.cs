@@ -98,10 +98,15 @@ public sealed class VelopackUpdater : ITrendoUpdater
     /// <summary>T-0770 (M5a/b): Sicherung ersetzen, ohne die alte vorher zu verlieren. Erst Platz prüfen, dann vollständig in eine
     /// Zwischendatei kopieren, dann atomar an den Zielnamen tauschen und erst danach ältere Sicherungen löschen. Bei jedem Fehler bleibt
     /// die alte Sicherung unverändert und es bleibt keine Zwischendatei liegen. <paramref name="note"/> sagt ehrlich, was nicht ging.</summary>
-    public static bool ReplaceBackup(string source, string dir, Func<string, long> freeBytes, out string? note)
+    internal static bool ReplaceBackup(string source, string dir, Func<string, long> freeBytes, out string? note)
     {
         note = null;
         string? tmp = null;
+        // Korrektur 3 (N-2): nur in Trendos eigenen Sicherungsordner „…\updates\vorherige-version“ (BootGuard.BackupDir)
+        var d = Path.TrimEndingDirectorySeparator(Path.GetFullPath(dir));
+        if (!string.Equals(Path.GetFileName(d), "vorherige-version", StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(Path.GetFileName(Path.GetDirectoryName(d)), "updates", StringComparison.OrdinalIgnoreCase))
+        { note = "Sicherung abgelehnt: falscher Zielordner."; return false; }
         try
         {
             // Korrektur 2 (N-a): Zwischendateien eines abgebrochenen Laufs (Absturz, Strom weg) zuerst wegräumen

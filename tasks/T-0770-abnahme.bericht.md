@@ -167,3 +167,31 @@ Reste nach dem Deinstallieren und Bewertung:
 - `tools/abnahme/lebenszyklus.ps1`
 - `tests/Trendo.Core.Tests/T0770Korrektur2Tests.cs`, `tests/Trendo.Core.Tests/T0770Korrektur2PfadTests.cs`, `tests/Trendo.App.Tests/T0770Korrektur2UiTests.cs`, `tests/Trendo.Core.Tests/RechteKernFix12Tests.cs` (ein Ausnahmeeintrag)
 - `installer/neuerungen/0.9.111.md`, `reports/T-0770/**`, `tasks/T-0770-abnahme.bericht.md`
+
+## Korrekturrunde 3 (3. Prüfung: 3× MITTEL, NIEDRIG)
+| Punkt | Erledigt | Test (Rot → Grün) |
+|---|---|---|
+| M-1 subst | `DataLocation.FinalPath` nutzt unter Windows `GetFinalPathNameByHandle` (CreateFile mit FILE_FLAG_BACKUP_SEMANTICS auf den längsten vorhandenen Teil, `\\?\`- und `\\?\UNC\`-Präfix normalisiert). Das löst Junctions, symbolische Links und subst-Laufwerke auf. `Instance(value, echteOrdner)` vergleicht nur aufgelöste Pfade; die Überladung erlaubt Tests mit künstlichen echten Ordnern. Datei-Id und Seriennummer werden nicht zusätzlich verglichen, weil der endgültige Pfad ausreicht. | `T0770Korrektur3PfadTests.FinalPath_resolves_subst`: echtes `subst` auf einen eigenen Temp-Ordner, danach `subst /d`, `subst`-Liste leer geprüft. Verhaltens-Rot `korrektur3/rot-core.log` („W:\TrendoOS“ statt echtem Pfad). `T0770Korrektur3Tests.Subst_drive_resolved` (Instanz auf, über und unter dem künstlichen echten Ordner abgelehnt, Geschwister erlaubt) |
+| M-2 Verknüpfung unter der Instanz | Die Instanz ist ungültig, wenn `DefaultIn`, `ToolsRootIn` oder `LegacyIn` eine Verknüpfung ist oder aufgelöst bei einem echten Ordner landet. `MigrateLegacy` verschiebt nichts, wenn der Altordner oder ein Ordner darüber eine Verknüpfung ist. | `T0770Korrektur3Tests.Link_below_instance_rejected`. `T0770Korrektur3PfadTests.Migrate_refuses_links`: Verhaltens-Rot, alter Code verschob 2 Einträge |
+| M-3 Skript | `Test-WorkSafe` löst `-Work` nativ auf und verlangt dann: lokal, unter dem aufgelösten `GetTempPath()`, ein Ordner `trendo-abnahme-*` im Pfad unter Temp, neu oder leer oder mit der Marke `.trendo-abnahme` eines früheren Laufs, kein echter Ordner (weder gleich, darin noch darüber). Sonst Exit 90, bevor etwas angelegt wird. Neuer Schalter `-NurPruefen` (nur prüfen). | `korrektur3/m3-skript-probe.log`: `%LOCALAPPDATA%\abnahme`, `%LOCALAPPDATA%\trendo-abnahme-x`, nicht leerer Ordner, Junction (Name mit Stamm) auf `%LOCALAPPDATA%` und darunter, Junction auf eigenen Ordner ohne Stamm, `subst V:\` – alle Exit 90 in rund 0,6 s, nichts angelegt. `V:\trendo-abnahme-s` (aufgelöst unter Temp) und ein neuer Ordner mit Stamm: Exit 0. Danach `subst` leer, Junctions entfernt, Ziele unberührt. Alle Proben liefen mit `-NurPruefen`; nur die Junction-Probe zeigte (unverändert) auf das echte `%LOCALAPPDATA%` |
+| Nachkontrolle Panne Runde 2 | Tiefer Vergleich (N1-Methode: rekursive Liste mit Pfad, Größe, Zeitstempel, SHA-256) um 07:00 gegen den Stand von Lauf 3 (06:19, also vor der Panne um 06:42–06:45). `%LOCALAPPDATA%\TrendoOS`: 434 Einträge, Listen-SHA 57664ee3… = **gleich**. `%APPDATA%\TrendoOS`: 40.983 Einträge, 5257bbf5… = **gleich**. `%LOCALAPPDATA%\TrendoWerkzeuge`: 297.372 Einträge, gleiche Bytes, Listen-SHA abweichend (cbedb460… statt 012ade06…). Die Ursache lässt sich nicht zuordnen, weil die Liste von 06:19 nicht gespeichert war. Schon in Lauf 3 änderten sich dort Zeitstempel durch parallele Sitzungen (LibreOffice). Die Panne startete nur `dotnet publish`/`vpk` mit Arbeitsordner `%LOCALAPPDATA%\abnahme`, nichts davon nutzt den Werkzeugordner. Nicht bewiesen. | `korrektur3/nachkontrolle-echte-ordner.txt` |
+| N-2 | `ReplaceBackup` ist `internal` und schreibt nur, wenn das Ziel genau `…\updates\vorherige-version` ist; sonst Abbruch ohne Schreiben. Die Ausnahme in `RechteKernFix12` ist entsprechend eng begründet. | `T0770Korrektur3UiTests.Replace_backup_only_own_folder`, Verhaltens-Rot `korrektur3/rot-app.log` |
+| N-6 | Der Runde-2-Test mit einer Junction auf das echte `%LOCALAPPDATA%` ist entfernt und ersetzt durch `T0770Korrektur3Tests.Junction_to_artificial_real_rejected` (nur künstliche Ziele). | – |
+| N-4 (ehrlich, Restliste) | Liegen Benutzerordner oder AppData selbst hinter einer Junction (verschobenes Profil), lehnen `Guard`/`RemovableTools` wegen der Verknüpfung in der Kette ab. Die Deinstallation **behält** dann Daten und Werkzeugordner, auch wenn der Nutzer „Daten löschen“ wählt. Das ist sicherer als falsches Löschen, aber ein Rest auf der Platte; der Hook schreibt „geschützter Ordner“ ins Protokoll. | – |
+| Automatische Rückkehr | `AppStartup.TryAutoRollback` aus `Program.cs` herausgelöst und getestet: Nach drei Fehlstarts geht die Rückkehr zur gesicherten v2, die Abweichung zu „zuletzt gut“ v1 wird gemeldet. Ohne Sicherung gibt es keine Rückkehr. | `T0770Korrektur3RueckkehrTests` (nur Kompilier-Rot, neue Methode) |
+
+**Tests:**
+- Core, Filter `T0770|DataLocation|BootGuard|Update|RechteKernFix12|Dependenc|Uninstall`: 47/47 (`korrektur3/gruen-core.log`).
+- Core, breiter Filter wie in Runde 2: 396/396 (`korrektur3/gruen-core-breit.log`).
+- App: `T0770Korrektur3UiTests` 1, `T0770Korrektur3RueckkehrTests` 1, `T0770Korrektur2UiTests` 2, `T0770KorrekturUiTests` 5, `T0770UpdateSicherungUiTests` 1, `T0770UpdateQuelleTests` 2, `UpdatesUiTests` 4, `UninstallPromptTests` 8, `RechteKernFix2Ui` 5 = 29/29 (`korrektur3/gruen-app-je-klasse.log`).
+- Die Ersatz-Tests für ReplaceBackup in `T0770KorrekturUiTests`/`T0770Korrektur2UiTests` nutzen jetzt den richtigen Ordner `updates\vorherige-version`.
+- Kein Volltest, kein neuer Lebenszyklus-Lauf.
+
+**Hinweis Arbeitsordner:** Frühere Läufe nutzten `_abnahme…`. Ab jetzt muss `-Work` z. B. `%TEMP%\<eigener Ordner>\trendo-abnahme-lauf4` heißen.
+
+**Berührte Dateien (Runde 3):**
+- `src/Trendo.Core/DataLocation.cs`, `src/Trendo.App/TrendoUpdater.cs`, `src/Trendo.App/Program.cs`
+- `tools/abnahme/lebenszyklus.ps1`
+- `tests/Trendo.Core.Tests/T0770Korrektur3Tests.cs`, `tests/Trendo.Core.Tests/T0770Korrektur3PfadTests.cs`, `tests/Trendo.Core.Tests/T0770Korrektur2Tests.cs`, `tests/Trendo.Core.Tests/RechteKernFix12Tests.cs`
+- `tests/Trendo.App.Tests/T0770Korrektur3UiTests.cs`, `tests/Trendo.App.Tests/T0770Korrektur3RueckkehrTests.cs`, `tests/Trendo.App.Tests/T0770KorrekturUiTests.cs`, `tests/Trendo.App.Tests/T0770Korrektur2UiTests.cs`
+- `installer/neuerungen/0.9.111.md`, `reports/T-0770/**`, `tasks/T-0770-abnahme.bericht.md`

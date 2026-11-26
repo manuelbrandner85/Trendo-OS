@@ -13,6 +13,13 @@ e4fdeb3d3830118735e6c91c23ba5002c353cc5f6b3b7d659cb94e29a629908f *./rohlogs/korr
 23fc6608675b06018a63648353306fbce70a40e19167c4d87a9c2a29e59123e3 *./rohlogs/korrektur2/m-a-skript-probe.log
 338869532f8dbbb1e798620c111257c8fd3674f36714aafbc5a1bdff345934a2 *./rohlogs/korrektur2/rot-app.log
 82d45a89ca7c1c4fcd168251af6aebb362b67e8fad8f5d551ea7e88beb63a374 *./rohlogs/korrektur2/rot-core.log
+e21b1973fe59d2a949d12fe6b0d43a157e623697b95013e512b8e20991e63814 *./rohlogs/korrektur3/gruen-app-je-klasse.log
+a72ff22397e69cd363b53913d60566086a81bce4754f6c04c6b2044c15132120 *./rohlogs/korrektur3/gruen-core-breit.log
+f3e95baeed4bf37778666b707b855424aec1d43b5596603d4a5fc1e8117774d9 *./rohlogs/korrektur3/gruen-core.log
+9b86253d5e354c017b6809e104bbd872f5dc4cd8473821a90b9d003409f22a05 *./rohlogs/korrektur3/m3-skript-probe.log
+d911f6de7bcb9854f09fc3cc0fc469bc8fa14d709e8f799812aaf7443aa55d86 *./rohlogs/korrektur3/nachkontrolle-echte-ordner.txt
+ce90afed09aca13892a32180d874fd31106c81a871d3b7ef7708885b1743bfd0 *./rohlogs/korrektur3/rot-app.log
+198f87b0d5a59b8d5124f6d93cd91e207d2486ebb5dc00e526647d2881b740ed *./rohlogs/korrektur3/rot-core.log
 bf6fd30465b0b9882003f7a2523acd6ed76de4282e9238c985e34dd27a4bbb83 *./rohlogs/lauf1-vor-fix/abnahme.log
 0d027a236ef69f7e1035356a6bc6c6d4c9d1bf15eaacba696d832e9fead64095 *./rohlogs/lauf1-vor-fix/fenster-a.png
 89f599b44903ad7dc59eb06bde07fcaea8e4181d53502617787e2e0a1892986f *./rohlogs/lauf1-vor-fix/pakete-sha256.txt

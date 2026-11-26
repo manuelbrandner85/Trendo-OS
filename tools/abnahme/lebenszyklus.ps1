@@ -7,7 +7,7 @@
 #  - Prozesse werden nur per PID beendet, und nur wenn ihre Datei unter -Work liegt
 #  - vorher/nachher wird der Stand der echten Ordner (nur lesend) verglichen
 # Aufruf (PowerShell 5.1 oder 7):
-#   powershell -NoProfile -ExecutionPolicy Bypass -File tools/abnahme/lebenszyklus.ps1 -Repo <Repo> -Work <leerer eigener Ordner> [-Phase Alles]
+#   powershell -NoProfile -ExecutionPolicy Bypass -File tools/abnahme/lebenszyklus.ps1 -Repo <Repo> -Work %TEMP%\<eigener Ordner>\trendo-abnahme-<name> [-Phase Alles] [-NurPruefen]
 # Phasen: Bauen, Installieren, Update, Leistung, Gross, Deinstallieren, Alles (= alle in dieser Reihenfolge)
 param(
     [Parameter(Mandatory = $true)][string]$Repo,
@@ -17,7 +17,8 @@ param(
     [string]$VersionB = '0.9.110-abnahme2',
     [string]$PackId = 'TrendoOSAbnahme',
     [string]$Title = 'Trendo OS Abnahme',
-    [int]$Runs = 3
+    [int]$Runs = 3,
+    [switch]$NurPruefen
 )
 $ErrorActionPreference = 'Stop'
 $Repo = (Resolve-Path $Repo).Path
@@ -25,51 +26,78 @@ if ($PackId -ieq 'TrendoOS') { throw 'Abbruch: Die Paket-Id der echten Installat
 $realLocal = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'TrendoOS'
 $realData = Join-Path ([Environment]::GetFolderPath('ApplicationData')) 'TrendoOS'
 $realTools = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'TrendoWerkzeuge'
-# Schutz (Korrektur M6): -Work darf weder ein echter Ordner sein noch darin noch darueber liegen (sonst wuerde z. B. -Work %LOCALAPPDATA%
-# die echte Installation einschliessen). Geprueft wird VOR dem Anlegen und vor jedem anderen Schritt.
-# Korrektur 2 (M-A): Verknuepfungen (Junction, symbolischer Link) in der Kette aufloesen, Netzordner ablehnen.
+# Schutz (Korrekturen M6, M-A, M-1, M-3): -Work wird VOR jedem anderen Schritt endgueltig aufgeloest (GetFinalPathNameByHandle: Junction,
+# symbolischer Link, subst) und muss
+#  - lokal sein (kein UNC, kein verbundenes Netzlaufwerk),
+#  - unter dem Temp-Ordner liegen ([IO.Path]::GetTempPath(), ebenfalls aufgeloest),
+#  - einen Ordner mit dem festen Stamm "trendo-abnahme-*" im Pfad unterhalb von Temp haben,
+#  - neu oder leer sein oder die Marke ".trendo-abnahme" eines frueheren Laufs dieses Skripts tragen,
+#  - weder ein echter Trendo-Ordner sein noch darin oder darueber liegen.
+# Sonst Exit 90, ohne dass etwas angelegt, gebaut, gestartet oder beendet wird. -NurPruefen prueft nur (Exit 0 = zulaessig).
+Add-Type -TypeDefinition @"
+using System; using System.Runtime.InteropServices; using Microsoft.Win32.SafeHandles;
+public static class AbnFinal {
+  [DllImport("kernel32.dll", CharSet=CharSet.Unicode, SetLastError=true)] static extern SafeFileHandle CreateFileW(string n, uint a, uint s, IntPtr sec, uint d, uint f, IntPtr t);
+  [DllImport("kernel32.dll", CharSet=CharSet.Unicode, SetLastError=true)] static extern uint GetFinalPathNameByHandleW(SafeFileHandle h, char[] b, uint n, uint f);
+  public static string Get(string existing) {
+    using (var h = CreateFileW(existing, 0, 7, IntPtr.Zero, 3, 0x02000000, IntPtr.Zero)) {
+      if (h.IsInvalid) return null;
+      var b = new char[1024]; var n = GetFinalPathNameByHandleW(h, b, (uint)b.Length, 0);
+      if (n > b.Length) { b = new char[n + 1]; n = GetFinalPathNameByHandleW(h, b, (uint)b.Length, 0); }
+      if (n == 0 || n > b.Length) return null;
+      var s = new string(b, 0, (int)n);
+      if (s.StartsWith(@"\\?\UNC\", StringComparison.OrdinalIgnoreCase)) return @"\\" + s.Substring(8);
+      if (s.StartsWith(@"\\?\")) s = s.Substring(4);
+      return s;
+    }
+  }
+}
+"@
 function Resolve-Final([string]$p) {
     $full = [IO.Path]::GetFullPath($p).TrimEnd('\', '/')
-    for ($hop = 0; $hop -lt 32; $hop++) {
-        $root = [IO.Path]::GetPathRoot($full)
-        $parts = @($full.Substring($root.Length).Split([char[]]@('\', '/'), [StringSplitOptions]::RemoveEmptyEntries))
-        $cur = $root.TrimEnd('\', '/'); $redir = $false
-        for ($i = 0; $i -lt $parts.Count; $i++) {
-            $next = $cur + '\' + $parts[$i]
-            $rest = @($parts | Select-Object -Skip ($i + 1))
-            $it = Get-Item -LiteralPath $next -Force -ErrorAction SilentlyContinue
-            if (-not $it) { $cur = (@($next) + $rest) -join '\'; break }
-            if ($it.LinkType -in @('Junction', 'SymbolicLink')) {
-                $t = @($it.Target)[0]; if (-not $t) { return $null }
-                if (-not [IO.Path]::IsPathRooted($t)) { $t = Join-Path (Split-Path $next -Parent) $t }
-                $full = (@([IO.Path]::GetFullPath($t).TrimEnd('\', '/')) + $rest) -join '\'; $redir = $true; break
-            }
-            $cur = $next
-        }
-        if (-not $redir) { return $cur.TrimEnd('\', '/') }
+    if ($full.Length -eq 2 -and $full[1] -eq ':') { $full += '\' }
+    $existing = $full; $rest = New-Object System.Collections.Generic.List[string]
+    while (-not (Test-Path -LiteralPath $existing)) {
+        $parent = [IO.Path]::GetDirectoryName($existing)
+        if (-not $parent) { return $null }
+        $rest.Insert(0, [IO.Path]::GetFileName($existing)); $existing = $parent
     }
-    return $null
+    $fin = [AbnFinal]::Get($existing)
+    if (-not $fin) { return $null }
+    return ((@($fin.TrimEnd('\')) + $rest) -join '\').TrimEnd('\')
 }
 function Test-Network([string]$p) {
     if ($p.StartsWith('\\') -or $p.StartsWith('//')) { return $true }
     try { return ([IO.DriveInfo]::new([IO.Path]::GetPathRoot($p)).DriveType -eq [IO.DriveType]::Network) } catch { return $true }
 }
 function Test-WorkSafe([string]$w) {
-    if (Test-Network $w) { return "Netzordner $w" }
+    if (-not $w -or -not [IO.Path]::IsPathRooted($w)) { return "kein vollstaendiger Pfad: $w" }
+    if (Test-Network $w) { return "Netzordner: $w" }
     $f = Resolve-Final $w
     if (-not $f -or (Test-Network $f)) { return "nicht aufloesbar oder Netzordner: $w" }
-    $full = $f + '\'
+    $tmp = Resolve-Final ([IO.Path]::GetTempPath())
+    if (-not $tmp) { return 'Temp-Ordner nicht aufloesbar' }
+    $tmpS = $tmp.TrimEnd('\') + '\'
+    if (-not ($f + '\').StartsWith($tmpS, [StringComparison]::OrdinalIgnoreCase) -or ($f + '\') -eq $tmpS) { return "liegt aufgeloest nicht unter dem Temp-Ordner: $f" }
+    $below = @($f.Substring($tmpS.Length).Split('\') | Where-Object { $_ })
+    if (-not ($below | Where-Object { $_ -like 'trendo-abnahme-*' })) { return "kein Ordner mit dem Stamm trendo-abnahme-* im Pfad: $f" }
     foreach ($r in @($realLocal, $realData, $realTools)) {
-        $rf = Resolve-Final $r; if (-not $rf) { $rf = $r }
-        $rr = $rf.TrimEnd('\', '/') + '\'
-        if ($full.StartsWith($rr, [StringComparison]::OrdinalIgnoreCase) -or $rr.StartsWith($full, [StringComparison]::OrdinalIgnoreCase)) { return $r }
+        $rf = Resolve-Final $r; if (-not $rf) { $rf = [IO.Path]::GetFullPath($r) }
+        $rr = $rf.TrimEnd('\', '/') + '\'; $full = $f + '\'
+        if ($full.StartsWith($rr, [StringComparison]::OrdinalIgnoreCase) -or $rr.StartsWith($full, [StringComparison]::OrdinalIgnoreCase)) { return "echter Ordner, darin oder darueber: $r" }
+    }
+    if (Test-Path -LiteralPath $f) {
+        $items = @(Get-ChildItem -Force -LiteralPath $f -ErrorAction SilentlyContinue)
+        if ($items.Count -gt 0 -and -not (Test-Path -LiteralPath (Join-Path $f '.trendo-abnahme'))) { return "Ordner ist nicht leer und nicht von diesem Skript angelegt: $f" }
     }
     return $null
 }
 $bad = Test-WorkSafe $Work
-if ($bad) { Write-Output "Abbruch: -Work ist ein echter Ordner, liegt darin oder darueber ($bad). Nichts wurde gestartet oder beendet."; exit 90 }
+if ($bad) { Write-Output "Abbruch: -Work ist nicht zulaessig ($bad). Nichts wurde angelegt, gestartet oder beendet."; exit 90 }
+if ($NurPruefen) { Write-Output "-Work zulaessig: $(Resolve-Final $Work)"; exit 0 }
+$Work = Resolve-Final $Work
 New-Item -ItemType Directory -Force $Work | Out-Null
-$Work = (Resolve-Path $Work).Path
+Set-Content -LiteralPath (Join-Path $Work '.trendo-abnahme') -Value "Arbeitsordner von tools/abnahme/lebenszyklus.ps1" -Encoding ASCII
 
 $Feed = Join-Path $Work 'feed'; $Pakete = Join-Path $Work 'pakete'; $Inst = Join-Path $Work 'installiert'
 $Instanz = Join-Path $Work 'instanz'; $Tmp = Join-Path $Work 'tmp'; $LogDir = Join-Path $Work 'log'; $Gross = Join-Path $Work 'gross'

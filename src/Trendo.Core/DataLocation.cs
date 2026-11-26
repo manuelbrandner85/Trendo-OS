@@ -13,14 +13,26 @@ public static class DataLocation
     /// <summary>Wurzel der Prüf-Instanz oder null (keine/ungültige Angabe: dann gelten die normalen Ordner).
     /// Korrektur T-0770 (M4): abgelehnt werden Netzpfade und jeder Ordner, der gleich einem echten Trendo-Ordner ist, darüber liegt
     /// (z. B. %LOCALAPPDATA%, %APPDATA%, Benutzerordner, Laufwerk) oder darunter – eine Prüf-Instanz darf die echte Installation nie berühren.</summary>
-    public static string? Instance(string? value = null)
+    public static string? Instance(string? value = null) => Instance(value ?? Environment.GetEnvironmentVariable(InstanceVar), RealRoots());
+
+    /// <summary>Wie <see cref="Instance(string?)"/>, mit vorgegebenen „echten“ Ordnern (für Tests mit künstlichen Ordnern).
+    /// Korrektur 2 (M-A) und 3 (M-1, M-2): Pfade werden endgültig aufgelöst (Junction, Link, subst); ungültig ist die Instanz auch, wenn
+    /// ihr Daten-, Werkzeug- oder Altordner eine Verknüpfung ist oder aufgelöst bei einem echten Ordner landet.</summary>
+    public static string? Instance(string? value, IReadOnlyList<string> realRoots)
     {
-        var v = (value ?? Environment.GetEnvironmentVariable(InstanceVar))?.Trim().Trim('"');
+        var v = value?.Trim().Trim('"');
         if (string.IsNullOrEmpty(v) || !Path.IsPathFullyQualified(v) || IsNetwork(v)) return null;
-        // Korrektur 2 (M-A): Verknüpfungen (Junction, symbolischer Link) auflösen – sonst ginge eine Junction auf %LOCALAPPDATA% durch
         var full = FinalPath(v);
         if (full is null || IsNetwork(full)) return null;
-        return RealRoots().Any(r => Related(full, FinalPath(r) ?? r)) ? null : full;
+        var roots = realRoots.Select(r => FinalPath(r) ?? Path.GetFullPath(r)).ToList();
+        if (roots.Any(r => Related(full, r))) return null;
+        foreach (var sub in new[] { DefaultIn(full), ToolsRootIn(full), LegacyIn(full) })
+        {
+            var d = new DirectoryInfo(sub);
+            if (d.Exists && (d.Attributes.HasFlag(FileAttributes.ReparsePoint) || d.LinkTarget is not null)) return null;
+            if (FinalPath(sub) is not { } fs || roots.Any(r => Related(fs, r))) return null;
+        }
+        return full;
     }
 
     /// <summary>Netzpfad (\\server, //server) oder ein auf einen Laufwerksbuchstaben verbundener Netzordner.</summary>
@@ -32,11 +44,24 @@ public static class DataLocation
         catch (Exception e) when (e is ArgumentException or IOException or UnauthorizedAccessException) { return true; } // im Zweifel ablehnen
     }
 
-    /// <summary>Endgültiger Pfad: jeder vorhandene Ordner der Kette wird aufgelöst, wenn er eine Verknüpfung ist (Junction, symbolischer Link);
-    /// nicht vorhandene Teile werden angehängt. Null, wenn die Kette nicht auflösbar ist (z. B. Schleife).</summary>
+    /// <summary>Endgültiger Pfad. Korrektur 3 (M-1): unter Windows über GetFinalPathNameByHandle auf den längsten vorhandenen Teil – das löst
+    /// Junctions, symbolische Links und subst-Laufwerke auf; nicht vorhandene Teile werden angehängt. Sonst (andere Systeme) Verknüpfungen
+    /// Schritt für Schritt. Null, wenn nicht auflösbar.</summary>
     public static string? FinalPath(string path)
     {
         var full = Path.TrimEndingDirectorySeparator(Path.GetFullPath(path));
+        if (OperatingSystem.IsWindows())
+        {
+            var existing = full; var rest = new Stack<string>();
+            while (!Directory.Exists(existing) && !File.Exists(existing))
+            {
+                var parent = Path.GetDirectoryName(existing);
+                if (parent is null) return full; // nichts vorhanden (z. B. Laufwerk fehlt): unverändert
+                rest.Push(Path.GetFileName(existing)); existing = parent;
+            }
+            if (NativeFinal(existing) is not { } fin) return null;
+            return Path.TrimEndingDirectorySeparator(Path.Combine([fin, .. rest]));
+        }
         for (var hop = 0; hop < 32; hop++)
         {
             var root = Path.GetPathRoot(full) ?? "";
@@ -61,6 +86,34 @@ public static class DataLocation
             if (!redirected) return Path.TrimEndingDirectorySeparator(cur);
         }
         return null;
+    }
+
+    [System.Runtime.InteropServices.DllImport("kernel32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode, SetLastError = true)]
+    static extern Microsoft.Win32.SafeHandles.SafeFileHandle CreateFileW(string name, uint access, uint share, IntPtr sec, uint disposition, uint flags, IntPtr template);
+    [System.Runtime.InteropServices.DllImport("kernel32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode, SetLastError = true)]
+    static extern uint GetFinalPathNameByHandleW(Microsoft.Win32.SafeHandles.SafeFileHandle h, char[] buffer, uint size, uint flags);
+
+    /// <summary>GetFinalPathNameByHandle (FILE_FLAG_BACKUP_SEMANTICS, ohne Zugriffsrechte) mit \\?\- bzw. \\?\UNC\-Präfix normalisiert.</summary>
+    static string? NativeFinal(string existing)
+    {
+        using var h = CreateFileW(existing, 0, 7, IntPtr.Zero, 3, 0x02000000, IntPtr.Zero);
+        if (h.IsInvalid) return null;
+        var buf = new char[1024];
+        var n = GetFinalPathNameByHandleW(h, buf, (uint)buf.Length, 0);
+        if (n > buf.Length) { buf = new char[n + 1]; n = GetFinalPathNameByHandleW(h, buf, (uint)buf.Length, 0); }
+        if (n == 0 || n > buf.Length) return null;
+        var s = new string(buf, 0, (int)n);
+        if (s.StartsWith(@"\\?\UNC\", StringComparison.OrdinalIgnoreCase)) return @"\\" + s[8..];
+        if (s.StartsWith(@"\\?\", StringComparison.Ordinal)) s = s[4..];
+        return s;
+    }
+
+    /// <summary>Ist der Pfad selbst oder ein Ordner darüber eine Verknüpfung?</summary>
+    static bool LinkInPathOrChain(string full)
+    {
+        var d = new DirectoryInfo(full);
+        if (d.Exists && (d.Attributes.HasFlag(FileAttributes.ReparsePoint) || d.LinkTarget is not null)) return true;
+        return ReparseInChain(full);
     }
 
     /// <summary>Liegt in der Kette über <paramref name="full"/> (ohne Laufwerk) eine Verknüpfung?</summary>
@@ -92,6 +145,7 @@ public static class DataLocation
     public static int MigrateLegacy(string legacyRoot, string newRoot)
     {
         if (!Directory.Exists(legacyRoot) || Path.GetFullPath(legacyRoot) == Path.GetFullPath(newRoot)) return 0;
+        if (LinkInPathOrChain(Path.GetFullPath(legacyRoot))) return 0; // Korrektur 3 (M-2): nie über eine Verknüpfung hinweg verschieben
         Directory.CreateDirectory(newRoot);
         var n = 0;
         foreach (var e in Directory.EnumerateFileSystemEntries(legacyRoot))

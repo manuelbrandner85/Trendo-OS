@@ -1,0 +1,5 @@
+    T-0770 N-2: ReplaceBackup lehnt einen anderen Zielordner ab und schreibt dort nichts [FAIL]
+      Assert.False() Failure
+      Expected: False
+      Actual:   True
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 1, Skipped: 0, Not Run: 0, Time: 1,689s

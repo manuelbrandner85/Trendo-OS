@@ -1,0 +1,3 @@
+﻿C:\Users\<user>\AppData\Local\TrendoOS :: 434 Eintraege rekursiv, 403660710 Bytes, Ordner 2026-11-23T22:36:34.7662523Z, Liste-SHA256 57664ee351c78d6289ae33999dbcc04726294a80815fee3b56e8f8ddb176a8b0 (Dauer 0 s, Stand 2026-11-26 06:59:58)
+C:\Users\<user>\AppData\Roaming\TrendoOS :: 40983 Eintraege rekursiv, 107835377152 Bytes, Ordner 2026-11-01T21:05:07.5814032Z, Liste-SHA256 5257bbf514f57840b498e0e5216742e82a13efde25f6abe894b45b92f257ecef (Dauer 5 s, Stand 2026-11-26 07:00:03)
+C:\Users\<user>\AppData\Local\TrendoWerkzeuge :: 297372 Eintraege rekursiv, 139840966273 Bytes, Ordner 2026-11-07T14:22:07.7860016Z, Liste-SHA256 cbedb46028960723f3bcd95bec9c246946c2086ed4e145b12b7962f0a984af9d (Dauer 49 s, Stand 2026-11-26 07:00:52)

@@ -20,29 +20,8 @@ public class T0770Korrektur2Tests
     /// <summary>Nur die Verknüpfung entfernen: Directory.Delete ohne Rekursion löscht bei einer Junction nur den Verweis.</summary>
     static void RemoveLink(string link) { if (new DirectoryInfo(link) is { Exists: true, LinkTarget: not null }) Directory.Delete(link, recursive: false); }
 
-    [Fact(DisplayName = "T-0770 M-A: Junction auf %LOCALAPPDATA% oder den echten Werkzeugordner wird nicht als Prüf-Instanz angenommen")]
-    public void Junction_to_real_folders_rejected()
-    {
-        if (!OperatingSystem.IsWindows()) return;
-        var local = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        var tmp = Directory.CreateTempSubdirectory("trendo-t0770-junction-").FullName;
-        var j1 = Path.Combine(tmp, "auf-localappdata");
-        var j2 = Path.Combine(tmp, "auf-werkzeuge");
-        var tools = Path.Combine(local, DataLocation.ToolsFolderName);
-        try
-        {
-            Assert.True(Junction(j1, local), "Junction konnte nicht angelegt werden");
-            Assert.Null(DataLocation.Instance(j1)); // sonst zeigte ToolsRootIn(j1) auf den echten Werkzeugordner
-            if (Directory.Exists(tools) && Junction(j2, tools)) Assert.Null(DataLocation.Instance(j2));
-            Assert.Equal(Path.GetFullPath(Path.Combine(tmp, "eigen")), DataLocation.Instance(Path.Combine(tmp, "eigen"))); // normaler eigener Ordner bleibt erlaubt
-        }
-        finally
-        {
-            RemoveLink(j1); RemoveLink(j2);
-            Assert.True(Directory.Exists(local)); // Ziel unberührt
-            Directory.Delete(tmp, recursive: false);
-        }
-    }
+    // Korrektur 3 (N-6): der frühere Test mit einer Junction auf das echte %LOCALAPPDATA% ist ersetzt durch
+    // T0770Korrektur3Tests.Junction_to_artificial_real_rejected (nur künstliche Ziele im Temp).
 
     [Fact(DisplayName = "T-0770 M-A: Werkzeugordner hinter einer Junction in der Elternkette wird beim Deinstallieren nicht gelöscht")]
     public void Removable_tools_rejects_reparse_parent()
