@@ -50,7 +50,7 @@ public class T0779_Fremd
                 Titel = "Europa-Quiz", Beschreibung = "Beleg T-0779", Sekunden = 30, TempoBonus = true,
                 Fragen =
                 [
-                    new() { Typ = "auswahl", Text = "Hauptstadt von Frankreich?", Antworten = [new() { Text = "Paris", Richtig = true }, new() { Text = "Lyon" }, new() { Text = "Nizza" }] },
+                    new() { Typ = "auswahl", Text = "Hauptstadt von Frankreich? (<!-- ist hier kein Kommentar)", Antworten = [new() { Text = "Paris", Richtig = true }, new() { Text = "Lyon" }, new() { Text = "Nizza" }] },
                     new() { Typ = "mehrfach", Text = "Nachbarn von Deutschland?", Antworten = [new() { Text = "Polen", Richtig = true }, new() { Text = "Österreich", Richtig = true }, new() { Text = "Spanien" }], Punkte = 2 },
                     new() { Typ = "wahrfalsch", Text = "Die Donau mündet ins Schwarze Meer.", Antworten = QuizKit.WahrFalsch(true) },
                     new() { Typ = "luecke", Text = "Der höchste Berg Deutschlands ist die [Zugspitze]." },
@@ -76,10 +76,10 @@ public class T0779_Fremd
             foreach (var f in new[] { html, pdf, gift, khtml, zip }) log.AppendLine($"- {Path.GetFileName(f)}: {new FileInfo(f).Length} Bytes, SHA-256 {Hash(f)}");
             log.AppendLine();
 
-            string Dom(string file)
+            string Dom(string file, string hash = "#selbsttest")
             {
                 var prof = Path.Combine(tmp, "edge-" + Guid.NewGuid().ToString("N")[..6]);
-                var url = new Uri(file).AbsoluteUri + "#selbsttest";
+                var url = new Uri(file).AbsoluteUri + hash;
                 var (code, outp) = Run(log, Browser, "--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check", "--user-data-dir=" + prof, "--virtual-time-budget=15000", "--dump-dom", url);
                 Assert.Equal(0, code);
                 return outp;
@@ -87,7 +87,11 @@ public class T0779_Fremd
             log.AppendLine("## Google Chrome (headless) – HTML-Quiz mit #selbsttest");
             var dom = Dom(html);
             Assert.Contains("data-tq-result=\"100\"", dom); Assert.Contains("Auswertung", dom); Assert.Contains("Bestanden", dom);
-            log.AppendLine("→ Ergebnis im DOM: data-tq-result=\"100\", „Auswertung“, „Bestanden“"); log.AppendLine();
+            log.AppendLine("→ Ergebnis im DOM: data-tq-result=\"100\", „Auswertung“, „Bestanden“ (Fragetext mit „<!--“ fehlerfrei gelesen)"); log.AppendLine();
+            log.AppendLine("## Google Chrome (headless) – Lückenregel des Spielers (#regeln) gegen Trendo (LearnBox.CheckTyped)");
+            dom = Dom(html, "#regeln");
+            Assert.Contains($"data-tq-rules=\"{QuizHtml.RuleExpectation}\"", dom);
+            log.AppendLine($"→ data-tq-rules=\"{QuizHtml.RuleExpectation}\" – gleich wie in Trendo (Fälle: {string.Join(", ", QuizHtml.RuleCases.Select(c => c.Expected + "/" + c.Typed))})"); log.AppendLine();
 
             log.AppendLine("## Google Chrome (headless) – Kurs-Webseite mit #selbsttest");
             dom = Dom(khtml);

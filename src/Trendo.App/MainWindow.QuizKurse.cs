@@ -107,7 +107,7 @@ public partial class MainWindow
             ("Laden", [
                 new ProgramCmd("quiz-import", "Fragen laden (Text, GIFT) …", d => _ = QuizPickImport(d), Tip: "Moodle-GIFT oder das einfache Fragen-Textformat einlesen."),
                 new ProgramCmd("quiz-from-cards", "Aus Karteikarten", d => QuizFromCards(d), Tip: "Karten eines Stapels aus „Lernen mit Karteikarten“ als Auswahlfragen."),
-                new ProgramCmd("quiz-to-cards", "In Karteikarten übernehmen", d => QuizToCards(d), Tip: "Jede Frage wird eine Karteikarte (Frage → Lösung).", Level: 1),
+                new ProgramCmd("quiz-export-cards", "In Karteikarten übernehmen", d => QuizToCards(d), Tip: "Jede Frage wird eine Karteikarte (Frage → Lösung).", Level: 1),
                 new ProgramCmd("quiz-open-source", "Text für die KI laden …", d => _ = QuizPickSource(d), Tip: "Text- oder Markdown-Datei, aus der die KI Fragen machen soll.", Level: 1),
             ]),
         ],
@@ -145,7 +145,7 @@ public partial class MainWindow
              + "mehrere richtige Schreibweisen mit | trennen ([Rom|Roma]). Rechtsklick auf eine Frage: duplizieren, verschieben, Art ändern, löschen. „▶ Quiz spielen“ (F5) startet den Spielmodus – "
              + "Tasten 1–4 wählen, Eingabe prüft. Ausgabe: HTML zum Weitergeben (läuft in jedem Browser, ohne Internet), PDF mit Lösungsblatt, GIFT für Moodle. "
              + "KI: Text ins Feld „Text für die KI“ legen und z. B. „Mach 5 Fragen aus dem Text“ schreiben – die Vorschau zeigt die Fragen, „Ja, behalten“ übernimmt sie als einen Schritt.",
-    }, "quiz", "quiz erstellen", "test", "prüfungsfragen", "multiple choice", "lückentext", "zuordnen", "kahoot", "quizlet", "moodle", "gift", "h5p", "abfrage", "klassenarbeit");
+    }, "quiz", "quiz erstellen", "test", "prüfungsfragen", "multiple choice", "lückentext", "zuordnen", "moodle", "gift", "abfrage", "klassenarbeit");
 
     /// <summary>Für Ausgaben: Quiz ohne Fehler (sonst eine Meldung mit dem ersten Fehler).</summary>
     static Quiz QuizReady(ProgramDocument d)
@@ -255,6 +255,15 @@ public partial class MainWindow
         return n;
     }
 
+    /// <summary>T-0779: höchstens 2 MB Text einlesen (Fragen, Text für die KI, Quiz im Kurs).</summary>
+    public const long QuizMaxFileBytes = 2 * 1024 * 1024;
+    static string QuizReadText(string file)
+    {
+        if (!File.Exists(file)) throw new FileNotFoundException("Die Datei gibt es nicht.", file);
+        if (new FileInfo(file).Length > QuizMaxFileBytes) throw new InvalidDataException("Die Datei ist zu groß (höchstens 2 MB).");
+        return File.ReadAllText(file);
+    }
+
     public void QuizSetSource(ProgramDocument d, string text, string from = "")
     {
         var t = (text ?? "").Replace("\r", "").Trim();
@@ -271,7 +280,7 @@ public partial class MainWindow
     async Task QuizPickSource(ProgramDocument d)
     {
         var f = await PickMediaFile("quiz-source", "Text für die KI", ["*.txt", "*.md"]);
-        if (f is not null) ProgramRun(QuizKey, () => QuizSetSource(d, File.ReadAllText(f), Path.GetFileName(f)));
+        if (f is not null) ProgramRun(QuizKey, () => QuizSetSource(d, QuizReadText(f), Path.GetFileName(f)));
     }
 
     // ---------- KI-Fachaktion (T-0774-Baustein) ----------
@@ -284,8 +293,10 @@ public partial class MainWindow
         {
             var (got, skipped) = QuizText.Parse(a.GetValueOrDefault("fragen") ?? "");
             if (got.Count == 0) throw new InvalidOperationException("Die KI hat keine lesbaren Fragen geliefert" + (skipped.Count > 0 ? $" (ausgelassen: {skipped[0]})." : "."));
+            var cut = Math.Max(0, got.Count - 20);
             if (got.Count > 20) got = got[..20];
             var at = QuizOf(d).Fragen.Count;
+            _progMsg[QuizKey] = $"KI: {got.Count} Fragen" + (cut > 0 ? $", {cut} weitere weggelassen (höchstens 20 je Auftrag)" : "") + (skipped.Count > 0 ? $", {skipped.Count} unlesbar ausgelassen (z. B. {skipped[0]})" : "") + ".";
             QuizChange(d, $"{got.Count} Fragen aus dem Text", q => q.Fragen.AddRange(got));
             d.Data["sel"] = at;
         },
@@ -736,6 +747,7 @@ public partial class MainWindow
             ]),
         ],
         KiActions = [CourseKiLesson],
+        KiLocked = ["bild", "lernende", "erledigt"], // T-0779 M2: Bildpfade und Fortschritt der Lernenden setzt nur die Person (an jeder Stelle des Pfads und im geschriebenen Wert)
         KiHint = "Neue Lektionen schreibst du NUR mit EINEM Schritt „kurs.lektion“ – nie mit „cs-add-lesson“ oder anderen Menübefehlen: „titel“ ist der Titel, „inhalt“ der fertige Lerntext – Absätze durch Leerzeilen getrennt, „## “ am Zeilenanfang für eine Überschrift, "
                + "„- “ für Listenpunkte, „! “ für einen Merksatz. Optional „kapitel“ = Name des Kapitels (sonst das Kapitel der gewählten Lektion). Schreib verständlich, in kurzen Sätzen, erfinde keine Fakten.",
         Exports =
@@ -757,7 +769,7 @@ public partial class MainWindow
         Help = "Links die Gliederung: Kapitel und Lektionen anklicken, mit Rechtsklick verschieben oder löschen. Rechts daneben die gewählte Lektion aus Bausteinen – Text, Überschrift, Liste, Hinweis, Bild und Quiz. "
              + "Bilder und Quiz-Dateien kannst du auf die Lektion ziehen. „Kursansicht“ (F5) zeigt den Kurs wie für Lernende: Person wählen, Lektion lesen, Quiz spielen, „Lektion abschließen“. "
              + "Ausgabe: Webseite (eine HTML-Datei, läuft ohne Internet; Fortschritt bleibt im Browser) oder SCORM-Paket (ZIP) zum Hochladen in Moodle, ILIAS und andere Lernplattformen.",
-    }, "kurs", "kurse", "online-kurs", "e-learning", "lektion", "lernmodul", "schulung", "scorm", "moodle", "lernplattform", "unterricht", "fortbildung", "rise", "teachable");
+    }, "kurs", "kurse", "online-kurs", "e-learning", "lektion", "lernmodul", "schulung", "scorm", "moodle", "lernplattform", "unterricht", "fortbildung");
 
     static Kurs CourseReady(ProgramDocument d)
     {
@@ -845,8 +857,8 @@ public partial class MainWindow
 
     public void CourseAddImage(ProgramDocument d, string file)
     {
-        if (!KreativSafe.LocalFile(file, KreativSafe.MaxImageBytes)) throw new InvalidOperationException("Bitte ein Bild auf diesem Rechner wählen (höchstens 25 MB).");
-        if (Path.GetExtension(file).ToLowerInvariant() is not (".png" or ".jpg" or ".jpeg" or ".gif" or ".webp")) throw new InvalidDataException("Als Bild gehen PNG, JPG, GIF und WEBP.");
+        if (!KreativSafe.LocalFile(file, KursKit.MaxBildBytes)) throw new InvalidOperationException($"Bitte ein Bild auf diesem Rechner wählen (höchstens {KursKit.MaxBildBytes / 1024 / 1024} MB).");
+        if (!KursKit.BildOk(file)) throw new InvalidDataException("Als Bild gehen PNG, JPG, GIF, WEBP und SVG.");
         CourseInLesson(d, "Bild", l => l.Bloecke.Add(new KursBlock { Art = "bild", Bild = Path.GetFullPath(file), Text = "" }));
         _progMsg[CourseKey] = $"Bild „{Path.GetFileName(file)}“ eingefügt – darunter kannst du eine Bildunterschrift schreiben.";
     }
@@ -855,6 +867,7 @@ public partial class MainWindow
     public void CourseAddQuizFile(ProgramDocument d, string file)
     {
         if (!File.Exists(file)) throw new FileNotFoundException("Die Datei gibt es nicht.", file);
+        if (new FileInfo(file).Length > QuizMaxFileBytes) throw new InvalidDataException("Die Datei ist zu groß (höchstens 2 MB).");
         Quiz q;
         if (file.EndsWith(ProgramDocument.Extension, StringComparison.OrdinalIgnoreCase))
         {
@@ -1065,7 +1078,7 @@ public partial class MainWindow
             {
                 case "bild":
                     if (CourseBitmap(b.Bild) is { } bmp) sp.Children.Add(new Image { Name = n + "-img", Source = bmp, MaxHeight = 260, HorizontalAlignment = HorizontalAlignment.Left });
-                    else sp.Children.Add(P("Bild fehlt: " + Path.GetFileName(b.Bild), K4Bad, 12));
+                    else sp.Children.Add(P(Path.GetExtension(b.Bild).Equals(".svg", StringComparison.OrdinalIgnoreCase) && File.Exists(b.Bild) ? "SVG-Bild „" + Path.GetFileName(b.Bild) + "“ – erscheint in der Kurs-Webseite." : "Bild fehlt: " + Path.GetFileName(b.Bild), K4Bad, 12));
                     sp.Children.Add(BueroBox(n + "-text", b.Text, "Bildunterschrift (freiwillig)", v => SetB("Bildunterschrift", y => y.Text = v)));
                     break;
                 case "quiz" when b.Quiz is { } q:
@@ -1136,7 +1149,7 @@ public partial class MainWindow
                             QuizStopTimer(sid); _quizPlay.Remove(sid);
                         }));
                     else
-                        box.Children.Add(WkBtn("cs-quiz-start-" + b.Id, best is null ? "▶ Quiz starten" : "▶ Nochmal", CourseKey, () => _quizPlay[sid] = new QuizPlay(new QuizSpiel(q, Environment.TickCount))));
+                        box.Children.Add(WkBtn("cs-quiz-start-" + b.Id, best is null ? "▶ Quiz starten" : "▶ Nochmal", CourseKey, () => _quizPlay[sid] = new QuizPlay(new QuizSpiel(KursKit.MitKursGrenze(q, k), Environment.TickCount))));
                     sp.Children.Add(WkCard(box, "cs-quiz-" + b.Id + "-card"));
                     break;
                 }

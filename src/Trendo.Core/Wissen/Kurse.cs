@@ -129,6 +129,11 @@ public static class KursKit
         return new(done, all.Count, all.Count == 0 ? 0 : (int)Math.Round(100.0 * done / all.Count), got.Count == 0 ? null : (int)Math.Round(got.Average()), all.Count > 0 && done == all.Count);
     }
 
+    /// <summary>T-0779 M2: nur diese Endungen werden in die Kurs-Webseite eingebettet.</summary>
+    public static readonly string[] BildEndungen = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"];
+    public const long MaxBildBytes = 15L * 1024 * 1024;
+    public static bool BildOk(string file) => file.Length > 0 && File.Exists(file) && BildEndungen.Contains(Path.GetExtension(file).ToLowerInvariant()) && new FileInfo(file).Length <= MaxBildBytes;
+
     public static List<CvFinding> Pruefen(Kurs k)
     {
         var r = new List<CvFinding>();
@@ -146,6 +151,7 @@ public static class KursKit
                 foreach (var b in l.Bloecke)
                 {
                     if (b.Art == "bild" && (b.Bild.Length == 0 || !File.Exists(b.Bild))) r.Add(new(true, n, "Ein Bild fehlt oder die Datei gibt es nicht mehr."));
+                    else if (b.Art == "bild" && !BildOk(b.Bild)) r.Add(new(true, n, $"„{Path.GetFileName(b.Bild)}“ ist kein Bild (PNG, JPG, GIF, WEBP, SVG) oder größer als {MaxBildBytes / 1024 / 1024} MB."));
                     if (b.Art == "quiz" && b.Quiz is null) r.Add(new(true, n, "Ein Quiz-Baustein hat kein Quiz."));
                     if (b.Art == "quiz" && b.Quiz is { } q && QuizKit.Pruefen(q).FirstOrDefault(x => x.Fehler) is { } e) r.Add(new(true, n, $"Quiz „{q.Titel}“: {e.Feld} – {e.Text}"));
                     if (b.Art is "text" or "ueberschrift" or "liste" or "hinweis" && b.Text.Trim().Length == 0) r.Add(new(false, n, $"Ein {ArtName(b.Art)}-Baustein ist leer."));
@@ -206,7 +212,11 @@ public static class KursKit
         return k;
     }
 
-    static string Q(string s) => "\"" + (s ?? "").Replace("\"", "\"\"") + "\"";
+    /// <summary>CSV-Zelle in Anführungszeichen; Zellen, die mit =, +, -, @ beginnen, bekommen ein ' davor (keine Formel in Excel/Calc).</summary>
+    static string Q(string s) { var v = s ?? ""; if (v.Length > 0 && v[0] is '=' or '+' or '-' or '@') v = "'" + v; return "\"" + v.Replace("\"", "\"\"") + "\""; }
+
+    /// <summary>Quiz im Kurs mit der Bestehensgrenze des Kurses (einheitlich in Studio, Webseite und SCORM).</summary>
+    public static Quiz MitKursGrenze(Quiz q, Kurs k) { var c = q.Copy(); c.Bestehen = k.Bestehen; return c; }
 
     /// <summary>Fortschritt aller Lernenden als CSV (Semikolon, UTF-8 mit BOM – öffnet sich in Excel und LibreOffice Calc).</summary>
     public static string Csv(Kurs k)
@@ -239,6 +249,14 @@ public static class KursKit
 
 /// <summary>Kurs als Webseite: eine einzige HTML-Datei mit Gliederung, Lektionen, eingebetteten Bildern und Quizzen (Quiz-Spieler aus <see cref="QuizHtml"/>).
 /// Der Fortschritt bleibt im Browser (je Name) – im SCORM-Paket meldet die Seite ihn zusätzlich an die Lernplattform (SCORM 1.2: Status, Punkte, Lesezeichen, Stand).</summary>
+static class KursJson
+{
+    /// <summary>Alle Quiz-Objekte der Bausteine im Kurs-JSON.</summary>
+    public static IEnumerable<JsonObject> DescendantsQuiz(this JsonObject kurs) =>
+        (kurs["kapitel"] as JsonArray ?? []).OfType<JsonObject>().SelectMany(c => (c["lektionen"] as JsonArray ?? []).OfType<JsonObject>())
+            .SelectMany(l => (l["bloecke"] as JsonArray ?? []).OfType<JsonObject>()).Select(b => b["quiz"] as JsonObject).OfType<JsonObject>();
+}
+
 public static class KursHtml
 {
     const string Css = """
@@ -262,9 +280,10 @@ function kLoad(){st={erledigt:[],quiz:{}};try{var s=localStorage.getItem(kKey())
 function kSave(){try{localStorage.setItem(kKey(),JSON.stringify(st));}catch(e){}
  if(API){var done=lessons.filter(function(x){return st.erledigt.indexOf(x.l.id)>=0;}).length;var qs=Object.keys(st.quiz).map(function(k){return st.quiz[k];});
   var score=qs.length?Math.round(qs.reduce(function(a,b){return a+b;},0)/qs.length):Math.round(100*done/Math.max(1,lessons.length));
-  try{API.LMSSetValue('cmi.suspend_data',JSON.stringify(st).slice(0,4000));API.LMSSetValue('cmi.core.lesson_location',lessons[cur]?lessons[cur].l.id:'');
+  try{var sd=kSuspend(st);if(sd!==null)API.LMSSetValue('cmi.suspend_data',sd);API.LMSSetValue('cmi.core.lesson_location',lessons[cur]?lessons[cur].l.id:'');
   API.LMSSetValue('cmi.core.score.raw',String(score));API.LMSSetValue('cmi.core.score.min','0');API.LMSSetValue('cmi.core.score.max','100');
   API.LMSSetValue('cmi.core.lesson_status',done===lessons.length?(score>=K.bestehen?'passed':'failed'):'incomplete');API.LMSCommit('');}catch(e){}}}
+function kSuspend(s){var a=JSON.stringify(s);if(a.length<=4000)return a;var b=JSON.stringify({erledigt:s.erledigt,quiz:{}});if(b.length<=4000){document.body.setAttribute('data-k-suspend','ohne-quiz');return b;}document.body.setAttribute('data-k-suspend','zu-lang');return null;}
 function kOpen(i){if(!K.reihenfolge||i===0)return true;return st.erledigt.indexOf(lessons[i-1].l.id)>=0;}
 function kMissing(i){if(!kOpen(i))return 'Erst die vorige Lektion abschließen.';var m=null;lessons[i].l.bloecke.forEach(function(b){if(m)return;if(b.art==='quiz'&&b.quiz){var p=st.quiz[b.id];if(p==null||p<K.bestehen)m='Das Quiz „'+b.quiz.titel+'“ braucht mindestens '+K.bestehen+' %.';}});return m;}
 function kNav(){var n=document.getElementById('k-nav');n.innerHTML='';var done=lessons.filter(function(x){return st.erledigt.indexOf(x.l.id)>=0;}).length;
@@ -298,9 +317,10 @@ kStart();
     public static string Html(Kurs k, bool scorm = false)
     {
         var data = k.ToJson(); data["lernende"] = new JsonArray(); data["scorm"] = scorm;
+        foreach (var q in data.DescendantsQuiz()) q["bestehen"] = k.Bestehen; // einheitlich: Grenze des Kurses
         var pics = new JsonObject();
         foreach (var (_, l) in KursKit.Lektionen(k))
-            foreach (var b in l.Bloecke.Where(b => b.Art == "bild" && b.Bild.Length > 0 && File.Exists(b.Bild)))
+            foreach (var b in l.Bloecke.Where(b => b.Art == "bild" && KursKit.BildOk(b.Bild)))
                 pics[b.Id] = $"data:{Mime(b.Bild)};base64,{Convert.ToBase64String(File.ReadAllBytes(b.Bild))}";
         data["bilder"] = pics;
         foreach (var c in (data["kapitel"] as JsonArray)!.OfType<JsonObject>()) foreach (var l in (c["lektionen"] as JsonArray)!.OfType<JsonObject>()) foreach (var b in (l["bloecke"] as JsonArray)!.OfType<JsonObject>()) b["bild"] = ""; // keine lokalen Pfade weitergeben
@@ -317,7 +337,7 @@ kStart();
     /// <summary>SCORM-1.2-Manifest (ein SCO, eine Organisation) – so lesen es Moodle, ILIAS und andere Lernplattformen.</summary>
     public static string Manifest(Kurs k, string id)
     {
-        var t = WebUtility.HtmlEncode(k.Titel);
+        var t = WebUtility.HtmlEncode(new string((k.Titel ?? "").Where(c => c >= ' ' || c == '\t').ToArray())); // XML erlaubt keine Steuerzeichen
         return $"""
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest identifier="{id}" version="1.0"

@@ -1227,11 +1227,11 @@ public static class StudioKnowledgeBase
             ["STUDIO-PDFTOOLS-01", "SYS-10", "STUDIO-LETTER-01"],
             true),
         ["STUDIO-QUIZ-01"] = new("STUDIO-QUIZ-01", // T-0779
-            "Quiz erstellen wie in Kahoot, Quizlet oder dem Moodle-Test: Auswahl, Mehrfachauswahl, Wahr/Falsch, Lückentext und Zuordnen mit Punkten, Zeit je Frage, Mischen, Tempo-Bonus und Spielmodus mit Auswertung; Ausgabe als eigenständiges HTML-Quiz, Druck-PDF mit Lösungen und GIFT für Moodle.",
+            "Quiz erstellen wie in bekannten Quiz-Programmen und Lernplattformen: Auswahl, Mehrfachauswahl, Wahr/Falsch, Lückentext und Zuordnen mit Punkten, Zeit je Frage, Mischen, Tempo-Bonus und Spielmodus mit Auswertung; Ausgabe als eigenständiges HTML-Quiz, Druck-PDF mit Lösungen und GIFT für Moodle.",
             [
                 T("fragen", "Fragen aus Text", "Die KI macht Fragen aus deinem Text", "Mach 5 Fragen aus dem Text", ["fragen aus", "aus dem text", "erzeug", "generier"], "Text"),
                 T("luecke", "Lückentext", "Fachwörter als Lücken", "Schreib einen Lückentext zu: ", ["lücke", "lückentext", "ergänz"], "Thema"),
-                T("spiel", "Spiel-Quiz", "Mit Zeit und Tempo-Bonus", "Mach daraus ein Spiel-Quiz mit 20 Sekunden je Frage", ["spiel", "zeit", "klasse", "kahoot"], "Quiz"),
+                T("spiel", "Spiel-Quiz", "Mit Zeit und Tempo-Bonus", "Mach daraus ein Spiel-Quiz mit 20 Sekunden je Frage", ["spiel", "zeit", "klasse"], "Quiz"),
                 T("moodle", "Für Moodle", "Als GIFT ausgeben", "Gib das Quiz für Moodle aus", ["moodle", "gift", "lernplattform"], "Quiz"),
             ],
             [],
@@ -1243,7 +1243,7 @@ public static class StudioKnowledgeBase
             ["SPEC-06", "STUDIO-COURSE-01", "STUDIO-SUMMARY-01"],
             true),
         ["STUDIO-COURSE-01"] = new("STUDIO-COURSE-01", // T-0779
-            "Online-Kurse bauen wie mit Articulate Rise, Moodle oder Teachable: Kapitel und Lektionen aus Bausteinen (Text, Überschrift, Liste, Hinweis, Bild, Quiz), Kursansicht zum Durcharbeiten mit Fortschritt je Person, Ausgabe als Webseite und SCORM-1.2-Paket.",
+            "Online-Kurse bauen wie mit bekannten Kurs-Programmen und Lernplattformen: Kapitel und Lektionen aus Bausteinen (Text, Überschrift, Liste, Hinweis, Bild, Quiz), Kursansicht zum Durcharbeiten mit Fortschritt je Person, Ausgabe als Webseite und SCORM-1.2-Paket.",
             [
                 T("lektion", "Lektion schreiben", "Lerntext mit Überschriften und Merksätzen", "Schreib eine Lektion über: ", ["lektion", "lerntext", "erklär"], "Thema"),
                 T("gliederung", "Kurs gliedern", "Kapitel und Lektionen", "Gliedere einen Kurs über: ", ["gliederung", "kapitel", "aufbau"], "Thema"),

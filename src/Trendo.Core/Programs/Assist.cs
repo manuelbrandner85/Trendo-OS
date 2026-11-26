@@ -30,8 +30,11 @@ public sealed record AssistStep(AssistAction Action, Dictionary<string, string> 
     /// <summary>Wie oft (bei Aktionen ohne Parameter: „füge 3 Zeilen hinzu“).</summary>
     public int Times => Args.TryGetValue(AssistPlanner.TimesKey, out var t) && int.TryParse(t, out var n) ? n : 1;
     public string Text => Action.Label + (Times > 1 ? $" ({Times}×)" : "") + (Action.Parameters.Count == 0 ? "" : " – " + string.Join(", ", Action.Parameters.Where(p => Args.ContainsKey(p.Name)).Select(p => $"{p.Label}: {Show(p, Args[p.Name])}")));
-    static string Show(AssistParam p, string v) => p.Kind switch { AssistKind.YesNo => v == "ja" ? "ja" : "nein", AssistKind.Date when DateTime.TryParse(v, CultureInfo.InvariantCulture, out var d) => d.ToString("dd.MM.yyyy", CultureInfo.GetCultureInfo("de-DE")), _ => Short(v) };
-    /// <summary>T-0779: lange Werte (z. B. zwölf Quizfragen) in der Plan-Zeile kürzen – sonst schob der Plan „Ja, behalten“ aus dem sichtbaren Bereich. Der Wert selbst bleibt vollständig.</summary>
+    static string Show(AssistParam p, string v) => p.Kind switch { AssistKind.YesNo => v == "ja" ? "ja" : "nein", AssistKind.Date when DateTime.TryParse(v, CultureInfo.InvariantCulture, out var d) => d.ToString("dd.MM.yyyy", CultureInfo.GetCultureInfo("de-DE")), _ => v };
+    /// <summary>T-0779 (Gegenprüfung M4): Kurzform der Plan-Zeile – lange Werte auf <see cref="ShowMax"/> Zeichen, Zeilen mit „ / “. Nur für Fachaktionen mit Dokument-Vorschau;
+    /// dort steht die volle Fassung aufklappbar daneben. <see cref="Text"/> bleibt vollständig.</summary>
+    public string ShortText => Action.Label + (Times > 1 ? $" ({Times}×)" : "") + (Action.Parameters.Count == 0 ? "" : " – " + string.Join(", ", Action.Parameters.Where(p => Args.ContainsKey(p.Name)).Select(p => $"{p.Label}: {Short(Show(p, Args[p.Name]))}")));
+    public bool IsLong => Args.Values.Any(v => v.Length > ShowMax || v.Contains('\n'));
     public const int ShowMax = 160;
     static string Short(string v) { var one = v.Replace("\r", "").Replace("\n", " / "); return one.Length <= ShowMax ? one : one[..ShowMax].TrimEnd() + " …"; }
 }

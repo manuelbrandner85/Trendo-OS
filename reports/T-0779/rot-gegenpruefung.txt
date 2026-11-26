@@ -1,0 +1,26 @@
+# Rot-Lauf: neue Tests der Gegenprüfung auf dem alten Stand a136c971b
+[xUnit.net 00:00:22.24]     T-0779 M3: Fragetext mit „<!--“ – im HTML als gültiges JSON-Escape, JSON lässt sich lesen und ergibt denselben Text [FAIL]
+[xUnit.net 00:00:22.25]     T-0779 H1: Lücken mit Zahlen und kurzen Lösungen ohne Toleranz – „1988, 4, Ast, B“ ist bei „1989, 3, Ost, A“ 0 %; Karteikarten „Eintippen“ genauso; längere Wörter behalten einen Tippfehler [FAIL]
+[xUnit.net 00:00:22.27]     T-0779 M2: Kurs bettet nur Bilder (PNG/JPG/GIF/WEBP/SVG, höchstens 15 MB) ein – andere Dateien sind ein Fehler in der Prüfung und fehlen im Export [FAIL]
+[xUnit.net 00:00:22.50]     T-0779 Niedrig: CSV entschärft =,+,-,@; Manifest ohne Steuerzeichen; Quiz im Kurs mit der Bestehensgrenze des Kurses; suspend_data bleibt gültiges JSON [FAIL]
+Fehler!      : Fehler:     4, erfolgreich:    10, übersprungen:     0, gesamt:    14, Dauer: 803 ms - Trendo.Core.Tests.dll (net10.0)
+    T-0779 H2: „In Karteikarten übernehmen“ ist keine Aktion des Assistenten – weder Plan noch Probelauf (wie die Live-Vorschau beim Tippen) noch KI-Plan schreiben Karteikarten [FAIL]
+      Assert.DoesNotContain() Failure: Filter matched in collection
+      Collection: [···, AssistAction { Id = quiz-down, Label = Nach unten, Words = <>z__ReadOnlyArray`1[System.String], Params = , SideEffect = False, Next = , Parameters = Trendo.Core.Programs.AssistParam[] }, AssistAction { Id = quiz-del, Label = Frage löschen, Words = <>z__ReadOnlyArray`1[System.String], Params = , SideEffect = False, Next = , Parameters = Trendo.Core.Programs.AssistParam[] }, AssistAction { Id = quiz-check, Label = Prüfen, Words = <>z__ReadOnlyArray`1[System.String], Params = , SideEffect = False, Next = , Parameters = Trendo.Core.Programs.AssistParam[] }, AssistAction { Id = quiz-from-cards, Label = Aus Karteikarten, Words = <>z__ReadOnlyArray`1[System.String], Params = , SideEffect = False, Next = , Parameters = Trendo.Core.Programs.AssistParam[] }, AssistAction { Id = quiz-to-cards, Label = In Karteikarten übernehmen, Words = <>z__ReadOnlyArray`1[System.String], Params = , SideEffect = False, Next = , Parameters = Trendo.Core.Programs.AssistParam[] }]
+      Stack Trace:
+    T-0779 Quiz: fremde GIFT-Datei laden (Knopf) und Text für die KI per Ziehen und Ablegen; CSV-Karteikarten werden Auswahlfragen; Quiz → Karteikarten [FAIL]
+      System.InvalidOperationException : Sequence contains no matching element
+      Stack Trace:
+    T-0779 KI Quiz: „Mach Fragen aus dem Text“ → Vorschau zeigt die Fragen, Original unverändert → „Ja, behalten“ → EIN Rückgängig-Schritt „KI: …“, Rückgängig nimmt alle zurück (KI ersetzt) [FAIL]
+      System.InvalidOperationException : Sequence contains no matching element
+      Stack Trace:
+      Echtlauf nur mit TRENDO_T0779_ECHT=<Belegordner> (braucht Ollama mit Modell auf diesem PC).
+    T-0779 M2: KI setzt im Kurs weder Bildpfade („…/bloecke/0/bild“) noch Fortschritt („lernende/0/erledigt“) noch das ganze Kurs-Objekt mit Lernenden – abgelehnt, Kurs unverändert [FAIL]
+      Assert.NotEqual() Failure: Strings are equal
+      Expected: Not "vorschau"
+      Actual:       "vorschau"
+      Stack Trace:
+    T-0779 M4/Niedrig: andere Aktionen zeigen den vollen Wert; zu viele KI-Fragen werden gemeldet; zu große Dateien abgelehnt; keine fremden Markennamen im Fachwissen [FAIL]
+      System.InvalidOperationException : Sequence contains no matching element
+      Stack Trace:
+   Trendo.App.Tests  Total: 14, Errors: 0, Failed: 5, Skipped: 1, Not Run: 0, Time: 49,267s

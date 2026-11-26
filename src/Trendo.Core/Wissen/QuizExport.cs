@@ -33,7 +33,7 @@ function tqEl(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=nu
 function tqGaps(t){var r=[],m,re=/\[([^\[\]]+)\]/g;while((m=re.exec(t||""))){var a=m[1].split('|').map(function(s){return s.trim();}).filter(function(s){return s.length>0;});if(a.length)r.push(a);}return r;}
 function tqNorm(s){return (s||"").trim().toLowerCase().split(/\s+/).filter(function(x){return x;}).join(' ').replace(/[.!]+$/,'');}
 function tqLev(a,b){var d=[],i,j;for(i=0;i<=a.length;i++){d[i]=[i];}for(j=0;j<=b.length;j++)d[0][j]=j;for(i=1;i<=a.length;i++)for(j=1;j<=b.length;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return d[a.length][b.length];}
-function tqTypo(e,t){e=tqNorm(e);t=tqNorm(t);if(e===t)return true;return t.length>0&&tqLev(e,t)<=Math.max(1,Math.floor(e.length/6));}
+function tqTypo(e,t){e=tqNorm(e);t=tqNorm(t);if(e===t)return true;if(e.length<=4||/\p{Nd}/u.test(e))return false;return t.length>0&&tqLev(e,t)<=Math.max(1,Math.floor(e.length/6));}
 function tqShuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var x=a[i];a[i]=a[j];a[j]=x;}return a;}
 function tqRange(n){var a=[];for(var i=0;i<n;i++)a.push(i);return a;}
 function tqAnteil(f,inp){
@@ -83,7 +83,7 @@ function TrendoQuiz(root,quiz,opt){
 """;
 
     /// <summary>JSON sicher in ein &lt;script&gt; einbetten (kein „&lt;/script&gt;“ im Text).</summary>
-    public static string ScriptJson(string json) => json.Replace("</", "<\\/").Replace("<!--", "<\\!--").Replace("\u2028", "\\u2028").Replace("\u2029", "\\u2029");
+    public static string ScriptJson(string json) => json.Replace("</", "<\\/").Replace("<!--", "\\u003C!--") /* T-0779 M3: gültiges JSON-Escape statt „<\!--“ (JSON.parse lehnte das ab) */.Replace("\u2028", "\\u2028").Replace("\u2029", "\\u2029");
 
     public static string Html(Quiz q)
     {
@@ -91,11 +91,20 @@ function TrendoQuiz(root,quiz,opt){
         sb.Append("<!DOCTYPE html>\n<html lang=\"de\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">");
         sb.Append("<meta name=\"generator\" content=\"Trendo OS – Quiz erstellen\"><title>").Append(WebUtility.HtmlEncode(q.Titel)).Append("</title><style>").Append(Css).Append("</style></head>\n<body><main class=\"tq-wrap\" id=\"tq\"><noscript>Für dieses Quiz muss JavaScript an sein.</noscript></main>\n");
         sb.Append("<script id=\"tq-data\" type=\"application/json\">").Append(ScriptJson(q.ToJsonText())).Append("</script>\n<script>").Append(PlayerJs);
-        sb.Append("\nvar tqQuiz=JSON.parse(document.getElementById('tq-data').textContent);TrendoQuiz(document.getElementById('tq'),tqQuiz,{auto:location.hash==='#selbsttest',onDone:function(r){document.body.setAttribute('data-tq-result',r.prozent);}});\n</script></body></html>\n");
+        sb.Append("\nvar tqQuiz=JSON.parse(document.getElementById('tq-data').textContent);TrendoQuiz(document.getElementById('tq'),tqQuiz,{auto:location.hash==='#selbsttest',onDone:function(r){document.body.setAttribute('data-tq-result',r.prozent);}});\n");
+        // T-0779 H1: Beleg, dass der Spieler dieselbe Lückenregel nutzt wie Trendo (#regeln schreibt das Ergebnis je Fall in data-tq-rules)
+        sb.Append("if(location.hash==='#regeln'){document.body.setAttribute('data-tq-rules',[").Append(string.Join(",", RuleCases.Select(c => $"[{System.Text.Json.JsonSerializer.Serialize(c.Expected)},{System.Text.Json.JsonSerializer.Serialize(c.Typed)}]")))
+          .Append("].map(function(x){return tqTypo(x[0],x[1])?'1':'0';}).join(''));}\n</script></body></html>\n");
         return sb.ToString();
     }
 
     public static void Write(Quiz q, string path) => AtomicFile.WriteAllText(path, Html(q));
+
+    /// <summary>T-0779 H1: Prüffälle für die Lückenregel (Zahlen und kurze Lösungen genau, längere Wörter mit einem Tippfehler).</summary>
+    public static readonly (string Expected, string Typed)[] RuleCases =
+        [("1989", "1988"), ("3", "4"), ("Ost", "Ast"), ("A", "B"), ("Baujahr 1989", "Baujahr 1988"), ("elephant", "elephat"), ("Zugspitze", "zugspitz"), ("House", " house ")];
+    /// <summary>Erwartung aus <see cref="LearnBox.CheckTyped"/> – „1“ = richtig, „0“ = falsch.</summary>
+    public static string RuleExpectation => string.Concat(RuleCases.Select(c => LearnBox.CheckTyped(c.Expected, c.Typed).Ok ? '1' : '0'));
 }
 
 /// <summary>Quiz als PDF zum Ausdrucken (A4): Fragen mit Kästchen, Lücken und Zuordnungsliste, auf der letzten Seite die Lösungen. Gezeichnet mit PDFsharp (MIT).</summary>

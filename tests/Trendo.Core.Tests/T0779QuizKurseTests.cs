@@ -261,4 +261,60 @@ public class T0779QuizKurseTests
         }
         finally { Directory.Delete(root, true); }
     }
+
+    // ===================== Gegenprüfung =====================
+
+    [Fact(DisplayName = "T-0779 H1: Lücken mit Zahlen und kurzen Lösungen ohne Toleranz – „1988, 4, Ast, B“ ist bei „1989, 3, Ost, A“ 0 %; Karteikarten „Eintippen“ genauso; längere Wörter behalten einen Tippfehler")]
+    public void H1_gaps_strict()
+    {
+        var f = new QuizFrage { Typ = "luecke", Text = "Mauerfall [1989], Seiten [3], Himmelsrichtung [Ost], Buchstabe [A]." };
+        Assert.Equal(0, QuizKit.Anteil(f, QuizEingabe.Text("1988", "4", "Ast", "B")));
+        Assert.Equal(1, QuizKit.Anteil(f, QuizEingabe.Text("1989", "3", "ost", "a")));
+        Assert.False(LearnBox.CheckTyped("1989", "1988").Ok); Assert.False(LearnBox.CheckTyped("Baujahr 1989", "Baujahr 1988").Ok); // Karteikarten: fachlich genauso falsch
+        Assert.Equal((true, true), LearnBox.CheckTyped("Zugspitze", "zugspitz"));
+        Assert.Contains(@"if(e.length<=4||/\p{Nd}/u.test(e))return false;", QuizHtml.PlayerJs);
+    }
+
+    [Fact(DisplayName = "T-0779 M3: Fragetext mit „<!--“ – im HTML als gültiges JSON-Escape, JSON lässt sich lesen und ergibt denselben Text")]
+    public void M3_comment_in_json()
+    {
+        var q = new Quiz { Titel = "Kommentar <!-- und </script>", Fragen = [new() { Typ = "auswahl", Text = "Was beginnt mit <!-- in HTML?", Antworten = [new() { Text = "Kommentar", Richtig = true }, new() { Text = "Tabelle" }] }] };
+        var html = QuizHtml.Html(q);
+        Assert.DoesNotContain(@"<\!--", html);
+        var start = html.IndexOf("<script id=\"tq-data\" type=\"application/json\">", StringComparison.Ordinal); start = html.IndexOf('>', start) + 1;
+        var json = html[start..html.IndexOf("</script>", start, StringComparison.Ordinal)];
+        Assert.DoesNotContain("<!--", json);
+        var back = Quiz.FromJson(System.Text.Json.Nodes.JsonNode.Parse(json));
+        Assert.Equal(q.Fragen[0].Text, back.Fragen[0].Text); Assert.Equal(q.Titel, back.Titel);
+    }
+
+    [Fact(DisplayName = "T-0779 M2: Kurs bettet nur Bilder (PNG/JPG/GIF/WEBP/SVG, höchstens 15 MB) ein – andere Dateien sind ein Fehler in der Prüfung und fehlen im Export")]
+    public void M2_only_images_embedded()
+    {
+        var root = Tmp();
+        try
+        {
+            var exe = Path.Combine(root, "geheim.txt"); File.WriteAllText(exe, "Kontonummer 123");
+            var big = Path.Combine(root, "riesig.png"); using (var fs = File.Create(big)) fs.SetLength(15L * 1024 * 1024 + 1);
+            var k = Course(); k.Kapitel[0].Lektionen[0].Bloecke.Add(new KursBlock { Art = "bild", Bild = exe }); k.Kapitel[0].Lektionen[0].Bloecke.Add(new KursBlock { Art = "bild", Bild = big });
+            var f = KursKit.Pruefen(k);
+            Assert.Contains(f, x => x.Fehler && x.Text.Contains("geheim.txt")); Assert.Contains(f, x => x.Fehler && x.Text.Contains("riesig.png"));
+            var html = KursHtml.Html(k);
+            Assert.DoesNotContain("Kontonummer", html); Assert.DoesNotContain(Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("Kontonummer 123")), html);
+            Assert.DoesNotContain("data:application/octet-stream", html); Assert.DoesNotContain("data:image/png", html);
+        }
+        finally { Directory.Delete(root, true); }
+    }
+
+    [Fact(DisplayName = "T-0779 Niedrig: CSV entschärft =,+,-,@; Manifest ohne Steuerzeichen; Quiz im Kurs mit der Bestehensgrenze des Kurses; suspend_data bleibt gültiges JSON")]
+    public void Low_fixes()
+    {
+        var k = Course(); k.Titel = "Kurs\u0001mit\u0007Steuerzeichen"; k.Lernende[0].Name = "=HYPERLINK(\"x\")"; k.Bestehen = 75;
+        Assert.Contains("\"'=HYPERLINK(\"\"x\"\")\";", KursKit.Csv(k));
+        var m = KursHtml.Manifest(k, "id-1");
+        Assert.DoesNotContain('\u0001', m); Assert.DoesNotContain('\u0007', m); System.Xml.Linq.XDocument.Parse(m);
+        var html = KursHtml.Html(k);
+        Assert.Contains("\"bestehen\":75", html); Assert.DoesNotContain("\"bestehen\":60", html);
+        Assert.Contains("function kSuspend(s)", html); Assert.DoesNotContain("slice(0,4000)", html);
+    }
 }

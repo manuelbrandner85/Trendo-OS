@@ -203,7 +203,7 @@ public class T0779QuizKurse_Ui
             BueroAusbau_Ui.Drop(w, "quiz-list", csv);
             var q = MainWindow.QuizOf(d); Assert.Equal(5, q.Fragen.Count);
             Assert.Equal("dog", q.Fragen[2].Antworten.Single(a => a.Richtig).Text); Assert.Equal(3, q.Fragen[2].Antworten.Count);
-            Tap(w, "prog-cmd-quiz-to-cards");
+            Tap(w, "prog-cmd-quiz-export-cards");
             Assert.Contains("moodle", w.Learn.Decks);
             Assert.Equal(5, w.Learn.Store.Cards.Count(c => c.Deck == "moodle"));
         }
@@ -310,7 +310,9 @@ public class T0779QuizKurse_Ui
             Assert.Equal("vorschau", await Ask(w, QK, "Mach aus dem Text drei Fragen für ein Quiz zum Thema Vulkane"));
             Assert.Equal(before, d.Data.ToJsonString()); // Vorschau ändert das Original nicht
             Assert.DoesNotContain("neue Datei", w.AssistLast!.Value.Message); // T-0779: Fachaktion ohne eigene Datei kündigt keine an
-            Assert.All(w.AssistLast.Value.Steps, x => Assert.True(x.Length < 300 && !x.Contains('\n'), "Plan-Zeile zu lang: " + x)); // lange Fragen schoben „Ja, behalten“ aus dem Bild (Echtlauf)
+            // M4: Fachaktion mit langem Wert – Plan-Zeile kurz, volle Fassung aufklappbar (lange Fragen schoben „Ja, behalten“ aus dem Bild)
+            Assert.True(V<TextBlock>(w, "assist-step-0-text").Text!.Length < 300); Assert.NotNull(TryV<Expander>(w, "assist-step-0-full"));
+            Assert.Contains("Ätna", w.AssistLast.Value.Steps[0]); // Text selbst bleibt vollständig
             Tap(w, "assist-apply");
             await Until(() => w.AssistLast?.Phase is "fertig" or "fehler");
             var q = MainWindow.QuizOf(w.ProgramActive(QK)!);
@@ -343,6 +345,87 @@ public class T0779QuizKurse_Ui
             Assert.Equal(["text", "ueberschrift", "liste", "hinweis"], l.Bloecke.Select(b => b.Art));
             Assert.Equal(n + 1, KursKit.Lektionen(k).Count); Assert.StartsWith(AssistChain.UndoPrefix, d.UndoLabel);
             Tap(w, "assist-undo"); Assert.Equal(before, w.ProgramActive(CK)!.Data.ToJsonString());
+        }
+        finally { MainWindow.AssistStepDelayMs = 140; w.KiBackendsOverride = null; w.Close(); }
+    }
+
+    // ---------------- Gegenprüfung ----------------
+
+    [AvaloniaFact(DisplayName = "T-0779 H2: „In Karteikarten übernehmen“ ist keine Aktion des Assistenten – weder Plan noch Probelauf (wie die Live-Vorschau beim Tippen) noch KI-Plan schreiben Karteikarten")]
+    public async Task H2_cards_not_from_assistant()
+    {
+        var (w, _, _) = Ui.Open(); MainWindow.AssistStepDelayMs = 0;
+        try
+        {
+            var d = Open(w, QK, "beispiel");
+            var t = w.AssistTargetFor(QK)!;
+            Assert.DoesNotContain(t.Actions, a => a.Id.Contains("cards") && a.Id != "quiz-from-cards");
+            w.Learn.Add("Vokabeln", "Hund", "dog"); w.Learn.Add("Vokabeln", "Katze", "cat");
+            var before = w.Learn.Store.Cards.Count;
+            // derselbe Weg wie die Live-Vorschau: Regel-Plan → Arbeitskopie → Schritte ausführen
+            var plan = AssistPlanner.Plan("In Karteikarten übernehmen", t.Actions, new Dictionary<string, string>());
+            var ses = t.Begin(); foreach (var st in plan.Steps) ses.Run(st);
+            Assert.Equal(before, w.Learn.Store.Cards.Count);
+            w.KiBackendsOverride = () => [new FixedKi(_ => Plan("quiz-export-cards", new JsonObject()))];
+            var audits = w.Core.Audit.ReadAll().Count;
+            w.Find<TextBox>("auftrag-prompt").Text = "Übernimm bitte alle Fragen dieses Quiz als neue Karteikarten in meinen Stapel"; Tap(w, "auftrag-pruefen");
+            await Until(() => w.Core.Audit.ReadAll().Skip(audits).Any(a => a.Action is "assist.ki.ohneplan" or "assist.plan"));
+            Assert.DoesNotContain(w.AssistLast?.Steps ?? [], x => x.Contains("Karteikarten")); // unbekannte Aktion: kein Schritt
+            Assert.Equal(before, w.Learn.Store.Cards.Count);
+        }
+        finally { MainWindow.AssistStepDelayMs = 140; w.KiBackendsOverride = null; w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0779 M2: KI setzt im Kurs weder Bildpfade („…/bloecke/0/bild“) noch Fortschritt („lernende/0/erledigt“) noch das ganze Kurs-Objekt mit Lernenden – abgelehnt, Kurs unverändert")]
+    public async Task M2_ki_locked_fields()
+    {
+        var (w, _, _) = Ui.Open(); MainWindow.AssistStepDelayMs = 0;
+        try
+        {
+            var d = Open(w, CK, "beispiel");
+            w.CourseAddLearner(d, "Erika Muster"); w.Show(CK); Pump();
+            var before = d.Data.ToJsonString();
+            var whole = MainWindow.CourseOf(d).ToJson(); whole["lernende"]![0]!["erledigt"] = new JsonArray("x");
+            foreach (var (pfad, wert) in new[] { ("kurs/kapitel/0/lektionen/0/bloecke/0/bild", @"C:\Windows\win.ini"), ("kurs/lernende/0/erledigt", "[\"a\",\"b\"]"), ("kurs", whole.ToJsonString()) })
+            {
+                w.KiBackendsOverride = () => [new FixedKi(_ => Plan("dokument.setzen", new JsonObject { ["pfad"] = pfad, ["wert"] = wert }))];
+                var phase = await Ask(w, CK, "Ändere bitte im Kurs diese eine Stelle genau so wie angegeben für mich");
+                Assert.NotEqual("vorschau", phase);
+                Assert.Contains("legst du selbst fest", w.AssistLast!.Value.Message + string.Join(" ", w.AssistLog));
+                Assert.Equal(before, w.ProgramActive(CK)!.Data.ToJsonString());
+            }
+            // Titel ändern darf die KI weiterhin
+            w.KiBackendsOverride = () => [new FixedKi(_ => Plan("dokument.setzen", new JsonObject { ["pfad"] = "kurs/titel", ["wert"] = "Sicher präsentieren" }))];
+            Assert.Equal("vorschau", await Ask(w, CK, "Gib dem Kurs bitte den neuen Titel Sicher präsentieren und sonst nichts"));
+        }
+        finally { MainWindow.AssistStepDelayMs = 140; w.KiBackendsOverride = null; w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0779 M4/Niedrig: andere Aktionen zeigen den vollen Wert; zu viele KI-Fragen werden gemeldet; zu große Dateien abgelehnt; keine fremden Markennamen im Fachwissen")]
+    public async Task M4_and_low()
+    {
+        var (w, _, root) = Ui.Open(); MainWindow.AssistStepDelayMs = 0; Directory.CreateDirectory(root);
+        try
+        {
+            var d = Open(w, QK, "beispiel");
+            var longTitle = string.Join(" ", Enumerable.Repeat("Europa", 60));
+            w.KiBackendsOverride = () => [new FixedKi(_ => Plan("dokument.setzen", new JsonObject { ["pfad"] = "quelle", ["wert"] = longTitle }))];
+            Assert.Equal("vorschau", await Ask(w, QK, "Schreib bitte diesen langen Text in das Feld für die KI hinein"));
+            Assert.Contains(longTitle, V<TextBlock>(w, "assist-step-0-text").Text); Assert.Null(TryV<Expander>(w, "assist-step-0-full"));
+            Tap(w, "assist-discard");
+            var many = string.Join("\n\n", Enumerable.Range(1, 22).Select(i => $"? Frage {i}?\n+ ja\n- nein")) + "\n\n? kaputt";
+            w.KiBackendsOverride = () => [new FixedKi(_ => Plan("quiz.fragen", new JsonObject { ["fragen"] = many }))];
+            Assert.Equal("vorschau", await Ask(w, QK, "Mach aus dem Text zweiundzwanzig Fragen für das Quiz bitte"));
+            RealClick(w, V<Button>(w, "assist-apply")); Pump();
+            Assert.Contains("2 weitere weggelassen", w.ProgramMessage(QK)); Assert.Contains("1 unlesbar ausgelassen", w.ProgramMessage(QK));
+            Assert.Equal(25, MainWindow.QuizOf(w.ProgramActive(QK)!).Fragen.Count);
+            var big = Path.Combine(root, "gross.txt"); using (var fs = File.Create(big)) fs.SetLength(2L * 1024 * 1024 + 1);
+            var c = Open(w, CK, "beispiel");
+            Assert.Throws<InvalidDataException>(() => w.CourseAddQuizFile(c, big));
+            Assert.Throws<InvalidDataException>(() => w.QuizImportFile(w.ProgramActive(QK)!, big));
+            foreach (var id in new[] { "STUDIO-QUIZ-01", "STUDIO-COURSE-01" })
+                foreach (var brand in new[] { "Kahoot", "Quizlet", "Articulate", "Teachable", "H5P" })
+                    Assert.DoesNotContain(brand, StudioKnowledgeBase.For(id)!.Purpose, StringComparison.OrdinalIgnoreCase);
         }
         finally { MainWindow.AssistStepDelayMs = 140; w.KiBackendsOverride = null; w.Close(); }
     }

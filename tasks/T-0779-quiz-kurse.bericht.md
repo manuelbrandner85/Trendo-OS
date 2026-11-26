@@ -2,6 +2,24 @@
 
 **Auftrag:** `tasks/T-0779-quiz-kurse.md` (Freigabe 26.11.2026) · **Branch:** `claude/T-0779-quiz-kurse` (Basis main 184fcbbfc = 0.9.112) · eigene Kopie in `%TEMP%\trendo-auftrag-T-0779`.
 
+## Nachbesserung nach der Gegenprüfung („nicht freigabefähig“)
+Rot-Lauf: die neuen Tests gegen a136c971b (`reports/T-0779/rot-gegenpruefung.txt`): Core 4 von 14 rot (H1, M2, M3, Niedrig), App 5 rot (H2, M2-KI, M4, dazu die zwei Tests mit umbenannten bzw. neuen Elementen). Tests mit neuen Hilfen (`QuizHtml.RuleExpectation`, `KursKit.MitKursGrenze`) stehen in `T0779GegenpruefungTests` und übersetzen auf altem Stand nicht.
+
+| Nr. | Befund | Behebung | Test (rot → grün) |
+|---|---|---|---|
+| H1 | Lücken-Toleranz ließ „1988, 4, Ast, B“ für „1989, 3, Ost, A“ durch | `LearnBox.CheckTyped`: Lösungen bis 4 Zeichen und mit Ziffern nur genau (`ExactUpTo = 4`); gleiche Regel in `tqTypo` des HTML-Spielers | Core `H1_gaps_strict` (0 % statt 100 %), `H1_rule_cases`; **echt**: Chrome `#regeln` liefert `data-tq-rules="00000111"` = Trendo (`fremdprogramme.log`) |
+| H1 Karteikarten | Die Änderung wirkt auch in „Eintippen“ der Karteikarten. **Bewusst so gelassen:** dort ist „1988“ für „1989“ ebenso falsch (Vokabeln, Jahreszahlen); der bestehende Test SPEC-06 F10 („elephant/elephat“ als Tippfehler, „dog/cat“ falsch) bleibt grün, kein Karteikarten-Test geändert | Core `H1_gaps_strict` (Karteikarten-Fall), `W6Tests` grün |
+| H2 | „In Karteikarten übernehmen“ war ein Assistenten-Schritt und schrieb im Probelauf/Live-Vorschau in den Karteikarten-Speicher | Befehl heißt `quiz-export-cards` und fällt damit unter den vorhandenen Sperrfilter (keine Assistenten-Aktion) | App `H2_cards_not_from_assistant` (Aktionsliste, Regel-Plan + Probelauf wie die Live-Vorschau, KI-Plan – Kartenzahl unverändert) |
+| M1 | StudioFoldsUiTests erwartete 61 | 63 (Hinweis: zählt `StudioCatalog`, war schon auf a136c971b 63 – der Test war veraltet, nicht rot-grün) | App `StudioFolds_Ui` grün |
+| M2 | Kurs-Export bettete jede Datei ein; KI konnte `…/bild` und Fortschritt setzen (Sperre nur 1. Segment) | Einbetten nur PNG/JPG/GIF/WEBP/SVG bis 15 MB (`KursKit.BildOk`), sonst Fehler in `KursKit.Pruefen`; `KiLocked = bild, lernende, erledigt`; Sperre prüft jetzt **jedes Pfadsegment und die Schlüssel im geschriebenen JSON-Wert** (`ProgramAssistTarget.Session.LockedField`) – so auch kein ganzes `kurs`-Objekt mit Lernenden | Core `M2_only_images_embedded`; App `M2_ki_locked_fields` (drei Fälle abgelehnt, Titel weiter erlaubt); T0774 (Ordner-Sperre im Scannen) grün |
+| M3 | `<!--` wurde als `<\!--` (ungültiges JSON) eingebettet | `<!--` | Core `M3_comment_in_json` (JSON-Parse); **echt**: Chrome spielt ein Quiz mit „<!--“ im Fragetext zu 100 % durch |
+| M4 | Kürzung der Plan-Zeile galt für alle Aktionen | `AssistStep.Text` wieder vollständig; neue `ShortText`/`IsLong`; gekürzt (mit aufklappbarer Vollansicht „Ganz anzeigen“) nur bei Fachaktionen mit Dokument-Vorschau – in Plan, Protokoll und Fehlermeldung. Befund dabei: das Protokoll zeigte den langen Wert ebenfalls und schob „Ja, behalten“ aus dem Bild | App `Ki_questions_into_open_quiz` (Kurzform + Aufklapper), `M4_and_low` (dokument.setzen zeigt vollen Wert, 22 Fragen: Knopf erreichbar) |
+| Niedrig | Manifest-Steuerzeichen, suspend_data, Bestehen, Größen, Meldung, CSV, Marken, Bild | Steuerzeichen raus; `kSuspend` liefert gültiges JSON (sonst ohne Quiz-Stand bzw. gar nicht, mit Kennzeichen); Quiz im Kurs nutzt `Kurs.Bestehen` (Studio, Webseite, SCORM); 2 MB für Quiz-Dateien im Kurs und „Text für die KI“; `quiz.fragen` meldet weggelassene/unlesbare Fragen; CSV-Zellen mit = + - @ bekommen ' davor; Markennamen aus Suchwörtern und Fachwissen-Sätzen entfernt; Quiz-Bild neu ohne Farbkacheln (FLUX.2 klein lokal) | Core `Low_fixes`, `Course_threshold`; App `M4_and_low`; Bild `StudioBilder` grün. suspend_data nur im Code und im HTML geprüft (keine Lernplattform) |
+
+Neu berührt: `src/Trendo.Core/W6/Learning.cs`, `src/Trendo.Core/Programs/Assist.cs`, `src/Trendo.App/MainWindow.Assist.cs`, `src/Trendo.Core/Wissen/{Kurse,QuizExport}.cs`, `src/Trendo.App/MainWindow.QuizKurse.cs`, `src/Trendo.Core/PromptAction/StudioKnowledge.cs`, `tools/studio_bilder.py`, `src/Trendo.App/Assets/studios/STUDIO-QUIZ-01.jpg`, Tests `T0779QuizKurseTests.cs`, `T0779GegenpruefungTests.cs` (neu), `T0779QuizKurseUiTests.cs`, `T0779FremdTests.cs`, `StudioFoldsUiTests.cs`.
+
+Tests nach der Nachbesserung (gezielt): Build 0 Fehler; Core 189/189 bestanden (`rohlog-core-tests.txt`); App 21 Klassen, 319 gesamt, 0 Fehler, 4 übersprungen (Echt-/Fremdläufe ohne Variable, `rohlog-app-tests.txt`); Echtlauf qwen3:14b erneut bestanden (Quiz: 4 Fragen, Kurs: Lektion, Rückgängig; `echtlauf-lokale-ki.md`), Fremdlauf Chrome/7-Zip/pdftotext/qpdf erneut bestanden (`fremdprogramme.log`).
+
 ## Was war → was ist
 | Punkt | Vorher (Beleg) | Jetzt | Nachweis |
 |---|---|---|---|

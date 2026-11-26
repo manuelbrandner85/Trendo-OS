@@ -81,8 +81,9 @@ public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocumen
             if (_produce.Count > 0)
                 throw new InvalidOperationException($"Nach „{_produce[0].Def.Label}“ darf in einem Auftrag nichts mehr folgen – die KI erzeugt je Auftrag höchstens eine neue Datei, als letzten Schritt. Bitte den Auftrag aufteilen.");
             // 2. Gegenprüfung H1: dieselbe Zerlegung wie CheckEdit/DocPath (Rand-Leerzeichen, Tabs, Groß/klein) – „ folder“ ist „folder“
-            if (ki is null && cmd is null && AssistChain.PathParts(AssistChain.NormalizePath(step.Args.GetValueOrDefault("pfad") ?? "")).FirstOrDefault() is { } field
-                && spec.KiLocked.Contains(field, StringComparer.OrdinalIgnoreCase))
+            // T-0779 (Gegenprüfung M2): gesperrt ist ein Feld an jeder Stelle des Pfads („kurs/…/bloecke/0/bild“) und auch, wenn der geschriebene Wert es enthält
+            // (ganzes „kurs“-Objekt mit „lernende“) – vorher zählte nur das erste Segment
+            if (ki is null && cmd is null && spec.KiLocked.Count > 0 && LockedField(spec.KiLocked, step.Args.GetValueOrDefault("pfad") ?? "", step.Args.GetValueOrDefault("wert") ?? "") is { } field)
                 throw new InvalidOperationException($"„{field}“ legst du selbst fest – die KI ändert das nicht.");
             var before = doc.Remember();
             MainWindow.AssistQuiet++;
@@ -97,6 +98,22 @@ public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocumen
             }
             finally { doc.Rollback(_start); MainWindow.AssistQuiet--; }
         }
+        /// <summary>T-0779 M2: erstes gesperrtes Feld im Pfad (jede Stelle) oder als Schlüssel im geschriebenen JSON-Wert (jede Tiefe) – null, wenn nichts gesperrt ist.</summary>
+        internal static string? LockedField(IReadOnlyList<string> locked, string pfad, string wert)
+        {
+            bool Is(string k) => locked.Contains(k.Trim(), StringComparer.OrdinalIgnoreCase);
+            if (AssistChain.PathParts(AssistChain.NormalizePath(pfad)).FirstOrDefault(Is) is { } p) return p.Trim();
+            JsonNode? node = null;
+            try { if (wert.TrimStart().StartsWith('{') || wert.TrimStart().StartsWith('[')) node = JsonNode.Parse(wert); } catch (System.Text.Json.JsonException) { }
+            string? Walk(JsonNode? n) => n switch
+            {
+                JsonObject o => o.Select(kv => Is(kv.Key) ? kv.Key : Walk(kv.Value)).FirstOrDefault(x => x is not null),
+                JsonArray a => a.Select(Walk).FirstOrDefault(x => x is not null),
+                _ => null,
+            };
+            return Walk(node);
+        }
+
         public Control? Preview()
         {
             if (_preview is not null) return _preview;
@@ -260,10 +277,10 @@ public partial class MainWindow
             if (r.Stop) { r.Phase = "verworfen"; r.Message = "Gestoppt – nichts übernommen."; AssistRender(r, host); return; }
             var s = r.Plan.Steps[i];
             if (s.Action.SideEffect) { r.StepState[i] = "folgt"; r.Log.Add($"„{s.Text}“ wird erst beim Übernehmen ausgeführt."); continue; }
-            r.StepState[i] = "läuft"; r.Log.Add($"Ich {AssistVerb(s)} …"); AssistRender(r, host);
+            r.StepState[i] = "läuft"; r.Log.Add($"Ich führe aus: {StepShown(r.Target, s)} …"); AssistRender(r, host);
             if (AssistStepDelayMs > 0) await Task.Delay(AssistStepDelayMs);
             try { r.Session.Run(s); r.StepState[i] = "fertig"; }
-            catch (Exception ex) when (ex is not OutOfMemoryException) { r.StepState[i] = "fehler"; r.Phase = "fehler"; r.Message = $"„{s.Text}“ hat nicht geklappt: {ex.Message}"; AssistRender(r, host); return; }
+            catch (Exception ex) when (ex is not OutOfMemoryException) { r.StepState[i] = "fehler"; r.Phase = "fehler"; r.Message = $"„{StepShown(r.Target, s)}“ hat nicht geklappt: {ex.Message}"; AssistRender(r, host); return; }
         }
         try { r.Preview = r.Session.Preview(); } catch (Exception ex) when (ex is not OutOfMemoryException) { r.Preview = null; r.Log.Add("Keine Bildvorschau möglich: " + Trendo.Core.FriendlyError.Say(ex)); }
         r.Phase = "vorschau";
@@ -272,6 +289,8 @@ public partial class MainWindow
     }
 
     static string AssistVerb(AssistStep s) => "führe aus: " + s.Text;
+    /// <summary>T-0779 (M4): Fachaktion mit Dokument-Vorschau und langem Wert – Kurzform in Protokoll und Meldung (die volle Fassung steht aufklappbar beim Schritt); sonst der volle Text.</summary>
+    static string StepShown(IAssistTarget t, AssistStep s) => t is ProgramAssistTarget pt && pt.Produces(s.Action.Id) && s.IsLong ? s.ShortText : s.Text;
 
     void AssistApply(AssistRun r, ContentControl host)
     {
@@ -309,9 +328,14 @@ public partial class MainWindow
             var st = i < r.StepState.Count ? r.StepState[i] : "offen";
             var (icon, col) = st switch { "fertig" => ("✓", "#4ADE80"), "läuft" => ("◐", "#60A5FA"), "fehler" => ("✗", "#F87171"), "folgt" => ("⏵", "#FACC15"), _ => ("○", "#94A3B8") };
             var s = r.Plan.Steps[i];
+            // T-0779 (M4): Fachaktion mit Dokument-Vorschau und langem Wert (z. B. zwölf Fragen) – Kurzform, volle Fassung aufklappbar; sonst wie bisher der volle Text
+            var shortOnly = StepShown(r.Target, s) != s.Text;
+            Control line = new TextBlock { Name = $"assist-step-{i}-text", Text = (shortOnly ? s.ShortText : s.Text) + (s.FromMemory.Count > 0 ? "  (gemerkt)" : "") + (s.Action.SideEffect ? "  – wirkt nach außen" : ""), Foreground = Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap };
+            if (shortOnly)
+                line = new StackPanel { Spacing = 2, Children = { line, new Expander { Name = $"assist-step-{i}-full", Header = "Ganz anzeigen", FontSize = 11.5,
+                    Content = new ScrollViewer { MaxHeight = 220, Content = new SelectableTextBlock { Text = s.Text, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap } } } } };
             sp.Children.Add(new StackPanel { Name = $"assist-step-{i}", Orientation = Orientation.Horizontal, Spacing = 8, Children = {
-                new TextBlock { Text = icon, Foreground = Brush.Parse(col), FontSize = 14, Width = 16 },
-                new TextBlock { Text = s.Text + (s.FromMemory.Count > 0 ? "  (gemerkt)" : "") + (s.Action.SideEffect ? "  – wirkt nach außen" : ""), Foreground = Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap } } });
+                new TextBlock { Text = icon, Foreground = Brush.Parse(col), FontSize = 14, Width = 16 }, line } });
         }
         if (r.Plan.Unclear.Count > 0) sp.Children.Add(P("Nicht verstanden und ausgelassen: " + string.Join(" · ", r.Plan.Unclear.Select(u => $"„{u}“")), Brush.Parse("#FACC15"), 11.5));
         if (r.Log.Count > 0) sp.Children.Add(new TextBlock { Name = "assist-log", Text = string.Join("\n", r.Log.TakeLast(3)), Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
@@ -403,7 +427,7 @@ public partial class MainWindow
         if (prompt.Trim().Length < 3) return ("", null);
         var plan = AssistPlanner.Plan(prompt, t.Actions, new AssistPrefs(_core.DataRoot, t.Key).Values);
         if (!plan.Understood) return ("Noch nicht verstanden – „Plan erstellen“ fragt die KI.", null);
-        var text = "Ich würde: " + string.Join(" → ", plan.Steps.Select(s => s.Text)) + (plan.Questions.Count > 0 ? $"  ·  {plan.Questions.Count} Rückfrage(n)" : "");
+        var text = "Ich würde: " + string.Join(" → ", plan.Steps.Select(s => t is ProgramAssistTarget pt0 && pt0.Produces(s.Action.Id) ? s.ShortText : s.Text)) + (plan.Questions.Count > 0 ? $"  ·  {plan.Questions.Count} Rückfrage(n)" : "");
         // T-0774: Fachaktionen (neue Datei) nicht beim Tippen vorbereiten – der Probelauf würde Einstellungen setzen und damit „Wiederholen“ leeren
         if (!plan.Ready || plan.HasSideEffects || t is ProgramAssistTarget pt && plan.Steps.Any(s => pt.Produces(s.Action.Id))) return (text, null);
         try

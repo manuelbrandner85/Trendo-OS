@@ -12,6 +12,6 @@ xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
       Echtlauf nur mit TRENDO_T0774_ECHT=<Belegordner> (braucht Ollama mit Modell auf diesem PC).
   Finished:    Trendo.App.Tests (ID = 'b994b7e338b7f467953f9b30fdf40b993c374eddca237ac699472c938a3ff10b')
 === TEST EXECUTION SUMMARY ===
-   Trendo.App.Tests  Total: 306, Errors: 0, Failed: 0, Skipped: 4, Not Run: 0, Time: 682,642s
+   Trendo.App.Tests  Total: 319, Errors: 0, Failed: 0, Skipped: 4, Not Run: 0, Time: 687,829s
 Waiting 10 seconds for foreground threads to exit...
 Exit 0
