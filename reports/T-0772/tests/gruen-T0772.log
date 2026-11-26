@@ -1,0 +1,20 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0772\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:14.78]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:16.65]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:16.85]   Starting:    Trendo.Core.Tests
+  Bestanden T-0772: /shell:powershell -enc … (auch pwsh, .exe, ^, Anführungszeichen) ist ein versteckter Befehl [253 ms]
+  Bestanden T-0772: harmloses „powershell“ nach Doppelpunkt bleibt ohne Fund (kein verschlüsselter Befehl, --shell-Ausnahme bleibt) [10 ms]
+  Bestanden T-0772: Budget erschöpft – keine weiteren Spalten, klare Meldung, kein Hängen; Abbruch wirkt sofort [531 ms]
+  Bestanden T-0772: 300 fast gleiche Umrisse mit versteckter Kerbe – echte Doppel (auch umgedreht, anderer Anfang) werden weiter gefunden [5 s]
+  Bestanden T-0772: lange schräge Gravurlinie – zu nahe Löcher werden weiter erkannt, freie Linie wird gefräst [817 ms]
+  Bestanden T-0772: k5_dicht mit 3000 Linien gleich wie bisher und mindestens 5-mal schneller (Median aus 3, relativ gemessen) [12 s]
+  Bestanden T-0772: Verketten gleich wie 0.9.110 – 1200 Zufallszeichnungen, mit und ohne Stoß-Erkennung, Ketten, Meldungen, Reihenfolge [14 s]
+[xUnit.net 00:00:46.17]   Finished:    Trendo.Core.Tests
+  Bestanden T-0772: k5_dicht mit 10 000 Linien wird in begrenzter Zeit fertig (Grenze 120 s; bisher quadratisch) [1 s]
+
+Der Testlauf war erfolgreich.
+Gesamtzahl Tests: 8
+     Bestanden: 8
+ Gesamtzeit: 51,8010 Sekunden

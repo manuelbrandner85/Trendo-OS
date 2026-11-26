@@ -1,0 +1,17 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0772\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:54.77]     T-0747-fix 4: 10 000 Linien – Grundriss-Import und Konturen in wenigen Sekunden; Obergrenze mit Meldung; Abbrechen [FAIL]
+  Fehler T-0747-fix 4: 10 000 Linien – Grundriss-Import und Konturen in wenigen Sekunden; Obergrenze mit Meldung; Abbrechen [34 s]
+  Fehlermeldung:
+   Grundriss-Import 14237 ms
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_FixGegenpruefung.Big_dxf_fast() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0772\tests\Trendo.Core.Tests\DxfWohnungFraesenFixTests.cs:line 270
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standardausgabemeldungen:
+ 10 000 Linien: Grundriss-Import 14237 ms (168 Wände, 4832 Öffnungen), Konturen 288 ms (8367 Züge)
+
+
+
+Fehler!      : Fehler:     1, erfolgreich:   150, übersprungen:     0, gesamt:   151, Dauer: 5 m 53 s - Trendo.Core.Tests.dll (net10.0)

@@ -1,0 +1,20 @@
+## SPEC14_Ui
+  Finished:    Trendo.App.Tests (ID = '989c170557293a221c8875fe637a01adc1f1d1c55291f085bc6aa1be9101e070')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 2, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 33,950s
+## T0747_DxfUi
+  Finished:    Trendo.App.Tests (ID = '989c170557293a221c8875fe637a01adc1f1d1c55291f085bc6aa1be9101e070')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 2, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 88,593s
+## T0747_Fix3RaceUi
+  Finished:    Trendo.App.Tests (ID = '989c170557293a221c8875fe637a01adc1f1d1c55291f085bc6aa1be9101e070')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 4, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 136,192s
+## T0747_Fix4RaceUi
+  Finished:    Trendo.App.Tests (ID = '989c170557293a221c8875fe637a01adc1f1d1c55291f085bc6aa1be9101e070')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 3, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 344,237s
+## T0747_FixUi
+  Finished:    Trendo.App.Tests (ID = '989c170557293a221c8875fe637a01adc1f1d1c55291f085bc6aa1be9101e070')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 3, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 136,958s

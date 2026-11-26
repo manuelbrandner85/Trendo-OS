@@ -188,8 +188,9 @@ public static partial class SystemScan
 
     /// <summary>T-0755 Fix5 / T-0757 Fix1/Fix2: Aufruf von PowerShell irgendwo in den Argumenten – mit oder ohne Pfad (auch in Anführungszeichen mit Leerzeichen),
     /// nach Leerraum, Anführungszeichen, Pfadtrenner, Befehlstrennern (&amp; |) und den cmd-Trennern @ , ; = ( ), auch direkt hinter /c, /k, /r
-    /// (<c>/q/cpowershell</c>). Ende des Namens auch an „/“ (<c>powershell.exe/NoP</c>).</summary>
-    [GeneratedRegex(@"(?i)(?:(?<=^|[\s""'\\/(@,;=)&|])|(?<=/[ckr]))(?:powershell|pwsh)(?:\.exe)?(?=[""'\s)&|,;/]|$)")] private static partial Regex InnerPowerShell();
+    /// (<c>/q/cpowershell</c>). Ende des Namens auch an „/“ (<c>powershell.exe/NoP</c>). T-0772: auch nach „:“ (<c>/shell:powershell -enc …</c>);
+    /// ein Fund entsteht weiter nur, wenn danach ein verschlüsselter Befehl folgt – <c>Typ:powershell</c> ohne -enc bleibt ohne Fund.</summary>
+    [GeneratedRegex(@"(?i)(?:(?<=^|[\s""'\\/(@,;=:)&|])|(?<=/[ckr]))(?:powershell|pwsh)(?:\.exe)?(?=[""'\s)&|,;/]|$)")] private static partial Regex InnerPowerShell();
 
     /// <summary>T-0757 Fix3: einzige Ausnahme – PowerShell als Wert des Schalters <c>--shell</c> in genau der Form <c>--shell powershell</c> bzw.
     /// <c>--shell=powershell</c> (ohne Pfad, ohne .exe). Eine echo/rem-Ausnahme gibt es nicht mehr: Sie ließ sich wiederholt umgehen

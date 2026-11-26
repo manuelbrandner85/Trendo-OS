@@ -1,0 +1,7 @@
+Lesen 1148 ms (30002 Elemente)
+Konturen 29480 ms (29168, Hinweise 0) K 28ED7D434C52E28A N E3B0C44298FC1C14
+OperationCanceledException nach 31342 ms (Phase): The operation was canceled.
+
+real	1m4.347s
+user	0m0.030s
+sys	0m0.077s

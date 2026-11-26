@@ -1,0 +1,3 @@
+Abbruch 3000 ms: OperationCanceledException nach 121 ms
+Abbruch 10000 ms: OperationCanceledException nach 21 ms
+Nachlauf hoechstens 124 ms

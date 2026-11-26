@@ -38,7 +38,7 @@ public sealed record CadContour(List<(double X, double Y)> Pts, bool Closed, str
 /// <summary>T-0747: Aus den Elementen einer Zeichnung (DXF über <see cref="CadDxf"/>, SVG über <see cref="CadSvg"/>) werden Linienzüge.
 /// Lose Linien und Bögen, deren Enden sich treffen, werden zu einem Zug verkettet – so wird aus vier LINE-Elementen ein geschlossenes Rechteck.
 /// Gemeinsam genutzt vom Wohnungsplaner (Räume) und vom Fräsen (Konturen).</summary>
-public static class CadContours
+public static partial class CadContours
 {
     /// <summary>Linienzüge bilden. <paramref name="tol"/>: Enden, die näher als das beieinanderliegen, gelten als verbunden;
     /// <paramref name="chord"/>: höchste Abweichung beim Zerlegen von Kreisen und Bögen in gerade Stücke (gleiche Einheit wie die Zeichnung).</summary>
@@ -220,55 +220,9 @@ public static class CadContours
             }
             if (absorbed.Count > 0) chains = chains.Where((_, i) => !absorbed.Contains(i)).ToList();
         }
-        // 2. + 3. Spalten überbrücken, bis sich nichts mehr ändert
-        var open = chains.Where(c => !c.Closed).Select(c => (Pts: c.Pts, c.Layer)).ToList();
+        // 2. + 3. Spalten überbrücken, bis sich nichts mehr ändert (T-0772: schrittweise, gleiches Ergebnis – siehe CadContoursBridge.cs)
         var done = chains.Where(c => c.Closed).Select(c => new CadContour(c.Pts, true, c.Layer)).ToList();
-        var reported = new HashSet<(long, long)>();
-        for (var round = 0; round < 100_000; round++)
-        {
-            ct.ThrowIfCancellationRequested();
-            // 2. eigene Enden nah beieinander → schließen (Spalt wird Strecke)
-            for (var i = open.Count - 1; i >= 0; i--)
-                if (open[i].Pts.Count >= 3 && Dist(open[i].Pts[0], open[i].Pts[^1]) <= lim) { done.Add(new CadContour(open[i].Pts, true, open[i].Layer)); open.RemoveAt(i); }
-            // 3. kürzester eindeutiger Spalt zwischen zwei offenen Ketten
-            var ends = new List<(int Chain, bool Last, (double X, double Y) P)>();
-            for (var i = 0; i < open.Count; i++) { ends.Add((i, false, open[i].Pts[0])); ends.Add((i, true, open[i].Pts[^1])); }
-            var emap = new Dictionary<(long, long), List<int>>();
-            for (var e = 0; e < ends.Count; e++) { var c = C(ends[e].P); if (!emap.TryGetValue(c, out var l)) emap[c] = l = []; l.Add(e); }
-            IEnumerable<int> Around((double X, double Y) p)
-            {
-                var (cx, cy) = C(p);
-                for (var dx = -1L; dx <= 1; dx++) for (var dy = -1L; dy <= 1; dy++) if (emap.TryGetValue((cx + dx, cy + dy), out var l)) foreach (var e in l) yield return e;
-            }
-            var pairs = new List<(double D, int A, int B)>();
-            for (var a = 0; a < ends.Count; a++)
-                foreach (var b in Around(ends[a].P))
-                    if (b > a && ends[b].Chain != ends[a].Chain && open[ends[a].Chain].Layer == open[ends[b].Chain].Layer && Dist(ends[a].P, ends[b].P) is var d && d <= lim) pairs.Add((d, a, b));
-            if (pairs.Count == 0) break;
-            pairs.Sort((x, y) => x.D.CompareTo(y.D));
-            var merged = false;
-            foreach (var (d, a, b) in pairs)
-            {
-                // etwa gleich nah: ein anderes Ende (andere Kette) liegt an a oder b höchstens d + tol/2 entfernt → nicht raten
-                var amb = Around(ends[a].P).Concat(Around(ends[b].P)).Any(e => e != a && e != b && ends[e].Chain != ends[a].Chain && ends[e].Chain != ends[b].Chain
-                    && open[ends[e].Chain].Layer == open[ends[a].Chain].Layer && Math.Min(Dist(ends[e].P, ends[a].P), Dist(ends[e].P, ends[b].P)) <= d + tol / 2);
-                if (amb)
-                {
-                    var key = ((long)Math.Round(ends[a].P.X * 1000), (long)Math.Round(ends[a].P.Y * 1000));
-                    if (reported.Add(key)) notes?.Add($"Mehrdeutiger Spalt bei X {ends[a].P.X.ToString("0.##", System.Globalization.CultureInfo.GetCultureInfo("de-DE"))} Y {ends[a].P.Y.ToString("0.##", System.Globalization.CultureInfo.GetCultureInfo("de-DE"))}: mehrere Enden liegen etwa gleich nah – nicht verbunden.");
-                    continue;
-                }
-                var (ca, cb) = (open[ends[a].Chain], open[ends[b].Chain]);
-                var pa = ends[a].Last ? ca.Pts : Enumerable.Reverse(ca.Pts).ToList(); // endet am Ende a
-                var pb = ends[b].Last ? Enumerable.Reverse(cb.Pts).ToList() : cb.Pts; // beginnt am Ende b
-                var joined = new List<(double X, double Y)>(pa.Count + pb.Count); joined.AddRange(pa); joined.AddRange(pb); // beide Endpunkte bleiben, der Spalt ist eine Strecke
-                var (hi, lo) = ends[a].Chain > ends[b].Chain ? (ends[a].Chain, ends[b].Chain) : (ends[b].Chain, ends[a].Chain);
-                open.RemoveAt(hi); open.RemoveAt(lo); open.Add((joined, ca.Layer));
-                merged = true; break;
-            }
-            if (!merged) break;
-        }
-        done.AddRange(open.Select(o => new CadContour(o.Pts, false, o.Layer)));
+        Bridge(chains.Where(c => !c.Closed).Select(c => (c.Pts, c.Layer)).ToList(), done, tol, lim, cell, notes, ct);
         done.AddRange(jout);
         return done;
     }

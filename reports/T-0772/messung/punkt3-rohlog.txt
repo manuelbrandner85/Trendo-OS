@@ -1,0 +1,49 @@
+# Punkt 3: Gravur p1, alt/neu abwechselnd
+### alt --phasen p1_diag_gravur_1000_10000 Lauf 1 06:19:28
+Lesen 156 ms (11001 Elemente)
+Konturen 161 ms  (11001, Hinweise 0) K 5BA35568EAE0A917 N E3B0C44298FC1C14
+Generate 6804 ms G ED98257BA3C56EF1 W 341BDB633F1DF16A Bahnen 2965
+### neu --phasen p1_diag_gravur_1000_10000 Lauf 1 06:19:36
+Lesen 159 ms (11001 Elemente)
+Konturen 159 ms Stats (1, 0, 2000, False) (11001, Hinweise 0) K 5BA35568EAE0A917 N E3B0C44298FC1C14
+Generate 2981 ms G ED98257BA3C56EF1 W 341BDB633F1DF16A Bahnen 2965
+### alt --phasen p1_diag_gravur_1000_10000 Lauf 1 06:19:40
+Lesen 135 ms (11001 Elemente)
+Konturen 134 ms  (11001, Hinweise 0) K 5BA35568EAE0A917 N E3B0C44298FC1C14
+Generate 6993 ms G ED98257BA3C56EF1 W 341BDB633F1DF16A Bahnen 2965
+### neu --phasen p1_diag_gravur_1000_10000 Lauf 1 06:19:48
+Lesen 145 ms (11001 Elemente)
+Konturen 142 ms Stats (1, 0, 2000, False) (11001, Hinweise 0) K 5BA35568EAE0A917 N E3B0C44298FC1C14
+Generate 2803 ms G ED98257BA3C56EF1 W 341BDB633F1DF16A Bahnen 2965
+### alt --phasen p1_diag_gravur_1000_10000 Lauf 1 06:19:51
+Lesen 148 ms (11001 Elemente)
+Konturen 148 ms  (11001, Hinweise 0) K 5BA35568EAE0A917 N E3B0C44298FC1C14
+Generate 6728 ms G ED98257BA3C56EF1 W 341BDB633F1DF16A Bahnen 2965
+### neu --phasen p1_diag_gravur_1000_10000 Lauf 1 06:19:59
+Lesen 149 ms (11001 Elemente)
+Konturen 166 ms Stats (1, 0, 2000, False) (11001, Hinweise 0) K 5BA35568EAE0A917 N E3B0C44298FC1C14
+Generate 2866 ms G ED98257BA3C56EF1 W 341BDB633F1DF16A Bahnen 2965
+### alt --phasen p1_diag_gravur_200_10000 Lauf 1 06:20:03
+Lesen 197 ms (10201 Elemente)
+Konturen 130 ms  (10201, Hinweise 0) K 23301EAF881E06CE N E3B0C44298FC1C14
+Generate 3782 ms G 6E4845A898BEEDB7 W 5605DB3E4E2CFB68 Bahnen 2973
+### neu --phasen p1_diag_gravur_200_10000 Lauf 1 06:20:08
+Lesen 132 ms (10201 Elemente)
+Konturen 145 ms Stats (1, 0, 400, False) (10201, Hinweise 0) K 23301EAF881E06CE N E3B0C44298FC1C14
+Generate 2586 ms G 6E4845A898BEEDB7 W 5605DB3E4E2CFB68 Bahnen 2973
+### alt --phasen p1_diag_gravur_200_10000 Lauf 1 06:20:12
+Lesen 137 ms (10201 Elemente)
+Konturen 128 ms  (10201, Hinweise 0) K 23301EAF881E06CE N E3B0C44298FC1C14
+Generate 3512 ms G 6E4845A898BEEDB7 W 5605DB3E4E2CFB68 Bahnen 2973
+### neu --phasen p1_diag_gravur_200_10000 Lauf 1 06:20:16
+Lesen 135 ms (10201 Elemente)
+Konturen 121 ms Stats (1, 0, 400, False) (10201, Hinweise 0) K 23301EAF881E06CE N E3B0C44298FC1C14
+Generate 2539 ms G 6E4845A898BEEDB7 W 5605DB3E4E2CFB68 Bahnen 2973
+### alt --phasen p1_diag_gravur_200_10000 Lauf 1 06:20:20
+Lesen 126 ms (10201 Elemente)
+Konturen 119 ms  (10201, Hinweise 0) K 23301EAF881E06CE N E3B0C44298FC1C14
+Generate 3256 ms G 6E4845A898BEEDB7 W 5605DB3E4E2CFB68 Bahnen 2973
+### neu --phasen p1_diag_gravur_200_10000 Lauf 1 06:20:24
+Lesen 133 ms (10201 Elemente)
+Konturen 127 ms Stats (1, 0, 400, False) (10201, Hinweise 0) K 23301EAF881E06CE N E3B0C44298FC1C14
+Generate 2534 ms G 6E4845A898BEEDB7 W 5605DB3E4E2CFB68 Bahnen 2973
