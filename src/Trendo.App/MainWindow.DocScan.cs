@@ -121,7 +121,7 @@ public partial class MainWindow
             }
             finally { if (note is null) _progMsg.Remove(ScanKey); else _progMsg[ScanKey] = note; }
         },
-        d => [ScanSavePdf(d)], ScanFolder);
+        (d, created) => [ScanSavePdf(d, created)]);
 
     // ---------- Modell (öffentlich für Tests und die KI) ----------
 
@@ -306,11 +306,13 @@ public partial class MainWindow
     }
 
     /// <summary>Als PDF ablegen: Name aus Datum und Titel, Ordner nach Art – vorhandene Dateien werden nie überschrieben.</summary>
-    public string ScanSavePdf(ProgramDocument d)
+    /// <param name="created">T-0774: bekommt den Namen der neuen Datei vor dem Schreiben (KI-Lauf: bei einem Fehler wird genau diese Datei zurückgenommen).</param>
+    public string ScanSavePdf(ProgramDocument d, Action<string>? created = null)
     {
         var dir = UserDirFixedNames(ScanFolder(d)); // T-0764 (13. Prüfrunde): Ordner/Datei frei getippt – Kinder nur Freigabe, keine neue ausführbare Endung
         Directory.CreateDirectory(dir);
         var f = UserFile(DocScan.Unique(dir, DocScan.FileName(ScanDate(d), d.Text("title"))));
+        created?.Invoke(f);
         ScanWritePdf(d, f); NotifyFileResult(_progMsg[ScanKey]);
         return f;
     }

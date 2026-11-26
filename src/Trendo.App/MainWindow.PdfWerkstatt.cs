@@ -128,7 +128,7 @@ public partial class MainWindow
             foreach (var f in pdfs) { if (!File.Exists(f)) throw new FileNotFoundException("Datei nicht gefunden: " + Path.GetFileName(f)); PdfTools.ParsePages(spec, PdfView.PageCount(f)); } // prüft schon in der Vorschau
             d.Edit("Seiten herausziehen", x => { x["tool"] = "teilen"; x["splitMode"] = "bereiche"; x["ranges"] = spec; });
         },
-        PwKiProduce, _ => PwOutDir());
+        PwKiProduce);
 
     /// <summary>„Werkzeug ausführen“: das gewählte (oder genannte) Werkzeug auf die Liste – wie der Knopf „Ausführen“.</summary>
     ProgramKiAction PwKiRun => new(new AssistAction("pdf.ausfuehren", "Werkzeug ausführen (neue Datei)", ["ausfuehren", "anwenden", "zusammenfuegen", "komprimieren", "verkleinern", "wasserzeichen", "stempel", "seitenzahlen", "metadaten", "vergleichen", "bilder"],
@@ -139,7 +139,7 @@ public partial class MainWindow
             if (PwFiles(d).Count == 0) throw new InvalidOperationException("Es ist noch keine Datei in der Liste – erst „Dateien hinzufügen …“.");
             PwKiAllowed(d);
         },
-        PwKiProduce, _ => PwOutDir());
+        PwKiProduce);
 
     /// <summary>T-0774 (Gegenprüfung 2): KI-Pläne führen keine Passwort-Werkzeuge aus (weder schützen noch entsperren) – geprüft am Stand, der wirklich läuft.</summary>
     static void PwKiAllowed(ProgramDocument d)
@@ -148,7 +148,10 @@ public partial class MainWindow
     }
 
     /// <summary>Erzeugen bei „Ja, behalten“: dieselbe Prüfung noch einmal am echten Dokument, dann dieselbe Funktion wie der Knopf „Ausführen“.</summary>
-    List<string> PwKiProduce(ProgramDocument d) { PwKiAllowed(d); return PwRun(d); }
+    List<string> PwKiProduce(ProgramDocument d, Action<string> created) { PwKiAllowed(d); return PwRun(d, created); }
+
+    /// <summary>T-0774 (2. Gegenprüfung M1): während eines KI-Laufs bekommt jede Ausgabedatei, die die Werkstatt selbst anlegt, hier Bescheid (vor dem Schreiben).</summary>
+    Action<string>? _pwCreated;
 
     /// <summary>Füllwörter rund um eine Seitenangabe („Seiten 1 bis 3 als neue PDF heraus“) – alles andere ist eine unbekannte Angabe und wird gemeldet.</summary>
     static readonly HashSet<string> PwSpecFill = ["seite", "seiten", "s", "und", "als", "neue", "neuen", "pdf", "datei", "heraus", "herausziehen", "herausnehmen", "raus", "aus", "der", "die", "das", "dem", "den", "von",
@@ -180,7 +183,7 @@ public partial class MainWindow
     static string PwToolName(ProgramDocument d) => PwTools.FirstOrDefault(t => t.Id == d.Text("tool")).Name ?? "Zusammenfügen";
     static bool PwIsImage(string f) => Path.GetExtension(f).ToLowerInvariant() is ".png" or ".jpg" or ".jpeg";
     string PwOutDir() { var d = Path.Combine(WorkFolder("PDF-Werkstatt"), "Ergebnisse"); Directory.CreateDirectory(d); return d; }
-    string PwOut(string stem, string suffix, string ext = ".pdf") => PdfTools.Free(Path.Combine(PwOutDir(), DevStudio.SafeName(stem) + suffix + ext));
+    string PwOut(string stem, string suffix, string ext = ".pdf") { var p = PdfTools.Free(Path.Combine(PwOutDir(), DevStudio.SafeName(stem) + suffix + ext)); _pwCreated?.Invoke(p); return p; }
 
     void PwSetTool(ProgramDocument d, string id)
     {
@@ -302,12 +305,14 @@ public partial class MainWindow
     static string Kb(long b) => b >= 1 << 20 ? $"{b / 1048576.0:0.0} MB" : $"{Math.Max(1, b / 1024)} KB";
 
     /// <summary>Werkzeug auf die Liste anwenden. Ergebnis: neue Dateien (auch im Dokument unter „results“).</summary>
-    public List<string> PwRun(ProgramDocument d)
+    public List<string> PwRun(ProgramDocument d, Action<string>? created = null)
     {
+        _pwCreated = created;
         try { return PwRunCore(d); }
         catch (PdfSharp.Pdf.IO.PdfReaderException e) when (e.Message.Contains("password", StringComparison.OrdinalIgnoreCase))
         { throw new InvalidOperationException(PwPassword.Length > 0 ? "Das Passwort stimmt nicht – bitte noch einmal eingeben." : "Diese PDF ist mit Passwort geschützt – erst mit „Passwort“ entsperren.", e); }
         catch (PdfSharp.Pdf.IO.PdfReaderException e) { throw new InvalidDataException("Die PDF lässt sich nicht lesen – ist sie beschädigt?", e); }
+        finally { _pwCreated = null; }
     }
 
     List<string> PwRunCore(ProgramDocument d)
@@ -349,7 +354,7 @@ public partial class MainWindow
                 }
                 break;
             default:
-                foreach (var f in pdfs) outs.AddRange(PwOne(d, tool, f));
+                foreach (var f in pdfs) { var r = PwOne(d, tool, f); foreach (var (file, _) in r) _pwCreated?.Invoke(file); outs.AddRange(r); } // Teilen: Namen vergibt PdfTools
                 break;
         }
         PwResult(d, outs);

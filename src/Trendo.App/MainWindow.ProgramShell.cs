@@ -34,8 +34,9 @@ public sealed record ProgramFirstStep(string Label, string Hint, Action<ProgramD
 /// <paramref name="Prepare"/> läuft schon in der Vorschau (nur Einstellungen im Dokument, prüft die Werte – wirft mit einem Satz für die Person);
 /// <paramref name="Produce"/> läuft erst bei „Ja, behalten“ am echten Dokument und erzeugt die echte Datei. Beides zusammen ist EIN Rückgängig-Schritt;
 /// Rückgängig legt die erzeugte Datei beiseite (Ordner „.rueckgaengig“), Wiederholen holt sie zurück.
-/// Höchstens eine Fachaktion je Auftrag, als letzter Schritt. <paramref name="OutDir"/>: Ausgabeordner – schlägt das Erzeugen fehl, werden dort neu entstandene Dateien zurückgenommen.</summary>
-public sealed record ProgramKiAction(AssistAction Def, Action<ProgramDocument, IReadOnlyDictionary<string, string>> Prepare, Func<ProgramDocument, IReadOnlyList<string>> Produce, Func<ProgramDocument, string?>? OutDir = null);
+/// Höchstens eine Fachaktion je Auftrag, als letzter Schritt. <paramref name="Produce"/> meldet über den zweiten Wert jede Datei, die es selbst anlegt (vor dem Schreiben) –
+/// schlägt das Erzeugen fehl, werden genau diese Dateien beiseitegelegt („.rueckgaengig“); fremde Dateien im selben Ordner bleiben unberührt.</summary>
+public sealed record ProgramKiAction(AssistAction Def, Action<ProgramDocument, IReadOnlyDictionary<string, string>> Prepare, Func<ProgramDocument, Action<string>, IReadOnlyList<string>> Produce);
 
 public sealed class ProgramSpec(string key, string studio, string title)
 {

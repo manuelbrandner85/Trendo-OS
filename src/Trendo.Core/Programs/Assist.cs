@@ -280,7 +280,8 @@ public static partial class AssistPlanner
             if (JsonNode.Parse(answer[start..(end + 1)]) is not JsonObject root || root["steps"] is not JsonArray steps) return plan;
             foreach (var st in steps.OfType<JsonObject>().Take(12))
             {
-                if (actions.FirstOrDefault(a => a.Id == (string?)st["action"]) is not { } a) continue;
+                // T-0774 (2. Gegenprüfung N2): nichts fällt still heraus – unbekannte Aktionen und unerlaubte Auswahlwerte stehen unter „Nicht verstanden“
+                if (actions.FirstOrDefault(a => a.Id == (string?)st["action"]) is not { } a) { plan.Unclear.Add($"„{st["action"]?.ToString() ?? "?"}“ gibt es in diesem Programm nicht"); continue; }
                 var args = new Dictionary<string, string>();
                 if (st["args"] is JsonObject eo && a.Id == AssistChain.EditAction) // T-0707: Inhalt fürs Dokument – Text, Liste oder Gruppe; geprüft wird beim Ausführen (AssistChain.CheckEdit)
                 {
@@ -289,7 +290,9 @@ public static partial class AssistPlanner
                 }
                 else if (st["args"] is JsonObject ao)
                     foreach (var p in a.Parameters)
-                        if (ao[p.Name] is JsonValue jv && jv.ToString() is { Length: > 0 and < 2000 } v && (p.Kind != AssistKind.Choice || (p.Options ?? []).Contains(v)) && (p.Kind != AssistKind.Number || double.TryParse(v, NumberStyles.Float, CultureInfo.InvariantCulture, out _)))
+                        if (p.Kind == AssistKind.Choice && ao[p.Name] is JsonValue cv && cv.ToString() is { Length: > 0 } bad && !(p.Options ?? []).Contains(bad))
+                            plan.Unclear.Add($"{a.Label}: „{bad}“ ist kein erlaubter Wert für „{p.Label}“");
+                        else if (ao[p.Name] is JsonValue jv && jv.ToString() is { Length: > 0 and < 2000 } v && (p.Kind != AssistKind.Choice || (p.Options ?? []).Contains(v)) && (p.Kind != AssistKind.Number || double.TryParse(v, NumberStyles.Float, CultureInfo.InvariantCulture, out _)))
                             args[p.Name] = p.Kind == AssistKind.YesNo ? (v is "ja" or "true" or "Ja" ? "ja" : "nein") : v;
                 plan.Steps.Add(new AssistStep(a, args, []));
             }

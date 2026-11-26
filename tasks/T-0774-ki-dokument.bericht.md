@@ -2,6 +2,18 @@
 
 **Auftrag:** `tasks/T-0774-ki-dokument.md` (Freigabe 26.11.2026, Etappe 0.9.112) · **Branch:** `claude/T-0774-ki-dokument` (Basis main 0.9.111 = 2b1ffa923) · eigene Kopie in `%TEMP%\trendo-auftrag-T-0774`.
 
+## 2. Nachbesserung (zweite Gegenprüfung)
+| Nr. | Befund | Behebung | Test (rot auf 1703134a3 → grün) |
+|---|---|---|---|
+| H1 | Sperre verglich `NormalizePath(pfad).Split('/')[0]` ohne Trim – „ folder“ kam durch, CheckEdit/DocPath schrieben trotzdem | Gemeinsame Zerlegung `AssistChain.PathParts` (Trim, Tabs, leere Teile) für CheckEdit und die Sperre; Vergleich ohne Groß/klein | `Locked_path_variants` („ folder“, „folder “, Tab, „Folder“, „FOLDER“, „ fOlDeR⇥“, „/folder/“) |
+| M1 | Aufräumen durchsuchte rekursiv den Ausgabeordner (außerhalb des try) und löschte auch fremde, gleichzeitig entstandene Dateien endgültig | `ProgramKiAction.Produce` bekommt eine Meldefunktion und meldet jede selbst angelegte Datei vor dem Schreiben (PDF-Werkstatt über `PwOut` und die Teile von „Teilen“, Scannen über `ScanSavePdf`). Bei einem Fehler werden genau diese nach „.rueckgaengig“ gelegt, nicht gelöscht. Kein Durchsuchen mehr, `OutDir`/`Listing` entfernt | `Foreign_file_survives_failed_apply` (fremde Datei entsteht während des Laufs, alter Stand löschte sie); `Failed_apply_leaves_no_files` prüft jetzt „beiseitegelegt statt gelöscht“ |
+| N1 | Ausnahme aus `ChildWrite.DemandMove` in KiFilesStepped | Verschieben in `KiMoveAside` gekapselt: jede Ausnahme (außer Speicher) wird protokolliert und im Programm gemeldet, Rückgängig/Wiederholen werfen nie. Ehrlich: `UnauthorizedAccessException` wurde schon vorher abgefangen; der Test belegt den Fall „Datei gesperrt“ | `Undo_with_locked_file_does_not_throw` (auf dem alten Stand nur die Meldung anders) |
+| N2 | `pdf.ausfuehren` fiel still aus dem Plan | Ursache: `AssistPlanner.FromKi` überging unbekannte Aktionen (z. B. „pdf.ausführen“) und unerlaubte Auswahlwerte (z. B. „Wasserzeichen“ statt „wasserzeichen“) ohne Spur – dann lief das gerade gewählte Werkzeug. Jetzt stehen beide unter „Nicht verstanden“; in Programmen mit Fachaktion läuft so ein Plan gar nicht, sondern endet mit deutlicher Meldung | `Run_without_tool_after_password_is_reported` (drei Fälle) |
+| N3 | – | nur notiert, keine Änderung | – |
+
+Rot-Lauf: `reports/T-0774/rot-gegenpruefung-2.txt` – 5 von 16 rot auf 1703134a3. Endstand: 15 bestanden, 1 übersprungen (Echtlauf ohne Variable). Der Echtlauf mit qwen3:14b lief neu, die Belege und `SHA256.txt` sind neu erzeugt.
+Neu berührt: `src/Trendo.Core/Programs/AssistChain.cs` (`PathParts`).
+
 ## Nachbesserung nach der Gegenprüfung („nicht freigabefähig“)
 | Nr. | Befund | Behebung | Regressionstest (rot auf 6588330f8 → grün) |
 |---|---|---|---|
@@ -9,7 +21,7 @@
 | 2 (hoch) | Vorschau zeigte „Wasserzeichen“, danach `tool=passwort`/`pwMode=entfernen` → entsperrte Kopie | Folgt aus 1 (nichts nach der Fachaktion); zusätzlich prüft `PwKiAllowed` vor der Vorschau **und** beim Erzeugen am echten Dokument: KI-Pläne führen „Passwort“ (schützen/entfernen) nie aus | `No_password_tools_from_ki` (alter Stand erzeugte `…-entsperrt.pdf`) |
 | 3 (hoch) | `KiFilesRestored` hing an `Restored` und verschob Dateien auch bei Vorschau-Zurückrollen (Textsuche) | Neues Ereignis `ProgramDocument.Stepped` nur bei echtem `Undo()`/`Redo()` (nie bei `Rollback`), Zuordnung über die Schrittnummer (`TopStep`), Wiederholen-Liste behält die Nummer | `Preview_rollback_never_moves_files` (Ergebnisliste leeren + neue Vorschau + „Nein“ → Datei bleibt) |
 | 4 (mittel) | KI konnte `folder` (absolut/UNC) für Scans setzen | `ProgramSpec.KiLocked = ["folder"]` – `dokument.setzen` dort abgelehnt; Fotos-Ordner der KI: Netzwerkpfade abgelehnt | `Ki_cannot_set_scan_folder` |
-| 5 (mittel) | Fehler beim Übernehmen ließ schon geschriebene Dateien liegen | `ProgramKiAction.OutDir`: Dateiliste vorher/nachher, bei Fehler neu entstandene Dateien gelöscht, Dokument zurückgerollt | `Failed_apply_leaves_no_files` (zweite PDF nach der Vorschau beschädigt) |
+| 5 (mittel) | Fehler beim Übernehmen ließ schon geschriebene Dateien liegen | (in der 2. Nachbesserung ersetzt, siehe M1) | `Failed_apply_leaves_no_files` (zweite PDF nach der Vorschau beschädigt) |
 | 6 (mittel) | Wiederholen konnte gleichnamige fremde Datei treffen | Name belegt → nicht verschieben, Meldung im Programm, Protokoll `assist.datei.belegt` | `Redo_never_overwrites` |
 | 7 (mittel) | `SHA256.txt` passte nicht zum Rohlog (Zeilenende-Umwandlung) | `.gitattributes`: `reports/T-0774/** -text`; Echtlauf neu, Rohlog nennt Befehl und Testnamen, Liste neu erzeugt | Prüfung `sha256sum -c` vor dem Commit |
 | 8 (niedrig) | „3 bis Ende“/„3-“, Unbekanntes still verworfen | → `3-z`; unbekannte Wörter werden gemeldet | `Small_fixes` |
@@ -69,7 +81,7 @@ Neue Testklasse auf dem alten Stand (2b1ffa923, eigener Worktree, danach entfern
 - `src/Trendo.App/MainWindow.PdfWerkstatt.cs` (pdf.seiten_heraus, pdf.ausfuehren, PwPageSpec)
 - `src/Trendo.App/MainWindow.DocScan.cs` (scan.pdf, Knopf umbenannt)
 - `tests/Trendo.App.Tests/T0774KiDokumentUiTests.cs` (neu)
-- `src/Trendo.Core/Programs/ProgramDocument.cs`, `src/Trendo.Core/Programs/Assist.cs`, `.gitattributes` (Nachbesserung)
+- `src/Trendo.Core/Programs/ProgramDocument.cs`, `src/Trendo.Core/Programs/Assist.cs`, `src/Trendo.Core/Programs/AssistChain.cs`, `.gitattributes` (Nachbesserungen)
 - `docs/nachbau/pdf-werkstatt/anforderungen.md` (PW-14), `docs/nachbau/scannen/anforderungen.md` (SC-12, SC-15)
 - `reports/T-0774/*`, `tasks/T-0774-ki-dokument.md`, `tasks/T-0774-ki-dokument.bericht.md`
 

@@ -324,7 +324,8 @@ public class T0774KiDokument_Ui
             Tap(w, "assist-apply");
             await Until(() => w.AssistLast?.Phase is "fertig" or "fehler");
             Assert.Equal("fehler", w.AssistLast!.Value.Phase);
-            Assert.Empty(OutPdfs(root)); // die schon geschriebene Wasserzeichen-PDF der ersten Datei ist wieder weg
+            Assert.Empty(OutPdfs(root)); // die schon geschriebene Wasserzeichen-PDF der ersten Datei ist wieder weg …
+            Assert.Contains(Directory.GetFiles(root, "*-wasserzeichen*.pdf", SearchOption.AllDirectories), f => f.Contains(".rueckgaengig")); // … beiseitegelegt, nicht gelöscht
             Assert.Equal(before, d.Data.ToJsonString()); Assert.Equal(history, d.History.Count);
         }
         finally { MainWindow.AssistStepDelayMs = 140; w.KiBackendsOverride = null; w.PickOverride = null; w.Close(); }
@@ -374,6 +375,114 @@ public class T0774KiDokument_Ui
             Assert.Equal("scan.pdf", plain.Steps.Single().Action.Id); Assert.False(plain.Steps[0].Args.ContainsKey("modus"));
             var asked = AssistPlanner.Plan("Fotos als PDF ablegen im Modus Foto", actions);
             Assert.Equal("foto", asked.Steps.Single().Args["modus"]);
+        }
+        finally { MainWindow.AssistStepDelayMs = 140; w.KiBackendsOverride = null; w.PickOverride = null; w.Close(); }
+    }
+
+    // ───────────── 2. Gegenprüfung ─────────────
+
+    [AvaloniaFact(DisplayName = "T-0774 2. Gegenprüfung H1: gesperrte Stelle „folder“ auch mit Leerzeichen, Tab und anderer Groß-/Kleinschreibung – abgelehnt, nichts geschrieben")]
+    public async Task Locked_path_variants()
+    {
+        var (w, _, root) = Ui.Open(); MainWindow.AssistStepDelayMs = 0;
+        var outside = Path.Combine(root, "fremd"); Directory.CreateDirectory(outside);
+        var pfad = "";
+        try
+        {
+            w.KiBackendsOverride = () => [new FixedKi(_ => Plans(("dokument.setzen", Set(pfad, outside)), ("scan.pdf", new JsonObject { ["titel"] = "Brief" })))];
+            var (d, _) = OpenScan(w, root);
+            var before = d.Data.ToJsonString();
+            foreach (var v in new[] { " folder", "folder ", "\tfolder", "Folder", "FOLDER", " fOlDeR\t", "/folder/" })
+            {
+                pfad = v;
+                Assert.Equal("fehler", await Send(w, "Leg die Fotos als PDF in meinem anderen Ordner ab bitte jetzt"));
+                Assert.Contains("legst du selbst fest", w.AssistLast!.Value.Message);
+                Assert.Equal(before, d.Data.ToJsonString());
+                Tap(w, "assist-close");
+            }
+            Assert.Empty(Directory.GetFiles(outside));
+            Assert.Equal(["folder"], AssistChain.PathParts(AssistChain.NormalizePath(" folder\t")));
+        }
+        finally { MainWindow.AssistStepDelayMs = 140; w.KiBackendsOverride = null; w.PickOverride = null; w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0774 2. Gegenprüfung M1: Fehler beim Übernehmen – eine fremde Datei, die währenddessen im Ergebnis-Ordner entsteht, bleibt liegen; nur eigene Dateien werden beiseitegelegt")]
+    public async Task Foreign_file_survives_failed_apply()
+    {
+        var (w, _, root) = Ui.Open(); MainWindow.AssistStepDelayMs = 0;
+        FileSystemWatcher? watch = null;
+        try
+        {
+            w.KiBackendsOverride = () => [new FixedKi(_ => Plan("pdf.ausfuehren", new JsonObject { ["werkzeug"] = "wasserzeichen" }))];
+            var (d, _) = OpenPw(w, root);
+            var more = Enumerable.Range(2, 14).Select(i => PdfWerkstatt_Ui.TextPdf(Path.Combine(root, "eingang", $"datei{i:00}.pdf"), "Eins", "Zwei", "Drei")).ToList();
+            var bad = PdfWerkstatt_Ui.TextPdf(Path.Combine(root, "eingang", "zz-kaputt.pdf"), "Eins");
+            w.PickOverride = _ => Task.FromResult<string[]?>([.. more, bad]); Tap(w, "prog-cmd-pw-add");
+            Assert.Equal("vorschau", await Send(w, "Setz auf alle PDFs in der Liste ein Wasserzeichen VERTRAULICH"));
+            File.WriteAllText(bad, "kaputt");
+            string? foreign = null;
+            watch = new FileSystemWatcher(root) { IncludeSubdirectories = true, Filter = "*-wasserzeichen*.pdf", EnableRaisingEvents = true };
+            watch.Created += (_, e) => { if (foreign is null && !e.FullPath.Contains(".rueckgaengig")) { var f = Path.Combine(Path.GetDirectoryName(e.FullPath)!, "fremd-gleichzeitig.pdf"); try { File.WriteAllText(f, "fremd"); foreign = f; } catch (IOException) { } } };
+            Tap(w, "assist-apply");
+            await Until(() => w.AssistLast?.Phase is "fertig" or "fehler", 60000);
+            Assert.Equal("fehler", w.AssistLast!.Value.Phase);
+            Assert.NotNull(foreign);
+            Assert.True(File.Exists(foreign), "fremde Datei wurde mitgenommen"); Assert.Equal("fremd", File.ReadAllText(foreign!));
+            Assert.Empty(OutPdfs(root).Where(f => !f.EndsWith("fremd-gleichzeitig.pdf")));
+            Assert.NotEmpty(Directory.GetFiles(root, "*-wasserzeichen*.pdf", SearchOption.AllDirectories).Where(f => f.Contains(".rueckgaengig")));
+        }
+        finally { watch?.Dispose(); MainWindow.AssistStepDelayMs = 140; w.KiBackendsOverride = null; w.PickOverride = null; w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0774 2. Gegenprüfung N1: Rückgängig mit gesperrter KI-Datei wirft nicht – Schritt zurückgenommen, Meldung im Programm")]
+    public async Task Undo_with_locked_file_does_not_throw()
+    {
+        var (w, _, root) = Ui.Open(); MainWindow.AssistStepDelayMs = 0;
+        try
+        {
+            w.KiBackendsOverride = () => [new FixedKi(_ => Plan("pdf.seiten_heraus", new JsonObject { ["seiten"] = "1-3" }))];
+            var (d, _) = OpenPw(w, root);
+            var before = d.Data.ToJsonString();
+            Assert.Equal("vorschau", await Send(w, "Zieh aus der PDF die Seiten 1 bis 3 als neue Datei heraus"));
+            Tap(w, "assist-apply"); await Until(() => w.AssistLast?.Phase == "fertig");
+            var made = Results(d).Single();
+            using (new FileStream(made, FileMode.Open, FileAccess.Read, FileShare.None))
+            {
+                Assert.True(d.Undo());
+                Assert.Equal(before, d.Data.ToJsonString());
+                Assert.Contains("ließ sich nicht beiseitelegen", w.ProgramMessage(Pw));
+            }
+            Assert.True(File.Exists(made));
+        }
+        finally { MainWindow.AssistStepDelayMs = 140; w.KiBackendsOverride = null; w.PickOverride = null; w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0774 2. Gegenprüfung N2: „pdf.ausfuehren“ ohne Werkzeug nach „tool=passwort“ fällt nicht still weg – deutlicher Fehler")]
+    public async Task Run_without_tool_after_password_is_reported()
+    {
+        var (w, _, root) = Ui.Open(); MainWindow.AssistStepDelayMs = 0;
+        try
+        {
+            var ki = new FixedKi(_ => "{\"steps\":[{\"action\":\"dokument.setzen\",\"args\":{\"pfad\":\"tool\",\"wert\":\"passwort\"}},{\"action\":\"pdf.ausfuehren\"}]}");
+            w.KiBackendsOverride = () => [ki];
+            var (d, _) = OpenPw(w, root);
+            var phase = await Send(w, "Schütz die PDF mit einem Passwort und leg eine Kopie ab bitte");
+            Assert.Equal("fehler", phase);
+            Assert.Contains("Passwörter", w.AssistLast!.Value.Message);
+            Assert.Equal(2, w.AssistLast.Value.Steps.Count); // beide Schritte stehen im Plan – nichts fällt still heraus
+            Assert.Empty(OutPdfs(root));
+            Tap(w, "assist-close");
+            // unerlaubter Auswahlwert („Wasserzeichen“ statt „wasserzeichen“): fiel vorher still weg, dann lief das gerade gewählte Werkzeug („ordnen“)
+            w.KiBackendsOverride = () => [new FixedKi(_ => Plan("pdf.ausfuehren", new JsonObject { ["werkzeug"] = "Wasserzeichen" }))];
+            Assert.Equal("fehler", await Send(w, "Setz auf die PDF ein Wasserzeichen und leg sie neu ab"));
+            Assert.Contains("kein erlaubter Wert", w.AssistLast!.Value.Message);
+            Assert.Empty(OutPdfs(root));
+            Tap(w, "assist-close");
+            // unbekannte Aktion („pdf.ausführen“ mit ü): fiel vorher still aus dem Plan, übrig blieb nur „tool=passwort“
+            w.KiBackendsOverride = () => [new FixedKi(_ => "{\"steps\":[{\"action\":\"dokument.setzen\",\"args\":{\"pfad\":\"tool\",\"wert\":\"passwort\"}},{\"action\":\"pdf.ausführen\"}]}")];
+            Assert.Equal("fehler", await Send(w, "Schütz die PDF mit einem Passwort und leg eine Kopie ab bitte"));
+            Assert.Contains("gibt es in diesem Programm nicht", w.AssistLast!.Value.Message);
+            Assert.Empty(OutPdfs(root));
         }
         finally { MainWindow.AssistStepDelayMs = 140; w.KiBackendsOverride = null; w.PickOverride = null; w.Close(); }
     }
