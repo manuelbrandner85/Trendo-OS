@@ -98,3 +98,43 @@ Tests angepasst (Zählwerte): `tests/Trendo.App.Tests/PromptBarTests.cs`, `tests
 
 ## Sprachwahl
 Rust: NEIN. Die Abschottung braucht Windows-APIs (AppContainer, Job-Objekt), die Trendo schon in C# nutzt (`Sys/Sandbox.cs`); ein Rust-Baustein brächte keinen messbaren Vorteil, nur eine zweite Sprache. Lernende schreiben Python, weil es auf dem PC vorhanden und mitgeliefert ist.
+
+## Gegenprüfung (Korrekturen, Commit 5ea9f1b39)
+
+Jeder Punkt hat einen Regressionstest. Rot belegt auf zwei Wegen:
+- **Alter Stand:** Für Kern-Punkte, die schon mit der alten Schnittstelle prüfbar sind, lief die Datei `T0782_RotAlt` gegen f16ba134b. Ergebnis 5 von 5 rot, auf dem neuen Stand 5 von 5 grün (`reports/T-0782/gegenpruefung/rot-alter-stand-kern.txt`, `gruen-neuer-stand-dieselbe-datei.txt`).
+- **Rückbau:** Für die übrigen Punkte wurde die jeweilige Korrektur im neuen Stand zurückgebaut. Ergebnis App 6 von 6 rot, Kern 4 von 4 rot (`rot-rueckbau-app.txt`, `rot-rueckbau-kern.txt`). Danach wurde der Rückbau mit `git checkout` verworfen und alles lief wieder grün (`gruen-kern.txt`: 110 bestanden, 1 übersprungen; `gruen-app.txt`: 6/6 und 9/9 mit 1 übersprungen).
+
+| Punkt | Behebung | Test | Rot belegt |
+|---|---|---|---|
+| H1 | `AssistRouteFor` gibt bei `KiLocalOnly` immer „Dokument“ oder „Projekt“ zurück, vor der Claude-Weiche. `ClaudeFromStudioBar` lehnt für solche Programme und Studios ab. Damit gilt das auch für den Menüband-Weg `AssistFromProgram`. | App `H1_tutor_never_claude`: ClaudeNoClicks an, Claude über Override angemeldet; Auftragszeile, `AssistFromProgram` und Studio-Leiste ergeben 0 Claude-Läufe und 0 Aufrufe der Haupt-KI. Gegenprobe: das Programm „text“ geht an Claude. `H1_child_codelearn_never_claude`: Kinderprofil, „Programmieren lernen“. | Rückbau |
+| M1 | Eigener Desktop je Lauf (`CreateDesktopW`, DACL nur für Container, Person und SYSTEM; `lpDesktop`) | Kern `M1_own_desktop` ECHT: `GetPixel` liefert im Container überall CLR_INVALID, 0 sichtbare Fenster. Gegenprobe ohne Container: echte Pixel und mehr Fenster. | Rückbau |
+| M2 | Hilfetext und Hinweis in der App sagen ehrlich, dass Rechner- und Benutzername sowie Teile der Registrierung lesbar bleiben. `ProgramSpec.KiView` entfernt Programmausgabe und Testmeldungen aus der Sicht der KI-Kette. „Hinweis von der KI“ schickt sie nur an die KI auf diesem PC (`KiFrage(…, mitAusgabe)`). | App `M2_no_output_to_claude`, Kern `M2_no_output_to_ki` | Rückbau |
+| M3 | Ausgabe läuft über Pipes; Trendo behält nur die letzten 256 KB. Über 2 MB bricht der Lauf ab (Status „limit“). Der Lerncode kann nichts mehr ungebremst auf die Platte schreiben. `Tail` liest per Seek. | Kern `M3_output_flood` ECHT | Rückbau |
+| M4 | Der Temp-Ordner des Containers (`…\Packages\trendo.lernen.code\AC\Temp`) wird vor und nach jedem Lauf geleert. Arbeitsordner und AC-Temp werden während des Laufs und am Ende gemessen (Grenze 50 MB). Läufe laufen nacheinander. | Kern `M4_disk_and_actemp` ECHT | Rückbau |
+| M5 | Tests sind jetzt Daten (Aufruf plus erwarteter Wert). Im Container laufen nur die Aufrufe; die erwarteten Werte verlassen Trendo nie. Verglichen wird in C#. Es gibt keine Ergebnisdatei mehr; kaputte oder fremde Zeilen werden übergangen, Meldungen gekürzt. | Kern `M5_forgery_real` ECHT, `M5_parse_robust` | alter Stand |
+| M6 | Versuche und „Lösung gesehen“ stehen zusätzlich in `ProgramDocument.Meta` (nicht in der Rückgängig-Liste, mit gespeichert). Wer die Lösung gesehen hat, bekommt für „richtig“ keinen Punkt. Leere, unlesbare und Format-Eingaben zählen nicht. Die KI-Kette sieht nach `Nachhilfe.KiSicht` keine Antworten, Lösungswege, Hinweise, Eingaben und keinen Verlauf. | Kern `M6_undo_cannot_reset`, `M6_ki_view`; App `M6_ki_chain_sees_no_answer` | alter Stand und Rückbau |
+| M7 | `VerraetLoesung` erkennt: Rest, Bruch mit Leerzeichen, Zahlwörter bis 99, Unicode-Minus, Punkt/Komma, gesperrte Buchstaben, ae statt ä und Rechnungen (Punkt vor Strich) | Kern `M7_reveal_variants`, mit Fällen, die nicht anschlagen dürfen | alter Stand |
+| M8 | Prüfung akzeptiert: Einheit nur wenn sie passt (`Item.Einheit`, Pythagoras in cm), „c = 5“, Unicode-Minus, „4 R 0“, „3, Rest 2“, −3/−4. Abgelehnt ohne Versuch: e-Schreibweise und 0,75 bei Bruchfragen. Kein Absturz bei Überlauf. Soll-Antworten werden beim Anlegen und Einlesen vereinheitlicht. | Kern `M8_answer_checks` | alter Stand |
+| N2 | `MemoryError` gilt als Speichergrenze (im Lauf und im Ergebnis) | Kern `N2_memory` ECHT | Rückbau |
+| N4 | „Auf diesem PC“ heißt Loopback-Adresse (`IsLoopbackKi`) | App `N4_remote_url_not_local` | Rückbau |
+| N5 | Richtige Antwort mit anderer Groß-/Kleinschreibung bekommt einen Hinweis | Kern `N5_case_hint` | alter Stand |
+| App-Profil | Nutzerentscheidung 26.11.2026. `UninstallPrompt.Run` ruft `RemoveLearnProfile` auf (`DeleteAppContainerProfile`), nur bei der echten Installation; eine Prüf-Instanz lässt das Profil stehen. Hinweis in der App: Karte „Testergebnis“ (in allen Stufen) und Hilfe. Das vorhandene Profil auf diesem PC habe ich nicht angefasst. | App `Uninstall_removes_profile` und Kern `Profile_remove`, beide mit eigenem, kurzlebigem Test-Profil | Rückbau |
+
+**Ehrlich zu M5:** Der Lerncode läuft im selben Python-Prozess wie die Lauf-Hilfe. Er kann deren Zeilen fälschen, aber nur mit Werten, die er selbst ausrechnet. Die erwarteten Werte kennt er nicht.
+- Bestehen kann er also nur, wenn er richtig rechnet. Das gleicht dem Fest-Eintragen von Antworten, das auch echte Tests nicht ausschließen.
+- Ausnahme: Ein reiner Typ-Test (z. B. „gibt Text zurück“) lässt sich fälschen. Darum besteht im Test `M5_forgery_real` höchstens dieser eine Fall.
+- Vollständig ausschließen ließe sich das nur, wenn die Aufrufe in einem zweiten Prozess gezählt würden. Das ist nicht gebaut.
+
+**Ehrlich zu M2:** Rechner- und Benutzername sowie Teile von HKCU sind aus dem AppContainer lesbar. Ein Lerncode kann sie z. B. als Rückgabewert anzeigen. Gesperrt ist nur, dass sie über Trendo an Claude gehen. Die KI auf diesem PC bekommt sie im Kinderprofil zu sehen.
+
+**Nicht erneut geprüft:** Der Echtlauf mit Ollama lief nicht neu. Die KI-Kette sieht jetzt weniger (KiView); die Fachaktionen sind unverändert. Die SDXL-Turbo-Bilder habe ich nicht angefasst, sie kommen aus T-0783.
+
+**Weitere Testklassen (grün):** T0225_KiUi 3/0, AgentRun_Ui 5/0, AgentEchtlauf_Ui (2 übersprungen), ClaudeBridge_Ui 7/0, ClaudeLearn_Ui 2/0, UninstallPromptTests 8/0, AssistChain_Ui 6/0/1, T0774KiDokument_Ui 20/0/1, Assist_Ui 3/0, ClaudeEverywhere_Ui 2/0, PromptBarTests 6/0, DeadButtonTests 85/0, T0728_Bedienung_Ui 7/0, T0710_MenuBar_Ui 8/0, KreativStudios4_Ui 5/0. Kern: PromptAction, Sandbox, NoFixedUser, StudioTeams (123/0/2).
+- StudioFolds_Ui ist 1 von 3 rot („63 Studios“). Das liegt wie bisher am fehlenden `requirements.yaml`-Eintrag.
+
+**Berührte Dateien (Gegenprüfung):**
+- `src/Trendo.Core/Lernen/LernSandbox.cs`, `CodeLernen.cs`, `Nachhilfe.cs`, `NachhilfePruefung.cs` (neu), `src/Trendo.Core/PromptAction/LernenPromptAdapters.cs`
+- `src/Trendo.App/MainWindow.AssistChain.cs`, `MainWindow.ClaudeLos.cs`, `MainWindow.Assist.cs`, `MainWindow.ProgramShell.cs` (`KiView`), `MainWindow.AgentRun.cs`, `MainWindow.Nachhilfe.cs`, `MainWindow.CodeLernen.cs`, `UninstallPrompt.cs`
+- Tests: `tests/Trendo.Core.Tests/T0782GegenpruefungTests.cs` (neu), `T0782LernenTests.cs`, `tests/Trendo.App.Tests/T0782GegenpruefungUiTests.cs` (neu)
+- Belege: `reports/T-0782/gegenpruefung/*`
