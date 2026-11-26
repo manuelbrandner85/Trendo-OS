@@ -57,7 +57,7 @@ public class T0757RestpunkteTests(ITestOutputHelper output)
     public void R1_echte_lizenzen_aus_nuget()
     {
         var cache = Environment.GetEnvironmentVariable("NUGET_PACKAGES") is { Length: > 0 } n ? n : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".nuget", "packages");
-        if (!Directory.Exists(cache)) { output.WriteLine("Kein NuGet-Cache auf diesem PC – übersprungen."); return; }
+        if (!Directory.Exists(cache)) { Ueberspringen.Weil("kein NuGet-Cache auf diesem PC."); return; }
         var r = Root(); var elf = FreePortTests.Elf(r);
         var texts = new List<(string Want, string From, string Text)>();
         void Add(string want, string from, string? text) { if (text is not null) texts.Add((want, from, text)); }
@@ -162,7 +162,7 @@ public class T0757RestpunkteTests(ITestOutputHelper output)
         var r = Root();
         try
         {
-            if (NotDefault(r) is { } why) { output.WriteLine("Papierkorb hier nicht auf Voreinstellung: " + why + " – übersprungen."); return; }
+            if (NotDefault(r) is { } why) { Ueberspringen.Weil("Papierkorb hier nicht auf Voreinstellung: " + why); return; }
             var total = new DriveInfo(Path.GetPathRoot(r)!).TotalSize;
             long lo = total / 20, hi = Formula(total);
             output.WriteLine($"Laufwerk {total >> 30} GB: 5 % = {lo >> 20} MB, Formel = {hi >> 20} MB");

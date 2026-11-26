@@ -208,7 +208,7 @@ public class GeldRechnungenTests(ITestOutputHelper output)
     public void Pdf_text_pflichtangaben()
     {
         var tool = PdfToText();
-        if (tool is null) { output.WriteLine("NICHT GETESTET: pdftotext ist auf diesem PC nicht vorhanden."); return; }
+        if (tool is null) { Ueberspringen.Weil("pdftotext ist auf diesem PC nicht vorhanden (NICHT GETESTET)."); return; }
         var root = Tmp();
         try
         {

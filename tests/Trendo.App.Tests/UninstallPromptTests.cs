@@ -50,7 +50,7 @@ public class UninstallPromptTests
     [Fact(DisplayName = "T-0742 Gegenprüfung: Deinstallieren entfernt die eigenen Windows-Aufgaben der Abläufe (schtasks ersetzt)")]
     public void Ablauf_Aufgaben_werden_entfernt()
     {
-        if (!WorkflowTaskPlan.Supported) return;
+        if (!WorkflowTaskPlan.Supported) { Assert.Skip("Übersprungen – keine Windows-Aufgabenplanung auf diesem System."); return; }
         var exe = Path.Combine(Path.GetTempPath(), "TrendoOS.exe"); var root = Path.Combine(Path.GetTempPath(), "t0742-daten");
         var name = WorkflowTaskPlan.TaskName(root, "abc123");
         var xml = $"<Tasks><!-- \\{name} --><Task><RegistrationInfo><URI>\\{name}</URI></RegistrationInfo><Actions><Exec><Command>{exe}</Command><Arguments>{System.Security.SecurityElement.Escape(WorkflowTaskPlan.Arguments("abc123", root))}</Arguments></Exec></Actions></Task></Tasks>";

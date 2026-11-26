@@ -83,7 +83,7 @@ public class T0757Fix2Tests(ITestOutputHelper output)
     public void Niedrig_alle_nuget_lizenzen()
     {
         var cache = Environment.GetEnvironmentVariable("NUGET_PACKAGES") is { Length: > 0 } n ? n : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".nuget", "packages");
-        if (!Directory.Exists(cache)) { output.WriteLine("Kein NuGet-Cache – übersprungen."); return; }
+        if (!Directory.Exists(cache)) { Ueberspringen.Weil("kein NuGet-Cache auf diesem PC."); return; }
         var r = Path.Combine(Path.GetTempPath(), "trendo-t0757z-" + Guid.NewGuid().ToString("N")[..8]); Directory.CreateDirectory(r);
         var own = FreePort.Find(FreePort.OwnId)!;
         var files = Directory.EnumerateDirectories(cache).SelectMany(p => Directory.EnumerateDirectories(p))

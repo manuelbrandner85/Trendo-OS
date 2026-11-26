@@ -15,8 +15,17 @@ public class T0777StilleTests
 
     // Anfang eines Tests: Attribut, Kopf, die ersten fünf Zeilen des Rumpfs
     static readonly Regex TestHead = new(@"\[(?:Avalonia)?Fact\([^\n]*\]\s*\n\s*public [^\n]*\)\s*\n\s*\{\s*\n((?:[^\n]*\n){0,5})");
-    // Umgebungs-Schalter eines Echtlaufs (Variable, Belegordner), danach still zurück
-    static readonly Regex SilentGate = new(@"(is not \{ Length: > 0 \} \w+|(?:Beleg|Dir)\([^)]*\) is not \{ \} \w+)\)\s*return;");
+    // Umgebungs-Schalter eines Echtlaufs (Variable, Belegordner) oder fehlende Aufgabenplanung, danach still zurück
+    static readonly Regex SilentGate = new(@"(is not \{ Length: > 0 \} \w+|(?:Beleg|Dir)\([^)]*\) is not \{ \} \w+|WorkflowTaskPlan\.Supported)\)\s*return;");
+    // T-0777 Nachbesserung: „übersprungen“ nur in die Testausgabe schreiben und zurückkehren zählt als bestanden – überall im Test verboten
+    static readonly Regex LogAndReturn = new(@"\{\s*\w+\.WriteLine\([^;]*\);\s*return;\s*\}");
+
+    [Fact(DisplayName = "T-0777 Q4: kein Test schreibt „übersprungen/BLOCKIERT/NICHT GETESTET“ nur in die Ausgabe und kehrt still zurück")]
+    public void No_log_and_return()
+    {
+        var bad = Sources().SelectMany(f => File.ReadAllLines(f).Select((l, i) => (l, i)).Where(x => LogAndReturn.IsMatch(x.l)).Select(x => $"{Path.GetFileName(f)}:{x.i + 1}: {x.l.Trim()}")).ToList();
+        Assert.True(bad.Count == 0, "still bestehende Tests:\n" + string.Join("\n", bad));
+    }
     static readonly Regex SwallowedNet = new(@"catch \((?:HttpRequestException|TaskCanceledException)\) \{ \}");
     // Ausnahme mit Grund: ein zu großer Upload darf die Verbindung beenden statt 413 zu melden; danach prüft der Test, dass keine Datei entstand
     static readonly string[] SwallowAllowed = ["PhoneSendT0767Tests.cs"];

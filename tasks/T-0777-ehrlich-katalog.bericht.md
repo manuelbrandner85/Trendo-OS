@@ -78,3 +78,21 @@ Das Paket ist Querschnitt (Ehrlichkeit von Tests und Doku), kein Fachstudio.
 - Übersicht `studios`: zwei goldene Knöpfe (Gold-Regel), bestand schon vorher.
 
 **Status:** fertig zur Zusammenführung.
+
+## Nachbesserung nach der Gegenprüfung (26.11.2026)
+
+1. **HOCH, NoFixedUser:** Der Kommentar mit Personennamen ist entfernt; die Liste steht jetzt neutral formuliert in `StatusRules.RevokedPcVerified` („… ändert nur der Nutzer“). `NoFixedUserTests` ist grün.
+2. **Theory-Fälle:** `ProgramCatalog.ReadTrx` ordnet Theory-Fälle (`DisplayName(param: …)`) zusätzlich ihrem DisplayName zu (`TestBaseName`). Klammern im DisplayName selbst, etwa „(nur mit X)“, bleiben erhalten. Test: `T0777KatalogBeleg.Theory_case_failure_counts` – ein fehlgeschlagener Fall ergibt FAIL.
+3. **Mehrere TRX:** Pro Test gewinnt Fehlschlag vor bestanden vor übersprungen, unabhängig von der Reihenfolge. `Error`, `Timeout`, `Aborted` und `Inconclusive` zählen als Fehlschlag (`NormalizeOutcome`). Test: `Several_trx_fail_wins`.
+4. **Rücknahme wirkt überall:** Das gilt jetzt auch für Studio-Karten und Fortschritt. `StatusRules.EffectiveTest` greift in `StudioRegistry.Load`, `Progress.LoadUncached` und `Progress.GermanStatus`. `requirements.yaml` bleibt unverändert, das prüft der Test. Test: `Revoked_in_registry_and_progress`.
+5. **Notizen in den Belegordnern:** `reports/T-0698`, `T-0703`, `T-0707` und `T-0723` haben je eine `SHA-NEU-T-0777.txt`.
+6. **Weitere stille Rückkehrer:** `GeldRechnungenTests.cs:211`, `T0726OffenRotTests.cs:113`, `T0757Fix2Tests.cs:86`, `T0757RestpunkteTests.cs:60/165` melden jetzt `Ueberspringen.Weil`, `UninstallPromptTests.cs:53` meldet `Assert.Skip`. Der Wächter ist erweitert:
+   - neue Prüfung `No_log_and_return`: „Ausgabe schreiben und zurück“ ist überall in den Tests verboten;
+   - `WorkflowTaskPlan.Supported) return;` gilt jetzt als stiller Schalter.
+7. **Belegpfade:** `Evidence.Check` lehnt absolute Pfade, Laufwerke und `..` ab (Invalid). Testbelege für TESTED/PC_VERIFIED zählen nur unter `reports/` (`Evidence.IsReportPath`, in `TestedWithEvidence` und im Katalog). Belege außerhalb von `reports/` – 37 Einträge auf `docs/audit/…/requirements-delta.md`, alle NOT_RUN – bleiben für die Prüfsummen-Kontrolle `Register_evidence_unchanged` gültig. Test: `Evidence_paths_stay_in_reports`.
+8. **W4 X-06:** Eine `InvalidOperationException` führt nur noch dann zu „übersprungen“, wenn kein Netz da ist (kein Netzadapter oder `api.github.com` nicht auflösbar). Sonst schlägt der Test fehl.
+
+**Tests der Nachbesserung**
+- **Kern:** 56 bestanden, 1 übersprungen, 0 Fehler. Darin enthalten sind die T0777-Klassen, NoFixedUser, MP131, EvidenceTests, GeldRechnungen, T0726OffenRot, T0757Fix2, T0757Restpunkte, VorbildAnalysen und DecisionRegister. Der übersprungene Test ist T-0757 B: Der Papierkorb steht hier nicht auf Voreinstellung; vorher bestand dieser Test still.
+- **Weitere Kern-Klassen** mit StudioRegistry, Progress, Evidence und Katalog: 140 von 140 bestanden.
+- **App**, alle ohne Fehler: W4_X06_Ui 2 (echt mit Netz), UninstallPromptTests 8, DesignHonesty 5, ProgressEvidenceUiTests 1, DesignPaket1_Ui 31, ComponentsUi 1, StudioDepsUi 3, StudioIconTests 4, UebersichtVorschlaege_Ui 13.

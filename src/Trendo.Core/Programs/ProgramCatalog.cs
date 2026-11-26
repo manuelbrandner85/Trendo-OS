@@ -189,15 +189,8 @@ public static class ProgramCatalog
         return names.ToList();
     }
 
-    /// <summary>T-0777 (Neubewertung T-0769, Bericht 3.6): Module, deren Kernweg nie echt lief (Werkzeug oder Gerät ersetzt). Das Register führt sie
-    /// noch als PC_VERIFIED; der Katalog zeigt höchstens TESTED und nennt den Grund. Das Register selbst ändert nur Manuel.</summary>
-    public static readonly IReadOnlyDictionary<string, string> RevokedPcVerified = new Dictionary<string, string>(StringComparer.Ordinal)
-    {
-        ["SYS-04"] = "kein echter winget-Lauf, Installieren nur mit ersetztem Werkzeug geprüft",
-        ["SYS-07"] = "echter Stick-Auswurf nie gelaufen",
-        ["CORE-04"] = "Gegenstelle (Pi, Handy) fehlt, nur nachgebaute Geräte",
-        ["X-08"] = "kein echtes Android-Gerät, adb und Bluetooth nachgebaut",
-    };
+    /// <summary>T-0777: siehe <see cref="StatusRules.RevokedPcVerified"/> (gilt für Katalog, Studio-Karten und Fortschritt gleich).</summary>
+    public static IReadOnlyDictionary<string, string> RevokedPcVerified => StatusRules.RevokedPcVerified;
 
     /// <summary>T-0777: Teststand aus Belegen statt aus der bloßen Angabe im Register.
     /// <list type="bullet">
@@ -216,14 +209,14 @@ public static class ProgramCatalog
         var test = reg;
         if (StatusRules.Tested(reg))
         {
-            var state = Evidence.Check(ev, repo);
+            var state = Evidence.IsReportPath(ev?.Path) ? Evidence.Check(ev, repo) : ev is null ? EvidenceState.None : EvidenceState.Invalid; // T-0777: Testbeleg nur unter reports/
             if (state != EvidenceState.Verified) { notes.Add($"Register {reg}, aber {Evidence.Label(state)}"); test = "NOT_RUN"; }
             else if (reg == "PC_VERIFIED" && RevokedPcVerified.TryGetValue(studio, out var why)) { notes.Add("PC_VERIFIED zurückgenommen: " + why); test = "TESTED"; }
             else notes.Add("Beleg " + ev!.Path);
         }
         if (outcomes is not null && tests is not null)
         {
-            var o = tests.Select(t => outcomes.TryGetValue(t, out var x) ? x : null).ToList();
+            var o = tests.Select(t => outcomes.TryGetValue(t, out var x) ? NormalizeOutcome(x) : null).ToList();
             int passed = o.Count(x => x == "Passed"), failed = o.Count(x => x == "Failed"), skipped = o.Count(x => x is "NotExecuted" or "Skipped"), missing = o.Count(x => x is null);
             if (failed > 0) test = "FAIL";
             else if (passed > 0 && !StatusRules.Tested(test)) test = "TESTED";
@@ -329,15 +322,40 @@ public static class ProgramCatalog
         return System.Text.RegularExpressions.Regex.Replace(text, @"([A-Za-z]:\\Users\\)(?!<user>)[^\\\s]+", "$1<user>");
     }
 
-    /// <summary>Testergebnisse aus TRX-Dateien (Name = DisplayName).</summary>
+    /// <summary>T-0777: TRX-Ergebnis auf drei Stufen bringen. Failed, Error, Timeout, Aborted und Inconclusive zählen als Fehlschlag;
+    /// NotExecuted, Skipped, NotRunnable u. ä. als übersprungen; nur Passed als bestanden.</summary>
+    public static string NormalizeOutcome(string? outcome) => outcome switch
+    {
+        "Passed" => "Passed",
+        "Failed" or "Error" or "Timeout" or "Aborted" or "Inconclusive" => "Failed",
+        _ => "NotExecuted",
+    };
+
+    static int Rank(string normalized) => normalized switch { "Failed" => 3, "Passed" => 2, _ => 1 };
+
+    // Theory-Fälle heißen im TRX „DisplayName(param: wert, …)“ – der Katalog kennt nur den DisplayName
+    static readonly Regex TheoryCase = new(@"^(?<name>.*?)\((?<p>[A-Za-z_]\w*: .*)\)$", RegexOptions.Singleline);
+
+    /// <summary>DisplayName ohne den Parameter-Teil eines Theory-Falls.</summary>
+    public static string TestBaseName(string trxName) => TheoryCase.Match(trxName) is { Success: true } m ? m.Groups["name"].Value : trxName;
+
+    /// <summary>Testergebnisse aus TRX-Dateien (Name = DisplayName). T-0777: Theory-Fälle werden ihrem DisplayName zugeordnet; gibt es mehrere
+    /// Ergebnisse für denselben Test (Theory-Fälle, mehrere TRX-Dateien), gewinnt der Fehlschlag vor bestanden vor übersprungen.
+    /// Error, Timeout, Aborted und Inconclusive zählen als Fehlschlag.</summary>
     public static Dictionary<string, string> ReadTrx(IEnumerable<string> files)
     {
         var d = new Dictionary<string, string>(StringComparer.Ordinal);
+        void Put(string name, string o) { if (!d.TryGetValue(name, out var old) || Rank(o) > Rank(old)) d[name] = o; }
         foreach (var f in files)
         {
             var x = System.Xml.Linq.XDocument.Load(f);
             foreach (var r in x.Descendants().Where(n => n.Name.LocalName == "UnitTestResult"))
-                if (r.Attribute("testName")?.Value is { } n) d[n] = r.Attribute("outcome")?.Value ?? "";
+                if (r.Attribute("testName")?.Value is { } n)
+                {
+                    var o = NormalizeOutcome(r.Attribute("outcome")?.Value);
+                    Put(n, o);
+                    var b = TestBaseName(n); if (b != n) Put(b, o);
+                }
         }
         return d;
     }

@@ -25,6 +25,14 @@ public class W4_X06_Ui
         try { Assert.NotEmpty(await MainWindow.OssSearchHttp(new HttpClient { Timeout = TimeSpan.FromSeconds(15) }, "avalonia", ct: TestContext.Current.CancellationToken)); }
         catch (HttpRequestException e) { Assert.Skip("Übersprungen – keine Verbindung zu GitHub: " + e.Message); }
         catch (TaskCanceledException) { Assert.Skip("Übersprungen – GitHub antwortet nicht rechtzeitig."); }
-        catch (InvalidOperationException e) { Assert.Skip("Übersprungen – GitHub-Antwort nicht lesbar (z. B. Abfragegrenze): " + e.Message); }
+        // T-0777: nur ohne Netz überspringen – ist das Netz da (z. B. GitHub bremst, Antwort kaputt), schlägt der Test fehl
+        catch (InvalidOperationException) when (!NetworkReachable()) { Assert.Skip("Übersprungen – kein Netz (api.github.com nicht auflösbar)."); }
+    }
+
+    static bool NetworkReachable()
+    {
+        if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable()) return false;
+        try { return System.Net.Dns.GetHostAddresses("api.github.com").Length > 0; }
+        catch (System.Net.Sockets.SocketException) { return false; }
     }
 }

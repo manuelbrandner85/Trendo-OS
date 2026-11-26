@@ -19,7 +19,8 @@ public static class Evidence
     public static EvidenceState Check(EvidenceInfo? e, string? repoRoot)
     {
         if (e?.Path is not { Length: > 0 } rel) return EvidenceState.None;
-        var file = repoRoot is null ? null : System.IO.Path.Combine(repoRoot, rel.Replace('/', System.IO.Path.DirectorySeparatorChar));
+        if (!IsRepoRelative(rel)) return EvidenceState.Invalid; // T-0777: kein absoluter Pfad, kein „..“ – ein Beleg liegt im Projekt
+        var file =repoRoot is null ? null : System.IO.Path.Combine(repoRoot, rel.Replace('/', System.IO.Path.DirectorySeparatorChar));
         var exists = file is not null && File.Exists(file);
         if (e.Sha256 is not { Length: 64 } sha) return exists || repoRoot is null ? EvidenceState.PathOnly : EvidenceState.Invalid;
         if (!exists) return EvidenceState.Recorded;
@@ -29,6 +30,18 @@ public static class Evidence
         _checked[(fi.FullName, sha)] = (fi.Length, fi.LastWriteTimeUtc, st);
         return st;
     }
+
+    /// <summary>T-0777: relativer Pfad im Projekt – nicht absolut, kein Laufwerk, keine Freigabe (\\server), kein „..“-Teil.</summary>
+    public static bool IsRepoRelative(string? rel)
+    {
+        if (rel is not { Length: > 0 }) return false;
+        var p = rel.Replace('\\', '/');
+        if (p.StartsWith('/') || p.Contains(':') || System.IO.Path.IsPathRooted(rel)) return false;
+        return !p.Split('/').Any(s => s is ".." or ".");
+    }
+
+    /// <summary>T-0777: Testbelege (TESTED/PC_VERIFIED) liegen unter <c>reports/</c>.</summary>
+    public static bool IsReportPath(string? rel) => IsRepoRelative(rel) && rel!.Replace('\\', '/').StartsWith("reports/", StringComparison.Ordinal);
 
     static EvidenceState Hash(string file, string sha)
     {
@@ -60,8 +73,8 @@ public static class Evidence
 
 public sealed record ProgressItem(string Id, string Name, string Impl, string Test, EvidenceInfo? Evidence = null)
 {
-    /// <summary>„Getestet“ zählt als belegt nur mit geprüftem oder erfasstem Beleg.</summary>
-    public bool TestedWithEvidence(string? repoRoot) => StatusRules.Tested(Test) && Trendo.Core.Evidence.Check(Evidence, repoRoot) is EvidenceState.Verified or EvidenceState.Recorded;
+    /// <summary>„Getestet“ zählt als belegt nur mit geprüftem oder erfasstem Beleg. T-0777: ein Testbeleg muss unter reports/ liegen.</summary>
+    public bool TestedWithEvidence(string? repoRoot) => StatusRules.Tested(Test) && Trendo.Core.Evidence.IsReportPath(Evidence?.Path) && Trendo.Core.Evidence.Check(Evidence, repoRoot) is EvidenceState.Verified or EvidenceState.Recorded;
 }
 public sealed record ProgressModule(string Wave, string WaveName, int Order, ProgressItem Module, IReadOnlyList<ProgressItem> Subs)
 {
@@ -99,7 +112,7 @@ public static class Progress
             .Deserialize<Doc>(File.ReadAllText(requirementsYaml));
         static string S(Dictionary<string, object> m, string k) => m.TryGetValue(k, out var v) ? v?.ToString() ?? "" : "";
         var all = doc.Modules.Concat(doc.BusinessRequirements).Concat(doc.LetterRequirements)
-            .ToDictionary(m => S(m, "id"), m => new ProgressItem(S(m, "id"), S(m, "name") is { Length: > 0 } n ? n : S(m, "title"), S(m, "implementation_status"), S(m, "test_status"),
+            .ToDictionary(m => S(m, "id"), m => new ProgressItem(S(m, "id"), S(m, "name") is { Length: > 0 } n ? n : S(m, "title"), S(m, "implementation_status"), StatusRules.EffectiveTest(S(m, "id"), S(m, "test_status")), // T-0777: zurückgenommenes PC_VERIFIED
                 S(m, "evidence") is { Length: > 0 } ev ? new EvidenceInfo(ev, S(m, "evidence_sha256") is { Length: > 0 } sh ? sh : null, S(m, "evidence_commit") is { Length: > 0 } co ? co : null) : null));
         var plan = JsonSerializer.Deserialize<List<PlanEntry>>(File.ReadAllText(planJson)) ?? [];
         // Welle 0 (Setup) steht nicht in requirements.yaml: Status aus docs/wave0.yaml (über buildplan.json)
@@ -109,7 +122,7 @@ public static class Progress
             .ToList();
     }
 
-    public static string GermanStatus(ProgressItem i) => (i.Impl, i.Test) switch
+    public static string GermanStatus(ProgressItem i) => (i.Impl, StatusRules.EffectiveTest(i.Id, i.Test)) switch
     {
         (_, "PC_VERIFIED") when StatusRules.Built(i.Impl) => "Fertig & auf dem PC geprüft",
         (_, _) when StatusRules.Done(i.Impl, i.Test) => "Fertig & getestet",
