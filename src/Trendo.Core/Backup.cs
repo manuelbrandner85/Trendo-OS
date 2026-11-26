@@ -102,8 +102,30 @@ public sealed class Backup(string dataRoot, string backupDir, AuditLog audit)
             }
         }
         var list = notSaved.OrderBy(x => x, StringComparer.OrdinalIgnoreCase).Take(150).ToList();
-        z.Comment = NoteHead + System.Text.Json.JsonSerializer.Serialize(new NoteData(sums.Count, notSaved.Count, list, UnencryptedNotice + " " + EncryptAdvice), NoteJson); // T-0754: Hinweis lesbar (Umlaute nicht als \u-Folgen), z. B. im Kommentar-Feld von 7-Zip
+        z.Comment = NoteHead + AsciiJson(System.Text.Json.JsonSerializer.Serialize(new NoteData(sums.Count, notSaved.Count, list, Ascii(UnencryptedNotice + " " + EncryptAdvice)), NoteJson));
         return null;
+    }
+
+    /// <summary>T-0776: Der Vermerk steht nur in ASCII. ZIP-Kommentare haben keine Kennung für UTF-8; 7-Zip liest sie in der Windows-Codepage und zeigte
+    /// „verschlÃ¼sselt“. Deshalb der Hinweis mit ae/oe/ue/ss („nicht verschluesselt“), lesbar in jedem Programm.</summary>
+    public static string Ascii(string s)
+    {
+        var sb = new System.Text.StringBuilder(s.Length + 16);
+        foreach (var c in s)
+            sb.Append(c switch
+            {
+                'ä' => "ae", 'ö' => "oe", 'ü' => "ue", 'Ä' => "Ae", 'Ö' => "Oe", 'Ü' => "Ue", 'ß' => "ss",
+                '–' or '—' => "-", '„' or '“' or '”' => "\"", '‚' or '‘' or '’' => "'", _ => c < 128 ? c.ToString() : "?",
+            });
+        return sb.ToString();
+    }
+
+    /// <summary>Übrige Nicht-ASCII-Zeichen (z. B. in Dateinamen unter „nicht gesichert“) als JSON-Escape \uXXXX – der Name kommt beim Lesen unverändert zurück.</summary>
+    static string AsciiJson(string json)
+    {
+        var sb = new System.Text.StringBuilder(json.Length);
+        foreach (var c in json) { if (c < 128) sb.Append(c); else sb.Append("\\u").Append(((int)c).ToString("x4", System.Globalization.CultureInfo.InvariantCulture)); }
+        return sb.ToString();
     }
 
     sealed record NoteData(int Saved, int NotSavedCount, List<string> NotSaved, string? Hinweis = null);

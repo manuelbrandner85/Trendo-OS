@@ -1,21 +1,21 @@
-# T-0776 Fremdnachlauf krita-psd-ora – 2026-11-26 11:18:16 +01:00
+# T-0776 Fremdnachlauf krita-psd-ora – 2026-11-26 12:11:00 +01:00
 Datei trendo-bild.psd: 24542 Bytes, SHA-256 ca3a8d6689b60ca62d0aa1217913d52d3d8daff8214f15b0f9b7f510330af713
-Datei trendo-bild.ora: 1997 Bytes, SHA-256 411f74239db7dd5debfd5e336d68782e49b046a96773d62c2d022a0451ca5018
+Datei trendo-bild.ora: 1997 Bytes, SHA-256 c5c9a513e087cb7ef6c8635e33994c9de7614ffc1e461e717c33558c445368bb
 $ Krita öffnet bild.psd und speichert ORA
-  krita.exe C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-d9850a\bild.psd --export --export-filename C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-d9850a\krita-aus-psd.ora
-  Umgebung USERPROFILE=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-d9850a\krita-profil
-  Umgebung APPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-d9850a\krita-profil\AppData\Roaming
-  Umgebung LOCALAPPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-d9850a\krita-profil\AppData\Local
-  Umgebung HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-d9850a\krita-profil
-Exit 0 nach 20,9 s
+  krita.exe C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-185502\bild.psd --export --export-filename C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-185502\krita-aus-psd.ora
+  Umgebung USERPROFILE=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-185502\krita-profil
+  Umgebung APPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-185502\krita-profil\AppData\Roaming
+  Umgebung LOCALAPPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-185502\krita-profil\AppData\Local
+  Umgebung HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-185502\krita-profil
+Exit 0 nach 17,9 s
 $ Krita öffnet bild.psd und speichert PNG
-  krita.exe C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-d9850a\bild.psd --export --export-filename C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-d9850a\krita-aus-psd.png
-  Umgebung USERPROFILE=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-d9850a\krita-profil
-  Umgebung APPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-d9850a\krita-profil\AppData\Roaming
-  Umgebung LOCALAPPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-d9850a\krita-profil\AppData\Local
-  Umgebung HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-d9850a\krita-profil
+  krita.exe C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-185502\bild.psd --export --export-filename C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-185502\krita-aus-psd.png
+  Umgebung USERPROFILE=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-185502\krita-profil
+  Umgebung APPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-185502\krita-profil\AppData\Roaming
+  Umgebung LOCALAPPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-185502\krita-profil\AppData\Local
+  Umgebung HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-185502\krita-profil
 Exit 0 nach 2,5 s
-Datei krita-aus-psd.ora: 5973 Bytes, SHA-256 d17f66d31e955f6493ad7e5655dc35a5a99a531d22ed1154f6d79689dd0655eb
+Datei krita-aus-psd.ora: 5973 Bytes, SHA-256 fe44e8ebdef09f1700f9d22c48e52bf708efe772e505f094e4de4c233e91675a
 Datei krita-aus-psd.png: 215 Bytes, SHA-256 a2b0d089b988d9d2fac36a89fed3be20ba97e86e23d287495bdf49af8a7b4e6a
 Krita-Ebenen aus psd: Versteckt (hidden), Farbe rötlich (visible), Skizze (visible), Hintergrund (visible)
   Punkt (5|5): Trendo #123456, Krita aus psd #123456
@@ -23,20 +23,20 @@ Krita-Ebenen aus psd: Versteckt (hidden), Farbe rötlich (visible), Skizze (visi
   Punkt (38|2): Trendo #F0E0D0, Krita aus psd #F0E0D0
   Punkt (15|20): Trendo #F0E0D0, Krita aus psd #F0E0D0
 $ Krita öffnet bild.ora und speichert ORA
-  krita.exe C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-d9850a\bild.ora --export --export-filename C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-d9850a\krita-aus-ora.ora
-  Umgebung USERPROFILE=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-d9850a\krita-profil
-  Umgebung APPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-d9850a\krita-profil\AppData\Roaming
-  Umgebung LOCALAPPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-d9850a\krita-profil\AppData\Local
-  Umgebung HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-d9850a\krita-profil
-Exit 0 nach 2,6 s
+  krita.exe C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-185502\bild.ora --export --export-filename C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-185502\krita-aus-ora.ora
+  Umgebung USERPROFILE=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-185502\krita-profil
+  Umgebung APPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-185502\krita-profil\AppData\Roaming
+  Umgebung LOCALAPPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-185502\krita-profil\AppData\Local
+  Umgebung HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-185502\krita-profil
+Exit 0 nach 2,5 s
 $ Krita öffnet bild.ora und speichert PNG
-  krita.exe C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-d9850a\bild.ora --export --export-filename C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-d9850a\krita-aus-ora.png
-  Umgebung USERPROFILE=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-d9850a\krita-profil
-  Umgebung APPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-d9850a\krita-profil\AppData\Roaming
-  Umgebung LOCALAPPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-d9850a\krita-profil\AppData\Local
-  Umgebung HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-d9850a\krita-profil
-Exit 0 nach 2,6 s
-Datei krita-aus-ora.ora: 5969 Bytes, SHA-256 aa6131743dc5c4039f23e802603df1e6eababf10deeb1db73531278afe0e05a6
+  krita.exe C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-185502\bild.ora --export --export-filename C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-185502\krita-aus-ora.png
+  Umgebung USERPROFILE=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-185502\krita-profil
+  Umgebung APPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-185502\krita-profil\AppData\Roaming
+  Umgebung LOCALAPPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-185502\krita-profil\AppData\Local
+  Umgebung HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-185502\krita-profil
+Exit 0 nach 2,5 s
+Datei krita-aus-ora.ora: 5969 Bytes, SHA-256 3b217db51174c0d1edf25e8c2bda03e67794615af889acaa29d71e07a0622241
 Datei krita-aus-ora.png: 215 Bytes, SHA-256 e2d56dabbaf04188bbe39dd6bcfaa9b24a8c6df25ab6eeeb88ed8a4c20432a6b
 Krita-Ebenen aus ora: Versteckt (hidden), Farbe rötlich (visible), Skizze (visible), Hintergrund (visible)
   Punkt (5|5): Trendo #123456, Krita aus ora #123456

@@ -1,16 +1,18 @@
-# T-0776 Fremdnachlauf libreoffice-geld-xlsx – 2026-11-26 11:17:53 +01:00
-Datei trendo-auswertung.xlsx: 5598 Bytes, SHA-256 fafa90ed2562a5429a19f9dadfe3ada6e32a966899abfe591c2e98bec1f559a9
+# T-0776 Fremdnachlauf libreoffice-geld-xlsx – 2026-11-26 12:10:43 +01:00
+Datei trendo-auswertung.xlsx: 5597 Bytes, SHA-256 762d26c2d7a97c8a3dcc125a6f62b5eb63ea7b75888d07890d85ae0b8c4bfacc
 $ LibreOffice öffnet auswertung.xlsx und schreibt csv
-  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-auftrag-T-0776/.lauf/work/geld-8142c7/lo-profil --headless --norestore --nolockcheck --convert-to "csv:Text - txt - csv (StarCalc):59,34,76,1,,1031,false,true,false,false,false,-1" --outdir C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\geld-8142c7\lo-aus-xlsx-csv C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\geld-8142c7\auswertung.xlsx
-Exit 0 nach 3,2 s
-convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\geld-8142c7\auswertung.xlsx as a Calc document using filter : Text - txt - csv (StarCalc):59,34,76,1,,1031,false,true,false,false,false,-1
-Writing sheet �bersicht -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\geld-8142c7\lo-aus-xlsx-csv\auswertung-�bersicht.csv
-Writing sheet Monate -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\geld-8142c7\lo-aus-xlsx-csv\auswertung-Monate.csv
-Writing sheet Buchungen -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\geld-8142c7\lo-aus-xlsx-csv\auswertung-Buchungen.csv
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-auftrag-T-0776/.lauf/work/geld-e65dde/lo-profil --headless --norestore --nolockcheck --convert-to "csv:Text - txt - csv (StarCalc):59,34,76,1,,1031,false,true,false,false,false,-1" --outdir C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\geld-e65dde\lo-aus-xlsx-csv C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\geld-e65dde\auswertung.xlsx
+Exit 0 nach 2,8 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\geld-e65dde\auswertung.xlsx as a Calc document using filter : Text - txt - csv (StarCalc):59,34,76,1,,1031,false,true,false,false,false,-1
+Writing sheet �bersicht -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\geld-e65dde\lo-aus-xlsx-csv\auswertung-�bersicht.csv
+Writing sheet Monate -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\geld-e65dde\lo-aus-xlsx-csv\auswertung-Monate.csv
+Writing sheet Buchungen -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\geld-e65dde\lo-aus-xlsx-csv\auswertung-Buchungen.csv
 Datei libreoffice-auswertung-Buchungen.csv: 299 Bytes, SHA-256 514254306396d6198ebb57795957462803bac1691971cd863c89420ca3a29a44
 Datei libreoffice-auswertung-Monate.csv: 241 Bytes, SHA-256 163ba7a79b9fd74bf3d4bc272450e7a3f3a1bb560fed1c66280c5695e978383d
 Datei libreoffice-auswertung-Übersicht.csv: 514 Bytes, SHA-256 80ddca388105f8301795ca2f5d330e81dd27ca266173fa982dce67b9d900c4e9
 Blätter laut LibreOffice: auswertung-Buchungen, auswertung-Monate, auswertung-Übersicht
 Calc: Überschuss-Zeile =  | Überschuss (Einnahmen − Ausgaben) | 1035 | 195,1 | 1230,1 | 
 Calc: Monate/Summe = Summe | 1297 | 66,9 | 1230,1
+LibreOffice läuft aus einer Kopie im eigenen Temp-Ordner (14745 Dateien, 882 MB, kopiert in 13,8 s); Original im Trendo-Werkzeugordner: 15933 Einträge vor dem ersten Start erfasst.
+Trendo-Werkzeugordner (LibreOffice-Original): 15933 Einträge, keiner geändert, keiner neu, keiner fehlt. In der Kopie hat LibreOffice 2 Einträge angelegt/geändert/entfernt: program\opencl, share\uno_packages\cache.
 ERGEBNIS: BESTANDEN

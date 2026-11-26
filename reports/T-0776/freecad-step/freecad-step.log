@@ -1,14 +1,14 @@
-# T-0776 Fremdnachlauf freecad-step – 2026-11-26 11:18:15 +01:00
-Datei trendo-teile.step: 25965 Bytes, SHA-256 ff141960b2e3d338f23bf985f0205cdd353ee09ace3c208d456dcaab3b729e44
+# T-0776 Fremdnachlauf freecad-step – 2026-11-26 12:10:59 +01:00
+Datei trendo-teile.step: 26091 Bytes, SHA-256 e629a4dcc5e03c07fc327c4f69b76cdbf7531f2e2a4e9d7d8bb921140ece38b3
 $ FreeCAD liest teile.step
   freecadcmd.exe C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\tools\echtlauf\t0776\freecad_pruefe.py
-  Umgebung FREECAD_USER_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\step-f87f23\freecad-profil\home
-  Umgebung FREECAD_USER_DATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\step-f87f23\freecad-profil\daten
-  Umgebung FREECAD_USER_TEMP=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\step-f87f23\freecad-profil\tmp
-  Umgebung USERPROFILE=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\step-f87f23\freecad-profil\home
+  Umgebung FREECAD_USER_HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\step-a65f9c\freecad-profil\home
+  Umgebung FREECAD_USER_DATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\step-a65f9c\freecad-profil\daten
+  Umgebung FREECAD_USER_TEMP=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\step-a65f9c\freecad-profil\tmp
+  Umgebung USERPROFILE=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\step-a65f9c\freecad-profil\home
   Umgebung T0776_ART=step
-  Umgebung T0776_IN=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\step-f87f23\teile.step
-  Umgebung T0776_OUT=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\step-f87f23\teile-freecad.json
+  Umgebung T0776_IN=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\step-a65f9c\teile.step
+  Umgebung T0776_OUT=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\step-a65f9c\teile-freecad.json
 Exit 0 nach 0,7 s
 {"freecad": ["1", "1", "4"], "art": "step", "gueltig": true, "volumen": 10625.0, "flaeche": 4600.0, "koerper": 2, "schalen_geschlossen": true, "flaechen": 88, "umriss": [0.0, 0.0, 0.0, 60.0, 20.0, 20.0], "koerper_volumen": [6000.0, 4625.0], "namen": ["Quader", "Winkel"]}
 FreeCAD 1.1.4, Libs: 1.1.4R20260928 (Git shallow)

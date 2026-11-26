@@ -23,7 +23,7 @@ Trendo-Werkzeugordner `%LOCALAPPDATA%\TrendoWerkzeuge`; FreeCAD 1.1.4 und 7-Zip 
 
 Ohne Werkzeuge (leerer Werkzeugordner über `TRENDO_INSTANZ`, leerer Programme-Ordner, kurzer PATH): 9/9 „übersprungen“ mit „BLOCKIERT – fehlt auf diesem PC: …“ (`reports/T-0776/tests/ohne-werkzeug-uebersprungen.txt`).
 Jedes Fremdprogramm lief mit eigenem Profil im eigenen Temp-Ordner unter `$TEMP/trendo-auftrag-T-0776` (LibreOffice `-env:UserInstallation`, Krita/Inkscape über `USERPROFILE`/`APPDATA`/`LOCALAPPDATA` bzw. `INKSCAPE_PROFILE_DIR`/`XDG_*`, FreeCAD `FREECAD_USER_*`).
-Nach dem Lauf: keine Datei unter `%LOCALAPPDATA%\TrendoOS`, im Trendo-Werkzeugordner oder in `C:\Program Files\FreeCAD 1.1` geändert; Krita-/Inkscape-/FreeCAD-Profile des Nutzers unverändert (Änderungszeit). Prozesse wurden nur von Trendos `Cli.Run` (eigene Prozesse, Zeitlimit) gestartet; keiner musste beendet werden.
+Nach dem Lauf: keine Datei unter `%LOCALAPPDATA%\TrendoOS` geändert. **Korrektur (Gegenprüfung M1):** Die Aussage „im Trendo-Werkzeugordner nichts geändert“ war falsch – LibreOffice ändert trotz `-env:UserInstallation` die Ordnerzeiten von `program\opencl` und `share\uno_packages\cache` dort (legt kurz Einträge an); geprüft hatte ich nur Dateizeiten. Seitdem startet der Test LibreOffice aus einer Kopie im eigenen Temp-Ordner (`T0776_LoKopie`) und vergleicht jede Ordner- und Dateizeit des Originals (keine Änderung). In `C:\Program Files\FreeCAD 1.1` und den Krita-/Inkscape-Ordnern keine Datei geändert (Ordnerzeiten dort nicht geprüft); Krita-/Inkscape-/FreeCAD-Profile des Nutzers unverändert (Änderungszeit). Prozesse wurden nur von Trendos `Cli.Run` (eigene Prozesse, Zeitlimit) gestartet; keiner musste beendet werden.
 
 ## 3. Gefundene Fehler und Korrekturen (Rot-Grün)
 Rotlauf auf main 2b1ffa923 mit demselben Test: **2 Fehler** (`reports/T-0776/rot/`), nach der Korrektur 9/9 grün.
@@ -56,7 +56,7 @@ Katalog: `docs/programme/katalog.json` enthält keine dieser Aussagen; neu erzeu
 ## 7. Nicht geprüft / offen
 - **DXF-Texte in FreeCAD:** `freecadcmd` übernimmt TEXT-Elemente nicht (auch nicht mit „dxftext“); Texte nur im Log gezählt, nicht geprüft.
 - **Animation in Inkscape:** Inkscape kennt kein SMIL (meldet `animate`/`animateTransform` als unbekannt) – die Bewegung ist nicht geprüft, nur Datei, Form und Hintergrund.
-- **Umlaute im ZIP-Vermerk:** 7-Zip liest den ZIP-Kommentar in der Windows-Codepage, Trendo schreibt UTF-8 → „verschlÃ¼sselt“. Vorschlag: Vermerk nur in ASCII (JSON mit `\u00fc`) – nicht umgesetzt, Entscheidung offen.
+- ~~Umlaute im ZIP-Vermerk~~: behoben in der Gegenprüfungsrunde (Vermerk nur in ASCII, Dateinamen über `\u`-Folgen).
 - **Shopify-Beschreibung:** Trendo schreibt Umlaute dort als HTML-Zeichen (`&#246;`); Calc zeigt sie so an. Für Shopify (HTML) richtig, für eine Tabelle unschön – nur festgehalten.
 - Microsoft Office, Photoshop, Fusion/SolidWorks: nicht vorhanden bzw. nicht geprüft. T-0740-Dateien in LibreOffice: nicht nachgeholt.
 - FreeCAD steht nicht im Trendo-Werkzeugkatalog (`DependencyCatalog`); der Test findet es über `TRENDO_FREECAD` / `%ProgramFiles%\FreeCAD*`. Ein Katalogeintrag wäre ein eigener Auftrag.
@@ -67,3 +67,15 @@ Katalog: `docs/programme/katalog.json` enthält keine dieser Aussagen; neu erzeu
 - Geändert (Doku): `.gitattributes` (`reports/T-0776/** -text`), `docs/audit/2026-11-26-neubewertung/BERICHT.md`, `docs/audit/2026-11-26-neubewertung/restliste.md`, `reports/T-0691/BELEG.md`, `reports/T-0694/BELEG.md`, `reports/T-0740/BELEG.md`, `tasks/T-0682-b1c-office-schutz.bericht.md`, `tasks/T-0691-3d-cad.bericht.md`, `tasks/T-0692-text-editor.bericht.md`, `tasks/T-0694-geld-rechnungen.bericht.md`, `tasks/T-0753-verkaufen-pod.bericht.md`, `tasks/T-0754-dateien-schutz.bericht.md`
 
 Rust: nicht eingesetzt (Prüfläufe und kleine Korrekturen im bestehenden C#-Code; kein Leistungs- oder Sicherheitsvorteil).
+
+## Nachtrag: Korrekturen nach der Gegenprüfung (26.11.2026)
+| Punkt | Was jetzt | Beleg |
+|---|---|---|
+| M1 Werkzeugordner | Aussage oben berichtigt. LibreOffice läuft im Test aus einer Kopie des Installationsordners im eigenen Temp-Ordner (`T0776_LoKopie`, ca. 880 MB / 20 s, nach der Testklasse gelöscht); danach Vergleich aller Ordner- und Dateizeiten des Originals: unverändert. Was LibreOffice in der Kopie anlegt, steht im Log. Ein Lauf um 12:07 meldete Änderungen am Original (u. a. eine Sperrdatei `program\opencl\.~lock.cl-test.ods#`), obwohl die Konfiguration der Kopie nur relative Pfade nutzt (`$ORIGIN`) und die Kopie selbst die gleichen Einträge zeigte. Zur selben Zeit lief offenbar ein anderes LibreOffice aus dem Original (andere Sitzung, nicht meine Prozesse). Zwei Wiederholungen direkt danach: Original unverändert. Beleg: `reports/T-0776/korrektur/fremdzugriff-12-07/`. Die Prüfung schlägt also an, wenn jemand anderes das Original benutzt. | `reports/T-0776/libreoffice-*/…log`, Test `T0776_Fremdnachlauf` (3 LibreOffice-Fälle) |
+| M2 STEP | `CARTESIAN_POINT` mit `R()` (immer Dezimalpunkt); Namen und Dateiname nach ISO 10303-21 (`CadExport.StepString`: `''`, `\\`, `\X2\…\X0\`, `\X4\…\X0\`). FreeCAD-Nachlauf neu, Belege und SHA256SUMS erneuert. | `T0776_Korrektur.Step_strings_and_reals`, `reports/T-0776/freecad-step/` |
+| ZIP-Vermerk | Vermerk nur in ASCII („nicht verschluesselt“, `Backup.Ascii`), übrige Nicht-ASCII-Zeichen (Dateinamen) als `\uXXXX`; 7-Zip zeigt ihn richtig. Oberfläche und `Say()` bleiben mit Umlauten. | `T0776_Korrektur.Backup_note_ascii`, `T0754SicherungHinweisTests` (angepasst + nur-ASCII-Prüfung), `reports/T-0776/7zip-zip/` |
+| N1 PSD | Struktur-Test ohne Krita: Pascal-Name ohne Füllbytes, `luni` (UTF-16BE, Länge Vielfaches von 4), genau eine Ebene „Hintergrund“ ganz unten in der Hintergrundfarbe, Sichtbarkeit, Deckkraft | `T0776_Korrektur.Psd_structure` |
+| N4 Skript | `krita --version` mit Zeitlimit 60 s, danach nur der eigene Prozess per PID beendet | `tools/echtlauf/t0776/werkzeuge_finden.ps1` |
+
+Rot: Auf dem Stand vor der Korrektur lässt sich `T0776_Korrektur` nicht übersetzen (`CadExport.StepString`, `Backup.Ascii` fehlen, `reports/T-0776/korrektur/rot-*.txt`); der alte 7-Zip-Beleg zeigte „verschlÃ¼sselt“.
+Gezielte Tests grün: siehe `reports/T-0776/korrektur/` und `reports/T-0776/tests/`.

@@ -1,32 +1,34 @@
-# T-0776 Fremdnachlauf libreoffice-text – 2026-11-26 11:17:45 +01:00
-Datei trendo-nachlauf.docx: 4133 Bytes, SHA-256 8657c3357c611c0b07570e9e5dbe03744b8e5d967b671c896242b8b15e6b0c07
+# T-0776 Fremdnachlauf libreoffice-text – 2026-11-26 12:10:28 +01:00
+Datei trendo-nachlauf.docx: 4133 Bytes, SHA-256 f9becdfbb19c389db7c293c5d6a246481a136bb3c3d765824f44b76fda1a8ffb
 $ LibreOffice öffnet nachlauf.docx und schreibt txt
-  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-auftrag-T-0776/.lauf/work/text-53b1b7/lo-profil --headless --norestore --nolockcheck --convert-to "txt:Text (encoded):UTF8" --outdir C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-53b1b7\lo-aus-docx-txt C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-53b1b7\nachlauf.docx
-Exit 0 nach 3,6 s
-convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-53b1b7\nachlauf.docx as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-53b1b7\lo-aus-docx-txt\nachlauf.txt using filter : Text (encoded):UTF8
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-auftrag-T-0776/.lauf/work/text-f00f70/lo-profil --headless --norestore --nolockcheck --convert-to "txt:Text (encoded):UTF8" --outdir C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-f00f70\lo-aus-docx-txt C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-f00f70\nachlauf.docx
+Exit 0 nach 8,6 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-f00f70\nachlauf.docx as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-f00f70\lo-aus-docx-txt\nachlauf.txt using filter : Text (encoded):UTF8
 [stderr] Could not find platform independent libraries <prefix>
 Datei libreoffice-aus-docx.txt: 229 Bytes, SHA-256 b069f4a19ad53312e3e5eeb4aeeac82d948bbfcf05e291505b191251a0a5f42e
 LibreOffice-Text aus docx: Quartalsbericht Nachlauf ⏎ Kapitel eins ⏎ Dieser Absatz ist fett und kursiv – Umlaute äöüß bleiben. ⏎     • Erster Punkt ⏎     • Zweiter Punkt ⏎ Posten	Betrag ⏎ Miete	800 € ⏎ Strom	64,50 € ⏎ Zweite Seite, letzter Satz. ⏎
 $ LibreOffice öffnet nachlauf.docx und schreibt pdf
-  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-auftrag-T-0776/.lauf/work/text-53b1b7/lo-profil --headless --norestore --nolockcheck --convert-to pdf --outdir C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-53b1b7\lo-aus-docx-pdf C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-53b1b7\nachlauf.docx
-Exit 0 nach 1,7 s
-convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-53b1b7\nachlauf.docx as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-53b1b7\lo-aus-docx-pdf\nachlauf.pdf using filter : writer_pdf_Export
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-auftrag-T-0776/.lauf/work/text-f00f70/lo-profil --headless --norestore --nolockcheck --convert-to pdf --outdir C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-f00f70\lo-aus-docx-pdf C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-f00f70\nachlauf.docx
+Exit 0 nach 1,5 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-f00f70\nachlauf.docx as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-f00f70\lo-aus-docx-pdf\nachlauf.pdf using filter : writer_pdf_Export
 [stderr] Could not find platform independent libraries <prefix>
-Datei libreoffice-aus-docx.pdf: 61933 Bytes, SHA-256 631056afe3e8aba3428171863a0e028407030c7efae400a2f291ba5cda64baff
+Datei libreoffice-aus-docx.pdf: 61933 Bytes, SHA-256 f46fbf762c0cf86e216dca055e504d7b27b94f11931dfe55e9133bd05d34522f
 LibreOffice-PDF aus docx: 2 Seiten
-Datei trendo-nachlauf.odt: 2830 Bytes, SHA-256 f2b5676830f8a8f9c2a7fb4f1d3e1891e1fd7ecfd5192ad5d8441eb9ed99adec
+Datei trendo-nachlauf.odt: 2830 Bytes, SHA-256 b3ef534159d6618fe7d8b0ab8d9dc5449bfcad00e4945136b7c02b8f7cbca17b
 $ LibreOffice öffnet nachlauf.odt und schreibt txt
-  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-auftrag-T-0776/.lauf/work/text-53b1b7/lo-profil --headless --norestore --nolockcheck --convert-to "txt:Text (encoded):UTF8" --outdir C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-53b1b7\lo-aus-odt-txt C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-53b1b7\nachlauf.odt
-Exit 0 nach 1,4 s
-convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-53b1b7\nachlauf.odt as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-53b1b7\lo-aus-odt-txt\nachlauf.txt using filter : Text (encoded):UTF8
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-auftrag-T-0776/.lauf/work/text-f00f70/lo-profil --headless --norestore --nolockcheck --convert-to "txt:Text (encoded):UTF8" --outdir C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-f00f70\lo-aus-odt-txt C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-f00f70\nachlauf.odt
+Exit 0 nach 1,2 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-f00f70\nachlauf.odt as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-f00f70\lo-aus-odt-txt\nachlauf.txt using filter : Text (encoded):UTF8
 [stderr] Could not find platform independent libraries <prefix>
 Datei libreoffice-aus-odt.txt: 231 Bytes, SHA-256 92c4e9a5d07c46c7df26448d6ffd2d59f21b28d1785542a763edb4578d405874
 LibreOffice-Text aus odt: Quartalsbericht Nachlauf ⏎ Kapitel eins ⏎ Dieser Absatz ist fett und kursiv – Umlaute äöüß bleiben. ⏎     • Erster Punkt ⏎     • Zweiter Punkt ⏎ Posten	Betrag ⏎ Miete	800 € ⏎ Strom	64,50 € ⏎  ⏎ Zweite Seite, letzter Satz. ⏎
 $ LibreOffice öffnet nachlauf.odt und schreibt pdf
-  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-auftrag-T-0776/.lauf/work/text-53b1b7/lo-profil --headless --norestore --nolockcheck --convert-to pdf --outdir C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-53b1b7\lo-aus-odt-pdf C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-53b1b7\nachlauf.odt
-Exit 0 nach 1,4 s
-convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-53b1b7\nachlauf.odt as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-53b1b7\lo-aus-odt-pdf\nachlauf.pdf using filter : writer_pdf_Export
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-auftrag-T-0776/.lauf/work/text-f00f70/lo-profil --headless --norestore --nolockcheck --convert-to pdf --outdir C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-f00f70\lo-aus-odt-pdf C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-f00f70\nachlauf.odt
+Exit 0 nach 1,2 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-f00f70\nachlauf.odt as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-f00f70\lo-aus-odt-pdf\nachlauf.pdf using filter : writer_pdf_Export
 [stderr] Could not find platform independent libraries <prefix>
-Datei libreoffice-aus-odt.pdf: 61794 Bytes, SHA-256 017fdba912cb1703871df99dd59e129fd947a9d819884df02a9d89c24f002cf4
+Datei libreoffice-aus-odt.pdf: 61794 Bytes, SHA-256 9fe6fe227bc0925011118d4ed2c5602e4a17a0fa96472738c7b1a99f40d50167
 LibreOffice-PDF aus odt: 2 Seiten
+LibreOffice läuft aus einer Kopie im eigenen Temp-Ordner (14745 Dateien, 882 MB, kopiert in 13,8 s); Original im Trendo-Werkzeugordner: 15933 Einträge vor dem ersten Start erfasst.
+Trendo-Werkzeugordner (LibreOffice-Original): 15933 Einträge, keiner geändert, keiner neu, keiner fehlt. In der Kopie hat LibreOffice 2 Einträge angelegt/geändert/entfernt: program\opencl, share\uno_packages\cache.
 ERGEBNIS: BESTANDEN

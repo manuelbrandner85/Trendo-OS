@@ -1,0 +1,15 @@
+== T0754DateienSchutzUi
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 4, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 8,188s
+== SchutzRestic_Ui
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 2,146s
+== N23N24_CadPrintUi
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 3, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 7,803s
+== Studio3DMeshEditUiTests
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 5, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 12,769s
+== Kuenstlerstudio_Ui
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 6, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 11,486s

@@ -1,26 +1,28 @@
-# T-0776 Fremdnachlauf libreoffice-shop-csv – 2026-11-26 11:17:56 +01:00
+# T-0776 Fremdnachlauf libreoffice-shop-csv – 2026-11-26 12:10:47 +01:00
 Datei trendo-artikel.csv: 612 Bytes, SHA-256 ef4cbfd24330d95103309633a0f9597c31d57b450152d7455570d2cc1253fb36
 $ LibreOffice öffnet artikel.csv und schreibt csv
-  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-auftrag-T-0776/.lauf/work/shop-0b3480/lo-profil --headless --norestore --nolockcheck --infilter=CSV:44,34,76,1,,1033,true,false --convert-to "csv:Text - txt - csv (StarCalc):59,34,76,1,,1031,false,false,false,false,false" --outdir C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-0b3480\lo-aus-csv-csv C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-0b3480\artikel.csv
-Exit 0 nach 4,2 s
-convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-0b3480\artikel.csv as a Calc document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-0b3480\lo-aus-csv-csv\artikel.csv using filter : Text - txt - csv (StarCalc):59,34,76,1,,1031,false,false,false,false,false
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-auftrag-T-0776/.lauf/work/shop-08a8ab/lo-profil --headless --norestore --nolockcheck --infilter=CSV:44,34,76,1,,1033,true,false --convert-to "csv:Text - txt - csv (StarCalc):59,34,76,1,,1031,false,false,false,false,false" --outdir C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-08a8ab\lo-aus-csv-csv C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-08a8ab\artikel.csv
+Exit 0 nach 2,8 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-08a8ab\artikel.csv as a Calc document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-08a8ab\lo-aus-csv-csv\artikel.csv using filter : Text - txt - csv (StarCalc):59,34,76,1,,1031,false,false,false,false,false
 Datei libreoffice-artikel.csv: 621 Bytes, SHA-256 b4806e259878953a4ed4b48cdceac48cdc55d75b09e9d9d778eeb0c1227dc7e7
 artikel.csv: LibreOffice liest 3 Datenzeilen, 21 Spalten; Kopf: Title | URL handle | Description | Vendor | Type | Tags …
 Datei trendo-kunden.csv: 441 Bytes, SHA-256 1787ef5bd9840edf9327683217d53f25a5c5506d1a1f2444d33f1bf6c1fad0b7
 $ LibreOffice öffnet kunden.csv und schreibt csv
-  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-auftrag-T-0776/.lauf/work/shop-0b3480/lo-profil --headless --norestore --nolockcheck --infilter=CSV:44,34,76,1,,1033,true,false --convert-to "csv:Text - txt - csv (StarCalc):59,34,76,1,,1031,false,false,false,false,false" --outdir C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-0b3480\lo-aus-csv-csv C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-0b3480\kunden.csv
-Exit 0 nach 3,3 s
-convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-0b3480\kunden.csv as a Calc document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-0b3480\lo-aus-csv-csv\kunden.csv using filter : Text - txt - csv (StarCalc):59,34,76,1,,1031,false,false,false,false,false
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-auftrag-T-0776/.lauf/work/shop-08a8ab/lo-profil --headless --norestore --nolockcheck --infilter=CSV:44,34,76,1,,1033,true,false --convert-to "csv:Text - txt - csv (StarCalc):59,34,76,1,,1031,false,false,false,false,false" --outdir C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-08a8ab\lo-aus-csv-csv C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-08a8ab\kunden.csv
+Exit 0 nach 1,0 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-08a8ab\kunden.csv as a Calc document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-08a8ab\lo-aus-csv-csv\kunden.csv using filter : Text - txt - csv (StarCalc):59,34,76,1,,1031,false,false,false,false,false
 Datei libreoffice-kunden.csv: 446 Bytes, SHA-256 6318d87599d335cb1c8bf1dcb7821ea0ff82f2d9380d5dd5bed5570e9c56f139
 kunden.csv: LibreOffice liest 1 Datenzeilen, 20 Spalten; Kopf: First Name | Last Name | Email | Accepts Email Marketing | Default Address Company | Default Address Address1 …
-Datei trendo-bestellungen.csv: 304 Bytes, SHA-256 fca3467cc82a813fbcde4a45873639f98c418c6e553c2c9ccca28656132200b9
+Datei trendo-bestellungen.csv: 304 Bytes, SHA-256 f608d281fb09672d2f274ec8a56bb3f72d8da23dc5a36b44c261f2c18cccc084
 $ LibreOffice öffnet bestellungen.csv und schreibt csv
-  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-auftrag-T-0776/.lauf/work/shop-0b3480/lo-profil --headless --norestore --nolockcheck --infilter=CSV:44,34,76,1,,1033,true,false --convert-to "csv:Text - txt - csv (StarCalc):59,34,76,1,,1031,false,false,false,false,false" --outdir C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-0b3480\lo-aus-csv-csv C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-0b3480\bestellungen.csv
-Exit 0 nach 1,4 s
-convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-0b3480\bestellungen.csv as a Calc document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-0b3480\lo-aus-csv-csv\bestellungen.csv using filter : Text - txt - csv (StarCalc):59,34,76,1,,1031,false,false,false,false,false
-Datei libreoffice-bestellungen.csv: 305 Bytes, SHA-256 f7d83f846ae0136c87bf33d8c9ea4be66a67adc9178ad196adff82c433f41f38
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-auftrag-T-0776/.lauf/work/shop-08a8ab/lo-profil --headless --norestore --nolockcheck --infilter=CSV:44,34,76,1,,1033,true,false --convert-to "csv:Text - txt - csv (StarCalc):59,34,76,1,,1031,false,false,false,false,false" --outdir C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-08a8ab\lo-aus-csv-csv C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-08a8ab\bestellungen.csv
+Exit 0 nach 1,0 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-08a8ab\bestellungen.csv as a Calc document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-08a8ab\lo-aus-csv-csv\bestellungen.csv using filter : Text - txt - csv (StarCalc):59,34,76,1,,1031,false,false,false,false,false
+Datei libreoffice-bestellungen.csv: 305 Bytes, SHA-256 238087eb1a5f6bcaa927fde6e5c79d8d341cd005f53fd32be8e6e9ee45c41afd
 bestellungen.csv: LibreOffice liest 1 Datenzeilen, 14 Spalten; Kopf: Name | Email | Financial Status | Fulfillment Status | Currency | Subtotal …
 Calc: SW-M Preis 21, Bestand 3; SW-L Preis 22,5
 Calc: Formel-Artikel Titel = „'=1+1“, Beschreibung = „Gr&#246;&#223;e „XL“; s&#252;&#223;“
 Calc: Kunde Erika Muster, Hauptstraße 1, 10115 Berlin
+LibreOffice läuft aus einer Kopie im eigenen Temp-Ordner (14745 Dateien, 882 MB, kopiert in 13,8 s); Original im Trendo-Werkzeugordner: 15933 Einträge vor dem ersten Start erfasst.
+Trendo-Werkzeugordner (LibreOffice-Original): 15933 Einträge, keiner geändert, keiner neu, keiner fehlt. In der Kopie hat LibreOffice 2 Einträge angelegt/geändert/entfernt: program\opencl, share\uno_packages\cache.
 ERGEBNIS: BESTANDEN

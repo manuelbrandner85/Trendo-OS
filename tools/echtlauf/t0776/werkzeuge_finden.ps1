@@ -29,8 +29,9 @@ $out.Add('LibreOffice: ' + (Clean ((& (Join-Path $tw 'libreoffice\App\libreoffic
 $env:USERPROFILE = Join-Path $Arbeit 'k'; $env:APPDATA = Join-Path $Arbeit 'k\AppData\Roaming'; $env:LOCALAPPDATA_SAVE = $env:LOCALAPPDATA
 $env:LOCALAPPDATA = Join-Path $Arbeit 'k\AppData\Local'
 $kv = Join-Path $Arbeit 'krita-version.txt'  # krita.exe ist ein Fensterprogramm: Ausgabe nur über Umleitung
-Start-Process -FilePath (Join-Path $tw 'krita\bin\krita.exe') -ArgumentList '--version' -Wait -NoNewWindow -RedirectStandardOutput $kv
-$out.Add('Krita: ' + ((Get-Content $kv) -join ' ').Trim())
+$kp = Start-Process -FilePath (Join-Path $tw 'krita\bin\krita.exe') -ArgumentList '--version' -NoNewWindow -PassThru -RedirectStandardOutput $kv
+if ($kp.WaitForExit(60000)) { $out.Add('Krita: ' + ((Get-Content $kv) -join ' ').Trim()) }
+else { Stop-Process -Id $kp.Id -Force -ErrorAction SilentlyContinue; $out.Add('Krita: Zeitlimit 60 s ueberschritten - eigener Prozess ' + $kp.Id + ' beendet, keine Version') }
 $env:LOCALAPPDATA = $env:LOCALAPPDATA_SAVE
 $env:INKSCAPE_PROFILE_DIR = Join-Path $Arbeit 'i'; $env:XDG_CONFIG_HOME = $env:INKSCAPE_PROFILE_DIR; $env:XDG_CACHE_HOME = $env:INKSCAPE_PROFILE_DIR; $env:XDG_DATA_HOME = $env:INKSCAPE_PROFILE_DIR
 $out.Add('Inkscape: ' + ((& (Join-Path $tw 'inkscape\bin\inkscape.com') --version 2>$null) -join ' ').Trim())

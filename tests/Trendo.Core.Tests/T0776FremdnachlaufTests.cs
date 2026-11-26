@@ -19,7 +19,7 @@ namespace Trendo.Core.Tests;
 /// Nichts ist ersetzt. Jedes Fremdprogramm läuft mit eigenem Profil im eigenen Temp-Ordner (Umgebung <c>T0776_WORK</c>, sonst Temp).
 /// Fehlt ein Werkzeug, meldet der Test „übersprungen“ (BLOCKIERT) – er besteht dann nicht still.
 /// Rohlog und SHA-256 je Fall: Ordner aus <c>TRENDO_BELEG_DIR</c> (sonst Temp), abgelegt unter <c>reports/T-0776/</c>.</summary>
-public class T0776_Fremdnachlauf
+public class T0776_Fremdnachlauf(T0776_LoKopie loKopie) : IClassFixture<T0776_LoKopie>
 {
     static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
     static readonly CultureInfo De = CultureInfo.GetCultureInfo("de-DE"); // LibreOffice schreibt Zahlen im CSV mit dem Gebietsschema des Dokuments
@@ -166,7 +166,7 @@ public class T0776_Fremdnachlauf
     [Fact(DisplayName = "T-0776 echt: Texte (SYS-10) – Trendo schreibt DOCX und ODT, LibreOffice 26 öffnet beide und liefert Überschrift, Absätze, Liste und Tabelle als Text zurück")]
     public void Text_docx_odt_in_LibreOffice()
     {
-        var lo = Konsole(Need(NeedsFactAttribute.Tool("libreoffice"), "LibreOffice (soffice)"));
+        var lo = loKopie.Exe(Need(NeedsFactAttribute.Tool("libreoffice"), "LibreOffice (soffice)"));
         var work = Work("text");
         using var b = new Beleg("libreoffice-text");
         var d = new TextDoc { Title = "Nachlauf" };
@@ -193,13 +193,14 @@ public class T0776_Fremdnachlauf
             b.Keep(pdf, "libreoffice-aus-" + ext + ".pdf"); b.Line($"LibreOffice-PDF aus {ext}: {pages} Seiten");
             Assert.Equal(2, pages);
         }
+        b.Line(loKopie.Note); var (gleich, bericht) = loKopie.CheckOriginal(); b.Line(bericht); Assert.True(gleich, bericht);
         b.Line("ERGEBNIS: BESTANDEN");
     }
 
     [Fact(DisplayName = "T-0776 echt: Geld-Auswertung (SPEC-11) – Trendos XLSX öffnet in LibreOffice Calc mit drei Blättern; Calc rechnet die Formeln selbst nach (Überschuss 1035, Monatssumme 1297)")]
     public void Geld_xlsx_in_LibreOffice()
     {
-        var lo = Konsole(Need(NeedsFactAttribute.Tool("libreoffice"), "LibreOffice (soffice)"));
+        var lo = loKopie.Exe(Need(NeedsFactAttribute.Tool("libreoffice"), "LibreOffice (soffice)"));
         var work = Work("geld");
         using var b = new Beleg("libreoffice-geld-xlsx");
         List<Entry> buch =
@@ -228,13 +229,14 @@ public class T0776_Fremdnachlauf
         Assert.Equal(1230.10m, decimal.Parse(summe[3], De));
         Assert.Equal(6, buchungen.Length); // Kopf + 5 Buchungen
         Assert.Contains(buchungen, r => r.Length > 1 && r[1] == "Kontoführung");
+        b.Line(loKopie.Note); var (gleich, bericht) = loKopie.CheckOriginal(); b.Line(bericht); Assert.True(gleich, bericht);
         b.Line("ERGEBNIS: BESTANDEN");
     }
 
     [Fact(DisplayName = "T-0776 echt: Online verkaufen – Trendos Shopify-CSV (Artikel, Kunden, Bestellungen) öffnet in LibreOffice Calc: Spalten, Umlaute, Preise stimmen, Formel-Zelle bleibt Text")]
     public void Shop_csv_in_LibreOffice()
     {
-        var lo = Konsole(Need(NeedsFactAttribute.Tool("libreoffice"), "LibreOffice (soffice)"));
+        var lo = loKopie.Exe(Need(NeedsFactAttribute.Tool("libreoffice"), "LibreOffice (soffice)"));
         var work = Work("shop");
         using var b = new Beleg("libreoffice-shop-csv");
         var s = new Shop(Path.Combine(work, "daten"), "i");
@@ -273,6 +275,7 @@ public class T0776_Fremdnachlauf
         Assert.Equal(("Erika", "Muster", "Hauptstraße 1", "10115", "Berlin"), (kunde[0], kunde[1], kunde[5], kunde[10], kunde[7]));
         var best = lists[2][1]; var oh = lists[2][0].ToList();
         Assert.Equal(("2", "Shirt Waldlauf – M"), (best[oh.IndexOf("Lineitem quantity")], best[oh.IndexOf("Lineitem name")]));
+        b.Line(loKopie.Note); var (gleich, bericht) = loKopie.CheckOriginal(); b.Line(bericht); Assert.True(gleich, bericht);
         b.Line("ERGEBNIS: BESTANDEN");
     }
 
@@ -544,11 +547,13 @@ public class T0776_Fremdnachlauf
         b.Line("Trendo: " + res.Say());
         b.Keep(res.Zip, "trendo-sicherung.zip");
         var listing = SevenCheck(b, sz, res.Zip, work, data);
-        // Vermerk (ZIP-Kommentar) mit dem Hinweis „nicht verschlüsselt“: 7-Zip zeigt ihn an. Umlaute stellt 7-Zip falsch dar (ZIP-Kommentare haben keine
-        // Kennung für UTF-8, 7-Zip liest sie in der Windows-Codepage) – deshalb wird nur der ASCII-Teil verglichen; siehe Bericht „offene Punkte“.
+        // Vermerk (ZIP-Kommentar) mit dem Hinweis „nicht verschlüsselt“: 7-Zip zeigt ihn an. ZIP-Kommentare haben keine Kennung für UTF-8 (7-Zip liest
+        // sie in der Windows-Codepage) – deshalb schreibt Trendo den Vermerk seit T-0776 nur in ASCII; 7-Zip zeigt ihn dann Zeichen für Zeichen richtig.
         var comment = listing.Split('\n').Select(l => l.TrimEnd('\r')).FirstOrDefault(l => l.StartsWith("Comment = trendo-sicherung-v1", StringComparison.Ordinal));
         b.Line("7-Zip zeigt den Vermerk: " + (comment is null ? "nein" : comment.Length > 160 ? comment[..160] + " …" : comment));
-        Assert.NotNull(comment); Assert.Contains("\"NotSavedCount\":0", comment); Assert.Contains("Diese Sicherungen sind nicht verschl", comment);
+        Assert.NotNull(comment); Assert.Contains("\"NotSavedCount\":0", comment); Assert.Contains("Diese Sicherungen sind nicht verschluesselt. Es sind gewoehnliche ZIP-Dateien", comment);
+        Assert.Contains("Trendo aendert dafuer nichts an deinem System", comment); Assert.Contains("unter \\\"Schutz\\\" mit restic", comment);
+        Assert.All(comment, c => Assert.True(c < 128, $"7-Zip zeigt ein Nicht-ASCII-Zeichen im Vermerk: {c}")); // keine verstümmelten Umlaute wie „Ã¼“
         // Erweiterung (X-04): Werkstatt → bauen → Export-ZIP
         var dev = Path.Combine(work, "werkstatt");
         var dir = ExtensionWorkshop.Create(dev, "Meine Tabelle");
@@ -557,5 +562,79 @@ public class T0776_Fremdnachlauf
         b.Keep(zip!, "trendo-erweiterung.zip");
         SevenCheck(b, sz, zip!, work, dir);
         b.Line("ERGEBNIS: BESTANDEN");
+    }
+}
+
+/// <summary>T-0776 (Gegenprüfung M1): LibreOffice ändert trotz <c>-env:UserInstallation</c> Einträge im eigenen Programmordner (<c>program\opencl</c>,
+/// <c>share\uno_packages\cache</c>). Der Test startet LibreOffice deshalb aus einer Kopie im eigenen Temp-Ordner und prüft danach, dass sich im
+/// Trendo-Werkzeugordner kein Ordner und keine Datei geändert hat (Änderungszeiten, Anzahl). Die Kopie wird am Ende der Testklasse gelöscht.</summary>
+public sealed class T0776_LoKopie : IDisposable
+{
+    readonly object _lock = new();
+    string? _source, _copy, _exe;
+    Dictionary<string, (long Ticks, long Size)>? _before;
+    Dictionary<string, (long Ticks, long Size)>? _copyBefore;
+    public string Note { get; private set; } = "";
+
+    /// <summary>Programmdatei der Kopie (Konsolenfassung soffice.com, wenn vorhanden). Der erste Aufruf kopiert den Installationsordner.</summary>
+    public string Exe(string original)
+    {
+        lock (_lock)
+        {
+            if (_exe is not null) return _exe;
+            var program = Path.GetDirectoryName(Path.GetFullPath(original))!;              // …\libreoffice\program
+            _source = Path.GetDirectoryName(program)!;                                      // Installationsordner
+            _before = Snapshot(_source);
+            var root = Environment.GetEnvironmentVariable("T0776_WORK") is { Length: > 0 } w ? w : Path.Combine(TempDir.SystemTemp, "trendo-t0776-work");
+            _copy = Path.Combine(root, "lo-kopie-" + Guid.NewGuid().ToString("N")[..6], Path.GetFileName(_source));
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            long bytes = 0; var files = 0;
+            foreach (var d in Directory.EnumerateDirectories(_source, "*", SearchOption.AllDirectories)) Directory.CreateDirectory(Path.Combine(_copy, Path.GetRelativePath(_source, d)));
+            Directory.CreateDirectory(_copy);
+            foreach (var f in Directory.EnumerateFiles(_source, "*", SearchOption.AllDirectories))
+            {
+                var to = Path.Combine(_copy, Path.GetRelativePath(_source, f)); File.Copy(f, to); bytes += new FileInfo(to).Length; files++;
+            }
+            _copyBefore = Snapshot(_copy);
+            var exe = Path.Combine(_copy, Path.GetRelativePath(_source, original));
+            _exe = Path.ChangeExtension(exe, ".com") is var c && File.Exists(c) ? c : exe;
+            Note = $"LibreOffice läuft aus einer Kopie im eigenen Temp-Ordner ({files} Dateien, {bytes / 1048576.0:0} MB, kopiert in {sw.Elapsed.TotalSeconds:0.0} s); " +
+                   $"Original im Trendo-Werkzeugordner: {_before.Count} Einträge vor dem ersten Start erfasst.";
+            return _exe;
+        }
+    }
+
+    /// <summary>Hat sich im Original etwas geändert? (Änderungszeit jedes Ordners und jeder Datei, Größe, neue oder fehlende Einträge.)</summary>
+    public (bool Same, string Report) CheckOriginal()
+    {
+        lock (_lock)
+        {
+            if (_source is null || _before is null) return (false, "LibreOffice-Kopie wurde nicht angelegt.");
+            var now = Snapshot(_source);
+            var diff = now.Where(kv => !_before.TryGetValue(kv.Key, out var o) || o != kv.Value).Select(kv => kv.Key)
+                .Concat(_before.Keys.Where(k => !now.ContainsKey(k))).Distinct().Order(StringComparer.Ordinal).ToList();
+            // Gegenstück: was LibreOffice in seiner Kopie verändert hat – genau das wäre sonst im Trendo-Werkzeugordner passiert
+            var copyNow = _copy is not null && _copyBefore is not null ? Snapshot(_copy) : [];
+            var inCopy = copyNow.Where(kv => _copyBefore is not null && (!_copyBefore.TryGetValue(kv.Key, out var o) || o != kv.Value)).Select(kv => kv.Key)
+                .Concat(_copyBefore?.Keys.Where(k => !copyNow.ContainsKey(k)) ?? []).Distinct().Order(StringComparer.Ordinal).ToList();
+            var copyText = $" In der Kopie hat LibreOffice {inCopy.Count} Einträge angelegt/geändert/entfernt: {(inCopy.Count == 0 ? "keine" : string.Join(", ", inCopy.Take(20)))}.";
+            return (diff.Count == 0, (diff.Count == 0
+                ? $"Trendo-Werkzeugordner (LibreOffice-Original): {now.Count} Einträge, keiner geändert, keiner neu, keiner fehlt."
+                : $"Trendo-Werkzeugordner (LibreOffice-Original) geändert: {string.Join(", ", diff.Take(20))}") + copyText);
+        }
+    }
+
+    static Dictionary<string, (long, long)> Snapshot(string dir)
+    {
+        var res = new Dictionary<string, (long, long)>(StringComparer.OrdinalIgnoreCase) { ["."] = (Directory.GetLastWriteTimeUtc(dir).Ticks, -1) };
+        foreach (var d in Directory.EnumerateDirectories(dir, "*", SearchOption.AllDirectories)) res[Path.GetRelativePath(dir, d)] = (Directory.GetLastWriteTimeUtc(d).Ticks, -1);
+        foreach (var f in Directory.EnumerateFiles(dir, "*", SearchOption.AllDirectories)) { var i = new FileInfo(f); res[Path.GetRelativePath(dir, f)] = (i.LastWriteTimeUtc.Ticks, i.Length); }
+        return res;
+    }
+
+    public void Dispose()
+    {
+        if (_copy is null) return;
+        try { Directory.Delete(Path.GetDirectoryName(_copy)!, true); } catch (IOException) { } catch (UnauthorizedAccessException) { }
     }
 }

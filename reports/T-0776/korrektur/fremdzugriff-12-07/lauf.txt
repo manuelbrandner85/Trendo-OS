@@ -1,0 +1,30 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:35.28]     T-0776 echt: Texte (SYS-10) – Trendo schreibt DOCX und ODT, LibreOffice 26 öffnet beide und liefert Überschrift, Absätze, Liste und Tabelle als Text zurück [FAIL]
+  Fehler T-0776 echt: Texte (SYS-10) – Trendo schreibt DOCX und ODT, LibreOffice 26 öffnet beide und liefert Überschrift, Absätze, Liste und Tabelle als Text zurück [31 s]
+  Fehlermeldung:
+   Trendo-Werkzeugordner (LibreOffice-Original) geändert: program\opencl, share\uno_packages\cache In der Kopie hat LibreOffice 2 Einträge angelegt/geändert/entfernt: program\opencl, share\uno_packages\cache.
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0776_Fremdnachlauf.Text_docx_odt_in_LibreOffice() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\tests\Trendo.Core.Tests\T0776FremdnachlaufTests.cs:line 196
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:40.38]     T-0776 echt: Geld-Auswertung (SPEC-11) – Trendos XLSX öffnet in LibreOffice Calc mit drei Blättern; Calc rechnet die Formeln selbst nach (Überschuss 1035, Monatssumme 1297) [FAIL]
+  Fehler T-0776 echt: Geld-Auswertung (SPEC-11) – Trendos XLSX öffnet in LibreOffice Calc mit drei Blättern; Calc rechnet die Formeln selbst nach (Überschuss 1035, Monatssumme 1297) [5 s]
+  Fehlermeldung:
+   Trendo-Werkzeugordner (LibreOffice-Original) geändert: program\opencl, program\opencl\.~lock.cl-test.ods#, share\uno_packages\cache In der Kopie hat LibreOffice 2 Einträge angelegt/geändert/entfernt: program\opencl, share\uno_packages\cache.
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0776_Fremdnachlauf.Geld_xlsx_in_LibreOffice() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\tests\Trendo.Core.Tests\T0776FremdnachlaufTests.cs:line 232
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:47.75]     T-0776 echt: Online verkaufen – Trendos Shopify-CSV (Artikel, Kunden, Bestellungen) öffnet in LibreOffice Calc: Spalten, Umlaute, Preise stimmen, Formel-Zelle bleibt Text [FAIL]
+  Fehler T-0776 echt: Online verkaufen – Trendos Shopify-CSV (Artikel, Kunden, Bestellungen) öffnet in LibreOffice Calc: Spalten, Umlaute, Preise stimmen, Formel-Zelle bleibt Text [7 s]
+  Fehlermeldung:
+   Trendo-Werkzeugordner (LibreOffice-Original) geändert: program\opencl, share\uno_packages\cache In der Kopie hat LibreOffice 2 Einträge angelegt/geändert/entfernt: program\opencl, share\uno_packages\cache.
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0776_Fremdnachlauf.Shop_csv_in_LibreOffice() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\tests\Trendo.Core.Tests\T0776FremdnachlaufTests.cs:line 278
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+Fehler!      : Fehler:     3, erfolgreich:     6, übersprungen:     0, gesamt:     9, Dauer: 1 m 22 s - Trendo.Core.Tests.dll (net10.0)
