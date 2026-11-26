@@ -101,6 +101,21 @@ Ollama, qwen3:14b, über die Oberfläche: Mathe „Rechteck 3 cm länger als bre
 
 **Status:** umgesetzt und gezielt getestet; requirements.yaml-Eintrag, Merge und Volltest durch die Hauptsitzung.
 
+## 2. Prüfrunde (Nachbesserung 2)
+Jeder Punkt hat einen Regressionstest; Rot-Läufe gegen 8a5e74012 in `reports/T-0781/nachbesserung2/`.
+
+| Punkt | Änderung | Test |
+|---|---|---|
+| HOCH N1 Simpson | `Simpson`: `Rechenzeit.Pruefe()` in jeder Stufe, höchstens 200 000 Funktionswerte, Abbruch bei NaN/∞; vorab Abtastung (400 Punkte): ist f auf einem Stück nicht reell (√x, ln x, 1/√x auf [−1, 1]), lautet das Ergebnis ehrlich „… ist nicht definiert auf dem ganzen Intervall“ mit Gegenprobe; reelle Kubikwurzel (`x^(1/3)`, `x^(−1/3)` für x < 0) über `Auswertung.Pow`, Lücke bei 0 als Grenzwert → ∫₋₁¹ = 0 | Core `T0781Runde2Tests.Nicht_definiert` (3 Fälle), `.Kubikwurzel` (2 Fälle, Hälften 3/4 und 3/2) – vorher: Testlauf hing (Abbruch nach 600 s) |
+| HOCH N2 °C-Differenz | `Groessen.Ausrechnen`: °C − °C bleibt beim Umrechnen eine Differenz (10 °C, 18 °F) | `.Differenz_in_celsius` – vorher „−263,15 °C“ |
+| MITTEL Hintergrund | `MhRechnen`: kurzer Versuch mit 0,1 s Kern-Zeitgrenze direkt, sonst `async` im Hintergrund (kein `task.Wait`); Stand je Dokument (`_mhGen`), veraltete Ergebnisse verworfen; geschlossenes Dokument wird nicht angefasst; neu Getipptes bleibt stehen; Ausnahmen im Rückruf werden zur Meldung; keine Zwangs-Navigation. Anzeige: höchstens 0,2 s direkt je Sekunde, Rest im Hintergrund. Aufgabenblatt (`MhImportAsync`) rechnet im Hintergrund (je Zeile 3 s, zusammen 30 s). KI-Fachaktion rechnet mit der 3-s-Grenze des Kerns und merkt das Ergebnis | App `T0781Wissen_Ui`: `Spaet_ueberschreibt_getipptes_nicht`, `Veraltetes_ergebnis_verworfen`, `Geschlossenes_dokument_unberuehrt`, `Ausnahme_im_hintergrund`, `Import_ohne_blockieren` (Testnaht `MhKernFuerTests` stellt langsames Rechnen nach) |
+| MITTEL e-Schreibweise | Zehnerpotenz nur, wenn Ziffern/±Ziffern direkt folgen und kein Buchstabe ohne Operator danach; `2e + 3` = 2·e + 3; `2e+3` = 2000 mit Schritt „Hinweis zur Schreibweise“; `2e3x` → Meldung „mehrdeutig“ | `.E_schreibweise` |
+| Umbenennung | `ProgramCmd.NoKi`, `ProgramKiAction.OnApplyNote` (string?, null = alter Standardtext) – Definitionen zeichengleich mit T-0780 | bestehende App-Tests (`Eingebunden`, Sperren) grün |
+| NIEDRIG | `x^(1/3) = −2` → x = −8 (Probe ✓); deutsche Meldung „Die Hochzahl ist zu groß (höchstens 1000).“; `Rechenzeit.Pruefe()` auch in Vereinfachen (`Einmal`, Polynom-Multiplikation), Ableiten, Integrieren | `.Niedrig` |
+
+Tests: Core gezielt (T0781*, MatheKern, NaturKern, WissenAdapter, PromptAction, T0777Stille, KreativKits, Buero) 322 Tests: 321 bestanden, 1 übersprungen (PubChem-Abgleich); App `T0781Wissen_Ui` 16 bestanden, 2 übersprungen (FREMD, ECHT); App-Querklassen (26 Klassen, u. a. AssistChain, ClaudePrograms, DeadButton, PromptBar, StudioFolds, StudiosAlle) 364: 362 bestanden, 2 übersprungen. Kein Volltest.
+Ehrlich: Der Export (PDF/LaTeX/MD) rechnet noch synchron je Rechnung, aber mit der 3-s-Grenze des Kerns; meist liegen die Ergebnisse schon im Zwischenspeicher.
+
 ## ENTWICKLUNGSBERICHT
 - Projekt: Trendo OS / Sprachen: C# (.NET 10, Avalonia) / Rust eingesetzt: NEIN / Rust-Komponenten: keine
 - Grund der Sprachwahl: Rechenkern läuft im .NET-Prozess, Schulaufgaben in Millisekunden (200 Zufallsgleichungen + 81 weitere Core-Fälle in unter 1 s); Rust brächte FFI und zweite Toolchain ohne messbaren Vorteil

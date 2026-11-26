@@ -27,10 +27,12 @@ public static class Auswertung
     static double Pow(double b, Term e, IReadOnlyDictionary<string, double>? werte)
     {
         // ungerade Wurzeln aus negativen Zahlen (∛(−8) = −2) wie in der Schule
-        if (b < 0 && e is Zahl z && !z.Wert.IstGanz && z.Wert.N % 2 == 1)
+        // T-0781: auch „1/3“ aus der Eingabe (Bruch-Gruppe, noch kein einzelner Zahl-Knoten)
+        Bruch? ez = e is Zahl z0 ? z0.Wert : b < 0 && !e.Variablen().Any() ? Exakt(e) : null;
+        if (b < 0 && ez is { } zw && !zw.IstGanz && zw.N % 2 == 1)
         {
-            var r = Math.Pow(-b, z.Wert.AlsDouble());
-            return z.Wert.Z % 2 == 0 ? r : -r;
+            var r = Math.Pow(-b, zw.AlsDouble());
+            return zw.Z % 2 == 0 ? r : -r;
         }
         return Math.Pow(b, Wert(e, werte));
     }
@@ -99,7 +101,13 @@ public static class Vereinfacher
         return t;
     }
 
-    static Term Einmal(Term t) => t switch
+    static Term Einmal(Term t)
+    {
+        Rechenzeit.Pruefe();
+        return EinmalOhne(t);
+    }
+
+    static Term EinmalOhne(Term t) => t switch
     {
         Summe s => Sum(s.Glieder.Select(Einmal)),
         Produkt p => Prod(p.Faktoren.Select(Einmal)),
@@ -290,6 +298,7 @@ public sealed class Polynom
         foreach (var (ea, ca) in a._m.Values)
             foreach (var (eb, cb) in b._m.Values)
             {
+                if ((r._m.Count & 255) == 0) Rechenzeit.Pruefe();
                 var e = new SortedDictionary<string, int>(ea, StringComparer.Ordinal);
                 foreach (var (v, n) in eb) e[v] = e.GetValueOrDefault(v) + n;
                 r.Add(e, ca * cb);

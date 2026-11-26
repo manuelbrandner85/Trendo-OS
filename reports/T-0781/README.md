@@ -12,3 +12,4 @@
 
 Pfade mit Benutzernamen sind durch `C:\Users\<user>` ersetzt.
 | `nachbesserung/` | Nachbesserung nach der Gegenprüfung: Rot-Läufe gegen 5f38f9b4c (`rot-vorher.txt`, `rot-vorher-app.txt`), gezielte Testläufe danach (`rohlog-core-tests.txt`, `rohlog-app-tests.txt`); der Fremdprogramm-Beleg in `fremdprogramm/` ist mit dem neuen Stand neu erzeugt (Hochzahlen im PDF) |
+| `nachbesserung2/` | 2. Prüfrunde: Rot-Läufe gegen 8a5e74012 (`rot-vorher-core.txt`, `rot-vorher-app.txt`; im alten Stand nur die Testnaht ergänzt), gezielte Testläufe danach (`rohlog-core-tests.txt`, `rohlog-app-tests.txt`) |

@@ -53,13 +53,13 @@ public partial class MainWindow
         [
             ("Rechnen", [
                 new ProgramCmd("mh-run-rechnen", "Rechnen", d => MhRechnen(d), Primary: true, Tip: "Rechnet die Aufgabe aus der Eingabezeile mit Lösungsweg und Probe (Enter)."),
-                new ProgramCmd("mh-beispiel", "Beispiel einsetzen", d => MhBeispiel(d), Tip: "Setzt ein Beispiel für die gewählte Aufgabenart in die Eingabezeile.") { OhneKi = true },
+                new ProgramCmd("mh-beispiel", "Beispiel einsetzen", d => MhBeispiel(d), Tip: "Setzt ein Beispiel für die gewählte Aufgabenart in die Eingabezeile.") { NoKi = true },
             ]),
             ("Bearbeiten", [
-                new ProgramCmd("mh-loeschen", "Rechnung löschen", d => MhLoeschen(d, MhAuswahl(d)), Tip: "Entfernt die gewählte Rechnung (Entf). Rückgängig holt sie zurück.") { OhneKi = true },
-                new ProgramCmd("mh-kopie", "Rechnung kopieren", d => MhKopie(d, MhAuswahl(d)), Tip: "Legt eine Kopie der gewählten Rechnung an.") { OhneKi = true },
-                new ProgramCmd("mh-hoch", "Nach oben", d => MhVerschieben(d, MhAuswahl(d), -1), Level: 1) { OhneKi = true },
-                new ProgramCmd("mh-runter", "Nach unten", d => MhVerschieben(d, MhAuswahl(d), 1), Level: 1) { OhneKi = true },
+                new ProgramCmd("mh-loeschen", "Rechnung löschen", d => MhLoeschen(d, MhAuswahl(d)), Tip: "Entfernt die gewählte Rechnung (Entf). Rückgängig holt sie zurück.") { NoKi = true },
+                new ProgramCmd("mh-kopie", "Rechnung kopieren", d => MhKopie(d, MhAuswahl(d)), Tip: "Legt eine Kopie der gewählten Rechnung an.") { NoKi = true },
+                new ProgramCmd("mh-hoch", "Nach oben", d => MhVerschieben(d, MhAuswahl(d), -1), Level: 1) { NoKi = true },
+                new ProgramCmd("mh-runter", "Nach unten", d => MhVerschieben(d, MhAuswahl(d), 1), Level: 1) { NoKi = true },
             ]),
             ("Datei", [
                 new ProgramCmd("mh-import", "Aufgabenblatt öffnen …", d => _ = MhImportPick(d), Tip: "Liest Aufgaben aus einer Text-, Markdown- oder CSV-Datei (eine Aufgabe je Zeile, optional „gleichung: 3x + 7 = 22“). Du kannst die Datei auch auf das Rechenblatt ziehen."),
@@ -80,7 +80,7 @@ public partial class MainWindow
                + "Beispiel für „Ein Rechteck ist 3 cm länger als breit und hat 40 cm² Fläche“: {\"steps\":[{\"action\":\"mathe.rechnung\",\"args\":{\"art\":\"gleichung\",\"eingabe\":\"x*(x+3) = 40\"}}]}",
         Workspace = MhWorkspace,
         Properties = MhProperties,
-        Status = d => { var n = d.List("rechnungen").Count; if (n == 0) return "Noch keine Rechnung"; var l = Enumerable.Range(0, n).Select(i => MhLoesung(d, i)).ToList(); var fehl = l.Count(x => x.L is { ProbeOk: false } || x.Fehler is not null); return $"{n} Rechnung(en) · " + (fehl == 0 ? "alle Proben bestanden" : $"{fehl} ohne bestandene Probe"); },
+        Status = d => { var n = d.List("rechnungen").Count; if (n == 0) return "Noch keine Rechnung"; var l = Enumerable.Range(0, n).Select(i => MhLoesungOderSpaeter(d, i)).ToList(); var offen = l.Count(x => x is null); var fehl = l.Count(x => x is { } v && (v.L is { ProbeOk: false } || v.Fehler is not null)); return $"{n} Rechnung(en) · " + (offen > 0 ? $"{offen} rechnet noch" : fehl == 0 ? "alle Proben bestanden" : $"{fehl} ohne bestandene Probe"); },
         Help = "Oben die Aufgabenart wählen (oder „Automatisch“) und die Aufgabe eintippen: Komma oder Punkt, ·, :, ², √, π – das Malzeichen darf fehlen (2x, 3(x+1)). Enter oder „Rechnen“ legt die Rechnung an. "
              + "Rechts stehen Ergebnis, Lösungsweg Schritt für Schritt und die Probe; für Funktionen in x zeichnet der Graph mit. Mehrere Gleichungen mit „;“ trennen. "
              + "Entf löscht die gewählte Rechnung, Rechtsklick auf eine Rechnung zeigt weitere Befehle. Gerechnet wird exakt mit Brüchen; Näherungen sind mit ≈ gekennzeichnet.",
@@ -112,13 +112,31 @@ public partial class MainWindow
     /// <summary>Rechnen mit Zeitgrenze (3 s im Kern): Fehler und Abbruch werden zur Meldung, nie zum Absturz.</summary>
     static (Loesung? L, string? Fehler) MhRechneSicher(MatheAuftrag a)
     {
-        try { return (MatheKern.Rechne(a), null); }
+        try { return (MhKern(a, null), null); }
         catch (Exception e) when (e is FormatException or ArgumentException or DivideByZeroException or OverflowException or InvalidOperationException or OperationCanceledException) { return (null, e.Message); }
     }
 
-    /// <summary>T-0781 (Gegenprüfung: Einfrieren): Rechnung im Hintergrund; kurze Rechnungen (unter ¼ s) kommen sofort, längere melden sich nach dem Ende
-    /// und zeichnen das Programm neu – die Oberfläche bleibt bedienbar. Die Rechenzeit ist im Kern auf 3 s begrenzt.</summary>
+    /// <summary>T-0781 (2. Prüfrunde): kurzer Versuch direkt (Rechenzeit im Kern höchstens 0,1 s, kein Warten auf einen anderen Thread).
+    /// null = dauert länger – dann rechnet der Hintergrund mit der vollen Zeitgrenze weiter.</summary>
+    static (Loesung? L, string? Fehler)? MhRechneKurz(MatheAuftrag a, int ms = 100)
+    {
+        try { return (MhKern(a, TimeSpan.FromMilliseconds(Math.Max(1, ms))), null); }
+        catch (OperationCanceledException) { return null; }
+        catch (Exception e) when (e is FormatException or ArgumentException or DivideByZeroException or OverflowException or InvalidOperationException) { return (null, e.Message); }
+    }
+
+    /// <summary>Nur für Tests: ersetzt den Kernaufruf (Zeitgrenze null = volle 3 s), um langsames Rechnen nachzustellen.</summary>
+    internal static Func<MatheAuftrag, TimeSpan?, Loesung>? MhKernFuerTests;
+    static Loesung MhKern(MatheAuftrag a, TimeSpan? zeit) => MhKernFuerTests is { } f ? f(a, zeit) : MatheKern.Rechne(a, zeit);
+
+    /// <summary>Anzeige: direkt gerechnet wird höchstens 0,2 s je Sekunde (alle Zeilen zusammen), der Rest im Hintergrund.</summary>
+    long _mhBudgetAb; long _mhBudgetMs;
+
+    /// <summary>Lange Rechnungen laufen im Hintergrund; das Ergebnis kommt nur an, solange es noch gilt (Stand je Dokument).</summary>
     readonly HashSet<string> _mhLaeuft = [];
+    /// <summary>T-0781 (2. Prüfrunde): Stand je Dokument – jedes „Rechnen“ zählt hoch; ein spätes Ergebnis eines älteren Stands wird verworfen.</summary>
+    readonly Dictionary<string, int> _mhGen = [];
+
     (Loesung? L, string? Fehler)? MhLoesungOderSpaeter(ProgramDocument d, int i)
     {
         var r = d.List("rechnungen")[i];
@@ -126,11 +144,31 @@ public partial class MainWindow
         if (_mhCache.TryGetValue(key, out var c)) return c;
         if (_mhLaeuft.Contains(key)) return null;
         var auftrag = MhAuftrag(r);
-        var task = Task.Run(() => MhRechneSicher(auftrag));
-        if (task.Wait(250)) return MhMerken(key, task.Result);
+        var jetzt = Environment.TickCount64;
+        if (jetzt - _mhBudgetAb > 1000) { _mhBudgetAb = jetzt; _mhBudgetMs = 0; }
+        if (_mhBudgetMs < 200)
+        {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            var schnell = MhRechneKurz(auftrag, (int)Math.Min(100, 200 - _mhBudgetMs));
+            _mhBudgetMs += sw.ElapsedMilliseconds;
+            if (schnell is { } fertig) return MhMerken(key, fertig);
+        }
         _mhLaeuft.Add(key);
-        task.ContinueWith(t => Avalonia.Threading.Dispatcher.UIThread.Post(() => { _mhLaeuft.Remove(key); MhMerken(key, t.Result); if (CurrentView == MatheKey) Show(MatheKey); }));
+        _ = MhLoesungSpaeter(key, auftrag);
         return null;
+    }
+
+    async Task MhLoesungSpaeter(string key, MatheAuftrag auftrag)
+    {
+        (Loesung? L, string? Fehler) res;
+        try { res = await Task.Run(() => MhRechneSicher(auftrag)); }
+        catch (Exception ex) when (ex is not OutOfMemoryException) { res = (null, FriendlyError.Say(ex)); }
+        try
+        {
+            _mhLaeuft.Remove(key); MhMerken(key, res);
+            if (CurrentView == MatheKey) Show(MatheKey);
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException) { _progMsg[MatheKey] = "Anzeige nach dem Rechnen fehlgeschlagen: " + FriendlyError.Say(ex); }
     }
 
     IEnumerable<BlattEintrag> MhBlatt(ProgramDocument d)
@@ -143,7 +181,9 @@ public partial class MainWindow
         }
     }
 
-    /// <summary>„Rechnen“: Eingabezeile prüfen (der Kern muss die Aufgabe verstehen), dann als neue Rechnung anlegen – ein Rückgängig-Schritt.</summary>
+    /// <summary>„Rechnen“: Eingabezeile prüfen (der Kern muss die Aufgabe verstehen), dann als neue Rechnung anlegen – ein Rückgängig-Schritt.
+    /// T-0781 (2. Prüfrunde): kurze Aufgaben sofort, lange im Hintergrund ohne Blockieren; ein spätes Ergebnis gilt nur, wenn seitdem nicht neu gerechnet
+    /// und das Dokument nicht geschlossen wurde, und es überschreibt nie neu Getipptes.</summary>
     public void MhRechnen(ProgramDocument d)
     {
         var text = (_mhTyped.GetValueOrDefault(d.Id) ?? d.Text("eingabe")).Trim();
@@ -151,11 +191,32 @@ public partial class MainWindow
         var art = d.Text("art", "auto");
         var e = MhEintrag(art, text);
         var auftrag = MhAuftrag(e);
-        var task = Task.Run(() => MhRechneSicher(auftrag));
-        if (task.Wait(250)) { MhUebernehmen(d, e, text, task.Result); return; }
-        // länger als ¼ s: im Hintergrund weiterrechnen (höchstens 3 s), die Oberfläche bleibt bedienbar
-        _progMsg[MatheKey] = "Rechnet … (höchstens 3 Sekunden)";
-        task.ContinueWith(t => Avalonia.Threading.Dispatcher.UIThread.Post(() => ProgramRun(MatheKey, () => MhUebernehmen(d, e, text, t.Result))));
+        var gen = _mhGen[d.Id] = _mhGen.GetValueOrDefault(d.Id) + 1;
+        if (MhRechneKurz(auftrag) is { } schnell) { MhUebernehmen(d, e, text, schnell); return; }
+        _progMsg[MatheKey] = "Rechnet … (höchstens 3 Sekunden – du kannst weiterarbeiten)";
+        _ = MhRechnenSpaeter(d, e, text, gen, auftrag);
+    }
+
+    /// <summary>Für Tests: läuft gerade eine Rechnung im Hintergrund?</summary>
+    public bool MhRechnetNoch => _mhSpaet > 0 || _mhLaeuft.Count > 0;
+    int _mhSpaet;
+
+    async Task MhRechnenSpaeter(ProgramDocument d, JsonObject e, string text, int gen, MatheAuftrag auftrag)
+    {
+        _mhSpaet++;
+        try
+        {
+            (Loesung? L, string? Fehler) res;
+            try { res = await Task.Run(() => MhRechneSicher(auftrag)); }
+            catch (Exception ex) when (ex is not OutOfMemoryException) { res = (null, FriendlyError.Say(ex)); }
+            if (!ProgramDocs(MatheKey).Contains(d)) return;            // Dokument inzwischen geschlossen: nichts anfassen
+            if (_mhGen.GetValueOrDefault(d.Id) != gen) return;         // inzwischen neu gerechnet: dieses Ergebnis ist veraltet
+            try { MhUebernehmen(d, e, text, res); }
+            catch (ArgumentException ex) { _progMsg[MatheKey] = ex.Message; }
+            if (CurrentView == MatheKey) Show(MatheKey);
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException) { _progMsg[MatheKey] = "Das Ergebnis ließ sich nicht übernehmen: " + FriendlyError.Say(ex); }
+        finally { _mhSpaet--; }
     }
 
     void MhUebernehmen(ProgramDocument d, JsonObject e, string text, (Loesung? L, string? Fehler) res)
@@ -163,8 +224,10 @@ public partial class MainWindow
         var (l, err) = res;
         if (l is null) throw new ArgumentException(err!);
         MhMerken(e.ToJsonString(), res);
-        d.Edit("Rechnen: " + (text.Length > 30 ? text[..30] + "…" : text), x => { ((JsonArray)(x["rechnungen"] ??= new JsonArray())).Add(e); x["eingabe"] = ""; });
-        _mhTyped.Remove(d.Id);
+        // inzwischen neu Getipptes bleibt stehen
+        var neuGetippt = _mhTyped.TryGetValue(d.Id, out var jetzt) && jetzt.Trim() != text;
+        d.Edit("Rechnen: " + (text.Length > 30 ? text[..30] + "…" : text), x => { ((JsonArray)(x["rechnungen"] ??= new JsonArray())).Add(e); if (!neuGetippt) x["eingabe"] = ""; });
+        if (!neuGetippt) _mhTyped.Remove(d.Id);
         _mhSel[d.Id] = d.List("rechnungen").Count - 1;
         _progMsg[MatheKey] = $"{MatheKern.ArtName(l.Art)}: {l.Ergebnis}" + (l.ProbeOk ? " – Probe bestanden." : l.Unsicher ? " – Achtung: Probe unsicher (gelb)." : " – Achtung: Probe nicht bestanden.");
     }
@@ -216,16 +279,16 @@ public partial class MainWindow
 
     async Task MhImportPick(ProgramDocument d)
     {
-        if (await PickMediaFile("mh-import", "Aufgabenblatt (Text, Markdown, CSV)", [.. MhImportEndungen.Select(e => "*" + e)]) is { } f) ProgramRun(MatheKey, () => MhImport(d, f));
+        if (await PickMediaFile("mh-import", "Aufgabenblatt (Text, Markdown, CSV)", [.. MhImportEndungen.Select(e => "*" + e)]) is { } f) await MhImportAsync(d, f);
     }
 
-    /// <summary>Aufgaben aus einer Datei: eine je Zeile; „art: aufgabe“ wählt die Art; Aufzählungszeichen, Nummern und Überschriften werden übergangen.</summary>
-    public int MhImport(ProgramDocument d, string pfad)
+    /// <summary>Zeilen eines Aufgabenblatts lesen (ohne zu rechnen): eine Aufgabe je Zeile; „art: aufgabe“ wählt die Art; Aufzählungen, Nummern und Überschriften entfallen.</summary>
+    static List<JsonObject> MhImportZeilen(string pfad)
     {
         var fi = new FileInfo(pfad);
         if (!fi.Exists) throw new FileNotFoundException("Die Datei gibt es nicht.");
         if (fi.Length > 2_000_000) throw new InvalidDataException("Die Datei ist zu groß (höchstens 2 MB).");
-        var neu = new List<JsonObject>(); var uebergangen = 0;
+        var neu = new List<JsonObject>();
         foreach (var roh in File.ReadAllLines(pfad))
         {
             var z = roh.Trim().TrimStart('-', '*', '•', '\t', ' ');
@@ -236,16 +299,47 @@ public partial class MainWindow
             var art = "auto";
             var dp = z.IndexOf(':');
             if (dp > 0 && MatheKern.ArtVonId.ContainsKey(z[..dp].Trim().ToLowerInvariant())) { art = z[..dp].Trim().ToLowerInvariant(); z = z[(dp + 1)..].Trim(); }
-            var e = MhEintrag(art, z, quelle: Path.GetFileName(pfad));
-            if (MhPruefen(e).L is null) { uebergangen++; continue; }
-            neu.Add(e);
+            neu.Add(MhEintrag(art, z, quelle: Path.GetFileName(pfad)));
             if (neu.Count >= 200) break;
         }
-        if (neu.Count == 0) throw new InvalidDataException("In der Datei steht keine Aufgabe, die der Mathe-Helfer rechnen kann (eine Aufgabe je Zeile, z. B. „3x + 7 = 22“).");
-        d.Edit("Aufgabenblatt einlesen", x => { var a = (JsonArray)(x["rechnungen"] ??= new JsonArray()); foreach (var e in neu) a.Add(e); if (string.IsNullOrWhiteSpace(Js(x["title"]))) x["title"] = Path.GetFileNameWithoutExtension(pfad); });
-        _mhSel[d.Id] = d.List("rechnungen").Count - neu.Count;
-        _progMsg[MatheKey] = $"„{Path.GetFileName(pfad)}“: {neu.Count} Aufgabe(n) gerechnet" + (uebergangen > 0 ? $", {uebergangen} Zeile(n) übergangen (nicht verstanden)." : ".") + " Die Datei bleibt unverändert.";
-        return neu.Count;
+        return neu;
+    }
+
+    /// <summary>T-0781 (2. Prüfrunde): Aufgabenblatt einlesen – gerechnet wird im Hintergrund (je Zeile höchstens 3 s, zusammen höchstens 30 s);
+    /// die Oberfläche bleibt bedienbar, ein geschlossenes Dokument wird nicht angefasst.</summary>
+    public async Task<int> MhImportAsync(ProgramDocument d, string pfad)
+    {
+        List<JsonObject> zeilen;
+        try { zeilen = MhImportZeilen(pfad); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException) { _progMsg[MatheKey] = FriendlyError.Say(ex); Show(MatheKey); return 0; }
+        _progMsg[MatheKey] = $"„{Path.GetFileName(pfad)}“: rechnet {zeilen.Count} Aufgabe(n) … (die Oberfläche bleibt bedienbar)";
+        Show(MatheKey);
+        _mhSpaet++;
+        try
+        {
+            List<(JsonObject E, (Loesung? L, string? Fehler) R)> erg;
+            try
+            {
+                erg = await Task.Run(() =>
+                {
+                    var sw = System.Diagnostics.Stopwatch.StartNew(); var res = new List<(JsonObject, (Loesung?, string?))>();
+                    foreach (var e in zeilen) res.Add((e, sw.Elapsed.TotalSeconds > 30 ? (null, "Zeitgrenze für das Aufgabenblatt erreicht") : MhRechneSicher(MhAuftrag(e))));
+                    return res;
+                });
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException) { _progMsg[MatheKey] = FriendlyError.Say(ex); Show(MatheKey); return 0; }
+            if (!ProgramDocs(MatheKey).Contains(d)) return 0; // inzwischen geschlossen
+            var neu = erg.Where(x => x.R.L is not null).ToList(); var uebergangen = erg.Count - neu.Count;
+            foreach (var (e, r) in neu) MhMerken(e.ToJsonString(), r);
+            if (neu.Count == 0) { _progMsg[MatheKey] = "In der Datei steht keine Aufgabe, die der Mathe-Helfer rechnen kann (eine Aufgabe je Zeile, z. B. „3x + 7 = 22“)."; if (CurrentView == MatheKey) Show(MatheKey); return 0; }
+            d.Edit("Aufgabenblatt einlesen", x => { var a = (JsonArray)(x["rechnungen"] ??= new JsonArray()); foreach (var (e, _) in neu) a.Add(e.DeepClone()); if (string.IsNullOrWhiteSpace(Js(x["title"]))) x["title"] = Path.GetFileNameWithoutExtension(pfad); });
+            _mhSel[d.Id] = d.List("rechnungen").Count - neu.Count;
+            _progMsg[MatheKey] = $"„{Path.GetFileName(pfad)}“: {neu.Count} Aufgabe(n) gerechnet" + (uebergangen > 0 ? $", {uebergangen} Zeile(n) übergangen (nicht verstanden)." : ".") + " Die Datei bleibt unverändert.";
+            if (CurrentView == MatheKey) Show(MatheKey);
+            return neu.Count;
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException) { _progMsg[MatheKey] = "Das Aufgabenblatt ließ sich nicht übernehmen: " + FriendlyError.Say(ex); return 0; }
+        finally { _mhSpaet--; }
     }
 
     // ---------- KI-Fachaktion: Textaufgabe → Rechnung (das Ergebnis rechnet der Kern) ----------
@@ -263,14 +357,15 @@ public partial class MainWindow
             var art = a.GetValueOrDefault("art") is { Length: > 0 } ar && MatheKern.ArtVonId.ContainsKey(ar) ? ar.ToLowerInvariant() : "auto";
             MhKeinErgebnis(eingabe);
             var e = MhEintrag(art, eingabe, a.GetValueOrDefault("variable") ?? "", a.GetValueOrDefault("von") ?? "", a.GetValueOrDefault("bis") ?? "", "KI: Textaufgabe");
-            var (l, err) = MhPruefen(e);
+            var (l, err) = MhPruefen(e); // Zeitgrenze 3 s im Kern; das Ergebnis wird gemerkt, die Anzeige rechnet nicht noch einmal
             if (l is null) throw new InvalidOperationException($"Die Rechnung „{eingabe}“ versteht der Rechenkern nicht: {err}");
+            MhMerken(e.ToJsonString(), (l, err));
             d.Edit("Rechnung aus Textaufgabe", x => ((JsonArray)(x["rechnungen"] ??= new JsonArray())).Add(e));
             _mhSel[d.Id] = d.List("rechnungen").Count - 1;
         },
         (d, created) => [])
     {
-        Hinweis = "Gerechnet hat der Rechenkern, nicht die KI – „Ja, behalten“ übernimmt die Rechnung ins Rechenblatt (ein Rückgängig-Schritt).",
+        OnApplyNote = "Gerechnet hat der Rechenkern, nicht die KI – „Ja, behalten“ übernimmt die Rechnung ins Rechenblatt (ein Rückgängig-Schritt).",
     };
 
     /// <summary>Hat die KI schon ein Ergebnis eingesetzt („x = 5“, „x = 3; y = 2“)? Dann ablehnen – rechnen soll der Kern.</summary>
@@ -327,7 +422,7 @@ public partial class MainWindow
         }
         var zeile = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { box, Pos(los, 1) } };
         sp.Children.Add(KrCard(new StackPanel { Spacing = 6, Children = { arten, zeile, tasten } }, "mh-eingabe-karte"));
-        BueroFileDrop(sp, MatheKey, BueroExt(MhImportEndungen), "ein Aufgabenblatt (.txt, .md, .csv oder .tex)", (dd, files) => MhImport(dd, files[0]));
+        BueroFileDrop(sp, MatheKey, BueroExt(MhImportEndungen), "ein Aufgabenblatt (.txt, .md, .csv oder .tex)", (dd, files) => _ = MhImportAsync(dd, files[0]));
 
         var liste = d.List("rechnungen");
         if (liste.Count == 0)

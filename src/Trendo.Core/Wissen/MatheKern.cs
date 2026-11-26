@@ -78,13 +78,15 @@ public static partial class MatheKern
     static List<string> Gleichungen(string s) => [.. s.Split([';', '\n', '\r'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Where(x => x.Length > 0)];
 
     /// <summary>Rechnen. Wirft <see cref="FormatException"/> oder <see cref="ArgumentException"/> mit einem Satz für die Person, wenn die Aufgabe nicht geht.</summary>
-    public static Loesung Rechne(MatheAuftrag a)
+    /// <param name="zeit">Zeitgrenze (Standard 3 s); die Oberfläche versucht es zuerst mit 0,1 s und rechnet sonst im Hintergrund weiter.</param>
+    public static Loesung Rechne(MatheAuftrag a, TimeSpan? zeit = null)
     {
-        using var zeit = Rechenzeit.Grenze(Rechenzeit.Standard); // Gegenprüfung T-0781: nie einfrieren
+        using var grenze = Rechenzeit.Grenze(zeit ?? Rechenzeit.Standard); // Gegenprüfung T-0781: nie einfrieren
         var eingabe = Vorbereiten(a.Eingabe ?? "");
         if (eingabe.Length == 0) throw new FormatException("Bitte eine Aufgabe eingeben.");
+        TermLeser.HinweiseLeeren();
         var art = a.Art == MatheArt.Automatisch ? Erkenne(eingabe) : a.Art;
-        return art switch
+        var l = art switch
         {
             MatheArt.Vereinfachen => Vereinfachen(eingabe, false),
             MatheArt.Ausmultiplizieren => Vereinfachen(eingabe, true),
@@ -96,6 +98,8 @@ public static partial class MatheKern
             MatheArt.Integrieren => Integrieren(eingabe, a.Variable, a.Von, a.Bis),
             _ => throw new ArgumentException("Unbekannte Aufgabenart."),
         };
+        // T-0781 (2. Prüfrunde): mehrdeutige Schreibweisen als erster Schritt zeigen
+        return TermLeser.Hinweise.Count == 0 ? l : l with { Schritte = [.. TermLeser.Hinweise.Select(h => new Schritt("Hinweis zur Schreibweise", h)), .. l.Schritte] };
     }
 
     // =====================================================================================
@@ -843,6 +847,7 @@ public static partial class MatheKern
 
     static Term Abl(Term t, string x, List<Schritt> s, int tiefe)
     {
+        Rechenzeit.Pruefe();
         if (!t.Enthaelt(x)) return Term.Null;
         var idx = s.Count; var merken = tiefe <= 3 && s.Count < 16;
         if (merken) s.Add(new Schritt("", ""));
@@ -1013,6 +1018,7 @@ public static partial class MatheKern
 
     static Term Int(Term t, string x, List<Schritt> s, int tiefe)
     {
+        Rechenzeit.Pruefe();
         if (tiefe > 12) throw new NichtIntegrierbar("Das Integral wird zu verschachtelt.");
         void Merke(string regel, Term ergebnis) { if (s.Count < 18) s.Add(new Schritt(regel, $"∫ {A(t)} d{x} = {A(V(ergebnis))}")); }
         if (!t.Enthaelt(x)) { var r0 = Term.Mal(t, new Var(x)); Merke("Konstante: ∫ c dx = c·x", r0); return r0; }

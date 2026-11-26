@@ -32,7 +32,9 @@ public partial class T0781Wissen_Ui
 
     static string Plan(string action, JsonObject args) => new JsonObject { ["steps"] = new JsonArray(new JsonObject { ["action"] = action, ["args"] = args }) }.ToJsonString();
     static async Task Until(Func<bool> ok, int ms = 10000) { for (var i = 0; i < ms / 20 && !ok(); i++) { Dispatcher.UIThread.RunJobs(); await Task.Delay(20); } Assert.True(ok()); }
-    static void Tap(MainWindow w, string name) { var b = w.Find<Button>(name); b.BringIntoView(); Settle(); RealClick(w, b); Settle(); }
+    static void Tap(MainWindow w, string name) { var b = w.Find<Button>(name); b.BringIntoView(); Settle(); RealClick(w, b); Settle(); Fertig(w); }
+    /// <summary>T-0781 (2. Prüfrunde): Rechnen läuft ggf. im Hintergrund – warten (Oberfläche pumpt weiter), bis nichts mehr rechnet.</summary>
+    static void Fertig(MainWindow w, int ms = 8000) { var sw = System.Diagnostics.Stopwatch.StartNew(); while (w.MhRechnetNoch && sw.ElapsedMilliseconds < ms) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(10); } Settle(); }
     static string Hash(string f) => Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(f))).ToLowerInvariant();
     static void Pump() { for (var i = 0; i < 6; i++) Dispatcher.UIThread.RunJobs(); }
 }
@@ -149,7 +151,7 @@ public partial class T0781Wissen_Ui
             Assert.Equal(n, d.List("rechnungen").Count);
             // Enter in der Eingabezeile rechnet
             Tippe(w, "mh-eingabe", "3/4 + 5/6");
-            w.Find<TextBox>("mh-eingabe").RaiseEvent(new Avalonia.Input.KeyEventArgs { RoutedEvent = Avalonia.Input.InputElement.KeyDownEvent, Key = Avalonia.Input.Key.Enter }); Settle();
+            w.Find<TextBox>("mh-eingabe").RaiseEvent(new Avalonia.Input.KeyEventArgs { RoutedEvent = Avalonia.Input.InputElement.KeyDownEvent, Key = Avalonia.Input.Key.Enter }); Settle(); Fertig(w);
             Assert.Equal(n + 1, d.List("rechnungen").Count);
             Assert.StartsWith("19/12", w.Find<TextBlock>("mh-ergebnis").Text);
         }

@@ -64,7 +64,7 @@ public partial class MainWindow
                 new ProgramCmd("nw-farbe-masse", "Nach Atommasse", d => d.Set("faerben", "masse", "Färbung"), Level: 1),
             ]),
             ("Bearbeiten", [
-                new ProgramCmd("nw-loeschen", "Eintrag löschen", d => NwLoeschen(d, NwAuswahl(d)), Tip: "Entfernt den gewählten Laborheft-Eintrag (Entf).") { OhneKi = true },
+                new ProgramCmd("nw-loeschen", "Eintrag löschen", d => NwLoeschen(d, NwAuswahl(d)), Tip: "Entfernt den gewählten Laborheft-Eintrag (Entf).") { NoKi = true },
             ]),
             ("Messwerte", [
                 new ProgramCmd("nw-messwerte", "Messreihe auswerten …", d => Show(SK), Level: 1, Tip: "Öffnet „Messdaten & Auswertung“: Statistik, Ausgleichsgerade, Tests."),
@@ -240,7 +240,7 @@ public partial class MainWindow
         },
         (d, created) => [])
     {
-        Hinweis = "Gerechnet hat das Programm, nicht die KI – „Ja, behalten“ übernimmt den Eintrag ins Laborheft (ein Rückgängig-Schritt).",
+        OnApplyNote = "Gerechnet hat das Programm, nicht die KI – „Ja, behalten“ übernimmt den Eintrag ins Laborheft (ein Rückgängig-Schritt).",
     };
 
     // ---------- Arbeitsfläche ----------

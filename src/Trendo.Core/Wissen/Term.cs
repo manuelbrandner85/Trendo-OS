@@ -133,6 +133,12 @@ public static class TermLeser
         ["ln"] = "ln", ["log"] = "log", ["lg"] = "log", ["abs"] = "abs", ["betrag"] = "abs", ["exp"] = "exp", ["sqrt"] = "sqrt", ["wurzel"] = "sqrt",
     };
 
+    /// <summary>T-0781 (2. Prüfrunde): Hinweise zu mehrdeutigen Eingaben (z. B. „2e+3“ als Zehnerpotenz gelesen), gesammelt seit <see cref="HinweiseLeeren"/> (je Thread).</summary>
+    [ThreadStatic] static List<string>? _hinweise;
+    public static IReadOnlyList<string> Hinweise => _hinweise ?? [];
+    public static void HinweiseLeeren() => _hinweise = [];
+    static void Hinweis(string h) { _hinweise ??= []; if (!_hinweise.Contains(h)) _hinweise.Add(h); }
+
     public static Term Lies(string text)
     {
         if (string.IsNullOrWhiteSpace(text)) throw new FormatException("Bitte eine Rechnung eingeben.");
@@ -250,9 +256,14 @@ public static class TermLeser
                         if (j - ziffern > 6) throw new FormatException("Die Zehnerpotenz ist zu groß.");
                         var exp = int.Parse(s[(i + 1)..j], System.Globalization.NumberStyles.AllowLeadingSign, System.Globalization.CultureInfo.InvariantCulture);
                         if (Math.Abs(exp) > 10_000) throw new FormatException("Die Zehnerpotenz ist zu groß (höchstens 10⁴).");
+                        // Mit Vorzeichen direkt nach e („2e+3“, „2e-1“) ist es eine Zehnerpotenz – für die Konstante e: „2e + 3“ mit Leerzeichen oder „2·e − 1“
+                        if (s[i + 1] is '+' or '-') Hinweis($"„{s[st..j]}“ wurde als Zehnerpotenz {txt}·10^{exp} gelesen. Gemeint war „{txt}·e {s[i + 1]} {s[ziffern..j]}“? Dann mit Leerzeichen schreiben: {txt}e {s[i + 1]} {s[ziffern..j]}.");
                         i = j;
                         return new Zahl(Bruch.Lies(txt) * new Bruch(10).Hoch(exp));
                     }
+                    // „2e3x“ ist mehrdeutig (2·10³·x oder 2·e·3x) – nicht raten
+                    if (j > ziffern && j < s.Length && char.IsLetter(s[j]))
+                        throw new FormatException($"„{s[st..(j + 1)]}“ ist mehrdeutig: Zehnerpotenz ({txt}·10^{s[(i + 1)..j]}·{s[j]}) oder die Zahl e ({txt}·e·{s[(i + 1)..j]}{s[j]})? Bitte mit Malzeichen schreiben, z. B. {txt}e{s[(i + 1)..j]}·{s[j]} oder {txt}·e·{s[(i + 1)..j]}{s[j]}.");
                 }
                 return new Zahl(Bruch.Lies(txt));
             }

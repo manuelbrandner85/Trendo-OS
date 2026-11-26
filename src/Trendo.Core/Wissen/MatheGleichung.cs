@@ -376,7 +376,7 @@ public static partial class MatheKern
         if (!links.Enthaelt(x)) (seite, wert) = (rechts, links);
         if (wert.Enthaelt(x) || Vorkommen(seite, x) != 1)
             throw new ArgumentException("Diese Gleichung kann der Mathe-Helfer nicht Schritt für Schritt lösen: Die Variable kommt in Funktionen oder Wurzeln mehrfach vor. Lösbar sind Polynom- und Bruchgleichungen und Gleichungen, in denen die Variable nur einmal vorkommt.");
-        var kands = Loese(seite, V(wert), x, schritte, "", 0);
+        var kands = Loese(V(seite), V(wert), x, schritte, "", 0);
         // Einsetzen (unabhängig vom Umformen): Scheinlösungen verwerfen
         var proben = new List<Probe>();
         var gute = new List<Kand>();
@@ -652,7 +652,7 @@ public static partial class MatheKern
                 case Produkt p: foreach (var g in p.Faktoren) Walk(g); break;
                 case Potenz w:
                     Walk(w.Basis); Walk(w.Exponent);
-                    if (w.Exponent is Zahl e && (e.Wert.Vorzeichen < 0 || !e.Wert.IstGanz)) Basis(w.Basis);
+                    if (((w.Exponent as Zahl)?.Wert ?? (w.Exponent.Variablen().Any() ? null : Auswertung.Exakt(w.Exponent))) is { } e && (e.Vorzeichen < 0 || !e.IstGanz)) Basis(w.Basis); // T-0781 R2: auch „−1/3“ aus der Eingabe
                     break;
                 case Fkt fk:
                     Walk(fk.Argument);
@@ -679,6 +679,23 @@ public static partial class MatheKern
         // Ränder, an denen f nicht endlich ist (z. B. ln x bei 0), zählen auch
         foreach (var r in new[] { lo, hi }) if (!double.IsFinite(fw(r)) && !luecken.Contains(r)) luecken.Add(r);
         luecken = [.. luecken.Distinct().Order()];
+        // T-0781 (2. Prüfrunde): ist f auf einem ganzen Stück nicht definiert (√x, ln x für x < 0), gibt es kein Integral über das Intervall
+        {
+            var undefiniert = new List<double>();
+            for (var i = 1; i < 400; i++)
+            {
+                var v = lo + (hi - lo) * i / 400.0;
+                if (luecken.Any(l => Math.Abs(l - v) < 1e-9 * Math.Max(1, Math.Abs(l)))) continue;
+                if (double.IsNaN(fw(v))) undefiniert.Add(v);
+            }
+            if (undefiniert.Count > 0)
+            {
+                var von2 = undefiniert.Min(); var bis2 = undefiniert.Max();
+                schritte.Add(new Schritt($"Die Funktion ist nicht auf dem ganzen Intervall definiert (etwa von {x} = {Zahlwort(Math.Round(von2, 3))} bis {Zahlwort(Math.Round(bis2, 3))} nicht reell) – das bestimmte Integral gibt es so nicht", "nicht definiert"));
+                proben.Add(new Probe(true, $"✓ Gegenprobe: f({x} = {Zahlwort(Math.Round(undefiniert[undefiniert.Count / 2], 4))}) hat keinen reellen Wert."));
+                return (aufgabe, $"{kopf} ist nicht definiert auf dem ganzen Intervall (die Funktion hat dort keine reellen Werte)", $"\\int_{{{TermText.Latex(aT)}}}^{{{TermText.Latex(bT)}}} {TermText.Latex(f)}\\,d{x} \\text{{ nicht definiert}}");
+            }
+        }
         if (luecken.Count == 0)
         {
             var Fa = V(F.Ersetze(x, aT)); var Fb = V(F.Ersetze(x, bT));
@@ -739,16 +756,24 @@ public static partial class MatheKern
     }
 
     /// <summary>Adaptive Simpson-Regel (für die Gegenrechnung, rechnet nur mit f).</summary>
+    /// <summary>Adaptive Simpson-Regel. T-0781 (2. Prüfrunde): Zeitgrenze in jeder Stufe, höchstens 200 000 Funktionswerte,
+    /// und sofort NaN, sobald ein Wert nicht endlich ist (vorher: NaN erfüllte die Genauigkeit nie → 2⁵⁰ Aufrufe).</summary>
     static double Simpson(Func<double, double> f, double a, double b, double eps, int tiefe)
     {
-        double S(double l, double r) { var m = (l + r) / 2; return (r - l) / 6 * (f(l) + 4 * f(m) + f(r)); }
+        var aufrufe = 0;
+        double F(double v) { if (++aufrufe > 200_000) return double.NaN; return f(v); }
+        double S(double l, double r) { var m = (l + r) / 2; return (r - l) / 6 * (F(l) + 4 * F(m) + F(r)); }
         double Rek(double l, double r, double ganz, double e, int t)
         {
+            Rechenzeit.Pruefe();
             var m = (l + r) / 2; double sl = S(l, m), sr = S(m, r);
+            if (!double.IsFinite(sl) || !double.IsFinite(sr)) return double.NaN;
             if (t <= 0 || Math.Abs(sl + sr - ganz) <= 15 * e) return sl + sr + (sl + sr - ganz) / 15;
-            return Rek(l, m, sl, e / 2, t - 1) + Rek(m, r, sr, e / 2, t - 1);
+            var links = Rek(l, m, sl, e / 2, t - 1);
+            return double.IsFinite(links) ? links + Rek(m, r, sr, e / 2, t - 1) : double.NaN;
         }
-        return Rek(a, b, S(a, b), eps, tiefe);
+        var ganz0 = S(a, b);
+        return double.IsFinite(ganz0) ? Rek(a, b, ganz0, eps, tiefe) : double.NaN;
     }
 
     static Probe ProbeUneigentlich(Func<double, double> f, List<double> punkte, List<double> luecken, double wert)
@@ -774,6 +799,7 @@ public static partial class MatheKern
             var seite = p < hi ? 1 : -1; var weite = Math.Min(0.5, (hi - lo) / 2);
             double Teil(double d) => Math.Abs(Simpson(v => Math.Abs(f(v)), seite > 0 ? p + d : p - weite, seite > 0 ? p + weite : p - d, 1e-8, 40));
             var a1 = Teil(1e-3); var a2 = Teil(1e-9);
+            if (!double.IsFinite(a1)) return Probe.Gelb("Die Gegenrechnung an der Lücke ließ sich nicht ausrechnen – ob das Integral divergiert, ist unsicher.");
             if (double.IsFinite(a2) && a2 < 2 * a1) return Probe.Gelb("Die Gegenrechnung zeigt kein klares Wachstum an der Lücke – ob das Integral divergiert, ist unsicher.");
         }
         return new Probe(true, "✓ Gegenrechnung ohne Stammfunktion: rückt man näher an die Lücke heran, wächst die Fläche immer weiter – das Integral existiert nicht.");

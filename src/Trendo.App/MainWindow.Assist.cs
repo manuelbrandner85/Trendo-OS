@@ -48,7 +48,7 @@ public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocumen
     public string Title => spec.Title;
     public string Role => ($"Du bist erfahrene Fachkraft für „{spec.Title}“ in Trendo OS. {spec.Sentence} " + spec.KiHint).Trim();
     /// <summary>T-0774: zuerst die Fachaktionen des Programms (echte Datei), dann die Befehle des Menübands.</summary>
-    public IReadOnlyList<AssistAction> Actions { get; } = [.. spec.KiActions.Select(k => k.Def), .. spec.Ribbon.Where(g => !SkipGroups.Contains(g.Group)).SelectMany(g => g.Cmds.Where(c => !Risky().IsMatch(c.Name) && !c.OhneKi)
+    public IReadOnlyList<AssistAction> Actions { get; } = [.. spec.KiActions.Select(k => k.Def), .. spec.Ribbon.Where(g => !SkipGroups.Contains(g.Group)).SelectMany(g => g.Cmds.Where(c => !Risky().IsMatch(c.Name) && !c.NoKi)
         .Select(c => new AssistAction(c.Name, Symbols().Replace(c.Label, "").Trim() is { Length: > 0 } l ? l : c.Name, [.. Symbols().Replace(c.Label + " " + g.Group + " " + (c.Tip ?? ""), " ").Split(' ', StringSplitOptions.RemoveEmptyEntries)])))];
 
     public IAssistSession Begin() => new Session(spec, doc, produced, setAside);
@@ -105,7 +105,7 @@ public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocumen
             finally { doc.Rollback(_start); MainWindow.AssistQuiet--; } // … und sofort zurück
         }
         public bool Changed => _after != _start.Data || _produce.Count > 0;
-        public string? OnApply => _produce.Count == 0 ? null : _produce[0].Hinweis ?? "Die neue Datei entsteht erst bei „Ja, behalten“ – das Original bleibt unverändert.";
+        public string? OnApply => _produce.Count == 0 ? null : _produce[0].OnApplyNote ?? "Die neue Datei entsteht erst bei „Ja, behalten“ – das Original bleibt unverändert.";
         public void Apply(string label, IReadOnlyList<AssistStep> sideEffects)
         {
             var mark = doc.Remember();

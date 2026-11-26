@@ -68,6 +68,7 @@ public readonly record struct Groesse(double Wert, Dimension Dim, double Unsiche
 
     public Groesse Hoch(Bruch e)
     {
+        if (System.Numerics.BigInteger.Abs(e.Z) > 1000 || e.N > 1000) throw new ArgumentException("Die Hochzahl ist zu groß (höchstens 1000).");
         Dimension dim;
         if (e.IstGanz) dim = Dim.Hoch((int)e.Z);
         else if (e.N <= 12 && Dim.Wurzel((int)e.N) is { } w) dim = w.Hoch((int)e.Z);
@@ -269,7 +270,7 @@ public static class Einheiten
         var pos = e.LastIndexOf(" in ", StringComparison.Ordinal);
         if (pos > 0) { ziel = e[(pos + 4)..].Trim(); e = e[..pos].Trim(); }
         var schritte = new List<Schritt>();
-        Groesse g;
+        Groesse g; var differenz = false; // T-0781 (2. Prüfrunde): Temperaturdifferenz bleibt beim Umrechnen eine Differenz (10 K = 10 °C)
         // Temperatur mit Nullpunkt (°C, °F) nur als Einzelwert umrechnen
         var tm = Regex.Match(e, @"^(-?[\d.,]+)\s*(°[CF]|K)$");
         // T-0781 (Gegenprüfung): Temperaturen mit verschobenem Nullpunkt: Differenz zweier Temperaturen ist eine Temperaturdifferenz (in K),
@@ -287,6 +288,7 @@ public static class Einheiten
                 g = new Groesse(a.Wert - b.Wert, a.Dim);
                 schritte.Add(new Schritt("Zwei Temperaturen voneinander abziehen ergibt eine Temperaturdifferenz (°C- und K-Schritte sind gleich groß)", $"{Zahl(a.Wert)} K − {Zahl(b.Wert)} K = {Zahl(g.Wert)} K"));
                 ziel ??= "K";
+                differenz = true;
             }
             else if (!bAbs)
             {
@@ -310,11 +312,11 @@ public static class Einheiten
         }
         schritte.Add(new Schritt("Dimension des Ergebnisses", $"{g.Dim.SiText()} – {g.Dim.Beschreibung()}"));
         var einheit = ziel ?? SiEinheit(g.Dim);
-        var (w, u) = ziel is null ? (g.Wert, g.Unsicherheit) : Aus(g, ziel);
+        var (w, u) = ziel is null ? (g.Wert, g.Unsicherheit) : Aus(g, ziel, differenz);
         var text = Text(w, u, einheit);
-        if (ziel is not null) schritte.Add(new Schritt($"In {ziel} umrechnen", $"{Zahl(g.Wert)} {SiEinheit(g.Dim)} = {text}"));
+        if (ziel is not null) schritte.Add(new Schritt(differenz ? $"Temperaturdifferenz in {ziel} (ein Grad Celsius ist so groß wie ein Kelvin)" : $"In {ziel} umrechnen", $"{Zahl(g.Wert)} {SiEinheit(g.Dim)} = {text}"));
         // Probe: Ergebnis zurück in SI rechnen, muss den SI-Wert wieder ergeben
-        var zurueck = InSi(w, einheit);
+        var zurueck = InSi(w, einheit, 0, differenz);
         var ok = zurueck.Dim == g.Dim && Math.Abs(zurueck.Wert - g.Wert) <= 1e-9 * Math.Max(1e-300, Math.Abs(g.Wert));
         return (g, einheit, text, schritte, [new Probe(ok, $"{(ok ? "✓" : "✗")} Rückrechnung: {text} sind wieder {Zahl(zurueck.Wert)} {SiEinheit(zurueck.Dim)}.")]);
     }

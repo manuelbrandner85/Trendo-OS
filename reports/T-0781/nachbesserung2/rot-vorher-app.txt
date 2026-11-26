@@ -1,0 +1,71 @@
+Rot-Lauf App gegen 8a5e74012; im alten Stand nur die Testnaht ergänzt (MhKernFuerTests im Kernaufruf, MhRechnetNoch als reine Beobachtung), Verhalten unverändert.
+
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0781 R2 Hintergrund: „Rechnen“ hält die Oberfläche nicht an; spätes Ergebnis lässt neu Getipptes stehen [FAIL]
+      Assert.Equal() Failure: Strings differ
+                 ↓ (pos 0)
+      Expected: "x + 1 = 7"
+      Actual:   ""
+      Stack Trace:
+        tests\Trendo.App.Tests\T0781Runde2UiTests.cs(56,0): at Trendo.App.Tests.T0781Wissen_Ui.Spaet_ueberschreibt_getipptes_nicht()
+        --- End of stack trace from previous location ---
+    T-0781 R2 Hintergrund: geschlossenes Dokument wird nicht angefasst; keine Zwangs-Navigation zurück zum Mathe-Helfer [FAIL]
+      Assert.Equal() Failure: Strings differ
+                                             ↓ (pos 52)
+      Expected: ···"ingabe":"","rechnungen":[],"graphVon":"-10","graph"···
+      Actual:   ···"ingabe":"","rechnungen":[{"art":"auto","eingabe":""···
+                                             ↑ (pos 52)
+      Stack Trace:
+        tests\Trendo.App.Tests\T0781Runde2UiTests.cs(99,0): at Trendo.App.Tests.T0781Wissen_Ui.Geschlossenes_dokument_unberuehrt()
+        --- End of stack trace from previous location ---
+    T-0781 R2 Hintergrund: Aufgabenblatt wird im Hintergrund gerechnet (vorher synchron je Zeile) – Oberfläche bleibt bedienbar [FAIL]
+      Oberfläche stand 15196 ms
+      Stack Trace:
+        tests\Trendo.App.Tests\T0781Runde2UiTests.cs(137,0): at Trendo.App.Tests.T0781Wissen_Ui.Import_ohne_blockieren()
+        --- End of stack trace from previous location ---
+    T-0781 R2 Hintergrund: Ausnahme beim Rechnen im Hintergrund wird zur Meldung, kein Absturz, nichts angelegt [FAIL]
+      System.AggregateException : One or more errors occurred. (nachgestellt)
+      ---- System.NullReferenceException : nachgestellt
+      Stack Trace:
+           at System.Threading.Tasks.Task.ThrowIfExceptional(Boolean includeTaskCanceledExceptions)
+           at System.Threading.Tasks.Task`1.GetResultCore(Boolean waitCompletionNotification)
+           at System.Threading.Tasks.Task`1.get_Result()
+        src\Trendo.App\MainWindow.MatheHelfer.cs(161,0): at Trendo.App.MainWindow.<>c__DisplayClass4191_1.<MhRechnen>b__3()
+        src\Trendo.App\MainWindow.ProgramShell.cs(552,0): at Trendo.App.MainWindow.ProgramRun(String key, Action a)
+        src\Trendo.App\MainWindow.MatheHelfer.cs(161,0): at Trendo.App.MainWindow.<>c__DisplayClass4191_1.<MhRechnen>b__2()
+           at Avalonia.Threading.DispatcherOperation.InvokeCore()
+           at Avalonia.Threading.DispatcherOperation.<>c.<Execute>b__56_0(Object s)
+           at Avalonia.Threading.CulturePreservingExecutionContext.CallbackWrapper(Object obj)
+           at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+        --- End of stack trace from previous location ---
+           at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+           at Avalonia.Threading.CulturePreservingExecutionContext.Run(CulturePreservingExecutionContext executionContext, ContextCallback callback, Object state)
+           at Avalonia.Threading.DispatcherOperation.Execute()
+           at Avalonia.Threading.Dispatcher.ExecuteJob(DispatcherOperation job)
+           at Avalonia.Threading.Dispatcher.RunJobs(Nullable`1 priority, CancellationToken cancellationToken)
+           at Avalonia.Threading.Dispatcher.RunJobs(Nullable`1 priority)
+        tests\Trendo.App.Tests\T0781WissenUiTests.cs(34,0): at Trendo.App.Tests.T0781Wissen_Ui.Until(Func`1 ok, Int32 ms)
+        tests\Trendo.App.Tests\T0781Runde2UiTests.cs(115,0): at Trendo.App.Tests.T0781Wissen_Ui.Ausnahme_im_hintergrund()
+        --- End of stack trace from previous location ---
+        ----- Inner Stack Trace -----
+        tests\Trendo.App.Tests\T0781Runde2UiTests.cs(27,0): at Trendo.App.Tests.T0781Wissen_Ui.LangsamerKern.<.ctor>b__3_0(MatheAuftrag a, Nullable`1 zeit)
+        src\Trendo.App\MainWindow.MatheHelfer.cs(115,0): at Trendo.App.MainWindow.MhRechneSicher(MatheAuftrag a)
+        src\Trendo.App\MainWindow.MatheHelfer.cs(157,0): at Trendo.App.MainWindow.<>c__DisplayClass4191_0.<MhRechnen>b__0()
+           at System.Threading.Tasks.Task`1.InnerInvoke()
+           at System.Threading.ExecutionContext.RunFromThreadPoolDispatchLoop(Thread threadPoolThread, ExecutionContext executionContext, ContextCallback callback, Object state)
+        --- End of stack trace from previous location ---
+           at System.Threading.ExecutionContext.RunFromThreadPoolDispatchLoop(Thread threadPoolThread, ExecutionContext executionContext, ContextCallback callback, Object state)
+           at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+    T-0781 R2 Hintergrund: veraltete Ergebnisse werden verworfen – nur der zuletzt abgeschickte Stand kommt an [FAIL]
+      Assert.Single() Failure: The collection contained 2 items
+      Collection: [[···], [···]]
+      Stack Trace:
+        tests\Trendo.App.Tests\T0781Runde2UiTests.cs(76,0): at Trendo.App.Tests.T0781Wissen_Ui.Veraltetes_ergebnis_verworfen()
+        --- End of stack trace from previous location ---
+  Finished:    Trendo.App.Tests (ID = '17dc6f1f2e8854281c993aa166d6373349c6c99502dd8ca6d86f7f0c33c9dc6d')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 5, Errors: 0, Failed: 5, Skipped: 0, Not Run: 0, Time: 24,925s
+exit 1
