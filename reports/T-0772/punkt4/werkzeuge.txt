@@ -1,0 +1,15 @@
+# T-0772 Punkt 4: Werkzeugpruefung 26.11.2026 05:03 (nur nachgesehen, nichts installiert)
+$ python --version
+Python 3.13.15
+$ python -I -c 'import importlib.util as u; print(u.find_spec("ezdxf"))'
+None
+$ py -0p
+ -V:3.13 *        C:\Users\<user>\AppData\Local\Programs\Python\Python313\python.exe
+ -V:Astral/CPython3.12.16 C:\Users\<user>\AppData\Local\Temp\trendo-echt-stimme\uvhome\python\cpython-3.12.16-windows-x86_64-none\python.exe
+ -V:Astral/CPython3.12.15 C:\Users\<user>\AI-Tools\GENESIS\ace-step\uv-python\cpython-3.12.15-windows-x86_64-none\python.exe
+nicht vorhanden: /c/Program Files/FreeCAD 1.0/bin/FreeCADCmd.exe
+vorhanden: /c/Program Files/FreeCAD 1.1/bin/FreeCADCmd.exe
+nicht vorhanden: /c/Program Files/LibreCAD/LibreCAD.exe
+nicht vorhanden: /c/Program Files/ODA/ODAFileConverter/ODAFileConverter.exe
+Programme: FreeCAD 1.1
+$ FreeCAD 1.1: Suche nach ezdxf im Programmordner: 0 Treffer

@@ -1,0 +1,97 @@
+# Punkt 2: b2 / e0 / z1, alt/neu
+### alt --phasen b2_gleicher_rahmen_versteckt_2000 Lauf 1 06:03:51
+Lesen 116 ms (2000 Elemente)
+Konturen 36 ms  (2000, Hinweise 0) K FEDBE34C357C9648 N E3B0C44298FC1C14
+Generate 13991 ms G 4A5D61CD0EE85CA7 W E3B0C44298FC1C14 Bahnen 2000
+### neu --phasen b2_gleicher_rahmen_versteckt_2000 Lauf 1 06:04:10
+Lesen 115 ms (2000 Elemente)
+Konturen 65 ms Stats (1, 0, 0, False) (2000, Hinweise 0) K FEDBE34C357C9648 N E3B0C44298FC1C14
+Generate 10317 ms G 4A5D61CD0EE85CA7 W E3B0C44298FC1C14 Bahnen 2000
+### alt --phasen b2_gleicher_rahmen_versteckt_2000 Lauf 1 06:04:23
+Lesen 122 ms (2000 Elemente)
+Konturen 40 ms  (2000, Hinweise 0) K FEDBE34C357C9648 N E3B0C44298FC1C14
+Generate 12851 ms G 4A5D61CD0EE85CA7 W E3B0C44298FC1C14 Bahnen 2000
+### neu --phasen b2_gleicher_rahmen_versteckt_2000 Lauf 1 06:04:37
+Lesen 136 ms (2000 Elemente)
+Konturen 38 ms Stats (1, 0, 0, False) (2000, Hinweise 0) K FEDBE34C357C9648 N E3B0C44298FC1C14
+Generate 9571 ms G 4A5D61CD0EE85CA7 W E3B0C44298FC1C14 Bahnen 2000
+### alt --phasen b2_gleicher_rahmen_versteckt_2000 Lauf 1 06:04:49
+Lesen 141 ms (2000 Elemente)
+Konturen 45 ms  (2000, Hinweise 0) K FEDBE34C357C9648 N E3B0C44298FC1C14
+Generate 13567 ms G 4A5D61CD0EE85CA7 W E3B0C44298FC1C14 Bahnen 2000
+### neu --phasen b2_gleicher_rahmen_versteckt_2000 Lauf 1 06:05:04
+Lesen 133 ms (2000 Elemente)
+Konturen 45 ms Stats (1, 0, 0, False) (2000, Hinweise 0) K FEDBE34C357C9648 N E3B0C44298FC1C14
+Generate 9177 ms G 4A5D61CD0EE85CA7 W E3B0C44298FC1C14 Bahnen 2000
+### alt --phasen b2_gleicher_rahmen_versteckt_20000 Lauf 1 06:05:14
+Lesen 665 ms (20000 Elemente)
+Konturen 146 ms  (20000, Hinweise 0) K 64B9F4F72E5EBDA6 N E3B0C44298FC1C14
+OperationCanceledException nach 299060 ms (Phase): The operation was canceled.
+### neu --phasen b2_gleicher_rahmen_versteckt_20000 Lauf 1 06:10:14
+Lesen 611 ms (20000 Elemente)
+Konturen 138 ms Stats (1, 0, 0, False) (20000, Hinweise 0) K 64B9F4F72E5EBDA6 N E3B0C44298FC1C14
+Generate 255610 ms G BA4BD82F294FD35F W E3B0C44298FC1C14 Bahnen 20000
+### alt --phasen e0_kontrolle_verteilt_10000 Lauf 1 06:14:31
+Lesen 199 ms (10000 Elemente)
+Konturen 131 ms  (10000, Hinweise 0) K 0A934C3451032D85 N E3B0C44298FC1C14
+Generate 5660 ms G 7843A7FB6DF993AE W E3B0C44298FC1C14 Bahnen 10000
+### neu --phasen e0_kontrolle_verteilt_10000 Lauf 1 06:14:38
+Lesen 191 ms (10000 Elemente)
+Konturen 119 ms Stats (1, 0, 0, False) (10000, Hinweise 0) K 0A934C3451032D85 N E3B0C44298FC1C14
+Generate 5224 ms G 7843A7FB6DF993AE W E3B0C44298FC1C14 Bahnen 10000
+### alt --phasen e0_kontrolle_verteilt_10000 Lauf 1 06:14:45
+Lesen 365 ms (10000 Elemente)
+Konturen 273 ms  (10000, Hinweise 0) K 0A934C3451032D85 N E3B0C44298FC1C14
+Generate 5552 ms G 7843A7FB6DF993AE W E3B0C44298FC1C14 Bahnen 10000
+### neu --phasen e0_kontrolle_verteilt_10000 Lauf 1 06:14:53
+Lesen 174 ms (10000 Elemente)
+Konturen 131 ms Stats (1, 0, 0, False) (10000, Hinweise 0) K 0A934C3451032D85 N E3B0C44298FC1C14
+Generate 6126 ms G 7843A7FB6DF993AE W E3B0C44298FC1C14 Bahnen 10000
+### alt --phasen e0_kontrolle_verteilt_10000 Lauf 1 06:15:01
+Lesen 166 ms (10000 Elemente)
+Konturen 110 ms  (10000, Hinweise 0) K 0A934C3451032D85 N E3B0C44298FC1C14
+Generate 9009 ms G 7843A7FB6DF993AE W E3B0C44298FC1C14 Bahnen 10000
+### neu --phasen e0_kontrolle_verteilt_10000 Lauf 1 06:15:12
+Lesen 180 ms (10000 Elemente)
+Konturen 117 ms Stats (1, 0, 0, False) (10000, Hinweise 0) K 0A934C3451032D85 N E3B0C44298FC1C14
+Generate 6490 ms G 7843A7FB6DF993AE W E3B0C44298FC1C14 Bahnen 10000
+### alt --phasen e0_kontrolle_verteilt_100000 Lauf 1 06:15:20
+Lesen 730 ms (100000 Elemente)
+Konturen 936 ms  (100000, Hinweise 0) K 18991C737790F9DE N E3B0C44298FC1C14
+OutOfMemoryException nach 56062 ms (Phase): Insufficient memory to continue the execution of the program.
+### neu --phasen e0_kontrolle_verteilt_100000 Lauf 1 06:16:23
+Lesen 1068 ms (100000 Elemente)
+Konturen 1195 ms Stats (1, 0, 0, False) (100000, Hinweise 0) K 18991C737790F9DE N E3B0C44298FC1C14
+InvalidOperationException nach 39415 ms (Phase): Der G-Code w�rde zu gro� (�ber 1.073 Millionen Zeichen, rund 2,1 GB im Speicher) - das kann Trendo nicht schreiben und keine Steuerung verarbeiten. Bitte die Zeichnung aufteilen und in mehreren Auftr�
+### alt --phasen z1_zickzack_senkrecht_10000_versteckt_200 Lauf 1 06:17:11
+Lesen 126 ms (201 Elemente)
+Konturen 36 ms  (201, Hinweise 0) K 5E26C54E9F8133F5 N E3B0C44298FC1C14
+Generate 3369 ms G 385EC67F8B239E56 W 24D78450289FFE4F Bahnen 201
+### neu --phasen z1_zickzack_senkrecht_10000_versteckt_200 Lauf 1 06:17:15
+Lesen 113 ms (201 Elemente)
+Konturen 34 ms Stats (1, 0, 0, False) (201, Hinweise 0) K 5E26C54E9F8133F5 N E3B0C44298FC1C14
+Generate 3454 ms G 385EC67F8B239E56 W 24D78450289FFE4F Bahnen 201
+### alt --phasen z1_zickzack_senkrecht_10000_versteckt_200 Lauf 1 06:17:18
+Lesen 107 ms (201 Elemente)
+Konturen 37 ms  (201, Hinweise 0) K 5E26C54E9F8133F5 N E3B0C44298FC1C14
+Generate 3470 ms G 385EC67F8B239E56 W 24D78450289FFE4F Bahnen 201
+### neu --phasen z1_zickzack_senkrecht_10000_versteckt_200 Lauf 1 06:17:22
+Lesen 108 ms (201 Elemente)
+Konturen 32 ms Stats (1, 0, 0, False) (201, Hinweise 0) K 5E26C54E9F8133F5 N E3B0C44298FC1C14
+Generate 3285 ms G 385EC67F8B239E56 W 24D78450289FFE4F Bahnen 201
+### alt --phasen z1_zickzack_senkrecht_10000_versteckt_200 Lauf 1 06:17:26
+Lesen 104 ms (201 Elemente)
+Konturen 31 ms  (201, Hinweise 0) K 5E26C54E9F8133F5 N E3B0C44298FC1C14
+Generate 3468 ms G 385EC67F8B239E56 W 24D78450289FFE4F Bahnen 201
+### neu --phasen z1_zickzack_senkrecht_10000_versteckt_200 Lauf 1 06:17:30
+Lesen 103 ms (201 Elemente)
+Konturen 28 ms Stats (1, 0, 0, False) (201, Hinweise 0) K 5E26C54E9F8133F5 N E3B0C44298FC1C14
+Generate 3240 ms G 385EC67F8B239E56 W 24D78450289FFE4F Bahnen 201
+### alt --phasen z1_zickzack_senkrecht_100000_versteckt_2000 Lauf 1 06:17:34
+Lesen 451 ms (2001 Elemente)
+Konturen 104 ms  (2001, Hinweise 0) K B11ED8FEC493BD48 N E3B0C44298FC1C14
+Generate 61353 ms G 3920FD05AB25A8BB W 2F0CA25D3D8B81DE Bahnen 2001
+### neu --phasen z1_zickzack_senkrecht_100000_versteckt_2000 Lauf 1 06:18:36
+Lesen 331 ms (2001 Elemente)
+Konturen 134 ms Stats (1, 0, 0, False) (2001, Hinweise 0) K B11ED8FEC493BD48 N E3B0C44298FC1C14
+Generate 50180 ms G 3920FD05AB25A8BB W 2F0CA25D3D8B81DE Bahnen 2001

@@ -1,0 +1,1 @@
+400 Zeichnungen (korpus772.py, Startwerte 0-399), ImportDrawing alt (main 542dc1ce7) gegen neu: gleich 400 abweichend 0 Summe Zeit alt 45657 ms, neu 35996 ms

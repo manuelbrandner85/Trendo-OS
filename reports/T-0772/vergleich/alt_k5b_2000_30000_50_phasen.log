@@ -1,0 +1,7 @@
+Lesen 555 ms (30002 Elemente)
+Konturen 290259 ms (27070, Hinweise 41799) K 4DD3CB5FDD58D2A0 N C52A938C76800DD1
+OperationCanceledException nach 9154 ms (Phase): The operation was canceled.
+
+real	5m0.307s
+user	0m0.000s
+sys	0m0.030s

@@ -1,0 +1,50 @@
+# Punkt 1: k5_dicht-Nachbau (Lesen + Konturen + Fräsbahnen), alt/neu abwechselnd
+### alt --phasen k5b_dicht_2000_3000_50 Lauf 1 05:46:36
+Lesen 107 ms (3002 Elemente)
+Konturen 5660 ms  (2713, Hinweise 4190) K 221EDB0EDE600A8B N EB6FCF572DB73E96
+InvalidOperationException nach 2677 ms (Phase): Es blieb keine fr�sbare Kontur �brig: Kontur 3 ausgelassen: die Kontur kreuzt sich selbst (z. B. eine Acht) - dann ist nicht klar, was innen und au�en ist. Bitte in der Zeichnung in einzelne geschloss
+### neu --phasen k5b_dicht_2000_3000_50 Lauf 1 05:46:50
+Lesen 130 ms (3002 Elemente)
+Konturen 1446 ms Stats (289, 74, 3369358, False) (2713, Hinweise 4190) K 221EDB0EDE600A8B N EB6FCF572DB73E96
+InvalidOperationException nach 2516 ms (Phase): Es blieb keine fr�sbare Kontur �brig: Kontur 3 ausgelassen: die Kontur kreuzt sich selbst (z. B. eine Acht) - dann ist nicht klar, was innen und au�en ist. Bitte in der Zeichnung in einzelne geschloss
+### alt --phasen k5b_dicht_2000_3000_50 Lauf 1 05:46:58
+Lesen 128 ms (3002 Elemente)
+Konturen 5672 ms  (2713, Hinweise 4190) K 221EDB0EDE600A8B N EB6FCF572DB73E96
+InvalidOperationException nach 2816 ms (Phase): Es blieb keine fr�sbare Kontur �brig: Kontur 3 ausgelassen: die Kontur kreuzt sich selbst (z. B. eine Acht) - dann ist nicht klar, was innen und au�en ist. Bitte in der Zeichnung in einzelne geschloss
+### neu --phasen k5b_dicht_2000_3000_50 Lauf 1 05:47:11
+Lesen 102 ms (3002 Elemente)
+Konturen 1294 ms Stats (289, 74, 3369358, False) (2713, Hinweise 4190) K 221EDB0EDE600A8B N EB6FCF572DB73E96
+InvalidOperationException nach 3029 ms (Phase): Es blieb keine fr�sbare Kontur �brig: Kontur 3 ausgelassen: die Kontur kreuzt sich selbst (z. B. eine Acht) - dann ist nicht klar, was innen und au�en ist. Bitte in der Zeichnung in einzelne geschloss
+### alt --phasen k5b_dicht_2000_3000_50 Lauf 1 05:47:20
+Lesen 99 ms (3002 Elemente)
+Konturen 8206 ms  (2713, Hinweise 4190) K 221EDB0EDE600A8B N EB6FCF572DB73E96
+InvalidOperationException nach 2878 ms (Phase): Es blieb keine fr�sbare Kontur �brig: Kontur 3 ausgelassen: die Kontur kreuzt sich selbst (z. B. eine Acht) - dann ist nicht klar, was innen und au�en ist. Bitte in der Zeichnung in einzelne geschloss
+### neu --phasen k5b_dicht_2000_3000_50 Lauf 1 05:47:35
+Lesen 122 ms (3002 Elemente)
+Konturen 1410 ms Stats (289, 74, 3369358, False) (2713, Hinweise 4190) K 221EDB0EDE600A8B N EB6FCF572DB73E96
+InvalidOperationException nach 3368 ms (Phase): Es blieb keine fr�sbare Kontur �brig: Kontur 3 ausgelassen: die Kontur kreuzt sich selbst (z. B. eine Acht) - dann ist nicht klar, was innen und au�en ist. Bitte in der Zeichnung in einzelne geschloss
+### alt --phasen k5b_dicht_2000_30000_50 Lauf 1 05:47:45
+Lesen 926 ms (30002 Elemente)
+OperationCanceledException nach 399490 ms (Phase): The operation was canceled.
+### neu --phasen k5b_dicht_2000_30000_50 Lauf 1 05:54:31
+Lesen 766 ms (30002 Elemente)
+Konturen 70694 ms Stats (2930, 2111, 978573849, False) (27070, Hinweise 41799) K 4DD3CB5FDD58D2A0 N C52A938C76800DD1
+InvalidOperationException nach 47481 ms (Phase): Es blieb keine fr�sbare Kontur �brig: Kontur 1 ausgelassen: liegt in oder an der offenen Kontur 14303 - ob sie Loch oder Teil ist, l�sst sich nicht sicher sagen. Bitte den Umriss in der Zeichnung schl
+### neu --phasen k5b_dicht_2000_30000_50 Lauf 2 05:56:34
+Lesen 689 ms (30002 Elemente)
+Konturen 50599 ms Stats (2930, 2111, 978573849, False) (27070, Hinweise 41799) K 4DD3CB5FDD58D2A0 N C52A938C76800DD1
+InvalidOperationException nach 43488 ms (Phase): Es blieb keine fr�sbare Kontur �brig: Kontur 1 ausgelassen: liegt in oder an der offenen Kontur 14303 - ob sie Loch oder Teil ist, l�sst sich nicht sicher sagen. Bitte den Umriss in der Zeichnung schl
+### neu --phasen k5b_dicht_2000_30000_50 Lauf 3 05:58:13
+Lesen 714 ms (30002 Elemente)
+Konturen 51348 ms Stats (2930, 2111, 978573849, False) (27070, Hinweise 41799) K 4DD3CB5FDD58D2A0 N C52A938C76800DD1
+InvalidOperationException nach 51440 ms (Phase): Es blieb keine fr�sbare Kontur �brig: Kontur 1 ausgelassen: liegt in oder an der offenen Kontur 14303 - ob sie Loch oder Teil ist, l�sst sich nicht sicher sagen. Bitte den Umriss in der Zeichnung schl
+### neu --phasen k5b_dicht_500_60000_50 Lauf 1 06:00:00
+Lesen 1098 ms (60002 Elemente)
+Konturen 96917 ms Stats (3377, 2767, 2000187519, True) (56622, Hinweise 28584) K 5C3F329143D2CE04 N A15B219BC1B1FBA0
+InvalidOperationException nach 111243 ms (Phase): Es blieb keine fr�sbare Kontur �brig: Kontur 1 ausgelassen: liegt in oder an der offenen Kontur 9269 - ob sie Loch oder Teil ist, l�sst sich nicht sicher sagen. Bitte den Umriss in der Zeichnung schli
+### neu --cancel k5b_dicht_500_60000_50 Lauf 1 06:03:34
+Abbruch 3000 ms: OperationCanceledException nach 8 ms
+Nachlauf hoechstens 94 ms
+### alt --cancel k5b_dicht_500_60000_50 Lauf 1 06:03:42
+Abbruch 3000 ms: OperationCanceledException nach 292 ms
+Nachlauf hoechstens 374 ms

@@ -104,6 +104,7 @@ public static partial class CncCam
         // T-0747-fix4: doppelt gezeichnete (deckungsgleiche) geschlossene Konturen – egal welche Richtung oder Startecke – nur einmal verwenden. Sonst zählt
         // ein Loch in einer doppelten Platte zwei Umrisse und wird als „außen“ gefräst (um den Fräser-Ø zu groß).
         var dup = new bool[cs.Count];
+        var dupSel = new DupSelector(); // T-0772
         // T-0747-fix5: Vorfilter – nur Paare mit fast gleichem Rahmen (Raster über die linke untere Ecke) und fast gleicher Fläche werden genau geprüft
         var boxes = cs.Select((c, i) => { if ((i & 255) == 0) ct.ThrowIfCancellationRequested(); return c.Closed ? c.Box : (0.0, 0.0, -1.0, -1.0); }).ToArray();
         var areas = cs.Select(c => c.Closed ? Math.Abs(c.SignedArea) : 0).ToArray();
@@ -140,6 +141,7 @@ public static partial class CncCam
                 }
             }
             near.Sort();
+            if (near.Count > 64 && dupSel.Candidates(cs, i, near, ct) is { } sel) near = sel; // T-0772: viele fast gleiche Rahmen – nur mögliche Doppel prüfen
             foreach (var j in near)
             {
                 if (dup[j]) continue;
@@ -926,6 +928,8 @@ public static partial class CncCam
             {
                 n++; warn.AddRange(tw[k]!);
                 if (err[k] is { } e) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(e).Throw();
+                if ((long)g.Length + txt[k]!.Length + 16 > MaxGcodeChars) // T-0772: sonst Absturz (Speicher) statt Meldung
+                    throw new InvalidOperationException($"Der G-Code würde zu groß (über {MaxGcodeChars / 1_000_000:N0} Millionen Zeichen, rund {MaxGcodeChars / 500_000_000.0:0.#} GB im Speicher) – das kann Trendo nicht schreiben und keine Steuerung verarbeiten. Bitte die Zeichnung aufteilen und in mehreren Aufträgen fräsen.");
                 g.Append(txt[k]); txt[k] = null;
             }
         }
@@ -1299,9 +1303,58 @@ public static partial class CncCam
 
     /// <summary>T-0747-fix4: Toleranz für „deckungsgleich“ (doppelt gezeichnete Konturen).</summary>
     public const double DupTol = 0.001;
+    /// <summary>T-0772: längster G-Code (Zeichen) – die Grenze einer .NET-Zeichenkette; darüber gab es bisher einen Absturz wegen Speicher.</summary>
+    public const int MaxGcodeChars = 0x3FFFFFDF;
 
     /// <summary>T-0747-fix4: Sind zwei geschlossene Züge deckungsgleich (jeder Punkt des einen höchstens <paramref name="tol"/> vom anderen Zug,
     /// in beide Richtungen, auch Stückmitten)? Richtung und Startecke spielen keine Rolle.</summary>
+    /// <summary>T-0772: Vorauswahl für die Doppelprüfung, wenn sehr viele Konturen fast denselben Rahmen und dieselbe Fläche haben (20 000 Quadrate mit
+    /// einer versteckten Kerbe an verschiedener Stelle – bisher wurde jedes Paar mit zwei eigenen Rastern geprüft, quadratisch, über 150 s).
+    /// <see cref="Coincident"/> verlangt unter anderem, dass JEDER Eckpunkt und jede Streckenmitte von a näher als DupTol (+1e-9) an einer Strecke von b
+    /// liegt. Für einen einzigen solchen Prüfpunkt von a werden aus einem gemeinsamen Raster aller Strecken die Konturen geholt, die ihm so nahe kommen –
+    /// nur sie können deckungsgleich sein. Gewählt wird ein seltener Prüfpunkt (wenige Konturen in seiner Zelle, z. B. die Kerbspitze). Die übrigen
+    /// Prüfungen laufen unverändert in derselben Reihenfolge, das Ergebnis ist also dasselbe. Liefert ein Punkt zu viele Konturen, bleibt alles wie bisher.</summary>
+    sealed class DupSelector
+    {
+        const int Cap = 64; const double Cell = 0.01;
+        SegGrid? _grid; bool[]? _added; readonly Dictionary<(long, long), int> _density = []; readonly Dictionary<(long, long), int> _lastTag = [];
+        static IEnumerable<(double X, double Y)> TestPoints(List<(double X, double Y)> p)
+        {
+            for (var i = 0; i < p.Count; i++) { var u = p[i]; var v = p[(i + 1) % p.Count]; yield return u; yield return ((u.X + v.X) / 2, (u.Y + v.Y) / 2); }
+        }
+        static (long, long) K((double X, double Y) q) => ((long)Math.Floor(q.X / Cell), (long)Math.Floor(q.Y / Cell));
+        void Add(IReadOnlyList<CadContour> cs, int j)
+        {
+            _added![j] = true; var pts = cs[j].Pts;
+            for (var k = 0; k < pts.Count; k++) _grid!.Add(pts[k], pts[(k + 1) % pts.Count], j);
+            foreach (var q in TestPoints(pts))
+            {
+                var key = K(q);
+                if (_lastTag.TryGetValue(key, out var t) && t == j) continue; // je Kontur und Zelle einmal zählen
+                _lastTag[key] = j; _density[key] = _density.GetValueOrDefault(key) + 1;
+            }
+        }
+        public List<int>? Candidates(IReadOnlyList<CadContour> cs, int i, List<int> near, CancellationToken ct)
+        {
+            _grid ??= new SegGrid(Cell); _added ??= new bool[cs.Count];
+            var n = 0;
+            foreach (var j in near) if (!_added[j]) { if ((++n & 255) == 0) ct.ThrowIfCancellationRequested(); Add(cs, j); }
+            var d = DupTol + 1e-9; var pts = cs[i].Pts;
+            foreach (var q in TestPoints(pts).OrderBy(q => _density.GetValueOrDefault(K(q))).Take(4))
+            {
+                var tags = new HashSet<int>(); var tooMany = false;
+                _grid.Any(q.X - d, q.Y - d, q.X + d, q.Y + d, k =>
+                {
+                    var (a, b, tag) = _grid.Segs[k];
+                    if (tag == i || CncCam.SegDist(q, a, b) >= d) return false;
+                    tags.Add(tag); tooMany = tags.Count > Cap; return tooMany;
+                });
+                if (!tooMany) return near.Where(tags.Contains).ToList();
+            }
+            return null;
+        }
+    }
+
     public static bool Coincident(List<(double X, double Y)> a, List<(double X, double Y)> b, double tol, CancellationToken ct = default)
     {
         var (ax0, ay0, ax1, ay1) = (a.Min(p => p.X), a.Min(p => p.Y), a.Max(p => p.X), a.Max(p => p.Y));
@@ -1385,12 +1438,23 @@ public static partial class CncCam
     {
         cur ??= obstacles.Fine.Own; // ohne eigenen Merker: der des Rasters (nur einfädig)
         // T-0747-fix5: erst schnell prüfen, ob überhaupt etwas zu nah ist (ohne Listen, Abbruch beim ersten Treffer) – meist nicht
+        // T-0772: liegt im Rahmen der ganzen Bahn (± limit) gar keine fremde Strecke, kann keine Strecke der Bahn ihr näher als limit kommen –
+        // eine Abfrage statt einer je Bahnstrecke (100 000 Kreise: je Kreis rund 90 Abfragen gespart). Gleiches Ergebnis.
+        if (path.Count > 2)
+        {
+            double rx0 = path.Min(p => p.X) - limit, ry0 = path.Min(p => p.Y) - limit, rx1 = path.Max(p => p.X) + limit, ry1 = path.Max(p => p.Y) + limit;
+            if (!obstacles.AnyInRect(rx0, ry0, rx1, ry1, j =>
+                {
+                    var (c, d, tag) = obstacles.Segs[j];
+                    return tag != skip && Math.Max(c.X, d.X) >= rx0 && Math.Min(c.X, d.X) <= rx1 && Math.Max(c.Y, d.Y) >= ry0 && Math.Min(c.Y, d.Y) <= ry1;
+                }, cur)) return (-1, double.MaxValue);
+        }
         var any = false; var mm = closed ? path.Count : path.Count - 1;
         for (var i = 0; i < mm && !any; i++)
         {
             if ((i & 1023) == 0) ct.ThrowIfCancellationRequested();
             var a0 = path[i]; var b0 = path[(i + 1) % path.Count];
-            any = obstacles.Any(Math.Min(a0.X, b0.X) - limit, Math.Min(a0.Y, b0.Y) - limit, Math.Max(a0.X, b0.X) + limit, Math.Max(a0.Y, b0.Y) + limit, 1e-6,
+            any = obstacles.AnyNear(a0, b0, limit, 1e-6, // T-0772: lange Strecken stückweise (gleiches Ergebnis)
                 j => obstacles.Segs[j].Tag != skip && SegSeg(a0, b0, obstacles.Segs[j].A, obstacles.Segs[j].B) < limit, cur);
         }
         if (!any) return (-1, double.MaxValue);
@@ -1401,7 +1465,7 @@ public static partial class CncCam
             var a = path[i]; var b = path[(i + 1) % path.Count];
             // T-0758: kleinster Abstand dieser Strecke; bei Gleichstand gewinnt, was das bisherige Raster zuerst geliefert hätte – wie die Schleife
             // „dd < bisher“ über die Trefferliste, nur ohne Liste und Sortierung
-            var (bj, bd) = obstacles.Min(Math.Min(a.X, b.X) - limit, Math.Min(a.Y, b.Y) - limit, Math.Max(a.X, b.X) + limit, Math.Max(a.Y, b.Y) + limit, 1e-6,
+            var (bj, bd) = obstacles.MinNear(a, b, limit, 1e-6, // T-0772: lange Strecken stückweise (gleiches Ergebnis, auch bei Gleichstand)
                 j => { var (c, d, tag) = obstacles.Segs[j]; if (tag == skip) return double.NaN; var dd = SegSeg(a, b, c, d); return dd < limit ? dd : double.NaN; }, cur);
             if (bj >= 0 && bd < best.D) best = (obstacles.Segs[bj].Tag, bd);
         }
@@ -1806,7 +1870,7 @@ public static partial class CncCam
                     if (occ * (c / _ref) <= 4) break; // vorsichtige Schätzung der Belegung (wie bei Linien: halbe Zelle, halbe Belegung)
                 }
             }
-            Fine = new SegGrid(fine); _same = fine == _ref;
+            Fine = new SegGrid(fine); _same = fine == _ref; _along = new(BuildAlong);
             var m = 0;
             foreach (var (pts, closed, tag) in list) for (var i = 0; i < pts.Count - (closed ? 0 : 1); i++) { if ((++m & 4095) == 0) ct.ThrowIfCancellationRequested(); Fine.Add(pts[i], pts[(i + 1) % pts.Count], tag); }
         }
@@ -1839,6 +1903,98 @@ public static partial class CncCam
                 if (k.X < bk.X || k.X == bk.X && (k.Y < bk.Y || k.Y == bk.Y && j < bj)) { bj = j; bk = k; }
                 return false;
             });
+            return (bj, bd);
+        }
+        /// <summary>T-0772: Kandidaten für „Strecke näher als limit an a–b“ bei langen Strecken nicht über das ganze Rechteck (eine schräge Gravurlinie
+        /// über die Platte: alle Strecken der Platte, sortiert), sondern Stück für Stück entlang der Linie. Jede Strecke, die a–b näher als limit kommt,
+        /// liegt im Rechteck eines Stücks (± limit). Geliefert werden genau die Strecken, die die bisherige Abfrage auch geliefert hätte
+        /// (<paramref name="orig"/>: gleicher Zellen- und Bezugsrahmen), mehrfach gelieferte stören nicht: Any ist ja/nein, Min nimmt den kleinsten
+        /// Wert, bei Gleichstand nach Stelle im bisherigen Raster – beides hängt nicht von der Reihenfolge ab.</summary>
+        void Along((double X, double Y) a, (double X, double Y) b, double limit, Func<int, bool> orig, Func<int, bool> visit, SegGrid.Cursor cur)
+        {
+            var len = Math.Sqrt((b.X - a.X) * (b.X - a.X) + (b.Y - a.Y) * (b.Y - a.Y)); var step = 16 * Fine.CellSize;
+            var n = (int)Math.Min(1 << 20, Math.Ceiling(len / step));
+            var m = limit + 1e-9 * (1 + Math.Abs(a.X) + Math.Abs(a.Y) + Math.Abs(b.X) + Math.Abs(b.Y) + len); // Reserve gegen Rundung der Teilpunkte
+            for (var k = 0; k < n; k++)
+            {
+                double t0 = (double)k / n, t1 = (double)(k + 1) / n;
+                double x0 = a.X + (b.X - a.X) * t0, y0 = a.Y + (b.Y - a.Y) * t0;
+                double x1 = k == n - 1 ? b.X : a.X + (b.X - a.X) * t1, y1 = k == n - 1 ? b.Y : a.Y + (b.Y - a.Y) * t1;
+                if (Rect(cur, Math.Min(x0, x1) - m, Math.Min(y0, y1) - m, Math.Max(x0, x1) + m, Math.Max(y0, y1) + m, j => orig(j) && visit(j))) return;
+            }
+        }
+        /// <summary>T-0772: Index der langen Strecken (grobes Raster) entlang ihres Verlaufs: Zellen der Größe 8 × Feinzelle, eingetragen alle
+        /// ac/4 entlang der Strecke. Ein Punkt der Strecke liegt höchstens ac/8 von einem Eintrag entfernt – Abfragen mit ± 1 Zelle finden jede lange
+        /// Strecke, die das Rechteck wirklich berührt (das grobe Raster liefert dagegen jede, deren Rahmen es berührt: eine schräge Linie über die
+        /// ganze Platte bei jeder Abfrage). Sehr lange Strecken (über 200 000 Einträge) werden immer geliefert.</summary>
+        (Dictionary<(long, long), List<int>> Idx, double Cell, List<int> Always) AlongIndex => _along.Value;
+        readonly Lazy<(Dictionary<(long, long), List<int>>, double, List<int>)> _along;
+        (Dictionary<(long, long), List<int>>, double, List<int>) BuildAlong()
+        {
+            var ac = 8 * Fine.CellSize; var idx = new Dictionary<(long, long), List<int>>(); var always = new List<int>();
+            foreach (var j in Fine.BigList)
+            {
+                var (p, q, _) = Fine.Segs[j];
+                var len = Math.Sqrt((q.X - p.X) * (q.X - p.X) + (q.Y - p.Y) * (q.Y - p.Y)); var steps = Math.Ceiling(len / (ac / 4));
+                if (!(steps <= 200_000)) { always.Add(j); continue; }
+                var n = Math.Max(1, (int)steps); (long, long) lastKey = (long.MinValue, long.MinValue);
+                for (var k = 0; k <= n; k++)
+                {
+                    double t = (double)k / n; var key = ((long)Math.Floor((p.X + (q.X - p.X) * t) / ac), (long)Math.Floor((p.Y + (q.Y - p.Y) * t) / ac));
+                    if (key == lastKey) continue; lastKey = key;
+                    if (!idx.TryGetValue(key, out var l)) idx[key] = l = []; if (l.Count == 0 || l[^1] != j) l.Add(j);
+                }
+            }
+            return (idx, ac, always);
+        }
+        /// <summary>T-0772: Strecken, die das Rechteck berühren können (Obermenge): kurze über das feine Raster, lange über <see cref="AlongIndex"/>.
+        /// Sehr große Rechtecke wie bisher über <see cref="SegGrid.Any(SegGrid.Cursor, double, double, double, double, Func{int, bool})"/>.</summary>
+        /// <summary>T-0772: Gibt es eine Strecke mit <paramref name="pred"/>, die das Rechteck berühren kann? (Obermenge – „nein“ ist sicher)</summary>
+        public bool AnyInRect(double minX, double minY, double maxX, double maxY, Func<int, bool> pred, SegGrid.Cursor? cur = null) => Rect(cur ?? Fine.Own, minX, minY, maxX, maxY, pred);
+        bool Rect(SegGrid.Cursor cur, double minX, double minY, double maxX, double maxY, Func<int, bool> visit)
+        {
+            if (Fine.CellCount(minX, minY, maxX, maxY) > 4096) return Fine.Any(cur, minX, minY, maxX, maxY, visit);
+            var (idx, ac, always) = AlongIndex;
+            return Fine.AnyMixed(cur, minX, minY, maxX, maxY, idx, ac, always, visit);
+        }
+        long FC(double v) => (long)Math.Floor(v / Fine.CellSize);
+        /// <summary>Hätte die bisherige Abfrage (Rechteck ± e im feinen Raster, ggf. mit Bezugsrahmen) Strecke j geliefert?</summary>
+        Func<int, bool> Orig(double minX, double minY, double maxX, double maxY, double e)
+        {
+            long fx0 = FC(minX - e), fy0 = FC(minY - e), fx1 = FC(maxX + e), fy1 = FC(maxY + e);
+            long qx0 = R(minX), qy0 = R(minY), qx1 = R(maxX), qy1 = R(maxY);
+            return j =>
+            {
+                var (p, q, _) = Fine.Segs[j];
+                if (FC(Math.Max(p.X, q.X)) < fx0 || FC(Math.Min(p.X, q.X)) > fx1 || FC(Math.Max(p.Y, q.Y)) < fy0 || FC(Math.Min(p.Y, q.Y)) > fy1) return false;
+                return _same || InRef(j, qx0, qy0, qx1, qy1);
+            };
+        }
+        /// <summary>T-0772: wie <see cref="Any"/> mit dem Rechteck der Strecke a–b ± limit, für ein Prädikat, das nur Strecken näher als limit an a–b
+        /// annimmt – gleiches Ergebnis, bei langen Strecken über <see cref="Along"/>.</summary>
+        public bool AnyNear((double X, double Y) a, (double X, double Y) b, double limit, double expand, Func<int, bool> pred, SegGrid.Cursor? cur = null)
+        {
+            double minX = Math.Min(a.X, b.X) - limit, minY = Math.Min(a.Y, b.Y) - limit, maxX = Math.Max(a.X, b.X) + limit, maxY = Math.Max(a.Y, b.Y) + limit;
+            var hit = false;
+            Along(a, b, limit, Orig(minX, minY, maxX, maxY, _same ? 0 : expand), j => hit = pred(j), cur ?? Fine.Own);
+            return hit;
+        }
+        /// <summary>T-0772: wie <see cref="Min"/> mit dem Rechteck der Strecke a–b ± limit, für eine Bewertung, die nur Strecken näher als limit an a–b
+        /// zählt (sonst NaN) – gleiches Ergebnis (auch bei Gleichstand), bei langen Strecken über <see cref="Along"/>.</summary>
+        public (int J, double D) MinNear((double X, double Y) a, (double X, double Y) b, double limit, double expand, Func<int, double> score, SegGrid.Cursor? cur = null)
+        {
+            double minX = Math.Min(a.X, b.X) - limit, minY = Math.Min(a.Y, b.Y) - limit, maxX = Math.Max(a.X, b.X) + limit, maxY = Math.Max(a.Y, b.Y) + limit;
+            long qx0 = R(minX), qy0 = R(minY);
+            var bj = -1; var bd = double.MaxValue; (long X, long Y) bk = default;
+            (long X, long Y) Key(int j) { var (p, q, _) = Fine.Segs[j]; return (Math.Max(R(Math.Min(p.X, q.X)), qx0), Math.Max(R(Math.Min(p.Y, q.Y)), qy0)); }
+            Along(a, b, limit, Orig(minX, minY, maxX, maxY, _same ? 0 : expand), j =>
+            {
+                var d = score(j); if (double.IsNaN(d) || d > bd) return false;
+                if (d < bd || bj < 0) { bj = j; bd = d; bk = Key(j); return false; }
+                var k = Key(j); // Gleichstand: frühere Stelle im bisherigen Raster gewinnt
+                if (k.X < bk.X || k.X == bk.X && (k.Y < bk.Y || k.Y == bk.Y && j < bj)) { bj = j; bk = k; }
+                return false;
+            }, cur ?? Fine.Own);
             return (bj, bd);
         }
         /// <summary>Strecken mit <paramref name="keep"/>, in der Reihenfolge, in der das bisherige Raster sie geliefert hätte.</summary>
@@ -2019,4 +2175,27 @@ public sealed class SegGrid(double cell)
 
     /// <summary>Gibt es eine Strecke, die dem Punkt näher als <paramref name="d"/> kommt?</summary>
     public bool AnyWithin((double X, double Y) q, double d) => d > 0 && Any(q.X - d, q.Y - d, q.X + d, q.Y + d, i => CncCam.SegDist(q, Segs[i].A, Segs[i].B) < d);
+
+    /// <summary>T-0772: Nummern der Strecken im groben Raster.</summary>
+    public IReadOnlyList<int> BigList => _bigList;
+    /// <summary>T-0772: Zahl der feinen Zellen eines Rechtecks.</summary>
+    public double CellCount(double minX, double minY, double maxX, double maxY) => ((double)C(maxX) - C(minX) + 1) * ((double)C(maxY) - C(minY) + 1);
+    /// <summary>T-0772: Strecken des feinen Rasters in den Zellen des Rechtecks und die Strecken aus <paramref name="extra"/> (Zellen der Größe
+    /// <paramref name="extraCell"/>, ± 1 Zelle) sowie <paramref name="always"/> – jede höchstens einmal, Reihenfolge ohne Bedeutung.</summary>
+    public bool AnyMixed(Cursor cur, double minX, double minY, double maxX, double maxY, Dictionary<(long, long), List<int>> extra, double extraCell, List<int> always, Func<int, bool> hit)
+    {
+        Next(cur, Segs.Count); var stamp = cur.Stamp; var query = cur.Query;
+        long qx0 = C(minX), qx1 = C(maxX), qy0 = C(minY), qy1 = C(maxY);
+        for (var x = qx0; x <= qx1; x++)
+            for (var y = qy0; y <= qy1; y++)
+                if (_map.TryGetValue(Key(x, y), out var l))
+                    foreach (var i in l) if (stamp[i] != query) { stamp[i] = query; if (hit(i)) return true; }
+        long ex0 = (long)Math.Floor(minX / extraCell) - 1, ex1 = (long)Math.Floor(maxX / extraCell) + 1, ey0 = (long)Math.Floor(minY / extraCell) - 1, ey1 = (long)Math.Floor(maxY / extraCell) + 1;
+        for (var x = ex0; x <= ex1; x++)
+            for (var y = ey0; y <= ey1; y++)
+                if (extra.TryGetValue((x, y), out var l))
+                    foreach (var i in l) if (stamp[i] != query) { stamp[i] = query; if (hit(i)) return true; }
+        foreach (var i in always) if (stamp[i] != query) { stamp[i] = query; if (hit(i)) return true; }
+        return false;
+    }
 }
