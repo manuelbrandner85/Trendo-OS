@@ -624,6 +624,62 @@ modules:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Arbeiten & Büro), „Ja, weiter“ 15.11.2026
+- id: STUDIO-QUIZ-01
+  name: Quiz erstellen
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios), Etappe 0.9.113 Wissen & Lernen 26.11.2026 (T-0779)
+- id: STUDIO-COURSE-01
+  name: Kurse erstellen
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios), Etappe 0.9.113 Wissen & Lernen 26.11.2026 (T-0779)
+- id: STUDIO-REFERAT-01
+  name: Referate & Hausarbeiten
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios), Etappe 0.9.113 Wissen & Lernen 26.11.2026 (T-0780)
+- id: STUDIO-TIMELINE-01
+  name: Zeitleisten
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios), Etappe 0.9.113 Wissen & Lernen 26.11.2026 (T-0780)
+- id: STUDIO-MATH-01
+  name: Mathe-Helfer
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios), Etappe 0.9.113 Wissen & Lernen 26.11.2026 (T-0781)
+- id: STUDIO-SCIENCE-01
+  name: Naturwissenschaft
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios), Etappe 0.9.113 Wissen & Lernen 26.11.2026 (T-0781)
+- id: STUDIO-TUTOR-01
+  name: Nachhilfe mit KI
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios), Etappe 0.9.113 Wissen & Lernen 26.11.2026 (T-0782)
+- id: STUDIO-CODELEARN-01
+  name: Programmieren lernen
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios), Etappe 0.9.113 Wissen & Lernen 26.11.2026 (T-0782)
 - id: STUDIO-MUSIK-01
   name: Trendo Musik (Lieder mit ACE-Step)
   approved_expansion_functions: '0'

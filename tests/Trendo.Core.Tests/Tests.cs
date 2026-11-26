@@ -198,11 +198,11 @@ public class QA015_StudioStatus
         File.WriteAllText(f, "modules:\n" + mods); return f;
     }
 
-    [Fact(DisplayName = "QA-015: Fehlendes Programm → Blockiert, auch wenn gebaut; echte Liste hat 71 Module")]
+    [Fact(DisplayName = "QA-015: Fehlendes Programm → Blockiert, auch wenn gebaut; echte Liste hat 91 Studios")]
     public void Missing_tool_blocked()
     {
         var list = new StudioRegistry().Load(Req, new Probe());
-        Assert.Equal(83, list.Count); // + sieben Studios Arbeiten & Büro (15.11.2026), + Künstlerstudio (15.11.2026), + TV & Live (27.10.2026), + Trendo Musik (03.11.2026), + Filme machen und Print on Demand (08.11.2026), + vier + vier Studios Kreativ & KI (11.11.2026), + Teil 3 und 4 (14.11.2026)
+        Assert.Equal(91, list.Count); // + acht Studios Wissen & Lernen (26.11.2026), + sieben Studios Arbeiten & Büro (15.11.2026), + Künstlerstudio (15.11.2026), + TV & Live (27.10.2026), + Trendo Musik (03.11.2026), + Filme machen und Print on Demand (08.11.2026), + vier + vier Studios Kreativ & KI (11.11.2026), + Teil 3 und 4 (14.11.2026)
         Assert.Equal(Capability.Blocked, list.Single(s => s.Id == "CORE-05").Capability);
         Assert.All(list.Where(s => StudioRegistry.RequiredTools.ContainsKey(s.Id)), s => Assert.NotEqual(Capability.Ready, s.Capability));
     }
