@@ -48,6 +48,7 @@ public static class PromptActions
             new CodeProjectAdapter(), new VisionFactsAdapter(), new CiteSourceAdapter(), new DayPlanAdapter(), new KunstVorlageAdapter(), new LebenslaufAdapter(), new KarteAdapter(), new VertragFristAdapter(),
             new DeckDesignAdapter(), new DocScanAdapter(),
             new PdfWerkstattAdapter(), new FormularZuordnenAdapter(),
+            new ReferatGliederungAdapter(), new ZeitleisteZeilenAdapter(), // T-0780
             ..SystemActions.Create()
         ];
 }

@@ -13,7 +13,7 @@ public class StudioFolds_Ui
     [Fact(DisplayName = "Studio-Ordnung: 49 Studios in der Übersicht; jedes Ziel einer Zusammenlegung existiert und bleibt selbst sichtbar")]
     public void Plan_is_consistent()
     {
-        Assert.Equal(61, StudioCatalog.ById.Keys.Count(StudioCatalog.InOverview)); // + sieben Büro-Studios, + Künstlerstudio (15.11.2026)
+        Assert.Equal(63, StudioCatalog.ById.Keys.Count(StudioCatalog.InOverview)); // + Referate & Hausarbeiten, Zeitleisten (T-0780), + sieben Büro-Studios, + Künstlerstudio (15.11.2026)
         Assert.Equal(18, StudioCatalog.FoldedInto.Count);
         foreach (var (id, host) in StudioCatalog.FoldedInto)
         {
@@ -27,7 +27,7 @@ public class StudioFolds_Ui
     {
         var (w, _, _) = Ui.Open(); w.Width = 1600; w.Height = 1000;
         w.Show("studios"); Settle();
-        Assert.Equal("61 Studios", w.Find<TextBlock>("studios-count").Text![..10]);
+        Assert.Equal("63 Studios", w.Find<TextBlock>("studios-count").Text![..10]); // T-0780: zählt erst mit den Einträgen in requirements.yaml
         w.Find<TextBox>("txt-studio-search").Text = "Kostenlose KI finden"; Settle();
         Assert.StartsWith("1 Studios", w.Find<TextBlock>("studios-count").Text);
         w.Find<TextBox>("txt-studio-search").Text = "Texte übersetzen"; Settle();

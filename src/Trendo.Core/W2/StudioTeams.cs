@@ -309,6 +309,12 @@ public static class StudioTeams
         T("STUDIO-FORMS-01", "Formular-Team",
             R("forms-hilfe", "Formularhelferin", "füllt Felder aus und erklärt Amtsdeutsch", "nur eigene Angaben, nichts erfinden", true),
             R("forms-pruef", "Prüfer", "achtet auf Pflichtfelder und Unterschrift", "vor dem Abschicken alles vollständig")),
+        T("STUDIO-REFERAT-01", "Schreib-Team",
+            R("ref-betreuung", "Betreuerin", "gliedert das Thema und schreibt Abschnitte", "sachlich, klar, nur eigene Quellen", true),
+            R("ref-lektor", "Lektor", "prüft Formvorgaben, Zitate und Lesbarkeit", "jeder Beleg zeigt auf eine echte Quelle")),
+        T("STUDIO-TIMELINE-01", "Chronik-Team",
+            R("tl-historiker", "Historikerin", "findet Ereignisse und Epochen mit Datum", "nur belegte Daten, Unsicheres mit „ca.“", true),
+            R("tl-gestalter", "Gestalter", "ordnet Spuren, Farben und Bilder", "gut lesbar, nichts überdeckt")),
     ];
 
     public static StudioTeam? For(string? studioId) => All.FirstOrDefault(t => t.StudioId == studioId);

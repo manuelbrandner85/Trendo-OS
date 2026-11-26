@@ -1,0 +1,101 @@
+# T-0780 Fremdnachlauf libreoffice-referat – 2026-11-26 15:25:35 +01:00
+Datei fremd-zotero-export.ris: 294 Bytes, SHA-256 400f499b2b953bd37cf38f2f7c61bcaac7a143ab4aefb084b1edb2cd31b404d1
+RIS gelesen: 2 Quellen (Gärten für Einsteiger, Boden und Klima)
+Datei trendo-hausarbeit.docx: 5067 Bytes, SHA-256 b72c4ec662ae2490a027142544814e98ac022d386bf7aafc78045f830fd6d4b9
+$ LibreOffice öffnet hausarbeit.docx und schreibt txt
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-t0780-work/referat-d5f6bb/lo-profil --headless --norestore --nolockcheck --convert-to "txt:Text (encoded):UTF8" --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\referat-d5f6bb\lo-aus-docx-txt C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\referat-d5f6bb\hausarbeit.docx
+Exit 0 nach 6,0 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\referat-d5f6bb\hausarbeit.docx as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\referat-d5f6bb\lo-aus-docx-txt\hausarbeit.txt using filter : Text (encoded):UTF8
+[stderr] Could not find platform independent libraries <prefix>
+  eigene Prozesse (6): PID 3616 conhost.exe: C:\Windows\System32\conhost.exe; PID 27452 soffice.com: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-2bea00\libreoffice\program\soffice.com; PID 39076 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-2bea00\libreoffice\program\soffice.bin; PID 42972 opencltest.exe: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-2bea00\libreoffice\program\opencltest.exe; PID 54212 conhost.exe: C:\Windows\System32\conhost.exe; PID 64496 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-2bea00\libreoffice\program\soffice.bin
+Datei libreoffice-aus-docx.txt: 915 Bytes, SHA-256 6f103550641699b223d9b2ed462da8293db991480b046ca953d396958646ab1b
+LibreOffice-Text aus docx: alle 11 Prüfstellen gefunden
+$ LibreOffice öffnet hausarbeit.docx und schreibt pdf
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-t0780-work/referat-d5f6bb/lo-profil --headless --norestore --nolockcheck --convert-to pdf --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\referat-d5f6bb\lo-aus-docx-pdf C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\referat-d5f6bb\hausarbeit.docx
+Exit 0 nach 1,9 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\referat-d5f6bb\hausarbeit.docx as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\referat-d5f6bb\lo-aus-docx-pdf\hausarbeit.pdf using filter : writer_pdf_Export
+[stderr] Could not find platform independent libraries <prefix>
+  eigene Prozesse (3): PID 56800 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-2bea00\libreoffice\program\soffice.bin; PID 59732 soffice.com: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-2bea00\libreoffice\program\soffice.com; PID 65408 conhost.exe: C:\Windows\System32\conhost.exe
+Datei libreoffice-aus-docx.pdf: 77583 Bytes, SHA-256 e2bec66289b592bba52f04d96d681cf7bc6a211e38cf2ede1335f8d9811c4265
+LibreOffice-PDF aus docx: 4 Seiten
+$ pdftotext liest das LibreOffice-PDF aus docx
+  pdftotext.exe -enc UTF-8 C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\referat-d5f6bb\lo-aus-docx-pdf\hausarbeit.pdf -
+Exit 0 nach 0,0 s
+Musterhochschule
+Seminar Gartenbau Betreuung: Prof. Max Beispiel
+Hausarbeit
+Wasser sparen im eigenen Garten
+Möglichkeiten und Grenzen
+vorgelegt von Erika Muster Musterstadt, 26. November 2026
+Seite 1 von 4
+
+Inhaltsverzeichnis
+1 Einleitung 2 Wege zum Wassersparen
+2.1 Regenwasser sammeln 2.2 Boden verbessern 3 Fazit Literaturverzeichnis
+Seite 2 von 4
+
+1 Einleitung
+Gärten brauchen im Sommer viel Wasser (MUSTER und BEISPIEL 2024, S. 12). Diese Arbeit zeigt Wege zum Sparen.
+2 Wege zum Wassersparen
+2.1 Regenwasser sammeln
+Eine Regentonne fängt das Wasser vom Dach auf.
+2.2 Boden verbessern
+Humusreicher Boden hält Wasser länger (MUSTER 2023, S. 50).
+3 Fazit
+Mit wenigen Mitteln lässt sich viel Wasser sparen.
+Seite 3 von 4
+
+Literaturverzeichnis
+MUSTER, Erika, 2023. Boden und Klima. Zeitschrift für Gartenbau. 12(3), S. 45–67. MUSTER, Erika und Max BEISPIEL, 2024. Gärten für Einsteiger. Musterstadt:
+Grünverlag.
+Seite 4 von 4
+Datei trendo-hausarbeit.odt: 3215 Bytes, SHA-256 a63e4e72166bcb06cd664511b810184ca65957af4679dc8a1fc6413670682ca8
+$ LibreOffice öffnet hausarbeit.odt und schreibt txt
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-t0780-work/referat-d5f6bb/lo-profil --headless --norestore --nolockcheck --convert-to "txt:Text (encoded):UTF8" --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\referat-d5f6bb\lo-aus-odt-txt C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\referat-d5f6bb\hausarbeit.odt
+Exit 0 nach 1,3 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\referat-d5f6bb\hausarbeit.odt as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\referat-d5f6bb\lo-aus-odt-txt\hausarbeit.txt using filter : Text (encoded):UTF8
+[stderr] Could not find platform independent libraries <prefix>
+  eigene Prozesse (3): PID 56052 soffice.com: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-2bea00\libreoffice\program\soffice.com; PID 64484 conhost.exe: C:\Windows\System32\conhost.exe; PID 70572 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-2bea00\libreoffice\program\soffice.bin
+Datei libreoffice-aus-odt.txt: 917 Bytes, SHA-256 b9d4cc46e7d3b87b34c777d732ed3dc826e959dc75f114c63770c36b0e2e85a6
+LibreOffice-Text aus odt: alle 11 Prüfstellen gefunden
+$ LibreOffice öffnet hausarbeit.odt und schreibt pdf
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-t0780-work/referat-d5f6bb/lo-profil --headless --norestore --nolockcheck --convert-to pdf --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\referat-d5f6bb\lo-aus-odt-pdf C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\referat-d5f6bb\hausarbeit.odt
+Exit 0 nach 1,3 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\referat-d5f6bb\hausarbeit.odt as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\referat-d5f6bb\lo-aus-odt-pdf\hausarbeit.pdf using filter : writer_pdf_Export
+[stderr] Could not find platform independent libraries <prefix>
+  eigene Prozesse (3): PID 49328 soffice.com: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-2bea00\libreoffice\program\soffice.com; PID 60740 conhost.exe: C:\Windows\System32\conhost.exe; PID 69572 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-2bea00\libreoffice\program\soffice.bin
+Datei libreoffice-aus-odt.pdf: 77765 Bytes, SHA-256 5426318221ee5b3be07dcc8ae6c470f2f79a280863f39fa5ec60a47b016cc9de
+LibreOffice-PDF aus odt: 4 Seiten
+$ pdftotext liest das LibreOffice-PDF aus odt
+  pdftotext.exe -enc UTF-8 C:\Users\<user>\AppData\Local\Temp\trendo-t0780-work\referat-d5f6bb\lo-aus-odt-pdf\hausarbeit.pdf -
+Exit 0 nach 0,0 s
+Musterhochschule
+Seminar Gartenbau Betreuung: Prof. Max Beispiel
+Hausarbeit
+Wasser sparen im eigenen Garten
+Möglichkeiten und Grenzen
+vorgelegt von Erika Muster Musterstadt, 26. November 2026
+Seite 1 von 4
+
+Inhaltsverzeichnis
+1 Einleitung 2 Wege zum Wassersparen 2.1 Regenwasser sammeln 2.2 Boden verbessern 3 Fazit Literaturverzeichnis
+Seite 2 von 4
+
+1 Einleitung
+Gärten brauchen im Sommer viel Wasser (MUSTER und BEISPIEL 2024, S. 12). Diese Arbeit zeigt Wege zum Sparen.
+2 Wege zum Wassersparen
+2.1 Regenwasser sammeln
+Eine Regentonne fängt das Wasser vom Dach auf.
+2.2 Boden verbessern
+Humusreicher Boden hält Wasser länger (MUSTER 2023, S. 50).
+3 Fazit
+Mit wenigen Mitteln lässt sich viel Wasser sparen.
+Seite 3 von 4
+
+Literaturverzeichnis
+MUSTER, Erika, 2023. Boden und Klima. Zeitschrift für Gartenbau. 12(3), S. 45–67. MUSTER, Erika und Max BEISPIEL, 2024. Gärten für Einsteiger. Musterstadt:
+Grünverlag.
+Seite 4 von 4
+LibreOffice läuft aus einer Kopie im eigenen Temp-Ordner (14745 Dateien, 882 MB, kopiert in 24,0 s; frei vorher 28,3 GB). Keine alte eigene LibreOffice-Kopie vorhanden.
+Original: unverändert. Trendo-Werkzeugordner (LibreOffice-Original): 15933 Einträge, keiner geändert, keiner neu, keiner fehlt. In der Kopie hat LibreOffice bisher 2 Einträge angelegt/geändert/entfernt: program\opencl, share\uno_packages\cache.
+ERGEBNIS: BESTANDEN

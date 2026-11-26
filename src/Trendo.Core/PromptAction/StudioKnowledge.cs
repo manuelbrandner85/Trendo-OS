@@ -1226,6 +1226,38 @@ public static class StudioKnowledgeBase
             ["Original bleibt unverändert", "IBAN nur maskiert, nie im Dokument", "Abschicken macht die Person selbst"],
             ["STUDIO-PDFTOOLS-01", "SYS-10", "STUDIO-LETTER-01"],
             true),
+        // T-0780 (Etappe 0.9.113 „Wissen & Lernen“)
+        ["STUDIO-REFERAT-01"] = new("STUDIO-REFERAT-01",
+            "Referate und Hausarbeiten als Kette: Thema (Deckblatt) → Gliederung → Text je Abschnitt → Literatur und Zitate → Folien; Ausgabe als Word, OpenDocument, PDF und Folien.",
+            [
+                T("gliederung", "Gliederung", "Einleitung, Hauptteil, Fazit", "Schlag eine Gliederung vor zum Thema ", ["gliederung", "gliedern", "aufbau", "kapitel"], "Thema"),
+                T("abschnitt", "Abschnitt schreiben", "Text für einen Abschnitt", "Schreib den Abschnitt ", ["abschnitt", "einleitung", "fazit", "schreib"], "Abschnitt"),
+                T("quellen", "Quellen übernehmen", "Aus „Recherche mit Quellen“ oder BibTeX/RIS", "Übernimm meine Quellen", ["quelle", "literatur", "bibtex", "zotero", "citavi"], "Quellen"),
+                T("folien", "Folien", "Vortrag zum Referat", "Mach Folien zum Referat", ["folie", "vortrag", "präsentation", "powerpoint"], "Gliederung"),
+            ],
+            ["libreoffice"],
+            ["Thema", "Gliederung", "eigene Quellen (auch BibTeX/RIS)"],
+            ["Hausarbeit (DOCX, ODT, PDF)", "Folien (PPTX, ODP)", "Markdown", "BibTeX"],
+            [".tdoc", ".docx", ".odt", ".pdf", ".pptx", ".odp", ".md", ".bib", ".ris"],
+            ["Thema → Gliederung → Text je Abschnitt → zitieren → Formvorgaben prüfen → ausgeben → Folien"],
+            ["Keine erfundenen Quellen: jeder Verweis zeigt auf eine Quelle der Liste", "Deckblatt, Inhaltsverzeichnis und Seitenzahlen in der Ausgabe"],
+            ["STUDIO-CITE-01", "SYS-10", "STUDIO-DECKDESIGN-01"],
+            true),
+        ["STUDIO-TIMELINE-01"] = new("STUDIO-TIMELINE-01",
+            "Zeitleisten mit Ereignissen und Zeiträumen in mehreren Spuren – Daten auch vor Christus und ungefähr, mit Bildern, Zoom und Verschieben; Ausgabe als SVG, PNG und PDF.",
+            [
+                T("ereignisse", "Ereignisse einfügen", "Aus einem Text", "Füge die Ereignisse aus diesem Text ein: ", ["ereignis", "einfüg", "text", "chronik"], "Text"),
+                T("epochen", "Epochen", "Zeiträume anlegen", "Lege diese Epochen als Zeiträume an: ", ["epoche", "zeitraum", "zeitalter"], "Epochen"),
+                T("einlesen", "Einlesen", "CSV oder JSON (auch TimelineJS)", "Lies diese Tabelle ein", ["csv", "json", "tabelle", "timelinejs"], "Datei"),
+            ],
+            ["inkscape"],
+            ["Ereignisse mit Datum", "Zeiträume", "Bilder", "CSV/JSON"],
+            ["Zeitleiste (SVG, PNG, PDF)", "Tabelle (CSV)", "Austausch (JSON)"],
+            [".tdoc", ".svg", ".png", ".pdf", ".csv", ".json"],
+            ["Ereignisse eintragen oder einfügen → Spuren ordnen → Bilder anhängen → ausgeben"],
+            ["Daten vor Christus und ungefähre Angaben korrekt", "Nichts überdeckt sich"],
+            ["SPEC-06", "STUDIO-REFERAT-01"],
+            true),
     };
 
     /// <summary>Wissen zu einem Studio. Ohne ausführliche Beschreibung wird es ehrlich aus dem Fachprofil abgeleitet und ist dann als nicht ausführlich markiert.</summary>

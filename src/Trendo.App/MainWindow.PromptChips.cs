@@ -53,6 +53,8 @@ public partial class MainWindow
         ["STUDIO-CARDS-01"] = ["Einladung zur Hochzeit", "Geburtstagskarte für Oma", "Wer hat schon zugesagt?"],
         ["STUDIO-CONTRACTS-01"] = ["Bis wann kann ich kündigen?", "Was kosten meine Verträge im Jahr?", "Kündigung für den Handyvertrag"],
         ["STUDIO-PDFTOOLS-01"] = ["PDFs zusammenfügen", "PDF kleiner machen", "Seiten 1-3 herauslösen"],
+        ["STUDIO-REFERAT-01"] = ["Gliederung für mein Thema", "Schreib die Einleitung", "Welche Formvorgaben fehlen?"], // T-0780
+        ["STUDIO-TIMELINE-01"] = ["Ereignisse aus diesem Text einfügen", "Epochen als Zeiträume anlegen", "Daten prüfen"], // T-0780
         ["STUDIO-FORMS-01"] = ["Formular mit meinen Angaben ausfüllen", "Welche Pflichtfelder fehlen?", "Unterschrift einsetzen"],
     };
 

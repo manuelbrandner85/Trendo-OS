@@ -2141,3 +2141,29 @@ qual-check: settings-nav-system
 qual-check: settings-nav-systemcheck
 qual-check: settings-nav-teilen
 qual-check: settings-nav-verbund
+# T-0780 (26.11.2026): Referate & Hausarbeiten, Zeitleisten – weitere Ausgaben und rechte Spalte unter „Mehr Werkzeuge“ (wie bei „Recherche mit Quellen“); Titel, Spuren und Zeilen-Einfügen erreichbar über „Mehr Werkzeuge“ bzw. die KI-Zeile
+referate-programm: prog-level-einfach
+referate-programm: prog-level-erweitert
+referate-programm: prog-level-profi
+referate-programm (Dokument): prog-export-bib
+referate-programm (Dokument): prog-export-md
+referate-programm (Dokument): prog-export-odp
+referate-programm (Dokument): prog-export-odt
+referate-programm (Dokument): prog-level-einfach
+referate-programm (Dokument): prog-level-erweitert
+referate-programm (Dokument): prog-level-profi
+zeitleisten-programm: prog-level-einfach
+zeitleisten-programm: prog-level-erweitert
+zeitleisten-programm: prog-level-profi
+zeitleisten-programm (Dokument): prog-export-csv
+zeitleisten-programm (Dokument): prog-export-json
+zeitleisten-programm (Dokument): prog-export-svg-dunkel
+zeitleisten-programm (Dokument): prog-level-einfach
+zeitleisten-programm (Dokument): prog-level-erweitert
+zeitleisten-programm (Dokument): prog-level-profi
+zeitleisten-programm (Dokument): tl-p-lines
+zeitleisten-programm (Dokument): tl-p-lines-add
+zeitleisten-programm (Dokument): tl-p-title
+zeitleisten-programm (Dokument): tl-p-track-0
+zeitleisten-programm (Dokument): tl-p-trackcolor-0
+zeitleisten-programm (Dokument): tl-p-trackdel-0
