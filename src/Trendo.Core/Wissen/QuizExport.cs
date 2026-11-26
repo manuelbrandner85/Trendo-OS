@@ -103,8 +103,8 @@ function TrendoQuiz(root,quiz,opt){
     /// <summary>T-0779 H1: Prüffälle für die Lückenregel (Zahlen und kurze Lösungen genau, längere Wörter mit einem Tippfehler).</summary>
     public static readonly (string Expected, string Typed)[] RuleCases =
         [("1989", "1988"), ("3", "4"), ("Ost", "Ast"), ("A", "B"), ("Baujahr 1989", "Baujahr 1988"), ("elephant", "elephat"), ("Zugspitze", "zugspitz"), ("House", " house ")];
-    /// <summary>Erwartung aus <see cref="LearnBox.CheckTyped"/> – „1“ = richtig, „0“ = falsch.</summary>
-    public static string RuleExpectation => string.Concat(RuleCases.Select(c => LearnBox.CheckTyped(c.Expected, c.Typed).Ok ? '1' : '0'));
+    /// <summary>Erwartung aus <see cref="QuizKit.LueckeOk"/> – „1“ = richtig, „0“ = falsch.</summary>
+    public static string RuleExpectation => string.Concat(RuleCases.Select(c => QuizKit.LueckeOk(c.Expected, c.Typed) ? '1' : '0'));
 }
 
 /// <summary>Quiz als PDF zum Ausdrucken (A4): Fragen mit Kästchen, Lücken und Zuordnungsliste, auf der letzten Seite die Lösungen. Gezeichnet mit PDFsharp (MIT).</summary>

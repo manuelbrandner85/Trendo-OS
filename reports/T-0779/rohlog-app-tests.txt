@@ -4,6 +4,12 @@ xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
   Starting:    Trendo.App.Tests
     T-0779 FREMD: Chrome spielt HTML-Quiz und Kurs durch, 7-Zip prüft/entpackt SCORM, Chrome öffnet entpackte index.html, pdftotext und qpdf lesen das PDF (nur mit TRENDO_T0779_FREMD) [SKIP]
       Nur mit TRENDO_T0779_FREMD=<Belegordner> (Chrome, 7-Zip, qpdf, pdftotext dieses PCs).
+    Startmenü: jedes Katalog-Studio öffnet das eigene Fenster, Taskleiste, Minimieren, Wiederherstellen, Schließen [FAIL]
+      Assert.Contains() Failure: Filter not matched in collection
+      Collection: [StudioEntry { Id = CORE-01, Name = Desktop einrichten, ApprovalStatus = APPROVED_SPEC, ImplementationStatus = IN_PROGRESS, TestStatus = PC_VERIFIED, Capability = InProgress, Reason = Teilweise gebaut – einige Funktionen fehlen noch }, StudioEntry { Id = CORE-02, Name = KI fragen, ApprovalStatus = APPROVED_SPEC, ImplementationStatus = IMPLEMENTED, TestStatus = NOT_RUN, Capability = InProgress, Reason = Teilweise gebaut – einige Funktionen fehlen noch }, StudioEntry { Id = CORE-03, Name = KI-Team einsetzen, ApprovalStatus = APPROVED_SPEC, ImplementationStatus = IMPLEMENTED, TestStatus = PC_VERIFIED, Capability = Ready, Reason = Gebaut, getestet und auf dem PC geprüft }, StudioEntry { Id = CORE-04, Name = PC, Pi & Handy verbinden, ApprovalStatus = APPROVED_SPEC, ImplementationStatus = IN_PROGRESS, TestStatus = TESTED, Capability = InProgress, Reason = Teilweise gebaut – einige Funktionen fehlen noch }, StudioEntry { Id = CORE-05, Name = 3D-Modelle erstellen, ApprovalStatus = APPROVED_SPEC, ImplementationStatus = IMPLEMENTED, TestStatus = NOT_RUN, Capability = Blocked, Reason = Benötigtes Programm nicht gefunden: blender }, ···]
+      Stack Trace:
+        tests\Trendo.App.Tests\StartMenuWindowTests.cs(57,0): at Trendo.App.Tests.StartMenu_StudioFenster.Jedes_Studio()
+        --- End of stack trace from previous location ---
     T-0779 ECHT: lokale KI (Ollama) – Fragen aus einem Text ins offene Quiz und eine Lektion in den offenen Kurs, Rückgängig (nur mit TRENDO_T0779_ECHT) [SKIP]
       Echtlauf nur mit TRENDO_T0779_ECHT=<Belegordner> (braucht Ollama mit Modell auf diesem PC).
     T-0707 ECHT: lokale KI (Ollama, bestes Modell nach T-0703) ändert in drei Programmen das offene Dokument, Datei auf der Platte, Rückgängig (nur mit TRENDO_ASSIST_ECHT) [SKIP]
@@ -12,6 +18,6 @@ xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
       Echtlauf nur mit TRENDO_T0774_ECHT=<Belegordner> (braucht Ollama mit Modell auf diesem PC).
   Finished:    Trendo.App.Tests (ID = 'b994b7e338b7f467953f9b30fdf40b993c374eddca237ac699472c938a3ff10b')
 === TEST EXECUTION SUMMARY ===
-   Trendo.App.Tests  Total: 319, Errors: 0, Failed: 0, Skipped: 4, Not Run: 0, Time: 687,829s
+   Trendo.App.Tests  Total: 327, Errors: 0, Failed: 1, Skipped: 4, Not Run: 0, Time: 748,485s
 Waiting 10 seconds for foreground threads to exit...
-Exit 0
+Exit 1

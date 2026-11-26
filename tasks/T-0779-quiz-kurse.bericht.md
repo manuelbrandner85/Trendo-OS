@@ -2,6 +2,17 @@
 
 **Auftrag:** `tasks/T-0779-quiz-kurse.md` (Freigabe 26.11.2026) · **Branch:** `claude/T-0779-quiz-kurse` (Basis main 184fcbbfc = 0.9.112) · eigene Kopie in `%TEMP%\trendo-auftrag-T-0779`.
 
+## Zweite Nachbesserung (2. Gegenprüfung)
+| Nr. | Befund | Behebung | Test |
+|---|---|---|---|
+| M-A | `ExactUpTo` in `LearnBox.CheckTyped` machte SPEC06_Ui rot („dox“ für „dog“) | `src/Trendo.Core/W6/Learning.cs` wieder exakt wie vor T-0779; die strenge Regel steht nur im Quiz: `QuizKit.LueckeOk` (bis 4 Zeichen und mit Ziffern genau, sonst wie `CheckTyped`), gleicher Ablauf in `tqTypo` des HTML-Spielers. Damit ist die Begründung der ersten Nachbesserung („auch für Karteikarten“) zurückgenommen | Core `Quiz_rule_only` („dox“: Quiz falsch, Karteikarte richtig), `H1_gaps_strict`, `H1_rule_cases`; App `SPEC06_Ui`, `FsrsUi`, Core `W6Tests` ausdrücklich mitgelaufen und grün; Chrome `#regeln` erneut gleich |
+| M-B | Claude-Brücke beachtet `KiLocked` nicht | **nicht angefasst** (Vorgabe: baut T-0780 für alle Programme; beim Sammeln soll die Brücke `ProgramAssistTarget.Session.LockedField` nutzen) | – |
+| Niedrig | CSV: Tab und CR am Zellanfang | wie =, +, -, @ mit ' davor | Core `Csv_tab_cr` |
+| Niedrig | Bilder nur an der Endung erkannt | `KursKit.BildInhaltOk`: PNG/JPG/GIF/WEBP an den ersten Bytes, SVG als XML (ohne DTD) mit Wurzel `svg`; sonst Fehler in der Prüfung und kein Einbetten | Core `Image_content_checked` |
+| Hinweis | `StartMenu_StudioFenster` | bleibt rot, bis die Hauptsitzung STUDIO-QUIZ-01 und STUDIO-COURSE-01 in `requirements.yaml` einträgt (die Studios fehlen sonst im Startmenü-Register) | – |
+
+Rot-Lauf: `reports/T-0779/rot-gegenpruefung-2.txt` (CSV und Bildinhalt rot auf c6d5c409a; SPEC06_Ui dort laut Gegenprüfung rot). Tests (gezielt): Build 0 Fehler; Core 204/204 (mit W6, Fsrs, Learn); App 24 Klassen inkl. SPEC06_Ui und FsrsUi: 327 gesamt, 1 Fehler = `StartMenu_StudioFenster` (erwartet bis zum requirements.yaml-Eintrag), 4 übersprungen. Ehrlich: Echt- und Fremdlauf nicht wiederholt – die Änderung betrifft nur die Lückenregel (beide Wege durch `H1_rule_cases`/Chrome-Fälle abgedeckt; der Chrome-Beleg in `fremdprogramme.log` stammt vom Stand c6d5c409a, dessen JS-Regel unverändert ist), CSV und Bildprüfung.
+
 ## Nachbesserung nach der Gegenprüfung („nicht freigabefähig“)
 Rot-Lauf: die neuen Tests gegen a136c971b (`reports/T-0779/rot-gegenpruefung.txt`): Core 4 von 14 rot (H1, M2, M3, Niedrig), App 5 rot (H2, M2-KI, M4, dazu die zwei Tests mit umbenannten bzw. neuen Elementen). Tests mit neuen Hilfen (`QuizHtml.RuleExpectation`, `KursKit.MitKursGrenze`) stehen in `T0779GegenpruefungTests` und übersetzen auf altem Stand nicht.
 

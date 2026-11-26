@@ -201,19 +201,13 @@ public sealed partial class LearnBox(string dataRoot, Func<DateTime>? now = null
         return d[a.Length, b.Length];
     }
 
-    /// <summary>F10: Eingetippte Antwort prüfen: Groß/klein egal, 1 Tippfehler je 6 Zeichen erlaubt.
-    /// T-0779 (Gegenprüfung H1): keine Toleranz bei kurzen Lösungen (höchstens <see cref="ExactUpTo"/> Zeichen) und bei Lösungen mit Ziffern –
-    /// „1988“ ist nicht „1989“, „Ast“ nicht „Ost“, „B“ nicht „A“. Gilt auch für „Eintippen“ der Karteikarten (dort fachlich genauso falsch).</summary>
+    /// <summary>F10: Eingetippte Antwort prüfen: Groß/klein egal, 1 Tippfehler je 6 Zeichen erlaubt.</summary>
     public static (bool Ok, bool Typo) CheckTyped(string expected, string typed)
     {
         static string N(string s) => string.Join(' ', s.Trim().ToLowerInvariant().Split(' ', StringSplitOptions.RemoveEmptyEntries)).TrimEnd('.', '!');
         var e = N(expected); var t = N(typed); if (e == t) return (true, false);
-        if (e.Length <= ExactUpTo || e.Any(char.IsDigit)) return (false, false);
         var d = Levenshtein(e, t); return d <= Math.Max(1, e.Length / 6) && t.Length > 0 ? (true, true) : (false, false);
     }
-
-    /// <summary>Bis zu dieser Länge muss eine eingetippte Antwort genau stimmen (T-0779).</summary>
-    public const int ExactUpTo = 4;
 
     /// <summary>F11: Lernserie: Tage in Folge bis heute (oder gestern).</summary>
     public (int Streak, bool Today) Streak()

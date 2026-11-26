@@ -9,7 +9,7 @@ namespace Trendo.Core.Wissen;
 
 // ===================== STUDIO-QUIZ-01 Quiz erstellen (T-0779) =====================
 // Eigener Kern (Clean-Room, Anforderungen in docs/nachbau/quiz/anforderungen.md). Baut auf dem Lern-Kern von SPEC-06 auf:
-// Karteikarten → Quiz und Quiz → Karteikarten über LearnBox, Tippfehler-Toleranz beim Lückentext über LearnBox.CheckTyped.
+// Karteikarten → Quiz und Quiz → Karteikarten über LearnBox; Lücken mit eigener, strengerer Regel (QuizKit.LueckeOk) – die Karteikarten bleiben unverändert.
 
 /// <summary>Eine Antwortmöglichkeit (Auswahl, Mehrfachauswahl, Wahr/Falsch).</summary>
 public sealed class QuizAntwort
@@ -211,7 +211,7 @@ public static partial class QuizKit
                 var typed = e.Luecken ?? [];
                 var ok = 0;
                 for (var i = 0; i < gaps.Count; i++)
-                    if (i < typed.Count && typed[i] is { } t && t.Trim().Length > 0 && gaps[i].Any(s => LearnBox.CheckTyped(s, t).Ok)) ok++;
+                    if (i < typed.Count && typed[i] is { } t && t.Trim().Length > 0 && gaps[i].Any(s => LueckeOk(s, t))) ok++;
                 return (double)ok / gaps.Count;
             }
             case "zuordnen":
@@ -234,6 +234,21 @@ public static partial class QuizKit
         if (limit > 0 && sekunden > limit) return 0; // Zeit abgelaufen
         if (q.TempoBonus && limit > 0 && a >= 1) p += f.Punkte * 0.5 * Math.Clamp(1 - sekunden / limit, 0, 1);
         return Math.Round(p, 2);
+    }
+
+    /// <summary>Bis zu dieser Länge muss eine Lücke genau stimmen.</summary>
+    public const int ExactUpTo = 4;
+
+    /// <summary>T-0779 (Gegenprüfung H1/M-A): Regel für Lücken im Quiz – Lösungen bis <see cref="ExactUpTo"/> Zeichen und Lösungen mit Ziffern nur genau
+    /// („1988“ ist nicht „1989“, „Ast“ nicht „Ost“); längere Wörter wie bei den Karteikarten mit einem Tippfehler je 6 Zeichen (<see cref="LearnBox.CheckTyped"/>).
+    /// Gilt nur im Quiz; „Eintippen“ der Karteikarten bleibt unverändert. Derselbe Ablauf steht als <c>tqTypo</c> im HTML-Spieler.</summary>
+    public static bool LueckeOk(string expected, string typed)
+    {
+        static string N(string s) => string.Join(' ', (s ?? "").Trim().ToLowerInvariant().Split(' ', StringSplitOptions.RemoveEmptyEntries)).TrimEnd('.', '!');
+        var e = N(expected); var t = N(typed);
+        if (e == t) return true;
+        if (e.Length <= ExactUpTo || e.Any(char.IsDigit)) return false;
+        return LearnBox.CheckTyped(expected, typed).Ok;
     }
 
     /// <summary>Richtige Lösung in einem Satz (Rückmeldung, Auswertung, Lösungsblatt).</summary>

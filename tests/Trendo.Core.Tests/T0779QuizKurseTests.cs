@@ -264,14 +264,14 @@ public class T0779QuizKurseTests
 
     // ===================== Gegenprüfung =====================
 
-    [Fact(DisplayName = "T-0779 H1: Lücken mit Zahlen und kurzen Lösungen ohne Toleranz – „1988, 4, Ast, B“ ist bei „1989, 3, Ost, A“ 0 %; Karteikarten „Eintippen“ genauso; längere Wörter behalten einen Tippfehler")]
+    [Fact(DisplayName = "T-0779 H1: Lücken mit Zahlen und kurzen Lösungen ohne Toleranz – „1988, 4, Ast, B“ ist bei „1989, 3, Ost, A“ 0 %; Karteikarten „Eintippen“ unverändert; längere Wörter behalten einen Tippfehler")]
     public void H1_gaps_strict()
     {
         var f = new QuizFrage { Typ = "luecke", Text = "Mauerfall [1989], Seiten [3], Himmelsrichtung [Ost], Buchstabe [A]." };
         Assert.Equal(0, QuizKit.Anteil(f, QuizEingabe.Text("1988", "4", "Ast", "B")));
         Assert.Equal(1, QuizKit.Anteil(f, QuizEingabe.Text("1989", "3", "ost", "a")));
-        Assert.False(LearnBox.CheckTyped("1989", "1988").Ok); Assert.False(LearnBox.CheckTyped("Baujahr 1989", "Baujahr 1988").Ok); // Karteikarten: fachlich genauso falsch
-        Assert.Equal((true, true), LearnBox.CheckTyped("Zugspitze", "zugspitz"));
+        Assert.False(QuizKit.LueckeOk("1989", "1988")); Assert.False(QuizKit.LueckeOk("Baujahr 1989", "Baujahr 1988")); Assert.True(QuizKit.LueckeOk("Zugspitze", "zugspitz"));
+        Assert.True(LearnBox.CheckTyped("dog", "dox").Ok); // M-A: Karteikarten unverändert (Tippfehler bei kurzen Wörtern wie bisher)
         Assert.Contains(@"if(e.length<=4||/\p{Nd}/u.test(e))return false;", QuizHtml.PlayerJs);
     }
 

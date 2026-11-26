@@ -132,7 +132,34 @@ public static class KursKit
     /// <summary>T-0779 M2: nur diese Endungen werden in die Kurs-Webseite eingebettet.</summary>
     public static readonly string[] BildEndungen = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"];
     public const long MaxBildBytes = 15L * 1024 * 1024;
-    public static bool BildOk(string file) => file.Length > 0 && File.Exists(file) && BildEndungen.Contains(Path.GetExtension(file).ToLowerInvariant()) && new FileInfo(file).Length <= MaxBildBytes;
+    public static bool BildOk(string file) => file.Length > 0 && File.Exists(file) && BildEndungen.Contains(Path.GetExtension(file).ToLowerInvariant()) && new FileInfo(file).Length <= MaxBildBytes && BildInhaltOk(file);
+
+    /// <summary>T-0779 (2. Gegenprüfung): Inhalt passt zur Endung – PNG/JPG/GIF/WEBP an den ersten Bytes, SVG als XML mit Wurzel „svg“.</summary>
+    public static bool BildInhaltOk(string file)
+    {
+        try
+        {
+            var ext = Path.GetExtension(file).ToLowerInvariant();
+            if (ext == ".svg")
+            {
+                var settings = new System.Xml.XmlReaderSettings { DtdProcessing = System.Xml.DtdProcessing.Prohibit, XmlResolver = null };
+                using var r = System.Xml.XmlReader.Create(file, settings);
+                return r.MoveToContent() == System.Xml.XmlNodeType.Element && r.LocalName == "svg";
+            }
+            var h = new byte[12]; int n;
+            using (var fs = File.OpenRead(file)) n = fs.Read(h, 0, h.Length);
+            bool At(int i, params byte[] b) => n >= i + b.Length && b.Select((x, k) => h[i + k] == x).All(x => x);
+            return ext switch
+            {
+                ".png" => At(0, 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A),
+                ".jpg" or ".jpeg" => At(0, 0xFF, 0xD8, 0xFF),
+                ".gif" => At(0, (byte)'G', (byte)'I', (byte)'F', (byte)'8'),
+                ".webp" => At(0, (byte)'R', (byte)'I', (byte)'F', (byte)'F') && At(8, (byte)'W', (byte)'E', (byte)'B', (byte)'P'),
+                _ => false,
+            };
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Xml.XmlException) { return false; }
+    }
 
     public static List<CvFinding> Pruefen(Kurs k)
     {
@@ -151,7 +178,7 @@ public static class KursKit
                 foreach (var b in l.Bloecke)
                 {
                     if (b.Art == "bild" && (b.Bild.Length == 0 || !File.Exists(b.Bild))) r.Add(new(true, n, "Ein Bild fehlt oder die Datei gibt es nicht mehr."));
-                    else if (b.Art == "bild" && !BildOk(b.Bild)) r.Add(new(true, n, $"„{Path.GetFileName(b.Bild)}“ ist kein Bild (PNG, JPG, GIF, WEBP, SVG) oder größer als {MaxBildBytes / 1024 / 1024} MB."));
+                    else if (b.Art == "bild" && !BildOk(b.Bild)) r.Add(new(true, n, $"„{Path.GetFileName(b.Bild)}“ ist kein echtes Bild (PNG, JPG, GIF, WEBP, SVG – Inhalt passt nicht zur Endung) oder größer als {MaxBildBytes / 1024 / 1024} MB."));
                     if (b.Art == "quiz" && b.Quiz is null) r.Add(new(true, n, "Ein Quiz-Baustein hat kein Quiz."));
                     if (b.Art == "quiz" && b.Quiz is { } q && QuizKit.Pruefen(q).FirstOrDefault(x => x.Fehler) is { } e) r.Add(new(true, n, $"Quiz „{q.Titel}“: {e.Feld} – {e.Text}"));
                     if (b.Art is "text" or "ueberschrift" or "liste" or "hinweis" && b.Text.Trim().Length == 0) r.Add(new(false, n, $"Ein {ArtName(b.Art)}-Baustein ist leer."));
@@ -212,8 +239,8 @@ public static class KursKit
         return k;
     }
 
-    /// <summary>CSV-Zelle in Anführungszeichen; Zellen, die mit =, +, -, @ beginnen, bekommen ein ' davor (keine Formel in Excel/Calc).</summary>
-    static string Q(string s) { var v = s ?? ""; if (v.Length > 0 && v[0] is '=' or '+' or '-' or '@') v = "'" + v; return "\"" + v.Replace("\"", "\"\"") + "\""; }
+    /// <summary>CSV-Zelle in Anführungszeichen; Zellen, die mit =, +, -, @, Tab oder CR beginnen, bekommen ein ' davor (keine Formel in Excel/Calc).</summary>
+    static string Q(string s) { var v = s ?? ""; if (v.Length > 0 && v[0] is '=' or '+' or '-' or '@' or '\t' or '\r') v = "'" + v; return "\"" + v.Replace("\"", "\"\"") + "\""; }
 
     /// <summary>Quiz im Kurs mit der Bestehensgrenze des Kurses (einheitlich in Studio, Webseite und SCORM).</summary>
     public static Quiz MitKursGrenze(Quiz q, Kurs k) { var c = q.Copy(); c.Bestehen = k.Bestehen; return c; }
