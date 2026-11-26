@@ -1,0 +1,119 @@
+{
+  "format": "tdoc",
+  "version": 1,
+  "studio": "STUDIO-LOGO-01",
+  "title": "Beispiel: Caf\u00E9",
+  "created": "2026-11-26T10:54:06.8425976\u002B01:00",
+  "changed": "2026-11-26T10:54:32.1758032\u002B01:00",
+  "data": {
+    "name": "Caf\u00E9 Morgenrot",
+    "tagline": "R\u00F6stet seit heute",
+    "primary": "#8C2F1B",
+    "accent": "#B5541C",
+    "layout": "schild",
+    "font": "Segoe UI",
+    "vector": {
+      "w": 640,
+      "h": 180,
+      "background": "transparent",
+      "shapes": [
+        {
+          "id": "zeichen-form",
+          "kind": "path",
+          "x": 40,
+          "y": 20,
+          "w": 100,
+          "h": 140,
+          "fill": "#8C2F1B",
+          "closed": true,
+          "nodes": [
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              100,
+              0,
+              100,
+              0,
+              100,
+              0
+            ],
+            [
+              100,
+              70,
+              100,
+              70,
+              100,
+              103.333
+            ],
+            [
+              50,
+              140,
+              83.333,
+              126.667,
+              16.667,
+              126.667
+            ],
+            [
+              0,
+              70,
+              0,
+              103.333,
+              0,
+              70
+            ]
+          ],
+          "group": "zeichen"
+        },
+        {
+          "id": "zeichen-text",
+          "kind": "text",
+          "x": 58.8,
+          "y": 55.2,
+          "w": 62.4,
+          "h": 62.4,
+          "fill": "#FFFFFF",
+          "name": "zeichen-text",
+          "text": "CM",
+          "font": "Segoe UI",
+          "size": 52,
+          "bold": true,
+          "anchor": "middle",
+          "group": "zeichen"
+        },
+        {
+          "id": "name",
+          "kind": "text",
+          "x": 180,
+          "y": 52.4,
+          "w": 369.6,
+          "h": 52.8,
+          "fill": "#8C2F1B",
+          "name": "name",
+          "text": "Caf\u00E9 Morgenrot",
+          "font": "Segoe UI",
+          "size": 44,
+          "bold": true
+        },
+        {
+          "id": "untertitel",
+          "kind": "text",
+          "x": 180,
+          "y": 108,
+          "w": 187,
+          "h": 24,
+          "fill": "#B5541C",
+          "name": "untertitel",
+          "text": "R\u00F6stet seit heute",
+          "font": "Segoe UI",
+          "size": 20
+        }
+      ]
+    }
+  }
+}

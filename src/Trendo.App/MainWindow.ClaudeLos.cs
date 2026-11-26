@@ -38,7 +38,7 @@ public partial class MainWindow
 
     /// <summary>Übernimmt Claude die Aufträge der Studio-Zeile? (verbunden über das Abo, als Haupt-KI eingeschaltet, kein Abo-Limit gerade)</summary>
     public bool ClaudeTakesStudioPrompts =>
-        (!_opt.Isolated || ClaudeStatusOverride is not null) && _claude.Ready && KiSourceSettings.Load(_core.DataRoot).ClaudeMain && !CLimit.Active(DateTimeOffset.Now);
+        (ClaudeRealAllowed || ClaudeStatusOverride is not null) && _claude.Ready && KiSourceSettings.Load(_core.DataRoot).ClaudeMain && !CLimit.Active(DateTimeOffset.Now);
 
     /// <summary>Auftrag aus der Studio-Zeile an Claude geben. false = Claude übernimmt nicht (dann plant Trendo selbst).</summary>
     public async Task<bool> ClaudeFromStudioBar(string? studio, string text, Action<string>? status = null)

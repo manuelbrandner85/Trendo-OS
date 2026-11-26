@@ -302,6 +302,8 @@ public partial class MainWindow
             new TextBlock { Text = $"Assistent · {r.Target.Title}", Foreground = Text, FontWeight = FontWeight.SemiBold, FontSize = 13, VerticalAlignment = VerticalAlignment.Center },
             new TextBlock { Name = "assist-source", Text = $"   verstanden über: {r.Plan.Source}" + (r.Plan.Source == "Regeln" ? " (ohne KI)" : ""), Foreground = Muted, FontSize = 11, VerticalAlignment = VerticalAlignment.Center } } };
         sp.Children.Add(head);
+        if (r.Plan.Note is { Length: > 0 } note) // T-0775: was die KI dazu schreibt (z. B. die Ideen mit Begründung) bleibt sichtbar
+            sp.Children.Add(new TextBlock { Name = "assist-ki-note", Text = note, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 2, 0, 4) });
         for (var i = 0; i < r.Plan.Steps.Count; i++)
         {
             var st = i < r.StepState.Count ? r.StepState[i] : "offen";

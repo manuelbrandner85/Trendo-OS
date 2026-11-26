@@ -39,7 +39,7 @@ public partial class MainWindow
         if (set.OpenRouterModels.TryGetValue(OpenRouterFree.Text, out var orText)) CloudKiBackend.Preferred["openrouter"] = orText; else CloudKiBackend.Preferred.TryRemove("openrouter", out _);
         var order = set.RemoteMode == "zuerst" ? [.. cloud, .. list] : new List<IKiBackend>([.. list, .. cloud]); // „zuerst“: Internet-KI bevorzugt, sonst die KI auf dem PC
         // T-0316: Claude über das Abo des Nutzers ist die Haupt-KI, solange verbunden (nie in Tests mit eigenem Datenordner); sonst übernimmt die KI auf dem PC
-        if (ClaudeEmbedApproved && set.ClaudeMain && (!_opt.Isolated || ClaudeStatusOverride is not null)) order.Insert(0, new ClaudeKiBackend(this, () => KiSourceSettings.Load(_core.DataRoot).ClaudeModel));
+        if (ClaudeEmbedApproved && set.ClaudeMain && (ClaudeRealAllowed || ClaudeStatusOverride is not null)) order.Insert(0, new ClaudeKiBackend(this, () => KiSourceSettings.Load(_core.DataRoot).ClaudeModel));
         return order;
     }
 

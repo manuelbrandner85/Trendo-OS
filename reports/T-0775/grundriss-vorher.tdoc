@@ -1,0 +1,172 @@
+{
+  "format": "tdoc",
+  "version": 1,
+  "studio": "SPEC-01",
+  "title": "Badezimmer",
+  "created": "2026-11-26T10:54:33.1850009\u002B01:00",
+  "changed": "2026-11-26T10:54:33.1850009\u002B01:00",
+  "data": {
+    "plan": {
+      "version": 1,
+      "name": "Badezimmer",
+      "walls": [
+        {
+          "id": "229ac960",
+          "x1": -12,
+          "y1": -12,
+          "x2": 272,
+          "y2": -12,
+          "thickness": 24,
+          "height": 250,
+          "arc": null,
+          "arcBulge": 0,
+          "arcAX": 0,
+          "arcAY": 0,
+          "arcBX": 0,
+          "arcBY": 0
+        },
+        {
+          "id": "6002d85e",
+          "x1": 272,
+          "y1": -12,
+          "x2": 272,
+          "y2": 232,
+          "thickness": 24,
+          "height": 250,
+          "arc": null,
+          "arcBulge": 0,
+          "arcAX": 0,
+          "arcAY": 0,
+          "arcBX": 0,
+          "arcBY": 0
+        },
+        {
+          "id": "05f28517",
+          "x1": 272,
+          "y1": 232,
+          "x2": -12,
+          "y2": 232,
+          "thickness": 24,
+          "height": 250,
+          "arc": null,
+          "arcBulge": 0,
+          "arcAX": 0,
+          "arcAY": 0,
+          "arcBX": 0,
+          "arcBY": 0
+        },
+        {
+          "id": "20d722e8",
+          "x1": -12,
+          "y1": 232,
+          "x2": -12,
+          "y2": -12,
+          "thickness": 24,
+          "height": 250,
+          "arc": null,
+          "arcBulge": 0,
+          "arcAX": 0,
+          "arcAY": 0,
+          "arcBX": 0,
+          "arcBY": 0
+        }
+      ],
+      "openings": [
+        {
+          "id": "1eded1d0",
+          "wallId": "05f28517",
+          "kind": "tuer",
+          "at": 57,
+          "width": 88.5,
+          "height": 201,
+          "sill": 0,
+          "hingeLeft": true,
+          "inward": true
+        },
+        {
+          "id": "6d711176",
+          "wallId": "229ac960",
+          "kind": "fenster",
+          "at": 142,
+          "width": 80,
+          "height": 135,
+          "sill": 90,
+          "hingeLeft": true,
+          "inward": true
+        }
+      ],
+      "rooms": [
+        {
+          "id": "de6a4f3a",
+          "name": "Bad",
+          "kind": "bad",
+          "points": [
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 260,
+              "y": 0
+            },
+            {
+              "x": 260,
+              "y": 220
+            },
+            {
+              "x": 0,
+              "y": 220
+            }
+          ],
+          "floor": "fliesen",
+          "wallFinish": "fliesen",
+          "height": 250,
+          "slopeSides": 0,
+          "knee": 100,
+          "slopeDepth": 200
+        }
+      ],
+      "items": [
+        {
+          "id": "3929d0b4",
+          "type": "badewanne",
+          "name": "Badewanne",
+          "x": 175,
+          "y": 45,
+          "w": 170,
+          "d": 75,
+          "rot": 0,
+          "mirror": false
+        },
+        {
+          "id": "dce8d4e6",
+          "type": "wc",
+          "name": "WC",
+          "x": 35,
+          "y": 120,
+          "w": 40,
+          "d": 65,
+          "rot": 90,
+          "mirror": false
+        },
+        {
+          "id": "2e0b8eb7",
+          "type": "waschbecken",
+          "name": "Waschbecken",
+          "x": 120,
+          "y": 196,
+          "w": 60,
+          "d": 45,
+          "rot": 180,
+          "mirror": false
+        }
+      ],
+      "levelName": "Erdgeschoss",
+      "elevation": 0,
+      "dimensions": [],
+      "labels": [],
+      "background": null,
+      "north": 0
+    }
+  }
+}

@@ -250,7 +250,7 @@ public partial class MainWindow
                 if (x["vector"] is JsonObject vo) { var v = VectorKit.FromJson(vo, 640, 180); foreach (var s in v.Shapes.Where(s => s.Kind == "text")) s.Font = f; x["vector"] = VectorKit.ToJson(v); }
             }), Tip: "Alle Texte im Logo bekommen diese Schrift")).ToList()),
             ("Claude", [
-                new ProgramCmd("logo-claude", "Ideen mit Claude", d => _ = AssistFromProgram(LogoKey, "STUDIO-LOGO-01", $"Mach mir drei Ideen für ein Logo der Marke „{d.Text("name")}“ ({d.Text("tagline")}): Bildzeichen, Farben (#RRGGBB) und Schrift, jeweils mit einem Satz Begründung. Das Logo liegt als bearbeitbare Vektor-Zeichnung im Programm „Logos & Marken“."), Tip: "Nutzt deinen Claude-Zugang."),
+                new ProgramCmd("logo-claude", "Ideen mit Claude", d => _ = AssistFromProgram(LogoKey, "STUDIO-LOGO-01", $"Mach mir drei Ideen für ein Logo der Marke „{d.Text("name")}“ ({d.Text("tagline")}): Bildzeichen, Farben (#RRGGBB) und Schrift, jeweils mit einem Satz Begründung. Das Logo liegt als bearbeitbare Vektor-Zeichnung im Programm „Logos & Marken“. Setze die beste Idee gleich im offenen Logo um: neue Farben für die Formen (vector/shapes/…/fill, stroke) und dazu primary und accent; Name, Text und Formen bleiben – so siehst du sie sofort und nimmst sie mit Strg+Z zurück. Schreib die drei Ideen mit ihrer Begründung als kurzen Text in das Feld \"hinweis\" deiner Antwort (neben \"steps\"), damit die Person sie lesen kann."), Tip: "Nutzt deinen Claude-Zugang. Die beste Idee färbt das offene Logo um – Strg+Z nimmt sie zurück."),
             ]),
         ],
         GroupLevels = new() { ["Schrift"] = 1, ["Claude"] = 1 },

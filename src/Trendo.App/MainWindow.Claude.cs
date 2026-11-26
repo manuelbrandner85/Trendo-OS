@@ -47,6 +47,14 @@ public partial class MainWindow
     public static Func<Task<ClaudeCode.Status>>? ClaudeStatusOverride { get; set; }
     public static Func<IReadOnlyList<string>, string, Action<string>, CancellationToken, Task<int>>? ClaudeRunOverride { get; set; }
 
+    /// <summary>T-0775 Testschicht „echt“: Tests mit gesetztem TRENDO_ECHT_CLAUDE lassen im Testmodus (eigener Datenordner) das echte, bereits über das Abo
+    /// angemeldete Claude Code zu – Anmeldestand und Läufe gehen dann durch denselben Code wie im Produkt (<see cref="ClaudeCheck"/>, <see cref="ClaudeRun"/>,
+    /// API-Variablen und Token entfernt), ohne <see cref="ClaudeRunOverride"/>. Trendo meldet dabei nie selbst an. Standard aus: Tests und Vorschaubilder starten Claude nie.
+    /// Gilt nur für dieses eine Fenster (nicht statisch) – parallel laufende Tests mit eigenem Fenster bekommen nie echtes Claude.</summary>
+    public bool ClaudeEchtImTestmodus { get; set; }
+    /// <summary>Darf dieses Fenster das echte Claude Code nutzen? Im Produkt immer, im Testmodus nur mit <see cref="ClaudeEchtImTestmodus"/>.</summary>
+    bool ClaudeRealAllowed => !_opt.Isolated || ClaudeEchtImTestmodus;
+
     string? ClaudeExe() => ClaudeCode.Find(Environment.GetEnvironmentVariable, File.Exists);
 
     /// <summary>Testmodus (eigener Datenordner): nie ein echtes Programm starten – nur melden und protokollieren, was passieren würde.
@@ -96,7 +104,7 @@ public partial class MainWindow
     {
         if (!fresh && (DateTime.UtcNow - _claudeAt).TotalMinutes < 5) return _claude;
         if (ClaudeStatusOverride is { } o) { _claude = await o(); _claudeAt = DateTime.UtcNow; return _claude; }
-        if (_opt.Isolated) { _claudeAt = DateTime.UtcNow; return _claude = ClaudeCode.Status.Missing; } // Tests und Vorschaubilder nutzen nie das echte Abo
+        if (!ClaudeRealAllowed) { _claudeAt = DateTime.UtcNow; return _claude = ClaudeCode.Status.Missing; } // Tests und Vorschaubilder nutzen nie das echte Abo
         var exe = ClaudeExe();
         if (exe is null) { _claudeAt = DateTime.UtcNow; return _claude = ClaudeCode.Status.Missing; }
         try
@@ -122,7 +130,7 @@ public partial class MainWindow
         if (!DarfAusfuehren("claude.agent", out var nein)) throw new InvalidOperationException(nein); // T-0764 (H): KI-Agent mit Shell-Werkzeug
         if (!ClaudeEmbedApproved) throw new InvalidOperationException("Eingebettete Claude-Nutzung über das Abo wartet auf die Freigabe durch Anthropic. Nutze „In Claude Code öffnen“.");
         if (ClaudeRunOverride is { } o) return await o(args, dir, line, ct);
-        if (_opt.Isolated) throw new InvalidOperationException("Testmodus: Claude wird nicht gestartet."); // Tests und Vorschaubilder nutzen nie das echte Abo
+        if (!ClaudeRealAllowed) throw new InvalidOperationException("Testmodus: Claude wird nicht gestartet."); // Tests und Vorschaubilder nutzen nie das echte Abo
         var exe = _claude.Exe ?? ClaudeExe() ?? throw new InvalidOperationException("Claude Code ist nicht installiert.");
         var psi = new ProcessStartInfo(exe) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true, RedirectStandardInput = true,
             StandardOutputEncoding = System.Text.Encoding.UTF8, StandardErrorEncoding = System.Text.Encoding.UTF8, WorkingDirectory = dir };
@@ -271,7 +279,7 @@ public partial class MainWindow
     /// <summary>Knopf „In Claude Code öffnen“ (nur wenn Claude Code installiert ist).</summary>
     Button? ClaudeOpenButton(string name, Func<string> folder, Func<string?> prompt, string? studio)
     {
-        if (!_claude.Installed) { if (!_opt.Isolated || ClaudeStatusOverride is not null) _ = ClaudeCheck(); return null; }
+        if (!_claude.Installed) { if (ClaudeRealAllowed || ClaudeStatusOverride is not null) _ = ClaudeCheck(); return null; }
         var b = Act(name, "In Claude Code öffnen", () => ClaudeOpen(folder(), prompt(), ClaudeRoleFor(studio) + ClaudeTeamRule(studio), studio));
         ToolTip.SetTip(b, _claude.Ready ? "Öffnet dein Claude Code sichtbar im Projektordner – mit deinem Auftrag. Du arbeitest dort direkt mit deinem Claude-Abo." : "Claude Code ist installiert, aber nicht angemeldet – unter „KI-Quellen“ mit Claude verbinden.");
         b.IsEnabled = _claude.Ready;
