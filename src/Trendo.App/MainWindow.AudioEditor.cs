@@ -299,7 +299,7 @@ public partial class MainWindow
         _auWave = wave;
         // T-0732: die Welle nimmt den Tastaturfokus (nach jedem Neuaufbau, solange niemand anderes ihn hat) – so wirkt die Leertaste sofort
         wave.Focusable = true;
-        wave.AttachedToVisualTree += (_, _) => Dispatcher.UIThread.Post(() =>
+        wave.AttachedToVisualTree += (_, _) => Trendo.App.UiThread.Post(() =>
         {
             if (TopLevel.GetTopLevel(wave)?.FocusManager?.GetFocusedElement() is not Visual fv || TopLevel.GetTopLevel(fv) is null) wave.Focus();
         }, DispatcherPriority.Background);

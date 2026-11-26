@@ -1,10 +1,10 @@
 # Trendo PDF – Testergebnisse
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` · Stand: 0.9.36 (Stand df96c57)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 29 · Fehlgeschlagen 0 · Übersprungen 2 · nicht im Lauf 0
+Bestanden 28 · Fehlgeschlagen 0 · Übersprungen 2 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -12,11 +12,10 @@ Bestanden 29 · Fehlgeschlagen 0 · Übersprungen 2 · nicht im Lauf 0
 | PDF F3: Texterkennung – ohne Tesseract ehrlicher Hinweis; mit Tesseract wird ein Bild-Scan zur durchsuchbaren PDF und die Seite als Text erkannt | ✓ bestanden |
 | PDF F3: Unterschrift im Zeichenfeld zeichnen, dann auf die Seite klicken – fest als Bild in einer Kopie „(Trendo)“, Original unverändert | ✓ bestanden |
 | SYS-02/SYS-10: Dateiregal filtert nach Art, neueste zuerst, ohne Office-Sperrdateien | ✓ bestanden |
-| SYS-09 U1/F2: Ordner · Liste · Lesebereich; Termin aus der E-Mail erkennen und eintragen | ✓ bestanden |
 | SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt | übersprungen |
 | SYS-10 (UI): Tabs; Aufgabe anlegen/erledigen; Tabelle anzeigen; Text zählen; Drucken nur nach Bestätigung | ✓ bestanden |
 | SYS-10 F1/U1/U2: Start mit Programmkacheln und Vorlagen; Dokumente als Kacheln mit Filter; Öffnen im passenden Programm | ✓ bestanden |
-| SYS-10 wie Microsoft 365: Dokumente suchen (alle Wörter im Namen), Anheften mit ★ zeigt sie oben unter „Angeheftet“, Lösen nimmt sie weg; gelöschte Datei verschwindet | ✓ bestanden |
+| SYS-10 wie Microsoft 365: Dokumente suchen (alle Wörter im Namen), Anheften mit zeigt sie oben unter „Angeheftet“, Lösen nimmt sie weg; gelöschte Datei verschwindet | ✓ bestanden |
 | SYS-10-P01 (T-0244 getrennt): LibreOffice öffnet ein von Trendo erzeugtes DOCX | ✓ bestanden |
 | SYS-10-P02/P11: Neues DOCX/XLSX; Tabelle ohne Office lesen (XLSX + CSV mit ; und Anführungszeichen) | ✓ bestanden |
 | SYS-10-P04: Zuletzt verwendet – neueste zuerst | ✓ bestanden |
@@ -34,8 +33,8 @@ Bestanden 29 · Fehlgeschlagen 0 · Übersprungen 2 · nicht im Lauf 0
 | SYS-10-P22: Unterschrift als Bild in DOCX (Kopie, mit Hinweis „nicht rechtsverbindlich“) | ✓ bestanden |
 | SYS-10-P23: PDF-Formular lesen und ausfüllen (Kopie, inkrementell, Original unverändert) | ✓ bestanden |
 | SYS-10-P25: Barrierefreiheits-Bericht listet Mängel | ✓ bestanden |
-| T-0222: Ordner des Vollpakets wird bei der Installation gemerkt und beim ersten Start gefunden | ✓ bestanden |
 | T-0223 P1/P2 UI: PDF öffnen, blättern, Gehe zu, suchen, Lesezeichen – Seite wird gezeichnet | ✓ bestanden |
 | T-0223 P3–P5 UI: Markieren in einer Kopie (Original bleibt), Seiten auswählen, Passwort setzen und wieder öffnen | ✓ bestanden |
 | T-0303: Miniatur springt zur Seite; Seiten ordnen: Ziehen verschiebt, Drehen, Löschen, leere Seite, PDF einfügen, Rückgängig, Kopie speichern – Original bleibt | ✓ bestanden |
-| X-11 F1/F2/U1/U2: Vorhaben mit Ring, Kanban verschieben, Zeitplan mit Meilenstein, Dateien des Vorhabens | ✓ bestanden |
+| T-0711 PDF „Seiten ordnen“: Rückgängig und jetzt auch Wiederholen über die Hülle, Notsicherung, Karte öffnet die PDF wieder im Ordnen-Modus | ✓ bestanden |
+| T-0714 PDF-Formular: Werte tippen und ankreuzen → Rückgängig/Wiederholen; Fenster ohne Speichern geschlossen → Karte öffnet die PDF mit den Werten; „Ausgefüllt speichern“ schreibt sie und räumt die Sicherung weg | ✓ bestanden |

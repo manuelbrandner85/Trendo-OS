@@ -170,8 +170,14 @@ public class T0747_Fix2ZweitePruefung(ITestOutputHelper log)
         var ms = Lastmessung.Best(2, () => CncCam.Generate(cs, new CamSettings { ToolD = 6 }), parallel: true);
         var cancel = Lastmessung.Best(2, () =>
         {
-            using var cts = new CancellationTokenSource(); cts.CancelAfter(100);
+            // T-0771: „Abbrechen“ kommt nach 100 ms von einem eigenen Thread (wie der Klick aus der Oberfläche) statt über CancelAfter: dessen Zeitgeber
+            // läuft über den Thread-Pool, und der ist unter Volllast so belegt, dass der Abbruch selbst erst nach über einer Sekunde ausgelöst wurde.
+            // Gemessen wird weiter vom Start bis zur Ausnahme, Grenze unverändert.
+            using var cts = new CancellationTokenSource();
+            var clicker = new Thread(() => { Thread.Sleep(100); try { cts.Cancel(); } catch (ObjectDisposedException) { } }) { IsBackground = true, Priority = ThreadPriority.AboveNormal };
+            clicker.Start();
             Assert.ThrowsAny<OperationCanceledException>(() => CncCam.Generate(cs, new CamSettings { ToolD = 6 }, cts.Token));
+            clicker.Join();
         }, parallel: true);
         Lastmessung.Below(log, "Abbrechen nach 100 ms", cancel, 1500); Lastmessung.Below(log, "Zickzack 5000 Punkte", ms, 8000);
     }

@@ -254,7 +254,7 @@ public partial class MainWindow
         var term = what == "terminal";
         var streamed = new System.Text.StringBuilder(); // was schon laufend angezeigt wurde – bleibt auch nach „Abbrechen“ stehen
         // Ausgabe laufend: Zeilen kommen aus dem Hintergrund und werden in die Ausgabe geschrieben, ohne die Seite neu zu bauen
-        void Line(string l) => Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        void Line(string l) => Trendo.App.UiThread.Post(() =>
         {
             if (streamed.Length < CeOutMax) streamed.Append(l).Append('\n');
             if (!ReferenceEquals(_ceRunCts, cts)) return;

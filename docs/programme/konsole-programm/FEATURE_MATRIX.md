@@ -1,25 +1,45 @@
 # Konsolenspiele portieren – Funktionsmatrix
 
-Studio: Konsolenspiele portieren (STUDIO-CONSOLE-01) · Bereich: 3D, Spiele & VR · Seite: `konsole-programm` · Stand: 0.9.36 (Stand df96c57)
+Studio: Konsolenspiele portieren (STUDIO-CONSOLE-01) · Bereich: 3D & Spiele · Seite: `konsole-programm` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude
+- KI ▾
+- Claude
+- Markierung an Claude
+- kie.ai
 - Erkläre mir den nächsten Schritt
 - Was fehlt auf diesem PC?
 - Bring es auf mein Steam Deck
-- Markierung
-- Einfach
-- Erweitert
-- Professionell
 - Speichern
-- ↶ Rückgängig
-- Mehr ▾
-- 1 Spiel
-- 2 Werkzeuge
-- 3 Portieren
-- 4 Geräte
-- Abbild wählen (.iso)
-- Ich besitze dieses Spiel und habe das Abbild selbst von meiner eigenen Disc erstellt.
+- Mehr Werkzeuge
+- Rückgängig
+- Mehr
+- Bibliothek
+- Freies Spiel portieren
+- Eigene Disc
+- Werkzeuge
+- Portieren
+- Geräte
+- Spiel daraus erfinden
+- Alle
+- Eigene Spiele
+- Freie Spiele
+- Homebrew
+- lib-card-morvane
+- lib-card-moosgrund
+- lib-card-ascheturm
+- lib-card-kuestenrallye
+- lib-card-eisfront
+- lib-card-klingenbund
+- lib-card-funkstille
+- lib-card-sternenwerft
+- lib-card-demo-platformer-3d
+- lib-card-demo-squash
+- lib-card-demo-truck
+- lib-card-demo-platformer-2d
+- lib-card-demo-dodge
+- lib-card-hb-libbet
+- lib-card-hb-ucity

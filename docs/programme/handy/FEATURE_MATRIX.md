@@ -1,41 +1,25 @@
 # Handy verbinden – Funktionsmatrix
 
-Studio: Handy verbinden (X-08) · Bereich: System & Sicherheit · Seite: `handy` · Stand: 0.9.36 (Stand df96c57)
+Studio: Handy verbinden (X-08) · Bereich: System & Sicherheit · Seite: `handy` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude
-- Darstellung & Sprache
-- Personen & Konten
-- Sehen & Bedienhilfen
-- Trendo-Updates
-- Betriebsmodus
-- Geräte & Laufwerke
-- Geräteverbund
-- Im Heimnetz teilen
-- Apps
-- Programme verwalten
-- Hinzufügen
-- Pflegen & Aktualisieren
-- Zusatzprogramme
-- Downloads
-- Schutz & Datenschutz
-- Freigaben
-- Sicherung
-- Selbstheilung
-- Sicher prüfen
-- Sicherheits-Werkzeuge
-- Protokoll & Abstürze
-- Speicher & Leistung
-- Leistung messen
-- Systemcheck
-- Qualitäts-Ampel
-- Bau-Fortschritt
-- Mehr ▾
-- 🏠  Zuhause (im selben WLAN)
-- 🌍  Überall – auch unterwegs
+- KI ▾
+- Claude
+- kie.ai
+- settings-nav-settings
+- settings-nav-personen
+- settings-nav-bedien-sehen
+- settings-nav-updates
+- settings-nav-geraete
+- settings-nav-sicherung
+- Mehr Einstellungen (22)
+- Mehr
+- Zuhause (im selben WLAN)
+- Überall – auch unterwegs
+- Lauf aufzeichnen
 - Handy für unterwegs verbinden
 - Handy suchen
 - Ich will dieses Handy per WLAN verbinden

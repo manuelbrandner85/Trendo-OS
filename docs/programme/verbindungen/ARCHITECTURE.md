@@ -1,6 +1,6 @@
 # Verbindungen – Architektur
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `verbindungen` · Stand: 0.9.36 (Stand df96c57)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `verbindungen` · Stand: 0.9.110 (Stand 0eb9d52)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Connections.cs`
@@ -9,43 +9,42 @@ Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `verbindungen` 
 - KI-Zentrale (Bereiche, Suche, Seite – wie LM Studio)
 
 ## Fach-Engine (Trendo.Core)
-- `ClaudeExtensions`
 - `GitHubLink`
+- `ClaudeExtensions`
 - `ClaudeChats`
 - `ClaudeCode`
-- `DependencyCatalog`
+- `WebDesignPublish`
+- `WebPublishing`
+- `Rbac`
 
 ## Dateiformate (im Code belegt)
 - .csv
+- .glb
 - .gltf
 - .html
 - .jpg
 - .json
 - .md
+- .mp3
+- .mp4
 - .obj
+- .ogg
+- .pdf
+- .ply
 - .png
 - .svg
 - .tdoc
 - .txt
+- .wav
+- .webm
 - .xml
 - .zip
 
 ## Externe Programme und Dienste
 - Blender (optional, 3D-Fotos/Render)
 - Unreal Engine (optional)
-- Ollama – lokale KI (optional)
-- FFmpeg
 - LibreOffice (optional)
-- qpdf
-- Krita (optional)
-- Inkscape (optional)
-- Tesseract OCR
-- PDFsharp (MIT)
-- Hunspell-Wörterbücher
 - Git
-- OBS Studio (optional)
-- mpv (optional)
-- Python (optional)
 - Node.js (optional)
 
 ## Bausteine (Masterprompt 131 / 5)

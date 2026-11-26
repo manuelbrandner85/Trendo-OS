@@ -1,6 +1,6 @@
 # Animation & Motion – Funktionsmatrix
 
-Studio: Animation & Motion (STUDIO-ANIM-01) · Bereich: Kreativ & Medien · Seite: `animation-programm` · Stand: 0.9.36 (Stand 7f0f9e3)
+Studio: Animation & Motion (STUDIO-ANIM-01) · Bereich: Kreativ & Medien · Seite: `animation-programm` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -13,4 +13,6 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Pulsieren (Bewegung)
 - Drehen (Bewegung)
 - Video (MP4) (Ausgabe)
+- GIF (Ausgabe)
+- Bewegung mit Claude planen (Claude)
 - Animiertes SVG (.svg) (Exportieren)

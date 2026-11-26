@@ -1,6 +1,6 @@
 # Trendo Tabelle – Funktionsmatrix
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `tabelle` · Stand: 0.9.36 (Stand df96c57)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `tabelle` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/spec/kataloge/SYS-10_KATALOG.md`
 
@@ -34,31 +34,44 @@ Quelle: `docs/spec/kataloge/SYS-10_KATALOG.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- Hinzufügen …
-- ✳ Markierung fragen
-- ✳ Claude
+- KI ▾
+- Claude
+- Markierung an Claude
+- kie.ai
+- Programme hinzufügen …
 - Haushaltsplan als Tabelle
 - Präsentation über unser Projekt, 8 Folien
 - Lebenslauf modern gestalten
-- Mehr ▾
-- Datei ▾
+- Mehr
+- Speichern
+- Als PDF
+- Datei
 - Start
 - Einfügen
 - Daten
 - Überprüfen
 - Ansicht
-- Kopieren
-- Ausschneiden
-- Fett
-- Rahmen
-- Füllfarbe
-- Euro
-- Prozent
-- Bedingt
-- Als Tabelle
-- Sortieren
-- Zurück
-- Vor
+- tabelle-paste
+- tabelle-copy
+- tabelle-cut
+- tabelle-bold
+- tabelle-italic
+- tabelle-underline
+- tabelle-fontcolor
+- tabelle-border
+- tabelle-fill
+- tabelle-align-left
+- tabelle-align-center
+- tabelle-align-right
+- tabelle-wrap
+- tabelle-merge
+- tabelle-euro
+- tabelle-pct
+- tabelle-numcode
+- tabelle-cond
+- tabelle-astable
+- tabelle-sum
+- tabelle-sort
 - ANZAHL
 - HEUTE
 - MAX

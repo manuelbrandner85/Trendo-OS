@@ -168,7 +168,10 @@ public class KiModelT0703Tests
         {
             // Gesamtdauer ca. 2,3 s – mehr als die Zeitgrenze (1 s); nur die Lebenszeichen alle 150 ms verhindern das Ausweichen.
             // (vorher 300 ms Grenze / 100 ms Takt: im vollen Testlauf unter Last wurde ein Takt länger als die Grenze)
-            ["gross"] = async (d, ct) => { await Task.Delay(150, ct); for (var i = 0; i < 15; i++) { d(""); await Task.Delay(150, ct); } d("42"); return "42"; },
+            // T-0771: Das erste Lebenszeichen hebt die Zeitgrenze auf (IntelligenceCore). Es kam bisher nach „await Task.Delay(150)“ – unter Volllast
+            // ist der Thread-Pool ausgelastet, die Fortsetzung lief erst nach über 1 s, also nach der Grenze. Jetzt wartet der erste Takt auf dem
+            // aufrufenden Thread selbst (Thread.Sleep, ohne Thread-Pool) – gleiche 150 ms, gleiche Grenze, gleiche Aussage.
+            ["gross"] = async (d, ct) => { Thread.Sleep(150); d(""); for (var i = 0; i < 15; i++) { await Task.Delay(150, ct); d(""); } d("42"); return "42"; },
             ["klein"] = (d, _) => { d("32"); return Task.FromResult("32"); },
         });
         var (core2, failed2) = Core(thinker, TimeSpan.FromMilliseconds(1000));

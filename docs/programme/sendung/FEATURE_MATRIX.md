@@ -1,6 +1,6 @@
 # Live streamen – Funktionsmatrix
 
-Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.36 (Stand df96c57)
+Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/w6-katalog/SPEC-15.md`
 
@@ -29,16 +29,20 @@ Quelle: `docs/w6-katalog/SPEC-15.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude
+- KI ▾
+- Claude
+- kie.ai
 - Stream-Szene mit Kamera und Bildschirm
 - Ablauf für eine 30-Minuten-Sendung
-- Mehr ▾
+- Mehr
 - Ablauf
 - On-Air-Uhr
-- 🎥 Studio
+- Studio
+- bc-undo
+- bc-redo
 - Beginn = jetzt
 - Stopp
-- 🎥 Studio öffnen – Szenen, Tonmischer, Probelauf
+- Studio öffnen – Szenen, Tonmischer, Probelauf
 - Bildschirm
 - Fenster
 - Kamera

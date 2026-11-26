@@ -1,29 +1,45 @@
 # Geld – Funktionsmatrix
 
-Studio: Geld & Rechnungen (SPEC-11) · Bereich: Business & Geld · Seite: `finanzen` · Stand: 0.9.36 (Stand df96c57)
+Studio: Geld & Rechnungen (SPEC-11) · Bereich: Business & Geld · Seite: `finanzen` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude
+- KI ▾
+- Claude
+- kie.ai
 - Monatsausgaben nach Kategorie
 - Rechnung für Erika Muster schreiben
 - Sparplan für 5.000 €
-- Mehr ▾
+- Mehr
+- ↶ Rückgängig
+- ↷ Wiederholen
+- Übersicht
+- Buchungen
+- Rechnungen
+- Auswertung
+- Kredit
+- Kontoauszug öffnen …
+- + Neue Rechnung
+- + Angebot
+- Kleinunternehmer (§ 19 UStG – keine Umsatzsteuer)
+- Als Rechnungsentwurf anlegen
+- Kleinunternehmer (keine MwSt)
+- Rechnung erstellen
+- Rechnung + E-Rechnung (XRechnung) erstellen
+- Als PDF speichern
+- Als Excel (XLSX)
+- Als CSV
+- Übernehmen
+- ZIP erstellen
+- Tilgungsplan berechnen
 - Budget setzen
 - Heute
-- ↶ Rückgängig
+- Rückgängig
 - In Trendo Tabelle öffnen
 - Regel anlegen
 - Auf alle Ausgaben anwenden
 - Eintragen
-- Datei wählen …
-- Ansehen und übernehmen …
 - Als CSV speichern
-- Kleinunternehmer (keine MwSt)
-- Rechnung erstellen
-- Rechnung + E-Rechnung (XRechnung) erstellen
 - Prüfen
-- Übernehmen
-- ZIP erstellen

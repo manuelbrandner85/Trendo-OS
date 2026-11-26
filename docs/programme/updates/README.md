@@ -1,9 +1,9 @@
 # Trendo-Updates – Produktionspaket
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `updates` · Stand: 0.9.36 (Stand df96c57)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `updates` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Arbeitsfläche: Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)  
-Modulstatus (requirements.yaml): IN_PROGRESS / Test PC_VERIFIED  
+Modulstatus (requirements.yaml): IN_PROGRESS / Test NOT_RUN  
 Programm-Hülle (Dokumente, Rückgängig, Autosave, Bedienstufen): nein – eigene Arbeitsseite
 
 ## Inhalt

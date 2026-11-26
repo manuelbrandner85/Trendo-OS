@@ -1,6 +1,6 @@
 # Desktop-Symbole – Funktionsmatrix
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `desktop-symbole` · Stand: 0.9.36 (Stand df96c57)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `desktop-symbole` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 
@@ -40,62 +40,62 @@ Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude
-- Trendo KI
-- Agenten-Zentrale
-- Abläufe
-- Wissen & Gedächtnis
-- Programme
-- Freie Quellen
-- Code & GitHub
-- Freigaben
-- Ressourcen
-- Handy-Verbindung
-- Briefe schreiben
-- Texte & Tabellen
-- E-Mails & Termine
-- Neues Projekt starten
-- Kleine Helfer & Musik
-- Online verkaufen
-- Print on Demand
-- Geld & Rechnungen
-- Videos & Fotos bearbeiten
-- Live streamen
-- Trendo Musik
-- TV & Live
-- Filme machen
-- Kleidung & Produkte entwerfen
-- Freie Bilder & Klänge finden
-- KI-Anweisungen schreiben
-- KI fragen
-- KI-Team einsetzen
-- Kostenlose KI finden
-- Aufgaben automatisieren
-- Großprojekte umsetzen
-- 3D-Modelle erstellen
-- Konsolenspiele portieren
-- Spiele bauen
-- VR & AR gestalten
-- Gegenstände einscannen
-- Wohnung planen
-- Schaltungen berechnen
-- Statik nachrechnen
-- Geräte überwachen
-- Routen & Karten
-- Fräsen & Fertigen
-- Auto & Fahrten
-- Kameras & Roboter steuern
-- Messwerte auswerten
-- Lernen mit Karteikarten
-- Texte übersetzen
-- Wissen merken
-- Sicher recherchieren
-- Webseite bauen
-- Apps zusammenklicken
-- Projekte von GitHub holen
-- Trendo erweitern
-- Programme nachbauen
-- Desktop einrichten
-- Startmodus wählen
-- Daten schützen
-- System auf Gefahren prüfen
+- KI ▾
+- Claude
+- kie.ai
+- desk-toggle-page-ki
+- desk-toggle-page-ki-rollen
+- desk-toggle-page-ablaeufe
+- desk-toggle-page-ki-wissen
+- desk-toggle-page-components
+- desk-toggle-page-ki-quellen
+- desk-toggle-page-dev
+- desk-toggle-page-approvals
+- desk-toggle-page-ressourcen
+- desk-toggle-page-handy
+- desk-toggle-STUDIO-LETTER-01
+- desk-toggle-SYS-10
+- desk-toggle-SYS-09
+- desk-toggle-X-11
+- desk-toggle-SYS-02
+- desk-toggle-STUDIO-DECKDESIGN-01
+- desk-toggle-STUDIO-DOCSCAN-01
+- desk-toggle-STUDIO-DAYPLAN-01
+- Alle 13 Einträge zeigen
+- desk-toggle-STUDIO-ONLINE-BUSINESS-01
+- desk-toggle-STUDIO-POD-01
+- desk-toggle-SPEC-11
+- desk-toggle-CORE-08
+- desk-toggle-SPEC-15
+- desk-toggle-STUDIO-MUSIK-01
+- desk-toggle-STUDIO-TV-01
+- desk-toggle-STUDIO-FILM-01
+- desk-toggle-STUDIO-LOGO-01
+- desk-toggle-STUDIO-PODCAST-01
+- desk-toggle-STUDIO-COMIC-01
+- desk-toggle-STUDIO-SUMMARY-01
+- desk-toggle-STUDIO-IMAGEAI-01
+- desk-toggle-STUDIO-VIDEOAI-01
+- desk-toggle-STUDIO-AGENTS-01
+- desk-toggle-STUDIO-MODELS-01
+- desk-toggle-STUDIO-TRAIN-01
+- desk-toggle-CORE-02
+- desk-toggle-SYS-05
+- desk-toggle-STUDIO-CODEAI-01
+- desk-toggle-STUDIO-VISION-01
+- desk-toggle-CORE-05
+- desk-toggle-STUDIO-CONSOLE-01
+- desk-toggle-CORE-06
+- desk-toggle-SPEC-09
+- desk-toggle-SPEC-01
+- desk-toggle-SPEC-02
+- desk-toggle-SPEC-03
+- desk-toggle-SPEC-13
+- desk-toggle-SPEC-14
+- desk-toggle-SPEC-05
+- desk-toggle-SPEC-06
+- desk-toggle-CORE-10
+- desk-toggle-SYS-08
+- desk-toggle-STUDIO-CITE-01
+- desk-toggle-CORE-07
+- desk-toggle-X-04

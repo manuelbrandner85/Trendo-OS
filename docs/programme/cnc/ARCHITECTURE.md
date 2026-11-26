@@ -1,6 +1,6 @@
 # CNC-Werkstatt – Architektur
 
-Studio: Fräsen & Fertigen (SPEC-14) · Bereich: Technik & Fachgebiete · Seite: `cnc` · Stand: 0.9.36 (Stand df96c57)
+Studio: Fräsen & Fertigen (SPEC-14) · Bereich: Technik & Fachgebiete · Seite: `cnc` · Stand: 0.9.110 (Stand 0eb9d52)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Spec14.cs`
@@ -18,6 +18,7 @@ Studio: Fräsen & Fertigen (SPEC-14) · Bereich: Technik & Fachgebiete · Seite:
 - `CncSim`
 
 ## Dateiformate (im Code belegt)
+- .dxf
 - .md
 - .nc
 - .svg

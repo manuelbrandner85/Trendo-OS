@@ -1,6 +1,6 @@
 # Erweiterungen – Architektur
 
-Studio: Trendo erweitern (X-04) · Bereich: Entwickeln · Seite: `erweiterungen` · Stand: 0.9.36 (Stand df96c57)
+Studio: Trendo erweitern (X-04) · Bereich: Entwickeln · Seite: `erweiterungen` · Stand: 0.9.110 (Stand 0eb9d52)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.W5Ext.cs`
@@ -9,13 +9,17 @@ Studio: Trendo erweitern (X-04) · Bereich: Entwickeln · Seite: `erweiterungen`
 - Erweiterungen (Liste, Detailseite – wie VS Code)
 
 ## Fach-Engine (Trendo.Core)
-- `ExtensionStore`
 - `Extensions`
+- `ExtensionStore`
+- `FreeAssets`
+- `ApprovalException`
 - `CreationSuite`
+- `ExtensionRights`
 - `ExtensionSamples`
 - `SitePage`
 
 ## Dateiformate (im Code belegt)
+- .csv
 - .html
 - .jpg
 - .json
@@ -26,7 +30,9 @@ Studio: Trendo erweitern (X-04) · Bereich: Entwickeln · Seite: `erweiterungen`
 - .zip
 
 ## Externe Programme und Dienste
-– keine
+- LibreOffice (optional)
+- Poly Haven (freie 3D-Modelle)
+- ambientCG (freie Materialien)
 
 ## Bausteine (Masterprompt 131 / 5)
 Eigene Arbeitsseite ohne die gemeinsame Programm-Hülle – Dokumentmodell, Rückgängig und Bedienstufen sind hier nicht einheitlich.

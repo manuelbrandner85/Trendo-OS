@@ -100,7 +100,7 @@ public partial class MainWindow
         catch (AggregateException) { _frameCheck = (key, null); cts.Dispose(); return null; }
         _frameCheckRun = (key, cts, task);
         // T-0748-fix2: CancellationTokenSource auch bei überholten Rechnungen freigeben, sobald die Rechnung endet
-        task.ContinueWith(t => { cts.Dispose(); Avalonia.Threading.Dispatcher.UIThread.Post(() => FrameCheckDone(key, t)); }, TaskScheduler.Default);
+        task.ContinueWith(t => { cts.Dispose(); Trendo.App.UiThread.Post(() => FrameCheckDone(key, t)); }, TaskScheduler.Default);
         return CrossCheckResult.Running;
     }
 

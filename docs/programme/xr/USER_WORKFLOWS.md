@@ -1,8 +1,8 @@
-# VR & AR gestalten – Arbeitsabläufe
+# 3D-Modelle ansehen – Arbeitsabläufe
 
-Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` · Stand: 0.9.36 (Stand df96c57)
+Studio: 3D-Modelle ansehen (SPEC-04) · Bereich: 3D & Spiele · Seite: `xr` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Die Abläufe unten sind die Oberflächentests, die das Programm über den echten Eingabeweg bedienen (Klicks, Tastatur).
 
-- SPEC-04 UI: Beispielmodell laden, mit der Maus drehen, Ansichten, Maßstab plausibel, alle Geräte grün, Bericht speichern
-- SPEC-04 UI: zu feines Modell wird für Handy-AR gelb, Zielgerät färbt die Balken; Datei öffnen, fehlende Datei; Komfort-Rechner
+- SPEC-04 UI: Beispielmodell laden, mit der Maus drehen, Ansichten, Maßstab plausibel, Maße und keine Fehler, Bericht speichern
+- SPEC-04 UI: feines Modell über „Datei wählen“ öffnen (ein Klick liest ein), Dreiecke und Maße stehen da; fehlende Datei meldet einen Fehler; keine Bildzeit und kein Komfort-Rechner mehr

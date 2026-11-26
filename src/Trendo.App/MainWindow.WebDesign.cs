@@ -32,15 +32,15 @@ public partial class MainWindow
                 _wdNote = err ?? $"Gespeichert ({DateTime.Now:HH:mm:ss}) – {(_wdVariant is null ? WebDesignSite.ActiveFile(WebDesignDir) : "Variante")}";
                 _core.Audit.Append(Principal.LocalOwner.Name, "web.visuell.speichern", err ?? "ok");
                 if (err is null) _wdDraft = null;
-                if (m.Data is { } saved) Dispatcher.UIThread.Post(() => WebDesignPush3DFiles(saved)); // Z3: im Editor neu gewählte Datei
-                Dispatcher.UIThread.Post(() => Show("dev"));
+                if (m.Data is { } saved) Trendo.App.UiThread.Post(() => WebDesignPush3DFiles(saved)); // Z3: im Editor neu gewählte Datei
+                Trendo.App.UiThread.Post(() => Show("dev"));
                 break;
             case "entwurf": // ungespeicherte Änderung im Editor: Grundlage für die nächste KI-Änderung, nichts wird geschrieben
-                if (WebDesign.Validate(m.Data).Json is { } draft) { _wdDraft = draft; Dispatcher.UIThread.Post(() => WebDesignPush3DFiles(draft)); } // Z3: im Editor neu gewählte Datei
+                if (WebDesign.Validate(m.Data).Json is { } draft) { _wdDraft = draft; Trendo.App.UiThread.Post(() => WebDesignPush3DFiles(draft)); } // Z3: im Editor neu gewählte Datei
                 break;
             case "auswahl":
                 var ids = (System.Text.Json.Nodes.JsonNode.Parse(m.Data ?? "{}")?["ids"] as System.Text.Json.Nodes.JsonArray)?.Select(x => x?.ToString() ?? "").Where(x => x.Length > 0).ToList() ?? [];
-                if (!ids.SequenceEqual(_wdSelection)) { _wdSelection = ids; if (ids.Count > 0) WebDesignCodeJump(ids[^1]); Dispatcher.UIThread.Post(() => Show("dev")); } // K6: Klick springt im Code zur Stelle
+                if (!ids.SequenceEqual(_wdSelection)) { _wdSelection = ids; if (ids.Count > 0) WebDesignCodeJump(ids[^1]); Trendo.App.UiThread.Post(() => Show("dev")); } // K6: Klick springt im Code zur Stelle
                 break;
             case "aktion":
                 WebDesignHumanAction(m.Data);

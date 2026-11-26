@@ -53,7 +53,7 @@ public sealed class FloorPlanView : Control
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
-        if (_s.Focus) Avalonia.Threading.Dispatcher.UIThread.Post(() => Focus());
+        if (_s.Focus) Trendo.App.UiThread.Post(() => Focus());
     }
 
     protected override void OnSizeChanged(SizeChangedEventArgs e)

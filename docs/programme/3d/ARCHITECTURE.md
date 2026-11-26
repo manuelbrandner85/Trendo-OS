@@ -1,6 +1,6 @@
 # 3D – Architektur
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand df96c57)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D & Spiele · Seite: `3d` · Stand: 0.9.110 (Stand 0eb9d52)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.W4Studio3D.cs`
@@ -13,46 +13,22 @@ Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d
 - `Scene3D`
 - `Part3D`
 - `Studio3D`
-- `DependencyCatalog`
 - `ScenePlan`
-- `DesktopPlatform`
 
 ## Dateiformate (im Code belegt)
-- .docx
 - .fbx
 - .glb
 - .gltf
-- .html
 - .jpg
 - .json
-- .mp3
-- .mp4
 - .obj
-- .odt
-- .pdf
 - .png
 - .stl
-- .txt
-- .xlsx
-- .zip
 
 ## Externe Programme und Dienste
 - Blender (optional, 3D-Fotos/Render)
-- Unreal Engine (optional)
 - Ollama – lokale KI (optional)
-- FFmpeg
-- LibreOffice (optional)
-- qpdf
-- Krita (optional)
-- Inkscape (optional)
-- Tesseract OCR
 - ambientCG (freie Materialien)
-- PDFsharp (MIT)
-- Hunspell-Wörterbücher
-- Git
-- OBS Studio (optional)
-- mpv (optional)
-- Python (optional)
 
 ## Bausteine (Masterprompt 131 / 5)
 Eigene Arbeitsseite ohne die gemeinsame Programm-Hülle – Dokumentmodell, Rückgängig und Bedienstufen sind hier nicht einheitlich.

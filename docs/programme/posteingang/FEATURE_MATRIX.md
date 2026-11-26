@@ -1,6 +1,6 @@
 # Posteingang – Funktionsmatrix
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `posteingang` · Stand: 0.9.36 (Stand df96c57)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `posteingang` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/spec/kataloge/SYS-09_KATALOG.md`
 
@@ -25,25 +25,16 @@ Quelle: `docs/spec/kataloge/SYS-09_KATALOG.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude
+- KI ▾
+- Claude
+- kie.ai
 - Antwort auf die letzte E-Mail entwerfen
 - Termin nächste Woche Dienstag 10 Uhr
 - Ungelesene Mails zusammenfassen
-- Mehr ▾
-- E-Mail & Kontakte
+- Mehr
+- Schreiben
 - Adressbuch
 - Posteingang
 - Kalender
 - Aufgaben
-- Konto speichern
-- Abrufen
-- Posteingang (0)
-- Ungelesen (0)
-- ✎ Entwürfe (0)
-- ➤ Gesendet (0)
-- ⭐ Gemerkt (0)
-- Als Unterhaltungen
-- ✉ Neue Nachricht
-- 📅 Kalender
-- ☑ Aufgaben
-- Vorschläge aus dem Posteingang
+- Konto einrichten

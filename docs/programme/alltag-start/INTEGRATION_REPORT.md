@@ -1,6 +1,6 @@
 # Übersicht – Einbindung in Trendo OS
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `alltag-start` · Stand: 0.9.36 (Stand df96c57)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `alltag-start` · Stand: 0.9.110 (Stand 0eb9d52)
 
 - Seite `alltag-start` im Studio „Kleine Helfer & Musik“ (Arbeiten & Büro) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

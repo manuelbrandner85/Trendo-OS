@@ -1,12 +1,18 @@
 # Filme machen – Funktionsmatrix
 
-Studio: Filme machen (STUDIO-FILM-01) · Bereich: Kreativ & Medien · Seite: `film-programm` · Stand: 0.9.36 (Stand df96c57)
+Studio: Filme machen (STUDIO-FILM-01) · Bereich: Kreativ & Medien · Seite: `film-programm` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
 ## Werkzeuge der Oberfläche
+- Film rendern (Ausgabe)
+- Clips und Fotos hinzufügen (Ausgabe)
+- Im Videoschnitt weiterbearbeiten (Ausgabe)
 - Einstellungen vorschlagen (Planen)
 - Figuren & Orte übernehmen (Planen)
+- Drehbuch mit KI schreiben (Planen)
+- Drehbuch öffnen (.fountain) (Planen)
+- Musik wählen (Planen)
 - Drehbuch (.fountain) (Exportieren)
 - Drehbuch (PDF) (Exportieren)
 - Shotliste (CSV) (Exportieren)

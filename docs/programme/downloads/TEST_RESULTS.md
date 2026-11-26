@@ -1,34 +1,14 @@
-# Downloads – Testergebnisse
+# Downloads & Links – Testergebnisse
 
-Studio: Downloads & Links (SYS-03) · Bereich: System & Sicherheit · Seite: `downloads` · Stand: 0.9.36 (Stand df96c57)
+Studio: Downloads & Links (SYS-03) · Bereich: System & Sicherheit · Seite: `downloads` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 44 · Fehlgeschlagen 0 · Übersprungen 1 · nicht im Lauf 2
+Bestanden 17 · Fehlgeschlagen 0 · Übersprungen 1 · nicht im Lauf 2
 
 | Test | Ergebnis |
 |---|---|
-| CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste | ✓ bestanden |
-| Design: Aktuelle Projekte – Leerzustand ohne Demodaten, danach echtes Projekt | ✓ bestanden |
-| Design: Dock-Klick auf Dateien startet direkt (nur Owner) und wird auditiert; Browser offline deaktiviert | ✓ bestanden |
-| Design: KI-Assistent zeigt 'Nicht verbunden', Eingabe deaktiviert | ✓ bestanden |
-| Design: Systemstatus zeigt Messwert in % oder 'n. v.', nie Mockup-Werte ohne Messung | ✓ bestanden |
-| Design: die neun bekannten Studios zeigen auf der Studios-Seite den echten Status aus requirements.yaml | ✓ bestanden |
 | Download-Manager: mehrere Links auf einmal, höchstens N gleichzeitig, Fortschritt, Anhalten/Fortsetzen, Prüfsumme falsch → Fehler; ohne Netz (nachgebildet) | ✓ bestanden |
-| Fahrtenbuch (T-0311): Fahrt korrigieren mit Grund, Fahrt stornieren mit Grund, Monat festschreiben – danach keine Änderung mehr möglich | ✓ bestanden |
-| Komponenten: Lizenzliste, Unreal nur geführt (offizieller Link), Zustimmung wird gespeichert | ✓ bestanden |
-| LETTER-UI: Briefkopf → Akte (Behörde) → Fakt, Chronik, Eingang → Frist UNGEPRÜFT → Quelle fehlt → Export gesperrt → beheben → DOCX → Freigabe → Versand BLOCKED | ✓ bestanden |
-| LETTER-UI: Briefstudio hat genau eine Unterebene; Akte/Ausgabe erst mit offener Akte | ✓ bestanden |
-| Lernplan: Plan mit Prüfungstermin anlegen → Tagesplan mit Ziel, Kalender mit Prüfungstag; „Jetzt lernen“ lernt in Plan-Reihenfolge und hält das Tempo | ✓ bestanden |
-| QA-004 UI: Browser-Aktion abgelehnt → nichts geöffnet | ✓ bestanden |
-| QA-004 UI: Browser-Aktion freigegeben → genau einmal geöffnet | ✓ bestanden |
-| QA-004 UI: Explorer-Aktion → Freigabe-Ansicht; Ausführung erst nach Klick auf Freigeben | ✓ bestanden |
-| QA-017: Navigationsschaltflächen haben zugängliche Namen | ✓ bestanden |
-| QA-017: Strg+1..5 schaltet alle Hauptbereiche per Tastatur | ✓ bestanden |
-| QA-017: Tab bewegt Fokus durch die Navigation, Enter aktiviert | ✓ bestanden |
-| QA-019 (simuliert): Offline-Modus – Browser-Aktion deaktiviert, lokale Funktionen laufen | ✓ bestanden |
-| STUDIO-LETTER-01: Schnellzugriff „Neuer Brief“ → Kündigung → ausfüllen → prüfen → speichern; Absender gemerkt | ✓ bestanden |
-| SYS-02: Notiz-Schnelltool öffnet Werkzeuge; Notiz wird gespeichert; Rechner rechnet bei Enter | ✓ bestanden |
 | SYS-03 (UI): Tabs; Prüfsumme rot/grün; Link-Warnung; Suchmaschine wirkt in Strg+K; Webnotiz in der Suche | ✓ bestanden |
 | SYS-03-P06: Prüfsumme – Algorithmus erkannt, Abweichung gemeldet | ✓ bestanden |
 | SYS-03-P07: Download abbrechen und fortsetzen ergibt dieselbe Prüfsumme (lokaler Testserver) | ✓ bestanden |
@@ -45,13 +25,6 @@ Bestanden 44 · Fehlgeschlagen 0 · Übersprungen 1 · nicht im Lauf 2
 | SYS-03-P18/P19/P20/P21/P24: Downloads sortieren + rückgängig, Quarantäne, Defender-Auswertung, Webnotiz, Proxy | ✓ bestanden |
 | SYS-03: Adressen werden sicher normalisiert (nur http/https, sonst Suche oder Ablehnung) | nicht im Lauf |
 | SYS-03: Browser werden über bekannte Pfade gefunden; riskante und unfertige Downloads erkannt | ✓ bestanden |
-| SYS-03: Dock-Browser öffnet Browser & Downloads; Adresse wird geöffnet, javascript: abgelehnt; offline gesperrt | ✓ bestanden |
-| SYS-11/X-09: Apps hat genau eine Unterebene; Programme und Speicher-Seite öffnen | ✓ bestanden |
-| SYS-12: Anzeigegröße „Sehr groß“ wird gespeichert; F1 zeigt die Hilfe | ✓ bestanden |
-| Schlüssel: ungültig wird nicht gespeichert, gültig landet im Secret-Store, nie im Audit | ✓ bestanden |
-| Studio-Klick: Unreal nur geführt – kein Installieren-Knopf, offizieller Installer-Link | ✓ bestanden |
-| Studio-Klick: fehlendes Programm → genau eine Frage 'Studio braucht X. Jetzt installieren?', 'Später' installiert nichts | ✓ bestanden |
-| W0-01/03/06: Assistent – Name, Ordner, Design, Pakete, Installation über Zustimmung, Vorlagen, Systemcheck | ✓ bestanden |
-| W0b-01: Keine Fachwörter in Oberflächentexten (docs/SPRACHE.md) | ✓ bestanden |
-| W0b-02/04/05: Widgets ausblenden, Dock sortieren, Bewegung reduzieren, Hinweis einmalig – alles gespeichert | ✓ bestanden |
-| W0b-06: Design wechseln (Hell/Kontrast) baut das Fenster neu auf und speichert | ✓ bestanden |
+| SYS-03: Dock-Symbol öffnet „Downloads & Links“; Adresse öffnet im Standard-Browser, javascript: abgelehnt; offline gesperrt | ✓ bestanden |
+| T-0755 SYS-03 UI: „Downloads & Links“ – echter HTTP-Download (lokaler Testserver) zeigt SHA-256, vergleicht mit der Angabe, Anhalten/Fortsetzen, Verlauf bleibt; Links sammeln und im Standard-Browser öffnen | ✓ bestanden |
+| T-0755 SYS-03: SHA-256 wird immer berechnet, Verlauf bleibt nach „Fertige aus der Liste nehmen“ und über Neustart; Links sammeln ohne Doppelte | ✓ bestanden |

@@ -1,26 +1,22 @@
-# VR & AR gestalten – Testplan
+# 3D-Modelle ansehen – Testplan
 
-Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` · Stand: 0.9.36 (Stand df96c57)
+Studio: 3D-Modelle ansehen (SPEC-04) · Bereich: 3D & Spiele · Seite: `xr` · Stand: 0.9.110 (Stand 0eb9d52)
 
-20 Tests sprechen dieses Programm an.
+16 Tests sprechen dieses Programm an.
 
-- S3 VR: Brillen-Ansicht zeigt linkes und rechtes Auge (±3,15 cm, Sichtfeld der Brille), Ziehen dreht beide; Handy-AR hat keine Brillen-Ansicht
+- 3D-Modelle ansehen: Vorschau aus Augenhöhe schaltbar (1,60 m); keine Brillen-Reparatur mehr (T-0722)
 - SPEC-04 F02: glTF lesen
 - SPEC-04 F06: Material-Check
 - SPEC-04 F07: Texturgrößen & Grafikspeicher
 - SPEC-04 F08: Maßstab prüfen
 - SPEC-04 F09: Texel-Dichte
-- SPEC-04 F10: Bewegungs-Komfort
 - SPEC-04 F11: Szenenliste
 - SPEC-04 F12: Animationen
 - SPEC-04 F13: Prüfbericht
 - SPEC-04 F14: LOD-Plan
 - SPEC-04 F15: Zeichenaufrufe je Material
 - SPEC-04 F16: Erweiterungen
-- SPEC-04 UI: Beispielmodell laden, mit der Maus drehen, Ansichten, Maßstab plausibel, alle Geräte grün, Bericht speichern
-- SPEC-04 UI: zu feines Modell wird für Handy-AR gelb, Zielgerät färbt die Balken; Datei öffnen, fehlende Datei; Komfort-Rechner
-- SPEC-04 VR: Brillen-Reparatur – Dreiecke auf 90 % des Budgets, Texturen auf die Gerätegrenze, Zentimeter-Modell auf Meter; Blender-Skript mit Dezimieren, Bildverkleinern, GLB-Export; passendes Modell braucht nichts
-- SPEC-04 VR: Vorschau aus Augenhöhe schaltbar (1,60 m), Anzeige der größten Textur, Karte „Für die Brille reparieren“; passt das Modell, gibt es nichts zu reparieren
-- SPEC-04: GLB lesen, Dreiecke zählen, Geräte-Grenzen und Bildzeit prüfen
-- SPEC-09 Scan: Kameras als Marker, beschneiden, Reste entfernen, Löcher schließen, echte Größe direkt und über Kreditkarte, Rückgängig; gute Fotos auswählen und als Kopie verwenden; Texturqualität wählbar
+- SPEC-04 UI: Beispielmodell laden, mit der Maus drehen, Ansichten, Maßstab plausibel, Maße und keine Fehler, Bericht speichern
+- SPEC-04 UI: feines Modell über „Datei wählen“ öffnen (ein Klick liest ein), Dreiecke und Maße stehen da; fehlende Datei meldet einen Fehler; keine Bildzeit und kein Komfort-Rechner mehr
+- SPEC-04: GLB lesen, Dreiecke zählen, Fehler im Modell finden
 - glTF-Oberfläche: ohne Programme Einrichten-Knöpfe; mit ihnen offiziell prüfen und für Web packen – neue …-web.glb, Original bleibt, Hinweis auf Blender/Unreal

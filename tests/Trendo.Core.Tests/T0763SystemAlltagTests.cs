@@ -8,6 +8,11 @@ namespace Trendo.Core.Tests;
 
 /// T-0763: SYS-13 „Alles prüfen“ (Ampel je Bereich), X-02 Installation gegen das Paket prüfen und ersetzen, Quarantäne zurückholen,
 /// X-09 Grafiklast je Programm und Lastprobe gegen die Windows-Leistungsindikatoren.
+/// <remarks>T-0771: nicht parallel zu anderen Tests. Die Lastprobe X-09 vergleicht die Prozessorlast DIESES Testprozesses (Trendo gegen die
+/// Windows-Leistungsindikatoren). Liefen andere Testklassen im selben Prozess mit, schwankte dessen Last von Sekunde zu Sekunde; die beiden Messungen
+/// lesen nicht im selben Augenblick und wichen im Volltest um mehr als 5 Punkte ab (46,4 % gegen 39,6 %). Allein gemessen ist die Last des
+/// Testprozesses die, die der Test selbst erzeugt. Grenze (5 Punkte) und Messung unverändert.</remarks>
+[Collection("T0763 Lastprobe")]
 public class T0763SystemAlltagTests
 {
     static string Tmp() { var d = Path.Combine(Path.GetTempPath(), "trendo-t0763-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(d); return d; }
@@ -247,3 +252,7 @@ public class T0763SystemAlltagTests
         finally { try { Directory.Delete(root, true); } catch (IOException) { } }
     }
 }
+
+/// <summary>T-0771: Sammlung für die Lastprobe – läuft allein, nicht parallel zu anderen Testklassen.</summary>
+[CollectionDefinition("T0763 Lastprobe", DisableParallelization = true)]
+public sealed class T0763LastprobeSammlung;

@@ -1,9 +1,9 @@
 # Trendo Text – Produktionspaket
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.36 (Stand df96c57)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.110 (Stand 0eb9d52)
 
-Arbeitsfläche: Dokumentseite (Textverarbeitung)  
-Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  
+Arbeitsfläche: keine eigene Arbeitsfläche erkannt (Seite aus Listen, Feldern und Knöpfen)  
+Modulstatus (requirements.yaml): IMPLEMENTED / Test NOT_RUN  
 Programm-Hülle (Dokumente, Rückgängig, Autosave, Bedienstufen): nein – eigene Arbeitsseite
 
 ## Inhalt

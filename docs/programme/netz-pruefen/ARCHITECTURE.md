@@ -1,6 +1,6 @@
 # Sicher prüfen – Architektur
 
-Studio: Downloads & Links (SYS-03) · Bereich: System & Sicherheit · Seite: `netz-pruefen` · Stand: 0.9.36 (Stand df96c57)
+Studio: Downloads & Links (SYS-03) · Bereich: System & Sicherheit · Seite: `netz-pruefen` · Stand: 0.9.110 (Stand 0eb9d52)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Sys03.cs`
@@ -11,14 +11,14 @@ Studio: Downloads & Links (SYS-03) · Bereich: System & Sicherheit · Seite: `ne
 ## Reiter
 - Sicher prüfen
 - Laden & Speichern
-- Browser
+- Links & Webseiten
 
 ## Fach-Engine (Trendo.Core)
 - `Bookmarks`
 - `Browsers`
-- `DesktopPlatform`
 - `Renamer`
 - `NoteStore`
+- `Panel`
 - `Progress`
 - `ResourceMonitor`
 

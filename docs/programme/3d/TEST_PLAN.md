@@ -1,11 +1,10 @@
 # 3D – Testplan
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand df96c57)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D & Spiele · Seite: `3d` · Stand: 0.9.110 (Stand 0eb9d52)
 
-58 Tests sprechen dieses Programm an.
+57 Tests sprechen dieses Programm an.
 
 - 3D Für Engine: ohne Teil Hinweis; vier Ziele; Unity-Export mit Bericht-Datei; Verlust (Material) wird als Fehler gemeldet
-- 3D aus Bild: TripoSR nach Klick einrichten (Stand geprüft, eigene Umgebung), Foto wählen → GLB → „Im 3D-Studio öffnen“; falscher Stand wird nicht eingerichtet
 - 3D-Arbeitsfläche: Formen einsetzen (auf dem Boden), Teil anklicken, mit der Maus verschieben (Raster), Pfeiltasten, Verdoppeln, Entf, Rückgängig
 - 3D-Arbeitsfläche: „Auf den Boden“ setzt die Unterkante auf 0, Text und Ebene stehen auf dem Boden
 - 3D-Modelle, Einfach: Grundfunktionen sichtbar, Export und Fachwerkzeuge nach einem Klick; Erweitert zeigt alles
@@ -16,10 +15,8 @@ Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d
 - 3D: Teil hinzufügen, ändern, Vorschau, löschen, rückgängig
 - 3D: Vorschau und Export sind bei üblichen Fenstergrößen ohne Scrollen sichtbar
 - 3D: ohne Blender einmal fragen, mit Blender das aktuelle Objekt öffnen
-- Abdeckung und StudioCatalog nennen dieselben Kennungen, Titel und Bereiche
-- Baukasten übernimmt die neue Seite ins Formular
-- Briefseite zeigt den echten Brieftext in der Vorschau
-- Briefseite zeigt die Auftragsleiste und meldet ehrlich, wenn nichts eingebaut ist
+- B4 UI: Kinderprofil – Rolle Benutzer aus dem Profil, keine Rückfrage, Kern lehnt ab, Freigaben-Seite gesperrt, nichts installiert
+- B4 UI: Klick auf „assimp einrichten“ allein installiert nichts – erst eigene Rückfrage; Abbrechen lehnt ab, erst „Einrichten“ gibt frei und löst genau einmal im Kern aus
 - CORE-05 B1: Drucker im Netz finden – Bambu-Meldung ergibt IP, Seriennummer, Modell (P1S), Name, LAN-Modus; fremde Geräte und kaputte Meldungen fallen weg; gleiches Netz wie der PC
 - CORE-05 B1–B5: Drucker finden und übernehmen, Einrichtung mit WLAN-Schritten, verbinden, Licht/Tempo/Düse steuern, AMS und Meldungen sehen, Fertig-Meldung, mehrere Drucker, vorbereiten und mit Zeitraffer drucken
 - CORE-05 B2/WLAN: Einrichtung in vier Schritten – ins WLAN (2,4 GHz), Nur LAN, Entwicklermodus (sonst nur Zusehen), Zugangscode; Bedienweg passend zum Modell
@@ -49,16 +46,18 @@ Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d
 - CORE-05: Szenenbaum – Teile in Gruppen ordnen, Gruppe auswählen bewegt alle ihre Teile, Ausblenden nimmt Teile aus Ansicht und Render, Material für die ganze Gruppe
 - CORE-05: Umrisse: Würfelschnitt ergibt einen geschlossenen Umriss (Umfang 80 mm, Fläche 400 mm²); zwei Körper zwei Umrisse
 - CORE-05: Unbekannte Formate und Formen werden abgewiesen
-- Einfach: In jedem Programm bleibt jeder Befehl der Stufe erreichbar, direkt oder unter „Mehr“; direkt sichtbar sind höchstens vier Programmbefehle
-- Geräusche: MMAudio mit Hinweis „nur nicht-kommerziell“, Beschreibung + Länge → WAV zum Anhören; ohne Beschreibung kein Lauf
-- Spiele bauen, Einfach: Auftrag und nächster Schritt; „Alle Bereiche“ zeigt alles; Erweitert unverändert
-- Spiele bauen: Nächster Schritt nennt den schwächsten Bereich in Alltagssprache; Alltagswörter nur in Einfach
-- Startbildschirm bekommt keine Auftragsleiste
+- Startmenü: Suche und Enter starten das Studio, nicht die Übersicht
 - Studio-Seiten: Überschrift ist der Name aus dem Studio-Katalog
-- StudioCatalog.NameOf: Katalogname, sonst der bisherige Text
-- Teams im Claude-Chat: vor dem Lauf liegt das Studio-Team als .claude/agents/trendo-*.md im Projektordner – Claude kann die Fachrollen hinzuziehen
-- Teams: jedes Studio (außer dem abgelehnten SPEC-07) hat ein Profi-Team; „👥 Team“ im 3D-Studio öffnet „KI einsetzen“ mit dem 3D-Team; eigene Rolle nur mit Studio
-- Vorschlag 36: Studios zeigen „✨ Freie KI hier“ – 3D-Studio schlägt „3D aus Bild“ vor, der Klick öffnet die KI-Bibliothek (geladen wird erst dort); jede Studio-Zuordnung gibt es wirklich
+- T-0691 3D: Fremde Blender-Datei einlesen (wie Ziehen auf die Fläche), Punkt verschieben, Wiederherstellung nach Neustart bietet die ungespeicherte Szene vollständig an
+- T-0691 3D: Punkte-Modus – Punkt anklicken, Umschalt+Klick erweitert, Pfeil hoch verschiebt nur die Auswahl; Fläche füllen und Normalen über die Knöpfe
+- T-0691 3D: Würfel einsetzen → Tab (Bearbeiten) → Taste 3 → Fläche anklicken → E extrudiert → Strg+Z / Strg+Y → als glTF exportiert, Datei wieder lesbar
+- T-0708 V-14: CAD, 3D-Modelle und Code-Editor haben Speichern · Rückgängig · Wiederholen (· Exportieren) links oben; Rückgängig wirkt über mehrere Schritte
+- T-0714 3D: zwei Grundformen hinzugefügt, Fenster ohne Speichern geschlossen → Karte → Wiederherstellen bringt die Szene vollständig; Speichern im Projekt räumt weg
+- T-0724 Leistung: 3D-Szene mit 40 000 Dreiecken öffnen – alle Dreiecke kommen an (Zeit wird nur gemessen)
+- T-0727 B3: 3D-Ansicht im Programmfenster wird nie unter ihre Mindesthöhe gedrückt – die Seite lässt sich stattdessen verschieben
+- T-0730 3D: Szene aus neuerer Fassung – Sicherung bleibt erhalten und angeboten
+- Teams: jedes Studio (außer dem abgelehnten SPEC-07) hat ein Profi-Team; „Team“ im 3D-Studio öffnet „KI einsetzen“ mit dem 3D-Team; eigene Rolle nur mit Studio
+- V4: im Fokusmodus und in „Erweitert“ bleibt 3D wie bisher – „Programme hinzufügen“ ist erreichbar
+- Vorschlag 36: Studios zeigen „Freie KI hier“ – 3D-Studio schlägt „3D aus Bild“ vor, der Klick öffnet die KI-Bibliothek (geladen wird erst dort); jede Studio-Zuordnung gibt es wirklich
 - assimp-Oberfläche: ohne Einrichtung Knopf; FBX im 3D-Ordner → „→ GLB“ startet Trendo mit --assimp-convert, Ergebnis in 3D/umgewandelt
 - f3d im 3D-Studio: Einrichten ohne Werkzeug; mit Werkzeug Knopf je Modell, Vorschaubild erscheint im Studio
-- Übrige Seiten, Einfach: Rest hinter „Mehr anzeigen“ und nach einem Klick wieder da; Erweitert zeigt alles sofort

@@ -1,6 +1,6 @@
 # Bücher schreiben – Produktionspaket
 
-Studio: Bücher schreiben (STUDIO-BOOK-01) · Bereich: Kreativ & Medien · Seite: `buch-programm` · Stand: 0.9.36 (Stand 7f0f9e3)
+Studio: Bücher schreiben (STUDIO-BOOK-01) · Bereich: Kreativ & Medien · Seite: `buch-programm` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Arbeitsfläche: Texteditor  
 Modulstatus (requirements.yaml): IN_PROGRESS / Test NOT_RUN  

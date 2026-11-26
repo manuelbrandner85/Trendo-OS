@@ -1,6 +1,6 @@
 # Konto, Lizenz & Vollversion – Umsetzungsstand
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `lizenz` · Stand: 0.9.92 (Stand 94252fc)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `lizenz` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getestet“ nur, wenn der zugehörige Test im letzten echten Lauf bestanden hat.
 
@@ -32,4 +32,4 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | SYS-12-P24 | Einfacher Modus | Implementiert | – |
 | SYS-12-P25 | Barrierefreiheits-Bericht | Implementiert | – |
 
-0 von 25 Funktionen getestet (noch kein Testlauf eingelesen).
+0 von 25 Funktionen getestet.

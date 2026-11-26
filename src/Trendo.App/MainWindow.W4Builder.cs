@@ -386,7 +386,7 @@ public partial class MainWindow
                     else if (e.Key == Key.Enter && (!multi || e.KeyModifiers == KeyModifiers.Control)) { e.Handled = true; Finish(tb.Text ?? ""); }
                 };
                 tb.LostFocus += (_, _) => Finish(tb.Text ?? "");
-                tb.AttachedToVisualTree += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(() => { tb.Focus(); tb.SelectAll(); });
+                tb.AttachedToVisualTree += (_, _) => Trendo.App.UiThread.Post(() => { tb.Focus(); tb.SelectAll(); });
                 ToolTip.SetTip(tb, multi ? "Strg+Enter übernimmt · Esc bricht ab" : "Enter übernimmt · Esc bricht ab");
                 inner = tb;
             }

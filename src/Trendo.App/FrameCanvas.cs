@@ -46,7 +46,7 @@ public sealed class FrameCanvas : Control
     Point Screen(double cmX, double cmY) => new((cmX - _s.PanX) * _s.Zoom, (cmY - _s.PanY) * _s.Zoom);
     Point ScreenM(double x, double y) => Screen(x * 100, -y * 100);
 
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e) { base.OnAttachedToVisualTree(e); if (_s.Focus) Avalonia.Threading.Dispatcher.UIThread.Post(() => Focus()); }
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e) { base.OnAttachedToVisualTree(e); if (_s.Focus) Trendo.App.UiThread.Post(() => Focus()); }
     protected override void OnSizeChanged(SizeChangedEventArgs e) { base.OnSizeChanged(e); if ((!_s.Fitted || !_s.UserView) && Bounds.Width > 10) { Fit(); _s.Fitted = true; } }
 
     public void Fit()

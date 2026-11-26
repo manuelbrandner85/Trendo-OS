@@ -1,0 +1,13 @@
+== Core 06:11:45
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+  Fehler Python-Vorlage besteht den eigenen Test, Git bleibt ohne Remote [46 s]
+  Fehler S4-06-N Abschottung: Absturz (Zugriffsverletzung) wird erkannt und erklärt; Zeitgrenze beendet hängende Prozesse; weitere Programme starten ist gesperrt [1 m]
+  Fehler Trendo.Core.Tests.LicensingTests.Version_kommt_aus_einer_Quelle [6 ms]
+Fehler!      : Fehler:     3, erfolgreich:  3779, übersprungen:    43, gesamt:  3825, Dauer: 8 m 7 s - Trendo.Core.Tests.dll (net10.0)
+== Api 06:20:07
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Api.Tests\bin\Release\net10.0\Trendo.Api.Tests.dll" (.NETCoreApp,Version=v10.0)
+Bestanden!   : Fehler:     0, erfolgreich:    16, übersprungen:     0, gesamt:    16, Dauer: 2 s - Trendo.Api.Tests.dll (net10.0)
+== App 06:20:18
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" (.NETCoreApp,Version=v10.0)
+  Fehler T-0681 Code-Editor: „Ausführen“ läuft im Hintergrund – Klick kehrt sofort zurück, Ausgabe erscheint laufend, die Seite bleibt bedienbar, „Abbrechen“ beendet den eigenen Kindprozess [188 ms]
+Fehler!      : Fehler:     1, erfolgreich:  1868, übersprungen:    20, gesamt:  1889, Dauer: 1 h 17 m - Trendo.App.Tests.dll (net10.0)

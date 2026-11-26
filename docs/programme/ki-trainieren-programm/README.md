@@ -1,6 +1,6 @@
 # Eigene KI trainieren – Produktionspaket
 
-Studio: Eigene KI trainieren (STUDIO-TRAIN-01) · Bereich: KI & Automatik · Seite: `ki-trainieren-programm` · Stand: 0.9.95 (Stand cce5c62)
+Studio: Eigene KI trainieren (STUDIO-TRAIN-01) · Bereich: KI & Automatik · Seite: `ki-trainieren-programm` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Arbeitsfläche: keine eigene Arbeitsfläche erkannt (Seite aus Listen, Feldern und Knöpfen)  
 Modulstatus (requirements.yaml): IN_PROGRESS / Test NOT_RUN  

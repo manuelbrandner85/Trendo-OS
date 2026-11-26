@@ -1,40 +1,22 @@
 # Speicher & Leistung – Funktionsmatrix
 
-Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.36 (Stand df96c57)
+Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude
-- Darstellung & Sprache
-- Personen & Konten
-- Sehen & Bedienhilfen
-- Trendo-Updates
-- Betriebsmodus
-- Geräte & Laufwerke
-- Handy verbinden
-- Geräteverbund
-- Im Heimnetz teilen
-- Apps
-- Programme verwalten
-- Hinzufügen
-- Pflegen & Aktualisieren
-- Zusatzprogramme
-- Downloads
-- Schutz & Datenschutz
-- Freigaben
-- Sicherung
-- Selbstheilung
-- Sicher prüfen
-- Sicherheits-Werkzeuge
-- Protokoll & Abstürze
-- Leistung messen
-- Systemcheck
-- Qualitäts-Ampel
-- Bau-Fortschritt
-- Mehr ▾
-- Verstanden
+- KI ▾
+- Claude
+- kie.ai
+- settings-nav-settings
+- settings-nav-personen
+- settings-nav-bedien-sehen
+- settings-nav-updates
+- settings-nav-geraete
+- settings-nav-sicherung
+- Mehr Einstellungen (22)
+- Mehr
 - Leistung
 - Prozesse
 - Speicher

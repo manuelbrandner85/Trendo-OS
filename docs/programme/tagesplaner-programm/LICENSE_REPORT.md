@@ -1,6 +1,6 @@
 # Tagesplaner – Lizenzen
 
-Studio: Tagesplaner (STUDIO-DAYPLAN-01) · Bereich: Arbeiten & Büro · Seite: `tagesplaner-programm` · Stand: 0.9.95 (Stand cce5c62)
+Studio: Tagesplaner (STUDIO-DAYPLAN-01) · Bereich: Arbeiten & Büro · Seite: `tagesplaner-programm` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

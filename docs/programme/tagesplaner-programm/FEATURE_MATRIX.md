@@ -1,6 +1,6 @@
 # Tagesplaner – Funktionsmatrix
 
-Studio: Tagesplaner (STUDIO-DAYPLAN-01) · Bereich: Arbeiten & Büro · Seite: `tagesplaner-programm` · Stand: 0.9.95 (Stand cce5c62)
+Studio: Tagesplaner (STUDIO-DAYPLAN-01) · Bereich: Arbeiten & Büro · Seite: `tagesplaner-programm` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -10,5 +10,6 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Offene Aufgaben übernehmen (Planen)
 - Heute (Tag)
 - Unerledigtes auf morgen (Tag)
+- Kalenderdatei mit Terminen (Tag)
 - Kalenderdatei (.ics) (Exportieren)
 - Tagesplan (.txt) (Exportieren)

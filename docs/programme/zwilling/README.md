@@ -1,9 +1,9 @@
 # Geräte überwachen – Produktionspaket
 
-Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.36 (Stand df96c57)
+Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Arbeitsfläche: Diagramm/Zeichnung  
-Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  
+Modulstatus (requirements.yaml): IMPLEMENTED / Test NOT_RUN  
 Programm-Hülle (Dokumente, Rückgängig, Autosave, Bedienstufen): nein – eigene Arbeitsseite
 
 ## Inhalt

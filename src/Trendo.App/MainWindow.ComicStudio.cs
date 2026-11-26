@@ -354,7 +354,7 @@ public partial class MainWindow
             Cursor = new Cursor(ComicTool switch { "pinsel" or "radierer" or "feld" => StandardCursorType.Cross, "blase" => StandardCursorType.Ibeam, _ => StandardCursorType.Arrow }),
         };
         ComicViewForTests = view;
-        view.SelectionChanged = sel => { ComicSel = sel; Dispatcher.UIThread.Post(() => Show(ComicKey), DispatcherPriority.Background); };
+        view.SelectionChanged = sel => { ComicSel = sel; Trendo.App.UiThread.Post(() => Show(ComicKey), DispatcherPriority.Background); };
         view.Changed = label => ProgramRun(ComicKey, () => d.Edit(label, x => { book.Write(x); }));
         view.Stroked = layer => ProgramRun(ComicKey, () =>
         {
@@ -406,7 +406,7 @@ public partial class MainWindow
         var dock = new DockPanel { LastChildFill = true }; DockPanel.SetDock(top, Avalonia.Controls.Dock.Top); dock.Children.Add(top);
         if (SimpleCollapsed(ComicKey)) { var bar = ComicDrawBar(d, page); DockPanel.SetDock(bar, Avalonia.Controls.Dock.Top); dock.Children.Add(bar); } // T-0704: Zeichnen auch in „Einfach“
         dock.Children.Add(frame);
-        Dispatcher.UIThread.Post(() => { if (view.IsAttachedToVisualTree() && !_comicFocusText) view.Focus(); }, DispatcherPriority.Background);
+        Trendo.App.UiThread.Post(() => { if (view.IsAttachedToVisualTree() && !_comicFocusText) view.Focus(); }, DispatcherPriority.Background);
         return dock;
     }
 
@@ -562,7 +562,7 @@ public partial class MainWindow
         if (_comicFocusText && focus is not null)
         {
             _comicFocusText = false; var f = focus;
-            Dispatcher.UIThread.Post(() => { if (f.IsAttachedToVisualTree()) { f.Focus(); f.SelectAll(); } }, DispatcherPriority.Background);
+            Trendo.App.UiThread.Post(() => { if (f.IsAttachedToVisualTree()) { f.Focus(); f.SelectAll(); } }, DispatcherPriority.Background);
         }
         return sp;
     }

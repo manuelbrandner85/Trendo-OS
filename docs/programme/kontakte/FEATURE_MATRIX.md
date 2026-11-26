@@ -1,6 +1,6 @@
 # Adressbuch – Funktionsmatrix
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kontakte` · Stand: 0.9.36 (Stand df96c57)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kontakte` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/spec/kataloge/SYS-09_KATALOG.md`
 
@@ -25,25 +25,21 @@ Quelle: `docs/spec/kataloge/SYS-09_KATALOG.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude
+- KI ▾
+- Claude
+- kie.ai
 - Antwort auf die letzte E-Mail entwerfen
 - Termin nächste Woche Dienstag 10 Uhr
 - Ungelesene Mails zusammenfassen
-- Mehr ▾
-- E-Mail & Kontakte
+- Mehr
+- Schreiben
 - Adressbuch
 - Posteingang
 - Kalender
 - Aufgaben
 - + Neuer Kontakt
 - Datei wählen …
-- Einlesen
-- Alle als vCard sichern
-- Als CSV (Google, Outlook)
-- Nummern vereinheitlichen
-- Etiketten (PDF)
-- Geburtstage in den Kalender
-- 👥 Alle Kontakte
-- ★ Favoriten
-- 🎂 Bald Geburtstag
-- ⧉ Doppelte
+- ab-g-alle
+- ab-g-fav
+- ab-g-bday
+- ab-g-dups

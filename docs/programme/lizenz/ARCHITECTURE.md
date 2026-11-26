@@ -1,6 +1,6 @@
 # Konto, Lizenz & Vollversion – Architektur
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `lizenz` · Stand: 0.9.92 (Stand 94252fc)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `lizenz` · Stand: 0.9.110 (Stand 0eb9d52)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Lizenz.cs`
@@ -13,11 +13,12 @@ Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Se
 - `A11y`
 - `DeliveryMode`
 - `LicenseVerifier`
-- `DependencyCatalog`
+- `Position`
 - `LicenseKeys`
 - `LicenseStore`
 
 ## Dateiformate (im Code belegt)
+- .json
 - .txt
 - .zip
 

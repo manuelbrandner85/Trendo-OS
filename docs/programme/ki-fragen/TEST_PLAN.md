@@ -1,6 +1,6 @@
 # KI fragen – Testplan
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki-fragen` · Stand: 0.9.36 (Stand df96c57)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki-fragen` · Stand: 0.9.110 (Stand 0eb9d52)
 
 18 Tests sprechen dieses Programm an.
 
@@ -9,16 +9,16 @@ Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki-fragen` · 
 - CORE-02: Ohne erreichbare KI ehrliche Meldung statt Fantasieantwort
 - CORE-02: Ollama-Format (tags/chat) wird korrekt gesprochen
 - CORE-02: Rückfall auf die nächste Quelle, Wissen wird eingebaut, Inhalt nicht ins Protokoll
-- CORE-03 UI: Rolle wählen, starten, Team-Ablauf, Speichern über Freigabe
 - CORE-10 UI: Merken, Suchen, Löschen und Korrektur aus dem Gespräch
-- CORE-12 UI: Vorlage ausfüllen und senden, neue Vorlage speichern, Masterprompt bauen
 - Chatfenster: Enter sendet, Antwort als Sprechblase mit Tabelle und Code (Kopieren), Gespräch gespeichert und wieder zu öffnen, umbenennen, löschen
-- Claude-Regeln 01.11.2026: Claude Code aus Trendo erlaubt (eigene Anmeldung je Nutzer) – kein Sperr-Hinweis; „Claude Code öffnen“ startet das echte Claude Code im Projektordner
-- Claude-Regeln 01.11.2026: Trendo speichert keine Claude-Tokens – ein alter wird beim Start gelöscht, kein Token-Feld mehr
 - Gedächtnis: aus, bis man es einschaltet; danach merkt der Chat Aussagen, Einträge sichtbar und löschbar; alles vergessen fragt nach
-- SYS-05 UI: Vorlage anlegen, Probelauf, Freigeben, Ausführen, eigener Ablauf
-- T-0316: Claude als Haupt-KI – Frage läuft eingegrenzt über Claude (kein Datei-Ändern), Antwort mit Quelle „Claude (dein Abo)“; Haupt-KI aus → Claude wird nicht gefragt
 - T-0316: Claude-Karte – nicht installiert → „Claude Code einrichten“, nicht angemeldet → „Mit Claude verbinden“, verbunden → „✓ Mit deinem Claude-Abo verbunden (Max)“
-- T-0316: Studio – „✳ Claude“ immer in der Auftragsleiste; das Claude-Projekt des Studios trägt seine Rolle, kein Terminal
-- T-0316: Testmodus – Knöpfe „Claude Code einrichten“, „Mit Claude verbinden“, „Claude Code öffnen“ starten nie ein echtes Programm
-- X-05 UI: Suche findet laufende Quelle, Fragen nutzt die Rückfallkette
+- T-0717 KI fragen: noch nicht gesendete Nachricht – Rückgängig/Wiederholen, Notsicherung, Karte, Zurückholen
+- T-0734 ECHT: Ollama liest eine angehängte Datei, Antwort wächst sichtbar, Folgefrage kennt die Datei; Bildmodell erkennt die Farbe eines Bildes (nur mit TRENDO_ECHT_KIFRAGEN)
+- T-0734 Gegenprüfung: Anhang beim Senden nicht lesbar (leer, gelöscht) oder Bild ohne Bildmodell → Frage bleibt im Eingabefeld, Anhang bleibt, Meldung nennt die Datei
+- T-0734 Gegenprüfung: BMP wird vor dem Senden mit SkiaSharp in PNG umgewandelt – das Bildmodell bekommt ein echtes PNG
+- T-0734 Gegenprüfung: Datei lesen (hier ein langsames pdftotext) läuft neben der Oberfläche; „Stopp“ bricht das Lesen in unter 3 s ab, Frage und Anhang bleiben
+- T-0734 Gegenprüfung: während einer laufenden Antwort abgelegte Datei bleibt für die nächste Frage; nur die gesendeten Anhänge verschwinden
+- T-0734: Antwort wächst sichtbar in der Sprechblase; Stopp beendet in unter 2 s und das Geschriebene bleibt mit „(abgebrochen)“ im Gespräch
+- T-0734: Bild ohne Bildmodell → klare Meldung statt erfundener Antwort, Anhang bleibt; Hinweis sagt, dass Bilder auf dem PC bleiben
+- T-0734: „Datei anhängen“ (Auswahl) → Karte mit Name und Hinweis „bleibt auf diesem PC“; Frage enthält den Dateitext, Gespräch zeigt 📎; falsche Art wird abgelehnt

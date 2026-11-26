@@ -66,7 +66,7 @@ public partial class MainWindow
         var line = PackageParsers.CleanLine(raw);
         if (line.Length > 0) run.Add(line);
         if (PackageParsers.Progress(raw) is { } pr) run.Progress = pr;
-        Avalonia.Threading.Dispatcher.UIThread.Post(() => AppRunRefresh(run));
+        Trendo.App.UiThread.Post(() => AppRunRefresh(run));
     }
 
     void AppRunRefresh(AppRunState run)

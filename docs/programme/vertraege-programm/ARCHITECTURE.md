@@ -1,6 +1,6 @@
 # Verträge-Ordner – Architektur
 
-Studio: Verträge-Ordner (STUDIO-CONTRACTS-01) · Bereich: Arbeiten & Büro · Seite: `vertraege-programm` · Stand: 0.9.103 (Stand 0262de0)
+Studio: Verträge-Ordner (STUDIO-CONTRACTS-01) · Bereich: Arbeiten & Büro · Seite: `vertraege-programm` · Stand: 0.9.110 (Stand 0eb9d52)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Vertraege.cs`

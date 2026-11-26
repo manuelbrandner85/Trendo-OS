@@ -1,8 +1,8 @@
-# VR & AR gestalten – Einbindung in Trendo OS
+# 3D-Modelle ansehen – Einbindung in Trendo OS
 
-Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` · Stand: 0.9.36 (Stand df96c57)
+Studio: 3D-Modelle ansehen (SPEC-04) · Bereich: 3D & Spiele · Seite: `xr` · Stand: 0.9.110 (Stand 0eb9d52)
 
-- Seite `xr` im Studio „VR & AR gestalten“ (3D, Spiele & VR) – erreichbar über Startmenü, Suche und Programmkatalog
+- Seite `xr` im Studio „3D-Modelle ansehen“ (3D & Spiele) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein
-- Reiter: VR & AR gestalten, 3D-Bibliothek
+- Reiter: 3D-Modelle ansehen, 3D-Bibliothek
 - Quelltext: `src/Trendo.App/MainWindow.Library3D.cs`, `src/Trendo.App/MainWindow.Spec04.cs`

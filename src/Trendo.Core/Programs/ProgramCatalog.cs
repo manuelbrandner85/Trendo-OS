@@ -140,6 +140,22 @@ public static class ProgramCatalog
             ? System.Text.RegularExpressions.Regex.Matches(line, "„([^“]+)“").Select(m => m.Groups[1].Value).ToHashSet(StringComparer.Ordinal)
             : [];
 
+    /// <summary>T-0771: Programmnamen aus den Zeilen „- Programme:“ der Vorbild-Analysen (docs/claude/vorbilder), die es unter
+    /// <paramref name="known"/> nicht (mehr) gibt – z. B. nach einer Umbenennung. Der Katalog-Erzeuger meldet sie sofort; sonst fiel das erst im
+    /// Volltest auf (VorbildAnalysenTests, 0.9.110: „Downloads“ → „Downloads &amp; Links“, „Leistung“ → „Alles prüfen“).</summary>
+    public static List<(string File, string Name)> StaleAnalysisNames(string repo, IEnumerable<string> known)
+    {
+        var dir = Path.Combine(repo, "docs", "claude", "vorbilder"); if (!Directory.Exists(dir)) return [];
+        var k = known.ToHashSet(StringComparer.Ordinal);
+        return [.. Directory.EnumerateFiles(dir, "*.md").OrderBy(f => f, StringComparer.Ordinal)
+            .SelectMany(f => AnalysisPrograms(File.ReadAllText(f)).Where(n => !k.Contains(n)).Order(StringComparer.Ordinal).Select(n => (Path.GetFileName(f), n)))];
+    }
+
+    /// <summary>T-0771: verständliche Meldung zu <see cref="StaleAnalysisNames"/> (leer, wenn alles stimmt).</summary>
+    public static string StaleAnalysisMessage(IReadOnlyList<(string File, string Name)> stale) => stale.Count == 0 ? "" :
+        $"ACHTUNG: {stale.Count} Programmname(n) in den Vorbild-Analysen gibt es im Katalog nicht mehr – bitte in docs/claude/vorbilder anpassen " +
+        "(sonst wird VorbildAnalysenTests rot):\n" + string.Concat(stale.Select(x => $"  {x.File}: „{x.Name}“\n"));
+
     /// <summary>Vorbild-Analyse (docs/claude/vorbilder), wenn sie das Programm in ihrer Zeile „Programme:“ nennt.</summary>
     public static (string? File, string? Summary) Vorbild(string repo, ProgramEntry e)
     {

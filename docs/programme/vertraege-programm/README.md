@@ -1,6 +1,6 @@
 # Verträge-Ordner – Produktionspaket
 
-Studio: Verträge-Ordner (STUDIO-CONTRACTS-01) · Bereich: Arbeiten & Büro · Seite: `vertraege-programm` · Stand: 0.9.103 (Stand 0262de0)
+Studio: Verträge-Ordner (STUDIO-CONTRACTS-01) · Bereich: Arbeiten & Büro · Seite: `vertraege-programm` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Arbeitsfläche: keine eigene Arbeitsfläche erkannt (Seite aus Listen, Feldern und Knöpfen)  
 Modulstatus (requirements.yaml): IN_PROGRESS / Test NOT_RUN  

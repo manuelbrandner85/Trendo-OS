@@ -1,21 +1,17 @@
 # Selbstheilung – Testplan
 
-Studio: Einrichten & Reparieren (X-02) · Bereich: System & Sicherheit · Seite: `heilung` · Stand: 0.9.36 (Stand df96c57)
+Studio: Einrichten & Reparieren (X-02) · Bereich: System & Sicherheit · Seite: `heilung` · Stand: 0.9.110 (Stand 0eb9d52)
 
-15 Tests sprechen dieses Programm an.
+11 Tests sprechen dieses Programm an.
 
-- CORE-11 UI: Schutz-Seite über System erreichbar, Sichern, Ordner prüfen
-- SPEC-12 UI: Prüfsumme vergleichen, Fall anlegen, Beweis sichern, Bericht
-- SYS-04 UI: Suchen, installieren, Updates anzeigen und aktualisieren, entfernen
-- SYS-06 Freigabe-Dialog: Fenster schließen (X) lehnt ab
-- SYS-06 Freigabe-Dialog: Klick auf „Ablehnen“ lehnt ab
-- SYS-06 Freigabe-Dialog: Klick auf „Erlauben“ startet die Freigabe; Schließen des Hauptfensters beendet sie
-- SYS-06 Freigabe-Dialog: nennt Ordner und Dauer, Esc lehnt ab
-- SYS-06 Freigabe-Gate: ohne Zustimmung keine Freigabe, Anfrage abgelehnt
-- SYS-06 UI: Ordner teilen, Datei echt per HTTP laden, falsches Token abgelehnt, beenden
-- SYS-07 UI: Geräte suchen zeigt Gruppen
-- SYS-08 UI: Seite im Lesemodus lesen, .onion wird nicht abgerufen, Sitzung beenden
-- SYS-09 UI: Kontakt anlegen, Entwurf prüfen und im Mailprogramm öffnen (nichts wird gesendet)
+- X-02 (T-0763 Fix F4): Verknüpfung im Programmordner erscheint als eigener Hinweis in der Karte und gelb in „Alles prüfen“
+- X-02 (T-0763): beiseitegelegte Datei zurückholen – an den alten Ort, bisherige Datei bleibt als .bak, wird nicht erneut beiseitegelegt; alte Quarantäne ohne Herkunft ehrlich
+- X-02 (T-0763): fehlendes Zusatzprogramm mit einem Klick nachholen – erst eigene Rückfrage, dann Einrichtung; Nein ändert nichts
+- X-02 (T-0763): gelöschte Programmdatei erkannt und nach Rückfrage aus dem Installationspaket ersetzt
+- X-02 (T-0763): gelöschte und veränderte Programmdatei werden gegen das Installationspaket erkannt und daraus ersetzt
+- X-02 (T-0763): kaputte Einstellungsdatei wird beiseitegelegt und lässt sich per Knopf (mit Rückfrage) zurückholen
+- X-02 (T-0763): ohne Installation ehrlich „nur installierte Version“, ohne Paket „Setup erneut ausführen“; Pfade aus dem Paket bleiben im Programmordner
+- X-02 (T-0763, echt): installiertes Trendo dieses PCs gegen sein Paket prüfen; auf einer Kopie Datei löschen, verändern und ersetzen
 - X-02 UI: Beim Start automatisch geprüft, Seite zeigt Ergebnis, erneut prüfen
 - X-02: Fehlende Ordner, kaputte Dateien, verwaiste Pfade und alte Zwischendateien werden repariert
 - X-02: Verändertes Protokoll wird gemeldet, aber bewusst nicht „repariert“

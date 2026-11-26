@@ -1,6 +1,6 @@
 # Recherche mit Quellen – Architektur
 
-Studio: Recherche mit Quellen (STUDIO-CITE-01) · Bereich: Wissen & Lernen · Seite: `quellen-programm` · Stand: 0.9.95 (Stand cce5c62)
+Studio: Recherche mit Quellen (STUDIO-CITE-01) · Bereich: Wissen & Lernen · Seite: `quellen-programm` · Stand: 0.9.110 (Stand 0eb9d52)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.KreativStudios4.cs`
@@ -13,30 +13,23 @@ Studio: Recherche mit Quellen (STUDIO-CITE-01) · Bereich: Wissen & Lernen · Se
 
 ## Fach-Engine (Trendo.Core)
 - `CiteKit`
-- `DayPlanner`
 - `CodeAiKit`
+- `DayPlanner`
 - `VisionKit`
 - `KreativSafe`
+- `ClaudeCode`
 - `CodeProject`
+- `FolderSnapshot`
+- `VisionTags`
 - `RealProcessRunner`
 
 ## Dateiformate (im Code belegt)
 - .bib
-- .csv
-- .html
-- .ics
-- .jpg
 - .json
 - .md
-- .mp4
-- .ogg
-- .png
-- .svg
+- .ris
 - .tdoc
 - .txt
-- .wav
-- .xml
-- .zip
 
 ## Externe Programme und Dienste
 - Blender (optional, 3D-Fotos/Render)

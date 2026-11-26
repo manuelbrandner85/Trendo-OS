@@ -45,7 +45,7 @@ public partial class MainWindow
             case "bereit": VectorSend(_vec.InitScript()); break;
             case "kachel": if (_vec.Answer(m) is { } s) VectorSend(s); break;
             case "geladen": _vecNote = $"✓ Vektorkarte „{_vec.Name}“ angezeigt."; break;
-            case "fehler": _vecNote = "⚠ Karte: " + m.Text; Dispatcher.UIThread.Post(() => Show(MK)); break;
+            case "fehler": _vecNote = "⚠ Karte: " + m.Text; Trendo.App.UiThread.Post(() => Show(MK)); break;
         }
     }
 

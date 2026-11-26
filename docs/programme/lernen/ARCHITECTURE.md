@@ -1,6 +1,6 @@
 # Lernen mit Karteikarten – Architektur
 
-Studio: Lernen mit Karteikarten (SPEC-06) · Bereich: Wissen & Lernen · Seite: `lernen` · Stand: 0.9.36 (Stand df96c57)
+Studio: Lernen mit Karteikarten (SPEC-06) · Bereich: Wissen & Lernen · Seite: `lernen` · Stand: 0.9.110 (Stand 0eb9d52)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Spec06.cs`
@@ -13,13 +13,22 @@ Studio: Lernen mit Karteikarten (SPEC-06) · Bereich: Wissen & Lernen · Seite: 
 - `Grade`
 - `DText`
 - `LearnBox`
+- `AtomicFile`
 - `DPoly`
+- `Panel`
 
 ## Dateiformate (im Code belegt)
 - .csv
+- .jpg
+- .mp4
+- .ogg
+- .png
+- .txt
+- .wav
 
 ## Externe Programme und Dienste
 - Blender (optional, 3D-Fotos/Render)
+- FFmpeg
 - PDFsharp (MIT)
 
 ## Bausteine (Masterprompt 131 / 5)

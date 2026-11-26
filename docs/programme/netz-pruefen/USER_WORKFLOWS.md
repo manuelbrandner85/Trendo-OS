@@ -1,7 +1,7 @@
 # Sicher prüfen – Arbeitsabläufe
 
-Studio: Downloads & Links (SYS-03) · Bereich: System & Sicherheit · Seite: `netz-pruefen` · Stand: 0.9.36 (Stand df96c57)
+Studio: Downloads & Links (SYS-03) · Bereich: System & Sicherheit · Seite: `netz-pruefen` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Die Abläufe unten sind die Oberflächentests, die das Programm über den echten Eingabeweg bedienen (Klicks, Tastatur).
 
-– kein Oberflächentest gefunden
+- T-0755 SYS-03 UI: „Downloads & Links“ – echter HTTP-Download (lokaler Testserver) zeigt SHA-256, vergleicht mit der Angabe, Anhalten/Fortsetzen, Verlauf bleibt; Links sammeln und im Standard-Browser öffnen

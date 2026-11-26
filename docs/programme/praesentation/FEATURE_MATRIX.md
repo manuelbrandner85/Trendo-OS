@@ -1,6 +1,6 @@
 # Trendo Präsentation – Funktionsmatrix
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `praesentation` · Stand: 0.9.36 (Stand df96c57)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `praesentation` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/spec/kataloge/SYS-10_KATALOG.md`
 
@@ -34,35 +34,40 @@ Quelle: `docs/spec/kataloge/SYS-10_KATALOG.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- Hinzufügen …
-- ✳ Markierung fragen
-- ✳ Claude
+- KI ▾
+- Claude
+- Markierung an Claude
+- kie.ai
+- Programme hinzufügen …
 - Haushaltsplan als Tabelle
 - Präsentation über unser Projekt, 8 Folien
 - Lebenslauf modern gestalten
-- Mehr ▾
-- Datei ▾
+- Mehr
+- Speichern
+- Als PDF
+- Datei
 - Start
 - Einfügen
 - Entwurf
 - Übergänge
 - Animationen
 - Vorführen
-- Neue Folie
-- Duplizieren
-- Löschen
-- Layout
-- A+
-- A−
-- Fett
-- Farbe
-- Aufzählung
-- Links
-- Mitte
-- Rechts
-- Zurück
-- Vor
-- Nach oben
-- Nach unten
-- Folie
+- praesentation-new
+- praesentation-dup
+- praesentation-del
+- praesentation-layout
+- praesentation-bigger
+- praesentation-smaller
+- praesentation-bold
+- praesentation-italic
+- praesentation-underline
+- praesentation-color
+- praesentation-bullets
+- praesentation-left
+- praesentation-center
+- praesentation-right
+- praesentation-show
+- praesentation-up
+- praesentation-down
+- praesentation-add
 - praesentation-slide-0

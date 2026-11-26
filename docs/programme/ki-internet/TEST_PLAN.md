@@ -1,12 +1,12 @@
 # Kostenlose Internet-KIs – Testplan
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-internet` · Stand: 0.9.36 (Stand df96c57)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-internet` · Stand: 0.9.110 (Stand 0eb9d52)
 
 8 Tests sprechen dieses Programm an.
 
-- A: Hinzufügen-Zentrale mit Reitern und Suche über alles; Studio-Knopf; Trendo-Suche findet Installierbares; Meine Installationen
-- B: Einrichtung mit Profilbild, PIN und Wiederherstellungs-Code, Interessen → Desktop-Symbole, Personen; Sperrbildschirm mit PIN vergessen
 - C: kostenlose Internet-KIs – Liste laden, Schlüssel geführt einrichten, in allen Bereichen einspringen, Hinweis und Tageszähler, Bild verstehen
+- T-0739 X-05: feste Katalog-Summe entscheidet – richtige Datei wird installiert, veränderte Bytes werden verworfen, Widerspruch Server/Katalog ebenso
+- T-0739 X-05: jede Hugging-Face-Datei hat eine feste SHA-256 mit Herkunft; ohne Summe steht ehrlich „ohne Prüfsumme“
 - X-05 UI: Suche findet laufende Quelle, Fragen nutzt die Rückfallkette
 - X-05: Kostenlose Internet-KIs – nur Modelle ohne jeden Preis (auch Bild-Preis), „(free)“ aus dem Namen, Beschreibung gekürzt, größter Kontext zuerst; Liste speichern, nach 24 h veraltet
 - X-05: Nur freie Quellen auf diesem Gerät, Modelle passend zur Hardware

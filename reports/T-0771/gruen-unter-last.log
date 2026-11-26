@@ -1,0 +1,36 @@
+16
+Last: 16 PowerShell-Endlosschleifen (eigene PIDs, am Ende per PID beendet)
+##### Lauf 1/1 (core T0763SystemAlltagTests.Load_probe_against_performance_counters) 04:07:13
+  Fehler X-09 (T-0763, echt): Lastprobe – Prozessorlast eines ausgelasteten Prozesses weicht höchstens 5 Prozentpunkte von den Windows-Leistungsindikatoren ab [4 m 48 s]
+Abweichung: 0,49 Prozentpunkte
+Abweichung: 10,26 Prozentpunkte
+Messfenster je 4 s, Abweichung Last/Testprozess: 1,50/25,81 | 0,49/10,26 | 0,54/5,45 (gewertet: das mittlere)
+Grenze: 5 Prozentpunkte
+     at Trendo.Core.Tests.T0763SystemAlltagTests.Load_probe_against_performance_counters() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0763SystemAlltagTests.cs:line 219
+Fehler!      : Fehler:     1, erfolgreich:     0, übersprungen:     0, gesamt:     1, Dauer: 4 m 48 s - Trendo.Core.Tests.dll (net10.0)
+exit 1
+##### Lauf 1/1 (core T0754DateiRueckgaengigTests.Fremder_Ordner_Papierkorb_bleibt) 04:12:15
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 993 ms - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 1/1 (core T0766_Gegenpruefung2.N10_parallel) 04:12:26
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 977 ms - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 1/1 (core MusicProTests.Hook) 04:12:37
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 11 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 1/1 (core KiModelT0703Tests.Fallback_on_timeout_but_thinking_keeps_alive) 04:13:06
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 3 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 1/1 (core T0747_Fix2ZweitePruefung.Zigzag_speed_and_cancel) 04:13:23
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 8 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 1/1 (app Trendo.App.Tests.TonT0732_Ui.Record_until_stop) 04:13:43
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 12,879s
+exit 0
+##### Lauf 1/1 (app Trendo.App.Tests.WebDesignStufe3Teil2_Browser.Real_parser_round_trip) 04:13:59
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 23,038s
+exit 0
+##### gemeinsam in einem Prozess (wie im Volltest) unter Last
+  Fehler X-09 (T-0763, echt): Lastprobe – Prozessorlast eines ausgelasteten Prozesses weicht höchstens 5 Prozentpunkte von den Windows-Leistungsindikatoren ab [4 m 46 s]
+Fehler!      : Fehler:     1, erfolgreich:     5, übersprungen:     0, gesamt:     6, Dauer: 4 m 48 s - Trendo.Core.Tests.dll (net10.0)
+gestoppt

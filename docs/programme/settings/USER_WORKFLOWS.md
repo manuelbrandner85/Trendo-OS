@@ -1,11 +1,7 @@
 # Einstellungen – Arbeitsabläufe
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand df96c57)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Die Abläufe unten sind die Oberflächentests, die das Programm über den echten Eingabeweg bedienen (Klicks, Tastatur).
 
-- LETTER-UI: Briefkopf → Akte (Behörde) → Fakt, Chronik, Eingang → Frist UNGEPRÜFT → Quelle fehlt → Export gesperrt → beheben → DOCX → Freigabe → Versand BLOCKED
-- LETTER-UI: Briefstudio hat genau eine Unterebene; Akte/Ausgabe erst mit offener Akte
-- QA-004 UI: Browser-Aktion abgelehnt → nichts geöffnet
-- QA-004 UI: Browser-Aktion freigegeben → genau einmal geöffnet
-- QA-004 UI: Explorer-Aktion → Freigabe-Ansicht; Ausführung erst nach Klick auf Freigeben
+- T-0713 UI: Hinweis-Karte in den Einstellungen, wenn ein Erwachsenen-Profil ohne PIN neben einem Kinderprofil besteht; „PIN festlegen“ führt zur Anmeldung; mit PIN verschwindet sie

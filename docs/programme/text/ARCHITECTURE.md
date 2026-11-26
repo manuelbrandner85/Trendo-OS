@@ -1,18 +1,17 @@
 # Trendo Text – Architektur
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.36 (Stand df96c57)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.110 (Stand 0eb9d52)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Sys10.cs`
 - `src/Trendo.App/MainWindow.Text.cs`
 
 ## Bedienelemente der Arbeitsfläche
-- Dokumentseite (Textverarbeitung)
+– (nicht erfasst)
 
 ## Fach-Engine (Trendo.Core)
 - `TextDoc`
-- `ParaStyle`
-- `MarkKind`
+- `TextEdit`
 - `ListKind`
 - `Ooxml`
 - `TextTools`
@@ -20,6 +19,7 @@ Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` 
 - `Spelling`
 - `Writing`
 - `DocVersions`
+- `MarkKind`
 
 ## Dateiformate (im Code belegt)
 - .csv

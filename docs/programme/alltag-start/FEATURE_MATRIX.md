@@ -1,6 +1,6 @@
 # Übersicht – Funktionsmatrix
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `alltag-start` · Stand: 0.9.36 (Stand df96c57)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `alltag-start` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/spec/kataloge/SYS-02_KATALOG.md`
 
@@ -34,8 +34,10 @@ Quelle: `docs/spec/kataloge/SYS-02_KATALOG.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude
-- Mehr ▾
+- KI ▾
+- Claude
+- kie.ai
+- Mehr
 - Übersicht
 - Dateien
 - Bilder & Medien
@@ -46,5 +48,13 @@ Quelle: `docs/spec/kataloge/SYS-02_KATALOG.md`
 - Rechner
 - Uhr & Wecker
 - Zettel
-- Bilder & Bildschirmfoto
-- Musik & Videos
+- alltag-app-notizbuch
+- alltag-app-editor
+- alltag-app-rechner
+- alltag-app-uhr
+- alltag-app-zettel
+- alltag-app-alltag-bilder
+- alltag-app-medien
+- alltag-app-alltag-dateien
+- alltag-app-alltag-zeit
+- alltag-app-alltag-helfer

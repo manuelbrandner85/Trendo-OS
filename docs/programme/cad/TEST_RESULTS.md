@@ -1,10 +1,10 @@
 # Trendo CAD – Testergebnisse
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.36 (Stand df96c57)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D & Spiele · Seite: `cad` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 32 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 37 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -39,4 +39,9 @@ Bestanden 32 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | CORE-05: Umrisse: Würfelschnitt ergibt einen geschlossenen Umriss (Umfang 80 mm, Fläche 400 mm²); zwei Körper zwei Umrisse | ✓ bestanden |
 | CORE-05: Unbekannte Formate und Formen werden abgewiesen | ✓ bestanden |
 | N23: Bauschritte über das Menüband, Maß als Formel ändern, Parameter ändern rechnet neu, Rückgängig, Export 3MF/STEP/Zeichnung | ✓ bestanden |
-| N24: Drucker eintragen (Zugangscode geschützt), mit nachgebautem Drucker verbinden, Status sehen; Druck nur nach Bestätigung | ✓ bestanden |
+| T-0691 CAD: Fremd-DXF einlesen → Ebenen sichtbar → Kontur als Körper hochziehen → als DXF speichern; Strg+Z nimmt zurück; Wiederherstellung nach Neustart | ✓ bestanden |
+| T-0691 CAD: STL (von Blender) und facettiertes STEP als Referenzkörper; echtes B-Rep-STEP wird ehrlich abgelehnt; STEP-Export heißt „facettiert“ | ✓ bestanden |
+| T-0708 V-14: CAD, 3D-Modelle und Code-Editor haben Speichern · Rückgängig · Wiederholen (· Exportieren) links oben; Rückgängig wirkt über mehrere Schritte | ✓ bestanden |
+| T-0714 CAD: Quader und Maß geändert, Fenster ohne Speichern geschlossen → Karte → Wiederherstellen bringt das Bauteil (mit Versionsfeld); Speichern räumt weg | ✓ bestanden |
+| T-0714 Umzug: Sicherungen der früheren Notsicherung (wiederherstellen/text.docx, cad.tcad, tabelle.xlsx) werden beim ersten Start angeboten, mit Zeitpunkt; Zurückholen und Verwerfen gehen | ✓ bestanden |
+| T-0730 CAD: Bauteil aus neuerer Fassung – Sicherung bleibt erhalten und angeboten | ✓ bestanden |

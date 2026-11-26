@@ -1,0 +1,29 @@
+##### Lauf 1/5 (core T0763SystemAlltagTests.Load_probe_against_performance_counters) 04:20:49
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 16 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 2/5 (core T0763SystemAlltagTests.Load_probe_against_performance_counters) 04:21:18
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 15 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 3/5 (core T0763SystemAlltagTests.Load_probe_against_performance_counters) 04:21:37
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 14 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 4/5 (core T0763SystemAlltagTests.Load_probe_against_performance_counters) 04:21:54
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 15 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+##### Lauf 5/5 (core T0763SystemAlltagTests.Load_probe_against_performance_counters) 04:22:12
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 14 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+16
+== unter Last (16 PowerShell-Schleifen)
+##### Lauf 1/1 (core T0763SystemAlltagTests.Load_probe_against_performance_counters) 04:22:35
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 8 m 49 s - Trendo.Core.Tests.dll (net10.0)
+exit 0
+== unter Last, zusammen mit schweren Klassen im selben Prozess (T0747, T0766, MusicPro)
+  Fehler T-0747-fix 4: 10 000 Linien – Grundriss-Import und Konturen in wenigen Sekunden; Obergrenze mit Meldung; Abbrechen [22 s]
+  Fehler X-09 (T-0763, echt): Lastprobe – Prozessorlast eines ausgelasteten Prozesses weicht höchstens 5 Prozentpunkte von den Windows-Leistungsindikatoren ab [8 m 11 s]
+Messfenster Trendo: 7,87 s
+Abweichung: 0,14 Prozentpunkte
+Abweichung: 6,56 Prozentpunkte
+Messfenster je 4 s, Abweichung Last/Testprozess: 0,14/6,56 | 0,22/8,64 | 0,51/1,41 (gewertet: das mittlere)
+Fehler!      : Fehler:     2, erfolgreich:   137, übersprungen:     0, gesamt:   139, Dauer: 13 m 17 s - Trendo.Core.Tests.dll (net10.0)
+gestoppt

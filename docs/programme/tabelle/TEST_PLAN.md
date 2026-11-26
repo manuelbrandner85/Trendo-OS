@@ -1,28 +1,19 @@
 # Trendo Tabelle – Testplan
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `tabelle` · Stand: 0.9.36 (Stand df96c57)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `tabelle` · Stand: 0.9.110 (Stand 0eb9d52)
 
-49 Tests sprechen dieses Programm an.
+43 Tests sprechen dieses Programm an.
 
-- Annehmen/Verwerfen im Programm: Claude ändert das Studio-Dokument – Vorher/Nachher vergleichen, verwerfen stellt alles her, behalten übernimmt
 - Befehlsleiste Strg+K und Projekt-Fortsetzung überall: Claude fragen, weitermachen – auch aus einem anderen Studio
 - Claude auch in der Studio-Übersicht, in der Suche und im Fokusmodus
-- Claude im Menüband jedes Fachprogramms und Rechtsklick „✳ Claude fragen“ auf Elemente der Seite
 - Claude im Studio: Auswahl in Trendo Tabelle geht als Zustand mit; Internet und Befehle bei Bedarf immer an, je Projekt auf „sicher“ stellbar; Vorgabe abschaltbar
-- Claude im Studio: Ergebnis erscheint links im passenden Programm – Webseite im Webseiten-Studio, Spiel im Spiele-Studio; Studio wird daneben eingeblendet
-- Claude im Studio: Startideen, Rückfrage als Knöpfe, Anhang landet im Projekt, Abo-Verbrauch je Antwort
-- Claude im Studio: Trendo prüft das Ergebnis und gibt Fehler automatisch an Claude zurück, bis es läuft – höchstens drei Durchgänge
-- Claude kennt das Programm: offene Seite mit Feldern und Knöpfen geht mit; Claude bedient es erst nach „Ausführen“ – unbekannte Ziele fallen weg
-- Claude schlägt vor: Vorschläge als Knöpfe, Klick schickt sie ab, auch in der Befehlsleiste; abschaltbar
 - Fenster: Klick auf eine Kategorie im Fenster bleibt im selben Fenster; ohne Klick eigenes Fenster; offene Seite wird wiederverwendet
-- Fenster: maximiert füllt den ganzen Bildschirm – über Kopfleiste und Taskleiste, ohne Rand; Wiederherstellen bringt die Leisten zurück
 - Markieren & Claude fragen: Zellbereich in Trendo Tabelle geht mit ins Eingabefeld; Knopf auf der Seite; Strg+Umschalt+A
 - SYS-02/SYS-10: Dateiregal filtert nach Art, neueste zuerst, ohne Office-Sperrdateien
-- SYS-09 U1/F2: Ordner · Liste · Lesebereich; Termin aus der E-Mail erkennen und eintragen
 - SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt
 - SYS-10 (UI): Tabs; Aufgabe anlegen/erledigen; Tabelle anzeigen; Text zählen; Drucken nur nach Bestätigung
 - SYS-10 F1/U1/U2: Start mit Programmkacheln und Vorlagen; Dokumente als Kacheln mit Filter; Öffnen im passenden Programm
-- SYS-10 wie Microsoft 365: Dokumente suchen (alle Wörter im Namen), Anheften mit ★ zeigt sie oben unter „Angeheftet“, Lösen nimmt sie weg; gelöschte Datei verschwindet
+- SYS-10 wie Microsoft 365: Dokumente suchen (alle Wörter im Namen), Anheften mit zeigt sie oben unter „Angeheftet“, Lösen nimmt sie weg; gelöschte Datei verschwindet
 - SYS-10-P01 (T-0244 getrennt): LibreOffice öffnet ein von Trendo erzeugtes DOCX
 - SYS-10-P02/P11: Neues DOCX/XLSX; Tabelle ohne Office lesen (XLSX + CSV mit ; und Anführungszeichen)
 - SYS-10-P04: Zuletzt verwendet – neueste zuerst
@@ -48,8 +39,11 @@ Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `tabell
 - T-0228 Menüband: Σ-Summe, Fett, Euro, Sortieren, Ausfüllen (Mo, Di …), Kopieren/Einfügen mit angepasster Formel, Blätter
 - T-0228: Speichern als XLSX und wieder öffnen; erscheint unter „Zuletzt geöffnet“
 - T-0254: Text und Tabelle – ungespeichert gesichert, nach Neustart „Wiederherstellen“; „Verwerfen“ löscht; Speichern räumt die Sicherung weg
+- T-0682 Tabelle: fremde XLSX – Strg+S lässt das Original bytegleich; Kopie und „Trotzdem“ mit Sicherung „Name.original.xlsx“
+- T-0682: ODT wie DOCX geschützt; ODS und ODP kann Trendo nicht zurückschreiben – nur „Als Kopie speichern“ (XLSX/PPTX), Strg+S lässt das Original; ältere Sicherung wird nicht überschrieben
+- T-0701 Tabelle: fremde XLSX öffnen – kein Verlust-Hinweis, verbundene Zelle wird als Ganzes gewählt; verbinden, kursiv (Strg+I), eigenes Zahlenformat, Rechtsklick-Menü; Strg+S schreibt alles in die Datei, Formatcode und Diagramm-Einzelheiten bleiben
+- T-0714 Tabelle: Werte und Formel eingetippt, Fenster ohne Speichern geschlossen → Karte → Wiederherstellen bringt die Mappe; Speichern räumt weg
+- T-0714 Umzug: Sicherungen der früheren Notsicherung (wiederherstellen/text.docx, cad.tcad, tabelle.xlsx) werden beim ersten Start angeboten, mit Zeitpunkt; Zurückholen und Verwerfen gehen
+- T-0724 Leistung: Tabelle mit 100 000 Zellen öffnen – alle Werte kommen an (Zeit wird nur gemessen)
 - Tabelle F3: Autofilter – Knopf unter „Daten“, rechts je Spalte Werte mit Anzahl, Haken weg blendet Zeilen aus, „Alle“ und „Autofilter aus“
 - Tabelle F3: Pivot – „⊞ Pivot“ öffnet den Bauer rechts mit Vorschlag (Kategorie/Betrag), erstellt ein neues Blatt mit Formeln, das mitrechnet
-- Wiederholungen automatisieren: Auftrag als Ablauf merken (Prompt-Bibliothek), mit einem Klick wiederholen; Wiederholung wird erkannt
-- X-11 F1/F2/U1/U2: Vorhaben mit Ring, Kanban verschieben, Zeitplan mit Meilenstein, Dateien des Vorhabens
-- Ziehen in Claude: Text kommt als Zitat ins Eingabefeld, Dateien werden angehängt

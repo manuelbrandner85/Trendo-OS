@@ -1,7 +1,7 @@
-# VR & AR gestalten – Vorbild-Analyse (REA, Clean-Room)
+# 3D-Modelle ansehen – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` · Stand: 0.9.36 (Stand df96c57)
+Studio: 3D-Modelle ansehen (SPEC-04) · Bereich: 3D & Spiele · Seite: `xr` · Stand: 0.9.110 (Stand 0eb9d52)
 
-Analyse: [Vorbild-Analyse Modell-Prüfer: glTF-Viewer, Validator, Brillen-Leistungsanzeigen (Clean-Room)](../../../docs/claude/vorbilder/modell-pruefer-gltf.md)
+Analyse: [Vorbild-Analyse Modell-Prüfer: glTF-Viewer, Validator (Clean-Room)](../../../docs/claude/vorbilder/modell-pruefer-gltf.md)
 
 Kein fremder Code und keine fremden Grafiken übernommen – nur öffentlich beschriebener Funktionsumfang.

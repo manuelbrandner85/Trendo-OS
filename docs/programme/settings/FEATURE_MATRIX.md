@@ -1,6 +1,6 @@
 # Einstellungen – Funktionsmatrix
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand df96c57)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/spec/kataloge/SYS-12_KATALOG.md`
 
@@ -34,62 +34,62 @@ Quelle: `docs/spec/kataloge/SYS-12_KATALOG.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude
-- Personen & Konten
-- Sehen & Bedienhilfen
-- Trendo-Updates
-- Betriebsmodus
-- Geräte & Laufwerke
-- Handy verbinden
-- Geräteverbund
-- Im Heimnetz teilen
-- Apps
-- Programme verwalten
-- Hinzufügen
-- Pflegen & Aktualisieren
-- Zusatzprogramme
-- Downloads
-- Schutz & Datenschutz
-- Freigaben
-- Sicherung
-- Selbstheilung
-- Sicher prüfen
-- Sicherheits-Werkzeuge
-- Protokoll & Abstürze
-- Speicher & Leistung
-- Leistung messen
-- Systemcheck
-- Qualitäts-Ampel
-- Bau-Fortschritt
-- Verstanden
-- Aussehen
-- Farbe
-- Hintergrund
-- Bedienung
-- Startbildschirm
-- Weiteres
-- Dunkel Premium
+- KI ▾
+- Claude
+- kie.ai
+- settings-nav-personen
+- settings-nav-bedien-sehen
+- settings-nav-updates
+- settings-nav-geraete
+- settings-nav-sicherung
+- Mehr Einstellungen (23)
+- Mehr
+- settings-nav-aussehen
+- settings-nav-farbe
+- settings-nav-hintergrund
+- settings-nav-bedienung
+- settings-nav-start
+- settings-nav-mehr
+- • Dunkel Premium
 - Hell
 - Wie Windows (hell/dunkel)
 - Hoher Kontrast
-- ✓ Trendo
-- Wie Windows 11
-- Wie macOS
-- Wie Linux (GNOME)
-- Gold
-- Blau
-- Türkis
-- Violett
-- Pink
-- Bernstein
-- Grün
+- style-trendo
+- style-windows
+- style-mac
+- style-linux
+- accent-gold
+- accent-blau
+- accent-türkis
+- accent-violett
+- accent-pink
+- accent-bernstein
+- accent-grün
 - Farbe passend zum Hintergrund wählen
-- Gold-Orbit
-- Orbit
-- Abendrot
-- Bergsee
-- Polarlicht
-- Wellen
-- Morgen
+- wall-gold-orbit
+- wall-orbit
+- wall-abendrot
+- wall-bergsee-nacht
+- wall-polarlicht
+- wall-wellen
+- wall-morgen
 - Hintergrund nach Tageszeit wechseln (Morgen · Wellen · Bergsee · Polarlicht)
 - Bewegung reduzieren (keine Animationen)
+- Updates automatisch laden (Noch nicht geprüft)
+- • Normal
+- Groß
+- Sehr groß
+- Normal
+- Kompakt
+- • Automatisch
+- Volle Effekte
+- Sparsam (Raspberry Pi)
+- Weitermachen
+- Aktuelle Projekte
+- Welche KI hilft
+- Geräte und Messwerte
+- KI-Helfer bei der Arbeit
+- Studios auf dem Desktop
+- Freie Programme
+- Erdkugel mit Überblick (Dein Trendo)
+- Schnellaktionen über dem Desktop

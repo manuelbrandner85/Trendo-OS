@@ -1,6 +1,6 @@
 # Bewerbung & Lebenslauf – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Bewerbung & Lebenslauf (STUDIO-CV-01) · Bereich: Arbeiten & Büro · Seite: `bewerbung-programm` · Stand: 0.9.103 (Stand 0262de0)
+Studio: Bewerbung & Lebenslauf (STUDIO-CV-01) · Bereich: Arbeiten & Büro · Seite: `bewerbung-programm` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Analyse: [Vorbild-Analyse Bewerbung: Reactive Resume, Europass, Canva-Lebenslauf (Clean-Room)](../../../docs/claude/vorbilder/bewerbung-reactive-resume-europass.md)
 

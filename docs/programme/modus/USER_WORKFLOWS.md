@@ -1,12 +1,7 @@
 # Betriebsmodus – Arbeitsabläufe
 
-Studio: Startmodus wählen (SYS-01) · Bereich: System & Sicherheit · Seite: `modus` · Stand: 0.9.36 (Stand df96c57)
+Studio: Startmodus wählen (SYS-01) · Bereich: System & Sicherheit · Seite: `modus` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Die Abläufe unten sind die Oberflächentests, die das Programm über den echten Eingabeweg bedienen (Klicks, Tastatur).
 
-- CORE-04 UI: mit echtem Begleiter koppeln (Code vom Gerät), Details holen, Erreichbarkeit, Aufgabe zuordnen, entfernen
 - SYS-01 UI: Betriebsmodus zeigt aktuellen Modus und Fähigkeiten
-- X-08 UI: Bildschirm, Apps und Überschriften über die WLAN-Adresse, scrcpy nur nach Frage
-- X-08 UI: Bluetooth sucht ohne zu koppeln, adb-Einrichtung erst nach Ja
-- X-08 UI: Handy suchen (adb), Freigabe-Hinweis, Senden erst nach Zustimmung
-- X-08 UI: Verbindungsart, WLAN nur nach Haken, QR ohne gespeicherten Code, Wiederverbinden fragt

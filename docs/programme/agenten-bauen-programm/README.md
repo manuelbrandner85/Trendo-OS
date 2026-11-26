@@ -1,6 +1,6 @@
 # KI-Agenten bauen – Produktionspaket
 
-Studio: KI-Agenten bauen (STUDIO-AGENTS-01) · Bereich: KI & Automatik · Seite: `agenten-bauen-programm` · Stand: 0.9.95 (Stand cce5c62)
+Studio: KI-Agenten bauen (STUDIO-AGENTS-01) · Bereich: KI & Automatik · Seite: `agenten-bauen-programm` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Arbeitsfläche: Texteditor  
 Modulstatus (requirements.yaml): IN_PROGRESS / Test NOT_RUN  

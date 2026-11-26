@@ -1,6 +1,6 @@
 # Recherche mit Quellen – Lizenzen
 
-Studio: Recherche mit Quellen (STUDIO-CITE-01) · Bereich: Wissen & Lernen · Seite: `quellen-programm` · Stand: 0.9.95 (Stand cce5c62)
+Studio: Recherche mit Quellen (STUDIO-CITE-01) · Bereich: Wissen & Lernen · Seite: `quellen-programm` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

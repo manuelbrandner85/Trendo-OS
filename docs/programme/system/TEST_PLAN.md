@@ -1,21 +1,49 @@
 # System & Sicherheit – Testplan
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `system` · Stand: 0.9.36 (Stand df96c57)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `system` · Stand: 0.9.110 (Stand 0eb9d52)
 
-26 Tests sprechen dieses Programm an.
+65 Tests sprechen dieses Programm an.
 
+- Am Programm vorbei gearbeitet (nur eigene Dateien, Studio-Dokument unverändert) – Trendo schickt Claude zurück ins Programm-Dokument; neue Projekte übernehmen keine bloß geöffnete Vorlage
+- Annehmen/Verwerfen im Programm: Claude ändert das Studio-Dokument – Vorher/Nachher vergleichen, verwerfen stellt alles her, behalten übernimmt
+- Befehlsleiste Strg+K und Projekt-Fortsetzung überall: Claude fragen, weitermachen – auch aus einem anderen Studio
+- C1/C2/C4: Ist Claude verbunden, geht „Los“ der Studio-Zeile an Claude (Studio bleibt sichtbar, volle Rechte mit Rückfrage bei Wirkung nach außen); der zweite Auftrag läuft in derselben Sitzung; ohne Claude plant Trendo selbst
+- CORE-05: Claude baut ein 3D-Modell – sieht Szene, Formen und Materialien, Plan zeigt das Modell mit Gesamtmaß, erst „Ausführen“ baut Teile, Licht und Kamera; ungültiges Material fällt weg; Rückgängig stellt zurück
+- CORE-06: Claude baut Level – sieht alle Level voll, Plan zeigt das neue Level als Vorschau, erst „Ausführen“ legt Level 2 und den Hintergrund an, falsches Zeichen fällt weg, „Verwerfen“ stellt alles zurück
 - CORE-11 UI: Schutz-Seite über System erreichbar, Sichern, Ordner prüfen
-- SPEC-12 UI: Prüfsumme vergleichen, Fall anlegen, Beweis sichern, Bericht
-- SYS-04 UI: Suchen, installieren, Updates anzeigen und aktualisieren, entfernen
-- SYS-06 Freigabe-Dialog: Fenster schließen (X) lehnt ab
-- SYS-06 Freigabe-Dialog: Klick auf „Ablehnen“ lehnt ab
-- SYS-06 Freigabe-Dialog: Klick auf „Erlauben“ startet die Freigabe; Schließen des Hauptfensters beendet sie
-- SYS-06 Freigabe-Dialog: nennt Ordner und Dauer, Esc lehnt ab
-- SYS-06 Freigabe-Gate: ohne Zustimmung keine Freigabe, Anfrage abgelehnt
-- SYS-06 UI: Ordner teilen, Datei echt per HTTP laden, falsches Token abgelehnt, beenden
-- SYS-07 UI: Geräte suchen zeigt Gruppen
-- SYS-08 UI: Seite im Lesemodus lesen, .onion wird nicht abgerufen, Sitzung beenden
-- SYS-09 UI: Kontakt anlegen, Entwurf prüfen und im Mailprogramm öffnen (nichts wird gesendet)
+- Claude auch in der Studio-Übersicht, in der Suche und im Fokusmodus
+- Claude im Brief-Studio: arbeitet im offenen Brief (Brief.json) – Text und Design (z. B. Bewerbung als ZFA, zeitgemäß in Blau) erscheinen sofort im Brief-Programm
+- Claude im Menüband jedes Fachprogramms und Rechtsklick „Claude fragen“ auf Elemente der Seite
+- Claude im Programm: Studio ohne eigenes Programm (Webseiten) bleibt auf seiner Seite, kein Dokument
+- Claude im Programm: neues Projekt im Spiele-Studio legt ein Dokument in „Spiele bauen“ an, zeigt das Programm, Claude arbeitet darin; Fortsetzen öffnet es wieder
+- Claude im Studio: Auswahl in Trendo Tabelle geht als Zustand mit; Internet und Befehle bei Bedarf immer an, je Projekt auf „sicher“ stellbar; Vorgabe abschaltbar
+- Claude im Studio: Ergebnis erscheint links im passenden Programm – Webseite im Webseiten-Studio, Spiel im Spiele-Studio; Studio wird daneben eingeblendet
+- Claude im Studio: Startideen, Rückfrage als Knöpfe, Anhang landet im Projekt, Abo-Verbrauch je Antwort
+- Claude im Studio: Trendo prüft das Ergebnis und gibt Fehler automatisch an Claude zurück, bis es läuft – höchstens drei Durchgänge
+- Claude kennt das Programm: offene Seite mit Feldern und Knöpfen geht mit; Claude bedient es erst nach „Ausführen“ – unbekannte Ziele fallen weg
+- Claude live: Webseite erscheint in der Vorschau, beim Ändern vorher/nachher – Behalten oder Zurücknehmen; Lieferformat index.html
+- Claude live: neuer Text öffnet gleich in Trendo Text – aber nie über einen ungespeicherten Text
+- Claude live: offenes Studio-Dokument (.tdoc) – Claude bearbeitet es, das Studio übernimmt die Änderung sofort, Rückgängig im Studio
+- Claude schlägt vor: Vorschläge als Knöpfe, Klick schickt sie ab, auch in der Befehlsleiste; abschaltbar
+- Claude zeigt, wo es arbeitet; Felder in Aufklapp-Menüs kann Claude lesen und ausfüllen
+- Claude-Chat: ohne Claude Code „einrichten“, ohne Anmeldung „Mit Claude anmelden“ – im Testmodus startet nie ein echtes Claude
+- Claude-Chat: wie in Claude – erste Nachricht legt das Projekt an, Antwort mit Arbeitsschritten, Fortsetzen über die Sitzung, Zurücknehmen, Löschen in den Papierkorb
+- Echt testen bis es läuft: Skriptfehler gehen zurück an Claude; ohne Fehler sieht Claude das Bildschirmfoto an; abschaltbar
+- Etappen: Abo mitten im Auftrag leer – Ersatz-KI übernimmt, Trendo merkt sich das Projekt; ist Claude wieder frei, macht Claude dort weiter
+- Freie Bilder & Klänge Profi: ähnliche Bilder, Merken in neue Liste, Merklisten-Reiter mit Namensnennungen, Schriftvorschau mit eigenem Text; Claude sucht, prüft Lizenzen, merkt und schreibt die Namensnennung
+- Freihändig sprechen: zuhören, abschicken, Antwort vorlesen, bis man es ausschaltet
+- Genauere Leser (Kalender, Programm-Dokument), Design „Wie Windows“, Hilfe „?“ auf Seiten ohne eigenen Hilfetext, Hinweis statt stummer Knöpfe
+- Gutachter: zweite Meinung mit Note, ändert nichts; „Verbessern lassen“ gibt die Punkte an Claude
+- Markieren & Claude fragen: Zellbereich in Trendo Tabelle geht mit ins Eingabefeld; Knopf auf der Seite; Strg+Umschalt+A
+- Not-Stopp: Bricht laufende Claude-Arbeit ab und lässt keinen neuen Durchgang starten
+- Projekt-Gedächtnis: Claude merkt sich „Merken:“-Zeilen, sie gehen bei jeder Nachricht mit; ansehen, ergänzen, vergessen
+- SPEC-15: Claude als Regie – Briefing mit Szenen, Ton und Ton-Wache, Plan zeigt neue Szenen, „Ausführen“ legt Szenen mit Bauchbinde an und setzt den Sendeplan; ungültige Quelle fällt weg
+- STUDIO-MUSIK-01: Claude als Produzent – Briefing mit Silben und Reimen, Plan mit Rhythmus vorher/nachher, Ausführen füllt den Entwurf, Erstellen hängt die Fassung ans Original, Mastering-Ziel „laut“
+- SYS-13 (T-0763): Ampel je Bereich mit nächstem Schritt; Gesamtsatz; rot vor gelb vor grün
+- SYS-13 (T-0763): Entwickler-Prüfungen nur in „Professionell“ und ehrlich beschriftet; Telemetrie-Karte mit echtem Ergebnis
+- SYS-13 (T-0763): Studio öffnet „Alles prüfen“ – goldener Knopf, Ampel je Bereich mit nächstem Schritt; veränderte Protokollzeile rot mit Stelle
+- SYS-13 (T-0763): Telemetrie-Prüfung der installierten Version über die Paketlisten – findet Analyse-Bibliotheken, Trendo selbst ist frei
+- SYS-13 (T-0763): veränderte Protokollzeile wird mit Stelle gemeldet – Ampel rot im Bereich Protokoll
 - SYS-13 (UI): Rückfall-Sicherung und vorige Version; Protokoll-Prüfung
 - SYS-13-P09: Hash-Kette erkennt Ändern, Löschen und Vertauschen samt Stelle
 - SYS-13-P13: Jede Seite gehört zu einem Modul aus requirements.yaml
@@ -29,4 +57,15 @@ Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `sy
 - SYS-13-P25: Rückfall – vorige Version, Sicherung, Anleitung vorhanden
 - SYS-13: Absturzprotokoll schwärzt Benutzerpfade und behält höchstens 20 Dateien
 - SYS-13: Release-Skript baut nur von sauberem main
-- X-02 UI: Beim Start automatisch geprüft, Seite zeigt Ergebnis, erneut prüfen
+- Schöne Antworten: Überschrift, Tabelle als Raster, Code mit Farben und „Kopieren“; Glas-Design im Chat
+- Selbstlernend in allen Studios: Claudes „Lernregel“ wird Vorschlag; nach Ja gilt sie für alle Projekte des Studios; Nein und Zurücknehmen; Gutachten lehrt mit
+- Spiele-Studio: eingebaute Spielregeln; mit GAMEFORGE dessen Regeln, Skills und Agenten (im sicheren Modus als Projekt-Skills); Regeln-Feld zeigt den Stand
+- T-0621: Abgelaufene Claude-Anmeldung wird kein Liedtext – Ersatz-KI antwortet, Claude gilt bis zur neuen Anmeldung als nicht bereit
+- T-0726 A6: Kartenkacheln aus dem Internet nur nach Zustimmung über das Freigabe-Tor – Nein lädt nichts, Ja gilt als Einstellung (im Protokoll), ausschaltbar; offline kein Angebot
+- Unterlagen: nur Freigegebenes geht an Claude (als Datei im Projekt); passende Unterlagen werden vorgeschlagen – erst nach Ja
+- Verbindungen: GitHub-Anmeldung im eigenen gh-Ordner der Person (sichtbar, im Browser), Netlify-Schlüssel nur im Tresor, Claude-Plugins nur nach Ja geändert
+- Veröffentlichen: erst nach Ja; Projekt als ZIP im Ordner „Veröffentlicht“, ohne Hilfsdateien – hochgeladen wird nichts
+- Wiederholungen automatisieren: Auftrag als Ablauf merken (Prompt-Bibliothek), mit einem Klick wiederholen; Wiederholung wird erkannt
+- Zeitleiste mit Dauer und Tönen: fertig, Rückfrage, abschaltbar
+- Zeitreise: jede Antwort mit Änderungen wird ein Versionspunkt; zurück auf einen älteren Stand und wieder vor
+- Ziehen in Claude: Text kommt als Zitat ins Eingabefeld, Dateien werden angehängt

@@ -102,7 +102,7 @@ public static class SimpleWords
             if (b.GetValue(WordedProperty) && e.NewValue is not null && !ReferenceEquals(e.NewValue, Tagged(b)))
             {
                 b.SetValue(WordedProperty, false); b.SetValue(OriginalProperty, null);
-                Avalonia.Threading.Dispatcher.UIThread.Post(() => { if (b.IsLoaded) Apply(b); }, Avalonia.Threading.DispatcherPriority.Background);
+                Trendo.App.UiThread.Post(() => { if (b.IsLoaded) Apply(b); }, Avalonia.Threading.DispatcherPriority.Background);
             }
         });
     }

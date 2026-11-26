@@ -45,7 +45,7 @@ public partial class MainWindow
     readonly List<KieJob> _kieJobs = [];
     public IReadOnlyList<KieJob> KieJobs => _kieJobs;
     Action? _kieRefresh;
-    void KieRefresh() => Dispatcher.UIThread.Post(() => _kieRefresh?.Invoke());
+    void KieRefresh() => Trendo.App.UiThread.Post(() => _kieRefresh?.Invoke());
 
     /// <summary>Schlüssel prüfen (Kontostand abfragen) und erst dann für diese Person speichern.</summary>
     public async Task<bool> KieConnect(string key)

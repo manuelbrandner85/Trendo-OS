@@ -335,7 +335,11 @@ if (Environment.GetEnvironmentVariable("TRENDO_KATALOG") is { Length: > 0 } repo
         return names.ToList();
     }
     var entries = new List<Trendo.Core.Programs.ProgramEntry>();
-    foreach (var e in win.ProgramCatalogRuntime())
+    var runtimeEntries = win.ProgramCatalogRuntime().ToList();
+    // T-0771: veraltete Programmnamen in den Vorbild-Analysen sofort melden (0.9.110 fiel das erst im Volltest auf) – vor dem langen Durchlauf und am Ende noch einmal
+    var staleNames = Trendo.Core.Programs.ProgramCatalog.StaleAnalysisNames(repo, runtimeEntries.Select(x => x.Name));
+    if (staleNames.Count > 0) Console.Error.WriteLine(Trendo.Core.Programs.ProgramCatalog.StaleAnalysisMessage(staleNames));
+    foreach (var e in runtimeEntries)
     {
         var (ui, tools) = win.ProgramCatalogInspect(e.Id);
         double? warm = null; // A1: Öffnungszeit warm messen (zweites Öffnen, wie im Seiten-Prüflauf)
@@ -369,6 +373,7 @@ if (Environment.GetEnvironmentVariable("TRENDO_KATALOG") is { Length: > 0 } repo
     File.WriteAllText(Path.Combine(outDir, "katalog.json"), Trendo.Core.Programs.ProgramCatalog.ToJson(entries));
     File.WriteAllText(Path.Combine(outDir, "KATALOG.md"), Trendo.Core.Programs.ProgramCatalog.Markdown(entries));
     Console.WriteLine($"Programmkatalog: {entries.Count} Programme → {outDir}" + (outcomes is null ? "" : $" ({outcomes.Count} Testergebnisse)"));
+    if (staleNames.Count > 0) { Console.Error.WriteLine(Trendo.Core.Programs.ProgramCatalog.StaleAnalysisMessage(staleNames)); Environment.ExitCode = 3; }
     return;
 }
 if (Environment.GetEnvironmentVariable("TRENDO_PDF") is { Length: > 0 } pdf) { var copy = Path.Combine(root, Path.GetFileName(pdf)); File.Copy(pdf, copy, true); win.OpenPdf(copy); if (Environment.GetEnvironmentVariable("TRENDO_PDF_ORDNEN") is { Length: > 0 }) { win.PdfOrgStart(); if (win.PdfPages > 1) { win.PdfOrgSelect(1); win.PdfOrgMove([1], 0); } } win.Show("pdf"); for (var i = 0; i < 40; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(25); } win.Show("pdf"); for (var i = 0; i < 20; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(25); } } // T-0223/T-0303: Trendo PDF rendern (optional Seiten ordnen)

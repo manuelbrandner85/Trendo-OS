@@ -1,32 +1,31 @@
 # KI – Funktionsmatrix
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki` · Stand: 0.9.36 (Stand df96c57)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
 ## Werkzeuge der Oberfläche
-- Los
-- Hinzufügen …
-- ✳ Claude
-- Erkläre mir Zinseszins
-- Plane meine Woche
-- Fasse diesen Text zusammen
-- KI fragen
-- Mit Claude verbinden
-- KI-Bibliothek
-- KI-Quellen
-- Kostenlose Internet-KIs
-- KI-Vorlagen
-- Skills
-- KI-Rollen und Teams
-- Abläufe
-- Produktion
-- Verbindungen
-- Online-Dienste
-- Verstanden
+- KI ▾
+- Claude
+- kie.ai
+- Auftragszeile zeigen
+- ki-nav-ki-fragen
+- ki-nav-claude-verbinden
+- ki-nav-ki-bibliothek
+- ki-nav-ki-quellen
+- ki-nav-ki-internet
+- ki-nav-ki-vorlagen
+- ki-nav-ki-skills
+- ki-nav-ki-rollen
+- ki-nav-ablaeufe
+- ki-nav-produktion
+- ki-nav-verbindungen
+- ki-nav-keys
 - Modell
 - Fragen
+- Verbindungen
+- ✓ Automatisch (empfohlen)
 - Qwen2.5 0.5B (klein, schnell) herunterladen (Zustimmung)
-- Qwen2.5 3B (besseres Deutsch, ~1,9 GB) herunterladen (Zustimmung)
+- Qwen2.5 7B (besseres Deutsch, ~4,7 GB) herunterladen (Zustimmung)
 - KI einrichten
 - btn-ki-send

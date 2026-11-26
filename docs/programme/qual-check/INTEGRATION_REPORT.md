@@ -1,6 +1,6 @@
 # Alles prüfen – Einbindung in Trendo OS
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `qual-check` · Stand: 0.9.110 (Stand 579ed59)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `qual-check` · Stand: 0.9.110 (Stand 0eb9d52)
 
 - Seite `qual-check` im Studio „Qualität prüfen“ (System & Sicherheit) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

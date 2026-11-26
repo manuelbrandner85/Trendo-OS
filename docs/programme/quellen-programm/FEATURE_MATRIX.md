@@ -1,6 +1,6 @@
 # Recherche mit Quellen – Funktionsmatrix
 
-Studio: Recherche mit Quellen (STUDIO-CITE-01) · Bereich: Wissen & Lernen · Seite: `quellen-programm` · Stand: 0.9.95 (Stand cce5c62)
+Studio: Recherche mit Quellen (STUDIO-CITE-01) · Bereich: Wissen & Lernen · Seite: `quellen-programm` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -9,7 +9,8 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Artikel (Quelle)
 - Webseite (Quelle)
 - Aus der Recherche übernehmen (Quelle)
-- BibTeX einlesen … (Quelle)
+- BibTeX/RIS einlesen … (Quelle)
+- Aus DOI ergänzen (Quelle)
 - APA 7 (Stil)
 - Harvard (Stil)
 - DIN ISO 690 (nah) (Stil)
@@ -19,3 +20,5 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Literaturverzeichnis (.md) (Exportieren)
 - BibTeX (.bib) (Exportieren)
 - Nur Text (.txt) (Exportieren)
+- RIS für Zotero, Citavi, EndNote (.ris) (Exportieren)
+- CSL-JSON für Zotero und Pandoc (.json) (Exportieren)

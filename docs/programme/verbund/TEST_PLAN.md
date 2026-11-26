@@ -1,8 +1,8 @@
 # Geräteverbund (PC, Pi, Android) – Testplan
 
-Studio: PC, Pi & Handy verbinden (CORE-04) · Bereich: System & Sicherheit · Seite: `verbund` · Stand: 0.9.36 (Stand df96c57)
+Studio: PC, Pi & Handy verbinden (CORE-04) · Bereich: System & Sicherheit · Seite: `verbund` · Stand: 0.9.110 (Stand 0eb9d52)
 
-19 Tests sprechen dieses Programm an.
+14 Tests sprechen dieses Programm an.
 
 - CORE-04 Begleiter: Einmal-Code, 5 Fehlversuche verbrennen den Code, Token nur als Hash gespeichert
 - CORE-04 Begleiter: Entkoppeln vergleicht den Hash zeitgleich, abgelaufene PCs verschwinden, alte Fehlversuche auch
@@ -18,8 +18,3 @@ Studio: PC, Pi & Handy verbinden (CORE-04) · Bereich: System & Sicherheit · Se
 - CORE-04 UI: mit echtem Begleiter koppeln (Code vom Gerät), Details holen, Erreichbarkeit, Aufgabe zuordnen, entfernen
 - CORE-04: Aufgaben laufen lokal zuerst, sonst auf erreichbarem Gerät; nicht erreichbar wird ehrlich gemeldet
 - CORE-04: Gekoppeltes Gerät nur mit Heimnetz-Adresse speichern; Token nie in der Gerätedatei; Entfernen
-- SYS-01 UI: Betriebsmodus zeigt aktuellen Modus und Fähigkeiten
-- X-08 UI: Bildschirm, Apps und Überschriften über die WLAN-Adresse, scrcpy nur nach Frage
-- X-08 UI: Bluetooth sucht ohne zu koppeln, adb-Einrichtung erst nach Ja
-- X-08 UI: Handy suchen (adb), Freigabe-Hinweis, Senden erst nach Zustimmung
-- X-08 UI: Verbindungsart, WLAN nur nach Haken, QR ohne gespeicherten Code, Wiederverbinden fragt

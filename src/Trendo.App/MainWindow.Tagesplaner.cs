@@ -206,7 +206,7 @@ public partial class MainWindow
             Toggle = (k, done) => { if (DpItemOf(d, k) is { } item) ProgramRun(DayKey, () => DayPlanToggle(d, item, done)); },
         };
         // T-0730: nach Enter/Esc beim Umbenennen bekommt die neu aufgebaute Zeitleiste den Fokus zurück – sonst wirken Pfeile, Entf und F2 erst nach einem neuen Klick
-        if (_dayRefocus) { _dayRefocus = false; tl.AttachedToVisualTree += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(() => tl.Focus()); }
+        if (_dayRefocus) { _dayRefocus = false; tl.AttachedToVisualTree += (_, _) => Trendo.App.UiThread.Post(() => tl.Focus()); }
         tl.MenuAt = (k, m) => DayMenu(d, k, m);
         return tl;
     }

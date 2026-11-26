@@ -1,0 +1,8 @@
+##### alt unter Last, Lauf 1 03:48:23
+  Fehler T-0754 Gegenprüfung 1: Nicht im Papierkorb gelandet – ein fremder Ordner „Papierkorb“ im Arbeitsordner wird weder beim Rückgängig noch beim Wiederholen verschoben [4 s]
+   System.IO.IOException : The process cannot access the file '\\?\C:\Users\<user>\AppData\Local\Temp\trendo-testlauf-52328-6b079dff\trendo-t0754-1b360c27' because it is being used by another process.
+Fehler!      : Fehler:     1, erfolgreich:     5, übersprungen:     0, gesamt:     6, Dauer: 6 m 29 s - Trendo.Core.Tests.dll (net10.0)
+##### alt unter Last, Lauf 2 03:55:08
+  Fehler T-0754 Gegenprüfung 1: Nicht im Papierkorb gelandet – ein fremder Ordner „Papierkorb“ im Arbeitsordner wird weder beim Rückgängig noch beim Wiederholen verschoben [2 s]
+   System.IO.IOException : The process cannot access the file '\\?\C:\Users\<user>\AppData\Local\Temp\trendo-testlauf-70004-6b079f90\trendo-t0754-819cb059' because it is being used by another process.
+Fehler!      : Fehler:     1, erfolgreich:     5, übersprungen:     0, gesamt:     6, Dauer: 2 m 22 s - Trendo.Core.Tests.dll (net10.0)

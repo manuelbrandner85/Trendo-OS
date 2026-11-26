@@ -60,7 +60,7 @@ public partial class MainWindow
         var text = WebDesignCodeText; if (text is null) return;
         var line = WebDesignHtml.LineOf(text, id); if (line == 0) return;
         _wdCodeLine = line;
-        if (_wdCode is { } ed) Avalonia.Threading.Dispatcher.UIThread.Post(() => { if (line <= ed.Document.LineCount) { ed.TextArea.Caret.Line = line; ed.TextArea.Caret.Column = 1; ed.ScrollToLine(line); } });
+        if (_wdCode is { } ed) Trendo.App.UiThread.Post(() => { if (line <= ed.Document.LineCount) { ed.TextArea.Caret.Line = line; ed.TextArea.Caret.Column = 1; ed.ScrollToLine(line); } });
     }
 
     /// <summary>K6: Code zurück in den Editor. Eigene Bausteine kommen verlustfrei zurück; was nicht abbildbar ist, bleibt als HTML-Block und steht in der Meldeliste.</summary>
@@ -245,7 +245,7 @@ public partial class MainWindow
         }
         catch (FormatException) { _wdNote = "Die Skizze ließ sich nicht lesen."; }
         catch (System.Text.Json.JsonException) { _wdNote = "Die Skizze ließ sich nicht lesen."; }
-        finally { Avalonia.Threading.Dispatcher.UIThread.Post(() => Show("dev")); }
+        finally { Trendo.App.UiThread.Post(() => Show("dev")); }
     }
 
     /// <summary>Für Tests: Skizze direkt setzen (sonst kommt sie aus dem Editor).</summary>

@@ -1,0 +1,22 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:05.35]     T-0771 Korrektur (c): Kinderprofil mit echten Daten (Projekt, Brief, PIN, Lernen, Business, Kontakte, Notizbuch, Zettel, Musik, Wissen) und gelöschten Rollendateien → Kind [FAIL]
+[xUnit.net 00:00:05.37]     T-0771 Korrektur (b): Start- und Absturzspuren eines früheren Laufs ohne Nutzerdaten (Protokoll, Zwischenspeicher, Werkzeuge, Sicherheit, Logs) → Besitzer [FAIL]
+  Fehler T-0771 Korrektur (c): Kinderprofil mit echten Daten (Projekt, Brief, PIN, Lernen, Business, Kontakte, Notizbuch, Zettel, Musik, Wissen) und gelöschten Rollendateien → Kind [39 ms]
+  Fehlermeldung:
+   fach\lernen\karten.json
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0771Restpunkte.Kind_mit_nutzerdaten_bleibt_kind() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0771RestpunkteTests.cs:line 223
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0771 Korrektur (b): Start- und Absturzspuren eines früheren Laufs ohne Nutzerdaten (Protokoll, Zwischenspeicher, Werkzeuge, Sicherheit, Logs) → Besitzer [20 ms]
+  Fehlermeldung:
+   Assert.False() Failure
+Expected: False
+Actual:   True
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0771Restpunkte.Startspuren_ohne_nutzerdaten_bleiben_ersteinrichtung() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0771\tests\Trendo.Core.Tests\T0771RestpunkteTests.cs:line 185
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+Fehler!      : Fehler:     2, erfolgreich:    31, übersprungen:     0, gesamt:    33, Dauer: 1 s - Trendo.Core.Tests.dll (net10.0)

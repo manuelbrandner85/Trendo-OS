@@ -1,6 +1,6 @@
 # Apps – Architektur
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `apps` · Stand: 0.9.36 (Stand df96c57)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `apps` · Stand: 0.9.110 (Stand 0eb9d52)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Sys11.cs`
@@ -10,9 +10,8 @@ Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `ap
 
 ## Fach-Engine (Trendo.Core)
 - `Software`
+- `Rbac`
 - `AppCenter`
-- `DependencyCatalog`
-- `DesktopPlatform`
 - `RealProcessRunner`
 
 ## Dateiformate (im Code belegt)

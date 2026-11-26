@@ -1,6 +1,6 @@
 # 3D – Funktionsmatrix
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand df96c57)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D & Spiele · Seite: `3d` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/spec/kataloge/CORE-05_KATALOG.md`
 
@@ -49,10 +49,16 @@ Quelle: `docs/spec/kataloge/CORE-05_KATALOG.md`
 | D3-16 | Rundlauf-Prüfung: Export wieder einlesen und vergleichen (Teile, Dreiecke, Materialien, UV, Knochen, Animationen, Formschlüssel, Maße); Verlust = Fehler, gewollte Änderung = Hinweis; Bericht neben der Datei | Vorhanden | umgesetzt |
 
 ## Werkzeuge der Oberfläche
-- ✳ Claude
-- Mehr ▾
-- Verstanden
-- Kopieren
+- KI ▾
+- Claude
+- kie.ai
+- Programme hinzufügen …
+- Mehr
+- Speichern
+- Rückgängig
+- Wiederholen
+- Exportieren
+- Los
 - Blender einrichten
 - In Blender öffnen
 - Ordner zeigen
@@ -60,13 +66,10 @@ Quelle: `docs/spec/kataloge/CORE-05_KATALOG.md`
 - Als OBJ
 - Als STL
 - Als GLB
+- Als glTF
 - Als FBX
 - Als Blender-Datei
-- Los
-- Hinzufügen …
-- Speichern
 - Neues Objekt
-- Rückgängig
 - Drucken mit Bambu Studio
 - Drucker steuern
 - Freie 3D-Modelle suchen
@@ -87,12 +90,9 @@ Quelle: `docs/spec/kataloge/CORE-05_KATALOG.md`
 - Verdoppeln
 - Auf den Boden
 - Löschen
-- Schräg
-- Vorne
-- Oben
-- Rechts
-- Hinten
-- Links
+- Ansicht: Schräg ▾
+- Objekt
+- Bearbeiten
 - 1 Modellieren
 - 2 UV
 - 3 Material
@@ -107,5 +107,5 @@ Quelle: `docs/spec/kataloge/CORE-05_KATALOG.md`
 - Spiegeln
 - Aushöhlen
 - Teile vorschlagen
+- Jetzt einrichten
 - In Blender bauen (sichtbar)
-- Vorschaubild rendern

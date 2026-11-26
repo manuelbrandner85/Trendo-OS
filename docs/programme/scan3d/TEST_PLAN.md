@@ -1,12 +1,11 @@
 # Aus Fotos – Testplan
 
-Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `scan3d` · Stand: 0.9.36 (Stand df96c57)
+Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D & Spiele · Seite: `scan3d` · Stand: 0.9.110 (Stand 0eb9d52)
 
-31 Tests sprechen dieses Programm an.
+32 Tests sprechen dieses Programm an.
 
 - Open3D-Oberfläche: ohne Einrichtung Knopf; Glätten ersetzt das Modell mit Rückgängig; Fehler von Open3D wird gemeldet, Modell bleibt
 - S4 Scannen: Aufnahme-Assistent vor der Rechnung; nach der Rechnung Abdeckungsscheibe mit Prozent und Lücken aus den Kamerapositionen
-- SPEC-04 VR: Vorschau aus Augenhöhe schaltbar (1,60 m), Anzeige der größten Textur, Karte „Für die Brille reparieren“; passt das Modell, gibt es nichts zu reparieren
 - SPEC-09 F10: Skalieren
 - SPEC-09 F11: Zentrieren
 - SPEC-09 F12: Zuschneiden
@@ -35,3 +34,5 @@ Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: 
 - SPEC-09 UI: ohne Fotos keine Installation, mit Fotos fragt Trendo vor COLMAP
 - SPEC-09: Punktwolke aus PLY (ASCII/binär), XYZ, OBJ; ausdünnen, Ausreißer, PLY speichern
 - Scan-Arbeitsplatz (Runde 7): Fotos einlesen mit Prüfung und Vorschau, Schritte der Rechnung mit Fortschritt, Modell in 3D drehen, Export als OBJ, STL und GLB
+- T-0749 Echtlauf: Fotos → COLMAP → Netz im Scan-Arbeitsplatz → OBJ/STL/GLB
+- T-0749 Echtlauf: „Stopp“ beendet COLMAP sofort, es bleibt kein Prozess und kein halbes Modell

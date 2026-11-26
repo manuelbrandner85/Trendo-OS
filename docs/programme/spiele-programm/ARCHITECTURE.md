@@ -1,6 +1,6 @@
 # Spiele bauen – Architektur
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-programm` · Stand: 0.9.36 (Stand df96c57)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D & Spiele · Seite: `spiele-programm` · Stand: 0.9.110 (Stand 0eb9d52)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.ProgGame.cs`
@@ -15,6 +15,7 @@ Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-pro
 ## Fach-Engine (Trendo.Core)
 - `GameStudio`
 - `GameDesign`
+- `Panel`
 - `GameSaves`
 - `PlainWords`
 - `PlatformSim`
@@ -26,6 +27,7 @@ Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-pro
 - .json
 - .md
 - .mp3
+- .mp4
 - .ogg
 - .pdf
 - .png
@@ -37,6 +39,7 @@ Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-pro
 ## Externe Programme und Dienste
 - Blender (optional, 3D-Fotos/Render)
 - Unreal Engine (optional)
+- FFmpeg
 - PDFsharp (MIT)
 
 ## Bausteine (Masterprompt 131 / 5)

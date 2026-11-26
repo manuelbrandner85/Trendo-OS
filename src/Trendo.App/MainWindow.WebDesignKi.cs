@@ -339,7 +339,7 @@ public partial class MainWindow
         if (err is null) { foreach (var n in r.States) WebDesignStates.SaveContent(WebDesignDir, n, r.Json!, false, _wdVariant); _wdDraft = null; WebDesignReload(r.Json!); }
         _wdNote = err ?? "Gespeichert: " + string.Join(", ", r.Changes);
         _core.Audit.Append(Principal.LocalOwner.Name, "web.visuell.aktion", err ?? "ok");
-        Avalonia.Threading.Dispatcher.UIThread.Post(() => Show("dev"));
+        Trendo.App.UiThread.Post(() => Show("dev"));
     }
 
     /// <summary>A6 von Hand: gespeicherte Seite prüfen, ohne Änderung.</summary>

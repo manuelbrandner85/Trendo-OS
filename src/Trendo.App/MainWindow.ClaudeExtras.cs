@@ -55,7 +55,7 @@ public partial class MainWindow
             new DoubleTransition { Property = Visual.OpacityProperty, Duration = TimeSpan.FromMilliseconds(320), Easing = new Avalonia.Animation.Easings.CubicEaseOut(), Delay = TimeSpan.FromMilliseconds(delayMs) },
             new TransformOperationsTransition { Property = Visual.RenderTransformProperty, Duration = TimeSpan.FromMilliseconds(380), Easing = new Avalonia.Animation.Easings.CubicEaseOut(), Delay = TimeSpan.FromMilliseconds(delayMs) },
         ];
-        Dispatcher.UIThread.Post(() => { c.Opacity = 1; c.RenderTransform = TransformOperations.Parse("translateY(0px)"); }, DispatcherPriority.Background);
+        Trendo.App.UiThread.Post(() => { c.Opacity = 1; c.RenderTransform = TransformOperations.Parse("translateY(0px)"); }, DispatcherPriority.Background);
         return c;
     }
 
@@ -66,7 +66,7 @@ public partial class MainWindow
         var t = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(700) };
         t.Tick += (_, _) => { if (ct.IsCancellationRequested) { t.Stop(); c.Opacity = 1; return; } c.Opacity = c.Opacity > 0.7 ? 0.4 : 1; };
         // sofort anhalten – beim Ende der Antwort und wenn die Anzeige verschwindet (kein Zeitgeber läuft weiter, wenn das Fenster zu ist)
-        void Stop() { if (Dispatcher.UIThread.CheckAccess()) t.Stop(); else Dispatcher.UIThread.Post(t.Stop); }
+        void Stop() { if (Dispatcher.UIThread.CheckAccess()) t.Stop(); else Trendo.App.UiThread.Post(t.Stop); }
         ct.Register(Stop);
         c.DetachedFromVisualTree += (_, _) => Stop();
         t.Start();

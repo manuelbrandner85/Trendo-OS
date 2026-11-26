@@ -1,6 +1,6 @@
 # Hardware & Leistung – Architektur
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `hardware` · Stand: 0.9.92 (Stand 94252fc)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `hardware` · Stand: 0.9.110 (Stand 0eb9d52)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Hardware.cs`
@@ -10,22 +10,21 @@ Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `ha
 - Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)
 
 ## Fach-Engine (Trendo.Core)
+- `Checkup`
 - `Quality`
 - `StudioFit`
-- `DependencyCatalog`
 - `CompatState`
 - `PerformanceProfiles`
 - `AdviceAction`
-- `CompatibilityCheck`
 - `CrashLog`
+- `ToolState`
+- `CompatibilityCheck`
 - `HardwareScan`
-- `KiModel`
 
 ## Dateiformate (im Code belegt)
 - .json
 - .md
 - .txt
-- .zip
 
 ## Externe Programme und Dienste
 - Blender (optional, 3D-Fotos/Render)
@@ -33,12 +32,9 @@ Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `ha
 - Ollama – lokale KI (optional)
 - FFmpeg
 - LibreOffice (optional)
-- qpdf
 - Krita (optional)
 - Inkscape (optional)
 - Tesseract OCR
-- PDFsharp (MIT)
-- Hunspell-Wörterbücher
 - Git
 - OBS Studio (optional)
 - mpv (optional)

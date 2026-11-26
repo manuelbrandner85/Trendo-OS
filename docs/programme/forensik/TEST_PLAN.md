@@ -1,26 +1,17 @@
 # Sicherheits-Werkzeuge & Beweise – Testplan
 
-Studio: System auf Gefahren prüfen (SPEC-12) · Bereich: System & Sicherheit · Seite: `forensik` · Stand: 0.9.36 (Stand df96c57)
+Studio: System auf Gefahren prüfen (SPEC-12) · Bereich: System & Sicherheit · Seite: `forensik` · Stand: 0.9.110 (Stand 0eb9d52)
 
-20 Tests sprechen dieses Programm an.
+11 Tests sprechen dieses Programm an.
 
-- CORE-11 UI: Schutz-Seite über System erreichbar, Sichern, Ordner prüfen
 - SPEC-12 UI: Prüfsumme vergleichen, Fall anlegen, Beweis sichern, Bericht
 - SPEC-12: Beweis wird unverändert mit SHA-256 und Kette gesichert, Veränderung wird erkannt
 - SPEC-12: Höchstens 120 h, Warnung 24 h vorher, danach vollständig gelöscht
-- SYS-04 UI: Suchen, installieren, Updates anzeigen und aktualisieren, entfernen
-- SYS-06 Freigabe-Dialog: Fenster schließen (X) lehnt ab
-- SYS-06 Freigabe-Dialog: Klick auf „Ablehnen“ lehnt ab
-- SYS-06 Freigabe-Dialog: Klick auf „Erlauben“ startet die Freigabe; Schließen des Hauptfensters beendet sie
-- SYS-06 Freigabe-Dialog: nennt Ordner und Dauer, Esc lehnt ab
-- SYS-06 Freigabe-Gate: ohne Zustimmung keine Freigabe, Anfrage abgelehnt
-- SYS-06 UI: Ordner teilen, Datei echt per HTTP laden, falsches Token abgelehnt, beenden
-- SYS-07 UI: Geräte suchen zeigt Gruppen
-- SYS-08 UI: Seite im Lesemodus lesen, .onion wird nicht abgerufen, Sitzung beenden
-- SYS-09 UI: Kontakt anlegen, Entwurf prüfen und im Mailprogramm öffnen (nichts wird gesendet)
-- T-0201: Datei aufs Feld oder aufs Studio ziehen füllt das passende Feld
-- T-0201: Mausklick auf „Datei wählen …“ füllt das Feld, die Datei steht danach unter „Zuletzt“; Eintippen geht weiter
-- T-0201: Ordnerfeld öffnet den Ordner-Dialog
 - T-0201: jedes Pfad- oder Ordnerfeld hat „Datei wählen …“ bzw. „Ordner wählen …“
-- X-02 UI: Beim Start automatisch geprüft, Seite zeigt Ergebnis, erneut prüfen
+- T-0717 Forensik: bleibt außerhalb der Notsicherung – keine Sicherung, kein Anschluss; Fälle nur atomar (120-Stunden-Regel unverändert)
+- T-0755 SPEC-12 (echt): Autostart-Ordner mit echten Verknüpfungen und einer unsignierten Temp-Datei – Ampel je Eintrag, Bericht HTML und CSV
+- T-0755 SPEC-12 (echt): Signaturprüfung – Windows-Datei gültig von Microsoft, eingebettete Signatur gültig, unsignierte Datei erkannt, veränderte Datei ungültig
+- T-0755 SPEC-12 (echt, nur lesend): Prüfung dieses PCs – Run-Schlüssel, geplante Aufgaben und installierte Programme werden gelesen und bewertet
+- T-0755 SPEC-12 UI (echte Dateien, echte Signaturprüfung): „System prüfen“ zeigt Ampel, Datei, Herausgeber, Erklärung; Filter; Bericht als HTML/CSV; nichts wird verändert
+- T-0755 SPEC-12: Ampel-Regeln – grün nur gültig + bekannt, gelb unsigniert/unbekannt/Skript, rot bei fehlender Datei, ungültiger Signatur, %TEMP% oder verstecktem Befehl
 - YARA-Karte: ohne Einrichtung Einrichten-Knopf; mit yara-x Treffer als Warnung mit deutscher Art; nichts wird verändert; fehlender Ordner verständlich

@@ -1,6 +1,6 @@
 # Verkaufen – Architektur
 
-Studio: Online verkaufen (STUDIO-ONLINE-BUSINESS-01) · Bereich: Business & Geld · Seite: `verkaufen` · Stand: 0.9.36 (Stand df96c57)
+Studio: Online verkaufen (STUDIO-ONLINE-BUSINESS-01) · Bereich: Business & Geld · Seite: `verkaufen` · Stand: 0.9.110 (Stand 0eb9d52)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.W5Business.cs`
@@ -15,6 +15,7 @@ Studio: Online verkaufen (STUDIO-ONLINE-BUSINESS-01) · Bereich: Business & Geld
 ## Fach-Engine (Trendo.Core)
 - `BusinessStudio`
 - `FoundingSteps`
+- `AtomicFile`
 
 ## Dateiformate (im Code belegt)
 - .csv
@@ -22,9 +23,11 @@ Studio: Online verkaufen (STUDIO-ONLINE-BUSINESS-01) · Bereich: Business & Geld
 - .jpg
 - .json
 - .md
+- .pdf
 - .png
 - .svg
 - .txt
+- .xml
 - .zip
 
 ## Externe Programme und Dienste

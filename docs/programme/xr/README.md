@@ -1,9 +1,9 @@
-# VR & AR gestalten – Produktionspaket
+# 3D-Modelle ansehen – Produktionspaket
 
-Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` · Stand: 0.9.36 (Stand df96c57)
+Studio: 3D-Modelle ansehen (SPEC-04) · Bereich: 3D & Spiele · Seite: `xr` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Arbeitsfläche: 3D-Ansicht  
-Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  
+Modulstatus (requirements.yaml): Studio entfernt, nicht mehr angeboten – kein gültiger Prüfstand (Register: IMPLEMENTED / Test NOT_RUN)  
 Programm-Hülle (Dokumente, Rückgängig, Autosave, Bedienstufen): nein – eigene Arbeitsseite
 
 ## Inhalt

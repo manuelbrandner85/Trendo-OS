@@ -157,7 +157,7 @@ public partial class MainWindow
         void NameBox(string current, Action<MapDoc, string> set)
         {
             var t = new TextBox { Name = "mk-p-name", Text = current };
-            if (MapState.FocusName) { MapState.FocusName = false; MapState.Focus = false; Avalonia.Threading.Dispatcher.UIThread.Post(() => { t.Focus(); t.SelectAll(); }, Avalonia.Threading.DispatcherPriority.Background); } // T-0719: „Umbenennen …“ aus dem Rechtsklick-Menü
+            if (MapState.FocusName) { MapState.FocusName = false; MapState.Focus = false; Trendo.App.UiThread.Post(() => { t.Focus(); t.SelectAll(); }, Avalonia.Threading.DispatcherPriority.Background); } // T-0719: „Umbenennen …“ aus dem Rechtsklick-Menü
             void Commit() { if (!string.IsNullOrWhiteSpace(t.Text) && t.Text != current) MapEdit("Umbenennen", x => set(x, t.Text!.Trim())); }
             t.LostFocus += (_, _) => Commit(); OnEnter(t, Commit); sp.Children.Add(t);
         }

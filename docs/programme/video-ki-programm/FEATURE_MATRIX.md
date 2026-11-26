@@ -1,14 +1,16 @@
 # Videos mit KI – Funktionsmatrix
 
-Studio: Videos mit KI (STUDIO-VIDEOAI-01) · Bereich: KI & Automatik · Seite: `video-ki-programm` · Stand: 0.9.95 (Stand cce5c62)
+Studio: Videos mit KI (STUDIO-VIDEOAI-01) · Bereich: KI & Automatik · Seite: `video-ki-programm` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
 ## Werkzeuge der Oberfläche
 - Szenen planen (Video)
-- Bilder malen (Video)
+- Schlüsselbilder malen (Video)
 - Video bauen (Video)
 - Bild-KI einrichten (Video)
+- Musik wählen … (Ton)
+- Musik entfernen (Ton)
 - Quer 16:9 (Format)
 - Hoch 9:16 (Format)
 - Quadrat 1:1 (Format)

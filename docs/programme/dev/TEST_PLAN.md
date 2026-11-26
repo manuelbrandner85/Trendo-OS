@@ -1,14 +1,14 @@
-# Software – Testplan
+# Webseite bauen – Testplan
 
-Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand df96c57)
+Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.110 (Stand 0eb9d52)
 
-70 Tests sprechen dieses Programm an.
+67 Tests sprechen dieses Programm an.
 
-- A6: Echte Prüfung auf dem Export: drei Bilder, gezeichnete Seite mit <main>, defekter Link und zu breiter Inhalt werden gefunden (übersprungen ohne Chrome)
+- A4: Mod prüfen zeigt Beschreibung, Rechte und Lizenz; erst „Ja“ installiert; Vorlage einfügen
 - A6: Eingebauter Fehler wird gemeldet und gezielt nachgebessert; die Obergrenze gilt; Bildbewertung ist nur ein Hinweis
 - A6: „Seite prüfen“ meldet Fehler der gespeicherten Seite, ohne etwas zu ändern
 - A7: Ohne Claude läuft die Textaufgabe lokal und die Oberfläche nennt die KI; ohne jede KI ein klarer Hinweis
-- Annehmen/Verwerfen im Programm: Claude ändert das Studio-Dokument – Vorher/Nachher vergleichen, verwerfen stellt alles her, behalten übernimmt
+- A8: Ohne Wahl wird nichts gebaut; abgelehnte Richtungen werden gemeldet; die gewählte Richtung prägt die Seite
 - Befehlsleiste Strg+K und Projekt-Fortsetzung überall: Claude fragen, weitermachen – auch aus einem anderen Studio
 - CORE-07 (UI): Seite aus Beschreibung, Note, Stil, Paket erst nach Bestätigung
 - CORE-07 (UI): Software-Studio legt Projekt an und zeigt es mit Git-Stand
@@ -17,60 +17,57 @@ Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand
 - CORE-07: Python- und .NET-Vorlage bestehen ihren eigenen Test (echte Werkzeuge)
 - CORE-07: Vorlagen legen echte Projekte an, vorhandener Ordner wird nie überschrieben
 - Claude im Programm: Studio ohne eigenes Programm (Webseiten) bleibt auf seiner Seite, kein Dokument
-- Claude im Programm: neues Projekt im Spiele-Studio legt ein Dokument in „Spiele bauen“ an, zeigt das Programm, Claude arbeitet darin; Fortsetzen öffnet es wieder
-- Claude im Studio: Auswahl in Trendo Tabelle geht als Zustand mit; Internet und Befehle bei Bedarf immer an, je Projekt auf „sicher“ stellbar; Vorgabe abschaltbar
 - Claude im Studio: Ergebnis erscheint links im passenden Programm – Webseite im Webseiten-Studio, Spiel im Spiele-Studio; Studio wird daneben eingeblendet
 - Claude im Studio: Startideen, Rückfrage als Knöpfe, Anhang landet im Projekt, Abo-Verbrauch je Antwort
 - Claude im Studio: Trendo prüft das Ergebnis und gibt Fehler automatisch an Claude zurück, bis es läuft – höchstens drei Durchgänge
 - Claude schlägt vor: Vorschläge als Knöpfe, Klick schickt sie ab, auch in der Befehlsleiste; abschaltbar
-- Claude wie im Original: Skills, Plugins, Connectoren und Agenten aus dem eigenen Claude sichtbar; genutzter Skill/Connector unter der Antwort
 - Claude-Abo aufgebraucht: Ersatz-KI übernimmt dieselbe Nachricht (sichtbar „Aktive KI“), bis zur Freigabe ohne Claude, danach automatisch wieder Claude
 - Claude-App-Knopf: installiert (auch App-Paket über claude://) → öffnen; sonst die offizielle Download-Seite
-- Claude-Chat: „⬆ GitHub“ lädt das Projekt nach Ja als privates Repo hoch (gh-Ordner der Person); „🌐 Netlify“ nur im Web-Studio, veröffentlicht nach Ja
+- Claude-Chat: „GitHub“ lädt das Projekt nach Ja als privates Repo hoch (gh-Ordner der Person); „Netlify“ nur im Web-Studio, veröffentlicht nach Ja
 - Claude: während der Arbeit weiterschreiben – Nachricht wartet sichtbar und kommt gleich danach dran; „Stopp & jetzt“ nimmt sie sofort
 - Echt testen bis es läuft: Skriptfehler gehen zurück an Claude; ohne Fehler sieht Claude das Bildschirmfoto an; abschaltbar
-- Editor-Entwurf ist die Grundlage der KI: ungespeicherte Änderungen gehen nicht verloren und werden erst beim Übernehmen geschrieben
 - Etappen: Abo mitten im Auftrag leer – Ersatz-KI übernimmt, Trendo merkt sich das Projekt; ist Claude wieder frei, macht Claude dort weiter
 - Freihändig sprechen: zuhören, abschicken, Antwort vorlesen, bis man es ausschaltet
 - Gutachter: zweite Meinung mit Note, ändert nichts; „Verbessern lassen“ gibt die Punkte an Claude
-- K1 und K2: Das echte Editor-Bündel in echtem Chrome: Auswählen, Mehrfachauswahl, Text direkt ändern, KI-Vorschau (übersprungen ohne Chrome oder Node)
-- K1: Auftrag außerhalb der Auswahl wird abgelehnt; ohne Auswahl ein Hinweis
-- K1: Auswahl aus der Vorschau, Auftrag ändert nur sie, die KI sieht nur sie; Verwerfen lässt die Seite gleich, Übernehmen ist ein Rückgängig-Schritt
-- K2: Text direkt ändern: gespeicherte Daten enthalten den neuen Text, ohne KI
+- K3: Skizze aus dem Editor kommt an; ohne bildfähige KI ein Hinweis statt Fehler; mit bildfähiger KI enthält der Auftrag das Bild (Seite plus Striche)
 - K4 und A7: Bild ohne bildfähige KI ergibt einen Hinweis statt eines Fehlers, nichts wird gefragt; mit bildfähiger KI fließt das Bild in den Auftrag
 - K4: Satz → Vorschau ohne Schreiben → Übernehmen als ein Schritt → Rückgängig; Editor-Daten statt Dateien
 - K4: Ungültige KI-Antwort wird gemeldet, nichts gelangt in die Seite
-- K5: Stand benennen und wiederherstellen; Variante anlegen, öffnen, Original bleibt, übernehmen
-- Kein Datenverlust: Solange die KI arbeitet, bleibt das Ziel fest; eine Änderung in der Zwischenzeit verwirft den Vorschlag für die Auswahl
+- K6: Code zeigen, Klick auf einen Baustein springt zur Zeile, Änderung im Code landet nach „Code übernehmen“ in der Seite (vorher ein Stand)
+- K8/T-0718: ohne Ja im Freigabe-Tor kein Hochladen; nach Ja genau einmal, mit ehrlichem Bericht der Dateien; die Freigabe gilt nicht für den nächsten Lauf
 - Kein Datenverlust: Ungespeicherter Entwurf landet vor Wiederherstellen und Fassungswechsel in einem Stand; benannte Stände bleiben sichtbar
-- Kein Datenverlust: Wechsel der Fassung verwirft eine offene KI-Vorschau, die Variante bleibt unberührt
-- Kostenlose KI-Werkzeuge: Claude bestellt ein Bild – erst als Entwurf zum Ansehen, ins Projekt erst nach „Übernehmen“; neu erzeugen, verwerfen; Knöpfe; Diktieren
-- Markieren & Claude fragen: Zellbereich in Trendo Tabelle geht mit ins Eingabefeld; Knopf auf der Seite; Strg+Umschalt+A
 - Projekt-Gedächtnis: Claude merkt sich „Merken:“-Zeilen, sie gehen bei jeder Nachricht mit; ansehen, ergänzen, vergessen
 - Schöne Antworten: Überschrift, Tabelle als Raster, Code mit Farben und „Kopieren“; Glas-Design im Chat
+- Seiten: anlegen über die Felder, wechseln, löschen erst nach Nachfrage; Prüfung zeigt Befunde
 - Selbstlernend in allen Studios: Claudes „Lernregel“ wird Vorschlag; nach Ja gilt sie für alle Projekte des Studios; Nein und Zurücknehmen; Gutachten lehrt mit
-- Sperre löst sich: Auch wenn die Seite nicht lesbar ist, bleibt die KI nicht für immer blockiert
-- Spiele-Studio: eingebaute Spielregeln; mit GAMEFORGE dessen Regeln, Skills und Agenten (im sicheren Modus als Projekt-Skills); Regeln-Feld zeigt den Stand
-- Spiele: Unreal öffnen und die Herstellerseite bleiben der alte Weg
-- T-0203: Abbrechen installiert nichts
-- T-0203: LibreOffice bleibt zu, wenn die Versionsabfrage zu lange dauert
-- T-0203: OBS startet nicht, wenn die Dateiversion fehlt
-- T-0203: OBS unter Windows liest die Dateiversion und öffnet ohne Prozess in der Prüfung
 - T-0203: „Einrichten“ fragt, „Ja“ lädt nichts, solange die Prüfung nicht besteht
-- T-0203: „In LibreOffice öffnen“ startet die Datei, wenn --version schnell antwortet
-- T-0203: „In OBS öffnen“ startet die Sammlung, wenn --version schnell antwortet
 - T-0203: „In VS Code öffnen“ startet den Ordner, wenn --version schnell antwortet
-- T-0203: „Ja, einrichten“ öffnet keine Herstellerseite, solange die Prüfung nicht besteht
-- T-0203: „Starten“ öffnet LibreOffice und Blender erst nach bestandener Prüfung und Freigabe
-- T-0203: „Starten“ öffnet nicht, wenn die Prüfung scheitert
 - T-0206 (UI): Dateiliste, Editor mit Zeilennummern, Speichern; Änderung erst als Vorschau, dann übernehmen
+- T-0662: Abgelehnter Plan bekommt genau eine Nachfrage mit der Meldung; die berichtigte Antwort wird zur Vorschau
+- T-0688 Software-Seite: „Testen“ blockiert nicht mehr – öffnet den Code-Editor, Test läuft im Hintergrund; neue Vorlage „Programm mit Fenster“
+- T-0716 Web Design Studio: ungespeicherter Entwurf des Editors – Notsicherung der Hülle, Sperre, Karte, Zurückholen in den Editor; „Speichern“ räumt weg
+- T-0718 UI Baukasten: „Veröffentlichen …“ fragt im echten Dialog; nach Ja liegt die Seite im Zielordner, Prüfung grün
+- T-0718 UI Kinderprofil: keine Rückfrage, nichts veröffentlicht, Hinweis „Erwachsener“, im Protokoll abgelehnt
+- T-0718 UI Ordner: echter Dialog nennt Wirkung, Ziel, Dateien, Größe; Abbrechen = nichts im Ziel; Ja = genau eine Ausführung, Rückmeldung mit Ort, Dateien und Prüfung
+- T-0718 UI Testmodus: Server-Weg lädt nie ins Internet; Netlify ohne eigenes Konto: BLOCKIERT mit „Was tun“, keine Anfrage im Tor
+- T-0718 UI ZIP: nur nach Ja im Tor; Paket enthält genau die gezeigten Dateien; Rückmeldung nennt „nichts hochgeladen“
+- T-0718 UI eigener Server: echter Upload per HTTP an WebDAV auf 127.0.0.1 nach Ja – Dateien liegen byte-gleich auf dem Server, Nachprüfung, Anmeldung nur im geschützten Speicher; falsches Passwort → Meldung mit „Was tun“
+- T-0718 echter Chrome: Ordner und WebDAV-Server auf 127.0.0.1 – veröffentlichte Seite lädt ohne Fehler, alle lokalen Links/Dateien per HTTP erreichbar, Bildschirmfoto (übersprungen ohne Chrome/Edge)
+- T-0726 A5: „GitHub“ im Claude-Chat fragt im Freigabe-Tor (Repo, Sichtbarkeit, Dateien) – Nein lädt nichts hoch, Ja genau einmal; ändert sich vorher eine Datei, blockiert der Kern
 - Teams im Claude-Chat: vor dem Lauf liegt das Studio-Team als .claude/agents/trendo-*.md im Projektordner – Claude kann die Fachrollen hinzuziehen
-- Teams: jedes Studio (außer dem abgelehnten SPEC-07) hat ein Profi-Team; „👥 Team“ im 3D-Studio öffnet „KI einsetzen“ mit dem 3D-Team; eigene Rolle nur mit Studio
 - Unterlagen: nur Freigegebenes geht an Claude (als Datei im Projekt); passende Unterlagen werden vorgeschlagen – erst nach Ja
-- Verbindungen: GitHub-Anmeldung im eigenen gh-Ordner der Person (sichtbar, im Browser), Netlify-Schlüssel nur im Tresor, Claude-Plugins nur nach Ja geändert
+- V1: Webseite bauen in „Einfach“ – geführter Weg offen, Fachbereiche im Klappbereich „Mehr Werkzeuge“ (weiter im Baum)
 - Veröffentlichen: erst nach Ja; Projekt als ZIP im Ordner „Veröffentlicht“, ohne Hilfsdateien – hochgeladen wird nichts
 - Visueller Editor: Knöpfe da, im Testmodus kein WebView; „speichern“ vom Editor schreibt die Seite, Export legt die fertige Seite an
+- W1/Z4: Ansicht mit eigener Breite anlegen, Breite ändern und entfernen, ungültige Breite wird gemeldet
+- W2: Sammlung anlegen, Eintrag über das Formular, Pflichtfeld leer wird gemeldet, Vorlage-Seite mit Platzhaltern
+- W5: Auswahl zur Komponente machen, einfügen, als Vorlage speichern und in ein anderes Projekt holen
+- W6: Kontrast wird schon beim Wählen gemeldet; Übernehmen gilt fürs Projekt, eine bestehende Variante bleibt unverändert
 - Wiederholungen automatisieren: Auftrag als Ablauf merken (Prompt-Bibliothek), mit einem Klick wiederholen; Wiederholung wird erkannt
+- Z5: Sprache hinzufügen, KI-Vorschlag ändert erst nach „Übernehmen“, fehlende Übersetzung steht in der Liste
+- Z6: Prüflauf vergleicht die lokalen Modelle, speichert das Ergebnis und empfiehlt nur das bestandene
+- Z7: Medien ins Projekt holen – Bilder werden verkleinert, Lizenz fehlt wird angezeigt, Suche, Schrift von Fontsource mit Herkunft und Lizenz
+- Z8: Internet-Adresse abgelehnt, ohne dass etwas gelesen wird; eigene Datei wird zur neuen Seite mit Meldeliste
 - Zeitreise: jede Antwort mit Änderungen wird ein Versionspunkt; zurück auf einen älteren Stand und wieder vor
 - Ziehen in Claude: Text kommt als Zitat ins Eingabefeld, Dateien werden angehängt
 - axe-Oberfläche: ohne Einrichtung Einrichten-Knopf; mit axe → Befunde auf Deutsch (✗ Fehler, • Hinweis) mit Version und Zahl der bestandenen Regeln

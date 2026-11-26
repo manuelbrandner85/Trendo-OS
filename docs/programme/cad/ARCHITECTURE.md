@@ -1,6 +1,6 @@
 # Trendo CAD – Architektur
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.36 (Stand df96c57)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D & Spiele · Seite: `cad` · Stand: 0.9.110 (Stand 0eb9d52)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Cad.cs`
@@ -18,8 +18,8 @@ Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `ca
 - `CadExport`
 - `Part3D`
 - `Studio3D`
-- `DependencyCatalog`
 - `ScenePlan`
+- `CadError`
 
 ## Dateiformate (im Code belegt)
 - .fbx
@@ -31,26 +31,13 @@ Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `ca
 - .png
 - .stl
 - .xml
-- .zip
 
 ## Externe Programme und Dienste
 - Blender (optional, 3D-Fotos/Render)
-- Unreal Engine (optional)
 - Ollama – lokale KI (optional)
-- FFmpeg
-- LibreOffice (optional)
-- qpdf
-- Krita (optional)
-- Inkscape (optional)
 - FreeCAD (optional)
-- Tesseract OCR
 - ambientCG (freie Materialien)
 - PDFsharp (MIT)
-- Hunspell-Wörterbücher
-- Git
-- OBS Studio (optional)
-- mpv (optional)
-- Python (optional)
 
 ## Bausteine (Masterprompt 131 / 5)
 Eigene Arbeitsseite ohne die gemeinsame Programm-Hülle – Dokumentmodell, Rückgängig und Bedienstufen sind hier nicht einheitlich.

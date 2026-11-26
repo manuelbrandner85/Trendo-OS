@@ -1,8 +1,8 @@
 # Trendo CAD – Testplan
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.36 (Stand df96c57)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D & Spiele · Seite: `cad` · Stand: 0.9.110 (Stand 0eb9d52)
 
-32 Tests sprechen dieses Programm an.
+37 Tests sprechen dieses Programm an.
 
 - CAD wie Fusion 360: Normbohrung M5 per Auswahl (ein Schritt, Rückgängig), Eigenschaften mit Masse je Werkstoff und Querschnitt
 - CORE-05 B1: Drucker im Netz finden – Bambu-Meldung ergibt IP, Seriennummer, Modell (P1S), Name, LAN-Modus; fremde Geräte und kaputte Meldungen fallen weg; gleiches Netz wie der PC
@@ -35,4 +35,9 @@ Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `ca
 - CORE-05: Umrisse: Würfelschnitt ergibt einen geschlossenen Umriss (Umfang 80 mm, Fläche 400 mm²); zwei Körper zwei Umrisse
 - CORE-05: Unbekannte Formate und Formen werden abgewiesen
 - N23: Bauschritte über das Menüband, Maß als Formel ändern, Parameter ändern rechnet neu, Rückgängig, Export 3MF/STEP/Zeichnung
-- N24: Drucker eintragen (Zugangscode geschützt), mit nachgebautem Drucker verbinden, Status sehen; Druck nur nach Bestätigung
+- T-0691 CAD: Fremd-DXF einlesen → Ebenen sichtbar → Kontur als Körper hochziehen → als DXF speichern; Strg+Z nimmt zurück; Wiederherstellung nach Neustart
+- T-0691 CAD: STL (von Blender) und facettiertes STEP als Referenzkörper; echtes B-Rep-STEP wird ehrlich abgelehnt; STEP-Export heißt „facettiert“
+- T-0708 V-14: CAD, 3D-Modelle und Code-Editor haben Speichern · Rückgängig · Wiederholen (· Exportieren) links oben; Rückgängig wirkt über mehrere Schritte
+- T-0714 CAD: Quader und Maß geändert, Fenster ohne Speichern geschlossen → Karte → Wiederherstellen bringt das Bauteil (mit Versionsfeld); Speichern räumt weg
+- T-0714 Umzug: Sicherungen der früheren Notsicherung (wiederherstellen/text.docx, cad.tcad, tabelle.xlsx) werden beim ersten Start angeboten, mit Zeitpunkt; Zurückholen und Verwerfen gehen
+- T-0730 CAD: Bauteil aus neuerer Fassung – Sicherung bleibt erhalten und angeboten

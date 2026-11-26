@@ -1,6 +1,6 @@
 # Trendo Text – Funktionsmatrix
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.36 (Stand df96c57)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/spec/kataloge/SYS-10_KATALOG.md`
 
@@ -34,45 +34,39 @@ Quelle: `docs/spec/kataloge/SYS-10_KATALOG.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- Hinzufügen …
-- ✳ Markierung fragen
-- ✳ Claude
+- KI ▾
+- Claude
+- Markierung an Claude
+- kie.ai
+- Programme hinzufügen …
 - Haushaltsplan als Tabelle
 - Präsentation über unser Projekt, 8 Folien
 - Lebenslauf modern gestalten
-- Mehr ▾
+- Mehr
 - Start
 - Einfügen
-- Entwurf
-- Layout
-- Referenzen
-- Sendungen
-- Überprüfen
 - Ansicht
-- KI
-- Neu ▾
-- Öffnen …
+- Mehr ▾
 - Speichern
-- Als PDF
-- Drucken
-- Texthervorhebung
-- Zeilen
-- Absatz
+- Neu
+- Öffnen …
+- text-color
 - • Liste
 - 1. Liste
-- A⌫
-- Suchen
-- ✨ Schreibhilfe
-- Rechtschreibung
+- text-align-left
+- text-align-center
+- text-align-right
 - Mehr …
-- Text
-- Titel
-- Untertitel
-- Überschrift 1
-- Überschrift 2
-- Überschrift 3
-- Zitat
-- Format übertragen
+- Als PDF
+- Drucken
+- text-highlight
+- text-linespacing
+- text-paraspace
+- text-align-justify
+- Suchen
+- Schreibhilfe
+- Rechtschreibung
+- text-painter
 - Speichern unter …
 - Ausschneiden
 - Kopieren

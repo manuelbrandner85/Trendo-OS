@@ -1,7 +1,8 @@
 # Fotos verwalten – Testplan
 
-Studio: Fotos verwalten (STUDIO-PHOTOS-01) · Bereich: Kreativ & Medien · Seite: `fotos-verwalten-programm` · Stand: 0.9.36 (Stand 7f0f9e3)
+Studio: Fotos verwalten (STUDIO-PHOTOS-01) · Bereich: Kreativ & Medien · Seite: `fotos-verwalten-programm` · Stand: 0.9.110 (Stand 0eb9d52)
 
-0 Tests sprechen dieses Programm an.
+2 Tests sprechen dieses Programm an.
 
-– keine Tests gefunden
+- Fotos verwalten: Ordner wählen, Probelauf ändert nichts, Einsortieren erst nach zweitem Klick, Rückgängig
+- T-0725 Fotos verwalten: Ordner wählen, Probelauf → Raster mit echten Vorschaubildern (Doppeltes markiert), Klick zeigt das Foto groß, „In Bildbearbeitung öffnen“ übergibt es

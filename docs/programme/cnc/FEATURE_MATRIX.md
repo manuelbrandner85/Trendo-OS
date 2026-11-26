@@ -1,6 +1,6 @@
 # CNC-Werkstatt – Funktionsmatrix
 
-Studio: Fräsen & Fertigen (SPEC-14) · Bereich: Technik & Fachgebiete · Seite: `cnc` · Stand: 0.9.36 (Stand df96c57)
+Studio: Fräsen & Fertigen (SPEC-14) · Bereich: Technik & Fachgebiete · Seite: `cnc` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/w6-katalog/SPEC-14.md`
 
@@ -28,15 +28,17 @@ Quelle: `docs/w6-katalog/SPEC-14.md`
 | F20 | Kernloch | Vorhanden | gebaut |
 
 ## Werkzeuge der Oberfläche
-- ▶ Abspielen / Pause (Simulation)
-- ⏮ Anfang (Simulation)
-- ⏭ Ende (Simulation)
+- Abspielen / Pause (Simulation)
+- Anfang (Simulation)
+- Ende (Simulation)
 - Von oben (Ansicht)
 - Schräg (3D) (Ansicht)
 - Werkstück in 3D (Ansicht)
 - Tasche (Erzeugen)
 - Kontur (Erzeugen)
 - Lochkreis (Erzeugen)
+- Aus DXF/SVG … (Erzeugen)
+- Bahnen neu (Erzeugen)
 - G-Code (.nc) (Exportieren)
 - Vorschau (SVG) (Exportieren)
 - Prüfbericht (Exportieren)

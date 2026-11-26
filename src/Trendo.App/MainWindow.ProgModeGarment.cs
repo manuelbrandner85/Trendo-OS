@@ -145,7 +145,7 @@ public partial class MainWindow
                     OnEnter(b, () => Apply(b.Name));
                     b.GotFocus += (_, _) => st.WantFocus = false;
                     if (st.FocusField == b.Name)
-                        b.AttachedToVisualTree += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(() => { if (st.FocusField != b.Name || TopLevel.GetTopLevel(b) is null) return; st.FocusField = null; b.Focus(); b.CaretIndex = b.Text?.Length ?? 0; });
+                        b.AttachedToVisualTree += (_, _) => Trendo.App.UiThread.Post(() => { if (st.FocusField != b.Name || TopLevel.GetTopLevel(b) is null) return; st.FocusField = null; b.Focus(); b.CaretIndex = b.Text?.Length ?? 0; });
                 }
                 measures.Children.Add(new WrapPanel { Children = {
                     MSp(new TextBlock { Text = $"Punkt {st.Node + 1} genau setzen (cm, Fadenlauf = 0):", Foreground = Text, FontSize = 12, VerticalAlignment = VerticalAlignment.Center }),

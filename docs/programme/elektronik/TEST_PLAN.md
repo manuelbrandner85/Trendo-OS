@@ -1,13 +1,10 @@
 # Schaltung & Simulation – Testplan
 
-Studio: Schaltungen berechnen (SPEC-02) · Bereich: Technik & Fachgebiete · Seite: `elektronik` · Stand: 0.9.36 (Stand df96c57)
+Studio: Schaltungen berechnen (SPEC-02) · Bereich: Technik & Fachgebiete · Seite: `elektronik` · Stand: 0.9.110 (Stand 0eb9d52)
 
-20 Tests sprechen dieses Programm an.
+19 Tests sprechen dieses Programm an.
 
 - G3: Fachstudio zeigt keine Reiter fremder Studios; G10: keine Schrift unter 12 pt auf der Seite
-- G6: Dateifeld zeigt Vorschau der gewählten Datei (Name, Größe)
-- G7: Ergebnis-Karte mit Kopieren und Verlauf früherer Ergebnisse; G12: Benachrichtigung erscheint
-- G8: Strg+Q öffnet „Was möchtest du tun?“, findet Studios und Knöpfe der Seite und führt sie aus; G9/G13: F11 Fokusmodus
 - SPEC-02 F07: Reihe & parallel
 - SPEC-02 F08: Kondensator-Code
 - SPEC-02 F09: RC-Glied
@@ -24,3 +21,5 @@ Studio: Schaltungen berechnen (SPEC-02) · Bereich: Technik & Fachgebiete · Sei
 - SPEC-02 UI: Schaltung mit der Maus aufbauen (Batterie, Widerstand, LED, Drähte, Masse) – Simulation zeigt 20 mA, Prüfung ok
 - SPEC-02 UI: Vorlage Transistor schaltet die LED ein; OPV-Vorlage – Bode-Diagramm am Ausgang zeigt Verstärkung 20 dB und die Grenzfrequenz des Tiefpasses
 - SPEC-02: Farbcode, Ohm, LED-Vorwiderstand, Spannungsteiler, Stückliste
+- T-0748 UI: Schaltung – KiCad-Netzliste über den Knopf öffnen, simulieren, Platine verlegen, Gerber-ZIP exportieren und prüfen
+- T-0748-fix UI: Export Fertigungsdaten mit erzwungenem Prüffehler – Meldung, vorige ZIP bleibt unverändert, keine Zwischendatei

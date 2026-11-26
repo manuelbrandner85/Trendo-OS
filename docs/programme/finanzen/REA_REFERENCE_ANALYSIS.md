@@ -1,6 +1,6 @@
 # Geld – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Geld & Rechnungen (SPEC-11) · Bereich: Business & Geld · Seite: `finanzen` · Stand: 0.9.36 (Stand df96c57)
+Studio: Geld & Rechnungen (SPEC-11) · Bereich: Business & Geld · Seite: `finanzen` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Analyse: [Vorbild-Analyse Geld: HomeBank, GnuCash, Finanzguru (Clean-Room)](../../../docs/claude/vorbilder/geld-gnucash-homebank.md)
 

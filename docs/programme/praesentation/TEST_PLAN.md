@@ -1,15 +1,14 @@
 # Trendo Präsentation – Testplan
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `praesentation` · Stand: 0.9.36 (Stand df96c57)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `praesentation` · Stand: 0.9.110 (Stand 0eb9d52)
 
-28 Tests sprechen dieses Programm an.
+31 Tests sprechen dieses Programm an.
 
 - SYS-02/SYS-10: Dateiregal filtert nach Art, neueste zuerst, ohne Office-Sperrdateien
-- SYS-09 U1/F2: Ordner · Liste · Lesebereich; Termin aus der E-Mail erkennen und eintragen
 - SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt
 - SYS-10 (UI): Tabs; Aufgabe anlegen/erledigen; Tabelle anzeigen; Text zählen; Drucken nur nach Bestätigung
 - SYS-10 F1/U1/U2: Start mit Programmkacheln und Vorlagen; Dokumente als Kacheln mit Filter; Öffnen im passenden Programm
-- SYS-10 wie Microsoft 365: Dokumente suchen (alle Wörter im Namen), Anheften mit ★ zeigt sie oben unter „Angeheftet“, Lösen nimmt sie weg; gelöschte Datei verschwindet
+- SYS-10 wie Microsoft 365: Dokumente suchen (alle Wörter im Namen), Anheften mit zeigt sie oben unter „Angeheftet“, Lösen nimmt sie weg; gelöschte Datei verschwindet
 - SYS-10-P01 (T-0244 getrennt): LibreOffice öffnet ein von Trendo erzeugtes DOCX
 - SYS-10-P02/P11: Neues DOCX/XLSX; Tabelle ohne Office lesen (XLSX + CSV mit ; und Anführungszeichen)
 - SYS-10-P04: Zuletzt verwendet – neueste zuerst
@@ -31,4 +30,8 @@ Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `praese
 - T-0229 P1/P2/P3: Neue Folie mit Layout, Text bearbeiten, Formen/Tabelle einfügen, mit Pfeiltasten schieben, Design, Sortieren, Rückgängig
 - T-0229 P4/P5: Vorführung – Animationen per Klick, dann nächste Folie, schwarz, Laserpointer, Referentenansicht mit Notizen, Esc beendet
 - T-0229 P6: Speichern als PPTX und wieder öffnen, Zuletzt geöffnet, Als PDF, Diagramm aus Trendo Tabelle
-- X-11 F1/F2/U1/U2: Vorhaben mit Ring, Kanban verschieben, Zeitplan mit Meilenstein, Dateien des Vorhabens
+- T-0682 Präsentation: fremde PPTX – Strg+S lässt das Original bytegleich; Kopie und „Trotzdem“ mit Sicherung „Name.original.pptx“
+- T-0682: ODT wie DOCX geschützt; ODS und ODP kann Trendo nicht zurückschreiben – nur „Als Kopie speichern“ (XLSX/PPTX), Strg+S lässt das Original; ältere Sicherung wird nicht überschrieben
+- T-0701 Präsentation: fremde PPTX – Design der Datei als eigene Kachel; im Textfeld auf der Folie ein Wort markieren und Strg+B/Strg+I nur dort; Strg+S behält Design, Animation und alle Textformate
+- T-0714 Präsentation: Titel geschrieben und Folie dupliziert, Fenster ohne Speichern geschlossen → Karte → Wiederherstellen bringt die Folien; Speichern räumt weg
+- T-0714 Text und Präsentation: 100 Rückgängig-Schritte wie die Hülle (vorher 80)

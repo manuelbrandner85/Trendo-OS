@@ -1,9 +1,11 @@
 # Trendo PDF – Lizenzen
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` · Stand: 0.9.36 (Stand df96c57)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 
+- Blender (optional, 3D-Fotos/Render)
+- Unreal Engine (optional)
 - LibreOffice (optional)
 - qpdf
 - Tesseract OCR

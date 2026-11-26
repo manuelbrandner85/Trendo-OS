@@ -1,6 +1,6 @@
 # Trendo 3D-Druck – Funktionsmatrix
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d-druck` · Stand: 0.9.36 (Stand df96c57)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D & Spiele · Seite: `3d-druck` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/spec/kataloge/CORE-05_KATALOG.md`
 
@@ -50,13 +50,15 @@ Quelle: `docs/spec/kataloge/CORE-05_KATALOG.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- Hinzufügen …
-- ✳ Claude
-- Mehr ▾
+- KI ▾
+- Claude
+- kie.ai
+- Programme hinzufügen …
+- Mehr
 - Datei wählen …
 - Aus Trendo CAD
 - Bambu Studio einrichten (kostenlos, AGPL)
-- 🔍 Drucker im Netz finden
+- Drucker im Netz finden
 - Einrichtung (WLAN, Nur LAN, Entwicklermodus)
 - Speichern
 - Verbinden

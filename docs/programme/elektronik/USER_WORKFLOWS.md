@@ -1,6 +1,6 @@
 # Schaltung & Simulation – Arbeitsabläufe
 
-Studio: Schaltungen berechnen (SPEC-02) · Bereich: Technik & Fachgebiete · Seite: `elektronik` · Stand: 0.9.36 (Stand df96c57)
+Studio: Schaltungen berechnen (SPEC-02) · Bereich: Technik & Fachgebiete · Seite: `elektronik` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Die Abläufe unten sind die Oberflächentests, die das Programm über den echten Eingabeweg bedienen (Klicks, Tastatur).
 
@@ -9,3 +9,5 @@ Die Abläufe unten sind die Oberflächentests, die das Programm über den echten
 - SPEC-02 UI: RC-Vorlage – Schalter per Klick umlegen, Kondensator lädt, Oszilloskop sammelt Werte, Export SPICE/Stückliste/SVG
 - SPEC-02 UI: Schaltung mit der Maus aufbauen (Batterie, Widerstand, LED, Drähte, Masse) – Simulation zeigt 20 mA, Prüfung ok
 - SPEC-02 UI: Vorlage Transistor schaltet die LED ein; OPV-Vorlage – Bode-Diagramm am Ausgang zeigt Verstärkung 20 dB und die Grenzfrequenz des Tiefpasses
+- T-0748 UI: Schaltung – KiCad-Netzliste über den Knopf öffnen, simulieren, Platine verlegen, Gerber-ZIP exportieren und prüfen
+- T-0748-fix UI: Export Fertigungsdaten mit erzwungenem Prüffehler – Meldung, vorige ZIP bleibt unverändert, keine Zwischendatei

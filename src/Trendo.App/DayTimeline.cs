@@ -97,7 +97,7 @@ public sealed class DayTimeline : Panel
             void Commit(bool keep) { if (done) return; done = true; if (keep) Renamed?.Invoke(b.Key, box.Text ?? ""); else CancelEdit?.Invoke(); }
             box.KeyDown += (_, e) => { if (e.Key == Key.Enter) { e.Handled = true; Commit(true); } else if (e.Key == Key.Escape) { e.Handled = true; Commit(false); } };
             box.LostFocus += (_, _) => Commit(true);
-            box.AttachedToVisualTree += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(() => { box.Focus(); box.SelectAll(); });
+            box.AttachedToVisualTree += (_, _) => Trendo.App.UiThread.Post(() => { box.Focus(); box.SelectAll(); });
             head = box;
         }
         var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { new StackPanel { Spacing = 0, Children = { head, time } } } };

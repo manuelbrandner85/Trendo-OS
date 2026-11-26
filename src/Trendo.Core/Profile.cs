@@ -224,7 +224,7 @@ public static class BrowserImport
 public static class ProfileRole
 {
     public static string FileOf(string baseRoot) => Path.Combine(baseRoot, "profil", "rolle.json");
-    sealed record Stored(bool Child, DateTime AtUtc);
+    sealed record Stored(bool Child, DateTime AtUtc, string? Grund = null);
 
     /// <summary>Kinderprofil? true auch, wenn die Quelle fehlt, unlesbar ist oder widerspricht (außer Ersteinrichtung des Hauptprofils).</summary>
     public static bool IsChild(string dataRoot)
@@ -243,11 +243,85 @@ public static class ProfileRole
             // kein Eintrag: Ersteinrichtung (nichts da) → Besitzer; Stand vor dem Umbau → einmalig aus settings.json; sonst (Personen da, settings.json fehlt) → Kind
             var hasSettings = File.Exists(UserSettings.PathIn(dataRoot));
             var hasPersons = File.Exists(Path.Combine(baseRoot, "personen.json"));
-            var child = hasSettings ? mirror : hasPersons;
-            Write(baseRoot, child);
+            // T-0771 (Prüfer-N1, Korrektur): Ersteinrichtung nur, wenn das Profil noch nicht benutzt wurde. Fehlen rolle.json, settings.json und
+            // personen.json, liegen aber schon NUTZERDATEN aus einem früheren Lauf im Ordner (Projekte, Texte, Briefe, PIN …), hat jemand die
+            // Rollendateien gelöscht → Kind. Setup- und Startdateien (vollpaket-quelle.txt, Protokoll, Zwischenspeicher, Werkzeuge …) zählen nicht.
+            string? grund = null;
+            var child = hasSettings ? mirror : hasPersons || UsedBefore(baseRoot, out grund);
+            Write(baseRoot, child, hasSettings ? "Übernahme aus settings.json" : hasPersons ? "Personen vorhanden, keine Rollendatei" : grund);
+            Decided[Path.GetFullPath(baseRoot)] = DateTime.UtcNow;
             return child;
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or JsonException or ArgumentException or NotSupportedException) { return true; }
+    }
+
+    /// <summary>T-0771: Zeitpunkt, zu dem dieser Prozess für einen Hauptordner zuletzt die Ersteinrichtung entschieden hat.</summary>
+    static readonly System.Collections.Concurrent.ConcurrentDictionary<string, DateTime> Decided = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>T-0771 (Prüfer-N1, 2. Korrektur): Orte im Datenordner, die NICHT als Nutzerdaten zählen – jeweils mit Grund. Alles andere im
+    /// Datenordner zählt (Standard). Die Liste ist bewusst klein: nur, was Setup, Start, Absturz-/Startwächter und Hintergrund-Einrichtung ohne
+    /// Zutun der Person schreiben, und die Rollendateien selbst. Ein Wächtertest verlangt, dass jeder Eintrag einen Grund hat und im Quelltext
+    /// tatsächlich vorkommt.</summary>
+    public static readonly IReadOnlyDictionary<string, string> NotUserData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["vollpaket-quelle.txt"] = "Setup-Hook (VollpaketStart.RememberFromInstaller) schreibt sie vor dem ersten Start",
+        ["audit"] = "TrendoCore schreibt bei jedem Start „core.start“, noch vor der Rolle",
+        ["updates"] = "Startwächter (BootGuard, updates/start.json) und Versionsnotizen – bei jedem Start",
+        ["logs"] = "Absturzprotokolle (CrashLog) – auch von einem abgebrochenen ersten Start",
+        ["protokolle"] = "Protokolldateien des Programms",
+        [Path.Combine("ablaeufe", "windows-aufgabe.log")] = "Aufräum-Protokoll der Windows-Aufgaben beim Start (Program.cs)",
+        ["sicherheit"] = "Vertrauensliste der Programme (ProgramTrust), beim Start angelegt",
+        ["freigaben"] = "offene Freigaben des Kerns (ApprovalGate) – Zustand, keine Inhalte",
+        ["cache"] = "Zwischenspeicher",
+        ["tmp"] = "Zwischendateien",
+        ["werkzeuge"] = "eingerichtete Zusatzprogramme (auch automatisch aus dem Vollpaket)",
+        ["tools"] = "eingerichtete Zusatzprogramme",
+        ["tools.json"] = "Liste der Zusatzprogramme",
+        ["deps-consent.txt"] = "Zustimmung zu Zusatzprogrammen (Einrichtung)",
+        ["programme"] = "eingerichtete Programme (Einrichtung)",
+        ["modelle"] = "KI-Modelle, die Trendo nach dem Start selbst lädt",
+        [Path.Combine("profil", "rolle.json")] = "die Rollendatei selbst",
+        ["settings.json"] = "Einstellungen (eigener Weg: Übernahme aus settings.json)",
+        ["personen.json"] = "Personenliste (eigener Weg: dann immer Kind)",
+    };
+
+    /// <summary>T-0771 (Prüfer-N1, 2. Korrektur): Wurde dieses Hauptprofil schon benutzt? Ja, wenn irgendwo im Datenordner – außer an den Orten in
+    /// <see cref="NotUserData"/> – eine nicht leere Datei liegt, die älter ist als der Start dieses Trendo-Prozesses (bzw. als die letzte
+    /// Rollen-Entscheidung dieses Prozesses für denselben Ordner). Eine Neuinstallation mit Vollpaket oder ein abgestürzter erster Start bleibt eine
+    /// Ersteinrichtung. Ein unlesbarer Unterordner zählt nicht als Nutzerdaten („unklar“, steht in <paramref name="note"/> und in rolle.json) – keine
+    /// stille Aussperrung.</summary>
+    /// <remarks>Grenze: Wer alle eigenen Daten im Datenordner löscht (oder nur außerhalb gespeichert hat, z. B. in „Dokumente“), löst wieder eine
+    /// Ersteinrichtung aus.</remarks>
+    internal static bool UsedBefore(string baseRoot, out string note)
+    {
+        var since = ProcessStartUtc() - TimeSpan.FromSeconds(2);
+        if (Decided.TryGetValue(Path.GetFullPath(baseRoot), out var d) && d > since) since = d;
+        var unclear = new List<string>();
+        bool Skip(string rel) => NotUserData.Keys.Any(k => string.Equals(rel, k, StringComparison.OrdinalIgnoreCase) || rel.StartsWith(k + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
+        var stack = new Stack<DirectoryInfo>(); if (Directory.Exists(baseRoot)) stack.Push(new DirectoryInfo(baseRoot));
+        while (stack.Count > 0)
+        {
+            var dir = stack.Pop();
+            FileSystemInfo[] items;
+            try { items = dir.GetFileSystemInfos(); }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Security.SecurityException) { unclear.Add(Path.GetRelativePath(baseRoot, dir.FullName) + " (" + e.GetType().Name + ")"); continue; }
+            foreach (var it in items)
+            {
+                var rel = Path.GetRelativePath(baseRoot, it.FullName);
+                if (Skip(rel)) continue;
+                if (it is DirectoryInfo sub) { if ((sub.Attributes & FileAttributes.ReparsePoint) == 0) stack.Push(sub); continue; } // Verknüpfungen nicht verfolgen
+                if (it is FileInfo f && f.Length > 0 && f.CreationTimeUtc < since) { note = "Nutzerdaten aus einem früheren Lauf: " + rel; return true; }
+            }
+        }
+        note = "Ersteinrichtung" + (unclear.Count > 0 ? " – unklar, nicht lesbar: " + string.Join(", ", unclear) : "");
+        if (unclear.Count > 0) System.Diagnostics.Trace.WriteLine("Trendo Rolle: " + note);
+        return false;
+    }
+
+    static DateTime ProcessStartUtc()
+    {
+        try { return System.Diagnostics.Process.GetCurrentProcess().StartTime.ToUniversalTime(); }
+        catch (Exception e) when (e is InvalidOperationException or NotSupportedException or System.ComponentModel.Win32Exception) { return DateTime.UtcNow - TimeSpan.FromMinutes(10); }
     }
 
     /// <summary>Child aus settings.json (nur Spiegel). Unlesbar → false (verschärft dann nicht; die Rolle kommt aus der geschützten Quelle).</summary>
@@ -259,10 +333,10 @@ public static class ProfileRole
         catch (JsonException) { return false; }
     }
 
-    static void Write(string baseRoot, bool child)
+    static void Write(string baseRoot, bool child, string? why = null)
     {
         var f = FileOf(baseRoot); Directory.CreateDirectory(Path.GetDirectoryName(f)!);
-        AtomicFile.WriteAllText(f, JsonSerializer.Serialize(new Stored(child, DateTime.UtcNow)));
+        AtomicFile.WriteAllText(f, JsonSerializer.Serialize(new Stored(child, DateTime.UtcNow, why)));
     }
 
     /// <summary>Der Erwachsenen-Weg: Rolle eines Profils festlegen (Hauptprofil: rolle.json, Person: personen.json) – nur durch ein Erwachsenen-Profil
