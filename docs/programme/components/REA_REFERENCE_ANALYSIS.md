@@ -1,6 +1,6 @@
 # Zusatzprogramme – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `components` · Stand: 0.9.36 (Stand df96c57)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `components` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Analyse: [Vorbild-Analyse Programme: Microsoft Store, WinGet/UniGetUI, GNOME Software, Flathub (Clean-Room)](../../../docs/claude/vorbilder/programme-winget-appcenter.md)
 

@@ -1,6 +1,6 @@
-# VR & AR gestalten – Funktionsmatrix
+# 3D-Modelle ansehen – Funktionsmatrix
 
-Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` · Stand: 0.9.36 (Stand df96c57)
+Studio: 3D-Modelle ansehen (SPEC-04) · Bereich: 3D & Spiele · Seite: `xr` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/w6-katalog/SPEC-04.md`
 
@@ -9,13 +9,13 @@ Quelle: `docs/w6-katalog/SPEC-04.md`
 | F01 | GLB lesen | Vorhanden | gebaut |
 | F02 | glTF lesen | Vorhanden | gebaut |
 | F03 | Dreiecke & Punkte | Vorhanden | gebaut |
-| F04 | Geräte-Grenzen | Vorhanden | gebaut |
-| F05 | Bildzeit-Budget | Vorhanden | gebaut |
+| F04 | Geräte-Grenzen | Noch zu entwickeln | offen |
+| F05 | Bildzeit-Budget | Noch zu entwickeln | offen |
 | F06 | Material-Check | Vorhanden | gebaut |
 | F07 | Texturgrößen & Grafikspeicher | Vorhanden | gebaut |
 | F08 | Maßstab prüfen | Vorhanden | gebaut |
 | F09 | Texel-Dichte | Vorhanden | gebaut |
-| F10 | Bewegungs-Komfort | Vorhanden | gebaut |
+| F10 | Bewegungs-Komfort | Noch zu entwickeln | offen |
 | F11 | Szenenliste | Vorhanden | gebaut |
 | F12 | Animationen | Vorhanden | gebaut |
 | F13 | Prüfbericht | Vorhanden | gebaut |
@@ -25,22 +25,18 @@ Quelle: `docs/w6-katalog/SPEC-04.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude
-- Mehr ▾
+- KI ▾
+- Claude
+- kie.ai
+- Mehr
 - Datei wählen …
-- Öffnen
 - Beispielmodell
-- Meta Quest 3 / Pico 4
-- Meta Quest 2
-- Handy-AR
-- PC-VR
 - Schräg
 - Vorne
 - Seite
 - Oben
 - Drahtgitter an
-- 👁 Aus Augenhöhe
-- 🥽 Brillen-Ansicht
+- Aus Augenhöhe
 - Khronos-Prüfer einrichten
 - glTF-Transform einrichten
 - Prüfbericht speichern

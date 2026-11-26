@@ -1,7 +1,12 @@
 # Logos & Marken – Testplan
 
-Studio: Logos & Marken (STUDIO-LOGO-01) · Bereich: Kreativ & Medien · Seite: `logo-programm` · Stand: 0.9.36 (Stand 9dda6f3)
+Studio: Logos & Marken (STUDIO-LOGO-01) · Bereich: Kreativ & Medien · Seite: `logo-programm` · Stand: 0.9.110 (Stand 0eb9d52)
 
-0 Tests sprechen dieses Programm an.
+6 Tests sprechen dieses Programm an.
 
-– keine Tests gefunden
+- Animation mit echtem FFmpeg, vom Klick bis zur Datei: erste Form, auf der Bühne ziehen setzt Schlüssel bei 0 s und 2 s, Raute in der Zeitleiste ziehen und Strg+Z, Kurve per Rechtsklick; MP4 (ffprobe) zeigt die Form bei t=0 links und am Ende rechts; GIF und animiertes SVG
+- Animation: alte Ebenen-Dokumente öffnen weiter, Hochformat 1080×1920, Text und SVG auf der Bühne, Farbe als Schlüssel
+- Logo aus leerer Vorlage mit der Maus: Stern zeichnen, verschieben, drehen, skalieren, Strg+Z; Zeichenstift-Pfad mit Bézier-Rundung schließen, Punkt ziehen; Entf, Strg+D, Rechtsklick-Menü, Raster
+- Logo-Exporte echt geprüft: SVG in Chrome gerendert und Pixel mit der Vorschau verglichen, PDF mit PDFium gezeichnet, PNG 512/1024/2048, Favicon, Paket mit hell/dunkel/einfarbig/negativ
+- Logo: fremdes SVG hineinziehen und umfärben, PNG einsetzen; Vorschlag erzeugen ersetzt nur mit Rückgängig; Namensfeld ändert den Text in der Zeichnung
+- Logos: Vorschau hell und dunkel, Form wechseln, falsche Farbe wird gemeldet, SVG-Export ist gültig

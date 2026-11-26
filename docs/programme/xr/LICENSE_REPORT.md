@@ -1,10 +1,11 @@
-# VR & AR gestalten – Lizenzen
+# 3D-Modelle ansehen – Lizenzen
 
-Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` · Stand: 0.9.36 (Stand df96c57)
+Studio: 3D-Modelle ansehen (SPEC-04) · Bereich: 3D & Spiele · Seite: `xr` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 
 - Blender (optional, 3D-Fotos/Render)
+- FFmpeg
 - Poly Haven (freie 3D-Modelle)
 - ambientCG (freie Materialien)
 

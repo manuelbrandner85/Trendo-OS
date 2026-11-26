@@ -1,6 +1,6 @@
 # Skills – Testplan
 
-Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: KI & Automatik · Seite: `ki-skills` · Stand: 0.9.36 (Stand df96c57)
+Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: KI & Automatik · Seite: `ki-skills` · Stand: 0.9.110 (Stand 0eb9d52)
 
 8 Tests sprechen dieses Programm an.
 
@@ -11,4 +11,4 @@ Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: KI & Automatik · Seite: 
 - Skills-Seite: eigener Skill zeigt Tipps der Skill-Prüfung, „Als Datei“ sichert ihn, „Aus Datei laden“ übernimmt ihn als geladenen Skill
 - T-0317: Skills-Seite – ansehen, eigenen Skill anlegen und ändern (Version 2), passende Fachregeln gehen an die KI
 - T-0317: Vertraute Quelle – Liste nur der SKILL.md-Dateien, Übernehmen speichert Text mit Lizenz und Herkunft (nichts wird ausgeführt)
-- T-0317: „In Claude Code öffnen“ legt die passenden Skills als .claude/skills/trendo-…/SKILL.md in den Ordner und nennt die Checklisten-Prüfung
+- T-0711 Skills: Skill-Editor – Rückgängig, Notsicherung, Karte, Zurückholen

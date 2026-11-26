@@ -1,6 +1,6 @@
 # Vorhaben – Testergebnisse
 
-Studio: Neues Projekt starten (X-11) · Bereich: Arbeiten & Büro · Seite: `vorhaben` · Stand: 0.9.36 (Stand df96c57)
+Studio: Neues Projekt starten (X-11) · Bereich: Arbeiten & Büro · Seite: `vorhaben` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Lauf: `api.trx, app.trx, core.trx`
 
@@ -8,10 +8,10 @@ Bestanden 10 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
-| SYS-09 U1/F2: Ordner · Liste · Lesebereich; Termin aus der E-Mail erkennen und eintragen | ✓ bestanden |
-| SYS-10 F1/U1/U2: Start mit Programmkacheln und Vorlagen; Dokumente als Kacheln mit Filter; Öffnen im passenden Programm | ✓ bestanden |
-| SYS-10 wie Microsoft 365: Dokumente suchen (alle Wörter im Namen), Anheften mit ★ zeigt sie oben unter „Angeheftet“, Lösen nimmt sie weg; gelöschte Datei verschwindet | ✓ bestanden |
 | T-0308: Gantt – Balken ziehen verschiebt um Tage, Kante ziehen verlängert, Punkt auf anderen Balken = Abhängigkeit mit Nachrücken, Rückgängig, Beginn/Ende/„kommt nach“ im Feld | ✓ bestanden |
+| T-0717 Vorhaben: Zeitplan – Rückgängig/Wiederholen der Hülle (vorher eigener Stapel ohne Wiederholen) über mehrere Schritte, gespeichert nach dem Schließen | ✓ bestanden |
+| T-0725 Echtlauf Neues Projekt: LibreOffice Calc öffnet die Schritte-CSV (Semikolon, UTF-8), Ical.Net liest die Kalenderdatei; Messwerte: LibreOffice öffnet das Diagramm-PNG | ✓ bestanden |
+| T-0725 Neues Projekt: Beispiel-Vorhaben → „Schritte als Tabelle (.csv)“ und „Zeitplan als Kalenderdatei (.ics)“ landen in der Mappe; Ical.Net liest jeden Schritt mit Zeitraum | ✓ bestanden |
 | Vorhaben: „Beispiel ansehen“ legt ein Beispielprojekt an und öffnet den Planer mit Übersicht, Liste, Tafel, Zeitplan, Dateien | ✓ bestanden |
 | Vorhaben: „In den Kalender“ trägt die Fälligkeiten ein, zweites Mal ohne Doppelte, erledigter Schritt verschwindet wieder aus dem Kalender | ✓ bestanden |
 | X-11 (UI): Vorhaben anlegen, Schritt abhaken, Fortschritt steigt | ✓ bestanden |

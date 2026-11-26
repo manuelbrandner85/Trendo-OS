@@ -1,14 +1,13 @@
 # Werkstatt – Testergebnisse
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` · Stand: 0.9.36 (Stand df96c57)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D & Spiele · Seite: `spiele` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 55 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 36 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
-| 3D-Modelle, Einfach: Grundfunktionen sichtbar, Export und Fachwerkzeuge nach einem Klick; Erweitert zeigt alles | ✓ bestanden |
 | CORE-06 (UI): Spiel anlegen öffnet es im Browser; ohne Unreal ehrlicher Hinweis, mit Unreal Projekt anlegen | ✓ bestanden |
 | CORE-06 G1: Godot Asset Library – Suche mit Titel, Autor, Lizenz; Laden nur von GitHub/GitLab, ZIP sicher entpackt; fremde Download-Adresse abgelehnt | ✓ bestanden |
 | CORE-06 G1–G3: Assets – Godot-Suche, neue Downloads übernehmen, Bildstreifen als Lauf-Animation (4 Bilder), Ton als Sprung-Geräusch, Asset-Liste mit Abspann, NC-Lizenz warnt beim Veröffentlichen | ✓ bestanden |
@@ -35,31 +34,13 @@ Bestanden 55 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | CORE-06: Unreal-Engines aus Launcher-Liste erkannt, neueste zuerst; .uproject ist gültig | ✓ bestanden |
 | CORE-06: Zeitlimit: nach Ablauf verloren, Restzeit zählt herunter; ohne Limit −1 | ✓ bestanden |
 | CORE-06: Zustände der Figur – stehen auf dem Boden, laufen mit Tempo, springen nach oben, fallen nach unten; Blickrichtung folgt der Laufrichtung | ✓ bestanden |
-| Claude im Studio: Auswahl in Trendo Tabelle geht als Zustand mit; Internet und Befehle bei Bedarf immer an, je Projekt auf „sicher“ stellbar; Vorgabe abschaltbar | ✓ bestanden |
 | Claude im Studio: Ergebnis erscheint links im passenden Programm – Webseite im Webseiten-Studio, Spiel im Spiele-Studio; Studio wird daneben eingeblendet | ✓ bestanden |
-| Claude im Studio: Startideen, Rückfrage als Knöpfe, Anhang landet im Projekt, Abo-Verbrauch je Antwort | ✓ bestanden |
-| Claude im Studio: Trendo prüft das Ergebnis und gibt Fehler automatisch an Claude zurück, bis es läuft – höchstens drei Durchgänge | ✓ bestanden |
 | Claude wie im Original: Skills, Plugins, Connectoren und Agenten aus dem eigenen Claude sichtbar; genutzter Skill/Connector unter der Antwort | ✓ bestanden |
-| Claude-Abo aufgebraucht: Ersatz-KI übernimmt dieselbe Nachricht (sichtbar „Aktive KI“), bis zur Freigabe ohne Claude, danach automatisch wieder Claude | ✓ bestanden |
-| Einfach: In jedem Programm bleibt jeder Befehl der Stufe erreichbar, direkt oder unter „Mehr“; direkt sichtbar sind höchstens vier Programmbefehle | ✓ bestanden |
+| E6: „Was möchtest du machen?“ startet die Aufgabe – fehlt eine Angabe, fragt Trendo kurz und startet dann mit der Antwort | ✓ bestanden |
 | Kostenlose KI-Werkzeuge: Claude bestellt ein Bild – erst als Entwurf zum Ansehen, ins Projekt erst nach „Übernehmen“; neu erzeugen, verwerfen; Knöpfe; Diktieren | ✓ bestanden |
 | Spiele bauen, Einfach: Auftrag und nächster Schritt; „Alle Bereiche“ zeigt alles; Erweitert unverändert | ✓ bestanden |
-| Spiele bauen: Nächster Schritt nennt den schwächsten Bereich in Alltagssprache; Alltagswörter nur in Einfach | ✓ bestanden |
 | Spiele: Retro-Vorlage, Level im Raster bearbeiten, Figur hinzufügen, prüfen, bauen und spielen | ✓ bestanden |
-| Spiele: Umfang AAA+ wählen setzt AAA-Meilensteine; Bauen legt ein Unreal-Projekt mit Spielbibel an | ✓ bestanden |
 | Spiele: Unreal öffnen und die Herstellerseite bleiben der alte Weg | ✓ bestanden |
-| T-0203: Abbrechen installiert nichts | ✓ bestanden |
-| T-0203: LibreOffice bleibt zu, wenn die Versionsabfrage zu lange dauert | ✓ bestanden |
-| T-0203: OBS startet nicht, wenn die Dateiversion fehlt | ✓ bestanden |
-| T-0203: OBS unter Windows liest die Dateiversion und öffnet ohne Prozess in der Prüfung | ✓ bestanden |
-| T-0203: „Einrichten“ fragt, „Ja“ lädt nichts, solange die Prüfung nicht besteht | ✓ bestanden |
-| T-0203: „In LibreOffice öffnen“ startet die Datei, wenn --version schnell antwortet | ✓ bestanden |
-| T-0203: „In OBS öffnen“ startet die Sammlung, wenn --version schnell antwortet | ✓ bestanden |
-| T-0203: „In VS Code öffnen“ startet den Ordner, wenn --version schnell antwortet | ✓ bestanden |
-| T-0203: „Ja, einrichten“ öffnet keine Herstellerseite, solange die Prüfung nicht besteht | ✓ bestanden |
-| T-0203: „Starten“ öffnet LibreOffice und Blender erst nach bestandener Prüfung und Freigabe | ✓ bestanden |
-| T-0203: „Starten“ öffnet nicht, wenn die Prüfung scheitert | ✓ bestanden |
 | T-0204 (UI): Anlegen → Editor; Tempo und Level ändern, speichern, als ZIP exportieren | ✓ bestanden |
 | T-0204 (UI): Unreal – vorhandenes Projekt öffnen; ohne Unreal klarer Hinweis | ✓ bestanden |
-| T-0204: Einstellungen landen in config.js, Bild wird kopiert, Export enthält alles | ✓ bestanden |
-| Übrige Seiten, Einfach: Rest hinter „Mehr anzeigen“ und nach einem Klick wieder da; Erweitert zeigt alles sofort | ✓ bestanden |
+| T-0711 Spiele-Werkstatt: Tempo und Level-Raster – Rückgängig, Notsicherung, Karte öffnet das Spiel mit dem Entwurf | ✓ bestanden |

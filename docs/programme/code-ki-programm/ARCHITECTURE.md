@@ -1,6 +1,6 @@
 # Code mit KI – Architektur
 
-Studio: Code mit KI (STUDIO-CODEAI-01) · Bereich: KI & Automatik · Seite: `code-ki-programm` · Stand: 0.9.95 (Stand cce5c62)
+Studio: Code mit KI (STUDIO-CODEAI-01) · Bereich: KI & Automatik · Seite: `code-ki-programm` · Stand: 0.9.110 (Stand 0eb9d52)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.KreativStudios4.cs`
@@ -14,30 +14,20 @@ Studio: Code mit KI (STUDIO-CODEAI-01) · Bereich: KI & Automatik · Seite: `cod
 
 ## Fach-Engine (Trendo.Core)
 - `CiteKit`
-- `DayPlanner`
 - `CodeAiKit`
+- `DayPlanner`
 - `VisionKit`
 - `KreativSafe`
+- `ClaudeCode`
 - `CodeProject`
+- `FolderSnapshot`
+- `VisionTags`
 - `RealProcessRunner`
 
 ## Dateiformate (im Code belegt)
-- .csv
-- .html
-- .ics
-- .jpg
-- .json
 - .md
-- .mp4
-- .ogg
 - .patch
-- .png
-- .svg
 - .tdoc
-- .txt
-- .wav
-- .xml
-- .zip
 
 ## Externe Programme und Dienste
 - Blender (optional, 3D-Fotos/Render)

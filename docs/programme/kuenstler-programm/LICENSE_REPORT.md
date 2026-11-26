@@ -1,6 +1,6 @@
 # Künstlerstudio – Lizenzen
 
-Studio: Künstlerstudio (STUDIO-ART-01) · Bereich: Kreativ & Medien · Seite: `kuenstler-programm` · Stand: 0.9.102 (Stand 469343b)
+Studio: Künstlerstudio (STUDIO-ART-01) · Bereich: Kreativ & Medien · Seite: `kuenstler-programm` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

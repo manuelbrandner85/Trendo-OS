@@ -1,6 +1,6 @@
 # Karten & Touren – Funktionsmatrix
 
-Studio: Routen & Karten (SPEC-13) · Bereich: Technik & Fachgebiete · Seite: `karten` · Stand: 0.9.36 (Stand df96c57)
+Studio: Routen & Karten (SPEC-13) · Bereich: Technik & Fachgebiete · Seite: `karten` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/w6-katalog/SPEC-13.md`
 
@@ -28,7 +28,9 @@ Quelle: `docs/w6-katalog/SPEC-13.md`
 | F20 | GPX schreiben | Vorhanden | gebaut |
 
 ## Werkzeuge der Oberfläche
+- GPX-Datei öffnen … (Karte)
 - Hintergrund an/aus (Karte)
+- Karte aus dem Internet … (Karte)
 - Alles zeigen (Karte)
 - GPX (Navi, Uhr) (Exportieren)
 - GeoJSON (QGIS) (Exportieren)

@@ -1,8 +1,8 @@
 # Sicherung – Produktionspaket
 
-Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `sicherung` · Stand: 0.9.36 (Stand df96c57)
+Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `sicherung` · Stand: 0.9.110 (Stand 0eb9d52)
 
-Arbeitsfläche: Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)  
+Arbeitsfläche: Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11), Sicherungs-Zeitleiste  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  
 Programm-Hülle (Dokumente, Rückgängig, Autosave, Bedienstufen): nein – eigene Arbeitsseite
 

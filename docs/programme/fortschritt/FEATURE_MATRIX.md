@@ -1,6 +1,6 @@
 # Fortschritt – Funktionsmatrix
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `fortschritt` · Stand: 0.9.36 (Stand df96c57)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `fortschritt` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/spec/kataloge/SYS-13_KATALOG.md`
 
@@ -34,31 +34,13 @@ Quelle: `docs/spec/kataloge/SYS-13_KATALOG.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude
-- Darstellung & Sprache
-- Personen & Konten
-- Sehen & Bedienhilfen
-- Trendo-Updates
-- Betriebsmodus
-- Geräte & Laufwerke
-- Handy verbinden
-- Geräteverbund
-- Im Heimnetz teilen
-- Apps
-- Programme verwalten
-- Hinzufügen
-- Pflegen & Aktualisieren
-- Zusatzprogramme
-- Downloads
-- Schutz & Datenschutz
-- Freigaben
-- Sicherung
-- Selbstheilung
-- Sicher prüfen
-- Sicherheits-Werkzeuge
-- Protokoll & Abstürze
-- Speicher & Leistung
-- Leistung messen
-- Systemcheck
-- Qualitäts-Ampel
-- Verstanden
+- KI ▾
+- Claude
+- kie.ai
+- settings-nav-settings
+- settings-nav-personen
+- settings-nav-bedien-sehen
+- settings-nav-updates
+- settings-nav-geraete
+- settings-nav-sicherung
+- Mehr Einstellungen (23)

@@ -1,6 +1,6 @@
 # Trendo Musik – Funktionsmatrix
 
-Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand df96c57)
+Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/spec/kataloge/STUDIO-MUSIK-01_KATALOG.md`
 
@@ -33,39 +33,40 @@ Quelle: `docs/spec/kataloge/STUDIO-MUSIK-01_KATALOG.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude
+- KI ▾
+- Claude
+- kie.ai
 - Sommerlied über einen Roadtrip
 - Ruhige Klavierballade, instrumental
 - Rap über Montagmorgen
-- Mehr ▾
+- Mehr
+- ms-nav-erstellen
+- ms-nav-studio
+- ms-nav-bibliothek
+- ms-nav-stimmen
 - Erstellen
-- Studio
-- Bibliothek
-- Stimmen
-- ✨ Erstellen
-- Lieder
-- Sounds
-- Sprache
 - Übernehmen
-- Di
-- Mi
-- Do
-- Fr
-- Sa
-- So
-- Heute
+- ms-idea-day-6
+- ms-idea-day-5
+- ms-idea-day-4
+- ms-idea-day-3
+- ms-idea-day-2
+- ms-idea-day-1
+- ms-idea-day-0
 - Lied in meinem Geschmack
-- Einfach
-- Erweitert
+- Nur beschreiben
+- Mit eigenem Songtext
+- ms-input-undo
+- ms-input-redo
 - + Audio
 - + Stimme
 - + Persona
 - + Bild
-- 🎲 Idee
+- Idee
 - Instrumental (ohne Gesang)
 - Dauer genau
 - Zurücksetzen
-- 🎼 Genre wählen (181)
+- Genre wählen (181)
 - Klavier
 - Akustikgitarre
 - E-Gitarre
@@ -88,7 +89,6 @@ Quelle: `docs/spec/kataloge/STUDIO-MUSIK-01_KATALOG.md`
 - Suchen
 - Datei wählen und untersuchen
 - Das ist meine eigene Stimme. Ich nehme sie hier selbst mit dem Mikrofon auf.
-- ⏺ Aufnahme 1 von 10
-- 🧠 Stimme lernen
-- 🎙 Cover erzeugen
-- 🎤 Karaoke aus dem Original
+- Aufnahme 1 von 10
+- Stimme lernen
+- Cover erzeugen

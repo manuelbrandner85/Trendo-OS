@@ -1,18 +1,14 @@
 # Personen – Testergebnisse
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `personen` · Stand: 0.9.36 (Stand df96c57)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `personen` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 22 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 17 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
 | Anmeldung: „Beim Start nach PIN fragen“ lässt sich abschalten | ✓ bestanden |
-| Apps: WhatsApp installieren → Desktop und Startmenü, öffnet als App-Fenster mit eigenem Speicher, Entfernen löscht die Anmeldung | ✓ bestanden |
-| Einstellungen-App wie Windows 11: Bereiche links, Suche über alle Einstellungen, Betriebsmodus öffnet den Stick-Schreiber ohne PC-Einrichtung und ohne „vom PC entfernen“ | ✓ bestanden |
-| Ersteinrichtung im Vollbild: Claude freiwillig zuerst; Stick/SSD zeigen echte Laufwerke mit GB, zu kleine gesperrt, Windows-Laufwerk nie; ehrlicher Hinweis solange das Abbild fehlt | ✓ bestanden |
-| Ersteinrichtung: nach Neustart geht es beim letzten Schritt weiter, eine schon festgelegte PIN wird nicht erneut abgefragt | ✓ bestanden |
 | SYS-12 (UI): Bericht über alle Seiten; keine Seite tiefer als 2 Ebenen; Prüfseite hat keine unbenannten Knöpfe | ✓ bestanden |
 | SYS-12 (UI): Leise Benachrichtigung; Einstellung bleibt gespeichert; einfacher Modus zeigt weniger Kacheln | ✓ bestanden |
 | SYS-12 (UI): Mindestschrift greift; Knöpfe haben Namen und sind per Tab erreichbar; Bewegung aus = keine Übergänge | ✓ bestanden |
@@ -27,6 +23,5 @@ Bestanden 22 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | SYS-12-P25: Bericht listet Befunde je Seite | ✓ bestanden |
 | SYS-12: Anzeigegröße wird auf erlaubte Stufen begrenzt | ✓ bestanden |
 | SYS-12: Anzeigegröße „Sehr groß“ wird gespeichert; F1 zeigt die Hilfe | ✓ bestanden |
-| Stick-Schreiber schützt: Start-/Systemlaufwerk, Windows-Laufwerk, interne Platte als „Stick“ und zu kleine Laufwerke werden verweigert | ✓ bestanden |
-| Stick-Schreiber: Abbild im Release erkannt, Laufwerk wählen, Löschen erst nach Eintippen des Buchstabens, laden, prüfen, schreiben (virtuelle Festplatte), Boot-Tasten | ✓ bestanden |
-| TV-Vollbild: kleines Fenster „Verkleinern“ beim Start und bei Mausbewegung, ein Klick verkleinert | ✓ bestanden |
+| T-0713 UI: Hinweis-Karte in den Einstellungen, wenn ein Erwachsenen-Profil ohne PIN neben einem Kinderprofil besteht; „PIN festlegen“ führt zur Anmeldung; mit PIN verschwindet sie | ✓ bestanden |
+| T-0764 M1: Personen-Seite zeigt im Kinderprofil den ehrlichen Hinweis zu den Grenzen (eigenes Windows-Konto) | ✓ bestanden |

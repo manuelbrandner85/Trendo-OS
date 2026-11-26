@@ -1,6 +1,6 @@
-# Software – Architektur
+# Webseite bauen – Architektur
 
-Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand df96c57)
+Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.110 (Stand 0eb9d52)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.CodeEditor.cs`
@@ -10,22 +10,33 @@ Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand
 - Bildansicht
 
 ## Reiter
-- Software
+- Webseite bauen
 - Code-Editor
 
 ## Fach-Engine (Trendo.Core)
+- `DevBuild`
 - `CodeProject`
+- `CodeDrafts`
+- `Button`
+- `Panel`
 
 ## Dateiformate (im Code belegt)
+- .gltf
 - .html
 - .jpg
 - .json
 - .md
+- .mp4
+- .ogg
 - .png
 - .svg
+- .txt
+- .wav
 - .xml
+- .zip
 
 ## Externe Programme und Dienste
+- FFmpeg
 - Git
 - Python (optional)
 - Node.js (optional)

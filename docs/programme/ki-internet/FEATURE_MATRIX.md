@@ -1,32 +1,36 @@
 # Kostenlose Internet-KIs – Funktionsmatrix
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-internet` · Stand: 0.9.36 (Stand df96c57)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-internet` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude
-- KI fragen
-- Trendo KI (lokal)
-- Mit Claude verbinden
-- KI-Bibliothek
+- KI ▾
+- Claude
+- kie.ai
+- ki-nav-ki-fragen
+- ki-nav-ki
+- ki-nav-claude-verbinden
+- ki-nav-ki-bibliothek
+- ki-nav-ki-quellen
+- ki-nav-ki-vorlagen
+- ki-nav-ki-skills
+- ki-nav-ki-rollen
+- ki-nav-ablaeufe
+- ki-nav-produktion
+- ki-nav-verbindungen
+- ki-nav-keys
 - KI-Quellen
-- KI-Vorlagen
-- Skills
-- KI-Rollen und Teams
-- Abläufe
-- Produktion
-- Verbindungen
-- Online-Dienste
+- KI-Bibliothek
 - Kostenlose Internet-KIs
 - 1. Kostenloses Konto anlegen
 - 2. Schlüssel erstellen und kopieren
 - Aus Zwischenablage einfügen
 - Prüfen & verbinden
-- Nur im KI-Chat
-- In allen Bereichen – nur wenn die KI auf dem PC nicht antwortet (empfohlen)
-- In allen Bereichen – Internet-KI zuerst
+- or-mode-chat
+- or-mode-ersatz
+- or-mode-zuerst
 - Jetzt aktualisieren
 - Datei wählen …
-- 🌐 Fragen
+- Fragen

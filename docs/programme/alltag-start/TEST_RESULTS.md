@@ -1,23 +1,17 @@
 # Übersicht – Testergebnisse
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `alltag-start` · Stand: 0.9.36 (Stand df96c57)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `alltag-start` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 28 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 2
+Bestanden 22 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 2
 
 | Test | Ergebnis |
 |---|---|
-| Fenster-Verlauf: merkt Seitenwechsel (höchstens 30), nicht beim Neuzeichnen oder Zurückgehen | ✓ bestanden |
 | Fenster: Alt+← geht im aktiven Fenster zurück; mehrere Schritte nacheinander | ✓ bestanden |
 | Fenster: Klick auf eine Kategorie im Fenster bleibt im selben Fenster; ohne Klick eigenes Fenster; offene Seite wird wiederverwendet | ✓ bestanden |
 | Fenster: Zurück-Knopf führt im selben Fenster zur vorigen Seite; ohne vorige Seite ausgegraut; kein neues Fenster | ✓ bestanden |
-| Fenster: maximiert füllt den ganzen Bildschirm – über Kopfleiste und Taskleiste, ohne Rand; Wiederherstellen bringt die Leisten zurück | ✓ bestanden |
 | N11: Rechner – Tasten, wissenschaftlich, Programmierer, Grafik, Datum, Verlauf | ✓ bestanden |
-| N18: Zettel anlegen, Farbe wählen, auf der Startseite anheften und lösen | ✓ bestanden |
-| N20: Wecker stellen und klingeln (Benachrichtigung mit Schlummern), Timer läuft ab, Stoppuhr-Runden, Weltuhr | ✓ bestanden |
-| N5: Notizbuch – Abschnitt und Seite anlegen, schreiben (speichert), Schlagworte, Suche, der KI als Wissen geben | ✓ bestanden |
-| N9: Editor öffnet ANSI/CRLF, sucht, ersetzt, speichert in gleicher Kodierung; Kodierung umstellbar | ✓ bestanden |
 | SYS-02 (UI): Tabs vorhanden; Umbenennen mit Vorschau + Rückgängig; Erinnerung; Zwischenablage ohne Passwort; Einheiten | ✓ bestanden |
 | SYS-02-P05: Zwischenablage max. 50, keine Passwörter/Schlüssel, löschbar | ✓ bestanden |
 | SYS-02-P06/P10/P18: Drehen, Verkleinern, Schwärzen (Pixel überschrieben), Pipette – Original bleibt | ✓ bestanden |

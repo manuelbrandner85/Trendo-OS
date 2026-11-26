@@ -1,6 +1,6 @@
 # Aufgaben – Funktionsmatrix
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `aufgaben` · Stand: 0.9.36 (Stand df96c57)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `aufgaben` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/spec/kataloge/SYS-09_KATALOG.md`
 
@@ -25,15 +25,18 @@ Quelle: `docs/spec/kataloge/SYS-09_KATALOG.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude
+- KI ▾
+- Claude
+- kie.ai
 - Antwort auf die letzte E-Mail entwerfen
 - Termin nächste Woche Dienstag 10 Uhr
 - Ungelesene Mails zusammenfassen
-- Mehr ▾
-- E-Mail & Kontakte
+- Mehr
+- Schreiben
 - Adressbuch
 - Posteingang
 - Kalender
 - Aufgaben
 - Hinzufügen
-- ↶ Rückgängig
+- Rückgängig
+- Wiederholen

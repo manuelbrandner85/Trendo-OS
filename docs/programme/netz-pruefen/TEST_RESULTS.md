@@ -1,10 +1,10 @@
 # Sicher prüfen – Testergebnisse
 
-Studio: Downloads & Links (SYS-03) · Bereich: System & Sicherheit · Seite: `netz-pruefen` · Stand: 0.9.36 (Stand df96c57)
+Studio: Downloads & Links (SYS-03) · Bereich: System & Sicherheit · Seite: `netz-pruefen` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 14 · Fehlgeschlagen 0 · Übersprungen 1 · nicht im Lauf 2
+Bestanden 16 · Fehlgeschlagen 0 · Übersprungen 1 · nicht im Lauf 2
 
 | Test | Ergebnis |
 |---|---|
@@ -24,4 +24,6 @@ Bestanden 14 · Fehlgeschlagen 0 · Übersprungen 1 · nicht im Lauf 2
 | SYS-03-P18/P19/P20/P21/P24: Downloads sortieren + rückgängig, Quarantäne, Defender-Auswertung, Webnotiz, Proxy | ✓ bestanden |
 | SYS-03: Adressen werden sicher normalisiert (nur http/https, sonst Suche oder Ablehnung) | nicht im Lauf |
 | SYS-03: Browser werden über bekannte Pfade gefunden; riskante und unfertige Downloads erkannt | ✓ bestanden |
-| SYS-03: Dock-Browser öffnet Browser & Downloads; Adresse wird geöffnet, javascript: abgelehnt; offline gesperrt | ✓ bestanden |
+| SYS-03: Dock-Symbol öffnet „Downloads & Links“; Adresse öffnet im Standard-Browser, javascript: abgelehnt; offline gesperrt | ✓ bestanden |
+| T-0755 SYS-03 UI: „Downloads & Links“ – echter HTTP-Download (lokaler Testserver) zeigt SHA-256, vergleicht mit der Angabe, Anhalten/Fortsetzen, Verlauf bleibt; Links sammeln und im Standard-Browser öffnen | ✓ bestanden |
+| T-0755 SYS-03: SHA-256 wird immer berechnet, Verlauf bleibt nach „Fertige aus der Liste nehmen“ und über Neustart; Links sammeln ohne Doppelte | ✓ bestanden |

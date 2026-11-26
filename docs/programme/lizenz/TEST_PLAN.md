@@ -1,8 +1,8 @@
 # Konto, Lizenz & Vollversion – Testplan
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `lizenz` · Stand: 0.9.92 (Stand 94252fc)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `lizenz` · Stand: 0.9.110 (Stand 0eb9d52)
 
-16 Tests sprechen dieses Programm an.
+17 Tests sprechen dieses Programm an.
 
 - Commercial Desktop Edition: Hardware & Leistung prüft den PC, zeigt Profil, Systemcheck und Eignung je Studio; auch vor dem Kauf
 - Commercial Phase 2: Seite Konto, Lizenz & Vollversion in den Einstellungen, Vorabversion, kaputter Code abgelehnt
@@ -20,3 +20,4 @@ Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Se
 - SYS-12-P25: Bericht listet Befunde je Seite
 - SYS-12: Anzeigegröße wird auf erlaubte Stufen begrenzt
 - SYS-12: Anzeigegröße „Sehr groß“ wird gespeichert; F1 zeigt die Hilfe
+- Studio-Seiten: Überschrift ist der Name aus dem Studio-Katalog

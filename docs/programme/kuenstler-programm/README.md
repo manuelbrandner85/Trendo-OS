@@ -1,6 +1,6 @@
 # Künstlerstudio – Produktionspaket
 
-Studio: Künstlerstudio (STUDIO-ART-01) · Bereich: Kreativ & Medien · Seite: `kuenstler-programm` · Stand: 0.9.102 (Stand 469343b)
+Studio: Künstlerstudio (STUDIO-ART-01) · Bereich: Kreativ & Medien · Seite: `kuenstler-programm` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Arbeitsfläche: keine eigene Arbeitsfläche erkannt (Seite aus Listen, Feldern und Knöpfen)  
 Modulstatus (requirements.yaml): IN_PROGRESS / Test NOT_RUN  

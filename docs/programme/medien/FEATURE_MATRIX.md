@@ -1,6 +1,6 @@
 # Medien – Funktionsmatrix
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `medien` · Stand: 0.9.36 (Stand df96c57)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `medien` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/spec/kataloge/SYS-02_KATALOG.md`
 
@@ -34,16 +34,16 @@ Quelle: `docs/spec/kataloge/SYS-02_KATALOG.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude
-- Verstanden
+- KI ▾
+- Claude
+- kie.ai
 - Werkzeuge
 - Medien
-- 🖼 Fotos
-- 🎵 Musik & Videos
-- Alle Fotos
-- ★ Favoriten
-- ⧉ Doppelte
+- Fotos
+- Musik & Videos
+- photo-nav-alle
+- photo-nav-album-0
+- photo-nav-dups
 - Album anlegen
 - Ordner wählen …
-- Ordner aufnehmen
-- ↻ Neu einlesen
+- Neu einlesen

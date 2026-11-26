@@ -1,8 +1,8 @@
 # Audio bearbeiten – Testplan
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `ton` · Stand: 0.9.36 (Stand df96c57)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `ton` · Stand: 0.9.110 (Stand 0eb9d52)
 
-23 Tests sprechen dieses Programm an.
+25 Tests sprechen dieses Programm an.
 
 - Audio Mehrspur: Projekt anlegen, zwei Spuren, Clip mit der Maus verschieben, Stumm und Solo per Knopf, Abmischen öffnet eine Spur
 - Audio spektral retuschieren: Spektrogramm an, Rechteck um den Pfeifton ziehen, Bereich absenken – Pfeifton weg, Stimme bleibt, rückgängig
@@ -15,9 +15,6 @@ Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seit
 - CORE-08: Alle Aufgaben laufen mit echtem FFmpeg, Original bleibt, nichts wird überschrieben
 - CORE-08: Fehlende Datei gibt verständliche Meldung, Argumente ohne Shell
 - Einfach zuerst: neue Nutzer öffnen Programme in der Stufe „Einfach“ (weniger Werkzeuge, alle Funktionen über „Erweitert“/„Professionell“ erreichbar)
-- Einfachheit: jede Seite höchstens drei Reiterleisten auf einmal, Aufklapper und Scrollbereiche höchstens zwei Ebenen tief; Bericht der verschachteltsten Seiten
-- Programm: Startseite → Vorlage → bearbeiten → Rückgängig → Speichern → Zuletzt → wieder öffnen; Reiter für zwei Dokumente
-- Programm: ungespeichertes Dokument wird automatisch gesichert und auf der Startseite wiederhergestellt
 - S4-01 Mehrspur: Aufnahme landet als neue Spur, Automation per Feld (rückgängig machbar, Unsinn abgelehnt); ohne Mikrofon keine Scheinaufnahme
 - S4-06 Audioeditor: Plugin prüfen (Netz-Hinweis), ohne Freigabe kein Start, freigeben, anwenden → Schritt „Plugin: …“ (rückgängig); Absturz → Bericht, Projekt unverändert
 - S4-06 Audioeditor: „Plugins prüfen“ findet VST3 und schreibt einen Bericht – ohne Plugin zu laden; leerer Ordner: klare Meldung
@@ -26,4 +23,9 @@ Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seit
 - S4-19 Audioeditor: Melodie → Noten schreibt MIDI und Unsicherheitsbericht, legt die Noten in Trendo Musik; Akkord wird als NICHT exakt gemeldet
 - S4-20 Audioeditor: ohne Lizenz und bei Übersteuerung keine Freigabe (Grund steht da, kein Ordner); mit Angabe Freigabe mit WAV 24 Bit und Prüfbericht
 - Spiel-Effekte: Laser würfeln → öffnet sich mit Lizenz „selbst erzeugt“ und Tag Spiel.Schuss; neue Variante ist anders; in die Bibliothek und ins Paket
+- T-0732 Gegenprüfung Ton (UI): Dokument während der Aufnahme gewechselt – die Aufnahme landet im Dokument, in dem sie gestartet wurde – echtes FFmpeg
+- T-0732 Gegenprüfung Ton (UI): Fenster schließen während der Aufnahme – WAV sauber abgeschlossen, unter „Aufnahmen“, ins Dokument übernommen und von der Hülle gesichert – echtes FFmpeg
+- T-0732 Ton (UI): Effekt-Werte einstellbar – „Lauter“ um 6 dB, Echo-Abstand, Tiefen weg bei 200 Hz, Stille 2,5 s; Rückgängig
+- T-0732 Ton (UI): Leertaste startet und hält die Wiedergabe an – auf der Welle, nicht beim Tippen in Feldern
+- T-0732 Ton (UI): „Aufnehmen“ läuft bis „Stopp“ (länger als je), Pegel und Zeit sichtbar, Aufnahme an der Marke eingefügt – echtes FFmpeg
 - X17 Versionen: nach dem zweiten Speichern zeigt die Datei-Gruppe „Versionen (1)“, Wiederherstellen holt den alten Stand (rückgängig machbar)

@@ -1,10 +1,17 @@
 # Spiele bauen – Testplan
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-programm` · Stand: 0.9.36 (Stand df96c57)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D & Spiele · Seite: `spiele-programm` · Stand: 0.9.110 (Stand 0eb9d52)
 
-33 Tests sprechen dieses Programm an.
+106 Tests sprechen dieses Programm an.
 
-- 3D-Modelle, Einfach: Grundfunktionen sichtbar, Export und Fachwerkzeuge nach einem Klick; Erweitert zeigt alles
+- Automatik: Claude erhält im Studio die Anweisung, sein Team ohne Rückfrage einzusetzen
+- Automatik: Fachleute stehen ab Start auf „Automatisch“, die KI bekommt die Engine-Anweisung, Übernehmen hält die Wahl fest und zeigt sie
+- Automatik: Ohne Angabe der KI speichert Trendo keine Engine und entscheidet nach dem, was installiert ist
+- Automatik: Ordner besteht schon, das Spiel wird trotzdem gebaut und der Grund genannt
+- Automatik: gewählte Godot-Engine beim Plattformer ergibt beim Bauen ohne weiteren Klick das Godot-Projekt
+- Board: Stories aus der Spielbibel, Kriterien abhaken, erst dann fertig; Blockiert braucht einen Grund
+- Browser ECHT (ohne Ersatz): Spiel von der Seite in Chrome – laufen, Münze, Wand, mit der Leertaste darüber springen, Ziel = gewonnen; zweites Spiel: Stacheln mit einem Leben = verloren, Leertaste startet neu; eigenes Bild wird geladen
+- Browser ECHT (ohne Ersatz): Spiel von oben über die Oberfläche bauen und in Chrome mit echten Tasten durchspielen – Menü starten, laufen, Münze sammeln, Wand hält auf, Regel zählt, Ziel = gewonnen; „Im echten Browser prüfen“ meldet ✓
 - CORE-06 (UI): Spiel anlegen öffnet es im Browser; ohne Unreal ehrlicher Hinweis, mit Unreal Projekt anlegen
 - CORE-06 G1: Godot Asset Library – Suche mit Titel, Autor, Lizenz; Laden nur von GitHub/GitLab, ZIP sicher entpackt; fremde Download-Adresse abgelehnt
 - CORE-06 G1–G3: Assets – Godot-Suche, neue Downloads übernehmen, Bildstreifen als Lauf-Animation (4 Bilder), Ton als Sprung-Geräusch, Asset-Liste mit Abspann, NC-Lizenz warnt beim Veröffentlichen
@@ -31,9 +38,75 @@ Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-pro
 - CORE-06: Unreal-Engines aus Launcher-Liste erkannt, neueste zuerst; .uproject ist gültig
 - CORE-06: Zeitlimit: nach Ablauf verloren, Restzeit zählt herunter; ohne Limit −1
 - CORE-06: Zustände der Figur – stehen auf dem Boden, laufen mit Tempo, springen nach oben, fallen nach unten; Blickrichtung folgt der Laufrichtung
-- Einfach: In jedem Programm bleibt jeder Befehl der Stufe erreichbar, direkt oder unter „Mehr“; direkt sichtbar sind höchstens vier Programmbefehle
+- Chat: Antwort der KI lässt getippten Text und Fokus stehen und holt niemanden aus einem anderen Programm
+- Chat: Tab-Wechsel während die KI arbeitet – Antwort landet nur beim gefragten Spiel
+- Chat: Vorschlag bleibt beim Tab-Wechsel an seinem Spiel und erscheint im anderen Spiel nicht
+- Chat: Vorschlag ändert erst nach Übernehmen und nur den Abschnitt; Verwerfen lässt alles; Rückgängig ein Schritt; Verlauf ohne Rückgängig
+- Chat: ohne KI erscheint ein Hinweis im Verlauf, das Dokument bleibt unverändert
+- D5: Ähnliche Spiele zeigt nur belegte Titel mit Quelle; ohne Beleg „keine Referenz gefunden“
+- Dokument: Abschnitte verschieben und ergänzen, Bild einfügen und in die Ablage legen, Text ändern
+- Dokument: Netzwerkpfad aus fremder Datei wird nicht geöffnet, die Spielbibel zeigt einen Hinweis
+- Dokument: kaputte doc-Felder aus KI oder fremder Datei stürzen nicht ab
+- E1: Ohne Engine genau ein Schritt zur offiziellen Seite; mit Engine und bestandenem Bericht „Alles geprüft“
+- E5 + E6: Testlauf mit Startwert, schwarzes Bild wird gemeldet, zweiter Lauf meldet die Verschlechterung
+- E6: „Was möchtest du machen?“ startet die Aufgabe – fehlt eine Angabe, fragt Trendo kurz und startet dann mit der Antwort
+- E7: Dienste-Auswahl je Art; Erzeugtes landet mit Herkunft und Lizenz in der Asset-Liste
+- Export: PDF ist der erste Export (Stufe Einfach zeigt nur ihn) und schreibt eine Datei
+- Fahrzeug Editor: Werkzeug da; Art Ufo wählen und rückgängig; Probespiel: einsteigen, Status zeigt Ufo mit Treibstoff, E steigt aus
+- Gameplay: Doppelsprung einschalten und rückgängig; Aufgabe „Sammler“ anlegen; Probespiel zeigt Fortschritt; gebautes Spiel enthält Fähigkeit und Aufgabe
+- Godot ECHT über die Oberfläche (ohne Ersatz): Spiel von oben bauen → „Als Godot-Projekt“ → „Godot prüfen“ startet die echte Engine; Bericht nennt jede Prüfung mit ✓ und die Durchspiel-Prüfung
+- Ideen: Einstellungen gehen an die KI, Ablehnung beim nächsten Lauf; ohne Bild-KI nur ein Hinweis
+- Ideen: Konzeptbild erscheint auf der Karte und landet im Abschnitt Idee
+- Ideen: geführter Weg vom leeren Studio bis zum Spiel ohne Texteingabe; ohne KI aus dem Baukasten
+- Ideen: „Neue Ideen“ zeigt ohne KI andere Themen; Abschnitt entfernen löscht seinen Verlauf
+- Inventar Editor: Werkzeuge Gegenstand/Figur; Gegenstand „Apfel“ benennen; Figur sagt Text, wünscht Apfel, gibt +1 Leben; Rückgängig; Probespiel zeigt Inventar
+- Kachelspiel frei: Vorlage „Abenteuer von oben“ → Blick umschalten (Rückgängig), eigenes Level malen, Gegner verfolgt, eigenes Bild, Regel „alle Münzen“; Spielen im Fenster läuft in vier Richtungen bis zum Sieg; Bauen schreibt alles ins Spiel
+- Kampf Editor: Schwert wählen und rückgängig; Gegner 3 Trefferpunkte; Probespiel: Schwertschlag trifft, Boss verliert einen Punkt; gebautes Spiel hat die Waffe
+- Kette: Das Bildprogramm exportiert eine Figur, Spiele bauen übernimmt sie mit Projektbezug und baut sie ins Spiel
+- Kette: Der Ablauf „Spielfigur → fertiges Spiel“ läuft nur nach Freigabe und liefert Bild, Dokument und spielbares Spiel
+- Kette: Falsche Verwendung, falsches Studio und doppelte Annahme werden abgelehnt, nichts wird verbraucht
+- Kette: Ohne Namen hält der Ablauf mit klarer Meldung an und läuft nicht weiter
+- Level-Editor: Münzen ziehend malen, Start versetzen (nur einer), rechts radieren, Rückgängig je Strich, Prüfung meldet fehlendes Ziel, Testen baut das Spiel
+- M1–M5: Mixamo öffnen, neue Downloads übernehmen (ohne Doppelte), Aktionen zuordnen, Blender aufbereiten, nach Godot
+- Plattformer-Prüfung: kein Start, zwei Starts, kein Ziel, kein Boden unter dem Start; erlaubte Kacheln
+- Produktion: Prüfstufe wählen, Urteil sehen, Bedenken nur mit Risiko abnehmen; Team-Aufbau sichtbar
+- Referenz (Messung): Studio öffnet unter 1,5 Sekunden
+- Referenz (Messung): Vom Start zur ersten sinnvollen Aktion genügt ein Klick
+- Referenz: Alle Befehle sind in jeder Stufe erreichbar, in Einfach über „Mehr“ und über Claude
+- Referenz: Auftrag in Alltagssprache führt zur passenden Aufgabe
+- Referenz: Bauen erzeugt echte Spieldateien mit Titel und Level des Dokuments
+- Referenz: Bei Not-Stopp arbeitet Claude nicht weiter und bekommt den Grund genannt
+- Referenz: Claude bekommt das passende Fachwissen zum Auftrag; unbekanntes Studio wird abgelehnt
+- Referenz: Claude kennt Projekt, Dokument und frühere Entscheidungen
+- Referenz: Dateien entstehen nur im Projektordner, kein Ausbruch nach außen
+- Referenz: Fehlende Programme werden gemeldet, nichts gilt als verbunden
+- Referenz: Fehler werden verständlich gemeldet, das Dokument bleibt unverändert
+- Referenz: Gedächtnis nimmt nur erlaubte Arten und braucht ein Projekt
+- Referenz: Helfer-Studios und Programme der Beschreibung gibt es wirklich
+- Referenz: Installiert heißt nicht startbar, Unreal bleibt ungeprüft, MCP gilt erst nach echtem Lauf
+- Referenz: Ohne ausführliche Beschreibung bleibt das Studio ehrlich als nicht ausführlich markiert
+- Referenz: Speichern und Laden geben dasselbe Spiel zurück
+- Referenz: Startseite fragt „Was möchtest du machen?“ und zeigt fünf Aufgaben statt Fachbegriffe
+- Referenz: Umschalten zwischen Einfach, Erweitert und Profi verändert keine Projektdaten
+- Referenz: Veröffentlichen läuft nie ohne Zustimmung; Ablehnen ändert nichts
+- Spiel aus einem Satz: Übernehmen legt ein sofort spielbares, im Level-Editor änderbares Spiel an (Blick von oben) – Spielen läuft, Rückgängig nimmt den Auftrag zurück
+- Spiel-Editor wie GDevelop/Construct: neue Kacheln malen (Feder, Speicherpunkt, Schlüssel, Tür), Regel „Wenn … dann …“ anlegen und löschen, Zeitlimit; Probespiel zeigt Schlüssel und Restzeit; Bauen schreibt Regeln
+- Spiel-Editor: Gegner auswählen und Tempo setzen (Rückgängig), Münzwert, Spielregeln; Probespiel im Fenster läuft mit Tasten, Nochmal, Zurück; Bauen übernimmt die Eigenschaften
+- Spiele Engines: ohne Unity „blockiert“ und Unity-Tests verweigert; Plattformer bauen → Unity- und Godot-Projekt; mit Engines laufen EditMode/PlayMode bzw. die Godot-Prüfung mit Bericht
 - Spiele bauen, Einfach: Auftrag und nächster Schritt; „Alle Bereiche“ zeigt alles; Erweitert unverändert
-- Spiele bauen: Nächster Schritt nennt den schwächsten Bereich in Alltagssprache; Alltagswörter nur in Einfach
+- Spiele-Dashboard: Vorschau-Karte, Aufgabe anlegen, weiter/zurück schieben, Hinweise übernehmen, rückgängig
+- Spiele-Prompt: Satz → Vorschau mit KI-Name → Übernehmen legt das Spiel an (Strg+Z-fähig); Rückfrage-Knöpfe; Ändern zeigt nur die Änderung; Team-Vorschläge mit Ja
 - Spiele: Retro-Vorlage, Level im Raster bearbeiten, Figur hinzufügen, prüfen, bauen und spielen
 - Spiele: Umfang AAA+ wählen setzt AAA-Meilensteine; Bauen legt ein Unreal-Projekt mit Spielbibel an
-- Übrige Seiten, Einfach: Rest hinter „Mehr anzeigen“ und nach einem Klick wieder da; Erweitert zeigt alles sofort
+- Spielmenü Editor: Schalter an als Vorgabe; aus → gebautes Spiel ohne Menü; rückgängig → wieder an; Spiel enthält Menü-Code
+- Spielstand Probespiel: Fortsetzen erst nach Speichern; Speichern hält Punkte/Leben/Level fest; nach „Nochmal“ setzt „Fortsetzen“ fort; kaputte Datei → Meldung; gebautes Spiel speichert
+- T-0764 B: Kind – Godot- und Unity-Prüfung starten keine Engine (Rolle zuerst); Erwachsene: Engine-Lauf wie bisher
+- T-0764 B: Kind – Spiele-Bibliothek startet weder Godot noch den Emulator; Kittl über Claude fragt und öffnet nichts
+- T-0764 B: Kind – Unreal kompilieren/prüfen und „Spielen (Unreal)“ starten nichts (Build.bat, UnrealEditor-Cmd, Editor)
+- Team: KI-Antwort nur mit Fragen ändert nichts, bis eine Antwort gewählt ist
+- Tiled-Ausgabe: Plattform-Spiel mit 2 Leveln → 2 .tmj + Kachelbild + Welt; Level 1 zurückgelesen gleich; Münzwert aus Level 2 steht am Objekt
+- U1/U2: Rat-Modus umschalten, „Am Auftrag“ zeigt Fachleute, die Team-Anweisung enthält sie
+- U3: Team-Lauf mit Ablaufplan – Gegenprüfung, Abnahme, Protokoll im Spielordner
+- U4/U5/U6: /sprite erzeugt ein Spritesheet über das Bild-Werkzeug, die Prüfschleife bessert nach; Modus /musik-start … -ende
+- Unreal-Spiel veröffentlichen: Paketierer (Shipping) → Windows-ZIP; Fehlschlag nennt den Grund
+- Unreal-Spiel: Open World wählen (Rückgängig), Bauen schreibt C++-Spiel; ohne Unreal klare Meldung; mit Unreal kompilieren, Tests 3/3, Startlauf → Bericht im Projektordner; Fehler beim Kompilieren wird verständlich gemeldet

@@ -1,25 +1,20 @@
 # Handy verbinden – Testergebnisse
 
-Studio: Handy verbinden (X-08) · Bereich: System & Sicherheit · Seite: `handy` · Stand: 0.9.36 (Stand df96c57)
+Studio: Handy verbinden (X-08) · Bereich: System & Sicherheit · Seite: `handy` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 24 · Fehlgeschlagen 0 · Übersprungen 1 · nicht im Lauf 0
+Bestanden 19 · Fehlgeschlagen 0 · Übersprungen 1 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
-| CORE-04 UI: mit echtem Begleiter koppeln (Code vom Gerät), Details holen, Erreichbarkeit, Aufgabe zuordnen, entfernen | ✓ bestanden |
 | Handy (UI): Schritt für Schritt – Ort wählen → Code → Handy erreicht → verbunden → Bedienen erlauben; Hilfe nach 30 s mit Windows-Freigabe | ✓ bestanden |
 | Handy (UI): Überall/Tailscale – installieren → anmelden → App aufs Handy; jeder Schritt erst, wenn der vorige geprüft ist | ✓ bestanden |
 | Handy bedient Trendo: Bildschirmbild, Knopf antippen, Feld antippen und schreiben, Löschen | ✓ bestanden |
 | Handy-App: Apps-Liste, App öffnet in Handy-Größe auf dem Handy (nicht am PC), Navigation bleibt auf dem Handy, Zurück zum Start | ✓ bestanden |
-| Handy: QR öffnen → verbinden → Foto senden → Text senden → Datei vom PC laden; Fremde und Ungekoppelte abgewiesen | ✓ bestanden |
-| Handy: Trendo bedienen nur mit Erlaubnis am PC – dann Bildschirm, Tippen, Schreiben, Tasten, Scrollen; Scan wird gemeldet; Unterwegs-Link meldet an | ✓ bestanden |
-| Neuerungen im Vollbild: nicht wegklickbar (Esc, Klick daneben), läuft von selbst weiter, Pfeile blättern, „Los geht's“ erst auf der letzten Folie | ✓ bestanden |
-| SYS-01 UI: Betriebsmodus zeigt aktuellen Modus und Fähigkeiten | ✓ bestanden |
-| Update sofort: geladenes Update startet 30-Sekunden-Countdown (alles gesichert), danach Installation; „Jetzt neu starten“ geht sofort | ✓ bestanden |
+| T-0767 (UI): Kabel-Weg mit dem echten adb dieses PCs – Anzeige „möglich“, „Handy suchen“ läuft echt (ohne Handy: leere Liste) | ✓ bestanden |
+| T-0767 (UI): Lauf aufzeichnen → „Datei senden …“ an ein Handy → Entfernen → Aufzeichnung speichern; Kabel-Weg ehrlich | ✓ bestanden |
 | Updates: nach dem Neustart kommen die Fenster zurück und „Was ist neu?“ erscheint einmal | ✓ bestanden |
-| Updates: suchen und im Hintergrund laden; „beim nächsten Start“ installiert beim Beenden, „sofort“ mit Einrichtungsbildschirm, Sicherung und Fenstern | ✓ bestanden |
 | X-08 Android-Seite: Modell/Version/Akku per adb, Bildschirmfoto und neuestes Foto nur mit Zustimmung, Handy-Temp gelöscht | ✓ bestanden |
 | X-08 UI: Bildschirm, Apps und Überschriften über die WLAN-Adresse, scrcpy nur nach Frage | ✓ bestanden |
 | X-08 UI: Bluetooth sucht ohne zu koppeln, adb-Einrichtung erst nach Ja | ✓ bestanden |

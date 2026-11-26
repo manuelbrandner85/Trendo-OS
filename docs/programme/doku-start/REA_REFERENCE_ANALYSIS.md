@@ -1,6 +1,6 @@
 # Start – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.36 (Stand df96c57)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Analyse: [Vorbild-Analyse Office-Startseite: Microsoft 365, LibreOffice-Startcenter, Google Drive (Clean-Room)](../../../docs/claude/vorbilder/office-start-microsoft365.md)
 

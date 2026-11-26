@@ -1,6 +1,6 @@
-# VR & AR gestalten – Architektur
+# 3D-Modelle ansehen – Architektur
 
-Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` · Stand: 0.9.36 (Stand df96c57)
+Studio: 3D-Modelle ansehen (SPEC-04) · Bereich: 3D & Spiele · Seite: `xr` · Stand: 0.9.110 (Stand 0eb9d52)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Library3D.cs`
@@ -10,15 +10,16 @@ Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` �
 - 3D-Ansicht
 
 ## Reiter
-- VR & AR gestalten
+- 3D-Modelle ansehen
 - 3D-Bibliothek
 
 ## Fach-Engine (Trendo.Core)
-- `XrInspector`
 - `XrPlus`
 - `ModelConverter`
-- `XrPro`
 - `AssetLibrary`
+- `Panel`
+- `XrInspector`
+- `XrPro`
 - `FreeModels`
 - `Mesh3D`
 - `XrModelInfo`
@@ -28,9 +29,11 @@ Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` �
 - .fbx
 - .glb
 - .gltf
+- .jpg
 - .json
 - .md
 - .mp3
+- .mp4
 - .obj
 - .ogg
 - .ply
@@ -42,6 +45,7 @@ Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` �
 
 ## Externe Programme und Dienste
 - Blender (optional, 3D-Fotos/Render)
+- FFmpeg
 - Poly Haven (freie 3D-Modelle)
 - ambientCG (freie Materialien)
 

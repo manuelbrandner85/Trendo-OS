@@ -1,6 +1,6 @@
 # Open Source – Architektur
 
-Studio: Projekte von GitHub holen (X-06) · Bereich: Entwickeln · Seite: `oss` · Stand: 0.9.36 (Stand df96c57)
+Studio: Projekte von GitHub holen (X-06) · Bereich: Entwickeln · Seite: `oss` · Stand: 0.9.110 (Stand 0eb9d52)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.W4Oss.cs`
@@ -11,27 +11,25 @@ Studio: Projekte von GitHub holen (X-06) · Bereich: Entwickeln · Seite: `oss` 
 ## Fach-Engine (Trendo.Core)
 - `OpenSource`
 - `GitHubApps`
+- `Panel`
 - `KiActivityHub`
 - `KiRequest`
-- `ProgramGuide`
 
 ## Dateiformate (im Code belegt)
+- .jpg
 - .json
+- .mp4
+- .ogg
+- .png
 - .txt
+- .wav
+- .xml
 - .zip
 
 ## Externe Programme und Dienste
-- Blender (optional, 3D-Fotos/Render)
 - Ollama – lokale KI (optional)
 - FFmpeg
-- LibreOffice (optional)
-- qpdf
-- Krita (optional)
-- Inkscape (optional)
-- Tesseract OCR
 - Git
-- OBS Studio (optional)
-- mpv (optional)
 - Python (optional)
 - Node.js (optional)
 

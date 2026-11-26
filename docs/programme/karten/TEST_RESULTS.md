@@ -1,13 +1,14 @@
 # Karten & Touren – Testergebnisse
 
-Studio: Routen & Karten (SPEC-13) · Bereich: Technik & Fachgebiete · Seite: `karten` · Stand: 0.9.36 (Stand df96c57)
+Studio: Routen & Karten (SPEC-13) · Bereich: Technik & Fachgebiete · Seite: `karten` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 15 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 22 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
+| Programmkatalog: Karten-Programm aus dem Code – Engine MapDoc, Formate GPX/KML, OSM-Kacheln, 20 Katalogfunktionen, Vorbild-Analyse, Tests | ✓ bestanden |
 | SPEC-13 F02: GPX-Routen | ✓ bestanden |
 | SPEC-13 F13: UTM → Grad | ✓ bestanden |
 | SPEC-13 F14: Richtung | ✓ bestanden |
@@ -22,4 +23,10 @@ Bestanden 15 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | SPEC-13 UI: Kachel-Ordner als Offline-Paket laden – Karte springt hin, Info zeigt Kacheln und Zoom, bleibt nach Neustart gemerkt | ✓ bestanden |
 | SPEC-13 UI: Route mit der Maus zeichnen (Doppelklick beendet), Wegpunkt setzen, Fläche messen (Enter), Rechner rechnen sofort | ✓ bestanden |
 | SPEC-13: GPX lesen, km/Höhenmeter/Dauer, GeoJSON, Koordinaten DMS/UTM, Luftlinie | ✓ bestanden |
+| T-0719 Karten: GPX im Garmin-Aufbau auf die Karte ziehen – jede Spur/Route einzeln, ein Rückgängig-Schritt; alte Karten-Datei öffnen und bearbeiten; Assistenzweg schreibt einen Wegpunkt ins Dokument | ✓ bestanden |
+| T-0719 Karten: leere Karte → erster Schritt → Route mit der Maus, Punkt ziehen, Punkt aus der Mitte einfügen, Rechtsklick löschen, Wegpunkt setzen/ziehen/umbenennen, Rückgängig je Schritt, GPX-Datei | ✓ bestanden |
+| T-0719 Tagesplaner: alte Datei (Plan mit Termin-Kopien) öffnen – Zeitleiste zeigt alles, Termin ziehen hält Plan und Termin gleich; Assistenzweg schreibt einen Block, der in der Zeitleiste steht | ✓ bestanden |
+| T-0719 Tagesplaner: leerer Tag → erster Block, im Block benennen, ziehen (verschieben), Kante ziehen (Dauer), Doppelklick neu, Rechtsklick Termin/länger, Pfeiltaste, Entf, Rückgängig je Schritt, Kalenderdatei mit Ical.Net geprüft | ✓ bestanden |
+| T-0726 A6: Kartenkacheln aus dem Internet nur nach Zustimmung über das Freigabe-Tor – Nein lädt nichts, Ja gilt als Einstellung (im Protokoll), ausschaltbar; offline kein Angebot | ✓ bestanden |
+| T-0726 A7: Lernkarte löschen lässt sich rückgängig machen (Knopf und Strg+Z) – mit Lernstand und an alter Stelle; Bearbeiten nach der Tipp-Pause gespeichert | ✓ bestanden |
 | Vektorkarte-Oberfläche: .pmtiles mit MVT → MapLibre füllt die Arbeitsfläche statt der Rasterkarte; bereit → Start, Kachel → Antwort; Schließen | ✓ bestanden |

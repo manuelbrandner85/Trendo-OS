@@ -1,6 +1,6 @@
 # Start – Funktionsmatrix
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.36 (Stand df96c57)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/spec/kataloge/SYS-10_KATALOG.md`
 
@@ -34,36 +34,31 @@ Quelle: `docs/spec/kataloge/SYS-10_KATALOG.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- Hinzufügen …
-- ✳ Claude
+- KI ▾
+- Claude
+- kie.ai
+- Programme hinzufügen …
 - Haushaltsplan als Tabelle
 - Präsentation über unser Projekt, 8 Folien
 - Lebenslauf modern gestalten
-- Mehr ▾
+- Mehr
 - Start
 - PDF
 - Schreiben
 - Ordnen
-- Trendo Text
-- Trendo Tabelle
-- Trendo Präsentation
-- Trendo PDF
-- Briefe schreiben
-- Lebenslauf
-- Rechnung
-- Protokoll
-- Haushaltsbuch
-- Stundenzettel
-- Einkaufsliste
-- Vortrag
-- Projektbericht
-- Fotoalbum
-- Alle
-- Text
-- Tabelle
-- Präsentation
-- Jederzeit
-- Heute
-- 7 Tage
-- 30 Tage
-- SCHRITTE.md
+- doku-app-text
+- doku-app-tabelle
+- doku-app-praesentation
+- doku-app-pdf
+- doku-app-brief
+- doku-tpl-text-lebenslauf
+- doku-tpl-text-rechnung
+- doku-tpl-text-protokoll
+- doku-tpl-tabelle-haushalt
+- doku-tpl-tabelle-rechnung
+- doku-tpl-tabelle-stunden
+- doku-tpl-tabelle-einkauf
+- doku-tpl-praesentation-vortrag
+- doku-tpl-praesentation-projekt
+- doku-tpl-praesentation-fotoalbum
+- Mehr anzeigen: Zuletzt benutzt

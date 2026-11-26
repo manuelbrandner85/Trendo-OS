@@ -1,6 +1,6 @@
 # KI-Modelle vergleichen – Funktionsmatrix
 
-Studio: KI-Modelle vergleichen (STUDIO-MODELS-01) · Bereich: KI & Automatik · Seite: `modelle-vergleichen-programm` · Stand: 0.9.95 (Stand cce5c62)
+Studio: KI-Modelle vergleichen (STUDIO-MODELS-01) · Bereich: KI & Automatik · Seite: `modelle-vergleichen-programm` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -8,6 +8,11 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Frage stellen (Vergleich)
 - Quellen suchen (Vergleich)
 - Nächste Frage (Vergleich)
+- Fragenreihe starten (Fragenreihe)
+- Fragen aus Datei … (Fragenreihe)
+- Abbrechen (Fragenreihe)
 - KI-Quellen einrichten (KI-Quellen)
 - Bericht (.md) (Exportieren)
 - Rohdaten (.csv) (Exportieren)
+- Fragenreihe (.csv) (Exportieren)
+- Fragenreihe (.md) (Exportieren)

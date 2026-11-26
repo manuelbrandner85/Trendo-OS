@@ -1,5 +1,21 @@
 # Podcast aufnehmen – Testergebnisse
 
-Studio: Podcast aufnehmen (STUDIO-PODCAST-01) · Bereich: Kreativ & Medien · Seite: `podcast-programm` · Stand: 0.9.36 (Stand 9dda6f3)
+Studio: Podcast aufnehmen (STUDIO-PODCAST-01) · Bereich: Kreativ & Medien · Seite: `podcast-programm` · Stand: 0.9.110 (Stand 0eb9d52)
 
-Noch kein Testlauf eingelesen. Ergebnisse stehen hier erst nach einem echten Lauf (TRX-Datei) – nicht vorher.
+Lauf: `api.trx, app.trx, core.trx`
+
+Bestanden 11 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+
+| Test | Ergebnis |
+|---|---|
+| Podcast: Kapitel erscheinen wie im Player, Fehler werden genannt, Shownotes und Kapiteldatei, Feed nur mit Aufnahme und https | ✓ bestanden |
+| T-0681 Podcast: fehlt FFmpeg, nennt die Meldung den Einrichten-Weg – und „Lautheit angleichen“ geht danach weiter (Merker nicht hängen geblieben) | ✓ bestanden |
+| T-0697 Comic: Bildfeld aufziehen, im Feld zeichnen (Strich bleibt im Feld), Sprechblase setzen, Dorn richten, Feld verformen, Entf, Rückgängig – drei Seiten als PDF, PNG und CBZ | ✓ bestanden |
+| T-0697 Comic: KI schreibt die Geschichte in die Bildfelder des offenen Hefts – ein Schritt, Rückgängig holt den alten Stand | ✓ bestanden |
+| T-0697 Comic: altes Dokument (feste Aufteilung, Texte je Bild) wird gelesen und als freie Blasen gezeigt | ✓ bestanden |
+| T-0697 Podcast echt mit FFmpeg: zwei Spuren aufnehmen (Mikrofon durch Test-WAV ersetzt), Stelle an der Welle löschen (Kapitel rückt), Pausen kürzen, fertig machen → ffprobe: Dauer, −16 LUFS ±1, Kapitel, Tags | ✓ bestanden |
+| T-0697 Podcast: ohne Mikrofon-Ersatz im Testmodus wird nichts vorgetäuscht – ehrlicher Hinweis, keine Spur | ✓ bestanden |
+| T-0697 Storyboard: Einstellung beschreiben, Bildfelder werden Einstellungen in „Filme machen“ | ✓ bestanden |
+| T-0704 Comic in „Einfach“: Pinsel, Farbe, Strichstärke und Ebenen über die Zeichenleiste über der Seite – ohne die Eigenschaften aufzuklappen; der Strich hat die gewählte Farbe | ✓ bestanden |
+| T-0730 Podcast-Beleg: Pfade mit Testordner, Benutzerordner und Benutzername werden vor dem Serialisieren ersetzt – auch JSON-maskiert | ✓ bestanden |
+| V-12: Podcast – Kapitel in „Einfach“ als Liste mit Feldern und „+ Kapitel hinzufügen“, ohne Textformat; Profi behält das Textfeld | ✓ bestanden |

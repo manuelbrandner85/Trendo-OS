@@ -1,16 +1,14 @@
 # Lernen mit Karteikarten – Testergebnisse
 
-Studio: Lernen mit Karteikarten (SPEC-06) · Bereich: Wissen & Lernen · Seite: `lernen` · Stand: 0.9.36 (Stand df96c57)
+Studio: Lernen mit Karteikarten (SPEC-06) · Bereich: Wissen & Lernen · Seite: `lernen` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 17 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 18 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
-| Download-Manager: mehrere Links auf einmal, höchstens N gleichzeitig, Fortschritt, Anhalten/Fortsetzen, Prüfsumme falsch → Fehler; ohne Netz (nachgebildet) | ✓ bestanden |
 | FSRS-Oberfläche: Planer umschalten → Meldung, Behaltensrate wählbar, „Leicht“ zeigt 16 Tage statt 4, zurück auf SM-2 | ✓ bestanden |
-| Fahrtenbuch (T-0311): Fahrt korrigieren mit Grund, Fahrt stornieren mit Grund, Monat festschreiben – danach keine Änderung mehr möglich | ✓ bestanden |
 | Lernplan: Plan mit Prüfungstermin anlegen → Tagesplan mit Ziel, Kalender mit Prüfungstag; „Jetzt lernen“ lernt in Plan-Reihenfolge und hält das Tempo | ✓ bestanden |
 | SPEC-06 F07: Export | ✓ bestanden |
 | SPEC-06 F08: Bearbeiten & löschen | ✓ bestanden |
@@ -25,3 +23,6 @@ Bestanden 17 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | SPEC-06 UI: Eintippen (Tippfehler toleriert), Quiz mit Zifferntaste, Tabelle bearbeiten/suchen/löschen, Liste einfügen, umkehren, CSV, Prüfungsplan | ✓ bestanden |
 | SPEC-06 UI: Karten eintippen, mit Leertaste aufdecken, mit Taste 3 bewerten – Abstand-Vorschau auf den Knöpfen, Statistik zählt mit | ✓ bestanden |
 | SPEC-06: Karteikarten mit SM-2-Abständen, Import, Fortschritt, dauerhaft gespeichert | ✓ bestanden |
+| T-0717 Lernen: neue Karteikarte – Rückgängig/Wiederholen, Notsicherung, Karte, Zurückholen; Anlegen räumt weg | ✓ bestanden |
+| T-0725 Karteikarten: Anki-Klartext über „Datei öffnen …“ (Kopfzeilen, HTML, Schlagwörter), Karte löschen und mit Lernstand zurückholen | ✓ bestanden |
+| T-0726 A7: Lernkarte löschen lässt sich rückgängig machen (Knopf und Strg+Z) – mit Lernstand und an alter Stelle; Bearbeiten nach der Tipp-Pause gespeichert | ✓ bestanden |

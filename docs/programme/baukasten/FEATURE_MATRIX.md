@@ -1,16 +1,23 @@
 # Baukasten – Funktionsmatrix
 
-Studio: Apps zusammenklicken (X-03) · Bereich: Entwickeln · Seite: `baukasten` · Stand: 0.9.36 (Stand df96c57)
+Studio: Apps zusammenklicken (X-03) · Bereich: Entwickeln · Seite: `baukasten` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude
+- KI ▾
+- Claude
+- kie.ai
 - App für Einkaufslisten
 - Vereins-App mit Terminen
-- Mehr ▾
-- Kopieren
+- Mehr
+- Vorlage „Einkaufsliste“ nehmen
+- Leer anfangen
+- Zum Web-Design-Studio
+- ⌂ Start
+- + Seite
+- Öffnen (ZIP) …
 - + Überschrift
 - + Text
 - + Bild
@@ -18,10 +25,22 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - + Liste
 - + Kontakt per E-Mail
 - + Trennlinie
-- 📱 Handy
-- 🖥 Bildschirm
-- ↶ Rückgängig
-- ▶ Ausprobieren im Browser
+- + Eingabe-Formular
+- + Datenliste
+- + Auswertung
+- ✓ Handy
+- Bildschirm
+- builder-undo
+- builder-redo
+- Ausprobieren im Browser
 - Exportieren (ZIP)
 - Ordner mit fertiger Seite
-- Akzentfarbe
+- Veröffentlichen …
+- builder-accent-2F86F6
+- builder-accent-C8A04A
+- builder-accent-22B35E
+- builder-accent-E5484D
+- builder-accent-7C4DFF
+- builder-accent-1B2333
+- Seite löschen
+- + Datensammlung

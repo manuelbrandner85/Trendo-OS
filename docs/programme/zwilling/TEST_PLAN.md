@@ -1,9 +1,13 @@
 # Geräte überwachen – Testplan
 
-Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.36 (Stand df96c57)
+Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.110 (Stand 0eb9d52)
 
-21 Tests sprechen dieses Programm an.
+25 Tests sprechen dieses Programm an.
 
+- Gegenprüfung: Datei lesen und erste PDH-Abfrage laufen nicht auf dem UI-Faden, Ergebnis kommt dort an, kein Doppelstart
+- Gegenprüfung: Leistungsindikatoren werden beim Schließen des Fensters freigegeben
+- Gegenprüfung: Netzwerkpfad als wachsende Datei wird abgelehnt, ohne darauf zuzugreifen
+- Gegenprüfung: Regel-Datei mit leerem Eintrag stürzt nicht ab, sondern meldet es auf Deutsch
 - MQTT-Oberfläche: Verknüpfungen lesen (Kommentare, JSON-Feld), Fehler verständlich; Verbinden legt Sensoren an, merkt Broker ohne Passwort; Trennen
 - SPEC-10 F09: Speichergrenze
 - SPEC-10 F10: Ereignisprotokoll
@@ -20,8 +24,8 @@ Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite
 - SPEC-10 UI: Beispielanlagen laden, im Baum wählen, Kachel zeigt Zustand, Zeitraum 24 h, Grenze eintippen ändert die Ampel, Prognose
 - SPEC-10 UI: Sensor anlegen, CSV einlesen, ableiten, umbenennen, CSV/SVG speichern, löschen nur mit Bestätigung; PC messen und Live
 - SPEC-10: Zwilling mit Sensoren, CSV-Import, Ampel, Trend und Zeit bis Alarm
-- SYS-12 (UI): Bericht über alle Seiten; keine Seite tiefer als 2 Ebenen; Prüfseite hat keine unbenannten Knöpfe
-- SYS-12 (UI): Leise Benachrichtigung; Einstellung bleibt gespeichert; einfacher Modus zeigt weniger Kacheln
-- SYS-12 (UI): Mindestschrift greift; Knöpfe haben Namen und sind per Tab erreichbar; Bewegung aus = keine Übergänge
-- T-0212: Einfacher Modus vergrößert Knöpfe
 - T-0212: Schalter zeigt Zustand; „Status mit Zeichen“ setzt ✓ ⚠ ✕ an echte Statuspunkte
+- T-0716 Anlagen-Monitor: Grenze gesetzt (gespeichert) + zweite getippt – Rückgängig/Wiederholen, Notsicherung, Sperre, Karte, Zurückholen; Messwerte bleiben unberührt
+- T-0716 Fenster schließen, während im Feld getippt ist: das Programm übernimmt die Eingabe (wie vorher) – keine Karte, nichts geht verloren
+- T-0750 Echtbeleg: echte CPU-/RAM-/Datenträger-/Netzwerte dieses PCs, künstliche Last löst die CPU-Regel aus (Benachrichtigung + Protokoll)
+- T-0750 UI: wachsende Datei beobachten, Regel per Klick anlegen, Alarm löst bei echter Datei aus (Benachrichtigung, Protokoll), Regeln speichern/einlesen, Rückgängig

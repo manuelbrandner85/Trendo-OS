@@ -1,8 +1,8 @@
 # Sicher prüfen – Testplan
 
-Studio: Downloads & Links (SYS-03) · Bereich: System & Sicherheit · Seite: `netz-pruefen` · Stand: 0.9.36 (Stand df96c57)
+Studio: Downloads & Links (SYS-03) · Bereich: System & Sicherheit · Seite: `netz-pruefen` · Stand: 0.9.110 (Stand 0eb9d52)
 
-17 Tests sprechen dieses Programm an.
+19 Tests sprechen dieses Programm an.
 
 - SYS-03 (UI): Tabs; Prüfsumme rot/grün; Link-Warnung; Suchmaschine wirkt in Strg+K; Webnotiz in der Suche
 - SYS-03-P06: Prüfsumme – Algorithmus erkannt, Abweichung gemeldet
@@ -20,4 +20,6 @@ Studio: Downloads & Links (SYS-03) · Bereich: System & Sicherheit · Seite: `ne
 - SYS-03-P18/P19/P20/P21/P24: Downloads sortieren + rückgängig, Quarantäne, Defender-Auswertung, Webnotiz, Proxy
 - SYS-03: Adressen werden sicher normalisiert (nur http/https, sonst Suche oder Ablehnung)
 - SYS-03: Browser werden über bekannte Pfade gefunden; riskante und unfertige Downloads erkannt
-- SYS-03: Dock-Browser öffnet Browser & Downloads; Adresse wird geöffnet, javascript: abgelehnt; offline gesperrt
+- SYS-03: Dock-Symbol öffnet „Downloads & Links“; Adresse öffnet im Standard-Browser, javascript: abgelehnt; offline gesperrt
+- T-0755 SYS-03 UI: „Downloads & Links“ – echter HTTP-Download (lokaler Testserver) zeigt SHA-256, vergleicht mit der Angabe, Anhalten/Fortsetzen, Verlauf bleibt; Links sammeln und im Standard-Browser öffnen
+- T-0755 SYS-03: SHA-256 wird immer berechnet, Verlauf bleibt nach „Fertige aus der Liste nehmen“ und über Neustart; Links sammeln ohne Doppelte

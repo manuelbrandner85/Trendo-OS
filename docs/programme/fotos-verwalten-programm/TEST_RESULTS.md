@@ -1,5 +1,12 @@
 # Fotos verwalten – Testergebnisse
 
-Studio: Fotos verwalten (STUDIO-PHOTOS-01) · Bereich: Kreativ & Medien · Seite: `fotos-verwalten-programm` · Stand: 0.9.36 (Stand 7f0f9e3)
+Studio: Fotos verwalten (STUDIO-PHOTOS-01) · Bereich: Kreativ & Medien · Seite: `fotos-verwalten-programm` · Stand: 0.9.110 (Stand 0eb9d52)
 
-Noch kein Testlauf eingelesen. Ergebnisse stehen hier erst nach einem echten Lauf (TRX-Datei) – nicht vorher.
+Lauf: `api.trx, app.trx, core.trx`
+
+Bestanden 2 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+
+| Test | Ergebnis |
+|---|---|
+| Fotos verwalten: Ordner wählen, Probelauf ändert nichts, Einsortieren erst nach zweitem Klick, Rückgängig | ✓ bestanden |
+| T-0725 Fotos verwalten: Ordner wählen, Probelauf → Raster mit echten Vorschaubildern (Doppeltes markiert), Klick zeigt das Foto groß, „In Bildbearbeitung öffnen“ übergibt es | ✓ bestanden |

@@ -1,6 +1,6 @@
 # Konto, Lizenz & Vollversion – Funktionsmatrix
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `lizenz` · Stand: 0.9.92 (Stand 94252fc)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `lizenz` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/spec/kataloge/SYS-12_KATALOG.md`
 
@@ -34,35 +34,17 @@ Quelle: `docs/spec/kataloge/SYS-12_KATALOG.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude
-- Darstellung & Sprache
-- Personen & Konten
-- Sehen & Bedienhilfen
-- Trendo-Updates
-- Betriebsmodus
-- Geräte & Laufwerke
-- Handy verbinden
-- Geräteverbund
-- Im Heimnetz teilen
-- Apps
-- Programme verwalten
-- Hinzufügen
-- Pflegen & Aktualisieren
-- Zusatzprogramme
-- Downloads
-- Schutz & Datenschutz
-- Freigaben
-- Sicherung
-- Selbstheilung
-- Sicher prüfen
-- Sicherheits-Werkzeuge
-- Protokoll & Abstürze
-- Hardware & Leistung
-- Speicher & Leistung
-- Leistung messen
-- Systemcheck
-- Qualitäts-Ampel
-- Bau-Fortschritt
-- Mehr ▾
+- KI ▾
+- Claude
+- kie.ai
+- settings-nav-settings
+- settings-nav-personen
+- settings-nav-bedien-sehen
+- settings-nav-updates
+- settings-nav-geraete
+- settings-nav-sicherung
+- Mehr Einstellungen (22)
+- Mehr
 - Freischalten
+- Studios auf diesem PC: alle 83 zeigen
 - Systemcheck ansehen

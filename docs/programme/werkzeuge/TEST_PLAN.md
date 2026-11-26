@@ -1,13 +1,10 @@
 # Werkzeuge: Notizen, Rechner, Wecker – Testplan
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `werkzeuge` · Stand: 0.9.36 (Stand df96c57)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `werkzeuge` · Stand: 0.9.110 (Stand 0eb9d52)
 
-31 Tests sprechen dieses Programm an.
+24 Tests sprechen dieses Programm an.
 
 - Fenster: Einstellung übernehmen (Design-Knopf per Mausklick) schließt keine Fenster – alle kommen mit Lage und Zustand zurück
-- Fenster: Größe an Ecke und Rand per Maus ziehen; an linken/rechten Rand ziehen rastet auf halbe Fläche ein
-- Fenster: Startmenü öffnet Dokumente mit Taskleisten-Eintrag, Startbildschirm bleibt dahinter
-- Fenster: Ziehen an der Titelleiste verschiebt; Klick ins hintere Fenster holt es nach vorn; Reiter teilen ein Fenster
 - Fenster: maximiert und daneben geöffnet bleiben im AutomationPeer-Baum, mit Namen und endlichem Rechteck
 - Fenster: wechseln per Taskleiste, aktives hervorgehoben, maximieren, schließen
 - SYS-02 (UI): Tabs vorhanden; Umbenennen mit Vorschau + Rückgängig; Erinnerung; Zwischenablage ohne Passwort; Einheiten
@@ -30,8 +27,4 @@ Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `w
 - SYS-02: Notizen werden gespeichert, geändert und gelöscht
 - SYS-02: Rechner lehnt Unsinn ab statt zu raten
 - SYS-02: Rechner rechnet korrekt (Punkt vor Strich, Klammern, Komma, Prozent, Potenz)
-- SYS-13 (UI): Rückfall-Sicherung und vorige Version; Protokoll-Prüfung
-- SYS-13-P13: Jede Seite gehört zu einem Modul aus requirements.yaml
 - SYS-13-P14: Fehler in einer Seite zeigt freundliche Fehlerseite statt Absturz
-- SYS-13-P15/P16: Start < 3 s, Seitenwechsel im Median < 300 ms, 100 Wechsel ohne > 50 MB Zuwachs
-- Start: das Hauptfenster ist sichtbar und kommt aus dem minimierten Zustand zurück

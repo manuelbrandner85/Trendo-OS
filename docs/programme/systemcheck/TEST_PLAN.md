@@ -1,9 +1,14 @@
 # Systemcheck – Testplan
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `systemcheck` · Stand: 0.9.36 (Stand df96c57)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `systemcheck` · Stand: 0.9.110 (Stand 0eb9d52)
 
-17 Tests sprechen dieses Programm an.
+20 Tests sprechen dieses Programm an.
 
+- SYS-13 (T-0763): Ampel je Bereich mit nächstem Schritt; Gesamtsatz; rot vor gelb vor grün
+- SYS-13 (T-0763): Entwickler-Prüfungen nur in „Professionell“ und ehrlich beschriftet; Telemetrie-Karte mit echtem Ergebnis
+- SYS-13 (T-0763): Studio öffnet „Alles prüfen“ – goldener Knopf, Ampel je Bereich mit nächstem Schritt; veränderte Protokollzeile rot mit Stelle
+- SYS-13 (T-0763): Telemetrie-Prüfung der installierten Version über die Paketlisten – findet Analyse-Bibliotheken, Trendo selbst ist frei
+- SYS-13 (T-0763): veränderte Protokollzeile wird mit Stelle gemeldet – Ampel rot im Bereich Protokoll
 - SYS-13 (UI): Rückfall-Sicherung und vorige Version; Protokoll-Prüfung
 - SYS-13-P09: Hash-Kette erkennt Ändern, Löschen und Vertauschen samt Stelle
 - SYS-13-P13: Jede Seite gehört zu einem Modul aus requirements.yaml
@@ -17,7 +22,5 @@ Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `sy
 - SYS-13-P25: Rückfall – vorige Version, Sicherung, Anleitung vorhanden
 - SYS-13: Absturzprotokoll schwärzt Benutzerpfade und behält höchstens 20 Dateien
 - SYS-13: Release-Skript baut nur von sauberem main
-- T-0210: Design-Wahl zeigt sofort Vorschau und „Gewählt“
-- T-0210: Paket-Wahl erscheint in der Zusammenfassung
 - T-0210: Reparieren meldet „repariert ✓“ bzw. „hat nicht geklappt“
-- T-0210: „Ordner wählen …“ im Assistenten öffnet den Ordnerdialog und übernimmt die Wahl
+- T-0713 UI: „Reparieren“ im Systemcheck fragt mit dem Sammel-Dialog; Abbrechen ändert nichts, Ja richtet genau diese Komponente über das Tor ein

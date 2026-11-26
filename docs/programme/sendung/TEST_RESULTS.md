@@ -1,10 +1,10 @@
 # Live streamen – Testergebnisse
 
-Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.36 (Stand df96c57)
+Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 44 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 36 · Fehlgeschlagen 0 · Übersprungen 1 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -37,18 +37,11 @@ Bestanden 44 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | SPEC-15 UI: offline kein Stream, Aufnahme bleibt | ✓ bestanden |
 | SPEC-15: Claude als Regie – Briefing mit Szenen, Ton und Ton-Wache, Plan zeigt neue Szenen, „Ausführen“ legt Szenen mit Bauchbinde an und setzt den Sendeplan; ungültige Quelle fällt weg | ✓ bestanden |
 | SPEC-15: Sendeablauf mit Zeiten, Überziehung, Kapitelmarken, Bitrate, Speicher | ✓ bestanden |
-| Spiele: Unreal öffnen und die Herstellerseite bleiben der alte Weg | ✓ bestanden |
-| T-0203: Abbrechen installiert nichts | ✓ bestanden |
-| T-0203: LibreOffice bleibt zu, wenn die Versionsabfrage zu lange dauert | ✓ bestanden |
 | T-0203: OBS startet nicht, wenn die Dateiversion fehlt | ✓ bestanden |
 | T-0203: OBS unter Windows liest die Dateiversion und öffnet ohne Prozess in der Prüfung | ✓ bestanden |
-| T-0203: „Einrichten“ fragt, „Ja“ lädt nichts, solange die Prüfung nicht besteht | ✓ bestanden |
-| T-0203: „In LibreOffice öffnen“ startet die Datei, wenn --version schnell antwortet | ✓ bestanden |
 | T-0203: „In OBS öffnen“ startet die Sammlung, wenn --version schnell antwortet | ✓ bestanden |
-| T-0203: „In VS Code öffnen“ startet den Ordner, wenn --version schnell antwortet | ✓ bestanden |
-| T-0203: „Ja, einrichten“ öffnet keine Herstellerseite, solange die Prüfung nicht besteht | ✓ bestanden |
-| T-0203: „Starten“ öffnet LibreOffice und Blender erst nach bestandener Prüfung und Freigabe | ✓ bestanden |
-| T-0203: „Starten“ öffnet nicht, wenn die Prüfung scheitert | ✓ bestanden |
+| T-0715 Live streamen: alte ablauf.json lesbar; Programmpunkte und Szene – Rückgängig/Wiederholen mehrere Schritte (auch über das Menü), sofort gespeichert (keine Karte nötig, zweites Fenster sieht den Stand), Export atomar | ✓ bestanden |
+| T-0726 A9: Live streamen – Text in der Zelle mit Fokus ist nach der Tipp-Pause gespeichert (Fenster zu ohne Verlassen → da) und ein Rückgängig-Schritt; Unfertiges wartet | ✓ bestanden |
+| T-0728 C6: Ergebnisse der Rechner (LiveCalc) in Gold, nicht blau | ✓ bestanden |
+| T-0746 ECHT Live streamen: App sendet an lokalen RTMP-Empfänger (127.0.0.1), verbindet nach Abbruch neu, ffprobe liest die Aufzeichnung (nur mit TRENDO_ECHT_STREAM) | übersprungen |
 | mediamtx-Oberfläche: Sendeserver starten → OBS-Adresse und Ansehen-Adresse, nur 127.0.0.1; beenden; unsicherer Name abgelehnt | ✓ bestanden |
-| streamlink-Oberfläche: Mediathek-Seite zeigt Das Erste und arte; Klick löst den Stream auf und wechselt zum Player | ✓ bestanden |
-| typst-Oberfläche: ohne Programm Einrichten-Knopf; mit Programm Brief mit Posten → PDF im Ordner Dokumente; falscher Posten → Hinweis | ✓ bestanden |

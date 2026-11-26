@@ -1,6 +1,6 @@
 # Trendo CAD – Funktionsmatrix
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.36 (Stand df96c57)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D & Spiele · Seite: `cad` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/spec/kataloge/CORE-05_KATALOG.md`
 
@@ -50,37 +50,41 @@ Quelle: `docs/spec/kataloge/CORE-05_KATALOG.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- Hinzufügen …
-- ✳ Claude
-- Mehr ▾
-- Datei ▾
-- Quader
-- Zylinder
-- Kegel
-- Kugel
-- Extrudieren
-- Drehteil
-- Bohrung
-- Tasche
-- Rundung
-- Fase
-- Muster
-- Spiegeln
-- Verschieben
-- Drehen
-- Neues Teil
-- Schräg
-- Vorne
-- Oben
-- Zurück
-- Vor
-- 3D-Druck
-- Halter
+- KI ▾
+- Claude
+- kie.ai
+- Programme hinzufügen …
+- Mehr
+- Datei
+- cad-save
+- cad-undo
+- cad-redo
+- cad-export
+- cad-add-quader
+- cad-add-zylinder
+- cad-add-kegel
+- cad-add-kugel
+- cad-add-extrusion
+- cad-add-drehteil
+- cad-add-bohrung
+- cad-add-tasche
+- cad-add-rundung
+- cad-add-fase
+- cad-add-muster
+- cad-add-spiegeln
+- cad-add-verschieben
+- cad-add-drehen
+- cad-add-body
+- cad-view-iso
+- cad-view-front
+- cad-view-top
+- cad-print
+- cad-body-0
 - 1. Quader
 - 2. Bohrung
 - 3. Bohrung
 - 4. Rundung
-- Hoch
-- Runter
-- Ein/Aus
-- Löschen
+- cad-up
+- cad-down
+- cad-toggle
+- cad-delete

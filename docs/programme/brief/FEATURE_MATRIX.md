@@ -1,6 +1,6 @@
 # Briefe schreiben – Funktionsmatrix
 
-Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.36 (Stand df96c57)
+Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/spec/kataloge/STUDIO-LETTER-01_KATALOG.md`
 
@@ -33,30 +33,33 @@ Quelle: `docs/spec/kataloge/STUDIO-LETTER-01_KATALOG.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- Hinzufügen …
-- ✳ Claude
+- KI ▾
+- Claude
+- kie.ai
+- Programme hinzufügen …
 - Kündigung meines Fitnessstudios
 - Widerspruch gegen einen Bescheid
 - Mietminderung wegen Heizungsausfall
-- Speichern
-- Exportieren
-- Als PDF
-- Senden
-- Verstanden
+- letter-save
+- letter-undo
+- letter-redo
+- letter-export
+- letter-pdf
+- letter-send
 - 1 Absender
 - 2 Empfänger
 - 3 Inhalt
 - 4 Prüfen
 - 5 Fertig
-- Neuer Brief
-- Meine Briefe
-- Briefköpfe
-- Empfänger
+- letter-tab-brief
+- letter-tab-akten
+- letter-tab-briefkoepfe
+- letter-nav-empfaenger
 - 1  Was?
 - 2  An wen?
 - 3  Text & Design
 - Alles auf einer Seite
-- 🗑 Alles leeren
+- Alles leeren
 - Freier Brief
 - Kündigung
 - Widerspruch
@@ -67,26 +70,25 @@ Quelle: `docs/spec/kataloge/STUDIO-LETTER-01_KATALOG.md`
 - Widerruf (Kauf im Internet)
 - Adressänderung
 - Vorlagen ausblenden
+- Vorhandenen Brief öffnen (Word, LibreOffice) …
+- letter-gallery-frei
+- letter-gallery-kuendigung
+- letter-gallery-widerspruch
+- letter-gallery-widerruf
+- letter-gallery-umzug
+- letter-gallery-mahnung
+- letter-gallery-anfrage
+- letter-gallery-beschwerde
+- letter-gallery-bewerbung
 - Weiter →
 - ← Zurück
-- 🎨 Design wählen (20 Vorlagen)
-- ✍ Gezeichnete Unterschrift übernehmen
+- Design wählen (20 Vorlagen)
+- Gezeichnete Unterschrift übernehmen
 - Feld leeren
 - Bild übernehmen
 - Ohne Unterschrift
 - Brief prüfen
 - Text von der KI verbessern lassen
-- 9. November 2026
-- Alle 20 Vorlagen zeigen …
-- Fertig – Brief speichern
-- Als verschickt eintragen
-- Einsetzen
-- Jetzt Form B – zu Form A wechseln
-- Falz- und Lochmarken mitdrucken
-- Berechnen
-- In den Brief einsetzen
-- In den Kalender
-- Datei wählen …
-- Serienbrief erstellen
-- Vorschau
-- Alle als DOCX speichern
+- Neuer Brief
+- letter-design-style-klassisch
+- letter-design-style-modern

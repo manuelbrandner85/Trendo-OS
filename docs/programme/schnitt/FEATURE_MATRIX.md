@@ -1,6 +1,6 @@
 # Videoschnitt – Funktionsmatrix
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `schnitt` · Stand: 0.9.36 (Stand df96c57)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `schnitt` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/spec/kataloge/CORE-08_KATALOG.md`
 
@@ -48,14 +48,15 @@ Quelle: `docs/spec/kataloge/CORE-08_KATALOG.md`
 | ME-02 | Video Ausschnitt, Clips aneinanderhängen, Vorschaubilder | Vorhanden | umgesetzt |
 
 ## Werkzeuge der Oberfläche
+- Video hinzufügen (Schneiden)
 - Teilen (S) (Schneiden)
 - Löschen (Entf) (Schneiden)
-- ▶ Abspielen (Leertaste) (Schneiden)
-- ✨ Stille finden (Schneiden)
-- ◀ Nach vorn (Schneiden)
-- Nach hinten ▶ (Schneiden)
-- ⬇ Video exportieren (Ausgabe)
-- 📦 Film ausliefern (Ausgabe)
+- Abspielen (Leertaste) (Schneiden)
+- Stille finden (Schneiden)
+- Nach vorn (Schneiden)
+- Nach hinten (Schneiden)
+- Video exportieren (Ausgabe)
+- Film ausliefern (Ausgabe)
 - Bildspur + (Spuren)
 - Tonspur + (Spuren)
 - Leere Spuren entfernen (Spuren)
@@ -66,5 +67,5 @@ Quelle: `docs/spec/kataloge/CORE-08_KATALOG.md`
 - Löschen und aufrücken (Werkzeug)
 - ＋ Zoom (Ansicht)
 - － Zoom (Ansicht)
-- ⏮ Anfang (Ansicht)
+- Anfang (Ansicht)
 - Video (MP4) sofort (Exportieren)

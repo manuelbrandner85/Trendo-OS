@@ -1,14 +1,9 @@
 # Schutz & Datenschutz – Arbeitsabläufe
 
-Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `schutz` · Stand: 0.9.36 (Stand df96c57)
+Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `schutz` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Die Abläufe unten sind die Oberflächentests, die das Programm über den echten Eingabeweg bedienen (Klicks, Tastatur).
 
 - CORE-11 UI: Schutz-Seite über System erreichbar, Sichern, Ordner prüfen
-- SPEC-12 UI: Prüfsumme vergleichen, Fall anlegen, Beweis sichern, Bericht
-- SYS-04 UI: Suchen, installieren, Updates anzeigen und aktualisieren, entfernen
-- SYS-06 UI: Ordner teilen, Datei echt per HTTP laden, falsches Token abgelehnt, beenden
-- SYS-07 UI: Geräte suchen zeigt Gruppen
-- SYS-08 UI: Seite im Lesemodus lesen, .onion wird nicht abgerufen, Sitzung beenden
-- SYS-09 UI: Kontakt anlegen, Entwurf prüfen und im Mailprogramm öffnen (nichts wird gesendet)
-- X-02 UI: Beim Start automatisch geprüft, Seite zeigt Ergebnis, erneut prüfen
+- T-0754 Gegenprüfung UI: Laufwerk ohne Papierkorb – Entf fragt „endgültig löschen?“, Abbrechen lässt alles stehen, Ja löscht und sagt „endgültig gelöscht“; Schutzseite nennt sich nicht „gut geschützt“
+- T-0754 UI: Sicherung zeigt deutlich „nicht verschlüsselt“, Ordner und „Ordner öffnen“; Meldung nach dem Sichern sagt es; Ampel gelb; Studio verspricht keine Passwortverwaltung

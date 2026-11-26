@@ -1,6 +1,6 @@
 # Projekte – Funktionsmatrix
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `projects` · Stand: 0.9.36 (Stand df96c57)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `projects` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 
@@ -40,7 +40,8 @@ Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude
-- Verstanden
+- KI ▾
+- Claude
+- kie.ai
 - ＋ Projekt anlegen
 - Trendo im Browser öffnen

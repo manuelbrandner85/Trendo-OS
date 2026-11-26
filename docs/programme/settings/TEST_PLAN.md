@@ -1,49 +1,27 @@
 # Einstellungen – Testplan
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand df96c57)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.110 (Stand 0eb9d52)
 
-76 Tests sprechen dieses Programm an.
+44 Tests sprechen dieses Programm an.
 
 - Absturzschutz: abgefangener Oberflächenfehler zeigt einen Hinweis „Trendo läuft weiter“ – nur einmal bei Folgefehlern, Fenster bleibt bedienbar
-- Alle Studios: Bereich und Suche filtern die Karten, Alle zeigt wieder alles
 - Bedienstil: in den Einstellungen wählbar; Mac setzt runde Ampel-Knöpfe links (Schließen zuerst), Linux runde Knöpfe rechts – Knöpfe funktionieren weiter
-- CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste
-- Claude zeigt, wo es arbeitet; Felder in Aufklapp-Menüs kann Claude lesen und ausfüllen
 - Dateimanager-Verhalten je System: Ziehen verschiebt (Strg kopiert), Kopiename je System, Finder-Zeilenschalter benennt um, Entf/⌘⌫ legt in den Papierkorb, Leertaste zeigt Vorschau
-- Design: Aktuelle Projekte – Leerzustand ohne Demodaten, danach echtes Projekt
-- Design: Dock-Klick auf Dateien startet direkt (nur Owner) und wird auditiert; Browser offline deaktiviert
-- Design: KI-Assistent zeigt 'Nicht verbunden', Eingabe deaktiviert
-- Design: Systemstatus zeigt Messwert in % oder 'n. v.', nie Mockup-Werte ohne Messung
-- Design: die neun bekannten Studios zeigen auf der Studios-Seite den echten Status aus requirements.yaml
+- Dichte: Kompakt verkleinert Innenabstände von Knöpfen, Normal stellt sie wieder her, Einstellung bleibt gespeichert
+- E12: „Einfach“ blendet rechte Spalte, Erdkugel und Schnellaktionen aus (einblendbar unter „Anpassen“); Einstellungen zeigen die Hauptseiten, Rest unter „Mehr“
 - Einstellungen: linker Abschnitt schaltet um, Aussehen bleibt zuerst klickbar
 - Fenster: Einstellung übernehmen (Design-Knopf per Mausklick) schließt keine Fenster – alle kommen mit Lage und Zustand zurück
 - Fenster: Größe an Ecke und Rand per Maus ziehen; an linken/rechten Rand ziehen rastet auf halbe Fläche ein
-- Fenster: Klick auf eine Kategorie im Fenster bleibt im selben Fenster; ohne Klick eigenes Fenster; offene Seite wird wiederverwendet
-- Fenster: Startmenü öffnet Dokumente mit Taskleisten-Eintrag, Startbildschirm bleibt dahinter
 - Fenster: Ziehen an der Titelleiste verschiebt; Klick ins hintere Fenster holt es nach vorn; Reiter teilen ein Fenster
 - Fenster: maximiert füllt den ganzen Bildschirm – über Kopfleiste und Taskleiste, ohne Rand; Wiederherstellen bringt die Leisten zurück
 - Fenster: maximiert und daneben geöffnet bleiben im AutomationPeer-Baum, mit Namen und endlichem Rechteck
 - Fenster: wechseln per Taskleiste, aktives hervorgehoben, maximieren, schließen
 - Genauere Leser (Kalender, Programm-Dokument), Design „Wie Windows“, Hilfe „?“ auf Seiten ohne eigenen Hilfetext, Hinweis statt stummer Knöpfe
 - KI: die Seite lässt sich erneut öffnen, Status bleibt „Nicht verbunden“
-- Komponenten: Lizenzliste, Unreal nur geführt (offizieller Link), Zustimmung wird gespeichert
-- LETTER-UI: Briefkopf → Akte (Behörde) → Fakt, Chronik, Eingang → Frist UNGEPRÜFT → Quelle fehlt → Export gesperrt → beheben → DOCX → Freigabe → Versand BLOCKED
-- LETTER-UI: Briefstudio hat genau eine Unterebene; Akte/Ausgabe erst mit offener Akte
 - Mehrfachauswahl wie im System: Umschalt-Klick Bereich, Strg-Klick dazu/weg, Rahmen mit der Maus aufziehen, Alles auswählen, mehrere kopieren/einfügen und in den Papierkorb, Klick ins Leere hebt auf
 - Profi-Rahmen: Bildbearbeitung mit Werkzeugleiste links (aktives Werkzeug markiert), Werkzeuge nicht mehr im Menüband; Werkzeuge und Eigenschaften ein-/ausklappbar und gemerkt
-- Programme im Stil des Systems: Windows-Menüzeile im Fenster, Mac-Menüs oben in der Menüleiste (Ablage …), GNOME-Kopfleiste mit „Speichern“ blau und Hauptmenü ☰ – Menüeinträge lösen dieselben Befehle aus
-- QA-004 UI: Browser-Aktion abgelehnt → nichts geöffnet
-- QA-004 UI: Browser-Aktion freigegeben → genau einmal geöffnet
-- QA-004 UI: Explorer-Aktion → Freigabe-Ansicht; Ausführung erst nach Klick auf Freigeben
-- QA-017: Navigationsschaltflächen haben zugängliche Namen
-- QA-017: Strg+1..5 schaltet alle Hauptbereiche per Tastatur
-- QA-017: Tab bewegt Fokus durch die Navigation, Enter aktiviert
-- QA-019 (simuliert): Offline-Modus – Browser-Aktion deaktiviert, lokale Funktionen laufen
+- Programme im Stil des Systems: Windows-Menüzeile im Fenster, Mac-Menüs oben in der Menüleiste (Ablage …), GNOME-Kopfleiste mit „Speichern“ blau und Hauptmenü – Menüeinträge lösen dieselben Befehle aus
 - Registerkarten wie Explorer/Finder/Dateien: Strg/⌘+T neu, Mittelklick-Ordner in neuer Karte, Wechsel per Klick und Strg+Bild↓, eigener Verlauf je Karte, Strg/⌘+W schließt erst die Karte, dann das Fenster
-- STUDIO-LETTER-01: Schnellzugriff „Neuer Brief“ → Kündigung → ausfüllen → prüfen → speichern; Absender gemerkt
-- SYS-02: Notiz-Schnelltool öffnet Werkzeuge; Notiz wird gespeichert; Rechner rechnet bei Enter
-- SYS-03: Dock-Browser öffnet Browser & Downloads; Adresse wird geöffnet, javascript: abgelehnt; offline gesperrt
-- SYS-11/X-09: Apps hat genau eine Unterebene; Programme und Speicher-Seite öffnen
 - SYS-12 (UI): Bericht über alle Seiten; keine Seite tiefer als 2 Ebenen; Prüfseite hat keine unbenannten Knöpfe
 - SYS-12 (UI): Leise Benachrichtigung; Einstellung bleibt gespeichert; einfacher Modus zeigt weniger Kacheln
 - SYS-12 (UI): Mindestschrift greift; Knöpfe haben Namen und sind per Tab erreichbar; Bewegung aus = keine Übergänge
@@ -58,25 +36,15 @@ Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Se
 - SYS-12-P25: Bericht listet Befunde je Seite
 - SYS-12: Anzeigegröße wird auf erlaubte Stufen begrenzt
 - SYS-12: Anzeigegröße „Sehr groß“ wird gespeichert; F1 zeigt die Hilfe
-- Schlüssel: ungültig wird nicht gespeichert, gültig landet im Secret-Store, nie im Audit
-- Start: das Hauptfenster ist sichtbar und kommt aus dem minimierten Zustand zurück
-- Startmenü: Klick auf Startknopf öffnet, Klick daneben und Esc schließen, Windows-Taste schaltet um
 - Startmenü: Studio aus A–Z anheften, angeheftet öffnen, lösen; Zuletzt benutzt
-- Startmenü: Suche findet Studio/Seite, Ergebnis per Mausklick öffnet
 - Stil Trendo bleibt unverändert: Trendo-Kopf, Seitenspalten, Dock – keine Fremd-Leisten
 - Studio-Fenster wie im System: Mac und GNOME – KI-Zeile ist die Titelleiste (Ampel bzw. Schließen, Titel, Zurück), Windows behält die Titelleiste; Schließen in der Kopfleiste schließt das Fenster
-- Studio-Klick: Unreal nur geführt – kein Installieren-Knopf, offizieller Installer-Link
-- Studio-Klick: fehlendes Programm → genau eine Frage 'Studio braucht X. Jetzt installieren?', 'Später' installiert nichts
+- Studio-Ordnung: Das aufnehmende Studio und die Einstellungen führen die Bereiche unter „Mehr“ → „Verwandte Programme“, der Eintrag öffnet den Bereich
 - Studio-Seiten: Überschrift ist der Name aus dem Studio-Katalog
-- StudioCatalog.NameOf: Katalogname, sonst der bisherige Text
 - T-0107: Sparsam – keine Hintergrund-Unschärfe, keine Schatten und Effekte, keine Übergänge; Auswahl in den Einstellungen
-- Trendo erweitern: Erweiterungen dürfen alles außer Name und Logo – Produktname, Marke oder Logo-Datei werden abgelehnt
-- W0-01/03/06: Assistent – Name, Ordner, Design, Pakete, Installation über Zustimmung, Vorlagen, Systemcheck
-- W0b-01: Keine Fachwörter in Oberflächentexten (docs/SPRACHE.md)
-- W0b-02/04/05: Widgets ausblenden, Dock sortieren, Bewegung reduzieren, Hinweis einmalig – alles gespeichert
-- W0b-06: Design wechseln (Hell/Kontrast) baut das Fenster neu auf und speichert
+- T-0686-Rest: Bedienstile Windows und GNOME zeigen den Akzent in Gold statt Blau
+- T-0713 UI: Hinweis-Karte in den Einstellungen, wenn ein Erwachsenen-Profil ohne PIN neben einem Kinderprofil besteht; „PIN festlegen“ führt zur Anmeldung; mit PIN verschwindet sie
 - Wie GNOME: schwarze Leiste mit Aktivitäten und Uhr in der Mitte, Übersicht mit Suche und Dash, nur Schließen-Knopf im Fenster, Dateien mit „Andere Orte“
 - Wie Windows 11: Taskleiste mit Start/Suche/Uhr, Startmenü mit Angeheftet und Suche (Trendo KI), Widgets mit allen Trendo-Karten, eckige Fensterknöpfe, Datei-Explorer mit „Dieser PC“
 - Wie im Original: eine Kopfleiste in GNOME-Dateien/Finder, Uhr öffnet Mitteilungen + Monatskalender, Schnelleinstellungen mit Kacheln, „Nicht stören“, GNOME-Suche per Lupe/Lostippen, „Andere Orte“, Explorer springt beim Tippen
 - Wie macOS: Menüleiste mit Menüs und Uhr, Dock mit Launchpad und Papierkorb, Spotlight, Ampel-Knöpfe, ⌘W schließt, Finder mit Seitenleiste und Symbolansicht
-- Zeitleiste mit Dauer und Tönen: fertig, Rückfrage, abschaltbar

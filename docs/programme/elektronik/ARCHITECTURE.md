@@ -1,6 +1,6 @@
 # Schaltung & Simulation – Architektur
 
-Studio: Schaltungen berechnen (SPEC-02) · Bereich: Technik & Fachgebiete · Seite: `elektronik` · Stand: 0.9.36 (Stand df96c57)
+Studio: Schaltungen berechnen (SPEC-02) · Bereich: Technik & Fachgebiete · Seite: `elektronik` · Stand: 0.9.110 (Stand 0eb9d52)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Spec02.cs`
@@ -20,16 +20,20 @@ Studio: Schaltungen berechnen (SPEC-02) · Bereich: Technik & Fachgebiete · Sei
 - `PartTypes`
 - `Simulator`
 - `CircuitDrawing`
+- `GerberCheck`
+- `KiCadNetlist`
 
 ## Dateiformate (im Code belegt)
 - .cir
 - .csv
+- .drl
 - .svg
 - .tdoc
 - .zip
 
 ## Externe Programme und Dienste
-– keine
+- KiCad (optional)
+- Node.js (optional)
 
 ## Bausteine (Masterprompt 131 / 5)
 A Programmfenster mit Menüband und Kürzeln · B Arbeitsfläche · C Werkzeuge ändern das Dokument · D .tdoc-Projektdatei mit Autosave/Wiederherstellen · E Rückgängig/Wiederholen und Verlauf · I Prüfungen · J Startmenü, Suche, Ordner, Bedienstufen

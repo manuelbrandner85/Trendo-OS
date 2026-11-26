@@ -1,6 +1,6 @@
 # Messdaten & Auswertung – Funktionsmatrix
 
-Studio: Messwerte auswerten (SPEC-05) · Bereich: Wissen & Lernen · Seite: `wissenschaft` · Stand: 0.9.36 (Stand df96c57)
+Studio: Messwerte auswerten (SPEC-05) · Bereich: Wissen & Lernen · Seite: `wissenschaft` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/w6-katalog/SPEC-05.md`
 
@@ -24,6 +24,7 @@ Quelle: `docs/w6-katalog/SPEC-05.md`
 | F16 | Standardisieren | Vorhanden | gebaut |
 
 ## Werkzeuge der Oberfläche
+- CSV öffnen … (Daten)
 - Spalte + (Daten)
 - Zeile + (Daten)
 - Punkte (Diagramm)
@@ -38,4 +39,5 @@ Quelle: `docs/w6-katalog/SPEC-05.md`
 - Potenz (Ausgleich)
 - CSV (Excel) (Exportieren)
 - Auswertung (Exportieren)
+- Diagramm als Bild (.png) (Exportieren)
 - Diagramm (SVG) (Exportieren)

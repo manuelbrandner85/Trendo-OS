@@ -1,6 +1,6 @@
 # Tagesplaner – Architektur
 
-Studio: Tagesplaner (STUDIO-DAYPLAN-01) · Bereich: Arbeiten & Büro · Seite: `tagesplaner-programm` · Stand: 0.9.95 (Stand cce5c62)
+Studio: Tagesplaner (STUDIO-DAYPLAN-01) · Bereich: Arbeiten & Büro · Seite: `tagesplaner-programm` · Stand: 0.9.110 (Stand 0eb9d52)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.KreativStudios4.cs`
@@ -13,29 +13,20 @@ Studio: Tagesplaner (STUDIO-DAYPLAN-01) · Bereich: Arbeiten & Büro · Seite: `
 
 ## Fach-Engine (Trendo.Core)
 - `CiteKit`
-- `DayPlanner`
 - `CodeAiKit`
+- `DayPlanner`
 - `VisionKit`
 - `KreativSafe`
+- `ClaudeCode`
 - `CodeProject`
+- `FolderSnapshot`
+- `VisionTags`
 - `RealProcessRunner`
 
 ## Dateiformate (im Code belegt)
-- .csv
-- .html
 - .ics
-- .jpg
-- .json
-- .md
-- .mp4
-- .ogg
-- .png
-- .svg
 - .tdoc
 - .txt
-- .wav
-- .xml
-- .zip
 
 ## Externe Programme und Dienste
 - Blender (optional, 3D-Fotos/Render)

@@ -1,6 +1,6 @@
 # Freie Bilder & Klänge – Funktionsmatrix
 
-Studio: Freie Bilder & Klänge finden (X-07) · Bereich: Kreativ & Medien · Seite: `assets` · Stand: 0.9.36 (Stand df96c57)
+Studio: Freie Bilder & Klänge finden (X-07) · Bereich: Kreativ & Medien · Seite: `assets` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/spec/kataloge/X-07_KATALOG.md`
 
@@ -24,21 +24,23 @@ Quelle: `docs/spec/kataloge/X-07_KATALOG.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude
-- Mehr ▾
+- KI ▾
+- Claude
+- kie.ai
+- Mehr
 - Bilder
 - Klänge
 - Schriften
 - Symbole
 - 3D & Texturen
-- ☆ Merklisten
+- Merklisten
 - Meine Bibliothek
 - Suchen
-- Berge
-- Meer
-- Natur
-- Stadt
-- Tiere
-- Blumen
-- Essen
-- Weltall
+- mb-theme-0
+- mb-theme-1
+- mb-theme-2
+- mb-theme-3
+- mb-theme-4
+- mb-theme-5
+- mb-theme-6
+- mb-theme-7

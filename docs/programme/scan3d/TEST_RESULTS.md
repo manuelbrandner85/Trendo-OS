@@ -1,16 +1,15 @@
 # Aus Fotos – Testergebnisse
 
-Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `scan3d` · Stand: 0.9.36 (Stand df96c57)
+Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D & Spiele · Seite: `scan3d` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 31 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 30 · Fehlgeschlagen 0 · Übersprungen 2 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
 | Open3D-Oberfläche: ohne Einrichtung Knopf; Glätten ersetzt das Modell mit Rückgängig; Fehler von Open3D wird gemeldet, Modell bleibt | ✓ bestanden |
 | S4 Scannen: Aufnahme-Assistent vor der Rechnung; nach der Rechnung Abdeckungsscheibe mit Prozent und Lücken aus den Kamerapositionen | ✓ bestanden |
-| SPEC-04 VR: Vorschau aus Augenhöhe schaltbar (1,60 m), Anzeige der größten Textur, Karte „Für die Brille reparieren“; passt das Modell, gibt es nichts zu reparieren | ✓ bestanden |
 | SPEC-09 F10: Skalieren | ✓ bestanden |
 | SPEC-09 F11: Zentrieren | ✓ bestanden |
 | SPEC-09 F12: Zuschneiden | ✓ bestanden |
@@ -39,3 +38,5 @@ Bestanden 31 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | SPEC-09 UI: ohne Fotos keine Installation, mit Fotos fragt Trendo vor COLMAP | ✓ bestanden |
 | SPEC-09: Punktwolke aus PLY (ASCII/binär), XYZ, OBJ; ausdünnen, Ausreißer, PLY speichern | ✓ bestanden |
 | Scan-Arbeitsplatz (Runde 7): Fotos einlesen mit Prüfung und Vorschau, Schritte der Rechnung mit Fortschritt, Modell in 3D drehen, Export als OBJ, STL und GLB | ✓ bestanden |
+| T-0749 Echtlauf: Fotos → COLMAP → Netz im Scan-Arbeitsplatz → OBJ/STL/GLB | übersprungen |
+| T-0749 Echtlauf: „Stopp“ beendet COLMAP sofort, es bleibt kein Prozess und kein halbes Modell | übersprungen |

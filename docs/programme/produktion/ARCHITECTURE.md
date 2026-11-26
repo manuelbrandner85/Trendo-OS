@@ -1,6 +1,6 @@
 # Produktion – Architektur
 
-Studio: Großprojekte umsetzen (X-01) · Bereich: KI & Automatik · Seite: `produktion` · Stand: 0.9.36 (Stand df96c57)
+Studio: Großprojekte umsetzen (X-01) · Bereich: KI & Automatik · Seite: `produktion` · Stand: 0.9.110 (Stand 0eb9d52)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.W5Fusion.cs`
@@ -10,11 +10,15 @@ Studio: Großprojekte umsetzen (X-01) · Bereich: KI & Automatik · Seite: `prod
 
 ## Fach-Engine (Trendo.Core)
 - `BigBoards`
+- `BigBoardHandoff`
 - `Fusion`
+- `Cursor`
 
 ## Dateiformate (im Code belegt)
+- .html
 - .json
 - .md
+- .png
 - .stl
 - .txt
 

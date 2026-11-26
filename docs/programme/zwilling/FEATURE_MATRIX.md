@@ -1,6 +1,6 @@
 # Geräte überwachen – Funktionsmatrix
 
-Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.36 (Stand df96c57)
+Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/w6-katalog/SPEC-10.md`
 
@@ -29,23 +29,30 @@ Quelle: `docs/w6-katalog/SPEC-10.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude
-- Mehr ▾
+- KI ▾
+- Claude
+- kie.ai
+- Mehr
+- twin-undo
+- twin-redo
 - Diesen PC jetzt messen
-- ● Live (alle 5 s)
+- Live (alle 5 s)
 - 24 h
 - 7 Tage
 - 30 Tage
 - Alles
-- Vorlauf
-- Rücklauf
-- Brenner
-- Leistung
-- Temperatur
+- twin-node-Heizung-Vorlauf
+- twin-node-Heizung-Rücklauf
+- twin-node-Heizung-Brenner
+- twin-node-Solaranlage-Leistung
+- twin-node-Kühlraum-Temperatur
 - ＋ Anlegen
 - Datei wählen …
-- Einlesen
-- ● MQTT verbinden
+- MQTT verbinden
+- Ich erlaube Trendo, diese Adresse regelmäßig zu lesen.
+- Adresse hinzufügen
+- Regel anlegen
+- Regeln speichern
 - Anlegen
 - Umbenennen
 - CSV speichern

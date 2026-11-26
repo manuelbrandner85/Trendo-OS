@@ -1,6 +1,6 @@
 # Aus Fotos – Funktionsmatrix
 
-Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `scan3d` · Stand: 0.9.36 (Stand df96c57)
+Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D & Spiele · Seite: `scan3d` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/w6-katalog/SPEC-09.md`
 
@@ -29,13 +29,13 @@ Quelle: `docs/w6-katalog/SPEC-09.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude
-- Mehr ▾
+- KI ▾
+- Claude
+- kie.ai
+- Mehr
 - Gegenstände einscannen
 - Aus Fotos
-- Kopieren
 - Ordner wählen …
-- Einlesen und prüfen
 - Datei wählen …
 - COLMAP
 - Meshroom

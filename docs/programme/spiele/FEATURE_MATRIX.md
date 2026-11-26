@@ -1,6 +1,6 @@
 # Werkstatt – Funktionsmatrix
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` · Stand: 0.9.36 (Stand df96c57)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D & Spiele · Seite: `spiele` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/spec/kataloge/CORE-06_KATALOG.md`
 
@@ -47,20 +47,22 @@ Quelle: `docs/spec/kataloge/CORE-06_KATALOG.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- Hinzufügen …
-- ✳ Claude
-- Mehr ▾
+- KI ▾
+- Claude
+- kie.ai
+- Programme hinzufügen …
+- Mehr
 - Spiele bauen
 - Werkstatt
-- Kopieren
 - Spielen
 - Ordner
 - Bearbeiten
 - Ton an
 - Datei wählen …
 - Speichern und Vorschau
+- game-undo
+- game-redo
 - Als ZIP weitergeben
 - Fertig
 - Anlegen und spielen
-- Unreal-Projekt anlegen
-- Projekt öffnen
+- Leeres Unreal-Projekt anlegen

@@ -1,6 +1,6 @@
 # Konsolenspiele portieren – Umsetzungsstand
 
-Studio: Konsolenspiele portieren (STUDIO-CONSOLE-01) · Bereich: 3D, Spiele & VR · Seite: `konsole-programm` · Stand: 0.9.36 (Stand df96c57)
+Studio: Konsolenspiele portieren (STUDIO-CONSOLE-01) · Bereich: 3D & Spiele · Seite: `konsole-programm` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getestet“ nur, wenn der zugehörige Test im letzten echten Lauf bestanden hat.
 

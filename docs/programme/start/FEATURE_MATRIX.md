@@ -1,6 +1,6 @@
 # Startbildschirm – Funktionsmatrix
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.36 (Stand df96c57)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 
@@ -47,12 +47,12 @@ Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 - Programmieren
 - Visualisieren
 - Mehr …
-- Symbol hinzufügen
-- Projekte
-- Desktop-Symbole
-- Desktop einrichten
-- Alle Studios
-- Sicherung
-- Daten schützen
-- Alle Projekte anzeigen
+- desk-add-hint
+- continue-0
+- continue-1
+- continue-2
+- continue-3
+- continue-4
+- continue-5
+- btn-all-projects
 - ＋ Erstes Projekt anlegen

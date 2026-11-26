@@ -1,6 +1,6 @@
 # Dateien – Funktionsmatrix
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `dateien` · Stand: 0.9.36 (Stand df96c57)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `dateien` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 
@@ -39,25 +39,22 @@ Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 | PR-02 | Ordnername aus dem Namen (Umlaute, Nummer bei belegtem Namen), nichts außerhalb des Projekts | Vorhanden | umgesetzt |
 
 ## Werkzeuge der Oberfläche
-- Dieser PC
-- Zurück
-- Vor
-- Übergeordneter Ordner
-- Aktualisieren
-- Neu
-- Ausschneiden
-- Kopieren
-- Einfügen
-- Umbenennen
-- Löschen (in den Papierkorb)
-- Ansicht: Symbole
+- fb-tab-0
+- fb-new-folder
 - Ausgeblendete Elemente
-- Im Dateimanager des Systems öffnen
-- Start
-- Desktop
-- Downloads
-- Dokumente
-- Bilder
-- Musik
-- Videos
-- Lokaler Datenträger (C:\Users\<user>\AppData\Local\Temp\trendo-render\dateien-test)
+- fb-side-home
+- fb-side-desktop
+- fb-side-downloads
+- fb-side-dokumente
+- fb-side-bilder
+- fb-side-musik
+- fb-side-videos
+- fb-side-pc
+- fb-side-drive-10
+- fb-pc-desktop
+- fb-pc-downloads
+- fb-pc-dokumente
+- fb-pc-bilder
+- fb-pc-musik
+- fb-pc-videos
+- fb-drive-0

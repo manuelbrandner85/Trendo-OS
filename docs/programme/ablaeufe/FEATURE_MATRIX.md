@@ -1,6 +1,6 @@
 # Abläufe (Automatisch erledigen) – Funktionsmatrix
 
-Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.36 (Stand df96c57)
+Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/spec/kataloge/SYS-05_KATALOG.md`
 
@@ -16,28 +16,32 @@ Quelle: `docs/spec/kataloge/SYS-05_KATALOG.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude
+- KI ▾
+- Claude
+- kie.ai
 - Jeden Morgen Wetter und Termine zeigen
 - Downloads-Ordner wöchentlich aufräumen
-- KI fragen
-- Trendo KI (lokal)
-- Mit Claude verbinden
-- KI-Bibliothek
-- KI-Quellen
-- Kostenlose Internet-KIs
-- KI-Vorlagen
-- Skills
-- KI-Rollen und Teams
-- Produktion
-- Verbindungen
-- Online-Dienste
-- Mehr ▾
+- ki-nav-ki-fragen
+- ki-nav-ki
+- ki-nav-claude-verbinden
+- ki-nav-ki-bibliothek
+- ki-nav-ki-quellen
+- ki-nav-ki-internet
+- ki-nav-ki-vorlagen
+- ki-nav-ki-skills
+- ki-nav-ki-rollen
+- ki-nav-produktion
+- ki-nav-verbindungen
+- ki-nav-keys
+- Mehr
 - Abläufe
-- Einfach: Trendo-Abläufe
-- Profi: n8n und Node-RED
-- Downloads aufräumen: PDFs in einen Ordner
-- Jeden Morgen eine Tagesnotiz
-- Fotos mit Datum versehen
-- Ordner wöchentlich als ZIP sichern
+- Trendo-Abläufe
+- n8n und Node-RED
+- Ablauf aus dem Satz anlegen
+- wf-tpl-pdf
+- wf-tpl-notiz
+- wf-tpl-fotos
+- wf-tpl-archiv
 - + Eigener Ablauf
-- ↶ Rückgängig
+- Rückgängig
+- Wiederholen

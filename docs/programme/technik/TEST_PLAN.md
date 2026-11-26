@@ -1,12 +1,13 @@
 # Tragwerk & Mechanik – Testplan
 
-Studio: Statik nachrechnen (SPEC-03) · Bereich: Technik & Fachgebiete · Seite: `technik` · Stand: 0.9.36 (Stand df96c57)
+Studio: Statik nachrechnen (SPEC-03) · Bereich: Technik & Fachgebiete · Seite: `technik` · Stand: 0.9.110 (Stand 0eb9d52)
 
-20 Tests sprechen dieses Programm an.
+26 Tests sprechen dieses Programm an.
 
 - Bedienstufen: Einfach blendet Fachwerkzeuge aus, Erweitert zeigt alle, Wechsel lässt das Dokument unverändert; Einstellung bleibt gespeichert
-- Fräsen UI: Werkstück in 3D zeigt den Abtrag mit Volumen, das Foto entsteht und erscheint, Zurück zur Bahnansicht geht
-- Profi-Stufe: Befehlssuche führt Befehle aus, Verlauf springt zurück, Projektdaten – falsches JSON wird abgelehnt, richtiges übernommen und rückgängig machbar
+- Nachfrage: Wirkung nach außen fragt, Nein bricht ab und nennt den Grund; Bearbeiten fragt nicht
+- Nutzerweg: Ein harmloser Plan läuft von selbst, bei offener Freigabe bleibt er stehen
+- Nutzerweg: Mit ausgeschaltetem „ohne Klicks“ bleiben Plan, Vergleich und Behalten wie zuvor
 - SPEC-03 F08: Hohlprofil
 - SPEC-03 F09: Knicken (Euler)
 - SPEC-03 F10: Schrauben
@@ -23,4 +24,9 @@ Studio: Statik nachrechnen (SPEC-03) · Bereich: Technik & Fachgebiete · Seite:
 - SPEC-03 UI: bewegliches Tragwerk wird gemeldet; Rahmen-Vorlage, Ergebnisanzeigen, PDF/SVG/CSV-Export
 - SPEC-03: Balken (4 Lagerungen), Querschnitte, Wärmedehnung, Einheiten
 - Statik UI: 3D-Ansicht zeigt das Tragwerk als Körper mit Überhöhung, zweiter Klick führt zur Zeichnung zurück
-- Wohnung UI: Uhrzeit und Monat gehen als echter Sonnenstand in die Szene, ohne Wahl bleibt das Licht wie bisher
+- T-0728 C3: Claude ändert über die Brücke in drei Zügen – am Ende des Laufs ist es EIN Rückgängig-Schritt „Claude-Auftrag“; Strg+Z nimmt alles zurück (Claude selbst ersetzt durch die Werkzeugaufrufe)
+- T-0748 UI: Stufe Einfach – Gegenprobe steht im Inspektor, Bericht über „Datei ▸ Exportieren“ in der Menüleiste
+- T-0748 UI: Tragwerk – Vorlage Einfeldträger zeigt „Gegenprobe ✓ Abweichung“; Rahmen ebenso; Export „Gegenprobe (Bericht)“ mit Tabellenformel
+- T-0748-fix UI: Temperaturlast – Statuszeile sagt „nur Gleichgewicht geprüft“, nicht „✓ < 0,01 %“
+- T-0748-fix UI: großes Tragwerk – „Gegenprobe läuft …“, Rechnung im Hintergrund, neue Änderung bricht ab; danach ✓ in Inspektor und Statuszeile
+- T-0748-fix2 UI: Einzellast bei 1/3 – Inspektor zeigt M = F·a·b/L = 22,2 kNm (vorher 21,7), Gegenprobe ✓, Bericht-Export nutzt das Hintergrund-Ergebnis

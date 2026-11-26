@@ -1,20 +1,12 @@
 # Open Source – Lizenzen
 
-Studio: Projekte von GitHub holen (X-06) · Bereich: Entwickeln · Seite: `oss` · Stand: 0.9.36 (Stand df96c57)
+Studio: Projekte von GitHub holen (X-06) · Bereich: Entwickeln · Seite: `oss` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 
-- Blender (optional, 3D-Fotos/Render)
 - Ollama – lokale KI (optional)
 - FFmpeg
-- LibreOffice (optional)
-- qpdf
-- Krita (optional)
-- Inkscape (optional)
-- Tesseract OCR
 - Git
-- OBS Studio (optional)
-- mpv (optional)
 - Python (optional)
 - Node.js (optional)
 

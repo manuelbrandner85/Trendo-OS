@@ -1,6 +1,6 @@
 # Ersteinrichtung – Funktionsmatrix
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `einrichtung` · Stand: 0.9.36 (Stand df96c57)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `einrichtung` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 
@@ -40,7 +40,10 @@ Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude
-- 📷 Eigenes Foto wählen …
+- KI ▾
+- Claude
+- kie.ai
+- Alle 12 Einträge zeigen
+- Eigenes Foto wählen …
 - Mit der Kamera aufnehmen
 - Weiter

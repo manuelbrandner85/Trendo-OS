@@ -1,6 +1,6 @@
 # Medien bearbeiten – Funktionsmatrix
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `kreativ-medien` · Stand: 0.9.36 (Stand df96c57)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `kreativ-medien` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/spec/kataloge/CORE-08_KATALOG.md`
 
@@ -49,22 +49,27 @@ Quelle: `docs/spec/kataloge/CORE-08_KATALOG.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- Hinzufügen …
-- ✳ Claude
+- KI ▾
+- Claude
+- kie.ai
+- Programme hinzufügen …
 - Urlaubsvideo mit Musik schneiden
 - Foto aufhellen und zuschneiden
 - Untertitel erzeugen
-- Mehr ▾
-- Verstanden
+- Mehr
 - Medien bearbeiten
 - Videoschnitt
 - Bildbearbeitung
 - Audio bearbeiten
-- Kopieren
 - Datei wählen …
-- Übernehmen
 - Medienordner
 - 🖼  Beispielbild.png
 - Aneinanderhängen
 - Liste leeren
+- media-undo
+- media-redo
+- Stapel starten
+- Dateien wählen …
+- Ausgabeordner …
+- Ordner öffnen
 - Bild speichern

@@ -1,6 +1,6 @@
 # Bilder erkennen – Lizenzen
 
-Studio: Bilder erkennen (STUDIO-VISION-01) · Bereich: KI & Automatik · Seite: `bilder-erkennen-programm` · Stand: 0.9.95 (Stand cce5c62)
+Studio: Bilder erkennen (STUDIO-VISION-01) · Bereich: KI & Automatik · Seite: `bilder-erkennen-programm` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

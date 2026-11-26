@@ -1,6 +1,6 @@
 # Einstellungen – Architektur
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand df96c57)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.110 (Stand 0eb9d52)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Sys12.cs`
@@ -11,9 +11,10 @@ Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Se
 
 ## Fach-Engine (Trendo.Core)
 - `A11y`
+- `Position`
 
 ## Dateiformate (im Code belegt)
-– (nicht erfasst)
+- .json
 
 ## Externe Programme und Dienste
 – keine

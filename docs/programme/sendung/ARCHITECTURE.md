@@ -1,6 +1,6 @@
 # Live streamen – Architektur
 
-Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.36 (Stand df96c57)
+Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.110 (Stand 0eb9d52)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Spec15.cs`
@@ -12,7 +12,9 @@ Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung`
 ## Fach-Engine (Trendo.Core)
 - `BroadcastDesk`
 - `BroadcastPlus`
+- `AtomicFile`
 - `ObsScenes`
+- `Panel`
 
 ## Dateiformate (im Code belegt)
 - .csv
@@ -21,16 +23,21 @@ Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung`
 - .glb
 - .gltf
 - .html
+- .jpg
 - .json
 - .md
+- .mp4
 - .obj
 - .ods
 - .odt
+- .ogg
 - .ply
+- .png
 - .pptx
 - .srt
 - .stl
 - .txt
+- .wav
 - .xlsx
 - .xml
 

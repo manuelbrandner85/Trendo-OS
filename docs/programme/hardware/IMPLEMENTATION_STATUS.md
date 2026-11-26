@@ -1,6 +1,6 @@
 # Hardware & Leistung – Umsetzungsstand
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `hardware` · Stand: 0.9.92 (Stand 94252fc)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `hardware` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getestet“ nur, wenn der zugehörige Test im letzten echten Lauf bestanden hat.
 
@@ -32,4 +32,4 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | SYS-13-P24 | PC-Testlauf | Implementiert | – |
 | SYS-13-P25 | Rückfall-Version | Implementiert | – |
 
-0 von 25 Funktionen getestet (noch kein Testlauf eingelesen).
+0 von 25 Funktionen getestet.

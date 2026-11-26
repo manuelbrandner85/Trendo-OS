@@ -1,30 +1,30 @@
 # Podcast aufnehmen – Architektur
 
-Studio: Podcast aufnehmen (STUDIO-PODCAST-01) · Bereich: Kreativ & Medien · Seite: `podcast-programm` · Stand: 0.9.36 (Stand 9dda6f3)
+Studio: Podcast aufnehmen (STUDIO-PODCAST-01) · Bereich: Kreativ & Medien · Seite: `podcast-programm` · Stand: 0.9.110 (Stand 0eb9d52)
 
 ## Präsentation (Trendo.App)
-- `src/Trendo.App/MainWindow.KreativStudios.cs`
+- `src/Trendo.App/MainWindow.PodcastStudio.cs`
 
 ## Bedienelemente der Arbeitsfläche
-- Texteditor
 - Menüband
 - Eigenschaften
 - Statusleiste
 - Dokument-Reiter
 
 ## Fach-Engine (Trendo.Core)
-- `LogoKit`
-- `ComicKit`
+- `PodcastEdit`
 - `PodcastKit`
-- `SummaryKit`
+- `AudioFile`
+- `AudioEdit`
+- `KreativSafe`
 
 ## Dateiformate (im Code belegt)
 - .jpg
 - .md
 - .mp3
+- .mp4
 - .ogg
 - .png
-- .svg
 - .tdoc
 - .txt
 - .wav

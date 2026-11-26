@@ -1,10 +1,10 @@
 # Sicherung – Testergebnisse
 
-Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `sicherung` · Stand: 0.9.36 (Stand df96c57)
+Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `sicherung` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 8 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 12 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -16,3 +16,7 @@ Bestanden 8 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | CORE-11: Sicherung – höchstens „keep“ Sicherungen, Vorschau zählt ersetzte und neue Dateien, Wiederherstellen holt den alten Stand zurück | ✓ bestanden |
 | T-0214: Jetzt sichern → Meldung; Wiederherstellen fragt nach und meldet Ergebnis | ✓ bestanden |
 | T-0299: Zeitleiste zeigt Sicherungen, Vergleich mit heute, Vorschau, Einzeldatei nach Ja zurück (Nein ändert nichts) | ✓ bestanden |
+| T-0681 Sicherung UI: gesperrte Datei → „Unvollständig“ in Meldung und Liste; beschädigte Sicherung steht als solche da und wird beim Wiederherstellen übersprungen | ✓ bestanden |
+| T-0754 Gegenprüfung 4: Studienwissen CORE-11 verspricht keine Passwortverwaltung | ✓ bestanden |
+| T-0754 UI: Sicherung zeigt deutlich „nicht verschlüsselt“, Ordner und „Ordner öffnen“; Meldung nach dem Sichern sagt es; Ampel gelb; Studio verspricht keine Passwortverwaltung | ✓ bestanden |
+| T-0764 (14.): Kind – „Sicherung wiederherstellen“ ist gesperrt (Rolle und Dateien bleiben); Erwachsene stellen wieder her | ✓ bestanden |

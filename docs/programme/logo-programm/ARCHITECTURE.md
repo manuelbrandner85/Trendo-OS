@@ -1,6 +1,6 @@
 # Logos & Marken – Architektur
 
-Studio: Logos & Marken (STUDIO-LOGO-01) · Bereich: Kreativ & Medien · Seite: `logo-programm` · Stand: 0.9.36 (Stand 9dda6f3)
+Studio: Logos & Marken (STUDIO-LOGO-01) · Bereich: Kreativ & Medien · Seite: `logo-programm` · Stand: 0.9.110 (Stand 0eb9d52)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.KreativStudios.cs`
@@ -13,24 +13,22 @@ Studio: Logos & Marken (STUDIO-LOGO-01) · Bereich: Kreativ & Medien · Seite: `
 
 ## Fach-Engine (Trendo.Core)
 - `LogoKit`
-- `ComicKit`
-- `PodcastKit`
+- `VectorKit`
 - `SummaryKit`
 
 ## Dateiformate (im Code belegt)
-- .jpg
+- .ico
 - .md
-- .mp3
-- .ogg
+- .pdf
 - .png
 - .svg
 - .tdoc
-- .txt
-- .wav
-- .xml
+- .zip
 
 ## Externe Programme und Dienste
 - FFmpeg
+- Inkscape (optional)
+- PDFsharp (MIT)
 
 ## Bausteine (Masterprompt 131 / 5)
 A Programmfenster mit Menüband und Kürzeln · B Arbeitsfläche · C Werkzeuge ändern das Dokument · D .tdoc-Projektdatei mit Autosave/Wiederherstellen · E Rückgängig/Wiederholen und Verlauf · I Prüfungen · J Startmenü, Suche, Ordner, Bedienstufen

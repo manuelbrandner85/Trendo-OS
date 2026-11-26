@@ -1,12 +1,13 @@
 # KI-Bibliothek – Testplan
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-bibliothek` · Stand: 0.9.36 (Stand df96c57)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-bibliothek` · Stand: 0.9.110 (Stand 0eb9d52)
 
-8 Tests sprechen dieses Programm an.
+9 Tests sprechen dieses Programm an.
 
-- KI-Bibliothek (UI): Vorlesen laden (Laufzeit + Stimme geprüft), ausprobieren, Ergebnis, entfernen
 - KI-Bibliothek (UI): alle Arten als Auswahl, jede Art zeigt ihre Modelle mit Lizenz und Größe
-- KI-Bibliothek: nur offizielle Server (GitHub, Hugging Face) über HTTPS
+- T-0739 ECHT: echte Modelldatei laden und per Katalog-SHA-256 prüfen; veränderte Bytes werden verworfen (nur mit TRENDO_ECHT_PRUEFSUMME)
+- T-0739 X-05: feste Katalog-Summe entscheidet – richtige Datei wird installiert, veränderte Bytes werden verworfen, Widerspruch Server/Katalog ebenso
+- T-0739 X-05: jede Hugging-Face-Datei hat eine feste SHA-256 mit Herkunft; ohne Summe steht ehrlich „ohne Prüfsumme“
 - X-05 UI: Suche findet laufende Quelle, Fragen nutzt die Rückfallkette
 - X-05: Kostenlose Internet-KIs – nur Modelle ohne jeden Preis (auch Bild-Preis), „(free)“ aus dem Namen, Beschreibung gekürzt, größter Kontext zuerst; Liste speichern, nach 24 h veraltet
 - X-05: Nur freie Quellen auf diesem Gerät, Modelle passend zur Hardware

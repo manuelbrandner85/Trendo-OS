@@ -1,16 +1,16 @@
 # Sehen – Testergebnisse
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `bedien-sehen` · Stand: 0.9.36 (Stand df96c57)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `bedien-sehen` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 19 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 18 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
 | Bedienstufen: Einfach blendet Fachwerkzeuge aus, Erweitert zeigt alle, Wechsel lässt das Dokument unverändert; Einstellung bleibt gespeichert | ✓ bestanden |
+| E9 + E10: Eine Wahl „Einfach / Erweitert / Profi“ (größere Knöpfe getrennt); Alltagswörter in der linken Leiste mit Fachwort als Hinweis | ✓ bestanden |
 | Lesbare Schrift: Knöpfe in „Sehen“; Atkinson wird gespeichert und aufs Fenster angewandt; zurück zum Standard; unbekannte Wahl ignoriert; Schriftdateien und Lizenz liegen bei | ✓ bestanden |
-| Profi-Stufe: Befehlssuche führt Befehle aus, Verlauf springt zurück, Projektdaten – falsches JSON wird abgelehnt, richtiges übernommen und rückgängig machbar | ✓ bestanden |
 | SYS-12 (UI): Bericht über alle Seiten; keine Seite tiefer als 2 Ebenen; Prüfseite hat keine unbenannten Knöpfe | ✓ bestanden |
 | SYS-12 (UI): Leise Benachrichtigung; Einstellung bleibt gespeichert; einfacher Modus zeigt weniger Kacheln | ✓ bestanden |
 | SYS-12 (UI): Mindestschrift greift; Knöpfe haben Namen und sind per Tab erreichbar; Bewegung aus = keine Übergänge | ✓ bestanden |
@@ -25,5 +25,4 @@ Bestanden 19 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | SYS-12-P25: Bericht listet Befunde je Seite | ✓ bestanden |
 | SYS-12: Anzeigegröße wird auf erlaubte Stufen begrenzt | ✓ bestanden |
 | SYS-12: Anzeigegröße „Sehr groß“ wird gespeichert; F1 zeigt die Hilfe | ✓ bestanden |
-| T-0212: Einfacher Modus vergrößert Knöpfe | ✓ bestanden |
 | T-0212: Schalter zeigt Zustand; „Status mit Zeichen“ setzt ✓ ⚠ ✕ an echte Statuspunkte | ✓ bestanden |

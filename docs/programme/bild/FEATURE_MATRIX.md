@@ -1,6 +1,6 @@
 # Bildbearbeitung – Funktionsmatrix
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `bild` · Stand: 0.9.36 (Stand df96c57)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `bild` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/spec/kataloge/CORE-08_KATALOG.md`
 
@@ -48,6 +48,7 @@ Quelle: `docs/spec/kataloge/CORE-08_KATALOG.md`
 | ME-02 | Video Ausschnitt, Clips aneinanderhängen, Vorschaubilder | Vorhanden | umgesetzt |
 
 ## Werkzeuge der Oberfläche
+- Foto öffnen (Bild)
 - ＋ Mal-Ebene (Ebene)
 - ▲ Nach oben (Ebene)
 - ▼ Nach unten (Ebene)
@@ -56,4 +57,5 @@ Quelle: `docs/spec/kataloge/CORE-08_KATALOG.md`
 - 100 % (Ansicht)
 - PNG (Exportieren)
 - JPG (Exportieren)
+- WebP (klein, fürs Web) (Exportieren)
 - SVG (Vektor) (Exportieren)

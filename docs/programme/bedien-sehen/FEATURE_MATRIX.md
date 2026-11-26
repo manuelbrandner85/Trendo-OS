@@ -1,6 +1,6 @@
 # Sehen – Funktionsmatrix
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `bedien-sehen` · Stand: 0.9.36 (Stand df96c57)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `bedien-sehen` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/spec/kataloge/SYS-12_KATALOG.md`
 
@@ -34,48 +34,30 @@ Quelle: `docs/spec/kataloge/SYS-12_KATALOG.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude
-- Darstellung & Sprache
-- Personen & Konten
-- Trendo-Updates
-- Betriebsmodus
-- Geräte & Laufwerke
-- Handy verbinden
-- Geräteverbund
-- Im Heimnetz teilen
-- Apps
-- Programme verwalten
-- Hinzufügen
-- Pflegen & Aktualisieren
-- Zusatzprogramme
-- Downloads
-- Schutz & Datenschutz
-- Freigaben
-- Sicherung
-- Selbstheilung
-- Sicher prüfen
-- Sicherheits-Werkzeuge
-- Protokoll & Abstürze
-- Speicher & Leistung
-- Leistung messen
-- Systemcheck
-- Qualitäts-Ampel
-- Bau-Fortschritt
-- Mehr ▾
+- KI ▾
+- Claude
+- kie.ai
+- settings-nav-settings
+- settings-nav-personen
+- settings-nav-updates
+- settings-nav-geraete
+- settings-nav-sicherung
+- Mehr Einstellungen (23)
+- Mehr
 - Sehen
 - Hilfen
 - Prüfen
-- Kopieren
-- Wie gestaltet
+- ✓ Einfach
+- Erweitert
+- Professionell
+- Automatisch speichern
+- ✓ Wie gestaltet
 - mindestens 12 pt
 - mindestens 14 pt
 - mindestens 16 pt
-- Standard (Inter)
+- ✓ Standard (Inter)
 - Atkinson Hyperlegible
-- Einfachen Modus einschalten
-- Einfach
-- Erweitert
-- Professionell
+- Größere Knöpfe
 - Status mit Zeichen statt nur Farbe
 - Bewegung reduzieren (keine Animationen)
 - Windows-Einstellungen öffnen

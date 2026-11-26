@@ -1,6 +1,6 @@
 # Vorhaben – Architektur
 
-Studio: Neues Projekt starten (X-11) · Bereich: Arbeiten & Büro · Seite: `vorhaben` · Stand: 0.9.36 (Stand df96c57)
+Studio: Neues Projekt starten (X-11) · Bereich: Arbeiten & Büro · Seite: `vorhaben` · Stand: 0.9.110 (Stand 0eb9d52)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.W4Suite.cs`
@@ -10,11 +10,14 @@ Studio: Neues Projekt starten (X-11) · Bereich: Arbeiten & Büro · Seite: `vor
 
 ## Fach-Engine (Trendo.Core)
 - `CreationSuite`
+- `AtomicFile`
 - `FileShelf`
+- `Panel`
 
 ## Dateiformate (im Code belegt)
 - .csv
 - .docx
+- .ics
 - .jpg
 - .json
 - .md
@@ -35,6 +38,7 @@ Studio: Neues Projekt starten (X-11) · Bereich: Arbeiten & Büro · Seite: `vor
 ## Externe Programme und Dienste
 - Blender (optional, 3D-Fotos/Render)
 - Ollama – lokale KI (optional)
+- FFmpeg
 - LibreOffice (optional)
 - mpv (optional)
 

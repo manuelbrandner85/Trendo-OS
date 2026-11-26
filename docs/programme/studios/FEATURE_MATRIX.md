@@ -1,6 +1,6 @@
 # Alle Studios – Funktionsmatrix
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `studios` · Stand: 0.9.36 (Stand df96c57)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `studios` · Stand: 0.9.110 (Stand 0eb9d52)
 
 Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 
@@ -39,42 +39,43 @@ Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 | PR-02 | Ordnername aus dem Namen (Umlaute, Nummer bei belegtem Namen), nichts außerhalb des Projekts | Vorhanden | umgesetzt |
 
 ## Werkzeuge der Oberfläche
-- ✳ Claude
-- Verstanden
-- Suchen
+- KI ▾
+- Claude
 - Alle
-- Arbeiten & Büro (5)
+- Arbeiten & Büro (13)
 - Business & Geld (3)
-- Kreativ & Medien (7)
-- 3D, Spiele & VR (5)
-- Technik & Fachgebiete (8)
+- Kreativ & Medien (13)
+- 3D & Spiele (4)
+- Technik & Fachgebiete (5)
 - Wissen & Lernen (5)
-- KI & Automatik (6)
-- Entwickeln (5)
-- System & Sicherheit (15)
-- Bereit
-- Briefe schreiben
-- Print on Demand
-- Filme machen
-- Trendo Musik
-- TV & Live
-- Konsolenspiele portieren
-- Noch nicht verfügbar
-- Desktop einrichten
-- Schrift & Farben anpassen
-- Startmodus wählen
-- Handy verbinden
-- PC, Pi & Handy verbinden
-- Leistung anzeigen
-- KI fragen
-- KI-Team einsetzen
-- Aufgaben automatisieren
-- Wissen merken
-- Projekte von GitHub holen
-- Kostenlose KI finden
-- Alle Projekte anzeigen
+- KI & Automatik (10)
+- Entwickeln (2)
+- System & Sicherheit (6)
+- studio-card-CORE-11
+- studio-card-SYS-06
+- studio-card-CORE-07
+- studio-card-X-04
+- studio-card-X-06
+- studio-card-X-10
+- studio-area-tile-arbeiten
+- studio-area-tile-business
+- studio-area-tile-kreativ
+- studio-area-tile-spiele
+- studio-area-tile-technik
+- studio-area-tile-wissen
+- studio-area-tile-ki
+- studio-area-tile-entwickeln
+- studio-area-tile-system
+- sysmod-CORE-02
+- sysmod-CORE-03
+- sysmod-SYS-05
+- sysmod-CORE-10
+- sysmod-X-06
+- sysmod-X-05
+- studios-projects-all
 - ＋ Erstes Projekt anlegen
-- Öffnen
-- Alle anzeigen
+- studios-ki-open
+- studios-devices-open
 - Raspberry Pi oder Handy verbinden …
+- studios-team-open
 - Freie Projekte auf GitHub finden

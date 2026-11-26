@@ -1,6 +1,6 @@
 # Trendo PDF – Architektur
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` · Stand: 0.9.36 (Stand df96c57)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` · Stand: 0.9.110 (Stand 0eb9d52)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Pdf.cs`
@@ -15,10 +15,11 @@ Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` �
 - `Writing`
 - `DocVersions`
 - `PdfForm`
+- `Cursor`
 - `PdfText`
 - `Speller`
 - `TaskList`
-- `TaskItem`
+- `Rbac`
 
 ## Dateiformate (im Code belegt)
 - .csv
@@ -35,6 +36,8 @@ Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` �
 - .zip
 
 ## Externe Programme und Dienste
+- Blender (optional, 3D-Fotos/Render)
+- Unreal Engine (optional)
 - LibreOffice (optional)
 - qpdf
 - Tesseract OCR
