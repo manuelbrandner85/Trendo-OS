@@ -472,8 +472,9 @@ public class T0774KiDokument_Ui
             Assert.Equal(2, w.AssistLast.Value.Steps.Count); // beide Schritte stehen im Plan – nichts fällt still heraus
             Assert.Empty(OutPdfs(root));
             Tap(w, "assist-close");
-            // unerlaubter Auswahlwert („Wasserzeichen“ statt „wasserzeichen“): fiel vorher still weg, dann lief das gerade gewählte Werkzeug („ordnen“)
-            w.KiBackendsOverride = () => [new FixedKi(_ => Plan("pdf.ausfuehren", new JsonObject { ["werkzeug"] = "Wasserzeichen" }))];
+            // unerlaubter Auswahlwert (kein Werkzeug dieses Namens): fiel vorher still weg, dann lief das gerade gewählte Werkzeug („ordnen“).
+            // Groß/klein allein ist seit der 3. Gegenprüfung kein Fehler mehr („Wasserzeichen“ → „wasserzeichen“, siehe Choice_values_ignore_case)
+            w.KiBackendsOverride = () => [new FixedKi(_ => Plan("pdf.ausfuehren", new JsonObject { ["werkzeug"] = "Zauberstab" }))];
             Assert.Equal("fehler", await Send(w, "Setz auf die PDF ein Wasserzeichen und leg sie neu ab"));
             Assert.Contains("kein erlaubter Wert", w.AssistLast!.Value.Message);
             Assert.Empty(OutPdfs(root));
@@ -483,6 +484,80 @@ public class T0774KiDokument_Ui
             Assert.Equal("fehler", await Send(w, "Schütz die PDF mit einem Passwort und leg eine Kopie ab bitte"));
             Assert.Contains("gibt es in diesem Programm nicht", w.AssistLast!.Value.Message);
             Assert.Empty(OutPdfs(root));
+        }
+        finally { MainWindow.AssistStepDelayMs = 140; w.KiBackendsOverride = null; w.PickOverride = null; w.Close(); }
+    }
+
+    // ───────────── 3. Gegenprüfung ─────────────
+
+    [AvaloniaFact(DisplayName = "T-0774 3. Gegenprüfung M-a: Regel-Plan ohne KI mit unverstandenem Teil – Hinweis „Nicht verstanden und ausgelassen“, Ausführung läuft weiter bis zur PDF")]
+    public async Task Rule_plan_with_unclear_part_still_runs()
+    {
+        var (w, _, root) = Ui.Open(); MainWindow.AssistStepDelayMs = 0;
+        try
+        {
+            w.KiBackendsOverride = () => []; // keine KI – der Regel-Planer arbeitet
+            var (d, _) = OpenScan(w, root);
+            Assert.Equal("vorschau", await Send(w, "Leg die Fotos als PDF ab und mach das schnell"));
+            Assert.Contains("Regeln", w.Find<TextBlock>("assist-source").Text);
+            Assert.Contains(w.GetLogicalTexts(), t => t.StartsWith("Nicht verstanden und ausgelassen"));
+            Assert.DoesNotContain("Die KI hat", w.AssistLast!.Value.Message);
+            Tap(w, "assist-apply"); await Until(() => w.AssistLast?.Phase is "fertig" or "fehler");
+            Assert.Equal("fertig", w.AssistLast!.Value.Phase);
+            Assert.True(File.Exists(d.Text("last")));
+        }
+        finally { MainWindow.AssistStepDelayMs = 140; w.KiBackendsOverride = null; w.PickOverride = null; w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0774 3. Gegenprüfung M-b: Auswahlwerte ohne Rücksicht auf Groß-/Kleinschreibung („Komprimieren“, „Zusammenfügen“, „Dokument“) – zugeordnet statt Abbruch")]
+    public async Task Choice_values_ignore_case()
+    {
+        var (w, _, root) = Ui.Open(); MainWindow.AssistStepDelayMs = 0;
+        var answer = "";
+        try
+        {
+            w.KiBackendsOverride = () => [new FixedKi(_ => answer)];
+            var (d, _) = OpenPw(w, root);
+            answer = Plan("pdf.ausfuehren", new JsonObject { ["werkzeug"] = "Komprimieren" });
+            Assert.Equal("vorschau", await Send(w, "Mach die PDF bitte kleiner für den Versand per Mail"));
+            Assert.Contains("komprimieren", w.AssistLast!.Value.Steps[0]);
+            Tap(w, "assist-discard"); Tap(w, "assist-close");
+            var actions = w.AssistTargetFor(Pw)!.Actions;
+            var plan = AssistChain.FromKi("x", Plan("pdf.ausfuehren", new JsonObject { ["werkzeug"] = "Zusammenfügen" }), actions);
+            Assert.Equal("zusammenfuegen", plan.Steps.Single().Args["werkzeug"]); Assert.Empty(plan.Unclear);
+            var scan = AssistChain.FromKi("x", Plan("scan.pdf", new JsonObject { ["modus"] = "Dokument" }), [.. w.AssistTargetFor(Pw)!.Actions.Take(0), new AssistAction("scan.pdf", "Fotos als PDF ablegen", ["pdf"], [new AssistParam("modus", "Modus", AssistKind.Choice, [.. DocScan.Modes.Select(m => m.Id)], Required: false)])]);
+            Assert.Equal("dokument", scan.Steps.Single().Args["modus"]);
+            var bad = AssistChain.FromKi("x", Plan("pdf.ausfuehren", new JsonObject { ["werkzeug"] = "Zaubern" }), actions);
+            Assert.Contains(bad.Unclear, u => u.Contains("kein erlaubter Wert"));
+        }
+        finally { MainWindow.AssistStepDelayMs = 140; w.KiBackendsOverride = null; w.PickOverride = null; w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0774 3. Gegenprüfung N-a/N-b: Teilen meldet jedes Teil vor dem Schreiben; scheitert der Lauf, bleibt kein leerer, selbst angelegter „-teile“-Ordner zurück")]
+    public async Task Split_parts_reported_and_empty_dirs_removed()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "trendo-t0774-teile-" + Guid.NewGuid().ToString("N")[..8]); Directory.CreateDirectory(dir);
+        try
+        {
+            var src = PdfWerkstatt_Ui.TextPdf(Path.Combine(dir, "ab.pdf"), "1", "2", "3", "4");
+            var seen = new List<(string F, bool Existed)>();
+            var parts = PdfTools.SplitRanges(src, Path.Combine(dir, "teile"), "1-2; 3-z", created: f => seen.Add((f, File.Exists(f))));
+            Assert.Equal(parts, seen.Select(x => x.F)); Assert.All(seen, x => Assert.False(x.Existed));
+            seen.Clear();
+            Assert.Equal(PdfTools.Split(src, Path.Combine(dir, "je1"), 1, created: f => seen.Add((f, File.Exists(f)))), seen.Select(x => x.F));
+        }
+        finally { try { Directory.Delete(dir, true); } catch (IOException) { } }
+
+        var (w, _, root) = Ui.Open(); MainWindow.AssistStepDelayMs = 0;
+        try
+        {
+            w.KiBackendsOverride = () => [new FixedKi(_ => Plan("pdf.seiten_heraus", new JsonObject { ["seiten"] = "1-3" }))];
+            var (d, pdf) = OpenPw(w, root);
+            Assert.Equal("vorschau", await Send(w, "Zieh aus der PDF die Seiten 1 bis 3 als neue Datei heraus"));
+            File.WriteAllText(pdf, "kaputt"); // nach der Vorschau beschädigt – der „-teile“-Ordner entsteht, dann scheitert das Lesen
+            Tap(w, "assist-apply"); await Until(() => w.AssistLast?.Phase is "fertig" or "fehler");
+            Assert.Equal("fehler", w.AssistLast!.Value.Phase);
+            Assert.Empty(Directory.GetDirectories(root, "*-teile", SearchOption.AllDirectories));
         }
         finally { MainWindow.AssistStepDelayMs = 140; w.KiBackendsOverride = null; w.PickOverride = null; w.Close(); }
     }

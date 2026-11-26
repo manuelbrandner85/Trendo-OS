@@ -290,8 +290,12 @@ public static partial class AssistPlanner
                 }
                 else if (st["args"] is JsonObject ao)
                     foreach (var p in a.Parameters)
-                        if (p.Kind == AssistKind.Choice && ao[p.Name] is JsonValue cv && cv.ToString() is { Length: > 0 } bad && !(p.Options ?? []).Contains(bad))
-                            plan.Unclear.Add($"{a.Label}: „{bad}“ ist kein erlaubter Wert für „{p.Label}“");
+                        if (p.Kind == AssistKind.Choice && ao[p.Name] is JsonValue cv && cv.ToString() is { Length: > 0 } raw && !(p.Options ?? []).Contains(raw))
+                        {
+                            // 3. Gegenprüfung M-b: „Komprimieren“, „Dokument“, „Zusammenfügen“ sind die erlaubten Werte – erst ohne Treffer ablehnen
+                            if ((p.Options ?? []).FirstOrDefault(o => Norm(o) == Norm(raw)) is { } hit) args[p.Name] = hit;
+                            else plan.Unclear.Add($"{a.Label}: „{raw}“ ist kein erlaubter Wert für „{p.Label}“");
+                        }
                         else if (ao[p.Name] is JsonValue jv && jv.ToString() is { Length: > 0 and < 2000 } v && (p.Kind != AssistKind.Choice || (p.Options ?? []).Contains(v)) && (p.Kind != AssistKind.Number || double.TryParse(v, NumberStyles.Float, CultureInfo.InvariantCulture, out _)))
                             args[p.Name] = p.Kind == AssistKind.YesNo ? (v is "ja" or "true" or "Ja" ? "ja" : "nein") : v;
                 plan.Steps.Add(new AssistStep(a, args, []));

@@ -2,6 +2,17 @@
 
 **Auftrag:** `tasks/T-0774-ki-dokument.md` (Freigabe 26.11.2026, Etappe 0.9.112) · **Branch:** `claude/T-0774-ki-dokument` (Basis main 0.9.111 = 2b1ffa923) · eigene Kopie in `%TEMP%\trendo-auftrag-T-0774`.
 
+## 3. Nachbesserung (dritte Gegenprüfung: freigabefähig, zwei Rückschritte in der Bedienung)
+| Nr. | Befund | Behebung | Test (rot auf 4269aefdc → grün) |
+|---|---|---|---|
+| M-a | Abbruch bei „Nicht verstanden“ griff auch beim Regel-Planer ohne KI, Meldung sagte „Die KI hat …“ | Abbruch nur bei KI-Plänen (`Plan.Source` beginnt mit „KI“); Regel-Pläne behalten den Hinweis „Nicht verstanden und ausgelassen“ und laufen weiter | `Rule_plan_with_unclear_part_still_runs` („Leg die Fotos als PDF ab und mach das schnell“ → PDF entsteht) |
+| M-b | Auswahlwerte mit Groß-/Kleinschreibung verglichen („Komprimieren“, „Dokument“ brachen ab) | `AssistPlanner.FromKi`: Zuordnung über `Norm` (Groß/klein, Umlaute: „Zusammenfügen“ → „zusammenfuegen“), Ablehnung erst ohne Treffer | `Choice_values_ignore_case` |
+| N-a | Teile beim Teilen erst nach dem Schreiben gemeldet | `PdfTools.SplitRanges`/`Split` mit optionalem `created`, Meldung vor jedem Schreiben | `Split_parts_reported_and_empty_dirs_removed` (Teil 1) |
+| N-b | Leere Ordner blieben nach dem Rücknehmen | Die Werkstatt meldet auch Ordner, die der Lauf neu anlegt (`PwNewDir`); bei Fehler werden davon nur die leeren entfernt (nicht rekursiv) | `Split_parts_reported_and_empty_dirs_removed` (Teil 2: kein leerer „-teile“-Ordner) |
+
+Rot-Lauf: `reports/T-0774/rot-gegenpruefung-3.txt` – 3 von 19 rot (N-a dort herausgenommen, übersetzt nicht auf altem Code). Endstand: 18 bestanden, 1 übersprungen, zweimal. Ein Testfall aus N2 nutzt jetzt „Zauberstab“ statt „Wasserzeichen“, weil Groß/klein allein seit M-b kein Fehler mehr ist.
+Neu berührt: `src/Trendo.Core/Sys/PdfWerkstatt.cs`, `src/Trendo.Core/Sys/PdfTools.cs`.
+
 ## 2. Nachbesserung (zweite Gegenprüfung)
 | Nr. | Befund | Behebung | Test (rot auf 1703134a3 → grün) |
 |---|---|---|---|
@@ -81,7 +92,7 @@ Neue Testklasse auf dem alten Stand (2b1ffa923, eigener Worktree, danach entfern
 - `src/Trendo.App/MainWindow.PdfWerkstatt.cs` (pdf.seiten_heraus, pdf.ausfuehren, PwPageSpec)
 - `src/Trendo.App/MainWindow.DocScan.cs` (scan.pdf, Knopf umbenannt)
 - `tests/Trendo.App.Tests/T0774KiDokumentUiTests.cs` (neu)
-- `src/Trendo.Core/Programs/ProgramDocument.cs`, `src/Trendo.Core/Programs/Assist.cs`, `src/Trendo.Core/Programs/AssistChain.cs`, `.gitattributes` (Nachbesserungen)
+- `src/Trendo.Core/Programs/ProgramDocument.cs`, `src/Trendo.Core/Programs/Assist.cs`, `src/Trendo.Core/Programs/AssistChain.cs`, `src/Trendo.Core/Sys/PdfWerkstatt.cs`, `src/Trendo.Core/Sys/PdfTools.cs`, `.gitattributes` (Nachbesserungen)
 - `docs/nachbau/pdf-werkstatt/anforderungen.md` (PW-14), `docs/nachbau/scannen/anforderungen.md` (SC-12, SC-15)
 - `reports/T-0774/*`, `tasks/T-0774-ki-dokument.md`, `tasks/T-0774-ki-dokument.bericht.md`
 

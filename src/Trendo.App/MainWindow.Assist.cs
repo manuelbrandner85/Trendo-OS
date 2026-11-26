@@ -122,6 +122,9 @@ public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocumen
             {
                 doc.Rollback(mark); // nichts halb übernehmen …
                 foreach (var f in mine) if (File.Exists(f)) setAside?.Invoke(f); // … und die eigenen, schon geschriebenen Dateien beiseitelegen (nicht löschen)
+                // 3. Gegenprüfung N-b: Ordner, die dieser Lauf selbst angelegt hat und die jetzt leer sind, wieder entfernen (nur leere, nie rekursiv)
+                foreach (var dir in mine.Where(Directory.Exists).OrderByDescending(x => x.Length))
+                    try { if (!Directory.EnumerateFileSystemEntries(dir).Any()) Directory.Delete(dir); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
                 throw;
             }
             finally { MainWindow.AssistQuiet--; }
@@ -242,7 +245,8 @@ public partial class MainWindow
         if (r.Plan.Steps.Count == 0) { r.Phase = "verworfen"; r.Message = "Nichts mehr zu tun."; AssistRender(r, host); return; }
         // T-0774 (2. Gegenprüfung N2): Bei Programmen mit Fachaktion (neue Datei) läuft ein Plan mit ausgelassenen oder unerlaubten Teilen gar nicht erst –
         // sonst entstünde z. B. eine Datei mit dem falschen Werkzeug, weil das genannte still weggefallen ist
-        if (r.Plan.Unclear.Count > 0 && r.Target is ProgramAssistTarget { HasKiActions: true })
+        // 3. Gegenprüfung M-a: nur KI-Pläne – beim Regel-Planer (ohne KI) bleibt „Nicht verstanden und ausgelassen“ ein Hinweis, die Ausführung läuft weiter
+        if (r.Plan.Unclear.Count > 0 && r.Plan.Source.StartsWith("KI", StringComparison.Ordinal) && r.Target is ProgramAssistTarget { HasKiActions: true })
         {
             r.Phase = "fehler"; r.Message = "Die KI hat etwas geplant, das es hier so nicht gibt: " + string.Join(" · ", r.Plan.Unclear) + ". Es wurde nichts ausgeführt – bitte den Auftrag genauer formulieren.";
             _core.Audit.Append(Principal.LocalOwner.Name, "assist.ki.unklar", $"{r.Target.Key} {r.Plan.Unclear.Count}");

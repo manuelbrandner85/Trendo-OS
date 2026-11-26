@@ -182,7 +182,9 @@ public partial class MainWindow
     static List<string> PwFiles(ProgramDocument d) => [.. d.List("files").Select(n => n.AsText()).OfType<string>()];
     static string PwToolName(ProgramDocument d) => PwTools.FirstOrDefault(t => t.Id == d.Text("tool")).Name ?? "Zusammenfügen";
     static bool PwIsImage(string f) => Path.GetExtension(f).ToLowerInvariant() is ".png" or ".jpg" or ".jpeg";
-    string PwOutDir() { var d = Path.Combine(WorkFolder("PDF-Werkstatt"), "Ergebnisse"); Directory.CreateDirectory(d); return d; }
+    string PwOutDir() => PwNewDir(Path.Combine(WorkFolder("PDF-Werkstatt"), "Ergebnisse"));
+    /// <summary>Ordner anlegen; legt ihn dieser KI-Lauf neu an, bekommt <see cref="_pwCreated"/> Bescheid (leer gebliebene Ordner werden bei einem Fehler wieder entfernt).</summary>
+    string PwNewDir(string d) { var isNew = !Directory.Exists(d); Directory.CreateDirectory(d); if (isNew) _pwCreated?.Invoke(d); return d; }
     string PwOut(string stem, string suffix, string ext = ".pdf") { var p = PdfTools.Free(Path.Combine(PwOutDir(), DevStudio.SafeName(stem) + suffix + ext)); _pwCreated?.Invoke(p); return p; }
 
     void PwSetTool(ProgramDocument d, string id)
@@ -370,7 +372,7 @@ public partial class MainWindow
         switch (tool)
         {
             case "teilen":
-                var parts = d.Text("splitMode") == "alle" ? PdfTools.Split(f, PwSplitDir(stem), PwInt(d, "every", 1, 1, 10000), _core.Audit) : PdfTools.SplitRanges(f, PwSplitDir(stem), d.Text("ranges", "1-z"), _core.Audit);
+                var parts = d.Text("splitMode") == "alle" ? PdfTools.Split(f, PwSplitDir(stem), PwInt(d, "every", 1, 1, 10000), _core.Audit, _pwCreated) : PdfTools.SplitRanges(f, PwSplitDir(stem), d.Text("ranges", "1-z"), _core.Audit, _pwCreated);
                 res.AddRange(parts.Select(p => (p, $"Teil von {Path.GetFileName(f)}")));
                 break;
             case "komprimieren":
@@ -413,7 +415,7 @@ public partial class MainWindow
         return res;
     }
 
-    string PwSplitDir(string stem) { var dir = Path.Combine(PwOutDir(), DevStudio.SafeName(stem) + "-teile"); Directory.CreateDirectory(dir); return dir; }
+    string PwSplitDir(string stem) => PwNewDir(Path.Combine(PwOutDir(), DevStudio.SafeName(stem) + "-teile"));
 
     /// <summary>Export „Ergebnis als PDF“: Werkzeug ausführen und das (eine) Ergebnis an den gewählten Ort kopieren.</summary>
     string PwRunTo(ProgramDocument d, string target)

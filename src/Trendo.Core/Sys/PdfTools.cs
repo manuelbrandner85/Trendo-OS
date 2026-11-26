@@ -133,7 +133,8 @@ public static partial class PdfTools
     }
 
     /// <summary>In Dateien zu je <paramref name="every"/> Seiten teilen (qpdf --split-pages=n). Ergebnis: name-01.pdf, name-02.pdf …</summary>
-    public static List<string> Split(string input, string outDir, int every = 1, AuditLog? audit = null)
+    /// <param name="created">T-0774: bekommt jede neue Datei vor dem Schreiben.</param>
+    public static List<string> Split(string input, string outDir, int every = 1, AuditLog? audit = null, Action<string>? created = null)
     {
         if (every < 1) throw new ArgumentException("Mindestens eine Seite je Datei.");
         Directory.CreateDirectory(outDir);
@@ -147,7 +148,7 @@ public static partial class PdfTools
             using var t = new PdfDocument();
             for (var i = k * every; i < Math.Min(src.PageCount, (k + 1) * every); i++) t.AddPage(src.Pages[i]);
             var f = Path.Combine(outDir, $"{stem}-{(k + 1).ToString(CultureInfo.InvariantCulture).PadLeft(digits, '0')}.pdf");
-            Guard(f, input); Save(t, f); files.Add(f);
+            Guard(f, input); created?.Invoke(f); Save(t, f); files.Add(f);
         }
         audit?.Append("app", "pdf.split", $"{Path.GetFileName(input)} → {files.Count} Dateien");
         return files;
