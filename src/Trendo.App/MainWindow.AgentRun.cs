@@ -25,7 +25,14 @@ public partial class MainWindow
         IReadOnlyList<IKiBackend> All() => KiBackendsOverride?.Invoke() ?? DefaultKiBackends();
         return model == "claude"
             ? new IntelligenceCore(_core.DataRoot, _core.Audit, () => All().Where(b => b is IMainKiBackend).ToList())
-            : new IntelligenceCore(_core.DataRoot, _core.Audit, () => All().Where(b => b is not IRemoteKiBackend).ToList()) { LocalFallbacks = KiFallbacks, LocalModelFailed = KiModelFailed };
+            : new IntelligenceCore(_core.DataRoot, _core.Audit, () => All().Where(b => b is not IRemoteKiBackend && IsLoopbackKi(b)).ToList()) { LocalFallbacks = KiFallbacks, LocalModelFailed = KiModelFailed };
+    }
+
+    /// <summary>T-0782 (Gegenprüfung N4): „auf diesem PC“ heißt Loopback-Adresse – eine Quelle mit entfernter Adresse gilt nicht als lokal.</summary>
+    public static bool IsLoopbackKi(IKiBackend b)
+    {
+        if (!Uri.TryCreate(b.BaseUrl, UriKind.Absolute, out var u)) return false;
+        return u.IsLoopback || u.Host is "localhost" or "127.0.0.1" or "[::1]" or "::1";
     }
 
     /// <summary>Dienste für Agenten-Werkzeuge. <paramref name="page"/>: Seite, die live neu gezeichnet wird; null = Lauf ohne Person (Ablauf) – dann gibt es keine Zustimmung.</summary>

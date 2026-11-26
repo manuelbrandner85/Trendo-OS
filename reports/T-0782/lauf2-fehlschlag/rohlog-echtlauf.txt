@@ -1,0 +1,13 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0782 ECHT: lokale KI (Ollama) – Nachhilfe „Übung erzeugen“ und Programmieren „Hinweis geben“ im offenen Dokument, Rückgängig; Code-Tests echt (nur mit TRENDO_T0782_ECHT) [FAIL]
+      „Inhalt im Dokument ändern – Stelle: themen, Neuer Inhalt: {"m-kuerzen":{"einfach":{"12/18":{"frage":"Was ist 12/18?","antwort":"12/18 ist eine Kugel von 12 cm in die H\u00F6he von 18 cm, also 12/18 ist 1/1, 1, 2, 1, 3, 1, 4, 1, 5, 1, 6, 1, 7, 1, 8, 1, 9, 1, 10, 1, 11, 1, 12."},"kuerzen":{"frage":"Mit welchem Bruch kann man 12/18 k\u00FCrzen?","antwort":"Mit 12/18 kann man 12/18 nicht k\u00FCrzen, da es eine ganze Zahl ist."}}}}“ hat nicht geklappt: „themen“ legst du selbst fest – die KI ändert das nicht. | {"steps":[{"action":"dokument.setzen","args":{"pfad":"themen","wert":{"m-kuerzen":{"einfach":{"12/18":{"frage":"Was ist 12/18?","antwort":"12/18 ist eine Kugel von 12 cm in die Höhe von 18 cm, also 12/18 ist 1/1, 1, 2, 1, 3, 1, 4, 1, 5, 1, 6, 1, 7, 1, 8, 1, 9, 1, 10, 1, 11, 1, 12."},"kuerzen":{"frage":"Mit welchem Bruch kann man 12/18 kürzen?","antwort":"Mit 12/18 kann man 12/18 nicht kürzen, da es eine ganze Zahl ist."}}}}]}
+      Stack Trace:
+        tests\Trendo.App.Tests\T0782LernenUiTests.cs(354,0): at Trendo.App.Tests.T0782Lernen_Ui.Real_local_ki()
+        --- End of stack trace from previous location ---
+  Finished:    Trendo.App.Tests (ID = 'f6d0891a28c15250435b1b4f8281571aec646f47e954b6d2d82cf32837030490')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 1, Skipped: 0, Not Run: 0, Time: 624,100s
+exit=1

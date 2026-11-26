@@ -1,0 +1,51 @@
+# T-0782 Gegenprüfung – Rot-Lauf App (Rückbau der Korrekturen H1, M2, M6-KI-Sicht, N4, App-Profil gleichzeitig; danach git checkout)
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    App-Profil: Deinstallation entfernt das Profil (hier ein eigenes Test-Profil); eine Prüf-Instanz lässt es stehen [FAIL]
+      Assert.False() Failure
+      Expected: False
+      Actual:   True
+      Stack Trace:
+        tests\Trendo.App.Tests\T0782GegenpruefungUiTests.cs(188,0): at Trendo.App.Tests.T0782Gegenpruefung_Ui.Uninstall_removes_profile()
+    H1: Kinderprofil – „Programmieren lernen“ geht auch mit „Claude ohne Klicks“ nie an Claude (Route Dokument, Studio-Leiste lehnt ab) [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: Dokument
+      Actual:   ClaudeBereich
+      Stack Trace:
+        tests\Trendo.App.Tests\T0782GegenpruefungUiTests.cs(104,0): at Trendo.App.Tests.T0782Gegenpruefung_Ui.H1_child_codelearn_never_claude()
+        --- End of stack trace from previous location ---
+    M2: Programmausgabe und Testmeldungen gehen weder über die KI-Kette noch über „Hinweis von der KI“ an eine nicht lokale KI; Hinweis in der App nennt Grenzen und App-Profil [FAIL]
+      Assert.DoesNotContain() Failure: Sub-string found
+                                           ↓ (pos 1435)
+      String: ···"mt":1,"meldung":"MELDUNG-GEHEIM-3","tests":[{"name"···
+      Found:  "GEHEIM"
+      Stack Trace:
+        tests\Trendo.App.Tests\T0782GegenpruefungUiTests.cs(150,0): at Trendo.App.Tests.T0782Gegenpruefung_Ui.M2_no_output_to_claude()
+        --- End of stack trace from previous location ---
+    N4: eine „lokale“ Quelle mit entfernter Adresse wird in der Nachhilfe nie gefragt [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: 0
+      Actual:   1
+      Stack Trace:
+        tests\Trendo.App.Tests\T0782GegenpruefungUiTests.cs(170,0): at Trendo.App.Tests.T0782Gegenpruefung_Ui.N4_remote_url_not_local()
+        --- End of stack trace from previous location ---
+    M6: die KI-Kette der Nachhilfe sieht die Frage, aber keine Antwort, keinen Lösungsweg und keinen Hinweis [FAIL]
+      Assert.DoesNotContain() Failure: Sub-string found
+                                           ↓ (pos 1569)
+      String: ···" gemeint?","antworten":["Zebrafink"],"erklaerung":"···
+      Found:  "Zebrafink"
+      Stack Trace:
+        tests\Trendo.App.Tests\T0782GegenpruefungUiTests.cs(128,0): at Trendo.App.Tests.T0782Gegenpruefung_Ui.M6_ki_chain_sees_no_answer()
+        --- End of stack trace from previous location ---
+    H1: „Claude ohne Klicks“ und Claude angemeldet – Nachhilfe bleibt lokal (Auftragszeile, Menüband-Weg, Studio-Leiste): 0 Claude-Aufrufe; Gegenprobe: ein anderes Programm geht an Claude [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: Dokument
+      Actual:   ClaudeBereich
+      Stack Trace:
+        tests\Trendo.App.Tests\T0782GegenpruefungUiTests.cs(77,0): at Trendo.App.Tests.T0782Gegenpruefung_Ui.H1_tutor_never_claude()
+        --- End of stack trace from previous location ---
+  Finished:    Trendo.App.Tests (ID = 'f6d0891a28c15250435b1b4f8281571aec646f47e954b6d2d82cf32837030490')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 6, Errors: 0, Failed: 6, Skipped: 0, Not Run: 0, Time: 8,500s

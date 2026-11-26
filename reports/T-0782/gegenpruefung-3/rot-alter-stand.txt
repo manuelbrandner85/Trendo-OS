@@ -1,0 +1,11 @@
+# T-0782 3. Gegenprüfung – Rot-Lauf auf dem alten Stand 660a6a444 (Gleichungen und Brüche; der Werte-Test braucht die neue Schnittstelle)
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-t0782-alt3\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:12.01]     M6 (3.): alle 200 Gleichungen aus dem Erzeuger – „x = <Lösung>“ und „Die Lösung ist <Lösung>“ werden verdeckt, die Aufgabe selbst bleibt sichtbar [FAIL]
+  Fehler M6 (3.): alle 200 Gleichungen aus dem Erzeuger – „x = <Lösung>“ und „Die Lösung ist <Lösung>“ werden verdeckt, die Aufgabe selbst bleibt sichtbar [91 ms]
+  Fehlermeldung:
+   nicht verdeckt: Löse nach x auf: 4x + 7 = 35 → x = 7
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0782_Gegenpruefung3.Equations_hidden() in C:\Users\<user>\AppData\Local\Temp\trendo-t0782-alt3\tests\Trendo.Core.Tests\T0782Gegenpruefung3Tests.cs:line 29
+
+Fehler!      : Fehler:     1, erfolgreich:     1, übersprungen:     0, gesamt:     2, Dauer: 6 s - Trendo.Core.Tests.dll (net10.0)

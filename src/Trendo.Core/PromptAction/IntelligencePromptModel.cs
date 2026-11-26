@@ -51,6 +51,7 @@ public static class PromptActions
             new ReferatGliederungAdapter(), new ZeitleisteZeilenAdapter(), // T-0780
             new MatheLoesungAdapter(), new NaturRechnungAdapter(), // T-0781 Wissen & Lernen
             new QuizAnlegenAdapter(), new KursGliederungAdapter(), // T-0779
+            new TutorSheetAdapter(), new CodeLearnTaskAdapter(), // T-0782
             ..SystemActions.Create()
         ];
 }

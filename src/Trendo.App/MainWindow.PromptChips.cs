@@ -60,6 +60,8 @@ public partial class MainWindow
         ["STUDIO-SCIENCE-01"] = ["Molmasse von Glucose", "Gleiche Fe + O2 -> Fe2O3 aus", "Wie lange fällt ein Stein aus 20 m Höhe?"],
         ["STUDIO-QUIZ-01"] = ["Mach 5 Fragen aus dem Text", "Lückentext zum Kapitel", "Quiz für die Klasse mit Zeit"], // T-0779
         ["STUDIO-COURSE-01"] = ["Schreib eine Lektion zum Thema", "Kurs in drei Kapiteln gliedern", "Quiz am Ende jeder Lektion"], // T-0779
+        ["STUDIO-TUTOR-01"] = ["Gib mir eine Übung zu diesem Thema", "Erklär mir das mit einem Beispiel", "Was soll ich heute wiederholen?"],
+        ["STUDIO-CODELEARN-01"] = ["Warum schlägt mein Test fehl?", "Gib mir einen kleinen Hinweis", "Was bedeutet diese Fehlermeldung?"],
     };
 
     /// <summary>Chips für ein Studio (leer = keine Vorschläge hinterlegt).</summary>

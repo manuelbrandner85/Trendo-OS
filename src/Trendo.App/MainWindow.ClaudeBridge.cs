@@ -58,9 +58,21 @@ public partial class MainWindow
     /// <summary>Werkzeuge für Tests ohne Netz.</summary>
     public TrendoMcp ClaudeBridgeForTest(string folder, string? page = null, string? chatId = null) => new(BridgeTools(new BridgeRun { Folder = folder, Page = page ?? CurrentView, ChatId = chatId }));
 
+    /// <summary>T-0782 (2. Gegenprüfung H1b): Programme, die nur die KI auf diesem PC fragen dürfen (Nachhilfe, Kinderprofil), sind für Claude gesperrt –
+    /// jedes Werkzeug außer der Programmliste wird abgelehnt, wenn das Ziel oder die offene Seite so ein Programm ist. Eine einzige Prüfung vor der Verteilung.</summary>
+    McpResult? BridgeLocalOnlyRefusal(BridgeRun run, string tool, JsonObject a)
+    {
+        if (tool == "programme") return null;
+        var target = a["programm"].AsText();
+        var why = tool == "programm_oeffnen" ? (AssistLocalOnly(target) ? LocalOnlyRefusal(target) : null) : LocalOnlyRefusal(target) ?? LocalOnlyRefusal(run.Page);
+        if (why is null) return null;
+        _core.Audit.Append(Principal.LocalOwner.Name, "claude.bruecke.lokal", $"{tool} {target ?? run.Page ?? CurrentView}");
+        return McpResult.Fail(why);
+    }
+
     IReadOnlyList<McpTool> BridgeTools(BridgeRun run)
     {
-        McpTool T(string name, string text, JsonObject schema, Func<JsonObject, Task<McpResult>> body) => new(name, text, schema, a => BridgeUi(run, name, body, a));
+        McpTool T(string name, string text, JsonObject schema, Func<JsonObject, Task<McpResult>> body) => new(name, text, schema, a => BridgeLocalOnlyRefusal(run, name, a) is { } no ? Task.FromResult(no) : BridgeUi(run, name, body, a));
         McpTool S(string name, string text, JsonObject schema, Func<JsonObject, McpResult> body) => T(name, text, schema, a => Task.FromResult(body(a)));
         var programArg = ("programm", "string", "Kennung des Programms; ohne Angabe das zuletzt benutzte", false);
         return

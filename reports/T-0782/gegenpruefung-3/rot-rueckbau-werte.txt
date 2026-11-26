@@ -1,0 +1,27 @@
+# T-0782 3. Gegenprüfung – Rot-Lauf Rückbau der Werte-Prüfung (KiWertProblem liefert immer null; danach git checkout)
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0782\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:12.47]     M6 (3.): Positivliste prüft Werte – „thema“ nur gültige Kennungen, „fach“ nur bekannte Fächer, „klasse“ 1–13 [FAIL]
+  Fehler M6 (3.): Positivliste prüft Werte – „thema“ nur gültige Kennungen, „fach“ nur bekannte Fächer, „klasse“ 1–13 [3 ms]
+  Fehlermeldung:
+   Assert.NotNull() Failure: Value is null
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0782_Gegenpruefung3.Allowed_values() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0782\tests\Trendo.Core.Tests\T0782Gegenpruefung3Tests.cs:line 53
+
+Fehler!      : Fehler:     1, erfolgreich:     0, übersprungen:     0, gesamt:     1, Dauer: 3 ms - Trendo.Core.Tests.dll (net10.0)
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    M6 (3.): KI setzt „thema“ auf freien Text → abgelehnt, Dokument unverändert; gültige Kennung → Vorschau [FAIL]
+      Assert.Equal() Failure: Strings differ
+                 ↓ (pos 0)
+      Expected: "fehler"
+      Actual:   "vorschau"
+                 ↑ (pos 0)
+      Stack Trace:
+        tests\Trendo.App.Tests\T0782Gegenpruefung3UiTests.cs(44,0): at Trendo.App.Tests.T0782Gegenpruefung3_Ui.Thema_only_valid_ids()
+        --- End of stack trace from previous location ---
+  Finished:    Trendo.App.Tests (ID = 'f6d0891a28c15250435b1b4f8281571aec646f47e954b6d2d82cf32837030490')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 1, Skipped: 0, Not Run: 0, Time: 5,270s

@@ -1,0 +1,88 @@
+# T-0782 Fremdprogramm LibreOffice – 2026-11-26 15:34
+Programm: Kopie des Trendo-Werkzeugordners (LibreOffice portable) im eigenen Temp-Ordner, eigenes Profil (-env:UserInstallation).
+## arbeitsblatt-brueche.odt → txt
+Could not find platform independent libraries <prefix>
+convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0782\reports\T-0782\fremd\arbeitsblatt-brueche.odt as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0782\reports\T-0782\fremd\libreoffice-ausgabe\odt\arbeitsblatt-brueche.txt using filter : Text (encoded):UTF8
+exit=0
+## arbeitsblatt-brueche.docx → txt
+Could not find platform independent libraries <prefix>
+convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0782\reports\T-0782\fremd\arbeitsblatt-brueche.docx as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0782\reports\T-0782\fremd\libreoffice-ausgabe\docx\arbeitsblatt-brueche.txt using filter : Text (encoded):UTF8
+exit=0
+## eigene-uebungen.csv → xlsx (Semikolon, UTF-8) → csv
+convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0782\reports\T-0782\fremd\eigene-uebungen.csv as a Calc document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0782\reports\T-0782\fremd\libreoffice-ausgabe\eigene-uebungen.xlsx using filter : Calc Office Open XML
+exit=0
+convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0782\reports\T-0782\fremd\libreoffice-ausgabe\eigene-uebungen.xlsx as a Calc document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0782\reports\T-0782\fremd\libreoffice-ausgabe\rueck\eigene-uebungen.csv using filter : Text - txt - csv (StarCalc):9,34,76,1
+exit=0
+## Inhalte (von LibreOffice gelesen)
+### arbeitsblatt-brueche.txt
+﻿Arbeitsblatt: Brüche kürzen
+Mathe · Klasse 6 · Name: ____________________ · Datum: ____________
+Kürzen heißt: Zähler und Nenner durch dieselbe Zahl teilen. Der Wert bleibt gleich, die Zahlen werden kleiner.
+Aufgaben
+1. Kürze 12/18 so weit wie möglich.
+Antwort: ______________________________
+2. Kürze so weit wie möglich: 28/36 = ?
+Antwort: ______________________________
+3. Kürze so weit wie möglich: 6/10 = ?
+Antwort: ______________________________
+4. Kürze so weit wie möglich: 5/25 = ?
+Antwort: ______________________________
+5. Kürze so weit wie möglich: 6/9 = ?
+Antwort: ______________________________
+6. Kürze so weit wie möglich: 4/6 = ?
+Antwort: ______________________________
+7. Kürze so weit wie möglich: 20/48 = ?
+Antwort: ______________________________
+8. Kürze so weit wie möglich: 8/20 = ?
+Antwort: ______________________________
+Lösungen
+1. 2/3 – 12 und 18 sind durch 6 teilbar: 2/3.
+2. 7/9 – 28 und 36 sind beide durch 4 teilbar: 28:4 = 7, 36:4 = 9. Ergebnis 7/9.
+3. 3/5 – 6 und 10 sind beide durch 2 teilbar: 6:2 = 3, 10:2 = 5. Ergebnis 3/5.
+4. 1/5 – 5 und 25 sind beide durch 5 teilbar: 5:5 = 1, 25:5 = 5. Ergebnis 1/5.
+5. 2/3 – 6 und 9 sind beide durch 3 teilbar: 6:3 = 2, 9:3 = 3. Ergebnis 2/3.
+6. 2/3 – 4 und 6 sind beide durch 2 teilbar: 4:2 = 2, 6:2 = 3. Ergebnis 2/3.
+7. 5/12 – 20 und 48 sind beide durch 4 teilbar: 20:4 = 5, 48:4 = 12. Ergebnis 5/12.
+8. 2/5 – 8 und 20 sind beide durch 4 teilbar: 8:4 = 2, 20:4 = 5. Ergebnis 2/5.
+### arbeitsblatt-brueche.txt
+﻿Arbeitsblatt: Brüche kürzen
+Mathe · Klasse 6 · Name: ____________________ · Datum: ____________
+Kürzen heißt: Zähler und Nenner durch dieselbe Zahl teilen. Der Wert bleibt gleich, die Zahlen werden kleiner.
+Aufgaben
+1. Kürze 12/18 so weit wie möglich.
+Antwort: ______________________________
+2. Kürze so weit wie möglich: 28/36 = ?
+Antwort: ______________________________
+3. Kürze so weit wie möglich: 6/10 = ?
+Antwort: ______________________________
+4. Kürze so weit wie möglich: 5/25 = ?
+Antwort: ______________________________
+5. Kürze so weit wie möglich: 6/9 = ?
+Antwort: ______________________________
+6. Kürze so weit wie möglich: 4/6 = ?
+Antwort: ______________________________
+7. Kürze so weit wie möglich: 20/48 = ?
+Antwort: ______________________________
+8. Kürze so weit wie möglich: 8/20 = ?
+Antwort: ______________________________
+Lösungen
+1. 2/3 – 12 und 18 sind durch 6 teilbar: 2/3.
+2. 7/9 – 28 und 36 sind beide durch 4 teilbar: 28:4 = 7, 36:4 = 9. Ergebnis 7/9.
+3. 3/5 – 6 und 10 sind beide durch 2 teilbar: 6:2 = 3, 10:2 = 5. Ergebnis 3/5.
+4. 1/5 – 5 und 25 sind beide durch 5 teilbar: 5:5 = 1, 25:5 = 5. Ergebnis 1/5.
+5. 2/3 – 6 und 9 sind beide durch 3 teilbar: 6:3 = 2, 9:3 = 3. Ergebnis 2/3.
+6. 2/3 – 4 und 6 sind beide durch 2 teilbar: 4:2 = 2, 6:2 = 3. Ergebnis 2/3.
+7. 5/12 – 20 und 48 sind beide durch 4 teilbar: 20:4 = 5, 48:4 = 12. Ergebnis 5/12.
+8. 2/5 – 8 und 20 sind beide durch 4 teilbar: 8:4 = 2, 20:4 = 5. Ergebnis 2/5.
+### eigene-uebungen.csv
+"Thema"	"Frage"	"Antwort"	"Erklärung"	"Hinweis 1"	"Hinweis 2"
+"Brüche kürzen"	"Kürze 12/18 so weit wie möglich."	"2/3"	"12 und 18 sind durch 6 teilbar: 2/3."	"Welche Zahl teilt 12 und 18?"	
+## SHA-256
+8f6aefdc604d78196142b81560f956a9241b69d5e9e3dc79fe97126ce35e1236 *arbeitsblatt-brueche.odt
+952cfbe81c567048d6ab324c4645cf5c920736363105e7696b3d63a1aa1564d7 *arbeitsblatt-brueche.docx
+d3511ff1c8fa2106012480dfcf76664f04f906c2c15dce7e7f594ae1c6362d95 *eigene-uebungen.csv
+20b7bb608376e6bf8978116f48de9b4e995b17457879589e810760b88966a41b *begruessung.py
+6f97b61e8c22717cf236099b61a53e3384279ac91f4bb5b00067b2e307dca3a2 *libreoffice-ausgabe/odt/arbeitsblatt-brueche.txt
+6f97b61e8c22717cf236099b61a53e3384279ac91f4bb5b00067b2e307dca3a2 *libreoffice-ausgabe/docx/arbeitsblatt-brueche.txt
+b6bf0d64eb7db75e731a4456b4a8ca658e852b49ea346101148e0a4a6745bdc6 *libreoffice-ausgabe/eigene-uebungen.xlsx
+4f7857821011ac47cd581c3a3cb2ca36bf080a8725858d99b85bf1f05c715806 *libreoffice-ausgabe/rueck/eigene-uebungen.csv

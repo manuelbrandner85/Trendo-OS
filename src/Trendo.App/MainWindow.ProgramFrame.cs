@@ -97,6 +97,7 @@ public partial class MainWindow
         ErrorFix.Retry => retry,
         ErrorFix.Setup => () => { if (studio is not null) OpenAddHubFor(studio); else Show("hinzufuegen"); },
         ErrorFix.PickFolder => pickFolder ?? (() => Show("dateien")),
+        ErrorFix.AskClaude when ClaudeBlockedFor(studio) => null, // T-0782 H1b: kein „Claude fragen“ in Programmen nur mit lokaler KI
         ErrorFix.AskClaude => () => { var t = "Hilf mir bitte bei dieser Meldung in Trendo und sag mir in einfachen Worten, was ich tun kann:\n" + fe.Technical; if (studio is not null) ClaudeOpenFor(studio, t); else if (Windows.Active?.Id is { } id && _claudeDocks.ContainsKey(id)) { } else ClaudeDockToggle(null, t); }, // nur vorbefüllen, nie ein offenes Claude schließen
         _ => null,
     };

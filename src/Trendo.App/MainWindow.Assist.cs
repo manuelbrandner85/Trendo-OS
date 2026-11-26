@@ -56,6 +56,12 @@ public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocumen
     public bool Produces(string actionId) => spec.KiActions.Any(k => k.Def.Id == actionId);
     /// <summary>T-0774: Hat das Programm Fachaktionen, die Dateien erzeugen?</summary>
     public bool HasKiActions => spec.KiActions.Count > 0;
+    /// <summary>T-0782: nur die KI auf diesem PC (siehe <see cref="ProgramSpec.KiLocalOnly"/>).</summary>
+    public bool LocalOnly => spec.KiLocalOnly?.Invoke() == true;
+    /// <summary>T-0782: Daten des Dokuments für die KI (<see cref="ProgramSpec.KiView"/>).</summary>
+    public JsonObject KiData => spec.KiView?.Invoke(doc.Data) ?? doc.Data;
+    /// <summary>T-0782: Text so, wie er angezeigt oder protokolliert werden darf (<see cref="ProgramSpec.KiShow"/>).</summary>
+    public string Show(string text) => spec.KiShow is { } f ? f(doc, text) : text;
     /// <summary>T-0707: das offene Dokument (für den KI-Plan der einen Kette, <see cref="AssistChain"/>).</summary>
     public ProgramDocument Document => doc;
     public IEnumerable<AssistSuggestion> Hints() => [];
@@ -87,6 +93,13 @@ public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocumen
             // (ganzes „kurs“-Objekt mit „lernende“) – vorher zählte nur das erste Segment
             if (ki is null && cmd is null && spec.KiLocked.Count > 0 && LockedField(spec.KiLocked, step.Args.GetValueOrDefault("pfad") ?? "", step.Args.GetValueOrDefault("wert") ?? "") is { } field)
                 throw new InvalidOperationException($"„{field}“ legst du selbst fest – die KI ändert das nicht.");
+            // T-0782 (2. Gegenprüfung M6): Positivliste – nur ausdrücklich erlaubte Felder
+            if (ki is null && cmd is null && spec.KiAllowed is { } allowed
+                && !allowed.Contains(AssistChain.PathParts(AssistChain.NormalizePath(step.Args.GetValueOrDefault("pfad") ?? "")).FirstOrDefault() ?? "", StringComparer.OrdinalIgnoreCase))
+                throw new InvalidOperationException("Das ändert die KI hier nicht – erlaubt sind nur: " + string.Join(", ", allowed) + ".");
+            if (ki is null && cmd is null && spec.KiAllowedValue is { } check
+                && check(AssistChain.PathParts(AssistChain.NormalizePath(step.Args.GetValueOrDefault("pfad") ?? "")).FirstOrDefault() ?? "", step.Args.GetValueOrDefault("wert") ?? "") is { } bad)
+                throw new InvalidOperationException(bad);
             var before = doc.Remember();
             MainWindow.AssistQuiet++;
             try
@@ -230,19 +243,21 @@ public partial class MainWindow
             var role = t.Role + StudioTeams.Brief(ClaudeBelongs(t.Key) ? ClaudeStudioOf(t.Key) : null, prompt); // T-0630: das Team des Studios arbeitet ohne Auswahl mit
             // T-0707: eine KI für alle Einstiege – IntelligenceCore (Claude über das eigene Abo, wenn als Haupt-KI verbunden, sonst das beste Modell auf diesem PC aus T-0703).
             // Programme der Hülle bekommen die Daten des offenen Dokuments und die Aktion „dokument.setzen“: so landet eine Fachaufgabe direkt im Dokument.
-            var system = t is ProgramAssistTarget pt ? AssistChain.KiPrompt(t.Title, t.Actions, role, SkillsFor(t.Key), pt.Document.Data) : AssistPlanner.KiPrompt(t.Title, t.Actions, role, SkillsFor(t.Key));
+            var system = t is ProgramAssistTarget pt ? AssistChain.KiPrompt(t.Title, t.Actions, role, SkillsFor(t.Key), pt.KiData) : AssistPlanner.KiPrompt(t.Title, t.Actions, role, SkillsFor(t.Key));
             AssistBusy(host, t.Title);
-            var ki = await Intel.AskAsync(new KiRequest(prompt, system, PreferredModel: KiModelName, UseKnowledge: false));
+            // T-0782: Programme, die nur die KI auf diesem PC fragen dürfen (Nachhilfe, Kinderprofil) – derselbe Kern, auf lokale Quellen beschränkt
+            var intel = t is ProgramAssistTarget { LocalOnly: true } ? AgentKi("lokal", out _) : Intel;
+            var ki = await intel.AskAsync(new KiRequest(prompt, system, PreferredModel: KiModelName, UseKnowledge: false));
             kiAnswered = ki.Ok; AssistLastKiAnswer = ki.Text;
             // T-0707: kaputtes JSON (echter Fall mit qwen3:14b: eine schließende Klammer fehlte) – genau einmal nachfragen statt raten
             if (ki.Ok && t is ProgramAssistTarget && !AssistChain.FromKi(prompt, ki.Text, t.Actions).Understood && AssistChain.LooksLikePlan(ki.Text))
             {
                 _core.Audit.Append(Principal.LocalOwner.Name, "assist.ki.nachfrage", t.Key);
-                var again = await Intel.AskAsync(new KiRequest(AssistChain.RepairPrompt, system, PreferredModel: KiModelName, History: [new KiMessage("user", prompt), new KiMessage("assistant", AssistChain.CleanAnswer(ki.Text))], UseKnowledge: false));
+                var again = await intel.AskAsync(new KiRequest(AssistChain.RepairPrompt, system, PreferredModel: KiModelName, History: [new KiMessage("user", prompt), new KiMessage("assistant", AssistChain.CleanAnswer(ki.Text))], UseKnowledge: false));
                 if (again.Ok) { ki = again; AssistLastKiAnswer = ki.Text; }
             }
             if (ki.Ok) { var kp = t is ProgramAssistTarget ? AssistChain.FromKi(prompt, ki.Text, t.Actions) : AssistPlanner.FromKi(prompt, ki.Text, t.Actions); kp.Source = $"KI ({ki.Backend}{(ki.Model is { Length: > 0 } km ? ", " + km : "")})"; if (kp.Understood) plan = kp; }
-            else { _assistKiError = ki.Text; _core.Audit.Append(Principal.LocalOwner.Name, "assist.ki.fehler", $"{t.Key} {ki.Text}"); }
+            else { _assistKiError = AssistShow(t, ki.Text); _core.Audit.Append(Principal.LocalOwner.Name, "assist.ki.fehler", $"{t.Key} {AssistShow(t, ki.Text)}"); }
             if (!plan.Understood && ki.Ok) _core.Audit.Append(Principal.LocalOwner.Name, "assist.ki.ohneplan", $"{t.Key} antwort={ki.Text.Length} Zeichen");
             if (!plan.Understood) host.Content = null;
         }
@@ -316,16 +331,20 @@ public partial class MainWindow
     }
 
     /// <summary>Panel wie in Claude Code: Plan mit Live-Haken, Protokoll, Rückfragen als Knöpfe, Vorschau, Übernehmen/Verwerfen, Vorschläge, gemerkte Vorlieben.</summary>
+    /// <summary>T-0782: Text der Kette für Anzeige und Protokoll (Filter des Programms, z. B. Lösungen der Nachhilfe verdecken).</summary>
+    static string AssistShow(IAssistTarget t, string text) => t is ProgramAssistTarget pt ? pt.Show(text) : text;
+
     void AssistRender(AssistRun r, ContentControl host)
     {
         host = r.Host;
+        string F(string s) => AssistShow(r.Target, s);
         var sp = new StackPanel { Name = "assist-panel", Spacing = 6 };
         var head = new WrapPanel { Children = {
             new TextBlock { Text = $"Assistent · {r.Target.Title}", Foreground = Text, FontWeight = FontWeight.SemiBold, FontSize = 13, VerticalAlignment = VerticalAlignment.Center },
             new TextBlock { Name = "assist-source", Text = $"   verstanden über: {r.Plan.Source}" + (r.Plan.Source == "Regeln" ? " (ohne KI)" : ""), Foreground = Muted, FontSize = 11, VerticalAlignment = VerticalAlignment.Center } } };
         sp.Children.Add(head);
         if (r.Plan.Note is { Length: > 0 } note) // T-0775: was die KI dazu schreibt (z. B. die Ideen mit Begründung) bleibt sichtbar
-            sp.Children.Add(new TextBlock { Name = "assist-ki-note", Text = note, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 2, 0, 4) });
+            sp.Children.Add(new TextBlock { Name = "assist-ki-note", Text = F(note), Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 2, 0, 4) });
         for (var i = 0; i < r.Plan.Steps.Count; i++)
         {
             var st = i < r.StepState.Count ? r.StepState[i] : "offen";
@@ -333,15 +352,15 @@ public partial class MainWindow
             var s = r.Plan.Steps[i];
             // T-0779 (M4): Fachaktion mit Dokument-Vorschau und langem Wert (z. B. zwölf Fragen) – Kurzform, volle Fassung aufklappbar; sonst wie bisher der volle Text
             var shortOnly = StepShown(r.Target, s) != s.Text;
-            Control line = new TextBlock { Name = $"assist-step-{i}-text", Text = (shortOnly ? s.ShortText : s.Text) + (s.FromMemory.Count > 0 ? "  (gemerkt)" : "") + (s.Action.SideEffect ? "  – wirkt nach außen" : ""), Foreground = Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap };
+            Control line = new TextBlock { Name = $"assist-step-{i}-text", Text = F(shortOnly ? s.ShortText : s.Text) + (s.FromMemory.Count > 0 ? "  (gemerkt)" : "") + (s.Action.SideEffect ? "  – wirkt nach außen" : ""), Foreground = Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap };
             if (shortOnly)
                 line = new StackPanel { Spacing = 2, Children = { line, new Expander { Name = $"assist-step-{i}-full", Header = "Ganz anzeigen", FontSize = 11.5,
-                    Content = new ScrollViewer { MaxHeight = 220, Content = new SelectableTextBlock { Text = s.Text, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap } } } } };
+                    Content = new ScrollViewer { MaxHeight = 220, Content = new SelectableTextBlock { Text = F(s.Text), Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap } } } } };
             sp.Children.Add(new StackPanel { Name = $"assist-step-{i}", Orientation = Orientation.Horizontal, Spacing = 8, Children = {
                 new TextBlock { Text = icon, Foreground = Brush.Parse(col), FontSize = 14, Width = 16 }, line } });
         }
-        if (r.Plan.Unclear.Count > 0) sp.Children.Add(P("Nicht verstanden und ausgelassen: " + string.Join(" · ", r.Plan.Unclear.Select(u => $"„{u}“")), Brush.Parse("#FACC15"), 11.5));
-        if (r.Log.Count > 0) sp.Children.Add(new TextBlock { Name = "assist-log", Text = string.Join("\n", r.Log.TakeLast(3)), Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
+        if (r.Plan.Unclear.Count > 0) sp.Children.Add(P(F("Nicht verstanden und ausgelassen: " + string.Join(" · ", r.Plan.Unclear.Select(u => $"„{u}“"))), Brush.Parse("#FACC15"), 11.5));
+        if (r.Log.Count > 0) sp.Children.Add(new TextBlock { Name = "assist-log", Text = F(string.Join("\n", r.Log.TakeLast(3))), Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
 
         // Rückfragen als Knöpfe
         var qi = 0;
@@ -370,7 +389,7 @@ public partial class MainWindow
                 row.Children.Add(rem);
             }
             sp.Children.Add(new Border { Name = $"assist-q-{idx}", Background = Brush.Parse(q.Confirm ? "#1AF5A524" : "#1AC9A227"), CornerRadius = new CornerRadius(10), Padding = new Thickness(10, 8),
-                Child = new StackPanel { Spacing = 6, Children = { new TextBlock { Text = q.Text, Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap }, row } } });
+                Child = new StackPanel { Spacing = 6, Children = { new TextBlock { Text = F(q.Text), Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap }, row } } });
         }
 
         // Vorschau und Entscheidung
@@ -388,7 +407,7 @@ public partial class MainWindow
         if (r.Phase == "fertig") B(Act("assist-undo", "Rückgängig", () => { if (r.Target.Undo()) { r.Message = "Zurückgenommen."; r.Phase = "verworfen"; var p = CurrentView; Show(p); } else { r.Message = "Nichts zum Zurücknehmen."; AssistRender(r, host); } }));
         if (r.Phase is "fertig" or "verworfen" or "fehler" or "fragen") B(Act("assist-close", "Schließen", () => { _assistRuns.Remove(r.Host); _assistByKey.Remove(r.Target.Key); r.Host.Content = null; }));
         if (bar.Children.Count > 0) sp.Children.Add(bar);
-        if (r.Message.Length > 0) sp.Children.Add(new TextBlock { Name = "assist-msg", Text = r.Message, Foreground = r.Phase == "fehler" ? Brush.Parse("#F87171") : Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap });
+        if (r.Message.Length > 0) sp.Children.Add(new TextBlock { Name = "assist-msg", Text = F(r.Message), Foreground = r.Phase == "fehler" ? Brush.Parse("#F87171") : Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap });
 
         // T-0317: Prüfung nach Skill – Checkliste der passenden Fachregeln vor dem Übernehmen
         if (r.Phase is "vorschau" or "fertig" && SkillChecklist(r.Target.Key) is { Count: > 0 } checks)
@@ -430,7 +449,7 @@ public partial class MainWindow
         if (prompt.Trim().Length < 3) return ("", null);
         var plan = AssistPlanner.Plan(prompt, t.Actions, new AssistPrefs(_core.DataRoot, t.Key).Values);
         if (!plan.Understood) return ("Noch nicht verstanden – „Plan erstellen“ fragt die KI.", null);
-        var text = "Ich würde: " + string.Join(" → ", plan.Steps.Select(s => t is ProgramAssistTarget pt0 && pt0.Produces(s.Action.Id) ? s.ShortText : s.Text)) + (plan.Questions.Count > 0 ? $"  ·  {plan.Questions.Count} Rückfrage(n)" : "");
+        var text = AssistShow(t, "Ich würde: " + string.Join(" → ", plan.Steps.Select(s => t is ProgramAssistTarget pt0 && pt0.Produces(s.Action.Id) ? s.ShortText : s.Text)) + (plan.Questions.Count > 0 ? $"  ·  {plan.Questions.Count} Rückfrage(n)" : "")); // T-0784: T-0779 Kurzform + T-0782 AssistShow
         // T-0774: Fachaktionen (neue Datei) nicht beim Tippen vorbereiten – der Probelauf würde Einstellungen setzen und damit „Wiederholen“ leeren
         if (!plan.Ready || plan.HasSideEffects || t is ProgramAssistTarget pt && plan.Steps.Any(s => pt.Produces(s.Action.Id))) return (text, null);
         try

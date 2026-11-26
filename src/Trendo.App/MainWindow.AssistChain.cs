@@ -29,9 +29,26 @@ public partial class MainWindow
     public AssistRoute AssistRouteFor(string? key)
     {
         var target = AssistTargetFor(key);
+        // T-0782 (Gegenprüfung H1): Programme, die nur die KI auf diesem PC fragen dürfen (Nachhilfe, Kinderprofil), gehen nie in den Claude-Bereich –
+        // auch nicht bei „Claude ohne Klicks“ und ohne offenes Dokument
+        if (AssistLocalOnly(key)) return target is not null ? AssistRoute.Dokument : AssistRoute.Projekt;
         if (ClaudeTakesStudioPrompts && (ClaudeNoClicks || target is null)) return AssistRoute.ClaudeBereich;
         return target is not null ? AssistRoute.Dokument : AssistRoute.Projekt;
     }
+
+    /// <summary>T-0782: Darf dieses Programm nur die KI auf diesem PC fragen (<see cref="ProgramSpec.KiLocalOnly"/>)?</summary>
+    public bool AssistLocalOnly(string? key) => key is not null && Programs.TryGetValue(key, out var spec) && spec.KiLocalOnly?.Invoke() == true;
+
+    /// <summary>T-0782 (H1b): EINE Prüfung für alle Claude-Wege (Brücke, Plan-Zeilen, Chat): Ist die Seite <paramref name="page"/> oder die offene Seite ein Programm
+    /// nur mit der KI auf diesem PC, kommt der Satz für Claude bzw. den Chat zurück, sonst null.</summary>
+    public string? LocalOnlyRefusal(string? page = null) =>
+        AssistLocalOnly(page) || AssistLocalOnly(CurrentView)
+            ? "Dieses Programm arbeitet nur mit der KI auf diesem PC (z. B. Nachhilfe oder Kinderprofil). Claude darf es weder lesen noch ändern – bitte nichts weiter versuchen."
+            : null;
+
+    /// <summary>T-0782 (H1b): Claude ist hier aus – die offene Seite oder das Studio gehört zu einem Programm nur mit der KI auf diesem PC.</summary>
+    public bool ClaudeBlockedFor(string? studio) =>
+        AssistLocalOnly(CurrentView) || studio is not null && Programs.Values.Any(p => string.Equals(p.Studio, studio, StringComparison.OrdinalIgnoreCase) && p.KiLocalOnly?.Invoke() == true);
 
     /// <summary>Programme aus dem Programmkatalog, die (noch) nicht in der Programm-Hülle laufen – dort sagt die Kette „Noch nicht im Dokument möglich“.
     /// Maßgeblich ist, was gerade angemeldet ist: zieht ein Programm in die Hülle (B6), fällt es hier von selbst heraus.</summary>

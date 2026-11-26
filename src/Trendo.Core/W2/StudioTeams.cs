@@ -329,6 +329,12 @@ public static class StudioTeams
             R("natur-chemie", "Chemikerin", "Summenformeln, Molmassen und Reaktionen", "Groß- und Kleinschreibung der Symbole, Atombilanz", true),
             R("natur-physik", "Physiker", "Formeln, Einheiten und Messunsicherheit", "in SI rechnen, Dimension prüfen, sinnvolle Stellen"),
             R("natur-daten", "Datenprüferin", "achtet auf Quellen der Zahlenwerte", "IUPAC/CIAAW, CODATA – Quelle nennen")),
+        T("STUDIO-TUTOR-01", "Nachhilfe-Team",
+            R("tutor-lehrer", "Nachhilfe-Lehrerin", "erklärt, stellt Rückfragen und baut Übungen", "nie die Lösung vorwegnehmen, einfache Sprache", true),
+            R("tutor-plan", "Lernplanerin", "achtet auf Fortschritt und Wiederholung", "fällige Themen zuerst, kleine Schritte")),
+        T("STUDIO-CODELEARN-01", "Programmier-Lern-Team",
+            R("code-tutor", "Programmier-Tutorin", "gibt Hinweise zur Aufgabe", "nie fertigen Code, nur Denkanstöße", true),
+            R("code-pruef", "Testleiter", "lässt die echten Tests laufen und erklärt Fehlermeldungen", "nur die Tests bewerten")),
     ];
 
     public static StudioTeam? For(string? studioId) => All.FirstOrDefault(t => t.StudioId == studioId);

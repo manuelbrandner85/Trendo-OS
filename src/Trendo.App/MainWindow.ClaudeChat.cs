@@ -376,6 +376,7 @@ public partial class MainWindow
     {
         if (!_chatUis.TryGetValue(dock, out var ui) || ui.Running || string.IsNullOrWhiteSpace(text)) return;
         if (ClaudeNoClicks && _core.Approvals.Halted) { Toast("Der Not-Stopp ist aktiv. Claude startet erst nach „Fortsetzen“."); return; }
+        if (LocalOnlyRefusal() is { } localOnly) { Toast(localOnly); _core.Audit.Append(Principal.LocalOwner.Name, "claude.chat.lokal", CurrentView); return; } // T-0782 (H1b): nichts von dieser Seite an Claude
         text = text.Trim();
         var studio = ChatStudio(dock);
         var chats = CChats;

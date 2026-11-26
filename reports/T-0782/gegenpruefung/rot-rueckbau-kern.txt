@@ -1,0 +1,35 @@
+# T-0782 Gegenprüfung – Rot-Lauf Kern (Rückbau M1 Desktop, M3 Ausgabegrenze, M4 Platten-/AC-Temp-Grenze, N2 MemoryError gleichzeitig; danach git checkout)
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0782\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:15.49]     M4 ECHT: Dateien über der Grenze → Abbruch; Temp-Ordner des Containers ist nach jedem Lauf leer [FAIL]
+  Fehler M4 ECHT: Dateien über der Grenze → Abbruch; Temp-Ordner des Containers ist nach jedem Lauf leer [730 ms]
+  Fehlermeldung:
+   ok | 
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0782_Gegenpruefung.M4_disk_and_actemp() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0782\tests\Trendo.Core.Tests\T0782GegenpruefungTests.cs:line 193
+[xUnit.net 00:00:35.60]     M3 ECHT: Ausgabeflut → Abbruch „limit“, gelesen wird nur das Ende (höchstens 256 KB) [FAIL]
+  Fehler M3 ECHT: Ausgabeflut → Abbruch „limit“, gelesen wird nur das Ende (höchstens 256 KB) [20 s]
+  Fehlermeldung:
+   abgebrochen: Zeitgrenze von 20 s überschritten
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0782_Gegenpruefung.M3_output_flood() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0782\tests\Trendo.Core.Tests\T0782GegenpruefungTests.cs:line 171
+[xUnit.net 00:00:35.92]     N2 ECHT: Speichergrenze wird als Speichergrenze gemeldet (MemoryError erkannt) [FAIL]
+[xUnit.net 00:00:36.41]     M1 ECHT: eigener Desktop – GetDC(0)/GetPixel liefern nicht den echten Bildschirm, keine fremden Fenster (Gegenprobe ohne Container liest Pixel) [FAIL]
+  Fehler N2 ECHT: Speichergrenze wird als Speichergrenze gemeldet (MemoryError erkannt) [321 ms]
+  Fehlermeldung:
+   beendet mit Fehlercode 1 | Traceback (most recent call last):
+  File "C:\Users\<user>\AppData\Local\Temp\trendo-testlauf-47412-6b0870ee\trendo-t0782-gp-0cb012\lauf-3d40ac\p.py", line 1, in <module>
+    x = bytearray(700 * 1024 * 1024)
+MemoryError
+
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0782_Gegenpruefung.N2_memory() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0782\tests\Trendo.Core.Tests\T0782GegenpruefungTests.cs:line 237
+  Fehler M1 ECHT: eigener Desktop – GetDC(0)/GetPixel liefern nicht den echten Bildschirm, keine fremden Fenster (Gegenprobe ohne Container liest Pixel) [490 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Sub-string not found
+String:    "PIXEL [2039583, 2039583, 2039583, 2039583"···
+Not found: "UNGUELTIG True"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0782_Gegenpruefung.M1_own_desktop() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0782\tests\Trendo.Core.Tests\T0782GegenpruefungTests.cs:line 214
+
+Fehler!      : Fehler:     4, erfolgreich:     1, übersprungen:     0, gesamt:     5, Dauer: 21 s - Trendo.Core.Tests.dll (net10.0)

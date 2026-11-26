@@ -44,6 +44,8 @@ public partial class MainWindow
     public async Task<bool> ClaudeFromStudioBar(string? studio, string text, Action<string>? status = null)
     {
         if (string.IsNullOrWhiteSpace(text) || !ClaudeTakesStudioPrompts || Windows.Active?.Id is not { } id) return false;
+        // T-0782 (Gegenprüfung H1): nie für Programme, die nur die KI auf diesem PC fragen dürfen (Nachhilfe, Kinderprofil)
+        if (ClaudeBlockedFor(studio)) return false;
         var opened = !_claudeDocks.ContainsKey(id);
         if (opened) ClaudeDockToggle(studio, null);
         if (!_claudeDocks.TryGetValue(id, out var dock)) return false;

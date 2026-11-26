@@ -103,6 +103,16 @@ public sealed class ProgramSpec(string key, string studio, string title)
     /// <summary>T-0780 (Gegenprüfung H1/H2): Prüfung nach jeder Änderung durch eine KI – Assistent (Fachaktion, „dokument.setzen“, Befehle) und Claude-Brücke.
     /// Bekommt die Daten vorher und nachher; Rückgabe null = in Ordnung, sonst ein Satz für die Person (die Änderung wird dann nicht übernommen).</summary>
     public Func<JsonObject, JsonObject, string?>? KiCheck { get; init; }
+    /// <summary>T-0782: Die KI-Kette dieses Programms fragt nur die KI auf diesem PC (nie Claude oder einen Dienst im Internet) – z. B. für Kinder.</summary>
+    public Func<bool>? KiLocalOnly { get; init; }
+    /// <summary>T-0782 (Gegenprüfung M2/M6): was die KI-Kette vom Dokument sieht (z. B. ohne Lösungen oder Programmausgaben); fehlt = alles.</summary>
+    public Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>? KiView { get; init; }
+    /// <summary>T-0782 (2. Gegenprüfung M6): Texte der KI-Kette vor dem Anzeigen und Protokollieren filtern (Plan, Vorschau-Meldung, Protokoll) – z. B. Lösungen verdecken.</summary>
+    public Func<ProgramDocument, string, string>? KiShow { get; init; }
+    /// <summary>T-0782 (2. Gegenprüfung M6): „dokument.setzen“ der KI nur für diese Felder (Positivliste); null = keine Positivliste.</summary>
+    public IReadOnlyList<string>? KiAllowed { get; init; }
+    /// <summary>T-0782 (3. Gegenprüfung M6): Wert eines erlaubten Felds prüfen (Feld, Wert → Grund der Ablehnung oder null), z. B. nur gültige Themen-Kennungen.</summary>
+    public Func<string, string, string?>? KiAllowedValue { get; init; }
     public int LevelOf(ProgramCmd c) => Math.Max(c.Level, CmdLevels.GetValueOrDefault(c.Name));
 }
 

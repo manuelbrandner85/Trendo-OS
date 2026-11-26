@@ -1,0 +1,19 @@
+# T-0782 Rot-Lauf: Nachhilfe ohne KiLocalOnly (alter Stand der KI-Kette: Haupt-KI Claude zuerst)
+Befehl: Trendo.App.Tests.exe -method Trendo.App.Tests.T0782Lernen_Ui.Tutor_ki_exercise_local_only (Zeile KiLocalOnly auskommentiert)
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0782 Nachhilfe KI-Fachaktion: „Gib mir eine Übung …“ → Plan uebung.erzeugen → Vorschau ändert nichts → Ja → Übung im Dokument, EIN Rückgängig-Schritt; nur die KI auf diesem PC (Claude nie gefragt) [FAIL]
+      Assert.True() Failure
+      Expected: True
+      Actual:   False
+      Stack Trace:
+        tests\Trendo.App.Tests\T0782LernenUiTests.cs(48,0): at Trendo.App.Tests.T0782Lernen_Ui.Until(Func`1 ok, Int32 ms)
+        tests\Trendo.App.Tests\T0782LernenUiTests.cs(56,0): at Trendo.App.Tests.T0782Lernen_Ui.Ask(MainWindow w, String key, String prompt)
+        tests\Trendo.App.Tests\T0782LernenUiTests.cs(112,0): at Trendo.App.Tests.T0782Lernen_Ui.Tutor_ki_exercise_local_only()
+        --- End of stack trace from previous location ---
+  Finished:    Trendo.App.Tests (ID = 'f6d0891a28c15250435b1b4f8281571aec646f47e954b6d2d82cf32837030490')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 1, Skipped: 0, Not Run: 0, Time: 41,979s
+exit=0

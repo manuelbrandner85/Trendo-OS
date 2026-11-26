@@ -1,0 +1,62 @@
+using Trendo.Core.Lernen;
+using Trendo.Core.Programs;
+using Xunit;
+
+namespace Trendo.Core.Tests;
+
+/// <summary>Nur für den Rot-Lauf auf dem alten Stand (f16ba134b): dieselben Anforderungen wie in T0782_Gegenpruefung, mit der alten Schnittstelle.</summary>
+public class T0782_RotAlt
+{
+    static ProgramDocument Doc(string thema) { var d = new ProgramDocument("STUDIO-TUTOR-01", "T", Nachhilfe.Neu("mathe", 6)); Nachhilfe.ThemaWaehlen(d, thema); return d; }
+
+    [Fact(DisplayName = "ROT M8: Einheit, c = 5, Unicode-Minus, 4 R 0, 3, Rest 2, -3/-4")]
+    public void M8()
+    {
+        Assert.True(Nachhilfe.Vergleiche(new("x", ["5"], "", [], "zahl"), "c = 5").Richtig);
+        Assert.True(Nachhilfe.Vergleiche(new("x", ["-3"], "", [], "zahl"), "−3").Richtig);
+        Assert.True(Nachhilfe.Vergleiche(new("x", ["4"], "", [], "rest"), "4 R 0").Richtig);
+        Assert.True(Nachhilfe.Vergleiche(new("x", ["3 R 2"], "", [], "rest"), "3, Rest 2").Richtig);
+        Assert.True(Nachhilfe.Vergleiche(new("x", ["3/4"], "", [], "bruch"), "-3/-4").Richtig);
+        Assert.False(Nachhilfe.Vergleiche(new("x", ["21"], "", [], "zahl"), "2,1e1").Richtig);
+    }
+
+    [Fact(DisplayName = "ROT M7: Varianten der Lösung erkannt")]
+    public void M7()
+    {
+        Assert.True(Nachhilfe.VerraetLoesung("Das macht 3 Rest 2.", ["3 R 2"]));
+        Assert.True(Nachhilfe.VerraetLoesung("Gekürzt ist das 2 / 3.", ["2/3"]));
+        Assert.True(Nachhilfe.VerraetLoesung("Das sind einundzwanzig.", ["21"]));
+        Assert.True(Nachhilfe.VerraetLoesung("Schreib w-e-n-t.", ["went"]));
+        Assert.True(Nachhilfe.VerraetLoesung("Rechne einfach 20 + 1.", ["21"]));
+        Assert.True(Nachhilfe.VerraetLoesung("x ist −3.", ["-3"]));
+    }
+
+    [Fact(DisplayName = "ROT M6: Strg+Z setzt Versuch/Lösung gesehen nicht zurück; Unsinn zählt nicht")]
+    public void M6()
+    {
+        var d = Doc("m-kuerzen");
+        var u = Nachhilfe.NaechsteUebung(d, new Random(3)); var soll = u["antworten"]![0]!.GetValue<string>();
+        Nachhilfe.Pruefen(d, "???");
+        Assert.Throws<InvalidOperationException>(() => Nachhilfe.LoesungZeigen(d)); // „???“ darf kein Versuch sein
+        Nachhilfe.Pruefen(d, "99/100"); d.Undo();
+        Nachhilfe.LoesungZeigen(d); // nach dem zurückgenommenen Versuch weiter erlaubt
+        d.Undo();
+        Nachhilfe.Pruefen(d, soll);
+        Assert.Equal(0, Nachhilfe.Stand(d, Nachhilfe.ThemaById("m-kuerzen")!).Richtig); // gesehene Lösung → kein Punkt
+    }
+
+    [Fact(DisplayName = "ROT N5: Hinweis auf Großschreibung")]
+    public void N5() => Assert.Contains("Kleinschreibung", Nachhilfe.Vergleiche(new("x", ["die Bäume", "Bäume"], "", []), "bäume").Rueckmeldung);
+
+    public sealed class PyFactAttribute : FactAttribute { public PyFactAttribute() { if (LernSandbox.BundledPython() is null) Skip = "kein Python"; } }
+
+    [PyFact(DisplayName = "ROT M5: gefälschtes Ergebnis besteht nicht")]
+    public void M5()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "t0782-rot-" + Guid.NewGuid().ToString("N")[..6]);
+        var py = LernSandbox.PrepareRuntime(root).Exe!;
+        var boese = "import os, atexit\ndef _f():\n    open('ergebnis.json','w').write('{\"status\":\"pass\",\"message\":\"\",\"tests\":[{\"name\":\"t\",\"status\":\"pass\",\"message\":\"\",\"output\":\"\"}]}')\n    os._exit(0)\natexit.register(_f)\nimport sys\nsys.modules['unittest'].TestCase.run = lambda self, result=None: _f()\ndef gruss(name):\n    return 'nein'\n";
+        try { Assert.NotEqual("pass", CodeLernen.Testen(CodeLernen.Track[0], boese, py, Path.Combine(root, "w")).Status); }
+        finally { try { Directory.Delete(root, true); } catch (IOException) { } catch (UnauthorizedAccessException) { } }
+    }
+}

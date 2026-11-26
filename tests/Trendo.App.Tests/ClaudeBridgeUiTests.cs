@@ -134,6 +134,7 @@ public class ClaudeBridge_Ui
         {
             var spec = MainWindow.Programs[key];
             var opened = await Call(m, "programm_oeffnen", new JsonObject { ["programm"] = key, ["neu"] = true });
+            if (w.AssistLocalOnly(key)) { Assert.True(Failed(opened), key); continue; } // T-0782 H1b: Programme nur mit lokaler KI sind für Claude gesperrt
             Assert.False(Failed(opened), key + ": " + Text(opened));
             var listed = JsonNode.Parse(Text(await Call(m, "befehle", new JsonObject { ["programm"] = key })))!;
             Assert.Equal(spec.Ribbon.Sum(g => g.Cmds.Count), listed["befehle"]!.AsArray().Count);
@@ -154,6 +155,7 @@ public class ClaudeBridge_Ui
         foreach (var page in MainWindow.StudioPages.Values.Distinct().Where(p => !MainWindow.ClaudeBlockedPages.Contains(p)).ToList())
         {
             var opened = await Call(m, "programm_oeffnen", new JsonObject { ["programm"] = page });
+            if (w.AssistLocalOnly(page)) { Assert.True(Failed(opened), page); continue; } // T-0782 H1b
             Assert.False(Failed(opened), page + ": " + Text(opened));
             Assert.Equal(page, w.CurrentView);
         }
