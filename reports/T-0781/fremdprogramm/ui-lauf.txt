@@ -1,0 +1,2 @@
+Mathe-Helfer: 6 Aufgaben aus aufgaben-libreoffice.txt eingelesen, alle Proben bestanden, +1 Ableitung; Export PDF/MD/TEX.
+Naturwissenschaft: Vorlage Chemie + 1 Eintrag, 4 Einträge; Export PDF/CSV, Periodensystem-CSV.

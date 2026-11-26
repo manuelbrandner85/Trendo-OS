@@ -49,6 +49,7 @@ public static class PromptActions
             new DeckDesignAdapter(), new DocScanAdapter(),
             new PdfWerkstattAdapter(), new FormularZuordnenAdapter(),
             new ReferatGliederungAdapter(), new ZeitleisteZeilenAdapter(), // T-0780
+            new MatheLoesungAdapter(), new NaturRechnungAdapter(), // T-0781 Wissen & Lernen
             ..SystemActions.Create()
         ];
 }

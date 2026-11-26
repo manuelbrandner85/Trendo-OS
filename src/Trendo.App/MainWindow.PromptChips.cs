@@ -56,6 +56,8 @@ public partial class MainWindow
         ["STUDIO-REFERAT-01"] = ["Gliederung für mein Thema", "Schreib die Einleitung", "Welche Formvorgaben fehlen?"], // T-0780
         ["STUDIO-TIMELINE-01"] = ["Ereignisse aus diesem Text einfügen", "Epochen als Zeiträume anlegen", "Daten prüfen"], // T-0780
         ["STUDIO-FORMS-01"] = ["Formular mit meinen Angaben ausfüllen", "Welche Pflichtfelder fehlen?", "Unterschrift einsetzen"],
+        ["STUDIO-MATH-01"] = ["Löse 3x + 7 = 22", "Ein Rechteck ist 3 cm länger als breit und hat 40 cm² – wie breit?", "Leite x² · sin(x) ab"],
+        ["STUDIO-SCIENCE-01"] = ["Molmasse von Glucose", "Gleiche Fe + O2 -> Fe2O3 aus", "Wie lange fällt ein Stein aus 20 m Höhe?"],
     };
 
     /// <summary>Chips für ein Studio (leer = keine Vorschläge hinterlegt).</summary>

@@ -1,0 +1,7 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:01.82]     T-0781 Periodensystem: Abgleich mit PubChem (Masse ±0,02, EN ±0,05, Konfiguration) – nur mit TRENDO_PUBCHEM_CSV [SKIP]
+  Übersprungen T-0781 Periodensystem: Abgleich mit PubChem (Masse ±0,02, EN ±0,05, Konfiguration) – nur mit TRENDO_PUBCHEM_CSV [1 ms]
+
+Bestanden!   : Fehler:     0, erfolgreich:   313, übersprungen:     1, gesamt:   314, Dauer: 13 s - Trendo.Core.Tests.dll (net10.0)
+Exit 0

@@ -1,0 +1,357 @@
+Rot-Lauf Core gegen 0ab418a92 (T0781Runde3Tests übernommen)
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:03.77]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:04.53]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:04.57]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:00:04.80]     T-0781 R3 NIEDRIG: schmale Definitionslücke am Rand → „nicht überall definiert“, nicht „divergiert“(f: "sqrt(x)", von: "-0.0001", bis: "1") [FAIL]
+[xUnit.net 00:00:04.80]       Assert.Contains() Failure: Sub-string not found
+[xUnit.net 00:00:04.80]       String:    "∫ von −1/10000 bis 1 √x dx existiert nich"···
+[xUnit.net 00:00:04.80]       Not found: "nicht überall definiert"
+[xUnit.net 00:00:04.80]       Stack Trace:
+[xUnit.net 00:00:04.80]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-rot\tests\Trendo.Core.Tests\T0781Runde3Tests.cs(63,0): at Trendo.Core.Tests.T0781Runde3Tests.Schmale_luecke_am_rand(String f, String von, String bis)
+[xUnit.net 00:00:04.80]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:04.80]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:04.80]       Output:
+[xUnit.net 00:00:04.80]         Berechne: ∫ von −1/10000 bis 1 √x dx → ∫ von −1/10000 bis 1 √x dx existiert nicht (das Integral divergiert bei x = −0,0001, x = 0)
+[xUnit.net 00:00:04.80]           · Potenzregel: ∫ uⁿ du = uⁿ⁺¹/(n + 1) mit n = 1/2: ∫ √x dx = 2x^(3/2)/3
+[xUnit.net 00:00:04.80]           · Stammfunktion (C ist eine beliebige Konstante): ∫ √x dx = 2x^(3/2)/3 + C
+[xUnit.net 00:00:04.80]           · Achtung: Die Funktion ist im Intervall nicht überall definiert (x = −0,0001, x = 0) – uneigentliches Integral: an diesen Stellen den Grenzwert von F bilden: F(x) = 2x^(3/2)/3
+[xUnit.net 00:00:04.80]           · Teilstück 0 … 1 (mit Grenzwert): F(1) − F(0) = 0,6666666667 − (0) = 0,6666666667
+[xUnit.net 00:00:04.80]           · Der Grenzwert von F existiert nicht (F wächst über alle Grenzen bei x = −0,0001, x = 0) – das Integral divergiert: existiert nicht
+[xUnit.net 00:00:04.80]           Probe: ✓ Probe durch Ableiten: F' stimmt an 5 Stellen mit f überein – bei x = 0,7: F' ≈ 0,83666, f = 0,83666.
+[xUnit.net 00:00:04.80]           Probe: ⚠ Die Gegenrechnung zeigt kein klares Wachstum an der Lücke – ob das Integral divergiert, ist unsicher.
+[xUnit.net 00:00:04.82]     T-0781 R3 NIEDRIG: schmale Definitionslücke am Rand → „nicht überall definiert“, nicht „divergiert“(f: "ln(x)", von: "-0.000001", bis: "1") [FAIL]
+[xUnit.net 00:00:04.82]       Assert.Contains() Failure: Sub-string not found
+[xUnit.net 00:00:04.82]       String:    "∫ von −1/1000000 bis 1 ln(x) dx existiert"···
+[xUnit.net 00:00:04.82]       Not found: "nicht überall definiert"
+[xUnit.net 00:00:04.82]       Stack Trace:
+[xUnit.net 00:00:04.82]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-rot\tests\Trendo.Core.Tests\T0781Runde3Tests.cs(63,0): at Trendo.Core.Tests.T0781Runde3Tests.Schmale_luecke_am_rand(String f, String von, String bis)
+[xUnit.net 00:00:04.82]            at InvokeStub_T0781Runde3Tests.Schmale_luecke_am_rand(Object, Span`1)
+[xUnit.net 00:00:04.82]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:04.82]       Output:
+[xUnit.net 00:00:04.82]         Berechne: ∫ von −1/1000000 bis 1 ln(x) dx → ∫ von −1/1000000 bis 1 ln(x) dx existiert nicht (das Integral divergiert bei x = −0,000001, x = 0)
+[xUnit.net 00:00:04.82]           · Bekannte Stammfunktion (partielle Integration mit 1·ln x): ∫ ln(x) dx = x·ln(x) − x: ∫ ln(x) dx = −x + x·ln(x)
+[xUnit.net 00:00:04.82]           · Stammfunktion (C ist eine beliebige Konstante): ∫ ln(x) dx = −x + x·ln(x) + C
+[xUnit.net 00:00:04.82]           · Achtung: Die Funktion ist im Intervall nicht überall definiert (x = −0,000001, x = 0) – uneigentliches Integral: an diesen Stellen den Grenzwert von F bilden: F(x) = −x + x·ln(x)
+[xUnit.net 00:00:04.82]           · Teilstück 0 … 1 (mit Grenzwert): F(1) − F(0) = −1 − (0) = −1
+[xUnit.net 00:00:04.82]           · Der Grenzwert von F existiert nicht (F wächst über alle Grenzen bei x = −0,000001, x = 0) – das Integral divergiert: existiert nicht
+[xUnit.net 00:00:04.82]           Probe: ✓ Probe durch Ableiten: F' stimmt an 5 Stellen mit f überein – bei x = 0,7: F' ≈ −0,356675, f = −0,356675.
+[xUnit.net 00:00:04.82]           Probe: ⚠ Die Gegenrechnung zeigt kein klares Wachstum an der Lücke – ob das Integral divergiert, ist unsicher.
+[xUnit.net 00:00:04.82]     T-0781 R3 NIEDRIG: schmale Definitionslücke am Rand → „nicht überall definiert“, nicht „divergiert“(f: "sqrt(1-x)", von: "0", bis: "1.000001") [FAIL]
+[xUnit.net 00:00:04.82]       Assert.Contains() Failure: Sub-string not found
+[xUnit.net 00:00:04.82]       String:    "∫ von 0 bis 1000001/1000000 √(1 − x) dx e"···
+[xUnit.net 00:00:04.82]       Not found: "nicht überall definiert"
+[xUnit.net 00:00:04.82]       Stack Trace:
+[xUnit.net 00:00:04.82]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-rot\tests\Trendo.Core.Tests\T0781Runde3Tests.cs(63,0): at Trendo.Core.Tests.T0781Runde3Tests.Schmale_luecke_am_rand(String f, String von, String bis)
+[xUnit.net 00:00:04.82]            at InvokeStub_T0781Runde3Tests.Schmale_luecke_am_rand(Object, Span`1)
+[xUnit.net 00:00:04.82]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:04.82]       Output:
+[xUnit.net 00:00:04.82]         Berechne: ∫ von 0 bis 1000001/1000000 √(1 − x) dx → ∫ von 0 bis 1000001/1000000 √(1 − x) dx existiert nicht (das Integral divergiert bei x = 1, x = 1,000001)
+[xUnit.net 00:00:04.82]           · Potenzregel: ∫ uⁿ du = uⁿ⁺¹/(n + 1) mit n = 1/2 – lineare Substitution: durch die innere Ableitung −1 teilen: ∫ √(−x + 1) dx = −2(−x + 1)^(3/2)/3
+[xUnit.net 00:00:04.82]           · Stammfunktion (C ist eine beliebige Konstante): ∫ √(1 − x) dx = −2(−x + 1)^(3/2)/3 + C
+[xUnit.net 00:00:04.82]           · Achtung: Die Funktion ist im Intervall nicht überall definiert (x = 1, x = 1,000001) – uneigentliches Integral: an diesen Stellen den Grenzwert von F bilden: F(x) = −2(−x + 1)^(3/2)/3
+[xUnit.net 00:00:04.82]           · Teilstück 0 … 1 (mit Grenzwert): F(1) − F(0) = 0 − (−0,6666666667) = 0,6666666667
+[xUnit.net 00:00:04.82]           · Der Grenzwert von F existiert nicht (F wächst über alle Grenzen bei x = 1, x = 1,000001) – das Integral divergiert: existiert nicht
+[xUnit.net 00:00:04.82]           Probe: ✓ Probe durch Ableiten: F' stimmt an 3 Stellen mit f überein – bei x = 0,7: F' ≈ 0,547723, f = 0,547723.
+[xUnit.net 00:00:04.82]           Probe: ⚠ Die Gegenrechnung an der Lücke ließ sich nicht ausrechnen – ob das Integral divergiert, ist unsicher.
+[xUnit.net 00:00:05.25]     T-0781 R3 HOCH: ohne Potenzregel (Extrapolation): ∫ x^(−2/3) + x^(1/3) von 0 bis 1 = 15/4 – kein „existiert nicht“ [FAIL]
+[xUnit.net 00:00:05.25]       Assert.DoesNotContain() Failure: Sub-string found
+[xUnit.net 00:00:05.25]                                       ↓ (pos 38)
+[xUnit.net 00:00:05.25]       String: ···"−2/3) + x^(1/3)) dx existiert nicht (das "···
+[xUnit.net 00:00:05.25]       Found:  "existiert nicht"
+[xUnit.net 00:00:05.25]       Stack Trace:
+[xUnit.net 00:00:05.25]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-rot\tests\Trendo.Core.Tests\T0781Runde3Tests.cs(51,0): at Trendo.Core.Tests.T0781Runde3Tests.Extrapolation_ohne_potenzregel()
+[xUnit.net 00:00:05.25]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.25]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:05.25]       Output:
+[xUnit.net 00:00:05.25]         Berechne: ∫ von 0 bis 1 (x^(−2/3) + x^(1/3)) dx → ∫ von 0 bis 1 (x^(−2/3) + x^(1/3)) dx existiert nicht (das Integral divergiert bei x = 0)
+[xUnit.net 00:00:05.25]           · Summenregel: jedes Glied einzeln integrieren: ∫ (x^(1/3) + 1/(x^(2/3))) dx = ∫ x^(1/3) dx + ∫ 1/(x^(2/3)) dx
+[xUnit.net 00:00:05.25]           · Potenzregel: ∫ uⁿ du = uⁿ⁺¹/(n + 1) mit n = 1/3: ∫ x^(1/3) dx = 3x^(4/3)/4
+[xUnit.net 00:00:05.25]           · Potenzregel: ∫ uⁿ du = uⁿ⁺¹/(n + 1) mit n = −2/3: ∫ 1/(x^(2/3)) dx = 3x^(1/3)
+[xUnit.net 00:00:05.25]           · Stammfunktion (C ist eine beliebige Konstante): ∫ (x^(−2/3) + x^(1/3)) dx = 3x^(4/3)/4 + 3x^(1/3) + C
+[xUnit.net 00:00:05.25]           · Achtung: Die Funktion ist im Intervall nicht überall definiert (x = 0) – uneigentliches Integral: an diesen Stellen den Grenzwert von F bilden: F(x) = 3x^(4/3)/4 + 3x^(1/3)
+[xUnit.net 00:00:05.25]           · Der Grenzwert von F existiert nicht (F wächst über alle Grenzen bei x = 0) – das Integral divergiert: existiert nicht
+[xUnit.net 00:00:05.25]           Probe: ✓ Probe durch Ableiten: F' stimmt an 6 Stellen mit f überein – bei x = 0,7: F' ≈ 2,156338, f = 2,156338.
+[xUnit.net 00:00:05.25]           Probe: ⚠ Die Gegenrechnung zeigt kein klares Wachstum an der Lücke – ob das Integral divergiert, ist unsicher.
+[xUnit.net 00:00:05.28]     T-0781 R3 HOCH: langsam konvergente uneigentliche Integrale haben einen Wert (Test rechnet selbst: ∫₀¹ x^a = 1/(a+1))(f: "x^(-2/3)", von: "0", bis: "1", soll: 3) [FAIL]
+[xUnit.net 00:00:05.28]       Assert.DoesNotContain() Failure: Sub-string found
+[xUnit.net 00:00:05.28]                                       ↓ (pos 26)
+[xUnit.net 00:00:05.28]       String: ···"0 bis 1 x^(−2/3) dx existiert nicht (das "···
+[xUnit.net 00:00:05.28]       Found:  "existiert nicht"
+[xUnit.net 00:00:05.28]       Stack Trace:
+[xUnit.net 00:00:05.28]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-rot\tests\Trendo.Core.Tests\T0781Runde3Tests.cs(29,0): at Trendo.Core.Tests.T0781Runde3Tests.Konvergent(String f, String von, String bis, Double soll)
+[xUnit.net 00:00:05.28]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.28]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:05.28]       Output:
+[xUnit.net 00:00:05.28]         Berechne: ∫ von 0 bis 1 x^(−2/3) dx → ∫ von 0 bis 1 x^(−2/3) dx existiert nicht (das Integral divergiert bei x = 0)
+[xUnit.net 00:00:05.28]           · Potenzregel: ∫ uⁿ du = uⁿ⁺¹/(n + 1) mit n = −2/3: ∫ 1/(x^(2/3)) dx = 3x^(1/3)
+[xUnit.net 00:00:05.28]           · Stammfunktion (C ist eine beliebige Konstante): ∫ x^(−2/3) dx = 3x^(1/3) + C
+[xUnit.net 00:00:05.28]           · Achtung: Die Funktion ist im Intervall nicht überall definiert (x = 0) – uneigentliches Integral: an diesen Stellen den Grenzwert von F bilden: F(x) = 3x^(1/3)
+[xUnit.net 00:00:05.28]           · Der Grenzwert von F existiert nicht (F wächst über alle Grenzen bei x = 0) – das Integral divergiert: existiert nicht
+[xUnit.net 00:00:05.28]           Probe: ✓ Probe durch Ableiten: F' stimmt an 6 Stellen mit f überein – bei x = 0,7: F' ≈ 1,268434, f = 1,268434.
+[xUnit.net 00:00:05.28]           Probe: ⚠ Die Gegenrechnung zeigt kein klares Wachstum an der Lücke – ob das Integral divergiert, ist unsicher.
+  Fehler T-0781 R3 NIEDRIG: schmale Definitionslücke am Rand → „nicht überall definiert“, nicht „divergiert“(f: "sqrt(x)", von: "-0.0001", bis: "1") [171 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Sub-string not found
+String:    "∫ von −1/10000 bis 1 √x dx existiert nich"···
+Not found: "nicht überall definiert"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0781Runde3Tests.Schmale_luecke_am_rand(String f, String von, String bis) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-rot\tests\Trendo.Core.Tests\T0781Runde3Tests.cs:line 63
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Standardausgabemeldungen:
+ Berechne: ∫ von −1/10000 bis 1 √x dx → ∫ von −1/10000 bis 1 √x dx existiert nicht (das Integral divergiert bei x = −0,0001, x = 0)
+   · Potenzregel: ∫ uⁿ du = uⁿ⁺¹/(n + 1) mit n = 1/2: ∫ √x dx = 2x^(3/2)/3
+   · Stammfunktion (C ist eine beliebige Konstante): ∫ √x dx = 2x^(3/2)/3 + C
+   · Achtung: Die Funktion ist im Intervall nicht überall definiert (x = −0,0001, x = 0) – uneigentliches Integral: an diesen Stellen den Grenzwert von F bilden: F(x) = 2x^(3/2)/3
+   · Teilstück 0 … 1 (mit Grenzwert): F(1) − F(0) = 0,6666666667 − (0) = 0,6666666667
+   · Der Grenzwert von F existiert nicht (F wächst über alle Grenzen bei x = −0,0001, x = 0) – das Integral divergiert: existiert nicht
+   Probe: ✓ Probe durch Ableiten: F' stimmt an 5 Stellen mit f überein – bei x = 0,7: F' ≈ 0,83666, f = 0,83666.
+   Probe: ⚠ Die Gegenrechnung zeigt kein klares Wachstum an der Lücke – ob das Integral divergiert, ist unsicher.
+
+
+  Fehler T-0781 R3 NIEDRIG: schmale Definitionslücke am Rand → „nicht überall definiert“, nicht „divergiert“(f: "ln(x)", von: "-0.000001", bis: "1") [18 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Sub-string not found
+String:    "∫ von −1/1000000 bis 1 ln(x) dx existiert"···
+Not found: "nicht überall definiert"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0781Runde3Tests.Schmale_luecke_am_rand(String f, String von, String bis) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-rot\tests\Trendo.Core.Tests\T0781Runde3Tests.cs:line 63
+   at InvokeStub_T0781Runde3Tests.Schmale_luecke_am_rand(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standardausgabemeldungen:
+ Berechne: ∫ von −1/1000000 bis 1 ln(x) dx → ∫ von −1/1000000 bis 1 ln(x) dx existiert nicht (das Integral divergiert bei x = −0,000001, x = 0)
+   · Bekannte Stammfunktion (partielle Integration mit 1·ln x): ∫ ln(x) dx = x·ln(x) − x: ∫ ln(x) dx = −x + x·ln(x)
+   · Stammfunktion (C ist eine beliebige Konstante): ∫ ln(x) dx = −x + x·ln(x) + C
+   · Achtung: Die Funktion ist im Intervall nicht überall definiert (x = −0,000001, x = 0) – uneigentliches Integral: an diesen Stellen den Grenzwert von F bilden: F(x) = −x + x·ln(x)
+   · Teilstück 0 … 1 (mit Grenzwert): F(1) − F(0) = −1 − (0) = −1
+   · Der Grenzwert von F existiert nicht (F wächst über alle Grenzen bei x = −0,000001, x = 0) – das Integral divergiert: existiert nicht
+   Probe: ✓ Probe durch Ableiten: F' stimmt an 5 Stellen mit f überein – bei x = 0,7: F' ≈ −0,356675, f = −0,356675.
+   Probe: ⚠ Die Gegenrechnung zeigt kein klares Wachstum an der Lücke – ob das Integral divergiert, ist unsicher.
+
+
+  Fehler T-0781 R3 NIEDRIG: schmale Definitionslücke am Rand → „nicht überall definiert“, nicht „divergiert“(f: "sqrt(1-x)", von: "0", bis: "1.000001") [1 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Sub-string not found
+String:    "∫ von 0 bis 1000001/1000000 √(1 − x) dx e"···
+Not found: "nicht überall definiert"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0781Runde3Tests.Schmale_luecke_am_rand(String f, String von, String bis) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-rot\tests\Trendo.Core.Tests\T0781Runde3Tests.cs:line 63
+   at InvokeStub_T0781Runde3Tests.Schmale_luecke_am_rand(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standardausgabemeldungen:
+ Berechne: ∫ von 0 bis 1000001/1000000 √(1 − x) dx → ∫ von 0 bis 1000001/1000000 √(1 − x) dx existiert nicht (das Integral divergiert bei x = 1, x = 1,000001)
+   · Potenzregel: ∫ uⁿ du = uⁿ⁺¹/(n + 1) mit n = 1/2 – lineare Substitution: durch die innere Ableitung −1 teilen: ∫ √(−x + 1) dx = −2(−x + 1)^(3/2)/3
+   · Stammfunktion (C ist eine beliebige Konstante): ∫ √(1 − x) dx = −2(−x + 1)^(3/2)/3 + C
+   · Achtung: Die Funktion ist im Intervall nicht überall definiert (x = 1, x = 1,000001) – uneigentliches Integral: an diesen Stellen den Grenzwert von F bilden: F(x) = −2(−x + 1)^(3/2)/3
+   · Teilstück 0 … 1 (mit Grenzwert): F(1) − F(0) = 0 − (−0,6666666667) = 0,6666666667
+   · Der Grenzwert von F existiert nicht (F wächst über alle Grenzen bei x = 1, x = 1,000001) – das Integral divergiert: existiert nicht
+   Probe: ✓ Probe durch Ableiten: F' stimmt an 3 Stellen mit f überein – bei x = 0,7: F' ≈ 0,547723, f = 0,547723.
+   Probe: ⚠ Die Gegenrechnung an der Lücke ließ sich nicht ausrechnen – ob das Integral divergiert, ist unsicher.
+
+
+  Bestanden T-0781 R3 HOCH: weiterhin divergent – ∫1/x, ∫1/x², ∫x^(−1) von 0 bis 1(f: "x^(-1)") [66 ms]
+  Bestanden T-0781 R3 HOCH: weiterhin divergent – ∫1/x, ∫1/x², ∫x^(−1) von 0 bis 1(f: "1/x") [83 ms]
+  Bestanden T-0781 R3 HOCH: weiterhin divergent – ∫1/x, ∫1/x², ∫x^(−1) von 0 bis 1(f: "x^(-1.5)") [73 ms]
+  Bestanden T-0781 R3 HOCH: weiterhin divergent – ∫1/x, ∫1/x², ∫x^(−1) von 0 bis 1(f: "1/x^2") [137 ms]
+  Fehler T-0781 R3 HOCH: ohne Potenzregel (Extrapolation): ∫ x^(−2/3) + x^(1/3) von 0 bis 1 = 15/4 – kein „existiert nicht“ [73 ms]
+  Fehlermeldung:
+   Assert.DoesNotContain() Failure: Sub-string found
+                                ↓ (pos 38)
+String: ···"−2/3) + x^(1/3)) dx existiert nicht (das "···
+Found:  "existiert nicht"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0781Runde3Tests.Extrapolation_ohne_potenzregel() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-rot\tests\Trendo.Core.Tests\T0781Runde3Tests.cs:line 51
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standardausgabemeldungen:
+ Berechne: ∫ von 0 bis 1 (x^(−2/3) + x^(1/3)) dx → ∫ von 0 bis 1 (x^(−2/3) + x^(1/3)) dx existiert nicht (das Integral divergiert bei x = 0)
+   · Summenregel: jedes Glied einzeln integrieren: ∫ (x^(1/3) + 1/(x^(2/3))) dx = ∫ x^(1/3) dx + ∫ 1/(x^(2/3)) dx
+   · Potenzregel: ∫ uⁿ du = uⁿ⁺¹/(n + 1) mit n = 1/3: ∫ x^(1/3) dx = 3x^(4/3)/4
+   · Potenzregel: ∫ uⁿ du = uⁿ⁺¹/(n + 1) mit n = −2/3: ∫ 1/(x^(2/3)) dx = 3x^(1/3)
+   · Stammfunktion (C ist eine beliebige Konstante): ∫ (x^(−2/3) + x^(1/3)) dx = 3x^(4/3)/4 + 3x^(1/3) + C
+   · Achtung: Die Funktion ist im Intervall nicht überall definiert (x = 0) – uneigentliches Integral: an diesen Stellen den Grenzwert von F bilden: F(x) = 3x^(4/3)/4 + 3x^(1/3)
+   · Der Grenzwert von F existiert nicht (F wächst über alle Grenzen bei x = 0) – das Integral divergiert: existiert nicht
+   Probe: ✓ Probe durch Ableiten: F' stimmt an 6 Stellen mit f überein – bei x = 0,7: F' ≈ 2,156338, f = 2,156338.
+   Probe: ⚠ Die Gegenrechnung zeigt kein klares Wachstum an der Lücke – ob das Integral divergiert, ist unsicher.
+
+
+  Fehler T-0781 R3 HOCH: langsam konvergente uneigentliche Integrale haben einen Wert (Test rechnet selbst: ∫₀¹ x^a = 1/(a+1))(f: "x^(-2/3)", von: "0", bis: "1", soll: 3) [32 ms]
+  Fehlermeldung:
+   Assert.DoesNotContain() Failure: Sub-string found
+                                ↓ (pos 26)
+String: ···"0 bis 1 x^(−2/3) dx existiert nicht (das "···
+Found:  "existiert nicht"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0781Runde3Tests.Konvergent(String f, String von, String bis, Double soll) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-rot\tests\Trendo.Core.Tests\T0781Runde3Tests.cs:line 29
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Standardausgabemeldungen:
+ Berechne: ∫ von 0 bis 1 x^(−2/3) dx → ∫ von 0 bis 1 x^(−2/3) dx existiert nicht (das Integral divergiert bei x = 0)
+   · Potenzregel: ∫ uⁿ du = uⁿ⁺¹/(n + 1) mit n = −2/3: ∫ 1/(x^(2/3)) dx = 3x^(1/3)
+   · Stammfunktion (C ist eine beliebige Konstante): ∫ x^(−2/3) dx = 3x^(1/3) + C
+   · Achtung: Die Funktion ist im Intervall nicht überall definiert (x = 0) – uneigentliches Integral: an diesen Stellen den Grenzwert von F bilden: F(x) = 3x^(1/3)
+   · Der Grenzwert von F existiert nicht (F wächst über alle Grenzen bei x = 0) – das Integral divergiert: existiert nicht
+   Probe: ✓ Probe durch Ableiten: F' stimmt an 6 Stellen mit f überein – bei x = 0,7: F' ≈ 1,268434, f = 1,268434.
+   Probe: ⚠ Die Gegenrechnung zeigt kein klares Wachstum an der Lücke – ob das Integral divergiert, ist unsicher.
+
+
+[xUnit.net 00:00:05.31]     T-0781 R3 HOCH: langsam konvergente uneigentliche Integrale haben einen Wert (Test rechnet selbst: ∫₀¹ x^a = 1/(a+1))(f: "x^(-2/3)", von: "-1", bis: "1", soll: 6) [FAIL]
+[xUnit.net 00:00:05.31]       Assert.DoesNotContain() Failure: Sub-string found
+[xUnit.net 00:00:05.31]                                       ↓ (pos 27)
+[xUnit.net 00:00:05.31]       String: ···"1 bis 1 x^(−2/3) dx existiert nicht (das "···
+[xUnit.net 00:00:05.31]       Found:  "existiert nicht"
+[xUnit.net 00:00:05.31]       Stack Trace:
+[xUnit.net 00:00:05.31]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-rot\tests\Trendo.Core.Tests\T0781Runde3Tests.cs(29,0): at Trendo.Core.Tests.T0781Runde3Tests.Konvergent(String f, String von, String bis, Double soll)
+[xUnit.net 00:00:05.31]            at InvokeStub_T0781Runde3Tests.Konvergent(Object, Span`1)
+[xUnit.net 00:00:05.31]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:05.31]       Output:
+[xUnit.net 00:00:05.31]         Berechne: ∫ von −1 bis 1 x^(−2/3) dx → ∫ von −1 bis 1 x^(−2/3) dx existiert nicht (das Integral divergiert bei x = 0)
+[xUnit.net 00:00:05.31]           · Potenzregel: ∫ uⁿ du = uⁿ⁺¹/(n + 1) mit n = −2/3: ∫ 1/(x^(2/3)) dx = 3x^(1/3)
+[xUnit.net 00:00:05.31]           · Stammfunktion (C ist eine beliebige Konstante): ∫ x^(−2/3) dx = 3x^(1/3) + C
+[xUnit.net 00:00:05.31]           · Achtung: Die Funktion ist im Intervall nicht überall definiert (x = 0) – uneigentliches Integral: an diesen Stellen den Grenzwert von F bilden: F(x) = 3x^(1/3)
+[xUnit.net 00:00:05.31]           · Der Grenzwert von F existiert nicht (F wächst über alle Grenzen bei x = 0) – das Integral divergiert: existiert nicht
+[xUnit.net 00:00:05.31]           Probe: ✓ Probe durch Ableiten: F' stimmt an 6 Stellen mit f überein – bei x = 0,7: F' ≈ 1,268434, f = 1,268434.
+[xUnit.net 00:00:05.31]           Probe: ⚠ Die Gegenrechnung zeigt kein klares Wachstum an der Lücke – ob das Integral divergiert, ist unsicher.
+[xUnit.net 00:00:05.35]     T-0781 R3 HOCH: langsam konvergente uneigentliche Integrale haben einen Wert (Test rechnet selbst: ∫₀¹ x^a = 1/(a+1))(f: "x^(-0.9)", von: "0", bis: "1", soll: 10) [FAIL]
+[xUnit.net 00:00:05.35]       Assert.DoesNotContain() Failure: Sub-string found
+[xUnit.net 00:00:05.35]                                       ↓ (pos 30)
+[xUnit.net 00:00:05.35]       String: ···"s 1 1/(x^(9/10)) dx existiert nicht (das "···
+[xUnit.net 00:00:05.35]       Found:  "existiert nicht"
+[xUnit.net 00:00:05.35]       Stack Trace:
+[xUnit.net 00:00:05.35]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-rot\tests\Trendo.Core.Tests\T0781Runde3Tests.cs(29,0): at Trendo.Core.Tests.T0781Runde3Tests.Konvergent(String f, String von, String bis, Double soll)
+[xUnit.net 00:00:05.35]            at InvokeStub_T0781Runde3Tests.Konvergent(Object, Span`1)
+[xUnit.net 00:00:05.35]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:05.35]       Output:
+[xUnit.net 00:00:05.35]         Berechne: ∫ von 0 bis 1 1/(x^(9/10)) dx → ∫ von 0 bis 1 1/(x^(9/10)) dx existiert nicht (das Integral divergiert bei x = 0)
+[xUnit.net 00:00:05.35]           · Potenzregel: ∫ uⁿ du = uⁿ⁺¹/(n + 1) mit n = −9/10: ∫ 1/(x^(9/10)) dx = 10x^(1/10)
+[xUnit.net 00:00:05.35]           · Stammfunktion (C ist eine beliebige Konstante): ∫ 1/(x^(9/10)) dx = 10x^(1/10) + C
+[xUnit.net 00:00:05.35]           · Achtung: Die Funktion ist im Intervall nicht überall definiert (x = 0) – uneigentliches Integral: an diesen Stellen den Grenzwert von F bilden: F(x) = 10x^(1/10)
+[xUnit.net 00:00:05.35]           · Der Grenzwert von F existiert nicht (F wächst über alle Grenzen bei x = 0) – das Integral divergiert: existiert nicht
+[xUnit.net 00:00:05.35]           Probe: ✓ Probe durch Ableiten: F' stimmt an 5 Stellen mit f überein – bei x = 0,7: F' ≈ 1,378516, f = 1,378516.
+[xUnit.net 00:00:05.35]           Probe: ⚠ Die Gegenrechnung zeigt kein klares Wachstum an der Lücke – ob das Integral divergiert, ist unsicher.
+[xUnit.net 00:00:05.43]     T-0781 R3 HOCH: langsam konvergente uneigentliche Integrale haben einen Wert (Test rechnet selbst: ∫₀¹ x^a = 1/(a+1))(f: "5*x^(-3/4)", von: "0", bis: "1", soll: 20) [FAIL]
+[xUnit.net 00:00:05.43]       Assert.DoesNotContain() Failure: Sub-string found
+[xUnit.net 00:00:05.43]                                       ↓ (pos 27)
+[xUnit.net 00:00:05.43]       String: ···" bis 1 5x^(−3/4) dx existiert nicht (das "···
+[xUnit.net 00:00:05.43]       Found:  "existiert nicht"
+[xUnit.net 00:00:05.43]       Stack Trace:
+[xUnit.net 00:00:05.43]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-rot\tests\Trendo.Core.Tests\T0781Runde3Tests.cs(29,0): at Trendo.Core.Tests.T0781Runde3Tests.Konvergent(String f, String von, String bis, Double soll)
+[xUnit.net 00:00:05.43]            at InvokeStub_T0781Runde3Tests.Konvergent(Object, Span`1)
+[xUnit.net 00:00:05.43]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:05.43]       Output:
+[xUnit.net 00:00:05.43]         Berechne: ∫ von 0 bis 1 5x^(−3/4) dx → ∫ von 0 bis 1 5x^(−3/4) dx existiert nicht (das Integral divergiert bei x = 0)
+[xUnit.net 00:00:05.43]           · Faktorregel: der Faktor 5 kommt vor das Integral: ∫ 5/(x^(3/4)) dx = 5 · ∫ 1/(x^(3/4)) dx
+[xUnit.net 00:00:05.43]           · Potenzregel: ∫ uⁿ du = uⁿ⁺¹/(n + 1) mit n = −3/4: ∫ 1/(x^(3/4)) dx = 4x^(1/4)
+[xUnit.net 00:00:05.43]           · Stammfunktion (C ist eine beliebige Konstante): ∫ 5x^(−3/4) dx = 20x^(1/4) + C
+[xUnit.net 00:00:05.43]           · Achtung: Die Funktion ist im Intervall nicht überall definiert (x = 0) – uneigentliches Integral: an diesen Stellen den Grenzwert von F bilden: F(x) = 20x^(1/4)
+[xUnit.net 00:00:05.43]           · Der Grenzwert von F existiert nicht (F wächst über alle Grenzen bei x = 0) – das Integral divergiert: existiert nicht
+[xUnit.net 00:00:05.43]           Probe: ✓ Probe durch Ableiten: F' stimmt an 5 Stellen mit f überein – bei x = 0,7: F' ≈ 6,533509, f = 6,533509.
+[xUnit.net 00:00:05.43]           Probe: ⚠ Die Gegenrechnung zeigt kein klares Wachstum an der Lücke – ob das Integral divergiert, ist unsicher.
+[xUnit.net 00:00:05.47]     T-0781 R3 HOCH: langsam konvergente uneigentliche Integrale haben einen Wert (Test rechnet selbst: ∫₀¹ x^a = 1/(a+1))(f: "x^(-3/4)", von: "0", bis: "1", soll: 4) [FAIL]
+[xUnit.net 00:00:05.47]       Assert.DoesNotContain() Failure: Sub-string found
+[xUnit.net 00:00:05.47]                                       ↓ (pos 26)
+[xUnit.net 00:00:05.47]       String: ···"0 bis 1 x^(−3/4) dx existiert nicht (das "···
+[xUnit.net 00:00:05.47]       Found:  "existiert nicht"
+[xUnit.net 00:00:05.47]       Stack Trace:
+[xUnit.net 00:00:05.47]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-rot\tests\Trendo.Core.Tests\T0781Runde3Tests.cs(29,0): at Trendo.Core.Tests.T0781Runde3Tests.Konvergent(String f, String von, String bis, Double soll)
+[xUnit.net 00:00:05.47]            at InvokeStub_T0781Runde3Tests.Konvergent(Object, Span`1)
+[xUnit.net 00:00:05.47]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:05.47]       Output:
+[xUnit.net 00:00:05.47]         Berechne: ∫ von 0 bis 1 x^(−3/4) dx → ∫ von 0 bis 1 x^(−3/4) dx existiert nicht (das Integral divergiert bei x = 0)
+[xUnit.net 00:00:05.47]           · Potenzregel: ∫ uⁿ du = uⁿ⁺¹/(n + 1) mit n = −3/4: ∫ 1/(x^(3/4)) dx = 4x^(1/4)
+[xUnit.net 00:00:05.47]           · Stammfunktion (C ist eine beliebige Konstante): ∫ x^(−3/4) dx = 4x^(1/4) + C
+[xUnit.net 00:00:05.47]           · Achtung: Die Funktion ist im Intervall nicht überall definiert (x = 0) – uneigentliches Integral: an diesen Stellen den Grenzwert von F bilden: F(x) = 4x^(1/4)
+[xUnit.net 00:00:05.47]           · Der Grenzwert von F existiert nicht (F wächst über alle Grenzen bei x = 0) – das Integral divergiert: existiert nicht
+[xUnit.net 00:00:05.47]           Probe: ✓ Probe durch Ableiten: F' stimmt an 5 Stellen mit f überein – bei x = 0,7: F' ≈ 1,306702, f = 1,306702.
+[xUnit.net 00:00:05.47]           Probe: ⚠ Die Gegenrechnung zeigt kein klares Wachstum an der Lücke – ob das Integral divergiert, ist unsicher.
+[xUnit.net 00:00:05.47]   Finished:    Trendo.Core.Tests
+  Fehler T-0781 R3 HOCH: langsam konvergente uneigentliche Integrale haben einen Wert (Test rechnet selbst: ∫₀¹ x^a = 1/(a+1))(f: "x^(-2/3)", von: "-1", bis: "1", soll: 6) [30 ms]
+  Fehlermeldung:
+   Assert.DoesNotContain() Failure: Sub-string found
+                                ↓ (pos 27)
+String: ···"1 bis 1 x^(−2/3) dx existiert nicht (das "···
+Found:  "existiert nicht"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0781Runde3Tests.Konvergent(String f, String von, String bis, Double soll) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-rot\tests\Trendo.Core.Tests\T0781Runde3Tests.cs:line 29
+   at InvokeStub_T0781Runde3Tests.Konvergent(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standardausgabemeldungen:
+ Berechne: ∫ von −1 bis 1 x^(−2/3) dx → ∫ von −1 bis 1 x^(−2/3) dx existiert nicht (das Integral divergiert bei x = 0)
+   · Potenzregel: ∫ uⁿ du = uⁿ⁺¹/(n + 1) mit n = −2/3: ∫ 1/(x^(2/3)) dx = 3x^(1/3)
+   · Stammfunktion (C ist eine beliebige Konstante): ∫ x^(−2/3) dx = 3x^(1/3) + C
+   · Achtung: Die Funktion ist im Intervall nicht überall definiert (x = 0) – uneigentliches Integral: an diesen Stellen den Grenzwert von F bilden: F(x) = 3x^(1/3)
+   · Der Grenzwert von F existiert nicht (F wächst über alle Grenzen bei x = 0) – das Integral divergiert: existiert nicht
+   Probe: ✓ Probe durch Ableiten: F' stimmt an 6 Stellen mit f überein – bei x = 0,7: F' ≈ 1,268434, f = 1,268434.
+   Probe: ⚠ Die Gegenrechnung zeigt kein klares Wachstum an der Lücke – ob das Integral divergiert, ist unsicher.
+
+
+  Fehler T-0781 R3 HOCH: langsam konvergente uneigentliche Integrale haben einen Wert (Test rechnet selbst: ∫₀¹ x^a = 1/(a+1))(f: "x^(-0.9)", von: "0", bis: "1", soll: 10) [34 ms]
+  Fehlermeldung:
+   Assert.DoesNotContain() Failure: Sub-string found
+                                ↓ (pos 30)
+String: ···"s 1 1/(x^(9/10)) dx existiert nicht (das "···
+Found:  "existiert nicht"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0781Runde3Tests.Konvergent(String f, String von, String bis, Double soll) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-rot\tests\Trendo.Core.Tests\T0781Runde3Tests.cs:line 29
+   at InvokeStub_T0781Runde3Tests.Konvergent(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standardausgabemeldungen:
+ Berechne: ∫ von 0 bis 1 1/(x^(9/10)) dx → ∫ von 0 bis 1 1/(x^(9/10)) dx existiert nicht (das Integral divergiert bei x = 0)
+   · Potenzregel: ∫ uⁿ du = uⁿ⁺¹/(n + 1) mit n = −9/10: ∫ 1/(x^(9/10)) dx = 10x^(1/10)
+   · Stammfunktion (C ist eine beliebige Konstante): ∫ 1/(x^(9/10)) dx = 10x^(1/10) + C
+   · Achtung: Die Funktion ist im Intervall nicht überall definiert (x = 0) – uneigentliches Integral: an diesen Stellen den Grenzwert von F bilden: F(x) = 10x^(1/10)
+   · Der Grenzwert von F existiert nicht (F wächst über alle Grenzen bei x = 0) – das Integral divergiert: existiert nicht
+   Probe: ✓ Probe durch Ableiten: F' stimmt an 5 Stellen mit f überein – bei x = 0,7: F' ≈ 1,378516, f = 1,378516.
+   Probe: ⚠ Die Gegenrechnung zeigt kein klares Wachstum an der Lücke – ob das Integral divergiert, ist unsicher.
+
+
+  Fehler T-0781 R3 HOCH: langsam konvergente uneigentliche Integrale haben einen Wert (Test rechnet selbst: ∫₀¹ x^a = 1/(a+1))(f: "5*x^(-3/4)", von: "0", bis: "1", soll: 20) [82 ms]
+  Fehlermeldung:
+   Assert.DoesNotContain() Failure: Sub-string found
+                                ↓ (pos 27)
+String: ···" bis 1 5x^(−3/4) dx existiert nicht (das "···
+Found:  "existiert nicht"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0781Runde3Tests.Konvergent(String f, String von, String bis, Double soll) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-rot\tests\Trendo.Core.Tests\T0781Runde3Tests.cs:line 29
+   at InvokeStub_T0781Runde3Tests.Konvergent(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standardausgabemeldungen:
+ Berechne: ∫ von 0 bis 1 5x^(−3/4) dx → ∫ von 0 bis 1 5x^(−3/4) dx existiert nicht (das Integral divergiert bei x = 0)
+   · Faktorregel: der Faktor 5 kommt vor das Integral: ∫ 5/(x^(3/4)) dx = 5 · ∫ 1/(x^(3/4)) dx
+   · Potenzregel: ∫ uⁿ du = uⁿ⁺¹/(n + 1) mit n = −3/4: ∫ 1/(x^(3/4)) dx = 4x^(1/4)
+   · Stammfunktion (C ist eine beliebige Konstante): ∫ 5x^(−3/4) dx = 20x^(1/4) + C
+   · Achtung: Die Funktion ist im Intervall nicht überall definiert (x = 0) – uneigentliches Integral: an diesen Stellen den Grenzwert von F bilden: F(x) = 20x^(1/4)
+   · Der Grenzwert von F existiert nicht (F wächst über alle Grenzen bei x = 0) – das Integral divergiert: existiert nicht
+   Probe: ✓ Probe durch Ableiten: F' stimmt an 5 Stellen mit f überein – bei x = 0,7: F' ≈ 6,533509, f = 6,533509.
+   Probe: ⚠ Die Gegenrechnung zeigt kein klares Wachstum an der Lücke – ob das Integral divergiert, ist unsicher.
+
+
+  Fehler T-0781 R3 HOCH: langsam konvergente uneigentliche Integrale haben einen Wert (Test rechnet selbst: ∫₀¹ x^a = 1/(a+1))(f: "x^(-3/4)", von: "0", bis: "1", soll: 4) [40 ms]
+  Fehlermeldung:
+   Assert.DoesNotContain() Failure: Sub-string found
+                                ↓ (pos 26)
+String: ···"0 bis 1 x^(−3/4) dx existiert nicht (das "···
+Found:  "existiert nicht"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0781Runde3Tests.Konvergent(String f, String von, String bis, Double soll) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-rot\tests\Trendo.Core.Tests\T0781Runde3Tests.cs:line 29
+   at InvokeStub_T0781Runde3Tests.Konvergent(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standardausgabemeldungen:
+ Berechne: ∫ von 0 bis 1 x^(−3/4) dx → ∫ von 0 bis 1 x^(−3/4) dx existiert nicht (das Integral divergiert bei x = 0)
+   · Potenzregel: ∫ uⁿ du = uⁿ⁺¹/(n + 1) mit n = −3/4: ∫ 1/(x^(3/4)) dx = 4x^(1/4)
+   · Stammfunktion (C ist eine beliebige Konstante): ∫ x^(−3/4) dx = 4x^(1/4) + C
+   · Achtung: Die Funktion ist im Intervall nicht überall definiert (x = 0) – uneigentliches Integral: an diesen Stellen den Grenzwert von F bilden: F(x) = 4x^(1/4)
+   · Der Grenzwert von F existiert nicht (F wächst über alle Grenzen bei x = 0) – das Integral divergiert: existiert nicht
+   Probe: ✓ Probe durch Ableiten: F' stimmt an 5 Stellen mit f überein – bei x = 0,7: F' ≈ 1,306702, f = 1,306702.
+   Probe: ⚠ Die Gegenrechnung zeigt kein klares Wachstum an der Lücke – ob das Integral divergiert, ist unsicher.
+
+
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 13
+     Bestanden: 4
+     Nicht bestanden: 9
+ Gesamtzeit: 7,9044 Sekunden

@@ -1,0 +1,22 @@
+Rot-Lauf App gegen 0ab418a92 (T0781Runde2UiTests.cs übernommen, Testnaht MhKernFuerTests gab es dort schon)
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0781 R3 Hintergrund: nur eine ältere Fassung derselben Zeile wird verworfen – mit Meldung „Ältere Rechnung verworfen“ [FAIL]
+      Assert.Contains() Failure: Sub-string not found
+      String:    "Gleichung lösen: x = 2 – Probe bestanden."
+      Not found: "Ältere Rechnung verworfen"
+      Stack Trace:
+        tests\Trendo.App.Tests\T0781Runde2UiTests.cs(105,0): at Trendo.App.Tests.T0781Wissen_Ui.Gleiche_fassung_verworfen_mit_meldung()
+        --- End of stack trace from previous location ---
+    T-0781 R3 Hintergrund: schnelle Folge zweier verschiedener Rechnungen – beide kommen an, keine wird still verworfen [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: 2
+      Actual:   1
+      Stack Trace:
+        tests\Trendo.App.Tests\T0781Runde2UiTests.cs(79,0): at Trendo.App.Tests.T0781Wissen_Ui.Veraltetes_ergebnis_verworfen()
+        --- End of stack trace from previous location ---
+  Finished:    Trendo.App.Tests (ID = '17dc6f1f2e8854281c993aa166d6373349c6c99502dd8ca6d86f7f0c33c9dc6d')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 2, Errors: 0, Failed: 2, Skipped: 0, Not Run: 0, Time: 7,415s

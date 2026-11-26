@@ -1,0 +1,149 @@
+% Erzeugt mit Trendo OS – mit LuaLaTeX oder XeLaTeX übersetzen
+\documentclass[11pt,a4paper]{article}
+\usepackage{fontspec}
+\usepackage{amsmath,amssymb}
+\usepackage[ngerman]{babel}
+\usepackage[margin=2cm]{geometry}
+\title{aufgaben-libreoffice}
+\date{}
+\begin{document}
+\maketitle
+\section*{Löse nach x: 5x − 3 = 2x + 9}
+\textit{Gleichung lösen}
+
+\paragraph{Lösungsweg}
+\begin{enumerate}
+  \item Alles auf eine Seite bringen, ausmultiplizieren und zusammenfassen\\
+  \texttt{5x − 3 = 2x + 9  ⇔  3x − 12 = 0}
+  \item +12 auf beiden Seiten\\
+  \texttt{3x = 12}
+  \item Beide Seiten durch 3 teilen\\
+  \texttt{x = 12 : 3 = 4}
+\end{enumerate}
+\paragraph{Ergebnis}
+\[ x_{1} = 4 \]
+\paragraph{Probe}
+\begin{itemize}
+  \item ✓ x = 4 einsetzen: links 17, rechts 17 – stimmt (exakt).
+  \item ✓ Unabhängige Zählung mit der Sturm-Kette: genau 1 verschiedene reelle Nullstelle(n) – alle gefunden.
+\end{itemize}
+\section*{Löse nach x: x² + 2x − 15 = 0}
+\textit{Gleichung lösen}
+
+\paragraph{Lösungsweg}
+\begin{enumerate}
+  \item p-q-Formel mit p = 2 und q = −15: x = −p/2 ± √((p/2)² − q)\\
+  \texttt{x = −1 ± √((1)² − (−15)) = −1 ± √(16)}
+  \item √(16) = 4 – zwei Lösungen\\
+  \texttt{x₁ = −1 + 4 = 3;  x₂ = −1 − 4 = −5}
+\end{enumerate}
+\paragraph{Ergebnis}
+\[ x_{1} = -5,\quad x_{2} = 3 \]
+\paragraph{Probe}
+\begin{itemize}
+  \item ✓ x = −5 einsetzen: links 0, rechts 0 – stimmt (exakt).
+  \item ✓ x = 3 einsetzen: links 0, rechts 0 – stimmt (exakt).
+  \item ✓ Unabhängige Zählung mit der Sturm-Kette: genau 2 verschiedene reelle Nullstelle(n) – alle gefunden.
+\end{itemize}
+\section*{Löse das Gleichungssystem}
+\textit{Gleichungssystem}
+
+\paragraph{Lösungsweg}
+\begin{enumerate}
+  \item Jede Gleichung ordnen: Variablen links, Zahl rechts\\
+  \texttt{I: x + y = 10 | II: x − y = 2}
+  \item x aus den anderen Gleichungen entfernen (Additionsverfahren): II − I\\
+  \texttt{I: x + y = 10 | II: −2y = −8}
+  \item Gleichung II durch −2 teilen, damit vor y eine 1 steht\\
+  \texttt{I: x + y = 10 | II: y = 4}
+  \item y aus den anderen Gleichungen entfernen (Additionsverfahren): I − II\\
+  \texttt{I: x = 6 | II: y = 4}
+  \item Lösung ablesen\\
+  \texttt{x = 6;  y = 4}
+\end{enumerate}
+\paragraph{Ergebnis}
+\[ x = 6,\quad y = 4 \]
+\paragraph{Probe}
+\begin{itemize}
+  \item ✓ Gleichung I (x + y = 10) mit der Lösung: links 10, rechts 10.
+  \item ✓ Gleichung II (x − y = 2) mit der Lösung: links 2, rechts 2.
+\end{itemize}
+\section*{Berechne: 2/3 + 3/4}
+\textit{Bruchrechnen}
+
+\paragraph{Lösungsweg}
+\begin{enumerate}
+  \item Hauptnenner finden: kgV(3, 4) = 12; beide Brüche darauf erweitern\\
+  \texttt{2/3 + 3/4 = 8/12 + 9/12}
+  \item Zähler addieren\\
+  \texttt{= 17/12}
+\end{enumerate}
+\paragraph{Ergebnis}
+\[ \frac{17}{12} \]
+\paragraph{Probe}
+\begin{itemize}
+  \item ✓ Gegenrechnung mit dem Taschenrechner (Gleitkomma): 1,4166666667 – Bruch 17/12 ergibt 1,4166666667.
+\end{itemize}
+\section*{Faktorisiere: x² − 16}
+\textit{Faktorisieren}
+
+\paragraph{Lösungsweg}
+\begin{enumerate}
+  \item 3. binomische Formel rückwärts: a² − b² = (a + b)(a − b)\\
+  \texttt{x² − 16 = (x + 4)(x − 4)}
+  \item Ergebnis\\
+  \texttt{x² − 16 = (x + 4)(x − 4)}
+\end{enumerate}
+\paragraph{Ergebnis}
+\[ \left(x + 4\right) \cdot \left(x - 4\right) \]
+\paragraph{Probe}
+\begin{itemize}
+  \item ✓ Ausmultipliziert ergibt (x + 4)(x − 4) wieder x² − 16 – genau der Ausgangsterm.
+\end{itemize}
+\section*{Integriere: ∫ (4x³ − 2x) dx}
+\textit{Integrieren}
+
+\paragraph{Lösungsweg}
+\begin{enumerate}
+  \item Summenregel: jedes Glied einzeln integrieren\\
+  \texttt{∫ (4x³ − 2x) dx = ∫ 4x³ dx − ∫ 2x dx}
+  \item Faktorregel: der Faktor 4 kommt vor das Integral\\
+  \texttt{∫ 4x³ dx = 4 · ∫ x³ dx}
+  \item Potenzregel: ∫ uⁿ du = uⁿ⁺¹/(n + 1) mit n = 3\\
+  \texttt{∫ x³ dx = x⁴/4}
+  \item Faktorregel: der Faktor −2 kommt vor das Integral\\
+  \texttt{∫ −2x dx = −2 · ∫ x dx}
+  \item Potenzregel: ∫ xⁿ dx = xⁿ⁺¹/(n + 1) mit n = 1\\
+  \texttt{∫ x dx = x²/2}
+  \item Stammfunktion (C ist eine beliebige Konstante)\\
+  \texttt{∫ (4x³ − 2x) dx = x⁴ − x² + C}
+\end{enumerate}
+\paragraph{Ergebnis}
+\[ \int 4 \cdot x^{3} - 2 \cdot x\,dx = x^{4} - x^{2} + C \]
+\paragraph{Probe}
+\begin{itemize}
+  \item ✓ Probe durch Ableiten: F' stimmt an 6 Stellen mit f überein – bei x = 0,7: F' ≈ −0,028, f = −0,028.
+\end{itemize}
+\section*{Leite ab: f(x) = x²·e\textasciicircum{}x}
+\textit{Ableiten}
+
+\paragraph{Lösungsweg}
+\begin{enumerate}
+  \item Produktregel: (u·v)' = u'·v + u·v' mit u = x², v = e\textasciicircum{}x\\
+  \texttt{(x²·e\textasciicircum{}x)' = x²·e\textasciicircum{}x + 2x·e\textasciicircum{}x}
+  \item Potenzregel: (xⁿ)' = n·xⁿ⁻¹ mit n = 2\\
+  \texttt{(x²)' = 2x}
+  \item e-Funktion: (eᵘ)' = eᵘ·u'\\
+  \texttt{(e\textasciicircum{}x)' = e\textasciicircum{}x}
+  \item Ableitung von x\\
+  \texttt{(x)' = 1}
+  \item Zusammenfassen\\
+  \texttt{f'(x) = x²·e\textasciicircum{}x + 2x·e\textasciicircum{}x}
+\end{enumerate}
+\paragraph{Ergebnis}
+\[ f'(x) = x^{2} \cdot e^{x} + 2 \cdot x \cdot e^{x} \]
+\paragraph{Probe}
+\begin{itemize}
+  \item ✓ Gegenrechnung mit dem Differenzenquotienten an 6 Stellen – bei x = 0,7: Differenzenquotient 3,805993, Ableitung 3,805993.
+\end{itemize}
+\end{document}

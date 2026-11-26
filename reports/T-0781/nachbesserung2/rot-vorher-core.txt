@@ -1,0 +1,60 @@
+Rot-Lauf Core gegen 8a5e74012 (T0781Runde2Tests übernommen).
+Lauf 1: Filter ohne „nicht definiert“ – Kubikwurzel hängt im alten Simpson, Testhost nach 900 s per timeout beendet (exit 124).
+Lauf 0 (nicht gespeichert, nur Beobachtung): mit „nicht definiert“ ebenfalls nach 600 s ohne Ergebnis beendet.
+
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:01.20]     T-0781 R2 e-Schreibweise eindeutig: „2e + 3“ = 2·e + 3, „2e+3“ = 2000 mit Hinweis-Schritt, „2e3x“ mehrdeutig [FAIL]
+[xUnit.net 00:00:01.22]     T-0781 R2 N2: „30 °C − 20 °C in °C“ ist die Differenz 10 °C (nicht −263,15 °C) [FAIL]
+  Fehler T-0781 R2 e-Schreibweise eindeutig: „2e + 3“ = 2·e + 3, „2e+3“ = 2000 mit Hinweis-Schritt, „2e3x“ mehrdeutig [94 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Filter not matched in collection
+Collection: [Schritt { Text = Alles auf eine Seite bringen, ausmultiplizieren und zusammenfassen, Formel = x = 2000 + 1  ⇔  x − 2001 = 0 }, Schritt { Text = +2001 auf beiden Seiten, Formel = x = 2001 }]
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0781Runde2Tests.E_schreibweise() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-rot\tests\Trendo.Core.Tests\T0781Runde2Tests.cs:line 57
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standardausgabemeldungen:
+ Löse nach x: x = 2000 + 1 → x = 2001
+   · Alles auf eine Seite bringen, ausmultiplizieren und zusammenfassen: x = 2000 + 1  ⇔  x − 2001 = 0
+   · +2001 auf beiden Seiten: x = 2001
+   Probe: ✓ x = 2001 einsetzen: links 2001, rechts 2001 – stimmt (exakt).
+   Probe: ✓ Unabhängige Zählung mit der Sturm-Kette: genau 1 verschiedene reelle Nullstelle(n) – alle gefunden.
+
+
+  Fehler T-0781 R2 N2: „30 °C − 20 °C in °C“ ist die Differenz 10 °C (nicht −263,15 °C) [24 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "10 °C"
+Actual:   "−263,15 °C"
+           ↑ (pos 0)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0781Runde2Tests.Differenz_in_celsius() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-rot\tests\Trendo.Core.Tests\T0781Runde2Tests.cs:line 46
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+Der aktive Testlauf wurde abgebrochen. Grund: Der Testhostprozess ist abgestürzt.
+
+Fehler!      : Fehler:     2, erfolgreich:     0, übersprungen:     0, gesamt:     2, Dauer: 139 ms - Trendo.Core.Tests.dll (net10.0)
+Testlauf abgebrochen.
+exit 124
+
+=== Lauf 2: nur Niedrig ===
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:01.15]     T-0781 R2 Niedrig: x^(1/3) = −2 → x = −8; deutsche Meldung bei riesiger Hochzahl; große Terme brechen in der Zeit ab [FAIL]
+  Fehler T-0781 R2 Niedrig: x^(1/3) = −2 → x = −8; deutsche Meldung bei riesiger Hochzahl; große Terme brechen in der Zeit ab [39 ms]
+  Fehlermeldung:
+   System.ArgumentException : Diese Gleichung kann der Mathe-Helfer nicht Schritt für Schritt umformen.
+  Stapelverfolgung:
+     at Trendo.Core.Wissen.MatheKern.Loese(Term seite, Term wert, String x, List`1 s, String fall, Int32 tiefe) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-rot\src\Trendo.Core\Wissen\MatheGleichung.cs:line 593
+   at Trendo.Core.Wissen.MatheKern.GleichungUmformen(String eingabe, String aufgabe, Term links, Term rechts, String x) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-rot\src\Trendo.Core\Wissen\MatheGleichung.cs:line 379
+   at Trendo.Core.Wissen.MatheKern.Gleichung(String eingabe, String variable) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-rot\src\Trendo.Core\Wissen\MatheGleichung.cs:line 208
+   at Trendo.Core.Wissen.MatheKern.Rechne(MatheAuftrag a) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-rot\src\Trendo.Core\Wissen\MatheKern.cs:line 92
+   at Trendo.Core.Tests.T0781Runde2Tests.R(MatheArt art, String e, String v, String von, String bis) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-rot\tests\Trendo.Core.Tests\T0781Runde2Tests.cs:line 11
+   at Trendo.Core.Tests.T0781Runde2Tests.Niedrig() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0781-rot\tests\Trendo.Core.Tests\T0781Runde2Tests.cs:line 66
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Fehler!      : Fehler:     1, erfolgreich:    20, übersprungen:     0, gesamt:    21, Dauer: 494 ms - Trendo.Core.Tests.dll (net10.0)
+exit 1

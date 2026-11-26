@@ -1,0 +1,107 @@
+Chemie
+
+1. Molare Masse von CuSO4·5H2O
+
+Molmasse
+
+ 1. Atome zählen
+      Cu: 1, S: 1, O: 9, H: 10
+
+ 2. Anzahl mal Atommasse je Element
+      1 · 63,546 g/mol + 1 · 32,06 g/mol + 9 · 15,999 g/mol + 10 · 1,008 g/mol
+
+ 3. Zusammenzählen
+      M(CuSO4·5H2O) = 249,677 g/mol
+
+ 4. Massenanteile
+      Cu 25,45 %, S 12,84 %, O 57,67 %, H 4,04 %
+
+Ergebnis: M = 249,677 g/mol
+
+Probe bestanden: Gegenrechnung: Beiträge der Zeilen ergeben zusammen 249,677 g/mol.
+Probe bestanden: Massenanteile ergeben zusammen 100,00 %.
+
+2. Gleiche aus: Fe + O2 -> Fe2O3
+
+Reaktion ausgleichen
+
+ 1. Vor jeden Stoff einen unbekannten Faktor schreiben
+      a·Fe + b·O2 → c·Fe2O3
+
+ 2. Atombilanz je Element: links gleich viele Atome wie rechts
+      Fe: a = 2c | O: 2b = 3c
+
+ 3. Gleichungssystem lösen: c = 1 setzen
+      a = 2, b = 3/2, c = 1
+
+ 4. Mit 2 malnehmen, damit kleinste ganze Zahlen entstehen
+      a = 4, b = 3, c = 2
+
+ 5. Ausgeglichene Gleichung
+      4 Fe + 3 O2 → 2 Fe2O3
+
+Ergebnis: 4 Fe + 3 O2 → 2 Fe2O3
+
+Probe bestanden: Fe: links 4, rechts 4
+Probe bestanden: O: links 6, rechts 6
+Probe bestanden: Massenerhaltung: links 319,374 g, rechts 319,374 g (je Formelumsatz)
+
+3. Gleiche aus: C3H8 + O2 -> CO2 + H2O
+
+Reaktion ausgleichen
+
+ 1. Vor jeden Stoff einen unbekannten Faktor schreiben
+      a·C3H8 + b·O2 → c·CO2 + d·H2O
+
+ 2. Atombilanz je Element: links gleich viele Atome wie rechts
+      C: 3a = c | H: 8a = 2d | O: 2b = 2c + d
+
+ 3. Gleichungssystem lösen: d = 1 setzen
+      a = 1/4, b = 5/4, c = 3/4, d = 1
+
+ 4. Mit 4 malnehmen, damit kleinste ganze Zahlen entstehen
+      a = 1, b = 5, c = 3, d = 4
+
+ 5. Ausgeglichene Gleichung
+      C3H8 + 5 O2 → 3 CO2 + 4 H2O
+
+Ergebnis: C3H8 + 5 O2 → 3 CO2 + 4 H2O
+
+Probe bestanden: C: links 3, rechts 3
+Probe bestanden: H: links 8, rechts 8
+Probe bestanden: O: links 10, rechts 10
+Probe bestanden: Massenerhaltung: links 204,087 g, rechts 204,087 g (je Formelumsatz)
+
+Gerechnet mit dem Rechenkern von Trendo OS – exakt mit Brüchen, jede Lösung mit Probe.
+
+                                                                                        Seite 1 von 2
+4. Gleiche aus: CH4 + O2 -> CO2 + H2O
+
+Reaktion ausgleichen
+
+ 1. Vor jeden Stoff einen unbekannten Faktor schreiben
+      a·CH4 + b·O2 → c·CO2 + d·H2O
+
+ 2. Atombilanz je Element: links gleich viele Atome wie rechts
+      C: a = c | H: 4a = 2d | O: 2b = 2c + d
+
+ 3. Gleichungssystem lösen: d = 1 setzen
+      a = 1/2, b = 1, c = 1/2, d = 1
+
+ 4. Mit 2 malnehmen, damit kleinste ganze Zahlen entstehen
+      a = 1, b = 2, c = 1, d = 2
+
+ 5. Ausgeglichene Gleichung
+      CH4 + 2 O2 → CO2 + 2 H2O
+
+Ergebnis: CH4 + 2 O2 → CO2 + 2 H2O
+
+Probe bestanden: C: links 1, rechts 1
+Probe bestanden: H: links 4, rechts 4
+Probe bestanden: O: links 4, rechts 4
+Probe bestanden: Massenerhaltung: links 80,039 g, rechts 80,039 g (je Formelumsatz)
+
+Gerechnet mit dem Rechenkern von Trendo OS – exakt mit Brüchen, jede Lösung mit Probe.
+
+                                                                                        Seite 2 von 2
+
