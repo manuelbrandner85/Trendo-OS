@@ -1,0 +1,31 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:33.64]     T-0776 echt: CAD-STEP (CORE-05) – FreeCAD 1.1 liest Trendos STEP als gültigen geschlossenen Körper: Volumen 6000 mm³ bzw. Winkel, Umriss und Name stimmen [FAIL]
+  Fehler T-0776 echt: CAD-STEP (CORE-05) – FreeCAD 1.1 liest Trendos STEP als gültigen geschlossenen Körper: Volumen 6000 mm³ bzw. Winkel, Umriss und Name stimmen [670 ms]
+  Fehlermeldung:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0776_Fremdnachlauf.Cad_step_in_FreeCAD() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\tests\Trendo.Core.Tests\T0776FremdnachlaufTests.cs:line 308
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:54.27]     T-0776 echt: Künstlerstudio – Trendos PSD und ORA öffnen in Krita 6: Krita liest Ebenen (Namen, Sichtbarkeit) und zeigt dieselben Farben wie Trendo [FAIL]
+  Fehler T-0776 echt: Künstlerstudio – Trendos PSD und ORA öffnen in Krita 6: Krita liest Ebenen (Namen, Sichtbarkeit) und zeigt dieselben Farben wie Trendo [20 s]
+  Fehlermeldung:
+   Krita liest die Ebenennamen mit Füllbytes – der Name ist nicht sauber in der Datei: <image h="30" version="0.0.1" w="40" xres="72" yres="72">
+ <stack composite-op="svg:src-over" isolation="isolate" name="root" opacity="1" visibility="visible" x="0" y="0">
+  <layer composite-op="svg:src-over" name="Versteckt<NUL><NUL>" opacity="1" src="data/layer2.png" visibility="hidden" x="0" y="0"/>
+  <layer composite-op="svg:src-over" name="Farbe r_tlich<NUL><NUL>" opacity="1" src="data/layer1.png" visibility="visible" x="20" y="10"/>
+  <layer composite-op="svg:src-over" name="Skizze<NUL>" opacity="1" src="data/layer0.png" visibility="visible" x="2" y="2"/>
+ </stack>
+</image>
+
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0776_Fremdnachlauf.Art_psd_ora_in_Krita() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\tests\Trendo.Core.Tests\T0776FremdnachlaufTests.cs:line 417
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+Fehler!      : Fehler:     2, erfolgreich:     7, übersprungen:     0, gesamt:     9, Dauer: 46 s - Trendo.Core.Tests.dll (net10.0)

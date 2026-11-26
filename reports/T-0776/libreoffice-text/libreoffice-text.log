@@ -1,0 +1,38 @@
+# T-0776 Fremdnachlauf libreoffice-text – 2026-11-26 12:54:43 +01:00
+Datei trendo-nachlauf.docx: 4133 Bytes, SHA-256 71d67d2f92c399fd13701087d8cff8a8894fb91701e13dc590ed93e8ce49a06e
+$ LibreOffice öffnet nachlauf.docx und schreibt txt
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-auftrag-T-0776/.lauf/work/text-15891e/lo-profil --headless --norestore --nolockcheck --convert-to "txt:Text (encoded):UTF8" --outdir C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-15891e\lo-aus-docx-txt C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-15891e\nachlauf.docx
+Exit 0 nach 11,3 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-15891e\nachlauf.docx as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-15891e\lo-aus-docx-txt\nachlauf.txt using filter : Text (encoded):UTF8
+[stderr] Could not find platform independent libraries <prefix>
+  eigene Prozesse (6): PID 3296 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\lo-kopie-bab6a0\libreoffice\program\soffice.bin; PID 62528 conhost.exe: C:\Windows\System32\conhost.exe; PID 63080 conhost.exe: C:\Windows\System32\conhost.exe; PID 63276 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\lo-kopie-bab6a0\libreoffice\program\soffice.bin; PID 65456 opencltest.exe: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\lo-kopie-bab6a0\libreoffice\program\opencltest.exe; PID 68016 soffice.com: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\lo-kopie-bab6a0\libreoffice\program\soffice.com
+Datei libreoffice-aus-docx.txt: 229 Bytes, SHA-256 b069f4a19ad53312e3e5eeb4aeeac82d948bbfcf05e291505b191251a0a5f42e
+LibreOffice-Text aus docx: Quartalsbericht Nachlauf ⏎ Kapitel eins ⏎ Dieser Absatz ist fett und kursiv – Umlaute äöüß bleiben. ⏎     • Erster Punkt ⏎     • Zweiter Punkt ⏎ Posten	Betrag ⏎ Miete	800 € ⏎ Strom	64,50 € ⏎ Zweite Seite, letzter Satz. ⏎
+$ LibreOffice öffnet nachlauf.docx und schreibt pdf
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-auftrag-T-0776/.lauf/work/text-15891e/lo-profil --headless --norestore --nolockcheck --convert-to pdf --outdir C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-15891e\lo-aus-docx-pdf C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-15891e\nachlauf.docx
+Exit 0 nach 2,3 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-15891e\nachlauf.docx as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-15891e\lo-aus-docx-pdf\nachlauf.pdf using filter : writer_pdf_Export
+[stderr] Could not find platform independent libraries <prefix>
+  eigene Prozesse (3): PID 52632 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\lo-kopie-bab6a0\libreoffice\program\soffice.bin; PID 63260 conhost.exe: C:\Windows\System32\conhost.exe; PID 64228 soffice.com: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\lo-kopie-bab6a0\libreoffice\program\soffice.com
+Datei libreoffice-aus-docx.pdf: 61933 Bytes, SHA-256 d0f4bfb8e6f1399e3b34a8fd965a8b513c06941568a73e2b35f60a997cfc51cf
+LibreOffice-PDF aus docx: 2 Seiten
+Datei trendo-nachlauf.odt: 2830 Bytes, SHA-256 537641ec18cf53b6eb01d3a9881b7ea2547de69ba8fbb647512114bb957b5cb9
+$ LibreOffice öffnet nachlauf.odt und schreibt txt
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-auftrag-T-0776/.lauf/work/text-15891e/lo-profil --headless --norestore --nolockcheck --convert-to "txt:Text (encoded):UTF8" --outdir C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-15891e\lo-aus-odt-txt C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-15891e\nachlauf.odt
+Exit 0 nach 1,7 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-15891e\nachlauf.odt as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-15891e\lo-aus-odt-txt\nachlauf.txt using filter : Text (encoded):UTF8
+[stderr] Could not find platform independent libraries <prefix>
+  eigene Prozesse (3): PID 54604 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\lo-kopie-bab6a0\libreoffice\program\soffice.bin; PID 61132 soffice.com: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\lo-kopie-bab6a0\libreoffice\program\soffice.com; PID 65780 conhost.exe: C:\Windows\System32\conhost.exe
+Datei libreoffice-aus-odt.txt: 231 Bytes, SHA-256 92c4e9a5d07c46c7df26448d6ffd2d59f21b28d1785542a763edb4578d405874
+LibreOffice-Text aus odt: Quartalsbericht Nachlauf ⏎ Kapitel eins ⏎ Dieser Absatz ist fett und kursiv – Umlaute äöüß bleiben. ⏎     • Erster Punkt ⏎     • Zweiter Punkt ⏎ Posten	Betrag ⏎ Miete	800 € ⏎ Strom	64,50 € ⏎  ⏎ Zweite Seite, letzter Satz. ⏎
+$ LibreOffice öffnet nachlauf.odt und schreibt pdf
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-auftrag-T-0776/.lauf/work/text-15891e/lo-profil --headless --norestore --nolockcheck --convert-to pdf --outdir C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-15891e\lo-aus-odt-pdf C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-15891e\nachlauf.odt
+Exit 0 nach 1,9 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-15891e\nachlauf.odt as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\text-15891e\lo-aus-odt-pdf\nachlauf.pdf using filter : writer_pdf_Export
+[stderr] Could not find platform independent libraries <prefix>
+  eigene Prozesse (3): PID 5040 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\lo-kopie-bab6a0\libreoffice\program\soffice.bin; PID 39036 conhost.exe: C:\Windows\System32\conhost.exe; PID 68752 soffice.com: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\lo-kopie-bab6a0\libreoffice\program\soffice.com
+Datei libreoffice-aus-odt.pdf: 61794 Bytes, SHA-256 58dbac2dfc42fdc3e18211fd28f3ce28643866b7a52f1bf73db7df6d1b78c6c9
+LibreOffice-PDF aus odt: 2 Seiten
+LibreOffice läuft aus einer Kopie im eigenen Temp-Ordner (14745 Dateien, 882 MB, kopiert in 16,9 s; frei vorher 48,6 GB). Keine alte eigene LibreOffice-Kopie vorhanden.
+Original: unverändert. Trendo-Werkzeugordner (LibreOffice-Original): 15933 Einträge, keiner geändert, keiner neu, keiner fehlt. In der Kopie hat LibreOffice bisher 2 Einträge angelegt/geändert/entfernt: program\opencl, share\uno_packages\cache.
+ERGEBNIS: BESTANDEN

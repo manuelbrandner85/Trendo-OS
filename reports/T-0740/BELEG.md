@@ -14,7 +14,7 @@ Lauf am 17.11.2026 auf dem Entwicklungs-PC (Windows 11, .NET 10, Release-Build),
 ## Ersetzt / nicht echt
 
 - Der **Dateidialog** ist im Test ersetzt (`PickOverride`/`FolderPickOverride` liefern den Pfad); alles danach – Lesen, Trainieren, Einordnen, Schreiben – ist der echte Programmcode.
-- **Fremdprogramm:** Excel und LibreOffice sind auf diesem PC nicht nutzbar (`C:\Program Files\LibreOffice` enthält kein `soffice`). Ersatzweise prüft `pruefe.py` die Ausgaben mit Pythons eigenem `csv`- und `json`-Leser (unabhängig vom Trendo-Code). Öffnen in Excel/LibreOffice: **BLOCKIERT** (Voraussetzung: eine Tabellenkalkulation installieren).
+- **Fremdprogramm:** Excel und LibreOffice sind auf diesem PC nicht nutzbar (`C:\Program Files\LibreOffice` enthält kein `soffice`). Ersatzweise prüft `pruefe.py` die Ausgaben mit Pythons eigenem `csv`- und `json`-Leser (unabhängig vom Trendo-Code). Öffnen in Excel/LibreOffice: **BLOCKIERT** (Voraussetzung: eine Tabellenkalkulation installieren). **Nachtrag T-0776:** Für LibreOffice falsch – LibreOffice 26.2.4 liegt im Trendo-Werkzeugordner (`%LOCALAPPDATA%\TrendoWerkzeuge\libreoffice`); gesucht wurde nur unter `C:\Program Files\LibreOffice`, dort liegt nur ein Restordner `logs` (`reports/T-0776/werkzeuge.txt`). Eine Gegenprobe der T-0740-Dateien in LibreOffice ist damit möglich, aber noch nicht gemacht.
 
 ## Dateien
 

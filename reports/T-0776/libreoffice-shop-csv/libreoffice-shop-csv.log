@@ -1,0 +1,31 @@
+# T-0776 Fremdnachlauf libreoffice-shop-csv – 2026-11-26 12:55:14 +01:00
+Datei trendo-artikel.csv: 612 Bytes, SHA-256 ef4cbfd24330d95103309633a0f9597c31d57b450152d7455570d2cc1253fb36
+$ LibreOffice öffnet artikel.csv und schreibt csv
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-auftrag-T-0776/.lauf/work/shop-a178dd/lo-profil --headless --norestore --nolockcheck --infilter=CSV:44,34,76,1,,1033,true,false --convert-to "csv:Text - txt - csv (StarCalc):59,34,76,1,,1031,false,false,false,false,false" --outdir C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-a178dd\lo-aus-csv-csv C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-a178dd\artikel.csv
+Exit 0 nach 4,5 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-a178dd\artikel.csv as a Calc document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-a178dd\lo-aus-csv-csv\artikel.csv using filter : Text - txt - csv (StarCalc):59,34,76,1,,1031,false,false,false,false,false
+  eigene Prozesse (6): PID 10176 soffice.com: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\lo-kopie-bab6a0\libreoffice\program\soffice.com; PID 27784 conhost.exe: C:\Windows\System32\conhost.exe; PID 53408 opencltest.exe: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\lo-kopie-bab6a0\libreoffice\program\opencltest.exe; PID 56764 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\lo-kopie-bab6a0\libreoffice\program\soffice.bin; PID 58940 conhost.exe: C:\Windows\System32\conhost.exe; PID 61876 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\lo-kopie-bab6a0\libreoffice\program\soffice.bin
+Datei libreoffice-artikel.csv: 621 Bytes, SHA-256 b4806e259878953a4ed4b48cdceac48cdc55d75b09e9d9d778eeb0c1227dc7e7
+artikel.csv: LibreOffice liest 3 Datenzeilen, 21 Spalten; Kopf: Title | URL handle | Description | Vendor | Type | Tags …
+Datei trendo-kunden.csv: 441 Bytes, SHA-256 1787ef5bd9840edf9327683217d53f25a5c5506d1a1f2444d33f1bf6c1fad0b7
+$ LibreOffice öffnet kunden.csv und schreibt csv
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-auftrag-T-0776/.lauf/work/shop-a178dd/lo-profil --headless --norestore --nolockcheck --infilter=CSV:44,34,76,1,,1033,true,false --convert-to "csv:Text - txt - csv (StarCalc):59,34,76,1,,1031,false,false,false,false,false" --outdir C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-a178dd\lo-aus-csv-csv C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-a178dd\kunden.csv
+Exit 0 nach 1,4 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-a178dd\kunden.csv as a Calc document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-a178dd\lo-aus-csv-csv\kunden.csv using filter : Text - txt - csv (StarCalc):59,34,76,1,,1031,false,false,false,false,false
+  eigene Prozesse (3): PID 46584 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\lo-kopie-bab6a0\libreoffice\program\soffice.bin; PID 65904 conhost.exe: C:\Windows\System32\conhost.exe; PID 70364 soffice.com: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\lo-kopie-bab6a0\libreoffice\program\soffice.com
+Datei libreoffice-kunden.csv: 446 Bytes, SHA-256 6318d87599d335cb1c8bf1dcb7821ea0ff82f2d9380d5dd5bed5570e9c56f139
+kunden.csv: LibreOffice liest 1 Datenzeilen, 20 Spalten; Kopf: First Name | Last Name | Email | Accepts Email Marketing | Default Address Company | Default Address Address1 …
+Datei trendo-bestellungen.csv: 304 Bytes, SHA-256 1b5f39433a2ddec1c3068026c96afc2f1af85990a2fa139960d7d6850a99c42f
+$ LibreOffice öffnet bestellungen.csv und schreibt csv
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-auftrag-T-0776/.lauf/work/shop-a178dd/lo-profil --headless --norestore --nolockcheck --infilter=CSV:44,34,76,1,,1033,true,false --convert-to "csv:Text - txt - csv (StarCalc):59,34,76,1,,1031,false,false,false,false,false" --outdir C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-a178dd\lo-aus-csv-csv C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-a178dd\bestellungen.csv
+Exit 0 nach 1,5 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-a178dd\bestellungen.csv as a Calc document -> C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\shop-a178dd\lo-aus-csv-csv\bestellungen.csv using filter : Text - txt - csv (StarCalc):59,34,76,1,,1031,false,false,false,false,false
+  eigene Prozesse (3): PID 24808 soffice.com: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\lo-kopie-bab6a0\libreoffice\program\soffice.com; PID 67176 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\lo-kopie-bab6a0\libreoffice\program\soffice.bin; PID 71332 conhost.exe: C:\Windows\System32\conhost.exe
+Datei libreoffice-bestellungen.csv: 305 Bytes, SHA-256 82a2a82c677790d4d647ad2793058fbeac3c6aff32ea9a067a47f85987abd67a
+bestellungen.csv: LibreOffice liest 1 Datenzeilen, 14 Spalten; Kopf: Name | Email | Financial Status | Fulfillment Status | Currency | Subtotal …
+Calc: SW-M Preis 21, Bestand 3; SW-L Preis 22,5
+Calc: Formel-Artikel Titel = „'=1+1“, Beschreibung = „Gr&#246;&#223;e „XL“; s&#252;&#223;“
+Calc: Kunde Erika Muster, Hauptstraße 1, 10115 Berlin
+LibreOffice läuft aus einer Kopie im eigenen Temp-Ordner (14745 Dateien, 882 MB, kopiert in 16,9 s; frei vorher 48,6 GB). Keine alte eigene LibreOffice-Kopie vorhanden.
+Original: unverändert. Trendo-Werkzeugordner (LibreOffice-Original): 15933 Einträge, keiner geändert, keiner neu, keiner fehlt. In der Kopie hat LibreOffice bisher 2 Einträge angelegt/geändert/entfernt: program\opencl, share\uno_packages\cache.
+ERGEBNIS: BESTANDEN

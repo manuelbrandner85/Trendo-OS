@@ -1,0 +1,46 @@
+# T-0776 Fremdnachlauf krita-psd-ora – 2026-11-26 12:55:35 +01:00
+Datei trendo-bild.psd: 24542 Bytes, SHA-256 ca3a8d6689b60ca62d0aa1217913d52d3d8daff8214f15b0f9b7f510330af713
+Datei trendo-bild.ora: 1997 Bytes, SHA-256 6f90db8f480fd66d07227b64921a536382a98da2b8a6284371a05f8bb7ce4fd8
+$ Krita öffnet bild.psd und speichert ORA
+  krita.exe C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-81a5f3\bild.psd --export --export-filename C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-81a5f3\krita-aus-psd.ora
+  Umgebung USERPROFILE=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-81a5f3\krita-profil
+  Umgebung APPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-81a5f3\krita-profil\AppData\Roaming
+  Umgebung LOCALAPPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-81a5f3\krita-profil\AppData\Local
+  Umgebung HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-81a5f3\krita-profil
+Exit 0 nach 25,8 s
+$ Krita öffnet bild.psd und speichert PNG
+  krita.exe C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-81a5f3\bild.psd --export --export-filename C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-81a5f3\krita-aus-psd.png
+  Umgebung USERPROFILE=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-81a5f3\krita-profil
+  Umgebung APPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-81a5f3\krita-profil\AppData\Roaming
+  Umgebung LOCALAPPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-81a5f3\krita-profil\AppData\Local
+  Umgebung HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-81a5f3\krita-profil
+Exit 0 nach 3,5 s
+Datei krita-aus-psd.ora: 5973 Bytes, SHA-256 970af67fbc31b68f6c041be89013f566a09ee288ba21015db970e3766287985d
+Datei krita-aus-psd.png: 215 Bytes, SHA-256 a2b0d089b988d9d2fac36a89fed3be20ba97e86e23d287495bdf49af8a7b4e6a
+Krita-Ebenen aus psd: Versteckt (hidden), Farbe rötlich (visible), Skizze (visible), Hintergrund (visible)
+  Punkt (5|5): Trendo #123456, Krita aus psd #123456
+  Punkt (25|15): Trendo #C81E1E, Krita aus psd #C81E1E
+  Punkt (38|2): Trendo #F0E0D0, Krita aus psd #F0E0D0
+  Punkt (15|20): Trendo #F0E0D0, Krita aus psd #F0E0D0
+$ Krita öffnet bild.ora und speichert ORA
+  krita.exe C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-81a5f3\bild.ora --export --export-filename C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-81a5f3\krita-aus-ora.ora
+  Umgebung USERPROFILE=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-81a5f3\krita-profil
+  Umgebung APPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-81a5f3\krita-profil\AppData\Roaming
+  Umgebung LOCALAPPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-81a5f3\krita-profil\AppData\Local
+  Umgebung HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-81a5f3\krita-profil
+Exit 0 nach 4,1 s
+$ Krita öffnet bild.ora und speichert PNG
+  krita.exe C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-81a5f3\bild.ora --export --export-filename C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-81a5f3\krita-aus-ora.png
+  Umgebung USERPROFILE=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-81a5f3\krita-profil
+  Umgebung APPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-81a5f3\krita-profil\AppData\Roaming
+  Umgebung LOCALAPPDATA=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-81a5f3\krita-profil\AppData\Local
+  Umgebung HOME=C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\.lauf\work\kunst-81a5f3\krita-profil
+Exit 0 nach 3,5 s
+Datei krita-aus-ora.ora: 5969 Bytes, SHA-256 e5f1c14aaa65dc63f46e28a17888c17185fc6158708fca0f71d6b1ca7ff2e2f1
+Datei krita-aus-ora.png: 215 Bytes, SHA-256 e2d56dabbaf04188bbe39dd6bcfaa9b24a8c6df25ab6eeeb88ed8a4c20432a6b
+Krita-Ebenen aus ora: Versteckt (hidden), Farbe rötlich (visible), Skizze (visible), Hintergrund (visible)
+  Punkt (5|5): Trendo #123456, Krita aus ora #123456
+  Punkt (25|15): Trendo #C81E1E, Krita aus ora #C81E1E
+  Punkt (38|2): Trendo #F0E0D0, Krita aus ora #F0E0D0
+  Punkt (15|20): Trendo #F0E0D0, Krita aus ora #F0E0D0
+ERGEBNIS: BESTANDEN

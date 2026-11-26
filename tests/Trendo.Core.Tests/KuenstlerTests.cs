@@ -121,7 +121,7 @@ public class KuenstlerTests
             Assert.Equal("8BPS", System.Text.Encoding.ASCII.GetString(psd, 0, 4));
             Assert.Equal((1, 4, 20, 30), (psd[4] << 8 | psd[5], psd[12] << 8 | psd[13], psd[14] << 24 | psd[15] << 16 | psd[16] << 8 | psd[17], psd[18] << 24 | psd[19] << 16 | psd[20] << 8 | psd[21]));
             var lmLen = psd[26 + 4 + 4] << 24 | psd[26 + 4 + 5] << 16 | psd[26 + 4 + 6] << 8 | psd[26 + 4 + 7]; var count = (short)(psd[26 + 16] << 8 | psd[26 + 17]);
-            Assert.Equal(2, count); Assert.True(lmLen > 0);
+            Assert.Equal(3, count); Assert.True(lmLen > 0); // T-0776: 2 Ebenen + unterste Ebene „Hintergrund“ (Krita zeigte sonst den Hintergrund durchsichtig)
             Assert.Equal(26 + 4 + 4 + 4 + lmLen + 2 + 4 * 30 * 20, psd.Length);
             Assert.Throws<InvalidDataException>(() => PngCodec.Decode([1, 2, 3]));
         }

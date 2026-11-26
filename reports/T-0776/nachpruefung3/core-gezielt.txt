@@ -1,0 +1,6 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0776\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:01.41]     restic echt: sichern, Stände, zurückholen (Byte für Byte gleich), Ablage ohne Klartext, zweite Sicherung nur mit der Änderung, falsches Passwort verständlich [SKIP]
+  Übersprungen restic echt: sichern, Stände, zurückholen (Byte für Byte gleich), Ablage ohne Klartext, zweite Sicherung nur mit der Änderung, falsches Passwort verständlich [1 ms]
+
+Bestanden!   : Fehler:     0, erfolgreich:   104, übersprungen:     1, gesamt:   105, Dauer: 10 s - Trendo.Core.Tests.dll (net10.0)

@@ -1,0 +1,26 @@
+# T-0776 Werkzeug-Fundorte - 2026-11-26 12:12:06 +01:00
+## PATH
+soffice : nicht im PATH
+krita : nicht im PATH
+inkscape : nicht im PATH
+7z : nicht im PATH
+freecadcmd : nicht im PATH
+## Trendo-Werkzeugordner (%LOCALAPPDATA%\TrendoWerkzeuge)
+vorhanden: %LOCALAPPDATA%\TrendoWerkzeuge\libreoffice\App\libreoffice\program\soffice.exe  SHA-256 3c24436274cb9b5ccd363a517b377d07991eae82072690227e41c62ca9ca718b
+vorhanden: %LOCALAPPDATA%\TrendoWerkzeuge\krita\bin\krita.exe  SHA-256 94878e3536c3bba543e2a0e63c53c84d639cbda428b7257e9697ea9b805f5840
+vorhanden: %LOCALAPPDATA%\TrendoWerkzeuge\inkscape\bin\inkscape.exe  SHA-256 f3e3bbe91ca5f16dbcf0d5716a35f64be42bbacefd09550016e3854e0afec26a
+vorhanden: %LOCALAPPDATA%\TrendoWerkzeuge\7zip\7z.exe  SHA-256 94205cfc054dd3bbeb978905bc619a65b3f04e9e73bb2717841110b6f46d962e
+## Programme-Ordner
+vorhanden: C:\Program Files\FreeCAD 1.1\bin\freecadcmd.exe  SHA-256 1692e54224b48989974e8b91d3ac7a38d1d502d3db4dee1d4cf79ba91356e42d
+vorhanden: C:\Program Files\7-Zip\7z.exe  SHA-256 94205cfc054dd3bbeb978905bc619a65b3f04e9e73bb2717841110b6f46d962e
+fehlt: C:\Program Files\LibreOffice\program\soffice.exe
+fehlt: C:\Program Files\Krita (x64)\bin\krita.exe
+fehlt: C:\Program Files\Inkscape\bin\inkscape.exe
+Inhalt C:\Program Files\LibreOffice\program: logs
+## Versionen (eigenes Profil im Arbeitsordner)
+LibreOffice: LibreOffice 26.2.4.2 0229ac93fcf0d7cbc6376066c6f35021cef002dc
+Krita: krita 6.0.4 (git c5b23e3)
+Inkscape: Inkscape 1.4.4 (dcaf3e7, 2026-05-05)
+7-Zip (Werkzeugordner): 7-Zip 26.05 (x64) : Copyright (c) 1999-2026 Igor Pavlov : 2026-10-21
+7-Zip (Programme): 7-Zip 26.05 (x64) : Copyright (c) 1999-2026 Igor Pavlov : 2026-10-21
+FreeCAD: FreeCAD 1.1.4 Revision: 20260928 (Git shallow)

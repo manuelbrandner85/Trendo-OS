@@ -107,7 +107,8 @@ public static class CadExport
 
     static string Hex(string c) { var h = c.TrimStart('#').ToUpperInvariant(); return "#" + (h.Length == 8 ? h[2..] : h); }
 
-    /// <summary>STEP (ISO 10303-21, AP214) als facettiertes Volumen – lässt sich in FreeCAD, Fusion, SolidWorks usw. öffnen.</summary>
+    /// <summary>STEP (ISO 10303-21, AP214) als facettiertes Volumen. Geprüft in FreeCAD 1.1 (T-0776: gültige geschlossene Körper, Volumen und Namen stimmen);
+    /// Fusion, SolidWorks usw. sind nicht geprüft.</summary>
     public static void WriteStep(IReadOnlyList<(string Name, Solid Solid)> parts, string path)
     {
         var sb = new StringBuilder(); var n = 0;
@@ -124,18 +125,25 @@ public static class CadExport
         foreach (var (name, solid) in parts)
         {
             var (v, t) = Indexed(solid); if (t.Count == 0) continue;
-            var nm = name.Replace("'", "");
+            var nm = StepString(name); // T-0776: ISO 10303-21 statt Apostroph streichen
             var prod = E($"PRODUCT('{nm}','{nm}','',(#{prodCtx}))");
             var form = E($"PRODUCT_DEFINITION_FORMATION('','',#{prod})");
             var def = E($"PRODUCT_DEFINITION('design','',#{form},#{defCtx})");
             var shapeDef = E($"PRODUCT_DEFINITION_SHAPE('','',#{def})");
-            var pts = v.Select(p => E($"CARTESIAN_POINT('',({F(p.X)},{F(p.Y)},{F(p.Z)}))")).ToList();
+            var pts = v.Select(p => E($"CARTESIAN_POINT('',({R(p.X)},{R(p.Y)},{R(p.Z)}))")).ToList();
             var faces = new List<int>();
             foreach (var (a, b, c) in t)
             {
                 var loop = E($"POLY_LOOP('',(#{pts[a]},#{pts[b]},#{pts[c]}))");
                 var bound = E($"FACE_OUTER_BOUND('',#{loop},.T.)");
-                faces.Add(E($"FACE('',(#{bound}))"));
+                // T-0776: FACE_SURFACE mit Ebene statt nacktem FACE – nur so übernimmt der STEP-Leser von FreeCAD/Open CASCADE die Dreiecke
+                // (vorher las FreeCAD 1.1 zwei leere Schalen ohne eine einzige Fläche, reports/T-0776/freecad-step).
+                var (nv, rv) = PlaneAxes(v[a], v[b], v[c]);
+                var nDir = E($"DIRECTION('',({R(nv.X)},{R(nv.Y)},{R(nv.Z)}))");
+                var rDir = E($"DIRECTION('',({R(rv.X)},{R(rv.Y)},{R(rv.Z)}))");
+                var axis = E($"AXIS2_PLACEMENT_3D('',#{pts[a]},#{nDir},#{rDir})");
+                var plane = E($"PLANE('',#{axis})");
+                faces.Add(E($"FACE_SURFACE('',(#{bound}),#{plane},.T.)"));
             }
             var shell = E($"CLOSED_SHELL('',({string.Join(",", faces.Select(f => "#" + f))}))");
             var brep = E($"FACETED_BREP('{nm}',#{shell})");
@@ -145,11 +153,45 @@ public static class CadExport
             E($"SHAPE_DEFINITION_REPRESENTATION(#{shapeDef},#{rep})");
         }
         var file = new StringBuilder("ISO-10303-21;\nHEADER;\nFILE_DESCRIPTION(('facetted solid'),'2;1');\n");
-        file.Append($"FILE_NAME('{Path.GetFileName(path).Replace("'", "")}','{DateTime.UtcNow:yyyy-MM-ddTHH:mm:ss}',(''),(''),'','','');\nFILE_SCHEMA(('AUTOMOTIVE_DESIGN {{ 1 0 10303 214 1 1 1 1 }}'));\nENDSEC;\nDATA;\n");
+        file.Append($"FILE_NAME('{StepString(Path.GetFileName(path))}','{DateTime.UtcNow:yyyy-MM-ddTHH:mm:ss}',(''),(''),'','','');\nFILE_SCHEMA(('AUTOMOTIVE_DESIGN {{ 1 0 10303 214 1 1 1 1 }}'));\nENDSEC;\nDATA;\n");
         file.Append(sb).Append("ENDSEC;\nEND-ISO-10303-21;\n");
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
         File.WriteAllText(path, file.ToString(), new UTF8Encoding(false));
     }
+
+    /// <summary>Normale und Bezugsrichtung (in der Ebene, senkrecht zur Normalen) eines Dreiecks; bei entarteten Dreiecken eine gültige Ersatzlage.</summary>
+    static (Vec3 Normal, Vec3 Ref) PlaneAxes(Vec3 a, Vec3 b, Vec3 c)
+    {
+        var cr = Vec3.Cross(b - a, c - a);
+        var n = cr.Len < 1e-12 ? new Vec3(0, 0, 1) : cr.Norm();
+        var r = b - a;
+        r -= n * Vec3.Dot(r, n);
+        if (r.Len < 1e-9) r = Vec3.Cross(n, Math.Abs(n.X) < 0.9 ? new Vec3(1, 0, 0) : new Vec3(0, 1, 0));
+        return (n, r.Norm());
+    }
+
+    /// <summary>T-0776: Inhalt einer STEP-Zeichenkette nach ISO 10303-21: Apostroph und Backslash verdoppelt, druckbares ASCII bleibt,
+    /// alles andere als <c>\X2\hhhh…\X0\</c> (UTF-16, je Zeichen 4 Hex-Ziffern) bzw. <c>\X4\hhhhhhhh…\X0\</c> außerhalb der Grundebene.</summary>
+    public static string StepString(string s)
+    {
+        var sb = new StringBuilder(s.Length + 8);
+        var runes = s.EnumerateRunes().ToList();
+        static bool Plain(Rune r) => r.Value is >= 32 and <= 126;
+        for (var i = 0; i < runes.Count;)
+        {
+            var r = runes[i];
+            if (Plain(r)) { sb.Append(r.Value switch { '\'' => "''", '\\' => "\\\\", _ => ((char)r.Value).ToString() }); i++; continue; }
+            var wide = r.Value > 0xFFFF;
+            sb.Append(wide ? "\\X4\\" : "\\X2\\");
+            while (i < runes.Count && !Plain(runes[i]) && (runes[i].Value > 0xFFFF) == wide)
+                sb.Append(runes[i++].Value.ToString(wide ? "X8" : "X4", Inv));
+            sb.Append("\\X0\\");
+        }
+        return sb.ToString();
+    }
+
+    /// <summary>STEP-Gleitkommazahl: immer mit Dezimalpunkt (ISO 10303-21 REAL).</summary>
+    static string R(double v) { var s = F(Math.Abs(v) < 1e-12 ? 0 : v); return s.Contains('.') || s.Contains('E') ? s : s + "."; }
 
     /// <summary>Kanten für Zeichnungen: Polygonränder, außer zwischen Flächen derselben Ebene (sonst sieht man jedes Dreieck).</summary>
     public static List<(Vec3 A, Vec3 B)> FeatureEdges(Solid s)

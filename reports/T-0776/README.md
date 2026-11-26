@@ -1,0 +1,41 @@
+# T-0776 – Fremdprogramm-Nachläufe (Restliste Q3)
+
+Trendo schreibt echte Dateien mit seinem eigenen Exportcode; das Fremdprogramm öffnet sie per Kommandozeile und liest sie zurück.
+Test: `tests/Trendo.Core.Tests/T0776FremdnachlaufTests.cs` (Klasse `T0776_Fremdnachlauf`, 9 Fälle „T-0776 echt: …“). Nichts ist ersetzt.
+Jedes Fremdprogramm lief mit eigenem Profil in einem eigenen Temp-Ordner (LibreOffice `-env:UserInstallation`, Krita/Inkscape über `USERPROFILE`/`APPDATA`/`LOCALAPPDATA`
+bzw. `INKSCAPE_PROFILE_DIR` + `XDG_*`, FreeCAD über `FREECAD_USER_HOME/DATA/TEMP`). Unter `%LOCALAPPDATA%\TrendoOS` wurde nichts geschrieben.
+**Korrektur (Gegenprüfung M1):** Die frühere Aussage „im Trendo-Werkzeugordner hat sich keine Datei geändert“ war falsch. LibreOffice legt trotz `-env:UserInstallation` kurz Einträge in seinem eigenen Programmordner an – die Ordnerzeiten von `program\opencl` und `share\uno_packages\cache` im Trendo-Werkzeugordner änderten sich (der frühere Lauf hatte nur Datei-, nicht Ordnerzeiten geprüft). Seit der Korrektur startet der Test LibreOffice aus einer **Kopie** des Installationsordners im eigenen Temp-Ordner (`T0776_LoKopie`, ca. 880 MB, rund 20 s, am Ende gelöscht) und vergleicht danach jede Ordner- und Dateizeit des Originals: kein Eintrag geändert, neu oder entfernt (je Fall im Log „Trendo-Werkzeugordner (LibreOffice-Original): … keiner geändert“, dazu, was LibreOffice in der Kopie angelegt hat). Ein Lauf um 12:07 meldete Änderungen am Original (u. a. eine Sperrdatei `program\opencl\.~lock.cl-test.ods#`), obwohl die Konfiguration der Kopie nur relative Pfade nutzt (`$ORIGIN`) und die Kopie selbst die gleichen Einträge zeigte. Zur selben Zeit lief offenbar ein anderes LibreOffice aus dem Original (andere Sitzung, nicht meine Prozesse). Zwei Wiederholungen direkt danach: Original unverändert. Beleg: `reports/T-0776/korrektur/fremdzugriff-12-07/`. Die Prüfung schlägt also an, wenn jemand anderes das Original benutzt.
+Krita, Inkscape und FreeCAD: geprüft wurden nur die Dateizeiten ihrer Programmordner (keine geändert), Ordnerzeiten nicht.
+Pfade ohne Benutzernamen (`C:\Users\<user>`). Prüfsummen aller Dateien: `SHA256SUMS.txt`.
+
+| Ordner | Studio | Fremdprogramm | Was geprüft ist |
+|---|---|---|---|
+| `werkzeuge.txt` | – | – | Fundorte (nur lesend) und Versionen: LibreOffice 26.2.4, Krita 6.0.4, Inkscape 1.4.4, 7-Zip 26.05 im Trendo-Werkzeugordner; FreeCAD 1.1.4 und 7-Zip in `C:\Program Files`; nichts davon im PATH. `C:\Program Files\LibreOffice\program` enthält nur `logs` – daher die falschen „nicht installiert“-Aussagen in T-0692/T-0694/T-0740/T-0753. Skript: `tools/echtlauf/t0776/werkzeuge_finden.ps1` |
+| `libreoffice-text/` | SYS-10 Texte | LibreOffice Writer | Trendo-DOCX und -ODT → Text (Titel, Überschrift, Absatz mit Umlauten, Liste, Tabelle) und PDF (2 Seiten wegen Seitenumbruch) |
+| `libreoffice-geld-xlsx/` | SPEC-11 Geld | LibreOffice Calc | Trendo-Auswertung (XLSX) → CSV je Blatt: 3 Blätter, Calc rechnet die Formeln selbst (Überschuss 1035, Monatssumme 1297 / 66,90 / 1230,10) |
+| `libreoffice-shop-csv/` | Online verkaufen | LibreOffice Calc | Shopify-CSV Artikel/Kunden/Bestellungen: Spaltenzahl je Zeile, Preise, Bestand, Umlaute, Adresse; „=1+1“ bleibt Text `'=1+1` (Formel-Einschleusung entschärft) |
+| `freecad-step/` | CORE-05 CAD | FreeCAD 1.1.4 | Trendo-STEP (Quader + Winkel mit Tasche): 2 gültige geschlossene Körper, Volumen 6000 / 4625 mm³, Umriss 60×20×20, Namen „Quader“, „Winkel“ |
+| `freecad-cad-dxf/` | CORE-05 CAD | FreeCAD 1.1.4 | fremde DXF → Trendo bearbeitet → DXF: Ebenen, 10 Kanten (Polylinie, Kreise, Bogen, Linien), bearbeitete Linie bis x = 70. Texte übernimmt FreeCAD ohne Oberfläche nicht – **nicht geprüft** |
+| `freecad-wohnung-dxf/` | SPEC-01 Wohnung | FreeCAD 1.1.4 | fremde Wohnungs-DXF → Wand dicker → Trendo-DXF: FreeCAD übernimmt `$INSUNITS` = cm (×10 in mm) und den Umriss auf 1 mm genau wie Trendos eigener Leser |
+| `krita-psd-ora/` | Künstlerstudio | Krita 6.0.4 | Trendo-PSD und -ORA → Krita speichert ORA und PNG: Ebenennamen (mit Umlaut), Sichtbarkeit, Hintergrund; Farben an 4 Punkten gleich wie Trendos Gesamtbild |
+| `inkscape-svg/` | Logos / Animation | Inkscape 1.4.4 | Logo-SVG: Objekte mit Trendo-Kennung, Lage 20/30/120/60, PNG-Farben wie im Logo. Animations-SVG: Inkscape liest die Datei und die Form (40×40), Hintergrund stimmt; SMIL-Bewegung kennt Inkscape nicht – Bewegung **nicht geprüft** |
+| `7zip-zip/` | Daten schützen, Trendo erweitern | 7-Zip 26.05 | Sicherungs-ZIP und Erweiterungs-Export-ZIP: `7z t` „Everything is Ok“, Liste mit CRC, entpackt bitgleich zum Original (SHA-256 je Datei); Vermerk jetzt nur in ASCII („nicht verschluesselt“), 7-Zip zeigt ihn Zeichen für Zeichen richtig (vorher „verschlÃ¼sselt“) |
+| `korrektur/` | – | – | Gegenprüfung: `T0776_Korrektur` (STEP-Zeichenketten nach ISO 10303-21 und Zahlen mit Dezimalpunkt, PSD-Struktur mit `luni` und genau einer Ebene „Hintergrund“, ASCII-Vermerk der Sicherung), Rotlauf: auf dem alten Stand lässt sich der Test nicht übersetzen (`StepString`, `Backup.Ascii` fehlen) |
+| `rot/` | – | – | Derselbe Test auf main 2b1ffa923: **2 Fehler** – FreeCAD las Trendos STEP als zwei leere Schalen ohne Fläche (`FACE` statt `FACE_SURFACE`), Krita las die PSD-Ebenennamen mit Füllbytes (`Skizze\0`) und ohne Hintergrund |
+| `tests/` | – | – | grün nach der Korrektur: T-0776 9/9, Künstler/CAD/Netz 45/45, App `Kuenstlerstudio_Ui` 6/6, `Studio3DMeshEditUiTests` 5/5; ohne Werkzeuge (leerer Werkzeugordner, leerer Programme-Ordner, kurzer PATH) 9/9 „übersprungen“ mit „BLOCKIERT – fehlt auf diesem PC: …“ |
+
+Neu erzeugen: `T0776_WORK=<eigener Temp-Ordner> TRENDO_BELEG_DIR=<Ordner> dotnet test tests/Trendo.Core.Tests -c Release --filter "FullyQualifiedName~T0776_Fremdnachlauf"`.
+**Nachprüfung (H1, M-a, N-a):** Eine Änderung am Original ist kein harter Fehler mehr. Jeder LibreOffice-Fall schreibt den Stand ins Rohlog und in die Testausgabe:
+„unverändert“, „geändert“ (deutlicher HINWEIS) oder „nicht prüfbar (fremder Zugriff)“, wenn vor, während oder nach dem Fall ein fremdes soffice aus dem Original lief
+(etwa eine andere Sitzung). Hart geprüft bleibt, dass der Test selbst nur aus der Kopie startet: `T0776_LoKopie.Run` verweigert jeden anderen Pfad und beobachtet
+alle 50 ms den gestarteten Prozess samt Kindprozessen (Toolhelp, Programmpfad). Liegt ein eigener Prozess außerhalb der Kopie, schlägt der Fall fehl; ausgenommen ist nur
+der Windows-Konsolenhost `conhost.exe`. Die Kopie wird einmal angelegt, und zwar nur, wenn 5 GB Reserve frei sind (sonst BLOCKIERT). Scheitert das Kopieren, wird die
+Teilkopie gelöscht. Alte eigene Kopien (Kennung `.t0776-lokopie`, älter als der Teststart) werden beim Start entfernt. Am Ende werden eigene soffice-Prozesse aus der Kopie
+per PID beendet; danach wird die Kopie gelöscht. Scheitert das Löschen, schlägt das Aufräumen laut fehl. Nachgewiesen mit einer Ersatz-„Installation“ (cmd.exe als
+`soffice.exe`) in `T0776_Korrektur.LoKopie_watch`: fremder Prozess erkannt, Kindprozess außerhalb erkannt, Aufräumen.
+**Nachprüfung 3 (H-neu, M-neu, N-neu):**
+- Alte Kopien werden nur noch entfernt, wenn der Prozess aus der Kennung `.t0776-lokopie` beendet ist. Die Kennung enthält jetzt `pid=` und `start=` (UTC-Ticks).
+  Eine laufende Kopie einer anderen Sitzung bleibt liegen, auch wenn sie älter ist. Eine wiederverwendete PID (andere Startzeit) gilt als beendet.
+- BLOCKIERT wegen Platzmangel wird gemerkt; jeder Folgefall wird mit demselben Grund übersprungen.
+- Ein Nachkomme zählt nur als eigener Prozess, wenn er nach seinem Elternprozess gestartet ist (Startzeit über `GetProcessTimes`).
+- Eigene Prozesse mit nicht lesbarem Pfad stehen als HINWEIS im Rohlog und in der Testausgabe.

@@ -13,4 +13,4 @@ IBANs sind öffentliche Beispiel-IBANs mit gültiger Prüfziffer. Prüfsummen: `
 | `belege/EXTF_Buchungsstapel_2026.csv` | DATEV-Buchungsstapel | nur Formatprüfung im Test – **ungeprüft gegen DATEV-Software** |
 | `belege/tilgungsplan-10000-5-60.pdf/.csv` | 10.000 €, 5 %, 60 Monate: Rate 188,71 €, Restschuld 0,00 € | pdftotext; Gegenrechnung im Test |
 
-**NICHT GETESTET:** PDF/A-3-Konformität und EN-16931-/XRechnung-Schematron (kein veraPDF, Mustang oder KoSIT-Validator auf diesem PC; Schemata nicht beigelegt), Öffnen der XLSX in Excel/LibreOffice (beides nicht installiert), Import der DATEV-Datei in DATEV, Exporte echter Banken.
+**NICHT GETESTET:** PDF/A-3-Konformität und EN-16931-/XRechnung-Schematron (kein veraPDF, Mustang oder KoSIT-Validator auf diesem PC; Schemata nicht beigelegt), Öffnen der XLSX in Excel/LibreOffice (beides nicht installiert – **Nachtrag T-0776:** falsch für LibreOffice, es liegt im Trendo-Werkzeugordner; die XLSX öffnet dort mit nachgerechneten Formeln, `reports/T-0776/libreoffice-geld-xlsx/`; Excel bleibt ungeprüft), Import der DATEV-Datei in DATEV, Exporte echter Banken.
