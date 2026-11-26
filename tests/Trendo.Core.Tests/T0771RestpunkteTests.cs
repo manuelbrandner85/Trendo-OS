@@ -175,7 +175,7 @@ public class T0771Restpunkte
         try
         {
             foreach (var (dir, file) in new[] { ("audit", "audit.jsonl"), ("cache", "seiten.bin"), ("werkzeuge", "tools.json"), ("sicherheit", "vertrauen.json"),
-                         ("freigaben", "offen.json"), ("protokolle", "start.log"), ("updates", "stand.json"), ("", "start.json"), ("", "absturz.txt"), ("", "deps-consent.txt") })
+                         ("freigaben", "offen.json"), ("protokolle", "start.log"), ("updates", "stand.json"), ("updates", "start.json"), ("logs", "absturz-20261126-080000-000.txt"), ("", "deps-consent.txt"), ("ablaeufe", "windows-aufgabe.log") })
             {
                 var d = Path.Combine(root, dir); Directory.CreateDirectory(d); File.WriteAllText(Path.Combine(d, file), "{\"action\":\"core.start\"}");
             }
@@ -187,10 +187,50 @@ public class T0771Restpunkte
         finally { Weg(root); }
     }
 
-    [Fact(DisplayName = "T-0771 Korrektur (c): Kinderprofil mit echten Daten (Projekt, Brief, PIN) und gelöschten Rollendateien → Kind")]
+    [Fact(DisplayName = "T-0771 Korrektur 2: echter erster Start nachgebildet (Kern mit Protokoll, Startwächter, Absturzprotokoll, Vertrauensliste, Vollpaket-Hook) und Minuten später neu gestartet → Besitzer")]
+    public void Echter_erster_start_bleibt_ersteinrichtung()
+    {
+        var root = Tmp();
+        try
+        {
+            File.WriteAllText(Path.Combine(root, "vollpaket-quelle.txt"), "D:\\Trendo\\Programme"); // Setup-Hook (eigener Prozess)
+            var core = new TrendoCore(root, new InMemorySecretStore(), offline: true); // Protokoll „core.start“, projects/, freigaben/
+            new BootGuard(root).Begin("0.9.111"); // Startwächter updates/start.json
+            CrashLog.Write(root, new InvalidOperationException("erster Start abgestürzt"), "Programm"); // Absturz vor UseSettings
+            ProgramTrust.RegisterStore(Path.Combine(root, "werkzeuge"), Path.Combine(PersonStore.BaseOf(root), "sicherheit"));
+            Directory.CreateDirectory(Path.Combine(root, "sicherheit")); File.WriteAllText(Path.Combine(root, "sicherheit", "vertrauen.json"), "{}");
+            core.Shutdown();
+            Assert.False(File.Exists(ProfileRole.FileOf(root))); // die Rolle wurde im abgestürzten Lauf nie bestimmt
+            Altern(root);
+            Assert.False(ProfileRole.IsChild(root));
+        }
+        finally { Weg(root); }
+    }
+
+    [Fact(DisplayName = "T-0771 Korrektur 2 (Wächter): jede Ausnahme von den Nutzerdaten hat einen Grund und kommt im Quelltext als Ort vor – neue Ausnahmen fallen auf")]
+    public void Ausnahmen_begruendet_und_im_code()
+    {
+        var src = Directory.EnumerateFiles(Path.Combine(Repo(), "src"), "*.cs", SearchOption.AllDirectories)
+            .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}") && !f.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}"))
+            .Select(File.ReadAllText).ToList();
+        Assert.True(ProfileRole.NotUserData.Count <= 25, "Ausnahmeliste wächst – jede neue Ausnahme schwächt den Kinderschutz, bitte begründen und hier die Obergrenze anheben");
+        foreach (var (place, why) in ProfileRole.NotUserData)
+        {
+            Assert.True(why.Length >= 15, $"Ausnahme „{place}“ ohne Grund");
+            var first = place.Split(Path.DirectorySeparatorChar)[^1];
+            // mindestens zweimal: der Eintrag in NotUserData selbst und eine echte Verwendung als Ort
+            var uses = src.Sum(t => System.Text.RegularExpressions.Regex.Matches(t, System.Text.RegularExpressions.Regex.Escape(first) + "\"").Count);
+            Assert.True(uses >= 2, $"Ausnahme „{place}“ kommt im Quelltext nicht (mehr) als Ort vor");
+        }
+        // Gegenprobe: typische Nutzerdaten-Orte sind KEINE Ausnahme
+        foreach (var user in new[] { "projekte", "fach", "business", "kontakte.json", "notizbuch", "zettel.json", "musik", "fotos", "wissen", "briefe", "recherche", "prompts", "merklisten.json" })
+            Assert.False(ProfileRole.NotUserData.ContainsKey(user), user);
+    }
+
+    [Fact(DisplayName = "T-0771 Korrektur (c): Kinderprofil mit echten Daten (Projekt, Brief, PIN, Lernen, Business, Kontakte, Notizbuch, Zettel, Musik, Wissen) und gelöschten Rollendateien → Kind")]
     public void Kind_mit_nutzerdaten_bleibt_kind()
     {
-        foreach (var rel in new[] { Path.Combine("projekte", "Mein Spiel", "spiel.json"), Path.Combine("briefe", "oma.tdoc"), Path.Combine("profil", "anmeldung.json") })
+        foreach (var rel in new[] { Path.Combine("projekte", "Mein Spiel", "spiel.json"), Path.Combine("briefe", "oma.tdoc"), Path.Combine("profil", "anmeldung.json"), Path.Combine("fach", "lernen", "karten.json"), Path.Combine("business", "kunden.json"), "kontakte.json", Path.Combine("notizbuch", "seite1.md"), "zettel.json", Path.Combine("musik", "lied.json"), Path.Combine("wissen", "a.md") })
         {
             var root = Tmp();
             try

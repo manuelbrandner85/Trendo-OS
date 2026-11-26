@@ -93,3 +93,40 @@ Künstliche Last: 16 PowerShell-Endlosschleifen auf 16 logischen Kernen. Die Pro
   - Core: T0771*, Profile*, T0764*, RechteKern*, PageBuilder, SitePage, X03, Vollpaket*, SammelT0768, Person* – 331/331 grün.
   - App: alle RechteKern*-Ui, SammelT0768, T0771Dispatcher_Ui, alle WebDesign*-Klassen und die Vollpaket-Klassen (32 Klassen) – 121 Tests, 0 rot, 3 übersprungen.
   - Logs: `gruen-korrektur.log`.
+
+## Korrekturrunde 2 (fix2)
+
+**MITTEL 1:** Die Positivliste der Nutzerdaten-Orte war unvollständig (u. a. fach, wissen, business, notizbuch, notizen.json, zettel.json, kontakte.json, musik, fotos, prompts, recherche).
+- Jetzt ist es umgekehrt: Alles im Datenordner zählt als Nutzerdaten (nicht leere Datei aus einem früheren Lauf), außer `ProfileRole.NotUserData`.
+- Verknüpfungen (Reparse-Punkte) werden nicht verfolgt. Unlesbare Ordner gelten als „unklar“ und stehen als Grund in rolle.json.
+
+**Ausnahmeliste mit Grund** (im Code bestimmt, was Setup-Hook, Start und Absturz vor `UseSettings` schreiben):
+
+| Ort | Grund |
+|---|---|
+| `vollpaket-quelle.txt` | Setup-Hook `VollpaketStart.RememberFromInstaller`, vor dem ersten Start |
+| `audit` | `TrendoCore` schreibt bei jedem Start „core.start“, vor der Rolle |
+| `updates` | Startwächter `BootGuard` (`updates/start.json`), Versionsnotizen |
+| `logs` | `CrashLog` (`absturz-*.txt`), auch von einem abgebrochenen ersten Start |
+| `protokolle` | Protokolldateien |
+| `ablaeufe/windows-aufgabe.log` | Aufräum-Protokoll beim Start (`Program.cs`); der übrige Ordner `ablaeufe` zählt |
+| `sicherheit` | Vertrauensliste `ProgramTrust`, beim Start angelegt |
+| `freigaben` | Zustand offener Freigaben (`ApprovalGate`) |
+| `cache`, `tmp` | Zwischenspeicher |
+| `werkzeuge`, `tools`, `tools.json`, `deps-consent.txt`, `programme` | eingerichtete Zusatzprogramme, auch automatisch aus dem Vollpaket |
+| `modelle` | KI-Modelle, die Trendo nach dem Start selbst lädt |
+| `profil/rolle.json`, `settings.json`, `personen.json` | die Rollenquellen selbst (eigene Wege: Übernahme bzw. immer Kind) |
+
+**Tests:**
+- Neu: `Echter_erster_start_bleibt_ersteinrichtung`. Bildet nach: Setup-Hook-Datei, echter `TrendoCore` (Protokoll), `BootGuard.Begin`, `CrashLog.Write`, Vertrauensliste, alles gealtert → Besitzer.
+- Neu: Wächter `Ausnahmen_begruendet_und_im_code`. Jede Ausnahme braucht einen Grund und muss im Quelltext mindestens einmal außerhalb der Liste als Ort vorkommen. Die Obergrenze von 25 Einträgen macht neue Ausnahmen sichtbar. Gegenprobe: fach, business, kontakte.json … sind keine Ausnahmen.
+- (c) erweitert um fach/lernen, business, kontakte.json, notizbuch, zettel.json, musik, wissen. Auf 179de406c rot (`rot-korrektur2-179de406c.log`).
+- (b) nutzt jetzt die echten Orte (`updates/start.json`, `logs/absturz-*.txt`) und zusätzlich `ablaeufe/windows-aufgabe.log`. Auch (b) war damit auf 179de406c rot: Das Startprotokoll in `ablaeufe` hätte dort eine Neuinstallation zum Kind gemacht.
+- (a) und (d) unverändert grün.
+
+**Läufe:**
+- Core: T0771*, Profile*, T0764*, RechteKern*, Vollpaket*, SammelT0768, Person* – 331/331 grün.
+- App: RechteKern*-Ui, SammelT0768, T0771, Vollpaket-Klassen – 65/65 grün.
+- Logs: `gruen-korrektur2.log`.
+
+**Grenze (unverändert ehrlich):** Ein Kind, das nur außerhalb des Datenordners gespeichert hat (z. B. in „Dokumente“) und dann die Rollendateien löscht, bekommt wieder eine Ersteinrichtung.
