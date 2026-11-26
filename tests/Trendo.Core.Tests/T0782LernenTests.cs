@@ -8,6 +8,19 @@ using Xunit;
 
 namespace Trendo.Core.Tests;
 
+/// <summary>T-0782 (2. Gegenprüfung): Jede Probe läuft in einem eigenen, kurzlebigen App-Profil – das echte Profil „Trendo.Lernen.Code“ wird nie benutzt.</summary>
+public abstract class T0782ProfilTest : IDisposable
+{
+    protected readonly string Profil = "Trendo.Lernen.Test" + Guid.NewGuid().ToString("N")[..10];
+    protected T0782ProfilTest() { LernSandbox.Current = Profil; }
+    public void Dispose()
+    {
+        LernSandbox.Current = LernSandbox.ContainerName;
+        if (OperatingSystem.IsWindows() && LernSandbox.ProfileExists(Profil)) LernSandbox.RemoveProfile(Profil);
+        GC.SuppressFinalize(this);
+    }
+}
+
 /// <summary>T-0782: Kern von „Nachhilfe mit KI“ (Lernpfad, Prüfung, sokratischer Modus, Beherrschung, FSRS-Plan, CSV, Arbeitsblatt).</summary>
 public class T0782_Nachhilfe
 {
@@ -132,7 +145,7 @@ public class T0782_Nachhilfe
 /// <summary>T-0782: Kern von „Programmieren lernen“ – echte Tests im AppContainer (ohne Netz, Zeitgrenze, nur Temp-Ordner beschreibbar). Nichts ersetzt;
 /// übersprungen nur, wenn das mitgelieferte Python fehlt.</summary>
 [Collection("T0782-Sandbox")]
-public class T0782_CodeLernen
+public class T0782_CodeLernen : T0782ProfilTest
 {
     static string? Python(out string root)
     {

@@ -8,7 +8,7 @@ namespace Trendo.Core.Tests;
 
 /// <summary>T-0782 Gegenprüfung: Regressionstests für M1–M8, N2, N5 und das App-Profil (Kern). Die ECHT-Fälle laufen mit dem mitgelieferten Python im AppContainer.</summary>
 [Collection("T0782-Sandbox")]
-public class T0782_Gegenpruefung
+public class T0782_Gegenpruefung : T0782ProfilTest
 {
     static ProgramDocument Doc(string thema)
     {

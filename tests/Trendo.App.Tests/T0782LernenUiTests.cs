@@ -21,8 +21,21 @@ namespace Trendo.App.Tests;
 /// <summary>T-0782: „Nachhilfe mit KI“ und „Programmieren lernen“ – vom Klick bis zur Datei, KI-Fachaktion mit Vorschau/„Ja, behalten“/einem Rückgängig-Schritt,
 /// nur lokale KI in der Nachhilfe, Kinderprofil, Ablegen und Rechtsklick. Die Tests von „Programmieren lernen“ laufen ECHT im AppContainer (mitgeliefertes Python dieses PCs);
 /// die KI ist in diesen Tests ersetzt (feste Antwort) – der Echtlauf mit Ollama steht in <see cref="Real_local_ki"/> (nur mit TRENDO_T0782_ECHT).</summary>
+/// <summary>T-0782 (2. Gegenprüfung): App-Tests mit echtem Lauf benutzen ein eigenes, kurzlebiges App-Profil.</summary>
+public abstract class T0782ProfilUiTest : IDisposable
+{
+    protected readonly string Profil = "Trendo.Lernen.Test" + Guid.NewGuid().ToString("N")[..10];
+    protected T0782ProfilUiTest() { Trendo.Core.Lernen.LernSandbox.Current = Profil; }
+    public void Dispose()
+    {
+        Trendo.Core.Lernen.LernSandbox.Current = Trendo.Core.Lernen.LernSandbox.ContainerName;
+        if (OperatingSystem.IsWindows() && Trendo.Core.Lernen.LernSandbox.ProfileExists(Profil)) Trendo.Core.Lernen.LernSandbox.RemoveProfile(Profil);
+        GC.SuppressFinalize(this);
+    }
+}
+
 [Collection("Claude")]
-public class T0782Lernen_Ui
+public class T0782Lernen_Ui : T0782ProfilUiTest
 {
     const string Tu = MainWindow.TutorKey, Cl = MainWindow.CodeLearnKey;
 

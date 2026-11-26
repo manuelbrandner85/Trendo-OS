@@ -14,7 +14,7 @@ namespace Trendo.App.Tests;
 /// <summary>T-0782 Gegenprüfung (App): H1 (nie Claude bei KiLocalOnly, auch mit „Claude ohne Klicks“), M2/M6 (was die KI zu sehen bekommt), N4 (entfernte „lokale“ Quelle),
 /// App-Profil beim Deinstallieren und Hinweis in der App. Claude ist ersetzt (Anmeldestand und Lauf über die Test-Schnittstellen) – es wird gezählt, ob es gefragt wird.</summary>
 [Collection("Claude")]
-public class T0782Gegenpruefung_Ui
+public class T0782Gegenpruefung_Ui : T0782ProfilUiTest
 {
     const string Tu = MainWindow.TutorKey, Cl = MainWindow.CodeLearnKey;
 

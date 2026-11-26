@@ -64,7 +64,7 @@ public partial class MainWindow
     private string? NewestProject() => _core.Projects.List().OrderByDescending(p => p.CreatedAt).ThenBy(p => p.Id).FirstOrDefault()?.Id;
 
     /// <summary>Gehört auf diese Seite der Claude-Knopf? Jede Seite eines Studios (öffentlich für Tests); nicht Startbildschirm und Studio-Übersicht (eigene Eingabe).</summary>
-    public bool ClaudeBelongs(string key) => key is not ("start" or "studios" or "suche" or "claude-verbinden") && ClaudeStudioOf(key) is { } m && StudioCatalog.For(m) is not null;
+    public bool ClaudeBelongs(string key) => key is not ("start" or "studios" or "suche" or "claude-verbinden") && !AssistLocalOnly(key) && ClaudeStudioOf(key) is { } m && StudioCatalog.For(m) is not null; // T-0782 H1b: nie bei KiLocalOnly
 
     /// <summary>Studio, für das Claude auf dieser Seite arbeitet: das Modul der Seite; die Business-Seiten (BUS-…) gehören zu „Online verkaufen“.</summary>
     public string? ClaudeStudioOf(string key) => ModuleOf(key) is { } m ? (m.StartsWith("BUS-", StringComparison.Ordinal) ? "STUDIO-ONLINE-BUSINESS-01" : m) : null;

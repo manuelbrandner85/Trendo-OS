@@ -39,6 +39,10 @@ public partial class MainWindow
     /// <summary>T-0782: Darf dieses Programm nur die KI auf diesem PC fragen (<see cref="ProgramSpec.KiLocalOnly"/>)?</summary>
     public bool AssistLocalOnly(string? key) => key is not null && Programs.TryGetValue(key, out var spec) && spec.KiLocalOnly?.Invoke() == true;
 
+    /// <summary>T-0782 (H1b): Claude ist hier aus – die offene Seite oder das Studio gehört zu einem Programm nur mit der KI auf diesem PC.</summary>
+    public bool ClaudeBlockedFor(string? studio) =>
+        AssistLocalOnly(CurrentView) || studio is not null && Programs.Values.Any(p => string.Equals(p.Studio, studio, StringComparison.OrdinalIgnoreCase) && p.KiLocalOnly?.Invoke() == true);
+
     /// <summary>Programme aus dem Programmkatalog, die (noch) nicht in der Programm-Hülle laufen – dort sagt die Kette „Noch nicht im Dokument möglich“.
     /// Maßgeblich ist, was gerade angemeldet ist: zieht ein Programm in die Hülle (B6), fällt es hier von selbst heraus.</summary>
     public IReadOnlyList<(string Key, string Name, string Studio)> AssistOutsideShell() =>

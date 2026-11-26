@@ -18,6 +18,8 @@ public static class LernSandbox
 {
     /// <summary>Name des AppContainer-Profils (je Windows-Benutzer, ohne Admin angelegt).</summary>
     public const string ContainerName = "Trendo.Lernen.Code";
+    /// <summary>Profil, das Läufe benutzen. Tests setzen ein eigenes, kurzlebiges Profil (2. Gegenprüfung: das echte Profil nie für Proben).</summary>
+    public static string Current { get; set; } = ContainerName;
     static readonly object Gate = new(), RunGate = new();
 
     /// <param name="OutputLimit">T-0782 (Gegenprüfung M3/M4): Ausgabe oder Dateien im Arbeitsordner/AC-Temp wurden zu groß – der Lauf wurde abgebrochen.</param>
@@ -28,7 +30,10 @@ public static class LernSandbox
 
     /// <summary>Grenzen eines Laufs. <paramref name="OutputBytes"/>: stdout + stderr zusammen; <paramref name="DiskBytes"/>: alles, was der Lauf in seinem
     /// Arbeitsordner und im Temp-Ordner des Containers anlegt; <paramref name="ReadTailBytes"/>: so viel wird am Ende je Ausgabe gelesen (nur das Ende).</summary>
-    public sealed record Limits(int TimeoutMs = 10_000, long MemoryBytes = 512L << 20, long OutputBytes = 2L << 20, long DiskBytes = 50L << 20, int ReadTailBytes = 256 * 1024);
+    /// <param name="RegistryBytes">T-0782 (2. Gegenprüfung M4): Daten im Registry-Speicher des Containers.</param>
+    /// <param name="DriveDropBytes">T-0782 (2. Gegenprüfung M4): so viel darf der freie Platz des Laufwerks während des Laufs höchstens sinken (fängt auch offene, wachsende Dateien).</param>
+    public sealed record Limits(int TimeoutMs = 10_000, long MemoryBytes = 512L << 20, long OutputBytes = 2L << 20, long DiskBytes = 50L << 20, int ReadTailBytes = 256 * 1024,
+        long RegistryBytes = 1L << 20, long DriveDropBytes = 50L << 20, string? Container = null);
 
     /// <summary>Mitgeliefertes Python (eingebettete Fassung) im Werkzeugordner – oder null.</summary>
     public static string? BundledPython(string? toolsRoot = null)
@@ -40,7 +45,7 @@ public static class LernSandbox
     /// <summary>Lern-Laufzeit vorbereiten: Kopie des mitgelieferten Python unter <paramref name="dataRoot"/>/lernen/laufzeit/python, mit Lesezugriff für den Container.
     /// Null + Grund, wenn es kein mitgeliefertes Python gibt.</summary>
     [SupportedOSPlatform("windows")]
-    public static (string? Exe, string? Why) PrepareRuntime(string dataRoot, string? toolsRoot = null)
+    public static (string? Exe, string? Why) PrepareRuntime(string dataRoot, string? toolsRoot = null, string? container = null)
     {
         if (BundledPython(toolsRoot) is not { } src)
             return (null, "BLOCKIERT: Das mitgelieferte Python fehlt (Trendo-Werkzeugordner „python“). Ohne es startet Trendo keinen Code von Lernenden – ein Python aus dem System läuft nicht abgeschottet. Einrichten: unter „Zusatzprogramme“ das Trendo-Vollpaket ergänzen.");
@@ -56,7 +61,7 @@ public static class LernSandbox
                 foreach (var f in Directory.GetFiles(srcDir)) File.Copy(f, Path.Combine(dir, Path.GetFileName(f)), true);
                 File.WriteAllText(stamp, want);
             }
-            Grant(dir, Sid(), FileSystemRights.ReadAndExecute);
+            Grant(dir, Sid(container), FileSystemRights.ReadAndExecute);
         }
         return (Path.Combine(dir, "python.exe"), null);
     }
@@ -64,8 +69,9 @@ public static class LernSandbox
 
     /// <summary>SID des Containers als Text (legt das Profil bei Bedarf an).</summary>
     [SupportedOSPlatform("windows")]
-    public static string Sid(string name = ContainerName)
+    public static string Sid(string? name = null)
     {
+        name ??= Current;
         var hr = CreateAppContainerProfile(name, "Trendo – Code von Lernenden", "Abgeschotteter Lauf ohne Netz für „Programmieren lernen“", IntPtr.Zero, 0, out var sid);
         if (hr == unchecked((int)0x800700B7)) hr = DeriveAppContainerSidFromAppContainerName(name, out sid); // gibt es schon
         if (hr != 0) throw new Win32Exception(hr, "Der abgeschottete Bereich für Lernende ließ sich nicht anlegen.");
@@ -75,8 +81,65 @@ public static class LernSandbox
 
     /// <summary>T-0782 (Nutzerentscheidung 26.11.2026): Gibt es das Windows-App-Profil des Containers? (Ordner unter %LOCALAPPDATA%\Packages)</summary>
     [SupportedOSPlatform("windows")]
-    public static bool ProfileExists(string name = ContainerName) =>
-        Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", name.ToLowerInvariant()));
+    public static bool ProfileExists(string name = ContainerName)
+    {
+        if (Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", name.ToLowerInvariant()))) return true;
+        // 2. Gegenprüfung (N): auch die Zuordnung in der Registry zählt (Profil ohne Ordner) – nur lesen, ohne ein Profil anzulegen
+        if (DeriveSidText(name) is not { } sid) return false;
+        using var k = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(MappingsKey + "\\" + sid);
+        return k is not null;
+    }
+
+    const string AcRoot = @"Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppContainer";
+    const string MappingsKey = AcRoot + @"\Mappings";
+    /// <summary>Registry-Speicher des Containers (unter HKCU, von Windows je Container angelegt).</summary>
+    public static string StorageKey(string? name = null) => AcRoot + @"\Storage\" + (name ?? Current).ToLowerInvariant();
+
+    [SupportedOSPlatform("windows")]
+    static string? DeriveSidText(string name)
+    {
+        if (DeriveAppContainerSidFromAppContainerName(name, out var sid) != 0) return null;
+        try { if (!ConvertSidToStringSidW(sid, out var s)) return null; try { return Marshal.PtrToStringUni(s); } finally { LocalFree(s); } }
+        finally { FreeSid(sid); }
+    }
+
+    /// <summary>T-0782 (2. Gegenprüfung M4): Größe der Daten im Registry-Speicher des Containers (Namen und Werte, rekursiv). Nur lesen.</summary>
+    [SupportedOSPlatform("windows")]
+    public static long RegistryBytes(string? name = null)
+    {
+        using var k = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(StorageKey(name));
+        return k is null ? 0 : KeyBytes(k, 0);
+    }
+
+    [SupportedOSPlatform("windows")]
+    static long KeyBytes(Microsoft.Win32.RegistryKey k, int depth)
+    {
+        if (depth > 32) return 0;
+        long n = 0;
+        try
+        {
+            foreach (var v in k.GetValueNames()) { n += v.Length * 2; n += k.GetValue(v, null, Microsoft.Win32.RegistryValueOptions.DoNotExpandEnvironmentNames) switch { string str => str.Length * 2, byte[] b => b.Length, string[] a => a.Sum(x => x.Length * 2), null => 0, _ => 8 }; }
+            foreach (var sub in k.GetSubKeyNames()) { n += sub.Length * 2; using var c = k.OpenSubKey(sub); if (c is not null) n += KeyBytes(c, depth + 1); }
+        }
+        catch (Exception e) when (e is System.Security.SecurityException or UnauthorizedAccessException or IOException) { }
+        return n;
+    }
+
+    /// <summary>T-0782 (2. Gegenprüfung M4): Registry-Speicher des eigenen Containers leeren – nur Werte und Unterschlüssel UNTER dem Speicherschlüssel dieses Containers.</summary>
+    [SupportedOSPlatform("windows")]
+    public static int CleanContainerRegistry(string? name = null)
+    {
+        using var k = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(StorageKey(name), writable: true);
+        if (k is null) return 0;
+        var n = 0;
+        try
+        {
+            foreach (var v in k.GetValueNames()) { k.DeleteValue(v, false); n++; }
+            foreach (var sub in k.GetSubKeyNames()) { k.DeleteSubKeyTree(sub, false); n++; }
+        }
+        catch (Exception e) when (e is System.Security.SecurityException or UnauthorizedAccessException or IOException) { }
+        return n;
+    }
 
     /// <summary>T-0782 (Nutzerentscheidung 26.11.2026): Profil beim Deinstallieren wieder entfernen (offizielle API, ohne Admin). Gibt eine Zeile fürs Protokoll zurück.</summary>
     [SupportedOSPlatform("windows")]
@@ -95,17 +158,34 @@ public static class LernSandbox
         try { return Marshal.PtrToStringUni(p); } finally { Marshal.FreeCoTaskMem(p); }
     }
 
-    /// <summary>T-0782 (M4): Temp-Ordner des Containers leeren (nur dessen Inhalt; der Ordner gehört Trendos eigenem App-Profil).</summary>
+    /// <summary>Ordner, die Windows im AC-Ordner selbst anlegt – sie werden geleert, aber nicht entfernt.</summary>
+    static readonly HashSet<string> AcStandard = new(StringComparer.OrdinalIgnoreCase) { "Temp", "INetCache", "INetCookies", "INetHistory", "Microsoft" };
+
+    /// <summary>T-0782 (M4, 2. Gegenprüfung): den ganzen AC-Ordner des Containers leeren (Temp, INetCache, Microsoft und neue Unterordner).
+    /// Nur Inhalte dieses Ordners, der zu Trendos eigenem App-Profil gehört; Verknüpfungen werden entfernt, nie verfolgt.</summary>
     [SupportedOSPlatform("windows")]
     public static int CleanContainerTemp(string sidText)
     {
         if (ContainerFolder(sidText) is not { } ac) return 0;
-        var temp = new DirectoryInfo(Path.Combine(ac, "Temp"));
-        if (!temp.Exists || temp.Attributes.HasFlag(FileAttributes.ReparsePoint)) return 0;
+        var root = new DirectoryInfo(ac);
+        if (!root.Exists || root.Attributes.HasFlag(FileAttributes.ReparsePoint)) return 0;
         var n = 0;
-        foreach (var e in temp.EnumerateFileSystemInfos())
-            try { if (e is DirectoryInfo d && !d.Attributes.HasFlag(FileAttributes.ReparsePoint)) d.Delete(true); else e.Delete(); n++; }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+        void Empty(DirectoryInfo dir, bool keepStandard)
+        {
+            foreach (var e in dir.EnumerateFileSystemInfos())
+                try
+                {
+                    if (e is DirectoryInfo d && !d.Attributes.HasFlag(FileAttributes.ReparsePoint))
+                    {
+                        if (keepStandard && AcStandard.Contains(d.Name)) { Empty(d, false); continue; }
+                        d.Delete(true);
+                    }
+                    else e.Delete();
+                    n++;
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+        }
+        Empty(root, true);
         return n;
     }
 
@@ -128,13 +208,13 @@ public static class LernSandbox
     }
 
     /// <summary>Programm im Container ausführen. Nur <paramref name="workDir"/> ist beschreibbar; Ausgaben landen dort in „ausgabe.txt“/„fehler.txt“.</summary>
-    public static Result Run(string exe, IReadOnlyList<string> args, string workDir, int timeoutMs = 10_000, long memoryBytes = 512L << 20) =>
-        Run(exe, args, workDir, new Limits(timeoutMs, memoryBytes));
+    public static Result Run(string exe, IReadOnlyList<string> args, string workDir, int timeoutMs = 10_000, long memoryBytes = 512L << 20, string? container = null) =>
+        Run(exe, args, workDir, new Limits(timeoutMs, memoryBytes, Container: container));
 
-    public static Result Run(string exe, IReadOnlyList<string> args, string workDir, Limits lim, string container = ContainerName)
+    public static Result Run(string exe, IReadOnlyList<string> args, string workDir, Limits lim)
     {
         if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Der abgeschottete Lauf für Lernende ist bisher nur unter Windows gebaut – ohne ihn startet Trendo keinen Code.");
-        lock (RunGate) return RunWindows(exe, args, workDir, lim, container); // nacheinander: der Temp-Ordner des Containers wird je Lauf geleert
+        lock (RunGate) return RunWindows(exe, args, workDir, lim, lim.Container ?? Current); // nacheinander: der Temp-Ordner des Containers wird je Lauf geleert
     }
 
     /// <summary>Nur das Ende einer Datei lesen (T-0782 M3: eine riesige Ausgabe wird nie ganz eingelesen).</summary>
@@ -159,8 +239,10 @@ public static class LernSandbox
         Directory.CreateDirectory(workDir); Directory.CreateDirectory(Path.Combine(workDir, "tmp"));
         var sidText = Sid(container);
         Grant(workDir, sidText, FileSystemRights.Modify);
-        var acFolder = ContainerFolder(sidText); var acTemp = acFolder is null ? null : Path.Combine(acFolder, "Temp");
-        CleanContainerTemp(sidText);
+        var acFolder = ContainerFolder(sidText); var acTemp = acFolder; // 2. Gegenprüfung M4: der ganze AC-Ordner
+        CleanContainerTemp(sidText); CleanContainerRegistry(container);
+        var drive = new DriveInfo(Path.GetPathRoot(Path.GetFullPath(workDir))!);
+        var freeAtStart = drive.AvailableFreeSpace;
         var sw = Stopwatch.StartNew();
         IntPtr sid = IntPtr.Zero, job = IntPtr.Zero, attr = IntPtr.Zero, env = IntPtr.Zero, handles = IntPtr.Zero, caps = IntPtr.Zero, desk = IntPtr.Zero, deskSd = IntPtr.Zero;
         var pi = new PROCESS_INFORMATION();
@@ -241,6 +323,9 @@ public static class LernSandbox
                     lastDiskCheck = sw.ElapsedMilliseconds;
                     lastDisk = TreeBytes(workDir) + TreeBytes(acTemp);
                     if (lastDisk > lim.DiskBytes) { outLimit = true; break; }
+                    if (RegistryBytes(container) > lim.RegistryBytes) { outLimit = true; break; }
+                    try { if (freeAtStart - drive.AvailableFreeSpace > lim.DriveDropBytes) { outLimit = true; break; } } catch (IOException) { } // offene, wachsende Dateien
+                    lastDiskCheck = sw.ElapsedMilliseconds;
                 }
             }
             if (timedOut || outLimit) { TerminateJobObject(job, 0xEE); WaitForSingleObject(pi.hProcess, 5000); }
@@ -250,13 +335,13 @@ public static class LernSandbox
             foreach (var t in tail) t.Wait(3000);
             sw.Stop();
             // M4: auch nach dem Ende prüfen – ein schneller Lauf kann zwischen zwei Messungen fertig sein
-            if (!timedOut && !outLimit && (tail[0].Total + tail[1].Total > lim.OutputBytes || TreeBytes(workDir) + TreeBytes(acTemp) > lim.DiskBytes)) outLimit = true;
+            if (!timedOut && !outLimit && (tail[0].Total + tail[1].Total > lim.OutputBytes || TreeBytes(workDir) + TreeBytes(acTemp) > lim.DiskBytes || RegistryBytes(container) > lim.RegistryBytes)) outLimit = true;
             var outText = tail[0].Text; var errText = tail[1].Text;
             // N2: die Speichergrenze des Jobs lässt Anforderungen scheitern – Python meldet dann MemoryError, ohne die Grenze ganz zu erreichen
             var memHit = !timedOut && !outLimit && ((long)(ulong)info.PeakProcessMemoryUsed >= lim.MemoryBytes * 95 / 100 || errText.Contains("MemoryError", StringComparison.Ordinal));
             var exit = unchecked((int)code);
             var text = timedOut ? $"abgebrochen: Zeitgrenze von {lim.TimeoutMs / 1000.0:0.#} s überschritten"
-                : outLimit ? $"abgebrochen: zu viel Ausgabe oder zu große Dateien (Grenze {lim.OutputBytes >> 20} MB Ausgabe, {lim.DiskBytes >> 20} MB Dateien)"
+                : outLimit ? $"abgebrochen: zu viel Ausgabe oder zu große Dateien (Grenze {lim.OutputBytes >> 20} MB Ausgabe, {lim.DiskBytes >> 20} MB Dateien, {lim.RegistryBytes >> 10} KB Registry)"
                 : memHit ? $"abgebrochen: Speichergrenze ({lim.MemoryBytes >> 20} MB) erreicht"
                 : exit == 0 ? "ok" : Sys.Sandbox.CrashName(exit) is { } crash ? $"abgestürzt ({crash})" : $"beendet mit Fehlercode {exit}";
             return new Result(exit, timedOut, memHit, sw.Elapsed.TotalSeconds, outText, errText, text, outLimit);
@@ -274,7 +359,7 @@ public static class LernSandbox
             if (caps != IntPtr.Zero) Marshal.FreeHGlobal(caps);
             if (env != IntPtr.Zero) Marshal.FreeHGlobal(env);
             if (sid != IntPtr.Zero) LocalFree(sid);
-            CleanContainerTemp(sidText); // M4: nach jedem Lauf leer
+            CleanContainerTemp(sidText); CleanContainerRegistry(container); // M4: nach jedem Lauf leer (Ordner und Registry-Speicher)
         }
     }
 

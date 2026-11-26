@@ -331,9 +331,10 @@ public static partial class Nachhilfe
         var antworten = (antwort ?? "").Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(a => NormSoll(Clean(a, 120))).Where(a => a.Length > 0).Distinct().Take(5).ToList();
         if (frage.Length < 3) throw new ArgumentException("Die Übung braucht eine Frage.");
         if (antworten.Count == 0) throw new ArgumentException("Die Übung braucht eine richtige Antwort.");
+        if (ArtVon(antworten) == "text" && VerraetLoesung(frage, antworten)) throw new ArgumentException("Die Frage verrät schon die Antwort – bitte anders fragen."); // 2. Gegenprüfung M6
         var hs = hinweise.Select(h => Clean(h, 300)).Where(h => h.Length > 0).Take(3).ToList();
         // Ein Hinweis darf die Lösung nicht einfach verraten (sokratisch)
-        hs = [.. hs.Where(h => !VerraetLoesung(h, antworten))];
+        hs = [.. hs.Where(h => !VerraetLoesung(h, antworten, frage))];
         var art = ArtVon(antworten);
         var item = new Item(frage, antworten, erklaerung.Length > 0 ? erklaerung : "Die richtige Antwort ist: " + antworten[0], hs, art);
         var id = "u" + Guid.NewGuid().ToString("N")[..8];
@@ -377,7 +378,7 @@ public static partial class Nachhilfe
     {
         var text = OhneLinks(OhneLatex(Regex.Replace(antwort, @"<think>[\s\S]*?</think>", "").Trim()));
         var u = Uebung(d);
-        if (u is not null && !u["geloest"].AsBool() && !u["loesungGezeigt"].AsBool() && VerraetLoesung(text, ItemOf(u).Antworten))
+        if (u is not null && !u["geloest"].AsBool() && !u["loesungGezeigt"].AsBool() && VerraetLoesung(text, ItemOf(u).Antworten, u["frage"].AsText()))
             return ("Die KI hätte dir hier die Lösung verraten – das zeigt Trendo erst nach deinem Versuch mit „Lösungsweg zeigen“. Nimm lieber einen Hinweis.", true);
         return (text.Length > 1500 ? text[..1500] + " …" : text, false);
     }
@@ -431,7 +432,7 @@ public static partial class Nachhilfe
             if (antworten.Length == 0) { skipped.Add($"Zeile {i + 1}: Antwort fehlt"); continue; }
             var art = ArtVon(antworten);
             rows.Add(new JsonObject { ["id"] = "u" + Guid.NewGuid().ToString("N")[..8], ["thema"] = thema, ["frage"] = f[1].Trim(), ["antworten"] = new JsonArray([.. antworten.Select(a => (JsonNode)a)]),
-                ["erklaerung"] = f.ElementAtOrDefault(3)?.Trim() ?? "", ["hinweise"] = new JsonArray([.. f.Skip(4).Select(h => h.Trim()).Where(h => h.Length > 0 && !VerraetLoesung(h, antworten)).Take(3).Select(h => (JsonNode)h)]),
+                ["erklaerung"] = f.ElementAtOrDefault(3)?.Trim() ?? "", ["hinweise"] = new JsonArray([.. f.Skip(4).Select(h => h.Trim()).Where(h => h.Length > 0 && !VerraetLoesung(h, antworten, f[1])).Take(3).Select(h => (JsonNode)h)]),
                 ["art"] = art, ["herkunft"] = "eigen" });
         }
         if (rows.Count > 0) d.Edit($"{rows.Count} Übungen eingelesen", x => { var e = (JsonArray)(x["eigene"] ??= new JsonArray()); foreach (var r in rows) e.Add(r); });

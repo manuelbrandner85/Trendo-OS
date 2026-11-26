@@ -85,8 +85,8 @@ public partial class MainWindow
         Status = d => { var a = CodeLernen.Aktuell(d); var l = CodeLernen.Letzter(d); return $"Python · {a.Titel} ({CodeLernen.KonzeptName(a.Konzept)}) · {CodeLernen.Track.Count(x => CodeLernen.Geloest(d, x.Id))}/{CodeLernen.Track.Count} gelöst" + (l is null ? "" : $" · letzter Lauf: {l.Bestanden}/{l.Tests.Count} Tests"); },
         Help = "Links eine Aufgabe wählen (die nächste schaltet sich frei, wenn die vorige gelöst ist). In der Mitte steht, was zu tun ist; darunter schreibst du den Code. "
              + "„Tests ausführen“ (F5) startet die echten Tests der Aufgabe in einem abgeschotteten Bereich von Windows (App-Container): ohne Internet, mit 10 Sekunden Zeitgrenze, "
-             + "ohne Zugriff auf deine Dateien und deinen Bildschirm (eigener, unsichtbarer Desktop). Ehrlich: Rechner- und Benutzername und einige Windows-Einstellungen "
-             + "(Teile der Registrierung) kann der Code dort trotzdem lesen – das lässt sich in einem App-Container nicht ganz sperren. Was dein Programm ausgibt, geht nicht an Claude. "
+             + "ohne Zugriff auf deine Dateien und deinen Bildschirm (eigener, unsichtbarer Desktop). Ehrlich: Rechner- und Benutzername und Teile der Registrierung "
+             + "(z. B. zuletzt geöffnete Dateinamen) kann der Code dort trotzdem lesen – das lässt sich in einem App-Container nicht ganz sperren. Was dein Programm ausgibt, geht nicht an Claude. "
              + "Für den abgeschotteten Bereich legt Windows einmalig ein App-Profil „Trendo.Lernen.Code“ an; Trendo entfernt es beim Deinstallieren wieder. "
              + "Grün heißt bestanden. „Hinweis“ gibt Denkanstöße; die KI gibt ebenfalls nur Hinweise und bewertet nie. Export: Lösung mit Tests als .py, läuft in jedem Python.",
     }, "programmieren lernen", "python lernen", "coden lernen", "programmieren", "exercism", "codecademy", "freecodecamp", "scratch", "aufgaben mit tests", "informatik");
@@ -232,7 +232,7 @@ public partial class MainWindow
         }
         else res.Children.Add(P("Noch nicht getestet. „Tests ausführen“ (F5) prüft deinen Code mit den Tests der Aufgabe.", Muted, 12));
         res.Children.Add(new TextBlock { Name = "cl-hinweis-sicherheit", TextWrapping = TextWrapping.Wrap, FontSize = 11, Foreground = Muted,
-            Text = "Abgeschottet: kein Internet, keine deiner Dateien, nicht dein Bildschirm. Lesbar bleiben Rechner- und Benutzername. Programmausgaben gehen nicht an Claude. "
+            Text = "Abgeschottet: kein Internet, keine deiner Dateien, nicht dein Bildschirm. Lesbar bleiben Rechner- und Benutzername und Teile der Registrierung (z. B. zuletzt geöffnete Dateinamen). Programmausgaben gehen nicht an Claude. "
                  + "Windows legt dafür einmalig das App-Profil „Trendo.Lernen.Code“ an – Trendo entfernt es beim Deinstallieren." });
         center.Children.Add(KrCard(res, "cl-ergebnis-karte"));
 

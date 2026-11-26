@@ -22,6 +22,7 @@ public static partial class Nachhilfe
     [GeneratedRegex(@"^(-?\d+)\s*/\s*(-?\d+)$")] private static partial Regex FractionLoose();
     [GeneratedRegex(@"^(-?\d+)\s*(?:,\s*)?(?:r|rest)\s*(\d+)$")] private static partial Regex RestForm();
     [GeneratedRegex(@"[\p{L}\p{N}]")] private static partial Regex AnyWordChar();
+    [GeneratedRegex(@"^-?\d{1,3}(\.\d{3})+$")] private static partial Regex Thousands();
 
     /// <summary>Minuszeichen, geschützte Leerzeichen und Malpunkte vereinheitlichen.</summary>
     static string Zeichen(string s) => s.Replace('−', '-').Replace('–', '-').Replace('‒', '-').Replace(' ', ' ').Replace(' ', ' ').Replace(' ', ' ');
@@ -87,6 +88,7 @@ public static partial class Nachhilfe
                         else if (i.Einheit is { } s2) return new(false, $"Die Einheit passt nicht – gefragt ist {s2}.", false);
                         else return new(false, "Hier ist nur eine Zahl gefragt, ohne Einheit.", false);
                     }
+                    if (Thousands().IsMatch(e)) return new(false, "„1.234“ ist nicht eindeutig – schreib Kommazahlen mit Komma (z. B. 2,5) und große Zahlen ohne Punkt.", false);
                     if (!ZahlLesen(e, out var v)) return new(false, "Hier ist eine Zahl gefragt.", false);
                     return i.Antworten.Any(a => ZahlLesen(a, out var w) && Math.Abs(v - w) < 0.000001m) ? new(true, "Richtig!") : new(false, "Noch nicht richtig.");
                 }
@@ -108,12 +110,11 @@ public static partial class Nachhilfe
                 default:
                 {
                     var e = Norm(roh);
-                    string Loose(string s) => Fold(Norm(s));
-                    var hit = i.Antworten.FirstOrDefault(a => Loose(a) == Loose(e));
+                    var hit = i.Antworten.FirstOrDefault(a => Norm(a) == e || Norm(a) == UmlautEingabe(e));
                     if (hit is null) return new(false, "Noch nicht richtig.");
                     // N5: Großschreibung – richtig, aber mit Hinweis, wenn die Musterantwort anders geschrieben ist (z. B. Nomen groß)
                     var exact = i.Antworten.Any(a => string.Equals(Spaces().Replace(a.Trim(), " "), Spaces().Replace(roh.Trim().Trim('.', '!'), " "), StringComparison.Ordinal)
-                                                     || string.Equals(FoldCase(a), FoldCase(roh), StringComparison.Ordinal));
+                                                     || string.Equals(Spaces().Replace(a.Trim(), " "), UmlautEingabe(Spaces().Replace(roh.Trim().Trim('.', '!'), " ")), StringComparison.Ordinal));
                     return exact || !hit.Any(char.IsUpper) && !roh.Any(char.IsUpper) ? new(true, "Richtig!") : new(true, $"Richtig! Achte aber auf die Groß- und Kleinschreibung: „{hit}“.");
                 }
             }
@@ -121,7 +122,8 @@ public static partial class Nachhilfe
         catch (Exception ex) when (ex is OverflowException or FormatException) { return new(false, "Diese Eingabe kann Trendo nicht lesen – bitte kürzer oder einfacher schreiben.", false); }
     }
 
-    static string FoldCase(string s) => Spaces().Replace(s.Trim().Trim('.', '!'), " ").Replace("ae", "ä").Replace("oe", "ö").Replace("ue", "ü");
+    /// <summary>Nur die Eingabe wird umgeschrieben (ae → ä, oe → ö, ue → ü, Ae → Ä …): wer keine Umlaute tippen kann, schreibt „Baeume“. Nie umgekehrt.</summary>
+    static string UmlautEingabe(string s) => s.Replace("ae", "ä").Replace("oe", "ö").Replace("ue", "ü").Replace("Ae", "Ä").Replace("Oe", "Ö").Replace("Ue", "Ü");
 
     /// <summary>Kleinbuchstaben, Umlaute als ae/oe/ue/ss (so gilt „baeume“ wie „Bäume“).</summary>
     public static string Fold(string s) => s.ToLowerInvariant().Replace("ä", "ae").Replace("ö", "oe").Replace("ü", "ue").Replace("ß", "ss");
@@ -155,8 +157,16 @@ public static partial class Nachhilfe
         return Spaces().Replace(s, " ");
     }
 
+    static readonly (string Wort, int Nenner)[] Bruchwoerter = [("halbe", 2), ("halb", 2), ("drittel", 3), ("viertel", 4), ("fuenftel", 5), ("sechstel", 6), ("siebtel", 7), ("achtel", 8), ("neuntel", 9), ("zehntel", 10), ("zwoelftel", 12), ("hundertstel", 100)];
+
     static string Zahlwort(string s)
     {
+        s = s.Replace("anderthalb", "1.5");
+        foreach (var (w, n) in Zahlwoerter.Value.Where(x => x.Zahl < 100)) s = Regex.Replace(s, @"(?<![\p{L}])" + w + @"einhalb(?![\p{L}])", n.ToString(CultureInfo.InvariantCulture) + ".5");
+        s = Regex.Replace(s, @"(?<![\p{L}])einhalb(?![\p{L}])", "0.5");
+        foreach (var (w, n) in Zahlwoerter.Value.Where(x => x.Zahl is > 0 and < 100))
+            foreach (var (bw, bn) in Bruchwoerter)
+                s = Regex.Replace(s, @"(?<![\p{L}])" + w + @"\s*" + bw + @"(?![\p{L}])", $"{n}/{bn}");
         foreach (var (w, n) in Zahlwoerter.Value) s = Regex.Replace(s, @"(?<![\p{L}])" + w + @"(?![\p{L}])", n.ToString(CultureInfo.InvariantCulture));
         return s;
     }
@@ -186,8 +196,12 @@ public static partial class Nachhilfe
 
     /// <summary>Enthält ein Text die Lösung? Erkennt auch Schreibvarianten: Rest („3 Rest 2“), Bruch mit Leerzeichen, Zahlwörter („einundzwanzig“),
     /// Unicode-Minus, Punkt/Komma, gesperrte Buchstaben („w-e-n-t“), ae statt ä und Rechnungen, die die Lösung ergeben („20 + 1“).</summary>
-    public static bool VerraetLoesung(string text, IEnumerable<string> antworten)
+    public static bool VerraetLoesung(string text, IEnumerable<string> antworten) => VerraetLoesung(text, antworten, null);
+
+    /// <param name="frage">Brüche und Zahlen, die schon in der Aufgabe stehen (z. B. „Kürze 12/18“), gelten nicht als verraten.</param>
+    public static bool VerraetLoesung(string text, IEnumerable<string> antworten, string? frage)
     {
+        var ausFrage = frage is null ? [] : Regex.Matches(Zahlwort(Flach(frage)), @"-?\d+\s*/\s*-?\d+|-?\d+(?:\.\d+)?").Select(m => m.Value.Replace(" ", "")).ToHashSet();
         var flach = Flach(text);
         var mitZahlen = Zahlwort(flach);
         var gesperrt = LetterGaps().Replace(flach, "");
@@ -196,9 +210,11 @@ public static partial class Nachhilfe
             var a = Flach(a0);
             if (Bruch(a0, out var z, out var n) && n != 0)
             {
-                foreach (var t in new[] { mitZahlen })
-                    foreach (Match m in Regex.Matches(t, @"-?\d+\s*/\s*-?\d+"))
-                        if (Bruch(m.Value, out var tz, out var tn) && tz == z && tn == n) return true;
+                // genau der Bruch oder wertgleich (6/8, 0,75) – außer er steht schon in der Aufgabe
+                foreach (Match m in Regex.Matches(mitZahlen, @"-?\d+\s*/\s*-?\d+"))
+                    if (!ausFrage.Contains(m.Value.Replace(" ", "")) && Bruch(m.Value, out var tz, out var tn) && tn != 0 && (decimal)tz * n == (decimal)z * tn) return true;
+                foreach (Match m in Regex.Matches(mitZahlen, @"(?<![\d/])-?\d+\.\d+(?![\d/])"))
+                    if (!ausFrage.Contains(m.Value) && decimal.TryParse(m.Value, NumberStyles.Number, CultureInfo.InvariantCulture, out var dv) && Math.Abs(dv - (decimal)z / n) < 0.0001m) return true;
                 continue;
             }
             if (Rest(a0, out var q, out var r) && RestForm().IsMatch(a0.ToLowerInvariant()))
@@ -209,13 +225,29 @@ public static partial class Nachhilfe
             if (ZahlLesen(a0, out var v))
             {
                 foreach (Match m in Expression().Matches(mitZahlen)) if (Rechne(m.Value) is { } res && res == v) return true;
-                foreach (Match m in Number().Matches(mitZahlen)) if (decimal.TryParse(m.Value, NumberStyles.Number, CultureInfo.InvariantCulture, out var w) && w == v) return true;
+                foreach (Match m in Number().Matches(mitZahlen)) if (!ausFrage.Contains(m.Value) && decimal.TryParse(m.Value, NumberStyles.Number, CultureInfo.InvariantCulture, out var w) && w == v) return true;
                 continue;
             }
             var pattern = @"(?<![\p{L}\p{N}])" + Regex.Escape(a) + @"(?![\p{L}\p{N}])";
             if (Regex.IsMatch(flach, pattern) || Regex.IsMatch(gesperrt, pattern)) return true;
         }
         return false;
+    }
+
+    // ───────────── Anzeige-Filter der KI-Kette (2. Gegenprüfung M6) ─────────────
+
+    [GeneratedRegex(@"(Antwort|Lösungsweg|Hinweis): .*?(?=, (?:Frage|Antwort|Lösungsweg|Hinweis): |$)", RegexOptions.Singleline)] private static partial Regex StepSecrets();
+
+    /// <summary>Text der KI-Kette (Plan, Vorschau-Meldung, Protokoll) so, wie ihn ein Kind sehen darf: Antwort, Lösungsweg und Hinweis neuer Übungen verdeckt;
+    /// verrät der Text die Lösung der offenen oder einer eigenen Übung, wird er ganz zurückgehalten.</summary>
+    public static string FuerAnzeige(ProgramDocument d, string text)
+    {
+        var t = StepSecrets().Replace(text, "$1: (verdeckt)");
+        var u = Uebung(d);
+        var antworten = new List<string>();
+        if (u is not null && !u["geloest"].AsBool() && !u["loesungGezeigt"].AsBool()) antworten.AddRange(ItemOf(u).Antworten);
+        foreach (var o in d.List("eigene").OfType<JsonObject>()) antworten.AddRange(ItemOf(o).Antworten);
+        return antworten.Count > 0 && VerraetLoesung(t, antworten, u?["frage"].AsText()) ? "(ausgeblendet – darin stünde eine Lösung)" : t;
     }
 
     // ───────────── Versuche außerhalb der Rückgängig-Liste (M6) ─────────────
