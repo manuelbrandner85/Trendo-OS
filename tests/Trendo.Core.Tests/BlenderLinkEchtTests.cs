@@ -66,7 +66,7 @@ public class BlenderLinkEchtTests
         finally { try { p.StandardInput.Close(); if (!p.WaitForExit(5000)) p.Kill(); } catch (InvalidOperationException) { } }
     }
 
-    [EchtFact(DisplayName = "T-0785 ECHT: Blender startet sichtbar mit MCP, Würfel, Prozess beendet, automatischer Neustart, Szene wieder da")]
+    [EchtFact(DisplayName = "T-0785 ECHT: Blender startet sichtbar mit MCP; Absturz → Neustart, Sicherung als eigene Datei, Original unverändert; sauberes Schließen → kein Neustart")]
     public async Task Echt()
     {
         var exe = Environment.GetEnvironmentVariable("TRENDO_ECHT_BLENDER")!;
@@ -86,54 +86,78 @@ public class BlenderLinkEchtTests
         L($"vorher offene Blender-Prozesse (fremd, werden nie beendet): {before.Count}");
         L($"eigene Instanz: Port {port}, Profil {profile}, Projekt {project}");
         var env = new Dictionary<string, string> { ["BLENDER_USER_RESOURCES"] = profile };
-        var link = new BlenderLink(exe, new ProcessBlenderHost(), port, env, separateInstance: true, log: (k, t) => L($"[protokoll] {k}: {t}"))
-        { Heartbeat = TimeSpan.FromSeconds(2), StartTimeout = TimeSpan.FromMinutes(3) };
+        var host = new ProcessBlenderHost();
+        var link = new BlenderLink(exe, host, port, env, separateInstance: true, log: (k, t) => L($"[protokoll] {k}: {t}"), stateDir: Path.Combine(root, "zustand"))
+        { Heartbeat = TimeSpan.FromSeconds(2), StartTimeout = TimeSpan.FromMinutes(3), ExtraArgs = ["--online-mode"] }; // nur das eigene Temp-Profil; das Produkt setzt das nie
         link.Changed += s => L($"[status] {s.State}: {s.Text}");
         int? own = null; var killed = new List<int>();
+        static string Sha(string f) => Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(f)));
         try
         {
             var st = await link.EnsureAsync(project);
             Assert.Equal(BlenderLinkState.Verbunden, st.State); Assert.True(st.Own);
             own = link.OwnPid!.Value; Assert.DoesNotContain(own.Value, before);
-            var proc = Process.GetProcessById(own.Value);
+            var proc = host.Last!;
             for (var i = 0; i < 60 && proc.MainWindowHandle == IntPtr.Zero; i++) { await Task.Delay(500); proc.Refresh(); }
             L($"sichtbar: PID {own} Fenster={(proc.MainWindowHandle != IntPtr.Zero ? "ja" : "nein")} Titel=\"{proc.MainWindowTitle}\"");
             Assert.NotEqual(IntPtr.Zero, proc.MainWindowHandle);
             using var keep = link.Keep();
+            var szene = Path.Combine(project, "szene.blend");
+            Assert.True(File.Exists(szene));
+            var shaBefore = Sha(szene);
+            L($"szene.blend (ohne Würfel) SHA-256 {shaBefore}");
 
             var made = await link.RunAsync("Würfel anlegen", "import bpy, bmesh\nme=bpy.data.meshes.new('TrendoWuerfel'); bm=bmesh.new(); bmesh.ops.create_cube(bm, size=2.0); bm.to_mesh(me); bm.free()\nob=bpy.data.objects.new('TrendoWuerfel', me); bpy.context.scene.collection.objects.link(ob); ob.location=(0,0,1)\nresult={'objekte':[o.name for o in bpy.data.objects],'datei':bpy.data.filepath}");
-            L("Würfel: " + made.ToJsonString());
+            L("Würfel (nicht gespeichert): " + made.ToJsonString());
             Assert.Equal("ok", (string?)made["status"]);
-            Assert.Contains("TrendoWuerfel", made["result"]!["objekte"]!.ToJsonString());
 
             if (Environment.GetEnvironmentVariable("TRENDO_ECHT_MCP_SERVER") is { Length: > 0 } srv && File.Exists(srv))
-                await McpServerCheck(srv, port, exe, L); // der Weg, den Claude Code nimmt: MCP-Server (stdio) → Brücke im von Trendo gestarteten Blender
+                await McpServerCheck(srv, link.Port, exe, L); // der Weg, den Claude Code nimmt: MCP-Server (stdio) → Brücke im von Trendo gestarteten Blender
 
-            var rec = Path.Combine(project, BlenderLink.RecoveryName);
-            for (var i = 0; i < 90 && !File.Exists(rec); i++) await Task.Delay(500); // Sicherungskopie spätestens nach 30 s
-            L($"Wiederherstellungskopie vorhanden: {File.Exists(rec)} ({(File.Exists(rec) ? new FileInfo(rec).Length : 0)} Bytes)");
-            Assert.True(File.Exists(rec));
+            var (rec, meta) = BlenderBridge.RecoveryFor(szene);
+            for (var i = 0; i < 90 && !(File.Exists(rec) && File.Exists(meta)); i++) await Task.Delay(500); // Sicherung spätestens nach 30 s
+            L($"Sicherung vorhanden: {File.Exists(rec)}, Begleitdatei: {(File.Exists(meta) ? File.ReadAllText(meta) : "fehlt")}");
+            Assert.True(File.Exists(rec)); Assert.True(File.Exists(meta));
 
-            var first = own.Value;
-            Assert.DoesNotContain(first, before);
-            Process.GetProcessById(first).Kill(); killed.Add(first); // nur der selbst gestartete Prozess
-            L($"eigenen Prozess beendet: PID {first}");
+            // 1) Absturz: gehaltenes Process-Objekt hart beenden (nur der selbst gestartete Prozess)
+            var first = proc.Id; Assert.DoesNotContain(first, before);
+            proc.Kill(); killed.Add(first); proc.WaitForExit(10000);
+            L($"Absturz nachgestellt: eigenen Prozess hart beendet (PID {first}, Code {proc.ExitCode})");
             for (var i = 0; i < 360 && !(link.Starts >= 2 && link.Status.State == BlenderLinkState.Verbunden); i++) await Task.Delay(500);
             Assert.Equal(BlenderLinkState.Verbunden, link.Status.State); Assert.Equal(2, link.Starts);
             own = link.OwnPid; Assert.NotEqual(first, own); Assert.DoesNotContain(own!.Value, before);
-            L($"neu gestartet: PID {own}");
-
+            var restored = link.RestoredFile; Assert.NotNull(restored);
+            L($"neu gestartet: PID {own}, Sicherung als eigene Datei: {Path.GetFileName(restored)}");
             var scene = await link.RunAsync("Szene abfragen", "import bpy\nresult={'objekte':sorted(o.name for o in bpy.data.objects),'datei':bpy.data.filepath,'geaendert':bool(bpy.data.is_dirty)}", repeatable: true);
             L("Szene nach Neustart: " + scene.ToJsonString());
             Assert.Contains("TrendoWuerfel", scene["result"]!["objekte"]!.ToJsonString());
-            Assert.EndsWith("szene.blend", (string?)scene["result"]!["datei"]);
+            Assert.Equal(Path.GetFullPath(restored!), Path.GetFullPath((string)scene["result"]!["datei"]!));
+            Assert.Equal(shaBefore, Sha(szene)); // die Datei der Person ist unverändert
+            L($"szene.blend unverändert: SHA-256 {Sha(szene)}; Sicherung aufgeräumt: {!File.Exists(rec) && !File.Exists(meta)}");
+            Assert.False(File.Exists(rec));
+
+            // 2) sauberes Schließen: speichern, Fenster schließen wie die Person → kein Neustart
+            var saved = await link.RunAsync("Speichern", "import bpy\nbpy.ops.wm.save_mainfile()\nresult={'datei':bpy.data.filepath,'geaendert':bool(bpy.data.is_dirty)}");
+            L("gespeichert: " + saved.ToJsonString());
+            var p2 = host.Last!; var second = p2.Id;
+            L($"Fenster schließen (wie die Person): CloseMainWindow={p2.CloseMainWindow()}");
+            var exited = p2.WaitForExit(60000);
+            L($"Blender beendet: {exited}, Code {(exited ? p2.ExitCode : -999)}");
+            Assert.True(exited); Assert.Equal(0, p2.ExitCode);
+            for (var i = 0; i < 40 && link.Status.State != BlenderLinkState.Geschlossen; i++) await Task.Delay(500);
+            await Task.Delay(8000); // mehrere Herzschläge: es darf nichts neu starten
+            L($"Status nach sauberem Schließen: {link.Status.State} – {link.Status.Text}; Starts {link.Starts}");
+            Assert.Equal(BlenderLinkState.Geschlossen, link.Status.State); Assert.Equal(2, link.Starts);
+            var after = Process.GetProcessesByName("blender").Select(x => x.Id).Where(x => !before.Contains(x)).ToList();
+            L($"eigene Blender-Prozesse danach: [{string.Join(",", after)}]");
+            Assert.Empty(after);
             L("ERGEBNIS: BESTANDEN");
         }
         catch (Exception e) { L("ERGEBNIS: FEHLER " + e.GetType().Name + ": " + e.Message); throw; }
         finally
         {
             link.Dispose();
-            if (link.OwnPid is { } p && !before.Contains(p)) { try { Process.GetProcessById(p).Kill(); killed.Add(p); L($"Aufräumen: eigenen Prozess beendet (PID {p})"); } catch (ArgumentException) { } }
+            if (link.OwnPid is { } p && !before.Contains(p) && host.Last is { HasExited: false } lp && lp.Id == p) { try { lp.Kill(); killed.Add(p); L($"Aufräumen: eigenen Prozess beendet (PID {p})"); } catch (InvalidOperationException) { } }
             var after = Process.GetProcessesByName("blender").Select(x => x.Id).ToHashSet();
             L($"von diesem Test beendet: nur eigene PIDs [{string.Join(",", killed)}] (keine davon war vorher offen: {!killed.Any(before.Contains)})");
             L($"fremde Blender-Prozesse vorher [{string.Join(",", before)}], noch offen [{string.Join(",", before.Where(after.Contains))}], von selbst beendet [{string.Join(",", before.Where(x => !after.Contains(x)))}]");

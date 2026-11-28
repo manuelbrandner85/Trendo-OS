@@ -26,8 +26,8 @@ public partial class MainWindow
         if (StudioLaunchOverride is { } fake) { fake(exe ?? program, StudioMcp.LaunchArgs(program, projectDir)); return null; }
         if (program == "blender" && BlenderLinkGet() is { } link) // T-0785: über die gehaltene Verbindung – offenes Blender weiternutzen, nie ein zweites
         {
-            var keep = link.Keep();
-            _ = BlenderEnsure(projectDir).ContinueWith(_ => keep.Dispose(), TaskScheduler.Default);
+            _blenderStudioKeep ??= link.Keep(); // N2: Überwachung bleibt, bis Trendo beendet wird
+            _ = BlenderEnsure(projectDir);
             return null;
         }
         if (exe is null) return program == "blender" ? BlenderMissingText : $"{program} ist auf diesem PC nicht installiert.";

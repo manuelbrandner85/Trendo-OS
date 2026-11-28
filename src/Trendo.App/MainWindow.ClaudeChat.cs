@@ -497,10 +497,12 @@ public partial class MainWindow
             {
                 var usesBlender = false;
                 var mcpFile = chat.FullWith(ClaudeAlways) ? ClaudeStudioMcp(folder, dock.Studio, out usesBlender) : null; // C5 (08.11.2026): Blender/Unreal/Godot direkt aus Claude
-                using var blenderKeep = usesBlender ? await ClaudeBlenderReady(folder, live, steps, stepsPanel, ui.Cts.Token) : null; // T-0785: Blender sichtbar starten bzw. weiternutzen, Verbindung halten
+                var (blenderKeep, blenderMaySave) = usesBlender ? await ClaudeBlenderPrepare(folder, live, steps, stepsPanel, ui.Cts.Token) : (null, false); // T-0785: Blender sichtbar starten bzw. weiternutzen, Verbindung halten
+                using var blenderHold = blenderKeep;
+                if (usesBlender) mcpFile = ClaudeStudioMcp(folder, dock.Studio, out _); // Port der Verbindung (M3: kann gewechselt haben) in die .mcp.json
                 await using var bridge = await ClaudeBridgeOpen(dock, folder, chat.Id); // Claude bedient die Programme selbst
                 bridged = bridge is not null;
-                var sys2 = (bridge is null ? system : system + TrendoMcp.HandsFreeRule) + (usesBlender ? "\n" + StudioMcp.BlenderRule : "");
+                var sys2 = (bridge is null ? system : system + TrendoMcp.HandsFreeRule) + (usesBlender ? "\n" + StudioMcp.BlenderRule(blenderMaySave) : "");
                 await Task.Run(() => ClaudeRun(ClaudeWithMcp(ClaudeCode.Args(prompt, ClaudeCode.Phase.Chat, chat.Session, sys2, model is { Length: > 0 } ? model : null, chat.FullWith(ClaudeAlways) ? ClaudeCode.Level.Voll : ClaudeCode.Level.Sicher), mcpFile, bridge?.ConfigFile), folder, OnLine, ui.Cts.Token));
             }
             catch (OperationCanceledException) { error = "Angehalten."; }

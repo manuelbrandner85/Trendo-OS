@@ -15,6 +15,7 @@ public partial class MainWindow
     public static Func<BlenderLink?>? BlenderLinkOverride { get; set; }
 
     BlenderLink? _blenderLink;
+    IDisposable? _blenderStudioKeep;
     readonly List<WeakReference<TextBlock>> _blenderStatusFields = [];
 
     /// <summary>Die eine Blender-Verbindung dieser Trendo-Sitzung (null = Blender ist auf diesem PC nicht installiert oder Testmodus).</summary>
@@ -34,7 +35,45 @@ public partial class MainWindow
         _blenderLink = link;
         link.Changed += st => _ui.Post(() => BlenderStatusRefresh(st));
         link.Logged += (kind, text) => _core.Audit.Append(Principal.LocalOwner.Name, "blender.link." + kind, text); // Protokoll: jeder Abbruch, jedes Neuverbinden
+        link.AddonConsent = BlenderAddonConsentStored; // M2: gemerkte Zustimmung
+        link.AskAddonConsent = () => _ui.InvokeAsync(async () =>
+        {
+            var ok = await BlenderAsk("addon", "MCP-Add-on in Blender einschalten?",
+                "Damit Claude in Blender arbeiten kann, braucht Blender das Add-on „MCP“ (Blender Lab). Es ist installiert, aber ausgeschaltet.\n\n" +
+                BlenderAddonPermanentText, "Einschalten", "Nicht einschalten");
+            if (ok) BlenderAddonConsentStored = true;
+            _core.Audit.Append(Principal.LocalOwner.Name, "blender.link.addon-frage", ok ? "ja" : "nein");
+            return ok;
+        });
         return link;
+    }
+
+    public const string BlenderAddonPermanentText = "Trendo schaltet es jetzt ein. Hinweis: Speichert dein Blender seine Einstellungen automatisch, bleibt das Add-on danach dauerhaft an.";
+
+    /// <summary>Für Tests: Antworten auf Trendos Blender-Fragen („addon“, „projekt“) statt Dialog.</summary>
+    public static Func<string, bool>? BlenderAskOverride { get; set; }
+
+    /// <summary>M2: Zustimmung zum Einschalten des MCP-Add-ons, gemerkt im Datenordner.</summary>
+    public bool BlenderAddonConsentStored
+    {
+        get { try { var f = Path.Combine(_core.DataRoot, "blender-link.json"); return File.Exists(f) && System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(f))?["addonOk"]?.GetValue<bool>() == true; } catch (Exception e) when (e is IOException or System.Text.Json.JsonException or InvalidOperationException or UnauthorizedAccessException) { return false; } }
+        set { try { AtomicFile.WriteAllText(Path.Combine(_core.DataRoot, "blender-link.json"), new System.Text.Json.Nodes.JsonObject { ["addonOk"] = value }.ToJsonString()); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } }
+    }
+
+    /// <summary>Sichtbare Ja/Nein-Frage (erste Antwort = Ja).</summary>
+    async Task<bool> BlenderAsk(string key, string title, string text, string yes, string no)
+    {
+        if (BlenderAskOverride is { } o) return o(key);
+        if (_opt.Isolated) return false;
+        var dlg = new Window { Title = title, Width = 480, SizeToContent = SizeToContent.Height, CanResize = false, WindowStartupLocation = WindowStartupLocation.CenterOwner };
+        var y = new Button { Name = "blender-ask-ja", Content = yes, Background = Brush.Parse("#C9A227"), Foreground = Brushes.Black };
+        var n = new Button { Name = "blender-ask-nein", Content = no, IsCancel = true };
+        y.Click += (_, _) => dlg.Close(true); n.Click += (_, _) => dlg.Close(false);
+        dlg.Content = new StackPanel { Margin = new Thickness(16), Spacing = 10, Children = {
+            new TextBlock { Text = title, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
+            new TextBlock { Name = "blender-ask-text", Text = text, TextWrapping = TextWrapping.Wrap },
+            new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, HorizontalAlignment = HorizontalAlignment.Right, Children = { n, y } } } };
+        return await dlg.ShowDialog<bool>(this);
     }
 
     /// <summary>Blender verbinden oder selbst starten (sichtbar, mit Projekt). Ehrlich: Fehlt Blender, kommt eine klare Meldung – nichts wird geladen.</summary>
@@ -114,10 +153,9 @@ public partial class MainWindow
         var link = BlenderLinkGet();
         if (link is null) return BlenderMissingText;
         using var keep = link.Keep();
-        var before = link.Status.Usable;
         var st = await BlenderEnsure(dir);
         if (!st.Usable) return st.Text;
-        if (!before && link.Starts > 0 && st.Own && link.ProjectDir == dir && BlenderLink.ProjectArgs(dir).Args is [var opened] && Path.GetFullPath(opened) == Path.GetFullPath(blend)) return null; // gerade mit genau dieser Datei gestartet
+        if (link.OpenFile is { } of && string.Equals(Path.GetFullPath(of), Path.GetFullPath(blend), StringComparison.OrdinalIgnoreCase)) return null; // schon offen
         try { return await link.OpenFileAsync(blend); }
         catch (BlenderLinkException e) { return e.Message; }
     }
@@ -129,21 +167,40 @@ public partial class MainWindow
 
     /// <summary>Vor einem Claude-Lauf mit Blender-MCP: Statusfeld in die Live-Antwort, Blender verbinden oder sichtbar starten, und während des Laufs jeden
     /// Abbruch und jedes Neuverbinden als Schritt zeigen (nie still). Rückgabe hält die Verbindung bis zum Ende des Laufs.</summary>
-    async Task<IDisposable?> ClaudeBlenderReady(string folder, StackPanel live, List<ClaudeChats.Step> steps, StackPanel stepsPanel, CancellationToken ct)
+    async Task<IDisposable?> ClaudeBlenderReady(string folder, StackPanel live, List<ClaudeChats.Step> steps, StackPanel stepsPanel, CancellationToken ct) =>
+        (await ClaudeBlenderPrepare(folder, live, steps, stepsPanel, ct)).Keep;
+
+    /// <summary>Wie <see cref="ClaudeBlenderReady"/>; <c>MaySave</c>: Claude darf die offene Datei speichern (eigene bzw. Projektdatei). Im offenen Blender der
+    /// Person mit einer Datei außerhalb des Projekts fragt Trendo: Projekt öffnen (nur ohne Ungespeichertes) oder in der offenen Datei arbeiten – dann ohne Speichern.</summary>
+    internal async Task<(IDisposable? Keep, bool MaySave)> ClaudeBlenderPrepare(string folder, StackPanel live, List<ClaudeChats.Step> steps, StackPanel stepsPanel, CancellationToken ct)
     {
         void Step(string t, bool err = false) { var s = new ClaudeChats.Step(t, false, err); steps.Add(s); stepsPanel.Children.Add(TimelineRow(s, steps[0].At, true)); }
         var link = BlenderLinkGet();
         live.Children.Insert(0, BlenderStatusField("claude-blender-status"));
-        if (link is null) { Step("Blender: " + BlenderMissingText, true); return null; }
+        if (link is null) { Step("Blender: " + BlenderMissingText, true); return (null, false); }
         var keep = link.Keep();
+        var quiet = link.Quiet(); // N1: keine Kennungsabfragen, solange Claude über MCP arbeitet
         void OnLog(string kind, string text) { if (kind is "abbruch" or "neustart" or "wieder-verbunden" or "getrennt" or "fehler") _ui.Post(() => Step("Blender: " + text, kind is "abbruch" or "getrennt" or "fehler")); }
         link.Logged += OnLog;
+        var maySave = true;
         try
         {
             var st = await BlenderEnsure(folder, ct);
             Step("Blender: " + st.Text, !st.Usable);
+            if (st.Usable && !st.Own && !link.OpenFileInProject)
+            {
+                var name = link.OpenFile is { } f ? Path.GetFileName(f) : "eine ungespeicherte Szene";
+                var proj = BlenderLink.ProjectArgs(folder).Args;
+                var open = proj.Count > 0 && await BlenderAsk("projekt", "Welche Datei soll Claude bearbeiten?",
+                    $"In deinem offenen Blender ist {name} offen – sie gehört nicht zu diesem Projekt.\n\nProjekt öffnen: {Path.GetFileName(proj[0])} (nur, wenn in Blender nichts Ungespeichertes ist).\nIn der offenen Datei arbeiten: Claude ändert sie, speichert sie aber nicht ohne dich.",
+                    "Projekt öffnen", "In der offenen Datei arbeiten");
+                if (open && await link.OpenFileAsync(proj[0], ct) is { } why) { Step("Blender: " + why, true); maySave = false; }
+                else if (!open) { maySave = false; Step($"Blender: Claude arbeitet in deiner offenen Datei ({name}) und speichert sie nicht ohne dich."); }
+                else Step($"Blender: Projekt {Path.GetFileName(proj[0])} geöffnet.");
+            }
         }
-        catch (OperationCanceledException) { link.Logged -= OnLog; keep.Dispose(); throw; }
-        return new BlenderRunKeep(keep, () => link.Logged -= OnLog);
+        catch (OperationCanceledException) { link.Logged -= OnLog; quiet.Dispose(); keep.Dispose(); throw; }
+        catch (BlenderLinkException e) { Step("Blender: " + e.Message, true); maySave = false; }
+        return (new BlenderRunKeep(keep, () => { link.Logged -= OnLog; quiet.Dispose(); }), maySave);
     }
 }

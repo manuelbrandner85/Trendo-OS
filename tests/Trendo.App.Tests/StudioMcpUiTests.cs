@@ -96,7 +96,7 @@ public class BlenderLink_Ui
         finally { MainWindow.BlenderLinkOverride = null; w.Close(); }
     }
 
-    [Fact(DisplayName = "T-0785: Claude bekommt alle Werkzeuge des Blender-Servers frei (mit und ohne Trendo-Brücke)")]
+    [Fact(DisplayName = "T-0785 H3: Claude bekommt die lesenden Blender-Werkzeuge einzeln frei, execute_blender_code nicht vorab (mit und ohne Trendo-Brücke)")]
     public void Allowed_tools()
     {
         var d = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "trendo-blink-ui-" + Guid.NewGuid().ToString("N"))).FullName;
@@ -105,12 +105,98 @@ public class BlenderLink_Ui
             var mcp = Path.Combine(d, ".mcp.json");
             File.WriteAllText(mcp, "{\"mcpServers\":{\"trendo-blender\":{\"command\":\"python.exe\"}}}");
             var a = MainWindow.ClaudeWithMcp(["-p", "x"], mcp).ToList();
-            Assert.Equal("mcp__trendo-blender", a[a.IndexOf("--allowedTools") + 1]);
+            var allowed = a[a.IndexOf("--allowedTools") + 1];
+            Assert.Equal(Trendo.Core.StudioMcp.BlenderAllowedTools, allowed);
+            Assert.DoesNotContain("execute_blender_code", allowed); // H3: Python-Ausführung läuft durch die Auto-Prüfung von Claude Code
+            Assert.DoesNotContain("mcp__trendo-blender", allowed.Split(' '));
             var b = MainWindow.ClaudeWithMcp(["-p", "x"], mcp, Path.Combine(d, "bruecke.json")).ToList();
-            Assert.Equal("mcp__trendo mcp__trendo-blender", b[b.IndexOf("--allowedTools") + 1]);
+            Assert.Equal("mcp__trendo " + Trendo.Core.StudioMcp.BlenderAllowedTools, b[b.IndexOf("--allowedTools") + 1]);
             File.WriteAllText(mcp, "{\"mcpServers\":{\"trendo-unreal\":{\"command\":\"py.exe\"}}}");
             Assert.DoesNotContain("--allowedTools", MainWindow.ClaudeWithMcp(["-p", "x"], mcp));
         }
         finally { Directory.Delete(d, true); }
+    }
+
+    /// <summary>Antwortet wie die Brücke im offenen Blender der Person (Kennung mit offener Datei, Datei öffnen).</summary>
+    sealed class PersonBlender : IDisposable
+    {
+        readonly System.Net.Sockets.TcpListener _l;
+        public string File; public int Opened;
+        public PersonBlender(int port, string file)
+        {
+            File = file; _l = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, port); _l.Start();
+            _ = Task.Run(async () =>
+            {
+                while (true)
+                {
+                    System.Net.Sockets.Socket s; try { s = await _l.AcceptSocketAsync(); } catch (Exception) { return; }
+                    _ = Task.Run(async () =>
+                    {
+                        using var _s = s; var b = new byte[65536]; var got = new List<byte>();
+                        while (!got.Contains(0)) { var n = await s.ReceiveAsync(b); if (n == 0) return; got.AddRange(b.Take(n)); }
+                        var code = (string)System.Text.Json.Nodes.JsonNode.Parse(System.Text.Encoding.UTF8.GetString([.. got.TakeWhile(x => x != 0)]))!["code"]!;
+                        string res;
+                        if (code.Contains("open_mainfile")) { Interlocked.Increment(ref Opened); var a = code.IndexOf("filepath=") + 9; File = System.Text.Json.Nodes.JsonNode.Parse(code[a..code.IndexOf(")\n", a)])!.GetValue<string>(); res = "{\"status\":\"ok\",\"result\":{\"offen\":true}}"; }
+                        else res = new System.Text.Json.Nodes.JsonObject { ["status"] = "ok", ["result"] = new System.Text.Json.Nodes.JsonObject { ["pid"] = 777, ["datei"] = File, ["geaendert"] = false } }.ToJsonString();
+                        await s.SendAsync(System.Text.Encoding.UTF8.GetBytes(res + "\0"));
+                    });
+                }
+            });
+        }
+        public void Dispose() => _l.Stop();
+    }
+
+    sealed class PersonHost : Trendo.Core.IBlenderHost
+    {
+        public int Starts;
+        public Trendo.Core.IBlenderProc Start(string exe, IReadOnlyList<string> args, IReadOnlyDictionary<string, string> env) { Starts++; throw new InvalidOperationException("darf nicht starten"); }
+        public IReadOnlyList<int> BlenderPids() => [777];
+    }
+
+    [AvaloniaTheory(DisplayName = "T-0785 M4: offenes Blender der Person mit fremder Datei – Trendo fragt; „Projekt öffnen“ öffnet es, sonst arbeitet Claude in der Datei ohne Speichern")]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task M4_person_file(bool openProject)
+    {
+        var d = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "trendo-blink-ui-" + Guid.NewGuid().ToString("N"))).FullName;
+        var exe = Path.Combine(d, "blender.exe"); System.IO.File.WriteAllText(exe, "");
+        var proj = Directory.CreateDirectory(Path.Combine(d, "projekt")).FullName; var blend = Path.Combine(proj, "haus.blend"); System.IO.File.WriteAllText(blend, "x");
+        var port = Trendo.Core.BlenderBridge.FreePort(); var other = Path.Combine(d, "fremd.blend");
+        using var person = new PersonBlender(port, other); var host = new PersonHost(); var asked = new List<string>();
+        MainWindow.BlenderLinkOverride = () => new Trendo.Core.BlenderLink(exe, host, port);
+        MainWindow.BlenderAskOverride = k => { asked.Add(k); return openProject; };
+        var (w, _, _) = Ui.Open();
+        try
+        {
+            var steps = new List<Trendo.Core.ClaudeChats.Step>();
+            var (keep, maySave) = await w.ClaudeBlenderPrepare(proj, new Avalonia.Controls.StackPanel(), steps, new Avalonia.Controls.StackPanel(), CancellationToken.None);
+            using var _k = keep;
+            Assert.Equal(["projekt"], asked); Assert.Equal(0, host.Starts);
+            Assert.Contains(steps, s => s.Text.Contains("fremd.blend")); // die offene Datei wird gezeigt
+            if (openProject) { Assert.Equal(1, person.Opened); Assert.Equal(blend, person.File); Assert.True(maySave); }
+            else { Assert.Equal(0, person.Opened); Assert.False(maySave); Assert.Contains(steps, s => s.Text.Contains("speichert sie nicht")); }
+        }
+        finally { MainWindow.BlenderLinkOverride = null; MainWindow.BlenderAskOverride = null; w.Close(); try { Directory.Delete(d, true); } catch (IOException) { } }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0785 M2: Zustimmung zum MCP-Add-on wird sichtbar erfragt, mit Hinweis „bleibt dauerhaft an“, und gemerkt")]
+    public async Task M2_consent_stored()
+    {
+        var d = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "trendo-blink-ui-" + Guid.NewGuid().ToString("N"))).FullName;
+        var exe = Path.Combine(d, "blender.exe"); System.IO.File.WriteAllText(exe, "");
+        var asked = 0;
+        MainWindow.BlenderLinkOverride = () => new Trendo.Core.BlenderLink(exe, new PersonHost(), Trendo.Core.BlenderBridge.FreePort());
+        MainWindow.BlenderAskOverride = k => { if (k == "addon") asked++; return true; };
+        var (w, _, _) = Ui.Open();
+        try
+        {
+            var link = w.BlenderLinkGet()!;
+            Assert.False(link.AddonConsent); Assert.False(w.BlenderAddonConsentStored);
+            Assert.True(await link.AskAddonConsent!());
+            Assert.Equal(1, asked); Assert.True(w.BlenderAddonConsentStored);
+            Assert.Contains("dauerhaft an", MainWindow.BlenderAddonPermanentText);
+            Assert.Contains(w.Core.Audit.ReadAll(), e => e.Action == "blender.link.addon-frage");
+        }
+        finally { MainWindow.BlenderLinkOverride = null; MainWindow.BlenderAskOverride = null; w.Close(); try { Directory.Delete(d, true); } catch (IOException) { } }
     }
 }

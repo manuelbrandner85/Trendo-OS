@@ -32,8 +32,20 @@ public static class StudioMcp
         return null;
     }
 
-    /// <summary>T-0785: Freigabe für Claude Code – alle Werkzeuge des Blender-Servers im Projekt.</summary>
-    public const string BlenderAllowedTools = "mcp__" + Prefix + "blender";
+    /// <summary>T-0785 (H3): lesende bzw. ungefährliche Werkzeuge des Blender-MCP, die Claude ohne Rückfrage nutzen darf. <c>execute_blender_code*</c> bleibt
+    /// nutzbar, ist aber NICHT vorab erlaubt – es läuft durch die Auto-Prüfung von Claude Code (beliebiges Python).</summary>
+    public static readonly IReadOnlyList<string> BlenderSafeTools =
+    [
+        "get_blendfile_summary_datablocks", "get_blendfile_summary_datablocks_for_cli", "get_blendfile_summary_missing_files", "get_blendfile_summary_missing_files_for_cli",
+        "get_blendfile_summary_of_linked_libraries", "get_blendfile_summary_of_linked_libraries_for_cli", "get_blendfile_summary_path_info", "get_blendfile_summary_path_info_for_cli",
+        "get_blendfile_summary_usage_guess", "get_blendfile_summary_usage_guess_for_cli", "get_object_detail_summary", "get_objects_summary", "get_python_api_docs",
+        "get_screenshot_of_area_as_image", "get_screenshot_of_window_as_image", "get_screenshot_of_window_as_json",
+        "jump_to_tab_by_name", "jump_to_tab_by_space_type", "jump_to_view3d_object_by_name", "jump_to_view3d_object_data_by_name",
+        "render_thumbnail_to_path", "render_viewport_to_path", "search_api_docs", "search_manual_docs",
+    ];
+
+    /// <summary>Freigabeliste für <c>--allowedTools</c> (einzelne Werkzeuge, kein ganzer Server).</summary>
+    public static string BlenderAllowedTools => string.Join(" ", BlenderSafeTools.Select(t => "mcp__" + Prefix + "blender__" + t));
 
     /// <summary>Steht ein Server in der Projektdatei?</summary>
     public static bool HasServer(string? mcpFile, string name)
@@ -43,9 +55,11 @@ public static class StudioMcp
     }
 
     /// <summary>T-0785: Hinweis an Claude, wenn Blender verbunden ist – Trendo hält die Verbindung und startet Blender nach einem Absturz neu.</summary>
-    public const string BlenderRule = "Blender ist über den MCP-Server „trendo-blender“ sichtbar verbunden; du hast alle seine Werkzeuge (Szene lesen, Python ausführen, rendern, exportieren). " +
-        "Trendo hält die Verbindung: Scheitert ein Blender-Werkzeug mit einem Verbindungsfehler, startet Trendo Blender neu und öffnet das Projekt wieder – warte dann etwa 10 Sekunden und wiederhole den Schritt. " +
-        "Speichere wichtige Zwischenstände mit bpy.ops.wm.save_mainfile(). Vor dem Löschen von Dateien außerhalb der Szene fragst du nach.";
+    public static string BlenderRule(bool maySave) => "Blender ist über den MCP-Server „trendo-blender“ sichtbar verbunden; du hast alle seine Werkzeuge (Szene lesen, Python ausführen, rendern, exportieren). " +
+        "Trendo hält die Verbindung: Scheitert ein Blender-Werkzeug mit einem Verbindungsfehler, verbindet Trendo neu (nach einem Absturz startet es Blender neu) – warte dann etwa 10 Sekunden und wiederhole den Schritt. " +
+        (maySave ? "Die offene Datei gehört zum Projekt: wichtige Zwischenstände speicherst du mit bpy.ops.wm.save_mainfile(). "
+                 : "Die offene Datei gehört der Person und nicht zum Projekt: speichere sie NICHT (kein save_mainfile, kein save_as über ihre Datei), außer die Person sagt es ausdrücklich. ") +
+        "Vor dem Löschen oder Überschreiben von Dateien außerhalb der Szene fragst du nach.";
 
     public static JsonObject? ReadUserConfig(string? path = null)
     {
