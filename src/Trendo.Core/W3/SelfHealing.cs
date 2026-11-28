@@ -188,7 +188,13 @@ public static class InstallIntegrity
     /// „Squirrel.exe“ nur für alte Squirrel-Kompatibilität, „&lt;Name&gt;_ExecutionStub.exe“ wird zum Startprogramm im Ordner darüber).</summary>
     /// <summary>Datei, die Velopack selbst in den Programmordner legt (nicht „fremd“). T-0763 Fix F1: liegengebliebene Zwischendateien einer Reparatur werden
     /// nicht mehr ausgeblendet, sondern als Hinweis gemeldet (eine solche Datei kann ein Hardlink nach außen sein).</summary>
-    static bool OwnExtra(string rel) => rel.Equals("sq.version", StringComparison.OrdinalIgnoreCase);
+    static bool OwnExtra(string rel) => rel.Equals("sq.version", StringComparison.OrdinalIgnoreCase) || WebViewCache(rel);
+    /// <summary>T-0784: Zwischenspeicher der Webansichten, den ältere Fassungen (ohne eigenen Datenordner für WebView2) neben der Programmdatei anlegten –
+    /// genau „&lt;Name der Programmdatei&gt;.WebView2/…“ (z. B. „TrendoOS.exe.WebView2/EBWebView/…“). Laufzeit-Zwischenspeicher, keine Programmdatei; ein Ordner
+    /// mit anderem Namen (z. B. „fremd.WebView2/“) wird weiter gemeldet.</summary>
+    public static bool WebViewCache(string rel) => rel.StartsWith(ExeName + ".WebView2/", StringComparison.OrdinalIgnoreCase);
+    /// <summary>Name der Programmdatei der Installation (AssemblyName der App).</summary>
+    public const string ExeName = "TrendoOS.exe";
     public static bool NotInAppFolder(string rel) => rel.Equals("Squirrel.exe", StringComparison.OrdinalIgnoreCase) || (!rel.Contains('/') && rel.EndsWith("_ExecutionStub.exe", StringComparison.OrdinalIgnoreCase));
     public sealed record Finding(string File, string Problem);
     public sealed record Report(bool Installed, string? Package, string? Version, int Checked, IReadOnlyList<Finding> Findings, string Note)
