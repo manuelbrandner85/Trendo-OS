@@ -1,6 +1,6 @@
 # Kleidung & Produkte – Architektur
 
-Studio: Kleidung & Produkte entwerfen (SPEC-08) · Bereich: Kreativ & Medien · Seite: `mode-programm` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Kleidung & Produkte entwerfen (SPEC-08) · Bereich: Kreativ & Medien · Seite: `mode-programm` · Stand: 0.9.114 (Stand 99cbb5c)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.ProgMode.cs`

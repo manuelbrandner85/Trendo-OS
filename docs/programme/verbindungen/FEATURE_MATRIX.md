@@ -1,6 +1,6 @@
 # Verbindungen – Funktionsmatrix
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `verbindungen` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `verbindungen` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

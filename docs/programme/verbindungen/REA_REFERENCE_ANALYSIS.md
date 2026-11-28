@@ -1,6 +1,6 @@
 # Verbindungen – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `verbindungen` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `verbindungen` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Analyse: [Vorbild-Analyse KI-Verbindungen: Claude Desktop, Raycast, Zapier-Konten, Windows-Kontoverwaltung (Clean-Room)](../../../docs/claude/vorbilder/ki-verbindungen-zapier-raycast.md)
 

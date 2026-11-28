@@ -1,6 +1,6 @@
 # Trendo Text – Produktionspaket
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Arbeitsfläche: keine eigene Arbeitsfläche erkannt (Seite aus Listen, Feldern und Knöpfen)  
 Modulstatus (Register, Belege, Testlauf): IMPLEMENTED / Test TESTED (Lauf: 105 bestanden · 3 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

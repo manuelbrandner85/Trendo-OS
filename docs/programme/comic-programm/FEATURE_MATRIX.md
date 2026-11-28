@@ -1,6 +1,6 @@
 # Comics & Storyboards – Funktionsmatrix
 
-Studio: Comics & Storyboards (STUDIO-COMIC-01) · Bereich: Kreativ & Medien · Seite: `comic-programm` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Comics & Storyboards (STUDIO-COMIC-01) · Bereich: Kreativ & Medien · Seite: `comic-programm` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

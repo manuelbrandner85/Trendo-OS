@@ -1,6 +1,6 @@
 # Speicher & Leistung – Funktionsmatrix
 
-Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

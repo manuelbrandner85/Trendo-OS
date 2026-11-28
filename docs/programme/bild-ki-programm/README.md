@@ -1,6 +1,6 @@
 # Bilder mit KI – Produktionspaket
 
-Studio: Bilder mit KI (STUDIO-IMAGEAI-01) · Bereich: KI & Automatik · Seite: `bild-ki-programm` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Bilder mit KI (STUDIO-IMAGEAI-01) · Bereich: KI & Automatik · Seite: `bild-ki-programm` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Arbeitsfläche: keine eigene Arbeitsfläche erkannt (Seite aus Listen, Feldern und Knöpfen)  
 Modulstatus (Register, Belege, Testlauf): IN_PROGRESS / Test PC_VERIFIED (Beleg reports/echtlauf/2026-11-16/sdcli.log; Lauf: 4 bestanden · 2 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

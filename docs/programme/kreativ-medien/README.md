@@ -1,6 +1,6 @@
 # Medien bearbeiten – Produktionspaket
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `kreativ-medien` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `kreativ-medien` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Arbeitsfläche: Bildansicht, Medien-Werkbank (Dateien, Werkzeuge, Ergebnis)  
 Modulstatus (Register, Belege, Testlauf): IMPLEMENTED / Test TESTED (Lauf: 14 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

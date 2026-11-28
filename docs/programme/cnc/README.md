@@ -1,6 +1,6 @@
 # CNC-Werkstatt – Produktionspaket
 
-Studio: Fräsen & Fertigen (SPEC-14) · Bereich: Technik & Fachgebiete · Seite: `cnc` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Fräsen & Fertigen (SPEC-14) · Bereich: Technik & Fachgebiete · Seite: `cnc` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Arbeitsfläche: Werkzeugbahn-Ansicht  
 Modulstatus (Register, Belege, Testlauf): IMPLEMENTED / Test TESTED (Lauf: 26 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

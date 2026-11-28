@@ -1,6 +1,6 @@
 # PDF-Werkstatt – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: PDF-Werkstatt (STUDIO-PDFTOOLS-01) · Bereich: Arbeiten & Büro · Seite: `pdf-werkstatt-programm` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: PDF-Werkstatt (STUDIO-PDFTOOLS-01) · Bereich: Arbeiten & Büro · Seite: `pdf-werkstatt-programm` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Analyse: [Vorbild-Analyse PDF-Werkzeuge: PDF24, PDFsam, Stirling-PDF, Acrobat (Clean-Room)](../../../docs/claude/vorbilder/buero-pdf24-pdfsam.md)
 

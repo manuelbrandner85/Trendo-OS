@@ -1,6 +1,6 @@
 # Lernen mit Karteikarten – Funktionsmatrix
 
-Studio: Lernen mit Karteikarten (SPEC-06) · Bereich: Wissen & Lernen · Seite: `lernen` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Lernen mit Karteikarten (SPEC-06) · Bereich: Wissen & Lernen · Seite: `lernen` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Quelle: `docs/w6-katalog/SPEC-06.md`
 

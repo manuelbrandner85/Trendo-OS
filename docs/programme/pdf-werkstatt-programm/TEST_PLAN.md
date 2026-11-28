@@ -1,6 +1,6 @@
 # PDF-Werkstatt – Testplan
 
-Studio: PDF-Werkstatt (STUDIO-PDFTOOLS-01) · Bereich: Arbeiten & Büro · Seite: `pdf-werkstatt-programm` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: PDF-Werkstatt (STUDIO-PDFTOOLS-01) · Bereich: Arbeiten & Büro · Seite: `pdf-werkstatt-programm` · Stand: 0.9.114 (Stand 99cbb5c)
 
 34 Tests sprechen dieses Programm an.
 

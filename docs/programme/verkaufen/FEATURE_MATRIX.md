@@ -1,6 +1,6 @@
 # Verkaufen – Funktionsmatrix
 
-Studio: Online verkaufen (STUDIO-ONLINE-BUSINESS-01) · Bereich: Business & Geld · Seite: `verkaufen` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Online verkaufen (STUDIO-ONLINE-BUSINESS-01) · Bereich: Business & Geld · Seite: `verkaufen` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Quelle: `docs/spec/kataloge/STUDIO-ONLINE-BUSINESS-01_KATALOG.md`
 

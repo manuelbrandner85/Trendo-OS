@@ -1,6 +1,6 @@
 # Konto, Lizenz & Vollversion – Funktionsmatrix
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `lizenz` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `lizenz` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Quelle: `docs/spec/kataloge/SYS-12_KATALOG.md`
 

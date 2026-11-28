@@ -1,6 +1,6 @@
 # Präsentationen gestalten – Funktionsmatrix
 
-Studio: Präsentationen gestalten (STUDIO-DECKDESIGN-01) · Bereich: Arbeiten & Büro · Seite: `praesentation-gestalten-programm` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Präsentationen gestalten (STUDIO-DECKDESIGN-01) · Bereich: Arbeiten & Büro · Seite: `praesentation-gestalten-programm` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

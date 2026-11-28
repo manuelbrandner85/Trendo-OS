@@ -1,6 +1,6 @@
 # Messdaten & Auswertung – Funktionsmatrix
 
-Studio: Messwerte auswerten (SPEC-05) · Bereich: Wissen & Lernen · Seite: `wissenschaft` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Messwerte auswerten (SPEC-05) · Bereich: Wissen & Lernen · Seite: `wissenschaft` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Quelle: `docs/w6-katalog/SPEC-05.md`
 

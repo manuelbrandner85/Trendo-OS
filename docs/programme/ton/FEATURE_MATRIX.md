@@ -1,6 +1,6 @@
 # Audio bearbeiten – Funktionsmatrix
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `ton` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `ton` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Quelle: `docs/spec/kataloge/CORE-08_KATALOG.md`
 

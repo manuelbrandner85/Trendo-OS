@@ -1,6 +1,6 @@
 # Abläufe (Automatisch erledigen) – Produktionspaket
 
-Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Arbeitsfläche: KI-Zentrale (Bereiche, Suche, Seite – wie LM Studio)  
 Modulstatus (Register, Belege, Testlauf): IMPLEMENTED / Test PC_VERIFIED (Beleg reports/pc-t0003/UEBERSICHT.md; Lauf: 22 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

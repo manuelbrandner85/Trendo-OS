@@ -1,6 +1,6 @@
 # Startbildschirm – Architektur
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.114 (Stand 99cbb5c)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)

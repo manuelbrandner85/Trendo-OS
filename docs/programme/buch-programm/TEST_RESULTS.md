@@ -1,6 +1,6 @@
 # Bücher schreiben – Testergebnisse
 
-Studio: Bücher schreiben (STUDIO-BOOK-01) · Bereich: Kreativ & Medien · Seite: `buch-programm` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Bücher schreiben (STUDIO-BOOK-01) · Bereich: Kreativ & Medien · Seite: `buch-programm` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Lauf: `api.trx, app.trx, core.trx`
 

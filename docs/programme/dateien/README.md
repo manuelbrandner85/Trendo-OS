@@ -1,6 +1,6 @@
 # Dateien – Produktionspaket
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `dateien` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `dateien` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Arbeitsfläche: Dateimanager (Seitenleiste, Ordner, Laufwerke, Registerkarten – wie Explorer, Finder, Dateien)  
 Modulstatus (Register, Belege, Testlauf): IN_PROGRESS / Test PC_VERIFIED (Beleg reports/w1/pc/README.md; Lauf: 13 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

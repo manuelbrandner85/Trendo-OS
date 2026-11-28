@@ -1,5 +1,5 @@
 # Nachhilfe mit KI – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Nachhilfe mit KI (STUDIO-TUTOR-01) · Bereich: Wissen & Lernen · Seite: `nachhilfe-programm` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Nachhilfe mit KI (STUDIO-TUTOR-01) · Bereich: Wissen & Lernen · Seite: `nachhilfe-programm` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.

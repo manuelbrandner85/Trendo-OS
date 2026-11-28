@@ -1,6 +1,6 @@
 # Handy verbinden – Produktionspaket
 
-Studio: Handy verbinden (X-08) · Bereich: System & Sicherheit · Seite: `handy` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Handy verbinden (X-08) · Bereich: System & Sicherheit · Seite: `handy` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Arbeitsfläche: Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)  
 Modulstatus (Register, Belege, Testlauf): IN_PROGRESS / Test TESTED (PC_VERIFIED zurückgenommen: kein echtes Android-Gerät, adb und Bluetooth nachgebaut; Lauf: 21 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

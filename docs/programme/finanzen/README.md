@@ -1,6 +1,6 @@
 # Geld – Produktionspaket
 
-Studio: Geld & Rechnungen (SPEC-11) · Bereich: Business & Geld · Seite: `finanzen` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Geld & Rechnungen (SPEC-11) · Bereich: Business & Geld · Seite: `finanzen` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Arbeitsfläche: Diagramm  
 Modulstatus (Register, Belege, Testlauf): IMPLEMENTED / Test TESTED (Lauf: 18 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

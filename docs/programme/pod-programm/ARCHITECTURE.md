@@ -1,6 +1,6 @@
 # Print on Demand – Architektur
 
-Studio: Print on Demand (STUDIO-POD-01) · Bereich: Business & Geld · Seite: `pod-programm` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Print on Demand (STUDIO-POD-01) · Bereich: Business & Geld · Seite: `pod-programm` · Stand: 0.9.114 (Stand 99cbb5c)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.PodStudio.cs`

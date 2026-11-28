@@ -1,6 +1,6 @@
 # Kleidung & Produkte – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Kleidung & Produkte entwerfen (SPEC-08) · Bereich: Kreativ & Medien · Seite: `mode-programm` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Kleidung & Produkte entwerfen (SPEC-08) · Bereich: Kreativ & Medien · Seite: `mode-programm` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Analyse: [Vorbild-Analyse Kleidung: Seamly2D, Valentina, CLO 3D (Clean-Room)](../../../docs/claude/vorbilder/mode-seamly2d.md)
 

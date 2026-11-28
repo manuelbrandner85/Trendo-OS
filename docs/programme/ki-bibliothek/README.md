@@ -1,6 +1,6 @@
 # KI-Bibliothek – Produktionspaket
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-bibliothek` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-bibliothek` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Arbeitsfläche: KI-Zentrale (Bereiche, Suche, Seite – wie LM Studio)  
 Modulstatus (Register, Belege, Testlauf): IMPLEMENTED / Test TESTED (Lauf: 8 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

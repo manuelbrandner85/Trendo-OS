@@ -1,6 +1,6 @@
 # Selbstheilung – Produktionspaket
 
-Studio: Einrichten & Reparieren (X-02) · Bereich: System & Sicherheit · Seite: `heilung` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Einrichten & Reparieren (X-02) · Bereich: System & Sicherheit · Seite: `heilung` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Arbeitsfläche: Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)  
 Modulstatus (Register, Belege, Testlauf): IMPLEMENTED / Test PC_VERIFIED (Beleg reports/pc-t0003/UEBERSICHT.md; Lauf: 11 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

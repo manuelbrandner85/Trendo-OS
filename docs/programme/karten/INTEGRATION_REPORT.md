@@ -1,6 +1,6 @@
 # Karten & Touren – Einbindung in Trendo OS
 
-Studio: Routen & Karten (SPEC-13) · Bereich: Technik & Fachgebiete · Seite: `karten` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Routen & Karten (SPEC-13) · Bereich: Technik & Fachgebiete · Seite: `karten` · Stand: 0.9.114 (Stand 99cbb5c)
 
 - Seite `karten` im Studio „Routen & Karten“ (Technik & Fachgebiete) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: ja (Dokumente .tdoc, Zuletzt, Wiederherstellen, Bedienstufen)

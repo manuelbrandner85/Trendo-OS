@@ -1,6 +1,6 @@
 # Schaltung & Simulation – Produktionspaket
 
-Studio: Schaltungen berechnen (SPEC-02) · Bereich: Technik & Fachgebiete · Seite: `elektronik` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Schaltungen berechnen (SPEC-02) · Bereich: Technik & Fachgebiete · Seite: `elektronik` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Arbeitsfläche: Schaltplan-Zeichenfläche  
 Modulstatus (Register, Belege, Testlauf): IMPLEMENTED / Test TESTED (Lauf: 19 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

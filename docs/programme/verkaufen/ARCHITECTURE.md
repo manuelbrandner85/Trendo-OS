@@ -1,6 +1,6 @@
 # Verkaufen – Architektur
 
-Studio: Online verkaufen (STUDIO-ONLINE-BUSINESS-01) · Bereich: Business & Geld · Seite: `verkaufen` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Online verkaufen (STUDIO-ONLINE-BUSINESS-01) · Bereich: Business & Geld · Seite: `verkaufen` · Stand: 0.9.114 (Stand 99cbb5c)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.W5Business.cs`

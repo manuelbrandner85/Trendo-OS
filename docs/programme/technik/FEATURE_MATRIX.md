@@ -1,6 +1,6 @@
 # Tragwerk & Mechanik – Funktionsmatrix
 
-Studio: Statik nachrechnen (SPEC-03) · Bereich: Technik & Fachgebiete · Seite: `technik` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Statik nachrechnen (SPEC-03) · Bereich: Technik & Fachgebiete · Seite: `technik` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Quelle: `docs/w6-katalog/SPEC-03.md`
 

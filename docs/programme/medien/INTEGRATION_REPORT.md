@@ -1,6 +1,6 @@
 # Medien – Einbindung in Trendo OS
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `medien` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `medien` · Stand: 0.9.114 (Stand 99cbb5c)
 
 - Seite `medien` im Studio „Kleine Helfer & Musik“ (Arbeiten & Büro) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

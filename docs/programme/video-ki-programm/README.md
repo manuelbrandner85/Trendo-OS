@@ -1,6 +1,6 @@
 # Videos mit KI – Produktionspaket
 
-Studio: Videos mit KI (STUDIO-VIDEOAI-01) · Bereich: KI & Automatik · Seite: `video-ki-programm` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Videos mit KI (STUDIO-VIDEOAI-01) · Bereich: KI & Automatik · Seite: `video-ki-programm` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Arbeitsfläche: Texteditor  
 Modulstatus (Register, Belege, Testlauf): IN_PROGRESS / Test TESTED (Lauf: 4 bestanden · 2 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

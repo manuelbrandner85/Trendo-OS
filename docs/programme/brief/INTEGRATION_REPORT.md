@@ -1,6 +1,6 @@
 # Briefe schreiben – Einbindung in Trendo OS
 
-Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.114 (Stand 99cbb5c)
 
 - Seite `brief` im Studio „Briefe schreiben“ (Arbeiten & Büro) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

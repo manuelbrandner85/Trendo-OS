@@ -1,6 +1,6 @@
 # Trendo PDF – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Analyse: [Vorbild-Analyse Trendo PDF: Adobe Acrobat Reader, PDF-XChange, Okular (Clean-Room)](../../../docs/claude/vorbilder/pdf-acrobat-okular.md)
 

@@ -1,6 +1,6 @@
 # Trendo Text – Testplan
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.114 (Stand 99cbb5c)
 
 108 Tests sprechen dieses Programm an.
 

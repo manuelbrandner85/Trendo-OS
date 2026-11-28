@@ -1,6 +1,6 @@
 # Referate & Hausarbeiten – Produktionspaket
 
-Studio: Referate & Hausarbeiten (STUDIO-REFERAT-01) · Bereich: Wissen & Lernen · Seite: `referate-programm` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Referate & Hausarbeiten (STUDIO-REFERAT-01) · Bereich: Wissen & Lernen · Seite: `referate-programm` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Arbeitsfläche: Texteditor  
 Modulstatus (Register, Belege, Testlauf): IN_PROGRESS / Test TESTED (Lauf: 16 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

@@ -1,6 +1,6 @@
 # Skills – Testplan
 
-Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: KI & Automatik · Seite: `ki-skills` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: KI & Automatik · Seite: `ki-skills` · Stand: 0.9.114 (Stand 99cbb5c)
 
 8 Tests sprechen dieses Programm an.
 

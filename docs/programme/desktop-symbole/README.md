@@ -1,6 +1,6 @@
 # Desktop-Symbole – Produktionspaket
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `desktop-symbole` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `desktop-symbole` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Arbeitsfläche: Bildansicht  
 Modulstatus (Register, Belege, Testlauf): IN_PROGRESS / Test PC_VERIFIED (Beleg reports/w1/pc/README.md; Lauf: 10 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

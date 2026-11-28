@@ -1,6 +1,6 @@
 # Animation & Motion – Einbindung in Trendo OS
 
-Studio: Animation & Motion (STUDIO-ANIM-01) · Bereich: Kreativ & Medien · Seite: `animation-programm` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Animation & Motion (STUDIO-ANIM-01) · Bereich: Kreativ & Medien · Seite: `animation-programm` · Stand: 0.9.114 (Stand 99cbb5c)
 
 - Seite `animation-programm` im Studio „Animation & Motion“ (Kreativ & Medien) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: ja (Dokumente .tdoc, Zuletzt, Wiederherstellen, Bedienstufen)

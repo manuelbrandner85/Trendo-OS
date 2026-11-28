@@ -1,6 +1,6 @@
 # Texte zusammenfassen – Einbindung in Trendo OS
 
-Studio: Texte zusammenfassen (STUDIO-SUMMARY-01) · Bereich: KI & Automatik · Seite: `zusammenfassen-programm` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Texte zusammenfassen (STUDIO-SUMMARY-01) · Bereich: KI & Automatik · Seite: `zusammenfassen-programm` · Stand: 0.9.114 (Stand 99cbb5c)
 
 - Seite `zusammenfassen-programm` im Studio „Texte zusammenfassen“ (KI & Automatik) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: ja (Dokumente .tdoc, Zuletzt, Wiederherstellen, Bedienstufen)

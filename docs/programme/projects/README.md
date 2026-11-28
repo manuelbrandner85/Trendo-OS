@@ -1,6 +1,6 @@
 # Projekte – Produktionspaket
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `projects` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `projects` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Arbeitsfläche: Projektmappe (Projekte, Dateien, Details – wie ein Datei-Explorer)  
 Modulstatus (Register, Belege, Testlauf): IN_PROGRESS / Test PC_VERIFIED (Beleg reports/w1/pc/README.md; Lauf: 19 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

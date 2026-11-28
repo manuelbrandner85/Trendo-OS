@@ -1,6 +1,6 @@
 # Hardware & Leistung – Testplan
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `hardware` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `hardware` · Stand: 0.9.114 (Stand 99cbb5c)
 
 19 Tests sprechen dieses Programm an.
 

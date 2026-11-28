@@ -1,6 +1,6 @@
 # Trendo Text – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Analyse: [Vorbild-Analyse Trendo Text: Microsoft Word, LibreOffice Writer (Clean-Room)](../../../docs/claude/vorbilder/text-word-writer.md)
 

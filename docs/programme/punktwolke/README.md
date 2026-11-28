@@ -1,6 +1,6 @@
 # Punktwolke – Produktionspaket
 
-Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D & Spiele · Seite: `punktwolke` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D & Spiele · Seite: `punktwolke` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Arbeitsfläche: Punktwolken-Ansicht  
 Modulstatus (Register, Belege, Testlauf): IMPLEMENTED / Test TESTED (Lauf: 27 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

@@ -1,6 +1,6 @@
 # Verkaufen – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Online verkaufen (STUDIO-ONLINE-BUSINESS-01) · Bereich: Business & Geld · Seite: `verkaufen` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Online verkaufen (STUDIO-ONLINE-BUSINESS-01) · Bereich: Business & Geld · Seite: `verkaufen` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Analyse: [Vorbild-Analyse Verkaufen: SumUp, Square, Shopify POS, Loyverse (Clean-Room)](../../../docs/claude/vorbilder/verkaufen-kasse-shop.md)
 

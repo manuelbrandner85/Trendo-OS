@@ -1,6 +1,6 @@
 # Werkzeuge: Notizen, Rechner, Wecker – Produktionspaket
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `werkzeuge` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `werkzeuge` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Arbeitsfläche: Helfer-Arbeitsfläche (Haftnotizen, Rechner mit Tastenfeld, Wecker)  
 Modulstatus (Register, Belege, Testlauf): IMPLEMENTED / Test TESTED (Lauf: 24 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

@@ -1,6 +1,6 @@
 # Logos & Marken – Lizenzen
 
-Studio: Logos & Marken (STUDIO-LOGO-01) · Bereich: Kreativ & Medien · Seite: `logo-programm` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Logos & Marken (STUDIO-LOGO-01) · Bereich: Kreativ & Medien · Seite: `logo-programm` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

@@ -1,6 +1,6 @@
 # Adressbuch – Produktionspaket
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kontakte` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kontakte` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Arbeitsfläche: Adressbuch (Gruppen, Liste, Kontaktkarte)  
 Modulstatus (Register, Belege, Testlauf): IMPLEMENTED / Test TESTED (Lauf: 8 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

@@ -1,6 +1,6 @@
 # Code mit KI – Produktionspaket
 
-Studio: Code mit KI (STUDIO-CODEAI-01) · Bereich: KI & Automatik · Seite: `code-ki-programm` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Code mit KI (STUDIO-CODEAI-01) · Bereich: KI & Automatik · Seite: `code-ki-programm` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Arbeitsfläche: Code-Editor (Dateibaum, Reiter, Farben je Sprache – wie VS Code)  
 Modulstatus (Register, Belege, Testlauf): IN_PROGRESS / Test TESTED (Lauf: 9 bestanden · 2 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

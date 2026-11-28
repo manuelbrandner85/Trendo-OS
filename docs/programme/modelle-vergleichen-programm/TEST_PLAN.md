@@ -1,6 +1,6 @@
 # KI-Modelle vergleichen – Testplan
 
-Studio: KI-Modelle vergleichen (STUDIO-MODELS-01) · Bereich: KI & Automatik · Seite: `modelle-vergleichen-programm` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: KI-Modelle vergleichen (STUDIO-MODELS-01) · Bereich: KI & Automatik · Seite: `modelle-vergleichen-programm` · Stand: 0.9.114 (Stand 99cbb5c)
 
 6 Tests sprechen dieses Programm an.
 

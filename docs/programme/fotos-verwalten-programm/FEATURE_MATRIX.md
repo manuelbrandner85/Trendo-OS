@@ -1,6 +1,6 @@
 # Fotos verwalten – Funktionsmatrix
 
-Studio: Fotos verwalten (STUDIO-PHOTOS-01) · Bereich: Kreativ & Medien · Seite: `fotos-verwalten-programm` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Fotos verwalten (STUDIO-PHOTOS-01) · Bereich: Kreativ & Medien · Seite: `fotos-verwalten-programm` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

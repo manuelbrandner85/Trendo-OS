@@ -1,6 +1,6 @@
 # Kurse erstellen – Funktionsmatrix
 
-Studio: Kurse erstellen (STUDIO-COURSE-01) · Bereich: Wissen & Lernen · Seite: `kurse-programm` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Kurse erstellen (STUDIO-COURSE-01) · Bereich: Wissen & Lernen · Seite: `kurse-programm` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

@@ -1,6 +1,6 @@
 # Hinzufügen – Architektur
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `hinzufuegen` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `hinzufuegen` · Stand: 0.9.114 (Stand 99cbb5c)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Sys11.cs`

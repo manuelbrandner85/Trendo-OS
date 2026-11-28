@@ -1,6 +1,6 @@
 # Baukasten – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Apps zusammenklicken (X-03) · Bereich: Entwickeln · Seite: `baukasten` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Apps zusammenklicken (X-03) · Bereich: Entwickeln · Seite: `baukasten` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Analyse: [Vorbild-Analyse Apps zusammenklicken: Carrd, Webflow, Google Sites (Clean-Room)](../../../docs/claude/vorbilder/baukasten-carrd-webflow.md)
 

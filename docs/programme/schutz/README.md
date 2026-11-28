@@ -1,6 +1,6 @@
 # Schutz & Datenschutz – Produktionspaket
 
-Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `schutz` · Stand: 0.9.113 (Stand 1978f1a)
+Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `schutz` · Stand: 0.9.114 (Stand 99cbb5c)
 
 Arbeitsfläche: Diagramm, Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)  
 Modulstatus (Register, Belege, Testlauf): IMPLEMENTED / Test PC_VERIFIED (Beleg reports/pc-t0003/UEBERSICHT.md; Lauf: 11 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  
