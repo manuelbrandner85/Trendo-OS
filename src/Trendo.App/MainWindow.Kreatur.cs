@@ -97,7 +97,7 @@ public partial class MainWindow
             if (File.Exists(k + ".png"))
                 try { sp.Children.Add(new Image { Name = "3d-kreatur-vorschau", Source = new Bitmap(k + ".png"), MaxHeight = 190, Stretch = Stretch.Uniform, HorizontalAlignment = HorizontalAlignment.Left }); }
                 catch (Exception ex) when (ex is ArgumentException or IOException or NotSupportedException) { }
-            var open = Act("3d-kreatur-oeffnen", "In Blender öffnen", () => { if (File.Exists(k + ".blend")) Launch(k + ".blend"); });
+            var open = Act("3d-kreatur-oeffnen", "In Blender öffnen", async () => { if (!File.Exists(k + ".blend")) return; if (BlenderLinkGet() is null) { Launch(k + ".blend"); return; } _kreaturMsg = await BlenderShowFile(k + ".blend") ?? "Die Kreatur ist im verbundenen Blender offen."; Show("3d"); }); // T-0785: offenes Blender weiternutzen
             open.IsEnabled = File.Exists(k + ".blend");
             sp.Children.Add(new WrapPanel { Children = { open, new Border { Width = 4 }, Act("3d-kreatur-ordner", "Ordner zeigen", () => Launch(Folder3D)) } });
         }

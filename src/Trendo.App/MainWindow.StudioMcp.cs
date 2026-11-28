@@ -12,7 +12,7 @@ public partial class MainWindow
     /// <summary>Schreibt die <c>.mcp.json</c> des Projekts (nur Server, die das Studio braucht, aus der vorhandenen Claude-Einstellung) und liefert den Ordner samt fehlenden Servern.</summary>
     public StudioMcp.Result StudioMcpPrepare(string projectDir, string studioId, string? engine = null)
     {
-        var r = StudioMcp.EnsureProjectConfig(projectDir, studioId, engine, kittl: studioId == "STUDIO-POD-01" && PodKittlOn);
+        var r = StudioMcp.EnsureProjectConfig(projectDir, studioId, engine, kittl: studioId == "STUDIO-POD-01" && PodKittlOn, blenderPort: StudioMcp.Needs(studioId, engine).Contains("blender") ? BlenderLinkGet()?.Port : null);
         _core.Audit.Append(Principal.LocalOwner.Name, "studio.mcp", $"{studioId} +{string.Join(",", r.Added)} fehlt:{string.Join(",", r.Missing)}");
         return r;
     }
@@ -24,7 +24,13 @@ public partial class MainWindow
         if (program is not ("blender" or "unreal" or "godot")) return $"„{program}“ wird nicht automatisch gestartet.";
         var exe = _opt.Isolated && StudioLaunchOverride is null ? null : EngineDetect().FirstOrDefault(e => e.Id.Equals(program, StringComparison.OrdinalIgnoreCase) && e.Installed && e.Exe is not null)?.Exe;
         if (StudioLaunchOverride is { } fake) { fake(exe ?? program, StudioMcp.LaunchArgs(program, projectDir)); return null; }
-        if (exe is null) return $"{program} ist auf diesem PC nicht installiert.";
+        if (program == "blender" && BlenderLinkGet() is { } link) // T-0785: über die gehaltene Verbindung – offenes Blender weiternutzen, nie ein zweites
+        {
+            var keep = link.Keep();
+            _ = BlenderEnsure(projectDir).ContinueWith(_ => keep.Dispose(), TaskScheduler.Default);
+            return null;
+        }
+        if (exe is null) return program == "blender" ? BlenderMissingText : $"{program} ist auf diesem PC nicht installiert.";
         LaunchArgsAs(exe, StudioMcp.LaunchArgs(program, projectDir));
         return null;
     }

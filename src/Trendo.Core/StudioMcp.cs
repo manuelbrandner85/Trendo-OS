@@ -32,6 +32,21 @@ public static class StudioMcp
         return null;
     }
 
+    /// <summary>T-0785: Freigabe für Claude Code – alle Werkzeuge des Blender-Servers im Projekt.</summary>
+    public const string BlenderAllowedTools = "mcp__" + Prefix + "blender";
+
+    /// <summary>Steht ein Server in der Projektdatei?</summary>
+    public static bool HasServer(string? mcpFile, string name)
+    {
+        try { return mcpFile is not null && File.Exists(mcpFile) && JsonNode.Parse(File.ReadAllText(mcpFile))?["mcpServers"]?[name] is JsonObject; }
+        catch (Exception e) when (e is JsonException or IOException or UnauthorizedAccessException) { return false; }
+    }
+
+    /// <summary>T-0785: Hinweis an Claude, wenn Blender verbunden ist – Trendo hält die Verbindung und startet Blender nach einem Absturz neu.</summary>
+    public const string BlenderRule = "Blender ist über den MCP-Server „trendo-blender“ sichtbar verbunden; du hast alle seine Werkzeuge (Szene lesen, Python ausführen, rendern, exportieren). " +
+        "Trendo hält die Verbindung: Scheitert ein Blender-Werkzeug mit einem Verbindungsfehler, startet Trendo Blender neu und öffnet das Projekt wieder – warte dann etwa 10 Sekunden und wiederhole den Schritt. " +
+        "Speichere wichtige Zwischenstände mit bpy.ops.wm.save_mainfile(). Vor dem Löschen von Dateien außerhalb der Szene fragst du nach.";
+
     public static JsonObject? ReadUserConfig(string? path = null)
     {
         path ??= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".claude.json");
@@ -41,7 +56,7 @@ public static class StudioMcp
     public sealed record Result(string ProjectDir, IReadOnlyList<string> Added, IReadOnlyList<string> Missing);
 
     /// <summary>Legt bzw. aktualisiert <c>.mcp.json</c> im Projektordner und liefert den Ordner. Fehlende Server stehen in <see cref="Result.Missing"/>.</summary>
-    public static Result EnsureProjectConfig(string projectDir, string studioId, string? engine = null, JsonObject? userConfig = null, bool kittl = false)
+    public static Result EnsureProjectConfig(string projectDir, string studioId, string? engine = null, JsonObject? userConfig = null, bool kittl = false, int? blenderPort = null)
     {
         Directory.CreateDirectory(projectDir);
         var file = Path.Combine(projectDir, FileName);
@@ -54,7 +69,12 @@ public static class StudioMcp
         engine ??= EngineOfProject(projectDir); // Spiele: Engine aus den Projektdateien, wenn der Aufrufer sie nicht kennt
         var added = new List<string>(); var missing = new List<string>();
         foreach (var p in Needs(studioId, engine))
-            if (FindServer(userConfig, p) is { } s) { servers[Prefix + p] = s; added.Add(p); }
+            if (FindServer(userConfig, p) is { } s)
+            {
+                // T-0785: Blender-Brücke auf dem Port, den Trendos Verbindung hält (eigene Instanz) – die Einstellung der Person bleibt unverändert
+                if (p == "blender" && blenderPort is { } port) { if (s["env"] is not JsonObject env) s["env"] = env = new JsonObject(); env[BlenderBridge.PortVariable] = port.ToString(System.Globalization.CultureInfo.InvariantCulture); }
+                servers[Prefix + p] = s; added.Add(p);
+            }
             else missing.Add(p);
         if (kittl) { servers[Prefix + "kittl"] = new JsonObject { ["type"] = "http", ["url"] = KittlMcpUrl }; added.Add("kittl"); } // offizieller Zugang; die Anmeldung läuft über Claude im Browser, Trendo sieht keine Zugangsdaten
         File.WriteAllText(file, doc.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
@@ -83,7 +103,7 @@ public static class StudioMcp
         {
             "unreal" => Newest("*.uproject") is { } u ? [u] : [],
             "godot" => File.Exists(Path.Combine(projectDir, "project.godot")) ? ["--editor", "--path", projectDir] : [],
-            "blender" => Newest("*.blend") is { } b ? [b] : [],
+            "blender" => Directory.Exists(projectDir) && Directory.EnumerateFiles(projectDir, "*.blend", SearchOption.TopDirectoryOnly).Where(f => !Path.GetFileName(f).StartsWith('.')).OrderByDescending(File.GetLastWriteTimeUtc).FirstOrDefault() is { } b ? [b] : [], // T-0785: ohne Trendos Punkt-Dateien (Wiederherstellung)
             _ => [],
         };
     }

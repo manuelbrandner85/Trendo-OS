@@ -13,8 +13,12 @@ public partial class MainWindow
 
     /// <summary>C5: MCP-Server, die das Studio braucht (Blender, Unreal, Godot), in die .mcp.json des Projekts – Pfad der Datei oder null, wenn nichts eingetragen ist.
     /// Claude Code lädt Projekt-Server im Druckmodus nicht von selbst; darum gibt Trendo die Datei ausdrücklich mit (--mcp-config).</summary>
-    string? ClaudeStudioMcp(string folder, string? studio)
+    string? ClaudeStudioMcp(string folder, string? studio) => ClaudeStudioMcp(folder, studio, out _);
+
+    /// <summary>Wie oben; <paramref name="blender"/>: der Blender-Server ist dabei – dann hält Trendo die Blender-Verbindung (T-0785).</summary>
+    string? ClaudeStudioMcp(string folder, string? studio, out bool blender)
     {
+        blender = false;
         if (studio is null) return null;
         try
         {
@@ -23,16 +27,22 @@ public partial class MainWindow
             else if (_opt.Isolated) return null;
             else r = StudioMcpPrepare(folder, studio, StudioMcp.EngineFor(folder, studio == "CORE-06" ? ProgramActive(GK)?.Text("engine") : null)); // T-0630: Projektdateien, sonst die ausdrückliche Wahl
             var file = Path.Combine(folder, ".mcp.json");
+            blender = r.Added.Contains("blender");
             return r.Added.Count > 0 && File.Exists(file) ? file : null;
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Text.Json.JsonException) { return null; }
     }
 
-    static IReadOnlyList<string> ClaudeWithMcp(IReadOnlyList<string> args, string? mcpFile, string? bridgeFile = null)
+    internal static IReadOnlyList<string> ClaudeWithMcp(IReadOnlyList<string> args, string? mcpFile, string? bridgeFile = null)
     {
         var files = new[] { mcpFile, bridgeFile }.OfType<string>().ToList();
         if (files.Count == 0) return args;
-        IReadOnlyList<string> all = bridgeFile is null ? args : [.. args, "--allowedTools", TrendoMcp.AllowedTools];
+        // T-0785: voller Werkzeugumfang des Blender-MCP (Szene lesen, Code ausführen, rendern, exportieren …) – alle Werkzeuge des Servers freigegeben.
+        // Rückfragen bei Löschen, Senden und Kaufen bleiben (Trendo-Regeln im Systemtext); Blender gibt es nur im Modus „Voll“ (je Projekt freigegeben).
+        var allow = new List<string>();
+        if (bridgeFile is not null) allow.Add(TrendoMcp.AllowedTools);
+        if (StudioMcp.HasServer(mcpFile, StudioMcp.Prefix + "blender")) allow.Add(StudioMcp.BlenderAllowedTools);
+        IReadOnlyList<string> all = allow.Count == 0 ? args : [.. args, "--allowedTools", string.Join(" ", allow)];
         return [.. all, "--mcp-config", .. files];
     }
 

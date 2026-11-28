@@ -1,0 +1,25 @@
+2026-11-28 04:15:22.981 Blender: C:\Program Files\Blender Foundation\Blender 5.2\blender.exe (5.2)
+2026-11-28 04:15:22.981 vorher offene Blender-Prozesse (fremd, werden nie beendet): 0
+2026-11-28 04:15:22.981 eigene Instanz: Port 49633, Profil C:\Users\<user>\AppData\Local\Temp\trendo-testlauf-38484-6b0a473d\trendo-T-0785-echt-3b9454eb\profil, Projekt C:\Users\<user>\AppData\Local\Temp\trendo-testlauf-38484-6b0a473d\trendo-T-0785-echt-3b9454eb\projekt
+2026-11-28 04:15:26.074 [status] Startet: Blender startet sichtbar mit dem Projekt …
+2026-11-28 04:15:26.091 [protokoll] start: Blender gestartet (PID 3604, Port 49633).
+2026-11-28 04:15:30.586 [protokoll] verbunden: Blender von Trendo gestartet (PID 3604, Port 49633).
+2026-11-28 04:15:30.586 [status] Verbunden: Verbunden mit Blender (von Trendo gestartet, Port 49633).
+2026-11-28 04:15:30.592 sichtbar: PID 3604 Fenster=ja Titel="szene [C:\Users\<user>\AppData\Local\Temp\trendo-testlauf-38484-6b0a473d\trendo-T-0785-echt-3b9454eb\projekt\szene.blend] - Blender 5.2.3 LTS"
+2026-11-28 04:15:30.675 Würfel: {"status":"ok","result":{"objekte":["Camera","Cube","Light","TrendoWuerfel"],"datei":"C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-testlauf-38484-6b0a473d\\trendo-T-0785-echt-3b9454eb\\projekt\\szene.blend"}}
+2026-11-28 04:15:31.716 MCP-Server (stdio) Werkzeuge: 26 – execute_blender_code, execute_blender_code_for_cli, get_blendfile_summary_datablocks, get_blendfile_summary_datablocks_for_cli, get_blendfile_summary_missing_files, get_blendfile_summary_missing_files_for_cli, get_blendfile_summary_of_linked_libraries, get_blendfile_summary_of_linked_libraries_for_cli, get_blendfile_summary_path_info, get_blendfile_summary_path_info_for_cli, get_blendfile_summary_usage_guess, get_blendfile_summary_usage_guess_for_cli, get_object_detail_summary, get_objects_summary, get_python_api_docs, get_screenshot_of_area_as_image, get_screenshot_of_window_as_image, get_screenshot_of_window_as_json, jump_to_tab_by_name, jump_to_tab_by_space_type, jump_to_view3d_object_by_name, jump_to_view3d_object_data_by_name, render_thumbnail_to_path, render_viewport_to_path, search_api_docs, search_manual_docs
+2026-11-28 04:15:31.750 MCP-Server get_objects_summary: {"content":[{"type":"text","text":"{\n  \u0022status\u0022: \u0022ok\u0022,\n  \u0022result\u0022: {\n    \u0022status\u0022: \u0022ok\u0022,\n    \u0022scene_name\u0022: \u0022Scene\u0022,\n    \u0022active_workspace\u0022: \u0022Layout\u0022,\n    \u0022active_object\u0022: \u0022Cube\u0022,\n    \u0022object_mode\u0022: \u0022OBJECT\u0022,\n    \u0022camera_object\u0022: \u0022Camera\u0022,\n    \u0022collections\u0022: [\n      {\n        \u0022name\u0022: \u0022Scene Collection\u0022,\n        \u0022exclude\u0022: false,\n        \u0022hide_viewport\u0022: false,\n        \u0022objects\u0 …
+2026-11-28 04:16:00.228 Wiederherstellungskopie vorhanden: True (99226 Bytes)
+2026-11-28 04:16:00.228 eigenen Prozess beendet: PID 3604
+2026-11-28 04:16:03.744 [protokoll] abbruch: Blender (PID 3604) wurde beendet, Code -1.
+2026-11-28 04:16:03.745 [status] VerbindetNeu: Blender wurde beendet – starte neu in 1 s (Versuch 1 von 5).
+2026-11-28 04:16:06.781 [status] Startet: Blender wird neu gestartet und öffnet das Projekt wieder …
+2026-11-28 04:16:06.787 [protokoll] neustart: Blender gestartet (PID 19236, Port 49633, .trendo-blender-wiederherstellung.blend, aus der Wiederherstellung).
+2026-11-28 04:16:11.297 [protokoll] wieder-verbunden: Blender von Trendo gestartet (PID 19236, Port 49633).
+2026-11-28 04:16:11.297 [status] Verbunden: Verbunden mit Blender (von Trendo gestartet, Port 49633).
+2026-11-28 04:16:11.332 neu gestartet: PID 19236
+2026-11-28 04:16:11.400 Szene nach Neustart: {"status":"ok","result":{"objekte":["Camera","Cube","Light","TrendoWuerfel"],"datei":"C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-testlauf-38484-6b0a473d\\trendo-T-0785-echt-3b9454eb\\projekt\\szene.blend","geaendert":false}}
+2026-11-28 04:16:11.400 ERGEBNIS: BESTANDEN
+2026-11-28 04:16:11.401 Aufräumen: eigenen Prozess beendet (PID 19236)
+2026-11-28 04:16:11.411 von diesem Test beendet: nur eigene PIDs [3604,19236] (keine davon war vorher offen: True)
+2026-11-28 04:16:11.411 fremde Blender-Prozesse vorher [], noch offen [], von selbst beendet []
