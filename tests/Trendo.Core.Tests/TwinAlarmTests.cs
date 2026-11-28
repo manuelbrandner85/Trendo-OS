@@ -74,7 +74,8 @@ public class TwinAlarmTests
         Assert.NotEqual(r.Id, back.Id); Assert.Equal(now, back.Created);
         Assert.Throws<FormatException>(() => TwinRules.ImportJson("{\"Format\":\"anders\",\"Version\":1,\"Regeln\":[]}", now));
         Assert.Throws<FormatException>(() => TwinRules.ImportJson("kein json", now));
-        Assert.Throws<ArgumentException>(() => TwinRules.ImportJson(json.Replace("300", "-1"), now));
+        Assert.Contains("\"DurationSeconds\": 300", json); // nur das Feld ersetzen – „300“ kann auch im Zeitstempel „Created“ stehen (Wackler 28.11.2026)
+        Assert.Throws<ArgumentException>(() => TwinRules.ImportJson(json.Replace("\"DurationSeconds\": 300", "\"DurationSeconds\": -1"), now));
         Assert.Throws<FormatException>(() => TwinRules.ImportJson(json.Replace("\"Version\": 1", "\"Version\": 9"), now));
     }
 
