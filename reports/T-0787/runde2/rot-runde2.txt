@@ -1,0 +1,110 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot3\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:12.23]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:12.75]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:12.78]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:00:12.96]     T-0787 R2-1: Punkt mit drei Ziffern – führende 0 ist Dezimalpunkt, bei kg/l Dezimalpunkt, bei g/ml Tausenderpunkt; immer mit Hinweis außer „0.250“ [FAIL]
+[xUnit.net 00:00:12.96]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:12.96]       Expected: 0,25
+[xUnit.net 00:00:12.96]       Actual:   250
+[xUnit.net 00:00:12.96]       Stack Trace:
+[xUnit.net 00:00:12.96]         C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot3\tests\Trendo.Core.Tests\T0787Runde2Tests.cs(16,0): at Trendo.Core.Tests.T0787_Runde2.Punktregel()
+[xUnit.net 00:00:12.96]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:12.96]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:12.97]     T-0787 R2-1: JSON-LD-Import meldet mehrdeutige Mengen und markiert die Zutat mit „Menge prüfen“ – nichts still übernommen [FAIL]
+[xUnit.net 00:00:12.97]       Assert.Contains() Failure: Filter not matched in collection
+[xUnit.net 00:00:12.97]       Collection: []
+[xUnit.net 00:00:12.97]       Stack Trace:
+[xUnit.net 00:00:12.97]         C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot3\tests\Trendo.Core.Tests\T0787Runde2Tests.cs(31,0): at Trendo.Core.Tests.T0787_Runde2.Import_meldet_mehrdeutig()
+[xUnit.net 00:00:12.97]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:12.97]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:12.98]     T-0787 R2-4: deutsche Schreibweise „1.000,5 g“ und „1.250,75 ml“ [FAIL]
+[xUnit.net 00:00:12.98]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:12.98]       Expected: 1000,5
+[xUnit.net 00:00:12.98]       Actual:   1
+[xUnit.net 00:00:12.98]       Stack Trace:
+[xUnit.net 00:00:12.98]         C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot3\tests\Trendo.Core.Tests\T0787Runde2Tests.cs(49,0): at Trendo.Core.Tests.T0787_Runde2.Deutsche_schreibweise()
+[xUnit.net 00:00:12.98]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:12.98]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:12.99]     T-0787 R2-5: doppelte Kennung – das zuerst vorhandene Rezept behält seine, das Duplikat bekommt eine freie (auch wenn „x-2“ schon echt vergeben ist); Plan bleibt beim ersten [FAIL]
+[xUnit.net 00:00:12.99]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:00:12.99]       Expected: "x-2"
+[xUnit.net 00:00:12.99]       Actual:   "x-2-2"
+[xUnit.net 00:00:12.99]                     ↑ (pos 3)
+[xUnit.net 00:00:12.99]       Stack Trace:
+[xUnit.net 00:00:12.99]         C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot3\tests\Trendo.Core.Tests\T0787Runde2Tests.cs(61,0): at Trendo.Core.Tests.T0787_Runde2.Duplikat_bekommt_freie_kennung()
+[xUnit.net 00:00:12.99]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:12.99]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:12.99]     T-0787 R2-8: „10 x 10 x 10 g“, „3 x Eier“, „-1 g“ gemeldet, „1 Dose Bohnen“ = Dosenbohnen, Bund + Gramm zusammengelegt, Zeiten höchstens 7 Tage [FAIL]
+[xUnit.net 00:00:12.99]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:12.99]       Expected: 1000
+[xUnit.net 00:00:12.99]       Actual:   100
+[xUnit.net 00:00:12.99]       Stack Trace:
+[xUnit.net 00:00:12.99]         C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot3\tests\Trendo.Core.Tests\T0787Runde2Tests.cs(71,0): at Trendo.Core.Tests.T0787_Runde2.Kleinigkeiten()
+[xUnit.net 00:00:12.99]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:12.99]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:13.01]     T-0787 R2-3: weitere Gesundheitsversprechen nach Wortfamilien erkannt; „Der Teig heilt nicht“ und die Fehlalarme aus Runde 1 bleiben frei [FAIL]
+[xUnit.net 00:00:13.01]       nicht erkannt: Ein gesundes Frühstück
+[xUnit.net 00:00:13.01]       Stack Trace:
+[xUnit.net 00:00:13.01]         C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot3\tests\Trendo.Core.Tests\T0787Runde2Tests.cs(41,0): at Trendo.Core.Tests.T0787_Runde2.Versprechen_wortfamilien()
+[xUnit.net 00:00:13.01]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:13.01]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:13.02]   Finished:    Trendo.Core.Tests
+  Fehler T-0787 R2-1: Punkt mit drei Ziffern – führende 0 ist Dezimalpunkt, bei kg/l Dezimalpunkt, bei g/ml Tausenderpunkt; immer mit Hinweis außer „0.250“ [147 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: 0,25
+Actual:   250
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0787_Runde2.Punktregel() in C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot3\tests\Trendo.Core.Tests\T0787Runde2Tests.cs:line 16
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0787 R2-1: JSON-LD-Import meldet mehrdeutige Mengen und markiert die Zutat mit „Menge prüfen“ – nichts still übernommen [16 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Filter not matched in collection
+Collection: []
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0787_Runde2.Import_meldet_mehrdeutig() in C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot3\tests\Trendo.Core.Tests\T0787Runde2Tests.cs:line 31
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0787 R2-4: deutsche Schreibweise „1.000,5 g“ und „1.250,75 ml“ [3 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: 1000,5
+Actual:   1
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0787_Runde2.Deutsche_schreibweise() in C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot3\tests\Trendo.Core.Tests\T0787Runde2Tests.cs:line 49
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0787 R2-5: doppelte Kennung – das zuerst vorhandene Rezept behält seine, das Duplikat bekommt eine freie (auch wenn „x-2“ schon echt vergeben ist); Plan bleibt beim ersten [12 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+Expected: "x-2"
+Actual:   "x-2-2"
+              ↑ (pos 3)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0787_Runde2.Duplikat_bekommt_freie_kennung() in C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot3\tests\Trendo.Core.Tests\T0787Runde2Tests.cs:line 61
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0787 R2-8: „10 x 10 x 10 g“, „3 x Eier“, „-1 g“ gemeldet, „1 Dose Bohnen“ = Dosenbohnen, Bund + Gramm zusammengelegt, Zeiten höchstens 7 Tage [4 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: 1000
+Actual:   100
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0787_Runde2.Kleinigkeiten() in C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot3\tests\Trendo.Core.Tests\T0787Runde2Tests.cs:line 71
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0787 R2-3: weitere Gesundheitsversprechen nach Wortfamilien erkannt; „Der Teig heilt nicht“ und die Fehlalarme aus Runde 1 bleiben frei [20 ms]
+  Fehlermeldung:
+   nicht erkannt: Ein gesundes Frühstück
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0787_Runde2.Versprechen_wortfamilien() in C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot3\tests\Trendo.Core.Tests\T0787Runde2Tests.cs:line 41
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 6
+     Nicht bestanden: 6
+ Gesamtzeit: 15,9773 Sekunden

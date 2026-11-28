@@ -217,16 +217,37 @@ public partial class MainWindow
 
     async Task RzPickImport(ProgramDocument d)
     {
+        if (RzImportBusy > 0) { _progMsg[RzKey] = "Es wird gerade schon eine Datei gelesen – bitte kurz warten."; Show(RzKey); return; }
         if (await PickMediaFile("rz-import", "Rezept-Datei (JSON-LD oder gespeicherte Rezeptseite)", ["*.json", "*.jsonld", "*.html", "*.htm"]) is not { } f) return;
-        // Lesen und Auswerten im Hintergrund, Übernehmen im UI-Thread (ein Rückgängig-Schritt)
-        _progMsg[RzKey] = "Lese „" + Path.GetFileName(f) + "“ …"; RzImportBusy++; Show(RzKey);
+        await RzImportFilesAsync(d, [f]);
+    }
+
+    /// <summary>Gegenprüfung T-0787 (Runde 2): EIN Weg für „Rezept öffnen …“ und Ziehen und Ablegen – Lesen und Auswerten im Hintergrund, Übernehmen im UI-Thread
+    /// (ein Rückgängig-Schritt je Datei). Sperre: solange ein Einlesen läuft, startet kein zweites. Ist das Rezeptbuch inzwischen geschlossen, wird nichts übernommen.</summary>
+    public async Task RzImportFilesAsync(ProgramDocument d, IReadOnlyList<string> files)
+    {
+        if (RzImportBusy > 0) { _progMsg[RzKey] = "Es wird gerade schon eine Datei gelesen – bitte kurz warten."; Show(RzKey); return; }
+        RzImportBusy++;
+        _progMsg[RzKey] = files.Count == 1 ? "Lese „" + Path.GetFileName(files[0]) + "“ …" : $"Lese {files.Count} Dateien …"; Show(RzKey);
+        var n = 0;
         try
         {
-            var read = await Task.Run(() => RzImportRead(f));
-            ProgramRun(RzKey, () => RzImportApply(d, read, Path.GetExtension(f)));
+            foreach (var f in files)
+            {
+                (List<Rezept> Got, List<string> Notes) read;
+                try { read = await Task.Run(() => RzImportRead(f)); }
+                catch (Exception ex) when (ex is IOException or InvalidOperationException or InvalidDataException or UnauthorizedAccessException or ArgumentException)
+                { ProgramRun(RzKey, () => throw ex); return; }
+                if (!ProgramDocs(RzKey).Contains(d))
+                {
+                    _progMsg[RzKey] = $"Das Rezeptbuch „{d.Title}“ wurde geschlossen, während „{Path.GetFileName(f)}“ gelesen wurde – nichts übernommen.";
+                    _core.Audit.Append(Principal.LocalOwner.Name, "rezepte.import.verworfen", Path.GetFileName(f));
+                    Show(RzKey); return;
+                }
+                ProgramRun(RzKey, () => n += RzImportApply(d, read, Path.GetExtension(f)));
+            }
+            if (files.Count > 1 && n > 0) { _progMsg[RzKey] = $"{n} Rezepte aus {files.Count} Dateien eingelesen."; Show(RzKey); }
         }
-        catch (Exception ex) when (ex is IOException or InvalidOperationException or InvalidDataException or UnauthorizedAccessException or ArgumentException)
-        { ProgramRun(RzKey, () => throw ex); }
         finally { RzImportBusy--; }
     }
 
@@ -350,17 +371,18 @@ public partial class MainWindow
          new AssistParam("beschreibung", "Ein Satz zum Gericht", Required: false)]),
         (d, a) =>
         {
-            var name = (a.GetValueOrDefault("name") ?? "").Trim();
-            var zutaten = (a.GetValueOrDefault("zutaten") ?? "").Replace("\\n", "\n").Replace("\r", "").Split('\n').Where(l => l.Trim().Length > 0).Take(RezeptKit.MaxZutaten).Select(RezeptKit.LiesZutat).Where(z => z.Name.Length > 0).ToList();
+            var name = (a.GetValueOrDefault("name") ?? "").Trim(); var hinweise = new List<string>();
+            var zutaten = (a.GetValueOrDefault("zutaten") ?? "").Replace("\\n", "\n").Replace("\r", "").Split('\n').Where(l => l.Trim().Length > 0).Take(RezeptKit.MaxZutaten).Select(l => RezeptKit.LiesMitPruefvermerk(l, hinweise)).Where(z => z.Name.Length > 0).ToList(); // mehrdeutige Mengen: „Menge prüfen“ im Hinweis der Zutat
             var schritte = (a.GetValueOrDefault("schritte") ?? "").Replace("\\n", "\n").Replace("\r", "").Split('\n').Select(s => System.Text.RegularExpressions.Regex.Replace(s.Trim(), @"^\d+[.)]\s*", "")).Where(s => s.Length > 0).Take(RezeptKit.MaxSchritte).ToList();
             if (name.Length == 0 || zutaten.Count == 0 || schritte.Count == 0) throw new InvalidOperationException("Die KI hat kein vollständiges Rezept geliefert (Name, Zutaten und Schritte). Nichts übernommen.");
             var n = int.TryParse(System.Text.RegularExpressions.Regex.Match(a.GetValueOrDefault("portionen") ?? "", @"\d+").Value, out var p) ? Math.Clamp(p, 1, 100) : 4;
             var r = new Rezept(RezeptKit.NewId("r"), name.Length > 200 ? name[..200] : name, n, zutaten, schritte) { Beschreibung = (a.GetValueOrDefault("beschreibung") ?? "").Trim() is { } b && b.Length > 600 ? b[..600] : (a.GetValueOrDefault("beschreibung") ?? "").Trim() };
-            if (RezeptKit.Gesundheitsversprechen(RezeptKit.AllerText(r)) is { Count: > 0 } v) throw new InvalidOperationException($"Die KI hat ein Gesundheitsversprechen geschrieben („{v[0]}“) – Trendo nimmt das nicht an."); // auch Zutaten und Hinweise (Gegenprüfung T-0787)
+            if (RezeptKit.Gesundheitsversprechen(RezeptKit.AllerText(r)) is { Count: > 0 } v) // auch Zutaten und Hinweise (Gegenprüfung T-0787)
+                throw new InvalidOperationException(v[0].StartsWith(RezeptKit.Zeitgrenze, StringComparison.Ordinal) ? v[0] + " – nicht übernommen." : $"Die KI hat ein Gesundheitsversprechen geschrieben („{v[0]}“) – Trendo nimmt das nicht an.");
             var list = RzRezepte(d); list.Add(r); RzSave(d, list, "Rezept: " + r.Name);
             _rzSel[d.Id] = r.Id; _rzMode[d.Id] = 0; _rzView.Remove(d.Id);
             var nw = RezeptKit.JePortion(r);
-            _progMsg[RzKey] = $"KI: „{r.Name}“ mit {zutaten.Count} Zutaten und {schritte.Count} Schritten" + (nw.Erfasst > 0 ? $" – etwa {Math.Round(nw.Kcal)} kcal je Portion (Richtwert, gerechnet von Trendo)." : ".");
+            _progMsg[RzKey] = $"KI: „{r.Name}“ mit {zutaten.Count} Zutaten und {schritte.Count} Schritten" + (nw.Erfasst > 0 ? $" – etwa {Math.Round(nw.Kcal)} kcal je Portion (Richtwert, gerechnet von Trendo)." : ".") + (hinweise.Count > 0 ? $" ⚠ {hinweise.Count} Menge(n) mehrdeutig, in den Zutaten mit „Menge prüfen“ markiert: {hinweise[0]}" : "");
         },
         (_, _) => []) { MakesFile = false, OnApplyNote = "Erst bei „Ja, behalten“ kommt das Rezept ins Rezeptbuch – ein Rückgängig-Schritt nimmt es wieder heraus. Die Nährwerte rechnet Trendo selbst." };
 
@@ -429,6 +451,8 @@ public partial class MainWindow
              + "Trendo erkennt Menge, Einheit und Zutat und ordnet sie der Nährwert-Tabelle zu – Rechtsklick auf eine Zutat wählt ein anderes Lebensmittel. Mit „–“/„+“ zeigst du das Rezept für mehr oder weniger Portionen; "
              + "„Portionen übernehmen“ rechnet es um. Einheiten: 1 EL = 15 ml, 1 TL = 5 ml, 1 Tasse = 250 ml, 1 Prise ≈ 0,5 g. "
              + "Nährwerte sind Richtwerte aus der Tabelle USDA FoodData Central (SR Legacy, gemeinfrei, CC0 1.0) für rohe Zutaten, ohne Garverluste – keine Ernährungs- oder Gesundheitsberatung. "
+             + "Gesundheits- und Heilversprechen („heilt“, „gesund“, „zum Abnehmen“, „senkt den Blutzucker“ …) nimmt Trendo von der KI nicht an und meldet sie im eigenen Text – die Prüfung nutzt Wortlisten und ist nicht vollständig. "
+             + "Mengen mit Punkt: „1.000,5 g“ = 1000,5 g; „0.250 kg“ = 0,25 kg; „1.500 kg/l“ = 1,5; „1.500 g/ml/Stück“ = 1500 – Punkt mit drei Ziffern meldet Trendo immer zum Prüfen. "
              + "Im Wochenplan legst du Rezepte auf Tage; die Einkaufsliste fasst gleiche Zutaten zusammen und sortiert nach Abteilung im Laden. Ausgabe als PDF zum Drucken, Word, OpenDocument, "
              + "schema.org-Rezept (JSON-LD, liest z. B. Mealie oder Tandoor) und Rezeptseite. Einlesen: JSON-LD-Datei oder gespeicherte Rezeptseite öffnen oder auf die Arbeitsfläche ziehen.",
     };
@@ -471,11 +495,8 @@ public partial class MainWindow
         var grid = new Grid { Name = "rz-work", RowDefinitions = new RowDefinitions("Auto,*"), Margin = new Thickness(4, 0, 10, 4) };
         grid.Children.Add(bar);
         Grid.SetRow(body, 1); grid.Children.Add(body);
-        BueroFileDrop(grid, RzKey, BueroExt(".json", ".jsonld", ".html", ".htm"), "Rezept-Dateien (JSON-LD oder gespeicherte Rezeptseite)", (doc, files) =>
-        {
-            var n = 0; foreach (var f in files) n += RzImportFile(doc, f);
-            if (files.Count > 1) _progMsg[RzKey] = $"{n} Rezepte aus {files.Count} Dateien eingelesen.";
-        });
+        // Ablegen nimmt denselben Weg wie „Rezept öffnen …“: im Hintergrund lesen, Sperre, Prüfung, ob das Buch noch offen ist
+        BueroFileDrop(grid, RzKey, BueroExt(".json", ".jsonld", ".html", ".htm"), "Rezept-Dateien (JSON-LD oder gespeicherte Rezeptseite)", (doc, files) => _ = RzImportFilesAsync(doc, files));
         return grid;
     }
 

@@ -42,6 +42,12 @@ Deutsche Namen, Suchwörter und Ladenabteilungen sind eigene Zuordnung. Salz = N
 | RZ-15 | KI-Fachaktion | `rezept.anlegen` über `ProgramSpec.KiActions`: Vorschau → „Ja, behalten“ → ein Rückgängig-Schritt; Plan und Liste gesperrt; Nährwerte rechnet der Kern | UI `Ki_rezept`; **Echtlauf** qwen3:14b `Real_local_ki` | Auftrag | erfüllt |
 | RZ-16 | Einfach/Profi, Kürzel | Einfach: Neues Rezept, Öffnen, Portionen übernehmen, Auf den Plan; Profi: alles; Strg+Z/Strg+Y der Hülle | UI `Import_und_bedienung`, `Klick_bis_datei` | Trendo-Regel | teilweise (Menüleisten-Kürzel nicht einzeln getestet) |
 
+## Regeln (Prüfrunden T-0787)
+
+- **Punkt in Mengen:** „1.000,5“ = 1000,5 (deutsch, eindeutig); „0.250“ = 0,25 (führende 0 ist nie Tausenderpunkt); „1.500 kg/l/Pfund/dl/Tasse/Becher“ = 1,5; „1.500 g/ml/Stück/…“ und ohne Einheit = 1500. Punkt mit drei Ziffern meldet Trendo immer; beim Einlesen und aus der KI steht „Menge prüfen: …“ im Hinweis der Zutat.
+- **Gesundheitsversprechen:** Wortlisten nach Wortfamilien mit Wortgrenzen – fängt übliche Formulierungen, ist aber **nicht vollständig**.
+- **Einlesen:** im Hintergrund, eine Datei nach der anderen, kein zweites Einlesen gleichzeitig; ist das Buch inzwischen geschlossen, wird nichts übernommen. Zeiten höchstens 7 Tage.
+
 ## Nicht gebaut (bewusst)
 
 - Rezept direkt von einer Webadresse laden (Netzabruf, fremde Inhalte) – stattdessen gespeicherte Seite oder JSON-LD-Datei.

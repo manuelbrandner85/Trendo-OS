@@ -2,6 +2,22 @@
 
 **Auftrag:** `tasks/T-0787-rezepte-ernaehrung.md` (Freigabe 26.11.2026) · **Branch:** `claude/T-0787-rezepte-ernaehrung` (Basis main 9bc135aaa = 0.9.114) · eigene Kopie in `%TEMP%\trendo-auftrag-T-0787`.
 
+## Zweite Prüfrunde (Stand 3496aede4)
+Rot-Lauf: `T0787_Runde2` (nur Schnittstellen von 3496aede4) dort **6 von 6 rot** (`reports/T-0787/runde2/rot-runde2.txt`), auf dem neuen Stand grün. Für R2-2, R2-6 (Einlesen im Hintergrund, Sperre, geschlossenes Buch) und R2-7 (Zeitgrenze) gibt es keinen Rot-Lauf auf altem Stand: die Tests brauchen die neuen Schnittstellen `RzImportFilesAsync` bzw. `VersprechenZeit` und übersetzen dort nicht.
+
+| Nr. | Befund | Behebung | Test |
+|---|---|---|---|
+| M1 | „0.250 kg“ = 250 kg; „1.500 kg“ mehrdeutig; Hinweis fiel bei Einlesen/KI still weg | **Regel (in Hilfe und Anforderungen dokumentiert):** „1.000,5“ = deutsche Schreibweise (eindeutig); führende 0 („0.250“) = Dezimalpunkt; Punkt + drei Ziffern vor kg, l, Pfund, dl, Tasse, Becher = Dezimalpunkt (1,5 kg); sonst (g, ml, Stück, ohne Einheit) = Tausenderpunkt (1500 g). Punkt + drei Ziffern kommt immer mit Hinweis (außer „0.…“). Wege ohne Rückfrage (JSON-LD-Import, KI-Aktion) nutzen `LiesMitPruefvermerk`: die Zutat bekommt „Menge prüfen: …“ in ihren Hinweis, Import meldet „… mehrdeutig“, die KI-Meldung nennt es | Core `Punktregel`, `Import_meldet_mehrdeutig`, Neu `Pruefvermerk`; UI `Ki_mehrdeutig_markiert` |
+| M2 | Schließen während des Lesens; Doppelklick | `RzImportFilesAsync`: Sperre (kein zweites Einlesen, ehrliche Meldung); nach dem Lesen: Ist das Buch noch offen? Sonst nichts übernehmen, Meldung „… geschlossen … nichts übernommen“, Eintrag im Protokoll | UI `Geschlossen_waehrend_lesen`, `Sperre_gegen_doppelt` |
+| M3 | Lücken bei Versprechen | Wortfamilien: heilen (auch Heiltee/Heil-Tee, „heilt“ außer „heilt nicht“), Krebs/Krankheit, Schutz vor, senken (auch Risiko, „Blutdruck senkend“), entzündungshemmend, antioxidativ, stärkt Knochen/Herz/…, gut für/gegen, wirkt gegen, fördert Verdauung/…, gesund*, zum/beim Abnehmen, Schlankmacher, Superfood, lindern* … **Ehrlich:** Wortlisten, nicht vollständig – so in Hilfe und Code-Kommentar | Core `Versprechen_wortfamilien` (auch „Der Teig heilt nicht“, „Den Deckel abnehmen“, „Das Ei bleibt heil“, Fehlalarme aus Runde 1) |
+| M4 | „1.000,5 g“, „1.250,75 ml“ | deutsche Schreibweise eindeutig gelesen, ohne Hinweis | Core `Deutsche_schreibweise` |
+| N5 | Duplikat-Umbenennung konnte ein echtes späteres Rezept umbenennen | alle echten Kennungen bleiben reserviert; nur Duplikat/leere bekommt eine freie; Plan zeigt weiter auf das erste | Core `Duplikat_bekommt_freie_kennung` |
+| N6 | Ablegen las im UI-Thread | Ablegen nimmt `RzImportFilesAsync` (gleicher Weg wie „Rezept öffnen …“) | gleicher Code-Weg wie UI-Tests oben; das Ablege-Ereignis selbst nicht eigens simuliert |
+| N7 | Zeitüberschreitung der Regex | abgefangen → Hinweis „… brach an der Zeitgrenze ab“, KiCheck und KI-Aktion lehnen ab | Neu `Zeitgrenze_ehrlich` |
+| N8 | Kleinigkeiten | „10 x 10 x 10 g“ (bis drei Faktoren), „3 x Eier“, „-1 g“ gemeldet (mit Leerzeichen „- 2“ bleibt Aufzählung), „1 Dose Bohnen“ = Kidneybohnen (Dose), Bund/Dose/Pck. + Gramm über Packungsgewicht zusammengelegt, Zeiten beim Einlesen höchstens 7 Tage | Core `Kleinigkeiten` |
+
+Tests: Core (T0787*, PromptAction*, QA015*) **119 gesamt, 117 bestanden, 2 übersprungen** (`reports/T-0787/runde2/rohlog-core.txt`); App (T0787Rezepte_Ui, T0787_Rot, T0787Gegenpruefung_Ui, T0787Runde2_Ui, StudioFolds_Ui, PromptBarTests, UebersichtEinfach_Ui) **26 gesamt, 0 Fehler, 1 übersprungen** (`rohlog-app.txt`). Kopfzeile der Hülle unverändert (wird separat behandelt). Nicht wiederholt: Fremd- und Echtlauf.
+
 ## Nachbesserung nach der Gegenprüfung (Stand f3d579a88)
 Rot-Lauf: `T0787_Gegenpruefung` (nur alte Schnittstellen) auf f3d579a88: **8 von 8 rot** (`reports/T-0787/gegenpruefung/rot-gegenpruefung.txt`; G2 dort 1 min 25 s für 300 KB), auf dem neuen Stand grün. V10 war laut Gegenprüfung rot.
 
@@ -102,6 +118,7 @@ Erster Anlauf scheiterte nur an `TRENDO_ASSIST_MODELL=qwen3:14b` („unbekanntes
 ## Geänderte Dateien
 - neu: `src/Trendo.Core/Wissen/Rezepte.cs`, `src/Trendo.Core/Wissen/NaehrwertTabelle.Daten.cs`, `src/Trendo.Core/PromptAction/RezeptPromptAdapters.cs`, `src/Trendo.App/MainWindow.Rezepte.cs`, `src/Trendo.App/Assets/studios/STUDIO-RECIPE-01.jpg`, `tools/rezepte/naehrwerte_gen.py`, `tools/rezepte/herkunft-usda-sr.tsv`, `docs/nachbau/rezepte/anforderungen.md`, `docs/programme/rezepte-programm/*`
 - gemeinsam (klein, am Listenende): `src/Trendo.App/StudioCatalog.cs`, `StudioIcons.cs`, `MainWindow.PromptChips.cs`, `MainWindow.W6.cs`, `src/Trendo.Core/PromptAction/CapabilityCatalog.cs`, `IntelligencePromptModel.cs`, `StudioKnowledge.cs`, `src/Trendo.Core/W2/StudioProfiles.cs`, `StudioTeams.cs`, `tools/studio_bilder.py`, `tools/Trendo.Render/Program.cs`, `docs/design/STUDIOBILDER.json`, `docs/improvement-42/studio-capability-matrix.md`, `docs/programme/katalog.json`, `.gitattributes`
+- Zweite Prüfrunde: `tests/Trendo.Core.Tests/T0787Runde2Tests.cs`, `tests/Trendo.App.Tests/T0787Runde2UiTests.cs`, `reports/T-0787/runde2/*`
 - Gegenprüfung: `tests/Trendo.Core.Tests/T0787GegenpruefungTests.cs`, `tests/Trendo.App.Tests/T0787GegenpruefungUiTests.cs`, `tests/Trendo.App.Tests/Daten/einfach-vorher-ausgeblendet.txt`, `reports/T-0787/gegenpruefung/*`
 - Tests: neu `tests/Trendo.Core.Tests/T0787RezepteTests.cs`, `T0787FremdTests.cs`, `tests/Trendo.App.Tests/T0787RezepteUiTests.cs`, `T0787RotTests.cs`; Zahlen in `PromptBarTests.cs`, `StudioFoldsUiTests.cs`, `PromptActionTests.cs`
 - Belege: `reports/T-0787/*` (mit `SHA256.txt`), `tasks/T-0787-rezepte-ernaehrung.md`, dieser Bericht

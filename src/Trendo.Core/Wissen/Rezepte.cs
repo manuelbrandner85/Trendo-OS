@@ -237,37 +237,72 @@ public static class RezeptKit
     /// <summary>Größte Menge, die eine Zeile haben darf (1 000 000 g/ml/Stück) – mehr ist ein Tippfehler.</summary>
     public const double MaxMenge = 1_000_000;
     static readonly Regex UngefaehrRx = new(@"^(?:ca\.?|circa|zirka|etwa|ungefähr|rund)\s+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-    static readonly Regex TausenderRx = new(@"^(\d{1,3}(?:\.\d{3})+)(?![.,\d])", RegexOptions.Compiled);
+    /// <summary>Deutsche Schreibweise mit Tausenderpunkt und Komma („1.000,5“, „1.250,75“) – eindeutig.</summary>
+    static readonly Regex DeutschRx = new(@"^([1-9]\d{0,2}(?:\.\d{3})+),(\d+)(?![.,\d])", RegexOptions.Compiled);
+    /// <summary>Punkt mit genau drei Ziffern („1.000“, „0.250“, „1.500“) – mehrdeutig, Regel siehe <see cref="Lies"/>.</summary>
+    static readonly Regex PunktDreiRx = new(@"^(\d{1,3}(?:\.\d{3})+)(?![.,\d])", RegexOptions.Compiled);
     static readonly Regex MalRx = new(@"^(\d{1,4})\s*[x×]\s*(?=\d)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    /// <summary>Große Einheiten: dort ist „1.500“ eher 1,5 als 1500 (1,5 kg statt 1,5 t).</summary>
+    static readonly HashSet<string> GrosseEinheit = ["kg", "l", "pfund", "dl", "tasse", "becher"];
 
-    /// <summary>Wie <see cref="LiesZutat"/>, dazu ein Hinweis, wenn etwas mehrdeutig oder nicht lesbar war (Tausenderpunkt, „1e5“, Menge 0 oder riesig).</summary>
+    /// <summary>Wie <see cref="LiesZutat"/>, dazu ein Hinweis, wenn etwas mehrdeutig oder nicht lesbar war (Tausenderpunkt, „1e5“, Menge 0, negativ oder riesig).
+    /// Regel für den Punkt (dokumentiert in Hilfe und docs/nachbau/rezepte/anforderungen.md):
+    /// „1.000,5“ = deutsche Schreibweise (1000,5), eindeutig. „0.250“ = Dezimalpunkt (0,25) – eine führende 0 ist nie ein Tausenderpunkt.
+    /// „1.500 kg/l/Pfund/dl/Tasse/Becher“ = Dezimalpunkt (1,5). „1.500 g/ml/Stück/…“ und ohne Einheit = Tausenderpunkt (1500). Beide Fälle mit Punkt und drei Ziffern
+    /// sind mehrdeutig und kommen immer mit Hinweis zurück; wer nicht nachfragen kann (Einlesen, KI), schreibt „Menge prüfen“ in den Hinweis der Zutat.</summary>
     public static (Zutat Zutat, string? Hinweis) Lies(string zeile)
     {
-        var z = Regex.Replace((zeile ?? "").Replace('\t', ' '), @"\s+", " ").Trim().TrimStart('-', '–', '—', '*', '•', '·').Trim();
+        var z = Regex.Replace((zeile ?? "").Replace('\t', ' '), @"\s+", " ").Trim();
+        // „-1 g“: Minus direkt vor der Ziffer (ohne Leerzeichen) ist eine negative Menge – gemeldet, nicht übernommen. „- 2 Eier“ und „–2 Eier“ bleiben Aufzählungen.
+        if (z.Length > 1 && z[0] == '-' && char.IsDigit(z[1]))
+        {
+            var (zn, _) = Lies(z[1..]);
+            return (zn with { Menge = null, Bis = null, Einheit = "" }, $"Negative Menge „{z.Split(' ')[0]}“ – nicht übernommen.");
+        }
+        z = z.TrimStart('-', '–', '—', '*', '•', '·').Trim();
         if (z.Length > MaxZeile) z = z[..MaxZeile];
         if (z.Length == 0) return (new(null, null, "", ""), null);
         if (z.EndsWith(':') && !Regex.IsMatch(z, @"^\s*\d")) return (new(null, null, "", z.TrimEnd(':').Trim(), Gruppe: true), null);
         string? hinweis = null; var notizVorn = "";
         // „ca. 200 g“, „etwa 200 g“: Menge gilt, „ca.“ wandert in den Hinweis der Zutat
         if (UngefaehrRx.Match(z) is { Success: true } um0 && z.Length > um0.Length && char.IsDigit(z[um0.Length])) { notizVorn = "ca."; z = z[um0.Length..]; }
-        // „2 x 200 g“ → 400 g
+        // „2 x 200 g“ → 400 g, „10 x 10 x 10 g“ → 1000 g (höchstens drei Faktoren)
         double mal = 1;
-        if (MalRx.Match(z) is { Success: true } mm) { mal = double.Parse(mm.Groups[1].Value, CultureInfo.InvariantCulture); z = z[mm.Length..]; }
-        // „1.000 g“: Punkt mit genau drei Ziffern danach = Tausenderpunkt (deutsche Schreibweise) – wird gemeldet
-        if (TausenderRx.Match(z) is { Success: true } tm)
+        for (var f = 0; f < 3 && MalRx.Match(z) is { Success: true } mm; f++) { mal *= double.Parse(mm.Groups[1].Value, CultureInfo.InvariantCulture); z = z[mm.Length..]; }
+        // „1.000,5 g“: deutsche Schreibweise, eindeutig
+        if (DeutschRx.Match(z) is { Success: true } dm) z = dm.Groups[1].Value.Replace(".", "") + "," + dm.Groups[2].Value + z[dm.Length..];
+        // „1.000 g“ / „0.250 kg“ / „1.500 kg“: Punkt mit genau drei Ziffern – Regel siehe oben, immer mit Hinweis
+        else if (PunktDreiRx.Match(z) is { Success: true } tm)
         {
-            var ohne = tm.Groups[1].Value.Replace(".", "");
-            hinweis = $"„{tm.Groups[1].Value}“ als {ohne} gelesen (Punkt als Tausendertrennzeichen).";
-            z = ohne + z[tm.Length..];
+            var zahl = tm.Groups[1].Value;
+            var einheitDanach = Regex.Match(z[tm.Length..], @"^\s*([\p{L}]+)\.?").Groups[1].Value;
+            var gross = EinheitVon(einheitDanach) is { } ge && GrosseEinheit.Contains(ge.Id);
+            if (zahl.StartsWith('0') || gross)
+            {
+                if (!zahl.StartsWith('0') && zahl.Count(c => c == '.') > 1) { hinweis = $"„{zahl}“ ist nicht eindeutig lesbar – Menge nicht übernommen."; z = z[tm.Length..].Trim(); }
+                else
+                {
+                    hinweis = zahl.StartsWith('0') ? null : $"„{zahl} {einheitDanach}“ als {zahl.Replace('.', ',')} {einheitDanach} gelesen (Punkt als Dezimalpunkt) – bitte prüfen.";
+                    z = zahl.Replace('.', ',') + z[tm.Length..];
+                }
+            }
+            else
+            {
+                var ohne = zahl.Replace(".", "");
+                hinweis = $"„{zahl}“ als {ohne} gelesen (Punkt als Tausendertrennzeichen) – bitte prüfen.";
+                z = ohne + z[tm.Length..];
+            }
         }
         var m = ZeileRx.Match(z);
         double? a = m.Groups["a"].Success ? LiesZahl(m.Groups["a"].Value) : null, b = m.Groups["b"].Success ? LiesZahl(m.Groups["b"].Value) : null;
         var rest = m.Groups["rest"].Value.Trim();
+        // „3 x Eier“ = 3 Eier
+        if (a is not null && Regex.Match(rest, @"^[x×]\s+(?=\p{L})", RegexOptions.IgnoreCase) is { Success: true } xm) rest = rest[xm.Length..];
         // „1e5 g“, „1E+20 g“: keine Küchenzahl
         if (a is not null && Regex.IsMatch(rest, @"^[eE][+-]?\d"))
             return (new(null, null, "", z, notizVorn), $"„{z.Split(' ')[0]}“ ist keine lesbare Menge – bitte als normale Zahl schreiben.");
         if (a is not null) { a *= mal; b *= mal; }
-        if (a is <= 0 or > MaxMenge || b is <= 0 or > MaxMenge)
+        if ((a is <= 0 or > MaxMenge || b is <= 0 or > MaxMenge) && !(hinweis?.Contains("nicht eindeutig") ?? false))
         {
             hinweis = $"Menge „{m.Groups["a"].Value}“ liegt außerhalb von 0 bis 1 000 000 – nicht übernommen.";
             a = null; b = null;
@@ -290,12 +325,22 @@ public static class RezeptKit
         if (notizVorn.Length > 0) notiz = notiz.Length > 0 ? notizVorn + " " + notiz : notizVorn;
         if (b is not null && a is not null && b < a) (a, b) = (b, a);
         // „1 Dose Tomaten“: Dosenware vor Frischware
-        var lm = einheit == "dose" ? (NaehrwertTabelle.Kandidaten(rest, 6) is var kd && kd.FirstOrDefault(k => k.Id.EndsWith("-dose", StringComparison.Ordinal) || DosenWare.Contains(k.Id)) is { } dk ? dk.Id : kd.FirstOrDefault()?.Id ?? "")
+        var lm = einheit == "dose" ? (NaehrwertTabelle.Suche(rest, 40) is var kd && kd.FirstOrDefault(k => k.Id.EndsWith("-dose", StringComparison.Ordinal) || DosenWare.Contains(k.Id)) is { } dk ? dk.Id : kd.FirstOrDefault()?.Id ?? "")
             : NaehrwertTabelle.Match(rest)?.Id ?? "";
         return (new(a, b, einheit, rest, notiz, lm), hinweis);
     }
 
     static readonly HashSet<string> DosenWare = ["kidneybohnen", "kichererbsen", "kokosmilch", "mais", "oliven"];
+
+    /// <summary>Für Wege ohne Rückfrage (Einlesen, KI): Zeile lesen; war etwas mehrdeutig, steht „Menge prüfen: …“ im Hinweis der Zutat – nichts wird still übernommen.</summary>
+    public static Zutat LiesMitPruefvermerk(string zeile, List<string>? hinweise = null)
+    {
+        var (z, h) = Lies(zeile);
+        if (h is null) return z;
+        hinweise?.Add(h);
+        var vermerk = "Menge prüfen: " + h;
+        return z with { Notiz = Cut(z.Notiz.Length > 0 ? z.Notiz + "; " + vermerk : vermerk, MaxZeile) };
+    }
 
     /// <summary>Zeile wieder als Text (für das Eingabefeld und den Druck); <paramref name="faktor"/> für umgerechnete Portionen.</summary>
     public static string Zeile(Zutat z, double faktor = 1)
@@ -462,14 +507,24 @@ public static class RezeptKit
     /// sonst warfen Einkaufsliste, Wochendruck und KiCheck beim Zeichnen ArgumentException). Der Wochenplan zeigt auf das erste Rezept mit der Kennung.</summary>
     public static List<Rezept> Rezepte(JsonObject doc)
     {
+        var nodes = (doc["rezepte"] as JsonArray ?? []).Take(MaxRezepte).ToList();
+        static string Raw(JsonNode? n) => (n as JsonObject)?["id"] is JsonValue jv && jv.TryGetValue<string>(out var sid) ? Cut(sid.Trim(), 60) : "";
+        // Gegenprüfung T-0787 (Runde 2): alle echten Kennungen bleiben reserviert – nur ein späteres Duplikat oder eine leere Kennung bekommt eine freie.
+        // Der Wochenplan zeigt weiter auf das zuerst vorhandene Rezept; Planeinträge werden nie umgehängt.
+        var reserved = nodes.Select(Raw).Where(r => r.Length > 0).ToHashSet(StringComparer.Ordinal);
         var list = new List<Rezept>(); var seen = new HashSet<string>(StringComparer.Ordinal);
-        var i = 0;
-        foreach (var n in (doc["rezepte"] as JsonArray ?? []).Take(MaxRezepte))
+        for (var i = 0; i < nodes.Count; i++)
         {
-            var raw = (n as JsonObject)?["id"] is JsonValue jv && jv.TryGetValue<string>(out var sid) ? sid.Trim() : "";
-            var id = raw.Length > 0 ? Cut(raw, 60) : "r-" + i.ToString(CultureInfo.InvariantCulture);
-            var basis = id; for (var k = 2; !seen.Add(id); k++) id = basis + "-" + k.ToString(CultureInfo.InvariantCulture);
-            list.Add(RezeptVon(n) with { Id = id }); i++;
+            var raw = Raw(nodes[i]);
+            var id = raw;
+            if (raw.Length == 0 || !seen.Add(raw))
+            {
+                var basis = raw.Length > 0 ? raw : "r-" + i.ToString(CultureInfo.InvariantCulture);
+                id = basis;
+                for (var k = 2; reserved.Contains(id) || seen.Contains(id); k++) id = basis + "-" + k.ToString(CultureInfo.InvariantCulture);
+                seen.Add(id);
+            }
+            list.Add(RezeptVon(nodes[i]) with { Id = id });
         }
         return list;
     }
@@ -538,6 +593,10 @@ public static class RezeptKit
             if (byArt.TryGetValue("stueck:stueck", out var st)) { byArt["stueck"] = (byArt.GetValueOrDefault("stueck").Sum + st.Sum, ""); byArt.Remove("stueck:stueck"); }
             // Stück und Gramm derselben Zutat (Gegenprüfung T-0787): mit bekanntem Stückgewicht in Gramm zusammenlegen; ohne bleiben es getrennte, beschriftete Zeilen
             if (lm is { Stueck: > 0 } && byArt.ContainsKey("masse") && byArt.TryGetValue("stueck", out var stk)) { byArt["masse"] = (byArt["masse"].Sum + stk.Sum * lm.Stueck, "g"); byArt.Remove("stueck"); }
+            // „1 Bund“, „1 Dose“, „1 Pck.“ mit Gramm derselben Zutat: über das Packungsgewicht zusammenlegen
+            if (lm is not null && byArt.ContainsKey("masse"))
+                foreach (var k in byArt.Keys.Where(k => k.StartsWith("anders:", StringComparison.Ordinal) || k.StartsWith("stueck:", StringComparison.Ordinal)).ToList())
+                    if (PackGramm.TryGetValue((lm.Id, k[(k.IndexOf(':') + 1)..]), out var pg)) { byArt["masse"] = (byArt["masse"].Sum + byArt[k].Sum * pg, "g"); byArt.Remove(k); }
             var i = 0;
             foreach (var (art, (sum, einheit)) in byArt.OrderBy(kv => kv.Key))
             {
@@ -590,22 +649,55 @@ public static class RezeptKit
     // ------------------------------------------------------------ Keine Gesundheitsversprechen
 
     /// <summary>Heil- und Gesundheitsversprechen als ganze Wörter bzw. Wendungen (Wortgrenzen an Buchstaben: „verbeugt“ und „hilft beim Frischhalten“ sind kein Treffer).</summary>
+    /// <summary>Heil- und Gesundheitsversprechen nach Wortfamilien, als ganze Wörter bzw. Wendungen (Wortgrenzen an Buchstaben: „verbeugt“, „hilft beim Frischhalten“,
+    /// „Der Teig heilt nicht“ sind kein Treffer). <b>Ehrlich:</b> Das ist eine Wortliste – sie fängt die üblichen Formulierungen, ist aber nicht vollständig;
+    /// neue Umschreibungen erkennt sie nicht. Darum steht in Hilfe und Druck zusätzlich „Richtwerte – keine Ernährungs- oder Gesundheitsberatung“.</summary>
     static readonly string[] Versprechen =
     [
-        @"heil(?:t|en|end|ende|ender|endes|wirkung|wirkungen|mittel|kraft|kräfte|kräftig|kräftige)", @"gegen\s+krebs", @"krebs(?:vorbeugend|hemmend|schützend)\w*",
-        @"beug(?:t|en)\s+(?:\p{L}+\s+){0,4}vor", @"vorbeugend\w*", @"senk(?:t|en)\s+(?:den\s+|das\s+|die\s+)?(?:blutdruck|blutzucker\w*|cholesterin\w*|zuckerspiegel)",
-        @"(?:blutzucker|blutdruck|cholesterin)senkend\w*", @"entzündungshemmend\w*", @"entgift(?:et|en|end|ende|ung)", @"detox\w*",
-        @"stärk(?:t|en)\s+(?:das\s+|die\s+)?(?:immunsystem|abwehr\w*|abwehrkräfte)", @"immunbooster", @"fatburner", @"fettverbrennung\w*", @"schlank\s+über\s+nacht",
-        @"garantiert\s+abnehmen", @"abnehmen\s+garantiert", @"macht\s+schlank", @"wundermittel", @"medizinisch\w*", @"therapeutisch\w*", @"gegen\s+diabetes",
-        @"hilft\s+gegen", @"hilft\s+bei", @"lindert", @"lindern", @"schützt\s+vor\s+(?:krankheit\w*|krebs|herzinfarkt|erkältung\w*|infekt\w*)",
+        // heilen
+        @"heil(?:t|en)(?!\s+nicht)", @"heil(?:end|ende|ender|endes|enden|sam|same|samer|sames|wirkung|wirkungen|mittel|kraft|kräfte|kräftig|kräftige|kräftigen|kräuter|kräutern|pflanze|pflanzen|nahrung)",
+        @"heil(?:-\s*|\s+)?(?:tee|kräuter\w*|pflanze\w*|nahrung|wasser|mittel)",
+        // Krebs, Krankheiten
+        @"gegen\s+(?:krebs|diabetes|krankheit\w*|erkältung\w*|entzündung\w*|bluthochdruck|cholesterin)", @"krebs(?:vorbeugend|hemmend|schützend)\w*",
+        @"schutz\s+vor\s+(?:krebs|krankheit\w*|herzinfarkt|erkältung\w*|infekt\w*|entzündung\w*)", @"schützt\s+vor\s+(?:krankheit\w*|krebs|herzinfarkt|erkältung\w*|infekt\w*|entzündung\w*)",
+        @"beug(?:t|en)\s+(?:\p{L}+\s+){0,4}vor", @"vorbeugend\w*",
+        // senken, Risiko
+        @"senk(?:t|en)\s+(?:den\s+|das\s+|die\s+)?(?:blutdruck|blutzucker\w*|cholesterin\w*|zuckerspiegel|risiko\w*|krankheitsrisiko)", @"(?:risiko|risiken)\s+(?:\p{L}+\s+){0,3}senk\w*",
+        @"(?:blutzucker|blutdruck|cholesterin)(?:\s+|-)?senkend\w*",
+        // Entzündung, Entgiften, Oxidation
+        @"entzündungshemmend\w*", @"antientzündlich\w*", @"entgift(?:et|en|end|ende|ung)", @"detox\w*", @"antioxida\w*",
+        // stärken, gut für, fördern
+        @"stärk(?:t|en)\s+(?:das\s+|die\s+|den\s+)?(?:immunsystem|abwehr\w*|knochen|herz|nerven|gedächtnis|darm|stoffwechsel)", @"immunbooster",
+        @"gut\s+(?:für\s+(?:das\s+|die\s+|den\s+)?(?:herz|knochen|haut|darm|immunsystem|gehirn|nerven|leber|blut|gesundheit)|gegen\s+\p{L}+)",
+        @"wirk(?:t|en|sam|same)\s+gegen", @"förder(?:t|n)\s+(?:die\s+|den\s+|das\s+)?(?:verdauung|gesundheit|abwehr\w*|durchblutung|stoffwechsel|fettverbrennung|heilung)",
+        @"verdauungsfördernd\w*", @"gesundheitsfördernd\w*",
+        // gesund, abnehmen, schlank
+        @"gesund\w*", @"zum\s+abnehmen", @"beim\s+abnehmen", @"abnehmen\s+(?:hilft|leicht|garantiert)", @"garantiert\s+abnehmen", @"schlankmacher\w*", @"macht\s+schlank",
+        @"schlank\s+über\s+nacht", @"fatburner", @"fettverbrennung\w*", @"fett\s*verbrennend\w*",
+        // Wunder, medizinisch, lindern
+        @"wundermittel", @"superfood\w*", @"medizinisch\w*", @"therapeutisch\w*", @"hilft\s+gegen", @"hilft\s+bei", @"lindert", @"lindern\w*",
     ];
-    static readonly Regex[] VersprechenRx = [.. Versprechen.Select(v => new Regex(@"(?<!\p{L})" + v + @"(?!\p{L})", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled, TimeSpan.FromSeconds(2)))];
 
-    /// <summary>Gesundheits- oder Heilversprechen in einem Text (Trendo gibt keine; die KI darf keine schreiben). Liefert die gefundenen Wendungen.</summary>
+    /// <summary>Anfang eines Treffers, wenn die Prüfung an der Zeitgrenze abbrach (statt eines Absturzes).</summary>
+    public const string Zeitgrenze = "Die Prüfung auf Gesundheitsversprechen brach an der Zeitgrenze ab";
+    /// <summary>Zeitgrenze je Wendung (nur für Tests änderbar).</summary>
+    public static TimeSpan VersprechenZeit { get => _versprechenZeit; set { _versprechenZeit = value; _versprechenRx = null; } }
+    static TimeSpan _versprechenZeit = TimeSpan.FromSeconds(2);
+    static Regex[]? _versprechenRx;
+    static Regex[] VersprechenRx => _versprechenRx ??= [.. Versprechen.Select(v => new Regex(@"(?<!\p{L})" + v + @"(?!\p{L})", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, _versprechenZeit))];
+
+    /// <summary>Gesundheits- oder Heilversprechen in einem Text (Trendo gibt keine; die KI darf keine schreiben). Liefert die gefundenen Wendungen.
+    /// Bricht eine Wendung an der Zeitgrenze ab, steht statt eines Absturzes ein Eintrag mit <see cref="Zeitgrenze"/> in der Liste (ehrlicher Hinweis, gilt als nicht bestanden).</summary>
     public static List<string> Gesundheitsversprechen(string text)
     {
         var t = text ?? ""; if (t.Length > 200_000) t = t[..200_000];
-        return VersprechenRx.Select(r => r.Match(t)).Where(m => m.Success).Select(m => m.Value.Trim()).ToList();
+        var hits = new List<string>();
+        foreach (var r in VersprechenRx)
+        {
+            try { if (r.Match(t) is { Success: true } m) hits.Add(m.Value.Trim()); }
+            catch (RegexMatchTimeoutException) { return [Zeitgrenze + " (Text sehr lang oder ungewöhnlich)"]; }
+        }
+        return hits;
     }
 
     /// <summary>Aller Text eines Rezepts, in dem ein Versprechen stehen kann – auch Zutaten und deren Hinweise („1 TL Kurkuma, heilt Entzündungen“).</summary>
@@ -622,7 +714,8 @@ public static class RezeptKit
         foreach (var r in Rezepte(nachher))
         {
             if (alt.TryGetValue(r.Id, out var a) && a == RezeptJson(r).ToJsonString()) continue;
-            if (Gesundheitsversprechen(AllerText(r)) is { Count: > 0 } hits) return $"Die KI hat ein Gesundheitsversprechen geschrieben („{hits[0]}“) – Trendo nimmt das nicht an. Nährwerte sind nur Richtwerte.";
+            if (Gesundheitsversprechen(AllerText(r)) is { Count: > 0 } hits)
+                return hits[0].StartsWith(Zeitgrenze, StringComparison.Ordinal) ? hits[0] + " – nicht übernommen." : $"Die KI hat ein Gesundheitsversprechen geschrieben („{hits[0]}“) – Trendo nimmt das nicht an. Nährwerte sind nur Richtwerte.";
         }
         return null;
     }
@@ -682,6 +775,9 @@ public static class RezeptKit
     // ------------------------------------------------------------ schema.org/Recipe (JSON-LD)
 
     /// <summary>ISO-8601-Dauer „PT1H30M“ ↔ Minuten.</summary>
+    /// <summary>Längste Zeit, die beim Einlesen angenommen wird: 7 Tage (z. B. Sauerteig, Einlegen).</summary>
+    public const int MaxMinutenImport = 7 * 24 * 60;
+
     public static int? Minuten(string? iso)
     {
         if (iso is not { Length: > 0 }) return null;
@@ -785,7 +881,7 @@ public static class RezeptKit
             JsonNode? node;
             try { node = JsonNode.Parse(b, documentOptions: new JsonDocumentOptions { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip, MaxDepth = 64 }); }
             catch (JsonException e) { notes.Add("Ein JSON-LD-Block ist kein gültiges JSON: " + e.Message.Split('.')[0] + "."); continue; }
-            foreach (var o in Walk(node, 0)) if (IsRecipe(o)) { found.Add(VonSchema(o)); if (found.Count >= MaxRezepte) break; }
+            foreach (var o in Walk(node, 0)) if (IsRecipe(o)) { var h = new List<string>(); var rz = VonSchema(o, h); found.Add(rz); if (h.Count > 0) notes.Add($"„{rz.Name}“: {h.Count} Menge(n) mehrdeutig – in den Zutaten mit „Menge prüfen“ markiert ({h[0]})"); if (found.Count >= MaxRezepte) break; }
             if (found.Count >= MaxRezepte) { notes.Add($"Höchstens {MaxRezepte} Rezepte je Datei – der Rest wurde nicht gelesen."); break; } // Grenze über alle Blöcke
         }
         if (found.Count == 0 && notes.Count == 0) notes.Add("Die Datei enthält schema.org-Daten, aber kein „Recipe“.");
@@ -884,16 +980,16 @@ public static class RezeptKit
 
     static string Liste(JsonNode? n) => string.Join(", ", Texte(n).Select(Plain).Where(s => s.Length > 0).Distinct());
 
-    static Rezept VonSchema(JsonObject o)
+    static Rezept VonSchema(JsonObject o, List<string> hinweise)
     {
-        var ing = Texte(o["recipeIngredient"] ?? o["ingredients"]).Select(Plain).Where(s => s.Length > 0).Take(MaxZutaten).Select(LiesZutat).ToList();
+        var ing = Texte(o["recipeIngredient"] ?? o["ingredients"]).Select(Plain).Where(s => s.Length > 0).Take(MaxZutaten).Select(l => LiesMitPruefvermerk(l, hinweise)).ToList();
         var yieldWord = Texte(o["recipeYield"]).Select(s => Regex.Match(s, @"\d+\s+(\p{L}+)")).FirstOrDefault(m => m.Success)?.Groups[1].Value;
         return new Rezept(NewId("r"), Cut(Plain(S(o["name"])), 200), Yield(o["recipeYield"]), ing, Schritte(o["recipeInstructions"]))
         {
             Beschreibung = Cut(Plain(S(o["description"])), 4000),
             PortionWort = yieldWord is { Length: > 1 } w ? Cut(char.ToUpper(w[0]) + w[1..], 40) : "Portionen",
-            Vorbereitung = Math.Clamp(Minuten(S(o["prepTime"])) ?? 0, 0, 100_000), // Grenze schon beim Einlesen (negativ oder riesig: 0 bzw. 100 000)
-            Garzeit = Math.Clamp(Minuten(S(o["cookTime"])) ?? Math.Max(0, (Minuten(S(o["totalTime"])) ?? 0) - (Minuten(S(o["prepTime"])) ?? 0)), 0, 100_000),
+            Vorbereitung = Math.Clamp(Minuten(S(o["prepTime"])) ?? 0, 0, MaxMinutenImport), // Grenze schon beim Einlesen: 0 … 7 Tage
+            Garzeit = Math.Clamp(Minuten(S(o["cookTime"])) ?? Math.Max(0, Math.Min(Minuten(S(o["totalTime"])) ?? 0, MaxMinutenImport) - (Minuten(S(o["prepTime"])) ?? 0)), 0, MaxMinutenImport),
             Kategorie = Cut(Liste(o["recipeCategory"]), 100), Kueche = Cut(Liste(o["recipeCuisine"]), 100), Stichwoerter = Cut(Liste(o["keywords"]), 400),
             Quelle = Cut(S(o["url"]) is { Length: > 0 } url ? url : S(o["@id"]), 1000),
         };
