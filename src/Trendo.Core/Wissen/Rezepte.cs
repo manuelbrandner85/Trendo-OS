@@ -172,14 +172,14 @@ public static class RezeptKit
         new("tl", "TL", "Teelöffel", "volumen", 5, ["tl", "teel", "teelöffel", "teeloeffel"]),
         new("tasse", "Tasse", "Tasse", "volumen", 250, ["tasse", "tassen"]),
         new("becher", "Becher", "Becher", "volumen", 200, ["becher"]),
-        new("prise", "Prise", "Prise", "masse", 0.5, ["prise", "prisen"]),
+        new("prise", "Prise", "Prise", "masse", 0.5, ["prise", "prisen", "pinch", "pinches"]),
         new("msp", "Msp.", "Messerspitze", "masse", 0.3, ["msp", "messerspitze", "messerspitzen"]),
         new("stueck", "Stück", "Stück", "stueck", 1, ["stück", "stk", "st", "stueck"]),
         new("zehe", "Zehe", "Zehe", "stueck", 1, ["zehe", "zehen"]),
         new("scheibe", "Scheibe", "Scheibe", "anders", 1, ["scheibe", "scheiben"]),
         new("bund", "Bund", "Bund", "anders", 1, ["bund"]),
         new("stange", "Stange", "Stange", "anders", 1, ["stange", "stangen"]),
-        new("dose", "Dose", "Dose", "anders", 1, ["dose", "dosen"]),
+        new("dose", "Dose", "Dose", "anders", 1, ["dose", "dosen", "can", "cans", "tin", "tins"]),
         new("pck", "Pck.", "Päckchen", "anders", 1, ["pck", "päckchen", "packung", "pkg", "tüte"]),
         new("handvoll", "Handvoll", "Handvoll", "anders", 1, ["handvoll"]),
         new("zweig", "Zweig", "Zweig", "anders", 1, ["zweig", "zweige"]),
@@ -193,16 +193,18 @@ public static class RezeptKit
         new("quart", "quart", "Quart (US)", "volumen", 946.353, ["quart", "quarts", "qt"]),
         new("oz", "oz", "Unze", "masse", 28.3495, ["oz", "ounce", "ounces"]),
         new("lb", "lb", "Pfund (US)", "masse", 453.592, ["lb", "lbs", "pound", "pounds"]),
+        new("stick", "stick", "Stick (Butter, US)", "anders", 1, ["stick", "sticks"]),
     ];
 
     /// <summary>Englische Einheiten – Zutaten mit ihnen, die Trendo nicht zuordnen kann, ergeben beim Einlesen einen eigenen Hinweis.</summary>
-    public static readonly HashSet<string> EnglischeEinheiten = ["cup", "tbsp", "tsp", "floz", "pint", "quart", "oz", "lb"];
+    public static readonly HashSet<string> EnglischeEinheiten = ["cup", "tbsp", "tsp", "floz", "pint", "quart", "oz", "lb", "stick"];
 
     /// <summary>Gewicht je Packungseinheit (nur wo eindeutig): Dose 400 g (abgetropft 240 g), Päckchen Backpulver 15 g, Trockenhefe 7 g, Würfel Hefe 42 g.</summary>
     static readonly Dictionary<(string Lm, string Einheit), double> PackGramm = new()
     {
         [("tomaten-dose", "dose")] = 400, [("kidneybohnen", "dose")] = 240, [("kichererbsen", "dose")] = 240, [("kokosmilch", "dose")] = 400, [("thunfisch-dose", "dose")] = 140, [("mais", "dose")] = 285,
         [("backpulver", "pck")] = 15, [("hefe-trocken", "pck")] = 7, [("hefe-frisch", "stueck")] = 42, [("hefe-frisch", "pck")] = 42,
+        [("butter", "stick")] = 113.4, [("margarine", "stick")] = 113.4, // US-„stick“ = ½ cup = 4 oz
         [("sahne", "becher")] = 200, [("saure-sahne", "becher")] = 200, [("joghurt", "becher")] = 150, [("frischkaese", "pck")] = 200, [("mozzarella", "pck")] = 125, [("feta", "pck")] = 200,
         [("vollkornbrot", "scheibe")] = 45, [("weissbrot", "scheibe")] = 25, [("roggenbrot", "scheibe")] = 40, [("kochschinken", "scheibe")] = 20, [("gouda", "scheibe")] = 20, [("emmentaler", "scheibe")] = 20,
         [("petersilie", "bund")] = 30, [("schnittlauch", "bund")] = 25, [("dill", "bund")] = 20, [("basilikum", "bund")] = 20, [("lauchzwiebel", "bund")] = 100, [("radieschen", "bund")] = 150,
@@ -380,6 +382,11 @@ public static class RezeptKit
         if (b is not null && a is not null && b < a) (a, b) = (b, a);
         // „1 Dose Tomaten“: Dosenware vor Frischware
         var lm = einheit == "dose" ? DoseZuordnung(rest) : NaehrwertTabelle.Match(rest)?.Id ?? "";
+        // „1 tsp paprika“: mit Löffel oder Prise ist Paprika das Gewürz, nicht die frische Schote
+        if (lm == "paprika-rot" && einheit is "el" or "tl" or "tsp" or "tbsp" or "prise" or "msp") lm = "paprikapulver";
+        // „8 oz milk“: oz ist Gewicht, bei Flüssigkeiten ist meist fl oz gemeint – nachfragen statt raten
+        if (einheit == "oz" && NaehrwertTabelle.Find(lm) is { } flz && (flz.Abteilung is "Getränke" or "Öle & Fette" || lm is "vollmilch" or "fettarme-milch" or "sahne" or "kochsahne" or "zitronensaft" or "orangensaft" or "haehnchenbruehe" or "sojasauce" or "ahornsirup" or "honig"))
+            hinweis = (hinweis is null ? "" : hinweis + " ") + $"„{m.Groups["a"].Value} oz {rest}“: oz (Gewicht) oder fl oz (Volumen)? Menge prüfen.";
         return (new(a, b, einheit, rest, notiz, lm), hinweis);
     }
 
@@ -391,6 +398,7 @@ public static class RezeptKit
         static bool Dose(Lebensmittel l) => l.Id.EndsWith("-dose", StringComparison.Ordinal) || DosenWare.Contains(l.Id);
         var kd = NaehrwertTabelle.Suche(rest, 40);
         if (kd.FirstOrDefault(Dose) is { } dk) return dk.Id;
+        if (kd.FirstOrDefault()?.Id == "tomate") return "tomaten-dose"; // „1 can tomatoes“, „1 Dose Tomaten“
         var words = Regex.Split(rest.ToLowerInvariant(), @"[^\p{L}]+").Where(w => w.Length >= 4).ToList();
         if (NaehrwertTabelle.Alle.Where(Dose).FirstOrDefault(l => words.Any(w => l.Name.Contains(w, StringComparison.OrdinalIgnoreCase) || l.Such.Contains(w, StringComparison.OrdinalIgnoreCase))) is { } wl) return wl.Id;
         return kd.FirstOrDefault()?.Id ?? "";
@@ -712,41 +720,53 @@ public static class RezeptKit
 
     // ------------------------------------------------------------ Keine Gesundheitsversprechen
 
-    /// <summary>Heil- und Gesundheitsversprechen als ganze Wörter bzw. Wendungen (Wortgrenzen an Buchstaben: „verbeugt“ und „hilft beim Frischhalten“ sind kein Treffer).</summary>
-    /// <summary>Krankheits- und Körperbegriffe für Stufe (a) – feste Liste. Nur zusammen mit einem Wirk-Verb („heilt“, „hilft gegen“, „stärkt“ …) ist es eine Gesundheitsaussage.
-    /// Bewusst nicht darin: „Haut“, „Haar“ (Hähnchenhaut, „schützt die Haut vor dem Austrocknen“).</summary>
-    const string Koerper = @"(?:krebs\w*|tumor\w*|erkältung\w*|grippe\w*|infekt\w*|entzündung\w*|blutdruck\w*|bluthochdruck|blutzucker\w*|zuckerspiegel|cholesterin\w*|blutfett\w*|"
-        + @"verdauung\w*|darm\w*|magen\w*|immunsystem\w*|immunabwehr|abwehrkräfte|abwehr|herz\w*|kreislauf\w*|knochen\w*|kopfschmerz\w*|migräne\w*|schmerz\w*|husten\w*|halsschmerz\w*|halsweh|"
-        + @"schnupfen|fieber\w*|übelkeit|sodbrennen|blähung\w*|verstopfung|durchfall|diabetes|arthrose|rheuma\w*|allergie\w*|stoffwechsel\w*|leber\w*|niere\w*|gelenk\w*|krankheit\w*|"
-        + @"beschwerde\w*|depression\w*|stress\w*|schlafstörung\w*|müdigkeit|nerven\w*|gedächtnis\w*|gehirn\w*|sehkraft|übergewicht|fettleibigkeit|gefäß\w*|arterie\w*|thrombose|osteoporose|"
-        + @"anämie|eisenmangel|gesundheit|wohlbefinden|zellen|zellschutz)";
+    /// <summary>Eindeutig medizinische Begriffe (Krankheiten, Symptome, Blutdruck, Blutzucker, Cholesterin, Immunsystem/Abwehr) – <b>exakte Wortformen</b>, keine offenen Endungen
+    /// (4. Prüfrunde: „herz\w*“ traf „herzhaft“ und „Hühnerherzen“). Zusammengesetzte „…beschwerden“, „…schmerzen“, „…krankheit“, „…erkrankung“ zählen mit.</summary>
+    const string Medizin = @"(?:krebs|krebses|krebserkrankung(?:en)?|tumor(?:e|en)?|erkältung(?:en)?|grippe|grippalen?\s+infekt(?:en)?|infekt(?:e|en)?|infektion(?:en)?|entzündung(?:en)?|"
+        + @"blutdruck(?:s|es)?|bluthochdruck(?:s|es)?|blutzucker(?:s|spiegel|werte?)?|zuckerspiegel|cholesterin(?:s|spiegel|werte?)?|blutfett(?:e|werte?)?|"
+        + @"immunsystem(?:s)?|immunabwehr|abwehrkräfte|abwehr|herz|herzens|herzinfarkt(?:s|e|es)?|herzkrankheit(?:en)?|herzerkrankung(?:en)?|herzleiden|herz-kreislauf(?:-\p{L}+)?|"
+        + @"knochen|knochenbau|knochendichte|osteoporose|verdauung|kopfweh|kopfschmerz(?:en)?|migräne|husten|halsschmerz(?:en)?|halsweh|schnupfen|fieber|übelkeit|sodbrennen|blähung(?:en)?|"
+        + @"verstopfung|durchfall|müdigkeit|schlafstörung(?:en)?|depression(?:en)?|allergie(?:n)?|diabetes|arthrose|rheuma|thrombose|anämie|eisenmangel|übergewicht|fettleibigkeit|"
+        + @"krankheit(?:en)?|erkrankung(?:en)?|beschwerden|\p{L}+beschwerden|\p{L}+schmerzen|\p{L}+krankheit(?:en)?|\p{L}+erkrankung(?:en)?)";
+    /// <summary>Weichere Körperbegriffe – zusammen mit einem Wirk-Verb nur „Bitte prüfen“ (Stoffwechsel, Stress, Leber, Darm, Haut, Augen …).</summary>
+    const string Koerper = @"(?:stoffwechsel|stress|leber|darm|darmflora|magen|haut|augen|sehkraft|nerven|gedächtnis|gehirn|konzentration|gelenke?|nieren?|gefäße?|kreislauf|wohlbefinden|"
+        + @"gesundheit|zellen|haare?|figur|schlaf|energie|vitalität|abwehr\p{L}*)";
     const string WirkVerb = @"(?:heil(?:t|en)|lindert|lindern|bekämpf(?:t|en)|wirk(?:t|en|sam)\s+(?:gegen|bei)|hilft\s+(?:gegen|bei)|helfen\s+(?:gegen|bei)|schütz(?:t|en)\s+(?:vor|gegen)|"
         + @"schutz\s+(?:vor|gegen)|gut\s+(?:gegen|für)|beug(?:t|en)|senk(?:t|en)|reduzier(?:t|en)|regulier(?:t|en)|stärk(?:t|en)|förder(?:t|n)|unterstütz(?:t|en)|verbesser(?:t|n)|"
-        + @"schont|entlastet|stabilisiert|kräftigt|aktiviert)";
+        + @"schont|entlastet|stabilisiert|kräftigt|aktiviert|entgiftet|reinigt|befreit\s+von)";
     const string WirkWort = @"(?:senkend|hemmend|fördernd|stärkend|lindernd|vorbeugend|schützend|regulierend|stabilisierend)";
+    /// <summary>Werkzeuge, mit denen man etwas „abnimmt“ – „Ein Tuch hilft beim Abnehmen“ ist kein Diät-Versprechen.</summary>
+    const string Werkzeug = @"(?:tuch|tuches|lappen|topflappen|handschuh|handschuhe|zange|heber|kelle|griff|haken|messer|gabel|löffel|deckel|folie|papier)";
 
-    /// <summary>Stufe (a) – <b>Sperre</b> (Gegenprüfung T-0787, 3. Runde: Aufbau statt Wortliste): nur eindeutige Aussagen. Wirk-Verb + Körperbegriff (höchstens fünf Wörter dazwischen),
-    /// Körperbegriff + „-senkend/-hemmend/…“, feste Begriffe (Detox, Superfood, entzündungshemmend, antioxidativ …) und Abnehmen im Sinne einer Diät
-    /// („zum Abnehmen geeignet“, „hilft beim Abnehmen“ – nicht „vom Herd abnehmen“, „beim Abnehmen des Deckels“).
-    /// <b>Ehrlich:</b> Das bleibt eine Regel aus Wortlisten – übliche Formulierungen werden erkannt, neue Umschreibungen nicht. Kochsätze wie „hilft gegen das Ausflocken“ bleiben frei.</summary>
+    /// <summary>Stufe (a) – <b>Sperre</b> (4. Prüfrunde: praktisch ohne Fehlalarme; lieber eine Lücke als Hinweis als ein abgelehntes Rezept):
+    /// Wirk-Verb + eindeutig medizinischer Begriff (höchstens drei Wörter dazwischen); „gegen …“ + medizinischer Begriff; medizinischer Begriff + „-senkend/-hemmend …“;
+    /// feste Begriffe (Detox, Superfood, entzündungshemmend, antioxidativ, natürliches Antibiotikum, hält jung, verlängert das Leben …); Abnehmen nur mit klarer Diät-Bedeutung
+    /// („zum Abnehmen geeignet/ideal/perfekt“, „hilft beim Abnehmen“ ohne folgendes Objekt und ohne Werkzeug davor, „Abnehmrezept“, „Diät zum Abnehmen“).
+    /// <b>Ehrlich:</b> eine Regel aus Wortlisten – übliche Formulierungen werden erkannt, neue Umschreibungen nicht.</summary>
     static readonly string[] Versprechen =
     [
-        WirkVerb + @"(?:\s+\p{L}+){0,5}?\s+" + Koerper,
-        Koerper + @"(?:\s*-\s*|\s+)?" + WirkWort + @"\w*",
-        @"(?:krebs|blutdruck|blutzucker|cholesterin|verdauung|entzündung|immun|abwehr|herz|knochen|gesundheit|stoffwechsel)s?" + WirkWort + @"\w*",
-        @"detox\w*", @"entgift\w*", @"entschlack\w*", @"superfood\w*", @"entzündungshemmend\w*", @"antientzündlich\w*", @"antioxida\w*", @"immunbooster\w*", @"wundermittel\w*",
-        @"fatburner\w*", @"fett\s*verbrennend\w*", @"fettverbrennung\w*", @"schlankmacher\w*", @"macht\s+schlank", @"schlank\s+über\s+nacht", @"garantiert\s+abnehmen", @"abnehmen\s+garantiert",
-        @"(?:zum|beim|fürs|für\s+das)\s+abnehmen(?!\s+(?:vom|von|der|des|den|dem|aus|mit|vorsichtig|lassen|und\s+\p{L}+en\b))",
+        WirkVerb + @"(?:\s+\p{L}+){0,3}?\s+" + Medizin,
+        @"gegen\s+(?:\p{L}+\s+)?" + Medizin,
+        Medizin + @"(?:\s*-\s*|\s+)?" + WirkWort + @"\w*",
+        @"(?:krebs|blutdruck|blutzucker|cholesterin|verdauung|entzündung|immun|abwehr|herz|knochen)s?" + WirkWort + @"\w*",
+        @"detox\w*", @"entgift(?:et|en|end|ende|ung)", @"entschlack\w*", @"superfood\w*", @"entzündungshemmend\w*", @"antientzündlich\w*", @"antioxida\w*", @"immunbooster\w*", @"wundermittel\w*",
+        @"(?:natürliche[snm]?\s+)?antibiotik(?:um|a)", @"fatburner\w*", @"fett\s*verbrennend\w*", @"fettverbrennung\w*", @"schlankmacher\w*", @"macht\s+schlank", @"schlank\s+über\s+nacht",
+        @"garantiert\s+abnehmen", @"abnehmen\s+garantiert", @"hält\s+(?:\p{L}+\s+)?jung", @"verlänger(?:t|n)\s+(?:das\s+|dein\s+|ihr\s+)?leben",
+        @"zum\s+abnehmen\s+(?:geeignet|ideal|perfekt|optimal|super|gut)", @"(?:ideal|perfekt|geeignet|optimal|super|toll)\s+(?:zum|fürs|für\s+das)\s+abnehmen",
+        @"(?<!" + Werkzeug + @"\s+)(?:hilft|helfen)\s+(?:dir\s+|ihnen\s+|euch\s+)?beim\s+abnehmen(?![\s,]*\p{L})", @"abnehmrezept\w*", @"diät\s+zum\s+abnehmen", @"diätrezept\w*",
     ];
 
-    /// <summary>Stufe (b) – <b>Hinweis</b>: weiche Wörter ohne eindeutige Aussage („gesund“, „gesündere Variante“, „Heiltee“, „lindernd“, „senkt das Risiko“, „medizinisch“ …).
-    /// Ergibt nur „Bitte prüfen“, keine Ablehnung. „gesunde Portion Butter“, „Heilwasser“ und „Gesundheit!“ bleiben frei.</summary>
+    /// <summary>Stufe (b) – <b>Hinweis</b>: weiche Wörter und Wendungen ohne eindeutige Aussage – nur „Bitte prüfen“, keine Ablehnung.</summary>
     static readonly string[] Weich =
     [
         @"gesund(?:e|er|es|en|em)?(?!\s+(?:portion|prise|schuss|maß|menge|stück|löffel|handvoll|hunger|appetit|schlaf))", @"gesünder\w*", @"gesündeste\w*", @"gesundheitsbewusst\w*",
+        @"gesundheitsfördernd\w*", @"stoffwechsel" + WirkWort + @"\w*",
         @"heil(?:t|en)(?!\s+nicht)", @"heil(?:-\s*|\s+)?(?:tee|kräuter\w*|pflanze\w*|nahrung|mittel\w*|kraft|kräfte|wirkung\w*)", @"heilsam\w*",
         @"lindernd\w*", @"medizinisch\w*", @"therapeutisch\w*", @"diät\w*", @"vitalstoff\w*",
         @"senk(?:t|en)\s+(?:das|ihr|sein|dein)\s+risiko(?!\s+(?:des|eines|beim|zu|von|dass))",
+        WirkVerb + @"(?:\s+\p{L}+){0,3}?\s+" + Koerper,
+        @"(?:ideal\s+|gut\s+|hilfreich\s+)?bei\s+(?:einer\s+|leichter\s+|leichten\s+|starker\s+|starken\s+)?" + Medizin,
+        @"gegen\s+(?:einen\s+|den\s+)?kater", @"schlank\w*", @"für\s+die\s+(?:schlanke\s+)?figur",
     ];
 
     /// <summary>Anfang eines Treffers, wenn die Prüfung an der Zeitgrenze abbrach (statt eines Absturzes).</summary>

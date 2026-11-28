@@ -2,6 +2,19 @@
 
 **Auftrag:** `tasks/T-0787-rezepte-ernaehrung.md` (Freigabe 26.11.2026) · **Branch:** `claude/T-0787-rezepte-ernaehrung` (Basis main 9bc135aaa = 0.9.114) · eigene Kopie in `%TEMP%\trendo-auftrag-T-0787`.
 
+## Vierte Prüfrunde (Stand 4b5760a98)
+Rot-Lauf: `T0787_Runde4` (nur Schnittstellen von 4b5760a98) dort **3 von 3 rot** (`reports/T-0787/runde4/rot-runde4.txt`), auf dem neuen Stand grün.
+
+| Nr. | Befund | Behebung | Test |
+|---|---|---|---|
+| M1 | Sperre zu breit („herz\w*“ traf „herzhaft“, „Hühnerherzen“; Abnehmen; weiche Körperbegriffe) | **Sperre nur bei eindeutig medizinischen Begriffen in exakten Wortformen** (Krankheiten, Symptome, Blutdruck, Blutzucker, Cholesterin, Immunsystem/Abwehr, Herz/Herzens/Herzinfarkt/Herzkrankheit …, Knochen, Verdauung; zusammengesetzte „…beschwerden/…schmerzen/…krankheit/…erkrankung“) mit Wirk-Verb (höchstens drei Wörter dazwischen) oder „gegen …“; feste Begriffe neu: „natürliches Antibiotikum“, „hält jung“, „verlängert das Leben“. Abnehmen nur bei Diät-Bedeutung: „zum Abnehmen geeignet/ideal/perfekt“, „ideal/perfekt zum Abnehmen“, „hilft beim Abnehmen“ ohne folgendes Objekt und ohne Werkzeug davor (Tuch, Topflappen, Zange …), „Abnehmrezept“, „Diät zum Abnehmen“. **Nur Hinweis:** Wirk-Verb + weichere Körperbegriffe (Stoffwechsel, Stress, Leber, Darm, Haut, Augen, Nerven, Figur …), „bei Erkältung/Halsschmerzen …“, „gegen Kater“, „schlank“, „für die Figur“ | Core `T0787_Runde4`: 15 Fehlalarm-Sätze (5 aus der Prüfung, 10 eigene) weder Sperre noch Hinweis; 20 Sperr-Sätze (10 + 10 eigene); 10 Hinweis-Sätze (4 + 6 eigene) nicht gesperrt, aber als Hinweis erkannt (`T0787_Runde4Neu`). Alle Listen der Runden 1–3 unverändert grün |
+| N | „paprika“ (englisch) → frische Schote | mit Löffel oder Prise (EL, TL, tsp, tbsp, Prise, Msp.) ist Paprika das Gewürz; ohne bleibt es die Schote | Core `Englisch` |
+| N | can, stick, pinch | „can/tin“ = Dose (Packungsgewichte wie bei Dose, „1 can tomatoes“ = Dosentomaten 400 g), „stick“ = Butter/Margarine 113,4 g, „pinch“ = Prise | Core `Englisch` |
+| N | „8 oz milk“ | bei Flüssigkeiten Hinweis „oz (Gewicht) oder fl oz (Volumen)? Menge prüfen“; „8 oz butter“ ohne Hinweis | Core `Englisch` |
+
+**Bekannte Grenzen (bewusst so gelassen, laut Prüfung):** „2,500 g“ wird als englisches Tausenderkomma 2500 g gelesen (mit Hinweis „Menge prüfen“) – wer 2,5 g meint, schreibt „2,5 g“; „weiße Bohnen“ aus der Dose rechnen mit Kidneybohnen (SR Legacy hat keine weißen Bohnen in der Auswahl); Wortlisten und Einheiten stehen als `static readonly`-Arrays im Code (nicht von außen erweiterbar). Die Gesundheitsprüfung bleibt eine Regel aus Wortlisten – sie ist jetzt auf wenige Fehlalarme ausgelegt, nicht auf Vollständigkeit.
+Tests: Core (T0787*, PromptAction*, QA015*) **129 gesamt, 127 bestanden, 2 übersprungen** (`reports/T-0787/runde4/rohlog-core.txt`); App (dieselben acht Klassen wie in Runde 3) **28 gesamt, 0 Fehler, 1 übersprungen** (`rohlog-app.txt`). Nicht wiederholt: Fremd- und Echtlauf.
+
 ## Dritte Prüfrunde (Stand b6ffe500c)
 Rot-Lauf auf b6ffe500c (`reports/T-0787/runde3/rot-runde3.txt`): Core `T0787_Runde3` **5 von 5 rot**, App `T0787Runde3_Ui` **2 von 2 rot**; auf dem neuen Stand grün.
 
@@ -133,6 +146,7 @@ Erster Anlauf scheiterte nur an `TRENDO_ASSIST_MODELL=qwen3:14b` („unbekanntes
 ## Geänderte Dateien
 - neu: `src/Trendo.Core/Wissen/Rezepte.cs`, `src/Trendo.Core/Wissen/NaehrwertTabelle.Daten.cs`, `src/Trendo.Core/PromptAction/RezeptPromptAdapters.cs`, `src/Trendo.App/MainWindow.Rezepte.cs`, `src/Trendo.App/Assets/studios/STUDIO-RECIPE-01.jpg`, `tools/rezepte/naehrwerte_gen.py`, `tools/rezepte/herkunft-usda-sr.tsv`, `docs/nachbau/rezepte/anforderungen.md`, `docs/programme/rezepte-programm/*`
 - gemeinsam (klein, am Listenende): `src/Trendo.App/StudioCatalog.cs`, `StudioIcons.cs`, `MainWindow.PromptChips.cs`, `MainWindow.W6.cs`, `src/Trendo.Core/PromptAction/CapabilityCatalog.cs`, `IntelligencePromptModel.cs`, `StudioKnowledge.cs`, `src/Trendo.Core/W2/StudioProfiles.cs`, `StudioTeams.cs`, `tools/studio_bilder.py`, `tools/Trendo.Render/Program.cs`, `docs/design/STUDIOBILDER.json`, `docs/improvement-42/studio-capability-matrix.md`, `docs/programme/katalog.json`, `.gitattributes`
+- Vierte Prüfrunde: `tests/Trendo.Core.Tests/T0787Runde4Tests.cs`, `reports/T-0787/runde4/*`
 - Dritte Prüfrunde: `tests/Trendo.Core.Tests/T0787Runde3Tests.cs`, `tests/Trendo.App.Tests/T0787Runde3UiTests.cs`, `reports/T-0787/runde3/*`
 - Zweite Prüfrunde: `tests/Trendo.Core.Tests/T0787Runde2Tests.cs`, `tests/Trendo.App.Tests/T0787Runde2UiTests.cs`, `reports/T-0787/runde2/*`
 - Gegenprüfung: `tests/Trendo.Core.Tests/T0787GegenpruefungTests.cs`, `tests/Trendo.App.Tests/T0787GegenpruefungUiTests.cs`, `tests/Trendo.App.Tests/Daten/einfach-vorher-ausgeblendet.txt`, `reports/T-0787/gegenpruefung/*`
