@@ -167,6 +167,7 @@ class Program
                 try { new WorkflowTaskPlan().CleanupOrphans(self, l => { try { File.AppendAllText(Path.Combine(crashRoot, "ablaeufe", "windows-aufgabe.log"), $"{DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss zzz} Aufräumen: {l}\n"); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } }); }
                 catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException) { }
             });
+        WebViewData.Ensure(crashRoot); // T-0784: Zwischenspeicher der Webansichten im Datenordner, nie im Installationsordner
         StartupTrace.Mark("avalonia.start");
         return BuildAvaloniaApp().StartWithClassicDesktopLifetime(uiArgs);
     }

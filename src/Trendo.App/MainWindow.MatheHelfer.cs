@@ -20,6 +20,7 @@ public partial class MainWindow
     readonly Dictionary<string, int> _mhSel = [];
     /// <summary>Getippte, noch nicht gerechnete Eingabe je Dokument.</summary>
     readonly Dictionary<string, string> _mhTyped = [];
+    readonly Dictionary<string, bool> _mhTastenOffen = []; // T-0784 fix3: Zeichenbereich offen/zu je Dokument
     readonly Dictionary<string, (Loesung? L, string? Fehler)> _mhCache = [];
 
     static readonly (string Id, string Label, string Beispiel)[] MhArten =
@@ -433,7 +434,8 @@ public partial class MainWindow
         }
         var zeile = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { box, Pos(los, 1) } };
         // T-0784 (V10 „Einfach“): die 17 Zeichentasten in einem Bereich mit Wort – in „Einfach“ zugeklappt, sonst offen; Funktion bleibt gleich
-        var tastenBereich = new Expander { Name = "mh-tasten-bereich", Header = "Zeichen einfügen (², √, π, sin …)", IsExpanded = !IsSimple, HorizontalAlignment = HorizontalAlignment.Stretch, Content = tasten };
+        var tastenBereich = new Expander { Name = "mh-tasten-bereich", Header = "Zeichen einfügen (², √, π, sin …)", IsExpanded = _mhTastenOffen.GetValueOrDefault(d.Id, !IsSimple), HorizontalAlignment = HorizontalAlignment.Stretch, Content = tasten };
+        tastenBereich.PropertyChanged += (_, e) => { if (e.Property == Expander.IsExpandedProperty) _mhTastenOffen[d.Id] = tastenBereich.IsExpanded; }; // T-0784 fix3: Zustand je Dokument, bleibt nach „Rechnen“
         sp.Children.Add(KrCard(new StackPanel { Spacing = 6, Children = { arten, zeile, tastenBereich } }, "mh-eingabe-karte"));
         BueroFileDrop(sp, MatheKey, BueroExt(MhImportEndungen), "ein Aufgabenblatt (.txt, .md, .csv oder .tex)", (dd, files) => _ = MhImportAsync(dd, files[0]));
 

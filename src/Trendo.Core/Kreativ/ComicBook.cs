@@ -446,7 +446,7 @@ public static class ComicExport
     {
         if (book.Pages.Count == 0) throw new InvalidOperationException("Das Heft hat keine Seite.");
         Sys.PdfTools.EnsureFonts();
-        using var pdf = new PdfDocument(); pdf.Info.Title = book.Title.Trim().Length > 0 ? book.Title.Trim() : "Comic"; pdf.Info.Creator = "Trendo Comics";
+        using var pdf = new PdfDocument(); pdf.Info.Title = book.Title.Trim().Length > 0 ? book.Title.Trim() : "Comic"; pdf.Info.Creator = "" /* T-0784 */;
         var k = XUnit.FromMillimeter(210).Point / ComicBook.PageW;
         var images = new Dictionary<string, XImage?>(StringComparer.OrdinalIgnoreCase);
         try

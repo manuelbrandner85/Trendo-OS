@@ -10,7 +10,7 @@ namespace Trendo.App;
 /// <param name="SetupLabel">Knopftext, meist „Jetzt einrichten“.</param>
 /// <param name="Setup">Öffnet den Ort, an dem man es einrichtet (nach Zustimmung dort, nie automatisch).</param>
 /// <param name="Replaces">Befehl des Programms, der dasselbe tut (z. B. „Bild-KI einrichten“) – er wandert in „Einfach“ unter „Mehr“, solange der Hinweis sichtbar ist.</param>
-public sealed record ProgramBlocker(string Missing, string SetupLabel, Action Setup, string? Replaces = null);
+public sealed record ProgramBlocker(string Missing, string SetupLabel, Action Setup, string? Replaces = null, string? Tip = null); // T-0784 fix3: Tip = längere Erklärung am Knopf
 
 public partial class MainWindow
 {
@@ -20,7 +20,7 @@ public partial class MainWindow
     {
         var setup = new Button { Name = name + "-setup", Content = b.SetupLabel, FontSize = 12.5, Padding = new Thickness(10, 2), MinHeight = 0, Background = Accent, Foreground = Brushes.White, VerticalAlignment = VerticalAlignment.Center };
         setup.Click += (_, _) => b.Setup();
-        ToolTip.SetTip(setup, b.Missing + " – hier einrichten (es wird nichts ohne deine Zustimmung installiert)");
+        ToolTip.SetTip(setup, (b.Tip ?? b.Missing) + " – hier einrichten (es wird nichts ohne deine Zustimmung installiert)");
         return new Border
         {
             Name = name, Background = Brush.Parse(C("#26F5A524", "#33F5A524")), BorderBrush = Brush.Parse("#80F5A524"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8),

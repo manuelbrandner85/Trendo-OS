@@ -110,7 +110,7 @@ public static class GeldAuswertung
     public static int Pdf(Auswertung a, string path, string firma = "")
     {
         const double mm = 72 / 25.4;
-        using var pdf = new BizPdf("Auswertung " + a.Titel, firma.Length > 0 ? firma : "Trendo OS") { Footer = Hinweis };
+        using var pdf = new BizPdf("Auswertung " + a.Titel, firma) /* T-0784: Autor ist die Firma bzw. leer, nie Trendo */ { Footer = Hinweis };
         pdf.Write("Auswertung " + a.Titel, 16, true, pdf.Accent);
         if (firma.Trim().Length > 0) pdf.Write(firma.Trim(), 10, false, BizPdf.Grey);
         pdf.Y += 3;

@@ -13,7 +13,7 @@ public class NoBrandingInDocumentsTests
     [Fact(DisplayName = "Nutzer-Dokumente: kein „Erstellt mit Trendo OS“ und kein Trendo als Autor in den Generatoren")]
     public void Generators_have_no_branding()
     {
-        var bad = new Regex(@"(Erstellt|Angelegt|Gemacht|Made|Created|Erzeugt|Gerechnet) mit (dem Rechenkern von )?Trendo|Start mit Trendo|<dc:creator>Trendo|cp:lastModifiedBy>Trendo|meta:generator>Trendo|name=\\""generator\\"" content=\\""Trendo", RegexOptions.IgnoreCase); // T-0784: auch Generator-Angaben (HTML-Meta, ODF) und „Erzeugt/Gerechnet mit Trendo“
+        var bad = new Regex(@"(Erstellt|Angelegt|Gemacht|Made|Created|Erzeugt|Gerechnet) mit (dem Rechenkern von )?Trendo|Start mit Trendo|<dc:creator>Trendo|cp:lastModifiedBy>Trendo|meta:generator>Trendo|name=\\""generator\\"" content=\\""Trendo|xmp:CreatorTool>Trendo|Info\.(Author|Creator)\s*=\s*""Trendo|BizPdf\([^)]*""Trendo", RegexOptions.IgnoreCase); // T-0784 fix3: auch Autor/Ersteller in PDFs // T-0784: auch Generator-Angaben (HTML-Meta, ODF) und „Erzeugt/Gerechnet mit Trendo“
         var hits = new List<string>();
         foreach (var f in Directory.EnumerateFiles(Path.Combine(Root(), "src"), "*.cs", SearchOption.AllDirectories))
         {

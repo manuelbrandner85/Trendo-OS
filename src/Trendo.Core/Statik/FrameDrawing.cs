@@ -240,7 +240,7 @@ public static class FrameDrawing
     {
         Trendo.Core.Sys.PdfTools.Fonts.Ensure();
         const double mm = 72 / 25.4;
-        using var pdf = new PdfDocument(); pdf.Info.Title = f.Name; pdf.Info.Creator = "Trendo Tragwerk";
+        using var pdf = new PdfDocument(); pdf.Info.Title = f.Name; pdf.Info.Creator = "" /* T-0784 */;
         var page = pdf.AddPage(); page.Width = XUnit.FromMillimeter(210); page.Height = XUnit.FromMillimeter(297);
         using var g = XGraphics.FromPdfPage(page);
         g.DrawString(f.Name, new XFont("Arial", 16, XFontStyleEx.Bold), XBrushes.Black, 20 * mm, 22 * mm);

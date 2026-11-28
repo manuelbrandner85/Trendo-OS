@@ -287,7 +287,7 @@ public static class PlanDrawing
         XPoint P(double x, double y) => new(ox + x * k, oy + y * k);
         static XColor C(string hex) { var c = hex.TrimStart('#'); return XColor.FromArgb(Convert.ToInt32(c[..2], 16), Convert.ToInt32(c[2..4], 16), Convert.ToInt32(c[4..6], 16)); }
         Trendo.Core.Sys.PdfTools.Fonts.Ensure();
-        using var pdf = new PdfDocument(); pdf.Info.Title = p.Name; pdf.Info.Creator = "Trendo Grundriss";
+        using var pdf = new PdfDocument(); pdf.Info.Title = p.Name; pdf.Info.Creator = "" /* T-0784 */;
         var living = levels.Sum(l => l.LivingArea());
         foreach (var level in levels)
         {
