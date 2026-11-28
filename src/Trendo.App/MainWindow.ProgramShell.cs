@@ -107,6 +107,9 @@ public sealed class ProgramSpec(string key, string studio, string title)
     public Func<bool>? KiLocalOnly { get; init; }
     /// <summary>T-0788: eigener Satz, warum Claude dieses Programm gerade nicht bekommt (sonst der allgemeine Satz zu „nur lokale KI“).</summary>
     public Func<string>? KiLocalOnlyWhy { get; init; }
+    /// <summary>T-0788 (2. Prüfrunde): gilt „nur lokale KI“ für genau DIESES Dokument (nicht nur für das gerade aktive)? Für den .tdoc-Rückweg,
+    /// der an das Dokument gebunden ist, aus dem die Datei stammt.</summary>
+    public Func<ProgramDocument, bool>? KiLocalOnlyDoc { get; init; }
     /// <summary>T-0782 (Gegenprüfung M2/M6): was die KI-Kette vom Dokument sieht (z. B. ohne Lösungen oder Programmausgaben); fehlt = alles.</summary>
     public Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>? KiView { get; init; }
     /// <summary>T-0782 (2. Gegenprüfung M6): Texte der KI-Kette vor dem Anzeigen und Protokollieren filtern (Plan, Vorschau-Meldung, Protokoll) – z. B. Lösungen verdecken.</summary>

@@ -74,7 +74,7 @@ public partial class MainWindow
     readonly Dictionary<string, (string Stamp, FamilyTree Tree, Lazy<List<FamIssue>> Issues, Lazy<bool> Living)> _famCache = [];
     /// <summary>Für Tests: wie oft die Prüfung wirklich gerechnet wurde.</summary>
     public static int FamChecks;
-    static string FamStamp(ProgramDocument d) => $"{System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(d.Data)}|{d.TopStep}|{d.History.Count}|{d.Changed.Ticks}|{d.Dirty}";
+    string FamStamp(ProgramDocument d) => $"{System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(d.Data)}|{d.TopStep}|{d.History.Count}|{d.Changed.Ticks}|{d.Dirty}|{FamToday:yyyyMMdd}"; // „lebt“ hängt am Tag
     (FamilyTree Tree, Lazy<List<FamIssue>> Issues, Lazy<bool> Living) FamCached(ProgramDocument d)
     {
         var stamp = FamStamp(d);
@@ -328,6 +328,9 @@ public partial class MainWindow
             default: throw new ArgumentException("Unbekannte Einstellung.");
         }
         FamSave(d, t, field switch { "title" => "Titel", "hideLiving" => "Lebende ausblenden", _ => "Generationen" });
+        // T-0788 (2. Prüfrunde): Schutz eingeschaltet → frühere Arbeitskopie dieses Stammbaums in Claudes Ordner (von Trendo angelegt) löschen
+        if (field == "hideLiving" && FamProtected(d) && ClaudeDropWorkFiles(FamKey, d.Id) is var dropped and > 0)
+            _progMsg[FamKey] = $"Lebende Personen sind jetzt geschützt – {dropped} Arbeitskopie(n) dieses Stammbaums in Claudes Ordner gelöscht.";
     }
 
     /// <summary>Zeilen „Name | Geschlecht | Geburt | Geburtsort | Tod | Sterbeort | Vater | Mutter“ und „Ehe: A + B | Datum | Ort“ übernehmen.</summary>
@@ -489,6 +492,7 @@ public partial class MainWindow
         // derselbe gemeinsame Wächter wie Nachhilfe/Kinderprofil (LocalOnlyRefusal, KiStepPreReject). Die KI-Kette nimmt dann nur die KI auf diesem PC.
         KiLocalOnly = FamClaudeBlocked,
         KiLocalOnlyWhy = () => FamClaudeWhy,
+        KiLocalOnlyDoc = FamProtected, // .tdoc-Rückweg: maßgeblich ist das Dokument, aus dem die Datei stammt
         KiHint = "Personen fügst du nur mit „stammbaum.personen“ ein (alle in einem Schritt): eine Zeile je Person „Name | m oder w | Geburt | Geburtsort | Tod | Sterbeort | Vater | Mutter“ "
                + "(leere Felder dürfen fehlen), Ehen als „Ehe: Name + Name | Datum | Ort“. Daten wie „12.03.1850“, „1850“, „um 1850“, „vor 1900“. Nimm nur Personen und Daten, die im Text stehen – erfinde nichts. "
                + "Vorhandene Personen änderst du nicht.",
@@ -513,7 +517,9 @@ public partial class MainWindow
     public const string FamClaudeWhy = "Lebende Personen sind geschützt – Claude bekommt diesen Stammbaum nicht. Nimm dafür die KI auf diesem PC oder schalte rechts „Lebende Personen in Ausgaben ausblenden“ aus.";
 
     /// <summary>T-0788: Claude ist für den Stammbaum gesperrt, solange im offenen Dokument der Schutz an ist und es (vermutlich) lebende Personen enthält.</summary>
-    public bool FamClaudeBlocked() => ProgramActive(FamKey) is { } d && FamCached(d) is var c && c.Tree.HideLiving && c.Living.Value;
+    public bool FamClaudeBlocked() => ProgramActive(FamKey) is { } d && FamProtected(d);
+    /// <summary>T-0788 (2. Prüfrunde): genau dieses Dokument ist geschützt (Schutz an und vermutlich Lebende darin).</summary>
+    public bool FamProtected(ProgramDocument d) => FamCached(d) is var c && c.Tree.HideLiving && c.Living.Value;
 
     /// <summary>T-0788 (Gegenprüfung G1): Sicht für KI-Kette und Claude-Brücke – bei „Lebende ausblenden“ dieselbe Kürzung wie in den Ausgaben.</summary>
     JsonObject FamKiView(JsonObject data)

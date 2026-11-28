@@ -36,7 +36,24 @@ Tests: `T0788ClaudeSchutz_Ui` (4: Chat/.tdoc an–aus–an, .tdoc-Rückweg, Plan
 Testlauf dieser Runde: App T0788ClaudeSchutz_Ui, T0788Gegenpruefung_Ui, T0788Stammbaum_Ui, ClaudeBridge_Ui, AssistChain_Ui, T0782Gegenpruefung_Ui/2/3, T0782Lernen_Ui: **Total 46, Failed 0, Errors 0, Skipped 3** (Echtläufe ohne Schalter) – `reports/T-0788/gegenpruefung/app-claude-schutz.txt`; Core T0788* (ohne Fremdnachlauf): 62/62.
 Ehrlich: Eine `.tdoc`, die Claude in einem früheren Chat bei ausgeschaltetem Schutz bekommen hat, bleibt in dessen Projektordner liegen – das hat die Person mit dem Ausschalten so gewählt; neue Kopien entstehen bei eingeschaltetem Schutz nicht.
 
-**Offen:** Mutierende Befehle lesen den Stammbaum weiter einmal je Klick neu aus dem Dokument (bei 50 000 Personen etwa eine halbe Sekunde), die Prüfung danach einmal je neuem Stand.
+### 2. Prüfrunde (gegen 7bb702189)
+Rot-Lauf: `reports/T-0788/gegenpruefung/rot-runde2.txt` (Core 6 rot, App 3 von 3 rot – in Claudes Ordner standen „Erika“ und „Karl“, die alte Kopie blieb liegen).
+
+| Nr. | Fund | Behebung | Test |
+|---|---|---|---|
+| HOCH | .tdoc-Rückweg verriet ein geschütztes Dokument (Abgleich mit dem aktiven Dokument, Zurückschreiben des vollen Stands) | (a) Trendo merkt sich je selbst angelegter Arbeitsdatei Programm und Dokument-Id (`_claudeWorkFiles`); der Abgleich nimmt nur dieses Dokument, nie das aktive – gehört die Datei zu keinem offenen Dokument, wird nichts übernommen. (b) Gilt für dieses Dokument oder das Programm „nur lokale KI“ (neu `ProgramSpec.KiLocalOnlyDoc`, Stammbaum: `FamProtected`), wird nie zurückgeschrieben: die von Trendo angelegte Datei wird gelöscht, ehrliche Meldung an Person und Claude, Protokoll `claude.tdoc.zurueckgewiesen`. (c) Sonst wird beim Zurückschreiben nur die `KiView`-Sicht geschrieben. Eine nur zum Lesen geöffnete eigene Datei der Person wird nie als Arbeitsdatei geführt (und damit nie gelöscht) | `T0788Gegenpruefung3_Ui.Tab_switch_during_run`, `Protection_on_during_run` (Inhalt aller .tdoc in Claudes Ordner ohne „Erika“, „Karl“, „15 AUG 1952“); T0782*, SammelT0768KinderschutzUi grün |
+| MITTEL | transitive Verweise | Beim Ausblenden wird auch die Erreichbarkeit von den ausgeblendeten Verweisen aus über Datensätze und Quellen verfolgt (Lebender → NOTE → SOUR → REPO) | `T0788Gegenpruefung3Tests.Private_transitive` („Meldeakte Erika“) |
+| NIEDRIG | alte .tdoc beim Einschalten | `FamSetOption("hideLiving", true)` löscht bei geschütztem Dokument die von Trendo angelegten Arbeitsdateien genau dieses Dokuments (eigene Liste: Pfad und Herkunft), fremde Dateien im Ordner bleiben; Meldung „… Arbeitskopie(n) … gelöscht“, Protokoll `claude.tdoc.geloescht` | `Protection_on_deletes_old_copy`; `T0788ClaudeSchutz_Ui` angepasst (Kopie jetzt gelöscht statt liegen gelassen) |
+| NIEDRIG | „29.02.45 v. Chr.“ | v. Chr. vor der Tagesprüfung (julianisch) | `German_bc_ok`, `German_bc_bad` |
+| NIEDRIG | KI und Generationen | `KiProblem` sperrt `gens` | `Ki_gens_locked` |
+| NIEDRIG | doppelte Kennung | FAMC/FAMS des umbenannten zweiten Datensatzes werden gelöst und gemeldet | `Duplicate_not_linked` |
+| NIEDRIG | `Fresh()` | auch Kennungen, die nur als (verwaister) Verweis vorkommen, gelten als vergeben | `Duplicate_not_linked` (@I3@ verwaist) |
+| NIEDRIG | `FamStamp` | Tag (`FamToday`) im Stempel – „lebt“ wird am Folgetag neu bewertet | – (Stempel-Inhalt; mit `Check_cached` mitgelaufen) |
+| NIEDRIG | Einsender (SUBM) | Bei „Lebende ausblenden“ (Export, Bericht, KI-Sicht) fallen Adresse, Telefon, E-Mail, Fax, Webseite und eigene Tags des Einsenders weg; der Name bleibt. Grund: Der Einsender ist meist eine lebende Person (oft die Person selbst); der Name zeigt nur die Herkunft der Datei | `Subm_contact_removed` |
+
+Tests dieser Runde: Core T0788*, T0782*, PromptAction*, WissenStudios: **232 gesamt, 231 bestanden, 1 übersprungen** (Beleg-Schalter T-0782) – `reports/T-0788/gegenpruefung/core-runde2.txt`. App (T0788Stammbaum_Ui, T0788Gegenpruefung_Ui, T0788ClaudeSchutz_Ui, T0788Gegenpruefung3_Ui, T0782Gegenpruefung_Ui/2/3, T0782Lernen_Ui, AssistChain_Ui, Assist_Ui, ClaudeBridge_Ui, SammelT0768KinderschutzUi, UebersichtEinfach_Ui, PromptBarTests): **Total 70, Failed 0, Errors 0, Skipped 3** (Echtläufe ohne Schalter) – `reports/T-0788/gegenpruefung/app-runde2.txt`.
+
+**Offen:** Mutierende Befehle lesen den Stammbaum weiter einmal je Klick neu aus dem Dokument (bei 50 000 Personen etwa eine halbe Sekunde), die Prüfung danach einmal je neuem Stand. Arbeitskopien aus früheren App-Sitzungen kennt Trendo nicht mehr (die Liste lebt im Speicher) – sie werden beim Einschalten nicht gelöscht; neue entstehen bei Schutz nicht.
 
 ## Was war → was ist
 | Punkt | Vorher (Beleg) | Jetzt | Nachweis |

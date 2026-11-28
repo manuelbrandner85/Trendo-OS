@@ -74,11 +74,11 @@ public class T0788ClaudeSchutz_Ui
             Assert.Equal(1, claude.Calls);
             Assert.Contains("Erika", File.ReadAllText(Tdoc(claude.Folders[0])!));
             // 3) Bereich ist offen, Schutz wieder an → der nächste Chat geht nicht an Claude, keine neue .tdoc
-            var stamp = File.GetLastWriteTimeUtc(Tdoc(claude.Folders[0])!);
             w.FamSetOption(w.ProgramActive(Fam)!, "hideLiving", "true"); w.Show(Fam); Settle();
+            Assert.Null(Tdoc(claude.Folders[0])); // T-0788 (2. Prüfrunde): Schutz an löscht die frühere Arbeitskopie
             await Run(w.ClaudeChatSend("Und die Cousins"));
             Assert.Equal(1, claude.Calls);
-            Assert.Equal(stamp, File.GetLastWriteTimeUtc(Tdoc(claude.Folders[0])!));
+            Assert.Null(Tdoc(claude.Folders[0])); // und es entsteht keine neue
             Assert.Contains(w.Core.Audit.ReadAll(), a => a.Action == "claude.chat.lokal");
             Assert.StartsWith(Why, w.LocalOnlyRefusal(Fam));
         }
@@ -107,7 +107,9 @@ public class T0788ClaudeSchutz_Ui
             for (var i = 0; i < 30; i++) Settle();
             Assert.Equal(1, claude.Calls);
             Assert.Equal("15 AUG 1952", MainWindow.FamData(w.ProgramActive(Fam)!).P("I5")!.Birth!.Date);
-            Assert.Contains(w.Core.Audit.ReadAll(), a => a.Action == "claude.tdoc.zurueckgewiesen" && a.Detail.Contains(Why));
+            // T-0788 (2. Prüfrunde): das Einschalten des Schutzes löscht Claudes Arbeitskopie sofort – nichts wird übernommen, nichts zurückgeschrieben
+            Assert.Null(Tdoc(claude.Folders[0]));
+            Assert.Contains(w.Core.Audit.ReadAll(), a => a.Action == "claude.tdoc.geloescht");
         }
         finally { FakeClaude.Off(); w.Close(); }
     }

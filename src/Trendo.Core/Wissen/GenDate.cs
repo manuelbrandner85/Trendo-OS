@@ -153,24 +153,25 @@ public sealed partial record GenDate(string Raw, GenDateKind Kind, DayKey? A, Da
         s = s.Trim(); var bc = false;
         if (DeBc().Match(s) is { Success: true } b) { bc = true; s = s[..b.Index].Trim(); }
         DayKey? k = null;
-        if (DeDmy().Match(s) is { Success: true } m1) k = Make(m1.Groups[1].Value, m1.Groups[2].Value, m1.Groups[3].Value);
-        else if (DeMy().Match(s) is { Success: true } m2 && int.Parse(m2.Groups[1].Value, CultureInfo.InvariantCulture) is >= 1 and <= 12 && m2.Groups[2].Value.Length >= 3) k = Make("0", m2.Groups[1].Value, m2.Groups[2].Value);
+        if (DeDmy().Match(s) is { Success: true } m1) k = Make(m1.Groups[1].Value, m1.Groups[2].Value, m1.Groups[3].Value, bc);
+        else if (DeMy().Match(s) is { Success: true } m2 && int.Parse(m2.Groups[1].Value, CultureInfo.InvariantCulture) is >= 1 and <= 12 && m2.Groups[2].Value.Length >= 3) k = Make("0", m2.Groups[1].Value, m2.Groups[2].Value, bc);
         else if (DeNamed().Match(s) is { Success: true } m3)
         {
             var name = m3.Groups[2].Value.ToLowerInvariant().Replace("mrz", "mär").Replace("maerz", "mär");
             var mon = Array.FindIndex(DeMonths, x => name.StartsWith(x, StringComparison.Ordinal)) + 1;
             if (mon == 0) mon = Array.IndexOf(Ged, name.ToUpperInvariant()[..Math.Min(3, name.Length)]) + 1; // „12 MAR 1850“ klein geschrieben
-            if (mon > 0) k = Make(m3.Groups[1].Success ? m3.Groups[1].Value : "0", mon.ToString(CultureInfo.InvariantCulture), m3.Groups[3].Value);
+            if (mon > 0) k = Make(m3.Groups[1].Success ? m3.Groups[1].Value : "0", mon.ToString(CultureInfo.InvariantCulture), m3.Groups[3].Value, bc);
         }
-        else if (DeY().Match(s) is { Success: true } m4) k = Make("0", "0", m4.Groups[1].Value);
-        if (k is { } kk && bc) k = kk.Day > 0 && kk.Day > DaysIn(-kk.Year, kk.Month, true) ? null : kk with { Year = -kk.Year }; // v. Chr.: julianisch prüfen (G7)
+        else if (DeY().Match(s) is { Success: true } m4) k = Make("0", "0", m4.Groups[1].Value, bc);
         return k;
     }
 
-    static DayKey? Make(string d, string m, string y)
+    /// <summary>T-0788 (2. Prüfrunde): v. Chr. wird VOR der Tagesprüfung angewandt – „29.02.45 v. Chr.“ ist (julianisch) gültig.</summary>
+    static DayKey? Make(string d, string m, string y, bool bc = false)
     {
         var day = int.Parse(d, CultureInfo.InvariantCulture); var mon = int.Parse(m, CultureInfo.InvariantCulture); var year = int.Parse(y, CultureInfo.InvariantCulture);
         if (year == 0 || mon > 12 || (day > 0 && mon == 0)) return null;
+        if (bc) year = -year;
         if (day > 0 && day > DaysIn(year, mon, year < 0)) return null;
         return new DayKey(year, mon, day);
     }

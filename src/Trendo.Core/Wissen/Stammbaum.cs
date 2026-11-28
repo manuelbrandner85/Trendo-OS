@@ -200,9 +200,12 @@ public static partial class FamilyKit
 
     /// <summary>T-0788 (Gegenprüfung G6/G9): überlange Kennungen (über 20 Zeichen) bekommen eine kurze neue – alle Verweise darauf werden mitgeführt;
     /// doppelte Kennungen werden gemeldet und der zweite Datensatz eindeutig umbenannt (Verweise zeigen weiter auf den ersten, das ist in der Datei nicht eindeutig).</summary>
-    static void FixXrefs(List<GedNode> records, List<string> problems)
+    static HashSet<string> FixXrefs(List<GedNode> records, List<string> problems)
     {
         var used = new HashSet<string>(records.Where(r => r.Xref is not null).Select(r => Strip(r.Xref!)), StringComparer.Ordinal);
+        // T-0788 (2. Prüfrunde): auch Kennungen, die nur als (verwaister) Verweis vorkommen, sind vergeben – sonst bekäme ein umbenannter Datensatz fremde Verweise
+        used.UnionWith(Refs(records));
+        var dupRenamed = new HashSet<string>(StringComparer.Ordinal);
         string Fresh(string tag)
         {
             var prefix = tag switch { "INDI" => "I", "FAM" => "F", "SOUR" => "S", "NOTE" => "N", "OBJE" => "M", "REPO" => "R", "SUBM" => "U", _ => "X" };
@@ -232,15 +235,16 @@ public static partial class FamilyKit
         {
             var id = Strip(r.Xref!);
             if (seen.Add(id)) continue;
-            var neu = Fresh(r.Tag); r.Xref = Ptr(neu); seen.Add(neu);
+            var neu = Fresh(r.Tag); r.Xref = Ptr(neu); seen.Add(neu); dupRenamed.Add(neu);
             problems.Insert(0, $"Kennung @{id}@ doppelt – der zweite Datensatz ({r.Tag}) heißt jetzt @{neu}@; Verweise auf @{id}@ gelten dem ersten");
         }
+        return dupRenamed;
     }
 
     public static FamilyTree FromRecords(List<GedNode> records, List<string>? problems = null)
     {
         var t = new FamilyTree(); problems ??= [];
-        FixXrefs(records, problems);
+        var dupRenamed = FixXrefs(records, problems);
         var links = new List<FamLinkExtra>();
         foreach (var r in records)
         {
@@ -262,6 +266,8 @@ public static partial class FamilyKit
         using var ix = t.Indexed();
         foreach (var l in links)
         {
+            // T-0788 (2. Prüfrunde): ein umbenannter doppelter Datensatz wird nicht still über FAMC/FAMS in eine Familie gehängt – die Familie meint den ersten
+            if (dupRenamed.Contains(l.Person)) { problems.Add($"{l.Person}: Verknüpfung {l.Kind} zu {l.Fam} gelöst (doppelte Kennung – gemeint war vermutlich der erste Datensatz)"); t.P(l.Person)?.Links.RemoveAll(x => x.Fam == l.Fam); continue; }
             var f = t.F(l.Fam);
             if (f is null) { problems.Add($"{l.Person}: Verweis auf fehlende Familie {l.Fam}"); continue; }
             if (l.Kind == "FAMC" && !f.Children.Contains(l.Person)) { f.Children.Add(l.Person); problems.Add($"{l.Person}: als Kind in {l.Fam} ergänzt (stand nur bei der Person)"); }
@@ -560,19 +566,26 @@ public static partial class FamilyKit
             foreach (var c in f.ChildExtra.Where(c => living.Contains(c.Person))) hiddenRefs.UnionWith(Refs(c.Nodes));
             f.ChildExtra.RemoveAll(c => living.Contains(c.Person));
         }
+        // T-0788 (2. Prüfrunde): Einsender (SUBM) ist oft eine lebende Person – Adresse, Telefon, E-Mail und Webseite fallen weg, der Name bleibt (Herkunft der Datei)
+        foreach (var r in t.Records.Where(r => r.Tag == "SUBM")) r.Kids.RemoveAll(k => k.Tag is "ADDR" or "ADR1" or "ADR2" or "ADR3" or "CITY" or "POST" or "STAE" or "CTRY" or "PHON" or "EMAIL" or "FAX" or "WWW" || k.Tag.StartsWith('_'));
         if (hiddenRefs.Count > 0)
         {
             // was nach dem Kürzen noch erreichbar ist (von Personen, Familien, Kopf und von dort aus über Datensätze und Quellen)
             var kept = new HashSet<string>(t.Persons.SelectMany(Refs).Concat(t.Families.SelectMany(Refs)).Concat(Refs(t.Head)), StringComparer.Ordinal);
             var recs = t.Records.Where(r => r.Xref is not null).GroupBy(r => Strip(r.Xref!)).ToDictionary(g => g.Key, g => g.ToList(), StringComparer.Ordinal);
             var srcs = t.Sources.GroupBy(x => x.Id).ToDictionary(g => g.Key, g => g.ToList(), StringComparer.Ordinal);
-            var todo = new Queue<string>(kept);
-            while (todo.Count > 0)
+            void Close(HashSet<string> set)
             {
-                var id = todo.Dequeue();
-                var more = (recs.TryGetValue(id, out var rl) ? rl.SelectMany(r => Refs(r.Kids)) : []).Concat(srcs.TryGetValue(id, out var sl) ? sl.SelectMany(x => Refs(x.Extra)) : []);
-                foreach (var m in more) if (kept.Add(m)) todo.Enqueue(m);
+                var todo = new Queue<string>(set);
+                while (todo.Count > 0)
+                {
+                    var id = todo.Dequeue();
+                    var more = (recs.TryGetValue(id, out var rl) ? rl.SelectMany(r => Refs(r.Kids)) : []).Concat(srcs.TryGetValue(id, out var sl) ? sl.SelectMany(x => Refs(x.Extra)) : []);
+                    foreach (var m in more) if (set.Add(m)) todo.Enqueue(m);
+                }
             }
+            Close(kept);
+            Close(hiddenRefs); // T-0788 (2. Prüfrunde): auch was nur über ausgeblendete Datensätze erreichbar war (Lebender → NOTE → SOUR)
             t.Records.RemoveAll(r => r.Xref is not null && hiddenRefs.Contains(Strip(r.Xref)) && !kept.Contains(Strip(r.Xref)));
             t.Sources.RemoveAll(x => hiddenRefs.Contains(x.Id) && !kept.Contains(x.Id));
         }

@@ -459,7 +459,7 @@ public static partial class FamilyKit
             return "Die KI hat eine Kennung doppelt vergeben – nicht übernommen.";
         if (GedNode.ListJson(a.Records).ToJsonString() != GedNode.ListJson(b.Records).ToJsonString() || GedNode.ListJson(a.Head).ToJsonString() != GedNode.ListJson(b.Head).ToJsonString())
             return "Die KI darf weitere Datensätze und den Dateikopf nicht ändern – nicht übernommen.";
-        if (a.Title != b.Title || a.Root != b.Root) return "Die KI darf Titel und Mitte des Stammbaums nicht ändern – nicht übernommen.";
+        if (a.Title != b.Title || a.Root != b.Root || a.Generations != b.Generations) return "Die KI darf Titel, Mitte und Generationen des Stammbaums nicht ändern – nicht übernommen.";
         if (b.Persons.Any(p => a.P(p.Id) is null && p.Given.StartsWith("Lebende Person", StringComparison.OrdinalIgnoreCase)))
             return "Die KI hat eine ausgeblendete „Lebende Person“ als neue Person angelegt – nicht übernommen.";
         if (CycleMembers(b).Except(CycleMembers(a)).FirstOrDefault() is { } loop)

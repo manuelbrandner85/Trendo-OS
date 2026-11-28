@@ -431,7 +431,7 @@ public partial class MainWindow
         var shell = Programs.ContainsKey(dock.Page) && ProgramActive(dock.Page) is not null;
         string? workFile = null;
         if (shell && !AssistLocalOnly(dock.Page) && ProgramActive(dock.Page) is { } doc) // T-0788: nie eine .tdoc eines Programms nur mit lokaler KI (z. B. Stammbaum mit geschützten Lebenden) in Claudes Ordner
-            try { workFile = Regex.Replace(doc.Title, @"[\\/:*?""<>|]", "-") + ProgramDocument.Extension; var wf = Path.Combine(folder, workFile); if (!(doc.ReadOnly && doc.Path is { } own && ProgramDocument.SameFile(own, wf))) AtomicFile.WriteAllText(wf, doc.Serialize()); ClaudeDocSeen(doc, wf); } // T-0680: atomar; ein nur zum Lesen offenes Dokument (anderes Fenster) wird nicht überschrieben
+            try { workFile = Regex.Replace(doc.Title, @"[\\/:*?""<>|]", "-") + ProgramDocument.Extension; var wf = Path.Combine(folder, workFile); if (!(doc.ReadOnly && doc.Path is { } own && ProgramDocument.SameFile(own, wf))) { AtomicFile.WriteAllText(wf, doc.Serialize()); _claudeWorkFiles[Path.GetFullPath(wf)] = (dock.Page, doc.Id); } ClaudeDocSeen(doc, wf); } // T-0680: atomar; ein nur zum Lesen offenes Dokument (anderes Fenster) wird nicht überschrieben
             catch (Exception e) when (e is IOException or UnauthorizedAccessException) { workFile = null; }
         // Brief-Studio: der offene Brief ist das Dokument (Text UND Design) – Claude arbeitet darin, Trendo übernimmt jede Änderung live ins Brief-Programm
         var letterDoc = !shell && dock.Studio == LetterStudio;
@@ -829,6 +829,31 @@ public partial class MainWindow
     /// ist das keine „Änderung von außen“ – sonst würde das nächste Speichern nachfragen.</summary>
     static void ClaudeDocSeen(ProgramDocument doc, string file) { if (doc.Path is { } p && ProgramDocument.SameFile(p, file)) doc.AcceptDisk(); }
 
+    /// <summary>T-0788 (2. Prüfrunde): von Trendo angelegte Arbeitsdateien in Claudes Ordnern → Programm und Dokument, aus dem sie stammen.
+    /// Der Rückweg gleicht nur mit diesem Dokument ab (nie mit dem gerade aktiven), und beim Einschalten eines Schutzes lassen sich genau diese Dateien löschen.</summary>
+    readonly Dictionary<string, (string Page, string DocId)> _claudeWorkFiles = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>T-0788 (2. Prüfrunde): Arbeitsdateien, die Trendo für dieses Dokument in Claudes Ordner gelegt hat, löschen (nur diese – Pfad und Herkunft aus der eigenen Liste).
+    /// Rückgabe: Zahl gelöschter Dateien.</summary>
+    public int ClaudeDropWorkFiles(string page, string docId)
+    {
+        var n = 0;
+        foreach (var (file, bind) in _claudeWorkFiles.ToList())
+        {
+            if (bind.Page != page || bind.DocId != docId) continue;
+            _claudeWorkFiles.Remove(file);
+            try { if (File.Exists(file) && Path.GetExtension(file).Equals(ProgramDocument.Extension, StringComparison.OrdinalIgnoreCase)) { File.Delete(file); n++; } }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        }
+        if (n > 0) _core.Audit.Append(Principal.LocalOwner.Name, "claude.tdoc.geloescht", $"{page} {n}");
+        return n;
+    }
+
+    /// <summary>T-0788 (2. Prüfrunde): Gilt für dieses Dokument „nur lokale KI“ (Programm allgemein oder genau dieses Dokument, z. B. Stammbaum mit geschützten Lebenden)? Dann der Satz, sonst null.</summary>
+    string? DocLocalOnly(string page, ProgramDocument doc) =>
+        !Programs.TryGetValue(page, out var spec) ? null
+        : AssistLocalOnly(page) || spec.KiLocalOnlyDoc?.Invoke(doc) == true ? spec.KiLocalOnlyWhy?.Invoke() ?? LocalOnlyRefusal(page) ?? "Dieses Dokument arbeitet nur mit der KI auf diesem PC." : null;
+
     /// <summary>T-0780 (4. Gegenprüfung): abgelehnte .tdoc-Änderungen je Programm – gehen nach der Antwort als Prüfmeldung an Claude.</summary>
     readonly Dictionary<string, List<string>> _tdocRefused = [];
 
@@ -841,7 +866,9 @@ public partial class MainWindow
         var restored = true;
         try
         {
-            var root = System.Text.Json.Nodes.JsonNode.Parse(doc.Serialize())!.AsObject(); root["data"] = before; // Endstand, auch wenn gerade live eingespielt wird
+            // T-0788 (2. Prüfrunde): zurück in Claudes Datei nur die Sicht, die Claude sehen darf (KiView), nie mehr
+            var view = Programs.TryGetValue(dock.Page, out var vs) && vs.KiView is { } kv ? kv(before) : before;
+            var root = System.Text.Json.Nodes.JsonNode.Parse(doc.Serialize())!.AsObject(); root["data"] = view; // Endstand, auch wenn gerade live eingespielt wird
             AtomicFile.WriteAllText(file, root.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
             ClaudeDocSeen(doc, file);
         }
@@ -858,7 +885,23 @@ public partial class MainWindow
 
     void ClaudeSyncProgram(ClaudeDock dock, string file)
     {
-        if (ProgramActive(dock.Page) is not { } doc) return;
+        // T-0788 (2. Prüfrunde): an das Dokument gebunden, aus dem die Datei stammt – nie an das gerade aktive (Reiterwechsel während des Laufs)
+        var full = Path.GetFullPath(file);
+        if (!_claudeWorkFiles.TryGetValue(full, out var bind) || ProgramDocs(bind.Page).FirstOrDefault(x => x.Id == bind.DocId) is not { } doc)
+        { _claudeMsg = $"Claudes Änderung an „{Path.GetFileName(file)}“ gehört zu keinem offenen Dokument mehr – nichts übernommen."; return; }
+        // Programm oder Dokument nur mit lokaler KI (z. B. Stammbaum mit geschützten Lebenden): nichts übernehmen und NIE Daten zurückschreiben – die von Trendo angelegte Datei wird gelöscht
+        if (DocLocalOnly(bind.Page, doc) is { } local)
+        {
+            _claudeWorkFiles.Remove(full);
+            try { File.Delete(file); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+            var text = $"Trendo hat Claudes Änderung an „{Path.GetFileName(file)}“ nicht übernommen und die Arbeitsdatei aus Claudes Ordner gelöscht: {local}";
+            _claudeMsg = text;
+            if (!_tdocRefused.TryGetValue(dock.Page, out var list)) _tdocRefused[dock.Page] = list = [];
+            if (!list.Contains(text)) list.Add(text);
+            _core.Audit.Append(Principal.LocalOwner.Name, "claude.tdoc.zurueckgewiesen", $"{bind.Page} {local}");
+            if (!dock.Max) Show(CurrentView);
+            return;
+        }
         try
         {
             var fresh = ProgramDocument.Load(file);
