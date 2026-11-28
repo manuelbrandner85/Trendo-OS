@@ -53,7 +53,7 @@ public static partial class ZugferdPdf
         using (var probe = PdfReader.Open(new MemoryStream(second), PdfDocumentOpenMode.Import))
         {
             producer = probe.Info.Producer;
-            creator = probe.Info.Creator ?? ""; // T-0784: xmp:CreatorTool nur, wenn das PDF selbst einen Ersteller nennt (gleicher Wert)
+            creator = probe.Info.Creator ?? ""; // T-0784: xmp:CreatorTool immer mit demselben Wert wie /Creator der Info – auch leer (PDF/A: Info und XMP gleich)
             metaNo = probe.Internals.Catalog.Elements.GetReference("/Metadata")?.ObjectNumber ?? throw new InvalidDataException("Das PDF hat keine Metadaten.");
         }
         return AppendObject(second, metaNo, "<</Type/Metadata/Subtype/XML/Length {0}>>", Encoding.UTF8.GetBytes(Xmp(title, author, created, producer, creator)));
@@ -94,7 +94,7 @@ public static partial class ZugferdPdf
             "<rdf:Description rdf:about=\"\" xmlns:pdfaid=\"http://www.aiim.org/pdfa/ns/id/\"><pdfaid:part>3</pdfaid:part><pdfaid:conformance>B</pdfaid:conformance></rdf:Description>\n" +
             $"<rdf:Description rdf:about=\"\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\"><dc:title><rdf:Alt><rdf:li xml:lang=\"x-default\">{E(title)}</rdf:li></rdf:Alt></dc:title><dc:creator><rdf:Seq><rdf:li>{E(author)}</rdf:li></rdf:Seq></dc:creator><dc:description><rdf:Alt><rdf:li xml:lang=\"x-default\">E-Rechnung (ZUGFeRD / Factur-X, Profil EN 16931)</rdf:li></rdf:Alt></dc:description></rdf:Description>\n" +
             $"<rdf:Description rdf:about=\"\" xmlns:pdf=\"http://ns.adobe.com/pdf/1.3/\"><pdf:Producer>{E(producer)}</pdf:Producer></rdf:Description>\n" +
-            $"<rdf:Description rdf:about=\"\" xmlns:xmp=\"http://ns.adobe.com/xap/1.0/\">{(creator.Length > 0 ? $"<xmp:CreatorTool>{E(creator)}</xmp:CreatorTool>" : "")}<xmp:CreateDate>{created}</xmp:CreateDate><xmp:ModifyDate>{created}</xmp:ModifyDate></rdf:Description>\n" +
+            $"<rdf:Description rdf:about=\"\" xmlns:xmp=\"http://ns.adobe.com/xap/1.0/\"><xmp:CreatorTool>{E(creator)}</xmp:CreatorTool><xmp:CreateDate>{created}</xmp:CreateDate><xmp:ModifyDate>{created}</xmp:ModifyDate></rdf:Description>\n" +
             $"<rdf:Description rdf:about=\"\" xmlns:fx=\"{fx}\"><fx:DocumentType>INVOICE</fx:DocumentType><fx:DocumentFileName>{XmlName}</fx:DocumentFileName><fx:Version>1.0</fx:Version><fx:ConformanceLevel>EN 16931</fx:ConformanceLevel></rdf:Description>\n" +
             "<rdf:Description rdf:about=\"\" xmlns:pdfaExtension=\"http://www.aiim.org/pdfa/ns/extension/\" xmlns:pdfaSchema=\"http://www.aiim.org/pdfa/ns/schema#\" xmlns:pdfaProperty=\"http://www.aiim.org/pdfa/ns/property#\">" +
             $"<pdfaExtension:schemas><rdf:Bag><rdf:li rdf:parseType=\"Resource\"><pdfaSchema:schema>Factur-X PDFA Extension Schema</pdfaSchema:schema><pdfaSchema:namespaceURI>{fx}</pdfaSchema:namespaceURI><pdfaSchema:prefix>fx</pdfaSchema:prefix><pdfaSchema:property><rdf:Seq>" +
