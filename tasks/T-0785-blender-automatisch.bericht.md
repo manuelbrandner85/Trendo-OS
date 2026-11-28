@@ -153,6 +153,30 @@
 - Zwei echte Blender-Brücken auf einem Port sind nicht echt nachgestellt, nur mit Ersatz.
 - Eine volle Warteschlange beim **Verbinden** (Abweisung sofort) ist nur über die Toleranz „nach ‚arbeitet‘ einmal abwarten“ abgedeckt. Fremde Programme, die die Warteschlange füllen, kann Trendo nicht verhindern.
 
+## Korrekturrunde 3 (dritte Prüfrunde: Abriss unter Quiet, „Neu verbinden“, N9)
+
+- **Abriss unter Quiet wird sichtbar:**
+  - Auch während Claude arbeitet (Quiet) oder ein Auftrag läuft, schickt Trendo alle 30 s (`QuietProbeInterval`) genau **eine** Prüfverbindung (`ProbeAsync`). Sie bleibt offen, bis Blender antwortet; es gibt keinen Stau.
+  - Weist Blender die Verbindung ab, obwohl der Prozess lebt (Brücke gestoppt): erst „verbindet neu“, dann „Getrennt – die MCP-Brücke in Blender ist gestoppt …“.
+  - Wurde vorher „arbeitet“ gemeldet, gilt die erste Abweisung als volle Warteschlange. Dann prüft Trendo im nächsten Herzschlag gleich noch einmal.
+- **„Neu verbinden“ bei laufendem eigenen Blender ohne Brücke:** Trendo legt eine Neustart-Datei an. Das Startskript in Blender schaut alle 2 s danach und startet die Brücke neu. Wartezeit höchstens 10 s statt 180 s; klappt es nicht, kommt sofort ein Hinweis, wie die Person die Brücke in Blender startet.
+- **N9:** Ein Blender ohne Fenster zählt in den ersten 15 s nach seinem Start doch als offen (`ProcessBlenderHost.CountsAsOpen`), denn sein Fenster erscheint vielleicht noch. Danach zählt ein Hintergrund-Blender nicht. Nebenwirkung: Trendos eigene kurze Hintergrundläufe zählen in ihren ersten 15 s als „offen“.
+- **Tests:**
+  - Der N1-Test prüft wieder „verbindet neu“ und dann „getrennt“ nach einem Abriss unter Quiet, mit längerer Wartezeit, dazu höchstens eine Prüfverbindung je Quiet-Abstand. Auf dem Stand von fix2 ist er rot, dort blieb es bei „Verbunden“.
+  - Neu: `Reconnect_restarts_bridge` und `N9_young_without_window`. `M5_quiet_no_tcp` ist auf „höchstens eine Verbindung“ umgestellt. `M5_blocked_bridge` bleibt grün.
+- **ECHT** (eigener Port, eigenes Temp-Profil, kein fremdes Blender), zusätzlich:
+  - **Blockade 40 s:** nur „Verbunden → Arbeitet“, nie „getrennt“; der MCP-Aufruf mitten in der Blockade ging durch.
+  - **Brücke unter Quiet gestoppt:** nach 33 s „verbindet neu“ (unter 60 s), Blender lief weiter. „Neu verbinden“ startete die Brücke im selben Blender in 5 s neu: verbunden, ohne Neustart von Blender.
+  - **Hintergrund-Blender** nach 17 s: zählt nicht als offen.
+  - Absturz → eigene Datei und sauberes Schließen → kein Neustart wie zuvor.
+  - Beendet wurden nur eigene PIDs.
+
+**Ergebnisse Runde 3** (volle Klassenläufe):
+- Build: 0 Fehler.
+- **App**, 48 Klassen (alle Claude*, Studio3D*, W4Studio3D, Kreatur, StudioMcp*, BlenderLink_Ui und alle Klassen, die die geänderten Wege berühren): Total 278, Errors 0, **Failed 0**, Skipped 8 (ECHT-Läufe anderer Pakete), Exitcode 0.
+- **Core** (BlenderLink*, StudioMcp*, NoFixedUser, Claude*, Studio3D*, Kreatur*, KittlConnect, GameTools, BlenderScript): „Bestanden! Fehler: 0, erfolgreich: 148, übersprungen: 2“. Übersprungen sind der ECHT-Test ohne Umgebungsvariable (separat bestanden) und T-0688 ECHT.
+- **Core ECHT:** „Bestanden! erfolgreich: 1“ (2 min 36 s); Rohlog SHA-256 `89254a5a…`.
+
 ## Abnahmekriterien
 1. Echtes Ergebnis aus leerer Vorlage: **TEILWEISE**. Echt über die Verbindung (leere `szene.blend`, Würfel angelegt); der Weg über den Klick in der Oberfläche ist nur mit Ersatz-Blender geprüft.
 2. Fremdprogramm/Export: **TEILWEISE**. Die echte .blend öffnet sich im echten Blender, Beleg mit SHA-256. Ein Import-Export-Kreislauf gehört nicht zu diesem Paket.

@@ -1,45 +1,55 @@
-2026-11-28 05:26:08.893 Blender: C:\Program Files\Blender Foundation\Blender 5.2\blender.exe (5.2)
-2026-11-28 05:26:08.893 vorher offene Blender-Prozesse (fremd, werden nie beendet): 0
-2026-11-28 05:26:08.893 eigene Instanz: Port 60616, Profil C:\Users\<user>\AppData\Local\Temp\trendo-testlauf-18492-6b0a57dd\trendo-T-0785-echt-539ea872\profil, Projekt C:\Users\<user>\AppData\Local\Temp\trendo-testlauf-18492-6b0a57dd\trendo-T-0785-echt-539ea872\projekt
-2026-11-28 05:26:11.958 [status] Startet: Blender startet sichtbar mit dem Projekt …
-2026-11-28 05:26:11.970 [protokoll] start: Blender gestartet (PID 3056, Port 60616).
-2026-11-28 05:26:16.167 [protokoll] verbunden: Blender von Trendo gestartet (PID 3056, Port 60616).
-2026-11-28 05:26:16.167 [status] Verbunden: Verbunden mit Blender (von Trendo gestartet, Port 60616) – offen: szene.blend.
-2026-11-28 05:26:16.172 sichtbar: PID 3056 Fenster=ja Titel="szene [C:\Users\<user>\AppData\Local\Temp\trendo-testlauf-18492-6b0a57dd\trendo-T-0785-echt-539ea872\projekt\szene.blend] - Blender 5.2.3 LTS"
-2026-11-28 05:26:16.174 szene.blend (ohne Würfel) SHA-256 632ec97610e949f1ebfafbd6f8ed35a30908ad95b54020c84832ad426228b081
-2026-11-28 05:26:16.273 Würfel (nicht gespeichert): {"status":"ok","result":{"objekte":["Camera","Cube","Light","TrendoWuerfel"],"datei":"C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-testlauf-18492-6b0a57dd\\trendo-T-0785-echt-539ea872\\projekt\\szene.blend"}}
-2026-11-28 05:26:17.874 MCP-Server (stdio) Werkzeuge: 26 – execute_blender_code, execute_blender_code_for_cli, get_blendfile_summary_datablocks, get_blendfile_summary_datablocks_for_cli, get_blendfile_summary_missing_files, get_blendfile_summary_missing_files_for_cli, get_blendfile_summary_of_linked_libraries, get_blendfile_summary_of_linked_libraries_for_cli, get_blendfile_summary_path_info, get_blendfile_summary_path_info_for_cli, get_blendfile_summary_usage_guess, get_blendfile_summary_usage_guess_for_cli, get_object_detail_summary, get_objects_summary, get_python_api_docs, get_screenshot_of_area_as_image, get_screenshot_of_window_as_image, get_screenshot_of_window_as_json, jump_to_tab_by_name, jump_to_tab_by_space_type, jump_to_view3d_object_by_name, jump_to_view3d_object_data_by_name, render_thumbnail_to_path, render_viewport_to_path, search_api_docs, search_manual_docs
-2026-11-28 05:26:18.117 MCP-Server get_objects_summary: {"content":[{"type":"text","text":"{\n  \u0022status\u0022: \u0022ok\u0022,\n  \u0022result\u0022: {\n    \u0022status\u0022: \u0022ok\u0022,\n    \u0022scene_name\u0022: \u0022Scene\u0022,\n    \u0022active_workspace\u0022: \u0022Layout\u0022,\n    \u0022active_object\u0022: \u0022Cube\u0022,\n    \u0022object_mode\u0022: \u0022OBJECT\u0022,\n    \u0022camera_object\u0022: \u0022Camera\u0022,\n    \u0022collections\u0022: [\n      {\n        \u0022name\u0022: \u0022Scene Collection\u0022,\n        \u0022exclude\u0022: false,\n        \u0022hide_viewport\u0022: false,\n        \u0022objects\u0 …
-2026-11-28 05:26:45.817 Sicherung vorhanden: True, Begleitdatei: {"quelle": "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-testlauf-18492-6b0a57dd\\trendo-T-0785-echt-539ea872\\projekt\\szene.blend", "start": "2026-11-28T05:26:11.9425789+01:00", "pid": 3056, "zeit": 1795840005.3225985}
-2026-11-28 05:26:46.217 Kopie gespeichert: {"status":"ok","result":{"datei":"C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-testlauf-18492-6b0a57dd\\trendo-T-0785-echt-539ea872\\projekt\\szene.blend","geaendert":false},"stdout":"Info: Saved copy as \u0022kopie.blend\u0022\n"}
-2026-11-28 05:26:46.217 Sicherung nach Kopie-Speichern noch da: True
-2026-11-28 05:26:51.362 [status] Arbeitet: Blender rechnet gerade – die Verbindung auf Port 60616 steht.
-2026-11-28 05:26:58.220 während der Blockade (12 s): Status Arbeitet, offene Prüfverbindungen höchstens 1
-2026-11-28 05:26:59.222 MCP-Server (stdio) Werkzeuge: 26 – execute_blender_code, execute_blender_code_for_cli, get_blendfile_summary_datablocks, get_blendfile_summary_datablocks_for_cli, get_blendfile_summary_missing_files, get_blendfile_summary_missing_files_for_cli, get_blendfile_summary_of_linked_libraries, get_blendfile_summary_of_linked_libraries_for_cli, get_blendfile_summary_path_info, get_blendfile_summary_path_info_for_cli, get_blendfile_summary_usage_guess, get_blendfile_summary_usage_guess_for_cli, get_object_detail_summary, get_objects_summary, get_python_api_docs, get_screenshot_of_area_as_image, get_screenshot_of_window_as_image, get_screenshot_of_window_as_json, jump_to_tab_by_name, jump_to_tab_by_space_type, jump_to_view3d_object_by_name, jump_to_view3d_object_data_by_name, render_thumbnail_to_path, render_viewport_to_path, search_api_docs, search_manual_docs
-2026-11-28 05:27:26.428 Blockade fertig nach 40 s: {"status":"ok","result":{"geblockt":true}}
-2026-11-28 05:27:26.428 [status] Verbunden: Verbunden mit Blender (von Trendo gestartet, Port 60616) – offen: szene.blend.
-2026-11-28 05:27:26.437 MCP-Server get_objects_summary: {"content":[{"type":"text","text":"{\n  \u0022status\u0022: \u0022ok\u0022,\n  \u0022result\u0022: {\n    \u0022status\u0022: \u0022ok\u0022,\n    \u0022scene_name\u0022: \u0022Scene\u0022,\n    \u0022active_workspace\u0022: \u0022Layout\u0022,\n    \u0022active_object\u0022: \u0022Cube\u0022,\n    \u0022object_mode\u0022: \u0022OBJECT\u0022,\n    \u0022camera_object\u0022: \u0022Camera\u0022,\n    \u0022collections\u0022: [\n      {\n        \u0022name\u0022: \u0022Scene Collection\u0022,\n        \u0022exclude\u0022: false,\n        \u0022hide_viewport\u0022: false,\n        \u0022objects\u0 …
-2026-11-28 05:27:26.521 MCP-Aufruf aus der Blockade heraus: durchgegangen (40 s nach Beginn)
-2026-11-28 05:27:26.521 Status-Wechsel während der Blockade: [Verbunden, Arbeitet], offene Prüfverbindungen höchstens 1
-2026-11-28 05:27:26.632 Absturz nachgestellt: eigenen Prozess hart beendet (PID 3056, Code -1)
-2026-11-28 05:27:30.514 [protokoll] abbruch: Blender (PID 3056) ist abgestürzt bzw. wurde hart beendet (Code -1).
-2026-11-28 05:27:30.514 [status] VerbindetNeu: Blender ist abgestürzt – starte neu in 1 s (Versuch 1 von 5).
-2026-11-28 05:27:33.552 [protokoll] wiederhergestellt: Sicherung von szene.blend als eigene Datei szene-wiederhergestellt-20261128-052733.blend geöffnet; Original unverändert.
-2026-11-28 05:27:34.567 [status] Startet: Blender wird nach dem Absturz neu gestartet …
-2026-11-28 05:27:34.572 [protokoll] neustart: Blender gestartet (PID 37704, Port 60616, szene-wiederhergestellt-20261128-052733.blend).
-2026-11-28 05:27:38.045 [protokoll] wieder-verbunden: Blender von Trendo gestartet (PID 37704, Port 60616).
-2026-11-28 05:27:38.045 [status] Verbunden: Verbunden mit Blender (von Trendo gestartet, Port 60616) – offen: szene-wiederhergestellt-20261128-052733.blend.
-2026-11-28 05:27:38.286 neu gestartet: PID 37704, Sicherung als eigene Datei: szene-wiederhergestellt-20261128-052733.blend
-2026-11-28 05:27:38.351 Szene nach Neustart: {"status":"ok","result":{"objekte":["Camera","Cube","Light","TrendoWuerfel"],"datei":"C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-testlauf-18492-6b0a57dd\\trendo-T-0785-echt-539ea872\\projekt\\szene-wiederhergestellt-20261128-052733.blend","geaendert":false}}
-2026-11-28 05:27:38.352 szene.blend unverändert: SHA-256 632ec97610e949f1ebfafbd6f8ed35a30908ad95b54020c84832ad426228b081; Sicherung aufgeräumt: True
-2026-11-28 05:27:38.505 gespeichert: {"status":"ok","result":{"datei":"C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-testlauf-18492-6b0a57dd\\trendo-T-0785-echt-539ea872\\projekt\\szene-wiederhergestellt-20261128-052733.blend","geaendert":false},"stdout":"Info: Saved \u0022szene-wiederhergestellt-20261128-052733.blend\u0022\n"}
-2026-11-28 05:27:38.505 Fenster schließen (wie die Person): CloseMainWindow=True
-2026-11-28 05:27:38.775 Blender beendet: True, Code 0
-2026-11-28 05:27:42.072 [protokoll] geschlossen: Blender (PID 37704) wurde sauber beendet – kein Neustart.
-2026-11-28 05:27:42.072 [status] Geschlossen: Du hast Blender geschlossen. Trendo startet es nicht von selbst neu – „Neu verbinden“ öffnet es wieder.
-2026-11-28 05:27:50.327 Status nach sauberem Schließen: Geschlossen – Du hast Blender geschlossen. Trendo startet es nicht von selbst neu – „Neu verbinden“ öffnet es wieder.; Starts 2
-2026-11-28 05:27:50.334 eigene Blender-Prozesse danach: []
-2026-11-28 05:27:54.341 Hintergrund-Blender PID 40340 läuft: True, zählt als offen: False
-2026-11-28 05:27:54.359 ERGEBNIS: BESTANDEN
-2026-11-28 05:27:54.365 von diesem Test beendet: nur eigene PIDs [3056,40340] (keine davon war vorher offen: True)
-2026-11-28 05:27:54.365 fremde Blender-Prozesse vorher [], noch offen [], von selbst beendet []
+2026-11-28 06:13:21.407 Blender: C:\Program Files\Blender Foundation\Blender 5.2\blender.exe (5.2)
+2026-11-28 06:13:21.407 vorher offene Blender-Prozesse (fremd, werden nie beendet): 0
+2026-11-28 06:13:21.407 eigene Instanz: Port 56261, Profil C:\Users\<user>\AppData\Local\Temp\trendo-testlauf-34176-6b0a62ee\trendo-T-0785-echt-ba456944\profil, Projekt C:\Users\<user>\AppData\Local\Temp\trendo-testlauf-34176-6b0a62ee\trendo-T-0785-echt-ba456944\projekt
+2026-11-28 06:13:24.501 [status] Startet: Blender startet sichtbar mit dem Projekt …
+2026-11-28 06:13:24.517 [protokoll] start: Blender gestartet (PID 20744, Port 56261).
+2026-11-28 06:13:28.726 [protokoll] verbunden: Blender von Trendo gestartet (PID 20744, Port 56261).
+2026-11-28 06:13:28.726 [status] Verbunden: Verbunden mit Blender (von Trendo gestartet, Port 56261) – offen: szene.blend.
+2026-11-28 06:13:28.731 sichtbar: PID 20744 Fenster=ja Titel="szene [C:\Users\<user>\AppData\Local\Temp\trendo-testlauf-34176-6b0a62ee\trendo-T-0785-echt-ba456944\projekt\szene.blend] - Blender 5.2.3 LTS"
+2026-11-28 06:13:28.734 szene.blend (ohne Würfel) SHA-256 98ed752ddcf7fddab41cede34a9b19d1c2adfb5be7a9fcdec117101ba4109be9
+2026-11-28 06:13:28.831 Würfel (nicht gespeichert): {"status":"ok","result":{"objekte":["Camera","Cube","Light","TrendoWuerfel"],"datei":"C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-testlauf-34176-6b0a62ee\\trendo-T-0785-echt-ba456944\\projekt\\szene.blend"}}
+2026-11-28 06:13:29.656 MCP-Server (stdio) Werkzeuge: 26 – execute_blender_code, execute_blender_code_for_cli, get_blendfile_summary_datablocks, get_blendfile_summary_datablocks_for_cli, get_blendfile_summary_missing_files, get_blendfile_summary_missing_files_for_cli, get_blendfile_summary_of_linked_libraries, get_blendfile_summary_of_linked_libraries_for_cli, get_blendfile_summary_path_info, get_blendfile_summary_path_info_for_cli, get_blendfile_summary_usage_guess, get_blendfile_summary_usage_guess_for_cli, get_object_detail_summary, get_objects_summary, get_python_api_docs, get_screenshot_of_area_as_image, get_screenshot_of_window_as_image, get_screenshot_of_window_as_json, jump_to_tab_by_name, jump_to_tab_by_space_type, jump_to_view3d_object_by_name, jump_to_view3d_object_data_by_name, render_thumbnail_to_path, render_viewport_to_path, search_api_docs, search_manual_docs
+2026-11-28 06:13:29.752 MCP-Server get_objects_summary: {"content":[{"type":"text","text":"{\n  \u0022status\u0022: \u0022ok\u0022,\n  \u0022result\u0022: {\n    \u0022status\u0022: \u0022ok\u0022,\n    \u0022scene_name\u0022: \u0022Scene\u0022,\n    \u0022active_workspace\u0022: \u0022Layout\u0022,\n    \u0022active_object\u0022: \u0022Cube\u0022,\n    \u0022object_mode\u0022: \u0022OBJECT\u0022,\n    \u0022camera_object\u0022: \u0022Camera\u0022,\n    \u0022collections\u0022: [\n      {\n        \u0022name\u0022: \u0022Scene Collection\u0022,\n        \u0022exclude\u0022: false,\n        \u0022hide_viewport\u0022: false,\n        \u0022objects\u0 …
+2026-11-28 06:13:57.749 Sicherung vorhanden: True, Begleitdatei: {"quelle": "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-testlauf-34176-6b0a62ee\\trendo-T-0785-echt-ba456944\\projekt\\szene.blend", "start": "2026-11-28T06:13:24.4861012+01:00", "pid": 20744, "zeit": 1795842837.624815}
+2026-11-28 06:13:58.119 Kopie gespeichert: {"status":"ok","result":{"datei":"C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-testlauf-34176-6b0a62ee\\trendo-T-0785-echt-ba456944\\projekt\\szene.blend","geaendert":false},"stdout":"Info: Saved copy as \u0022kopie.blend\u0022\n"}
+2026-11-28 06:13:58.119 Sicherung nach Kopie-Speichern noch da: True
+2026-11-28 06:14:03.959 [status] Arbeitet: Blender rechnet gerade – die Verbindung auf Port 56261 steht.
+2026-11-28 06:14:10.116 während der Blockade (12 s): Status Arbeitet, offene Prüfverbindungen höchstens 1
+2026-11-28 06:14:10.928 MCP-Server (stdio) Werkzeuge: 26 – execute_blender_code, execute_blender_code_for_cli, get_blendfile_summary_datablocks, get_blendfile_summary_datablocks_for_cli, get_blendfile_summary_missing_files, get_blendfile_summary_missing_files_for_cli, get_blendfile_summary_of_linked_libraries, get_blendfile_summary_of_linked_libraries_for_cli, get_blendfile_summary_path_info, get_blendfile_summary_path_info_for_cli, get_blendfile_summary_usage_guess, get_blendfile_summary_usage_guess_for_cli, get_object_detail_summary, get_objects_summary, get_python_api_docs, get_screenshot_of_area_as_image, get_screenshot_of_window_as_image, get_screenshot_of_window_as_json, jump_to_tab_by_name, jump_to_tab_by_space_type, jump_to_view3d_object_by_name, jump_to_view3d_object_data_by_name, render_thumbnail_to_path, render_viewport_to_path, search_api_docs, search_manual_docs
+2026-11-28 06:14:38.327 Blockade fertig nach 40 s: {"status":"ok","result":{"geblockt":true}}
+2026-11-28 06:14:38.332 [status] Verbunden: Verbunden mit Blender (von Trendo gestartet, Port 56261) – offen: szene.blend.
+2026-11-28 06:14:38.335 MCP-Server get_objects_summary: {"content":[{"type":"text","text":"{\n  \u0022status\u0022: \u0022ok\u0022,\n  \u0022result\u0022: {\n    \u0022status\u0022: \u0022ok\u0022,\n    \u0022scene_name\u0022: \u0022Scene\u0022,\n    \u0022active_workspace\u0022: \u0022Layout\u0022,\n    \u0022active_object\u0022: \u0022Cube\u0022,\n    \u0022object_mode\u0022: \u0022OBJECT\u0022,\n    \u0022camera_object\u0022: \u0022Camera\u0022,\n    \u0022collections\u0022: [\n      {\n        \u0022name\u0022: \u0022Scene Collection\u0022,\n        \u0022exclude\u0022: false,\n        \u0022hide_viewport\u0022: false,\n        \u0022objects\u0 …
+2026-11-28 06:14:38.400 MCP-Aufruf aus der Blockade heraus: durchgegangen (40 s nach Beginn)
+2026-11-28 06:14:38.400 Status-Wechsel während der Blockade: [Verbunden, Arbeitet], offene Prüfverbindungen höchstens 1
+2026-11-28 06:14:38.842 Brücke in Blender gestoppt (unter Quiet, QuietProbeInterval 30 s): {"status":"ok","result":{"stoppt":true}}
+2026-11-28 06:15:11.164 [protokoll] abbruch: Verbindung zu Blender auf Port 56261 weg.
+2026-11-28 06:15:11.164 [status] VerbindetNeu: Verbindung zu Blender unterbrochen – verbinde neu (Versuch 1) …
+2026-11-28 06:15:11.459 Abriss sichtbar nach 33 s: VerbindetNeu – Verbindung zu Blender unterbrochen – verbinde neu (Versuch 1) …
+2026-11-28 06:15:11.462 [protokoll] neu-verbinden: Neu verbinden angefordert.
+2026-11-28 06:15:14.499 [protokoll] neu-verbinden: MCP-Brücke im von Trendo gestarteten Blender wird neu gestartet.
+2026-11-28 06:15:14.499 [status] VerbindetNeu: Die MCP-Brücke in Blender wird neu gestartet …
+2026-11-28 06:15:16.555 [protokoll] wieder-verbunden: Blender von Trendo gestartet (PID 20744, Port 56261).
+2026-11-28 06:15:16.555 [status] Verbunden: Verbunden mit Blender (von Trendo gestartet, Port 56261) – offen: szene.blend.
+2026-11-28 06:15:16.555 Neu verbinden nach 5 s: Verbunden – Verbunden mit Blender (von Trendo gestartet, Port 56261) – offen: szene.blend.
+2026-11-28 06:15:16.680 Absturz nachgestellt: eigenen Prozess hart beendet (PID 20744, Code -1)
+2026-11-28 06:15:19.183 [protokoll] abbruch: Blender (PID 20744) ist abgestürzt bzw. wurde hart beendet (Code -1).
+2026-11-28 06:15:19.183 [status] VerbindetNeu: Blender ist abgestürzt – starte neu in 1 s (Versuch 1 von 5).
+2026-11-28 06:15:22.236 [protokoll] wiederhergestellt: Sicherung von szene.blend als eigene Datei szene-wiederhergestellt-20261128-061522.blend geöffnet; Original unverändert.
+2026-11-28 06:15:23.238 [status] Startet: Blender wird nach dem Absturz neu gestartet …
+2026-11-28 06:15:23.244 [protokoll] neustart: Blender gestartet (PID 17700, Port 56261, szene-wiederhergestellt-20261128-061522.blend).
+2026-11-28 06:15:26.719 [protokoll] wieder-verbunden: Blender von Trendo gestartet (PID 17700, Port 56261).
+2026-11-28 06:15:26.719 [status] Verbunden: Verbunden mit Blender (von Trendo gestartet, Port 56261) – offen: szene-wiederhergestellt-20261128-061522.blend.
+2026-11-28 06:15:26.848 neu gestartet: PID 17700, Sicherung als eigene Datei: szene-wiederhergestellt-20261128-061522.blend
+2026-11-28 06:15:26.921 Szene nach Neustart: {"status":"ok","result":{"objekte":["Camera","Cube","Light","TrendoWuerfel"],"datei":"C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-testlauf-34176-6b0a62ee\\trendo-T-0785-echt-ba456944\\projekt\\szene-wiederhergestellt-20261128-061522.blend","geaendert":false}}
+2026-11-28 06:15:26.922 szene.blend unverändert: SHA-256 98ed752ddcf7fddab41cede34a9b19d1c2adfb5be7a9fcdec117101ba4109be9; Sicherung aufgeräumt: True
+2026-11-28 06:15:27.073 gespeichert: {"status":"ok","result":{"datei":"C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-testlauf-34176-6b0a62ee\\trendo-T-0785-echt-ba456944\\projekt\\szene-wiederhergestellt-20261128-061522.blend","geaendert":false},"stdout":"Info: Saved \u0022szene-wiederhergestellt-20261128-061522.blend\u0022\n"}
+2026-11-28 06:15:27.073 Fenster schließen (wie die Person): CloseMainWindow=True
+2026-11-28 06:15:27.326 Blender beendet: True, Code 0
+2026-11-28 06:15:30.781 [protokoll] geschlossen: Blender (PID 17700) wurde sauber beendet – kein Neustart.
+2026-11-28 06:15:30.781 [status] Geschlossen: Du hast Blender geschlossen. Trendo startet es nicht von selbst neu – „Neu verbinden“ öffnet es wieder.
+2026-11-28 06:15:38.908 Status nach sauberem Schließen: Geschlossen – Du hast Blender geschlossen. Trendo startet es nicht von selbst neu – „Neu verbinden“ öffnet es wieder.; Starts 2
+2026-11-28 06:15:38.913 eigene Blender-Prozesse danach: []
+2026-11-28 06:15:55.919 Hintergrund-Blender PID 37612 läuft: True, zählt als offen: False
+2026-11-28 06:15:55.937 ERGEBNIS: BESTANDEN
+2026-11-28 06:15:55.942 von diesem Test beendet: nur eigene PIDs [20744,37612] (keine davon war vorher offen: True)
+2026-11-28 06:15:55.942 fremde Blender-Prozesse vorher [], noch offen [], von selbst beendet []

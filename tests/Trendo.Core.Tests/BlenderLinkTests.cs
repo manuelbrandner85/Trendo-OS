@@ -126,7 +126,7 @@ public class BlenderLinkTests
             File.WriteAllText(Blend, "original");
             Link = link = new BlenderLink(exe, Host, port ?? FreePort(), separateInstance: separate, log: (k, t) => { lock (Log) Log.Add(k + ": " + t); }, stateDir: Path.Combine(Dir, "zustand"))
             { Heartbeat = TimeSpan.FromMilliseconds(100), PingTimeout = TimeSpan.FromMilliseconds(400), StartTimeout = TimeSpan.FromSeconds(8), Backoff = _ => TimeSpan.FromMilliseconds(50),
-              ProbeInterval = TimeSpan.FromMilliseconds(100), ForeignProbeInterval = TimeSpan.FromMilliseconds(100), QuickRestartWindow = TimeSpan.Zero };
+              ProbeInterval = TimeSpan.FromMilliseconds(100), ForeignProbeInterval = TimeSpan.FromMilliseconds(100), QuietProbeInterval = TimeSpan.FromMilliseconds(500), QuickRestartWindow = TimeSpan.Zero };
         }
         public bool Logged(string kind) { lock (Log) return Log.Any(l => l.StartsWith(kind + ":")); }
         public string LastScript => File.ReadAllText(Directory.EnumerateFiles(State, "bruecke-*.py").OrderBy(File.GetLastWriteTimeUtc).Last());
@@ -319,25 +319,51 @@ public class BlenderLinkTests
         Assert.Single(r.Host.Started); Assert.True(r.Logged("abbruch")); Assert.True(r.Logged("wieder-verbunden"));
     }
 
-    [Fact(DisplayName = "T-0785 N1: solange Claude arbeitet (Quiet), schickt der Herzschlag keine Kennungsabfragen")]
+    [Fact(DisplayName = "T-0785 N1/M5: unter Quiet (Claude arbeitet) nur selten genau eine Prüfverbindung – ein Abriss wird trotzdem sichtbar („verbindet neu“/„getrennt“)")]
     public async Task N1_quiet_no_pings()
     {
         using var r = new Rig();
         await r.Link.EnsureAsync(r.Dir);
         using var keep = r.Link.Keep();
         var p = r.Host.Last;
-        FakeAddon a;
+        var a = r.Host.AddonOf(p);
         using (r.Link.Quiet())
         {
-            lock (r.Host.Addons) { r.Host.Addons[p.Id].Dispose(); r.Host.Addons.Remove(p.Id); }
-            await Task.Delay(600); // M5: unter Quiet keine TCP-Prüfung – also auch kein „verbindet neu“, solange der Prozess lebt
-            Assert.Equal(BlenderLinkState.Verbunden, r.Link.Status.State);
-            r.Host.Bridge(p); a = r.Host.AddonOf(p);
-            await Task.Delay(600);
-            Assert.Equal(0, a.Requests);
+            await Task.Delay(300);
+            var before = a.Accepted;
+            await Task.Delay(1100); // 11 Herzschläge, Quiet-Abstand 0,5 s
+            Assert.InRange(a.Accepted - before, 0, 3); // höchstens eine Prüfverbindung je Quiet-Abstand
+            lock (r.Host.Addons) { r.Host.Addons[p.Id].Dispose(); r.Host.Addons.Remove(p.Id); } // Brücke gestoppt, Prozess lebt
+            await Until(() => r.Link.Status.State is BlenderLinkState.VerbindetNeu or BlenderLinkState.Getrennt, 6000);
+            await Until(() => r.Link.Status.State == BlenderLinkState.Getrennt, 8000);
+            Assert.Contains("Brücke in Blender ist gestoppt", r.Link.Status.Text);
+            Assert.True(r.Logged("abbruch")); Assert.Equal(1, r.Link.Starts);
         }
-        await Until(() => a.Requests > 0); // danach wieder mit Kennungsabfrage
-        Assert.Equal(BlenderLinkState.Verbunden, r.Link.Status.State);
+    }
+
+    [Fact(DisplayName = "T-0785: „Neu verbinden“ bei laufendem eigenen Blender ohne Brücke startet die Brücke über das Startskript neu – ohne Start-Zeitgrenze abzuwarten")]
+    public async Task Reconnect_restarts_bridge()
+    {
+        using var r = new Rig();
+        r.Link.StartTimeout = TimeSpan.FromMinutes(3);
+        await r.Link.EnsureAsync(r.Dir);
+        var p = r.Host.Last;
+        lock (r.Host.Addons) { r.Host.Addons[p.Id].Dispose(); r.Host.Addons.Remove(p.Id); }
+        var req = r.Link.CurrentRestartFile!;
+        Assert.Contains("RESTART = ", r.LastScript); Assert.Contains("_restart_watch", r.LastScript);
+        var watcher = Task.Run(async () => { for (var i = 0; i < 200 && !File.Exists(req); i++) await Task.Delay(25); if (File.Exists(req)) { File.Delete(req); r.Host.Bridge(p); } }); // so tut es das Startskript in Blender
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        var s = await r.Link.ReconnectAsync();
+        await watcher;
+        Assert.Equal(BlenderLinkState.Verbunden, s.State); Assert.True(sw.Elapsed < TimeSpan.FromSeconds(15)); Assert.Equal(1, r.Link.Starts);
+    }
+
+    [Fact(DisplayName = "T-0785 N9: Blender ohne Fenster zählt nur in den ersten 15 s nach dem Start als offen")]
+    public void N9_young_without_window()
+    {
+        Assert.True(ProcessBlenderHost.CountsAsOpen(true, TimeSpan.FromHours(1)));
+        Assert.True(ProcessBlenderHost.CountsAsOpen(false, TimeSpan.FromSeconds(3)));
+        Assert.False(ProcessBlenderHost.CountsAsOpen(false, TimeSpan.FromSeconds(20)));
     }
 
     [Fact(DisplayName = "T-0785: langer Lauf (3 s bei 0,4 s Lebenszeichen-Grenze) bricht nicht ab und löst keinen Neustart aus")]
@@ -582,10 +608,11 @@ public class BlenderLinkTests
         Assert.Equal(1, r.Link.Starts);
     }
 
-    [Fact(DisplayName = "T-0785 M5: unter Quiet (Claude arbeitet) und während eines Auftrags keine einzige TCP-Prüfung")]
+    [Fact(DisplayName = "T-0785 M5: unter Quiet (Claude arbeitet) höchstens eine Prüfverbindung je Quiet-Abstand")]
     public async Task M5_quiet_no_tcp()
     {
         using var r = new Rig();
+        r.Link.QuietProbeInterval = TimeSpan.FromSeconds(30);
         await r.Link.EnsureAsync(r.Dir);
         using var keep = r.Link.Keep();
         var a = r.Host.AddonOf(r.Host.Last);
@@ -594,7 +621,7 @@ public class BlenderLinkTests
         {
             var before = a.Accepted;
             await Task.Delay(1000);
-            Assert.Equal(before, a.Accepted);
+            Assert.InRange(a.Accepted - before, 0, 1);
         }
     }
 

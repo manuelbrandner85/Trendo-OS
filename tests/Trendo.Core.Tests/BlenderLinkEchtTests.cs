@@ -145,6 +145,24 @@ public class BlenderLinkEchtTests
             for (var i = 0; i < 20 && link.Status.State != BlenderLinkState.Verbunden; i++) await Task.Delay(500);
             Assert.Equal(BlenderLinkState.Verbunden, link.Status.State);
 
+            // M5 (3. Prüfrunde): Brücke in Blender gestoppt, während Claude arbeitet (Quiet) – spätestens nach 60 s sichtbar; „Neu verbinden“ startet sie neu
+            using (link.Quiet())
+            {
+                var stop = await link.RunAsync("Brücke stoppen", "import bpy, importlib\nn=[k for k in bpy.context.preferences.addons.keys() if k.startswith('bl_ext.') and k.endswith('.mcp')][0]\nsrv=importlib.import_module(n+'.mcp_to_blender_server')\ndef _stop():\n    srv.stop()\n    return None\nbpy.app.timers.register(_stop, first_interval=0.5)\nresult={'stoppt':True}");
+                var stopAt = DateTimeOffset.Now;
+                L($"Brücke in Blender gestoppt (unter Quiet, QuietProbeInterval {link.QuietProbeInterval.TotalSeconds:0} s): {stop.ToJsonString()}");
+                for (var i = 0; i < 130 && link.Status.State is not (BlenderLinkState.VerbindetNeu or BlenderLinkState.Getrennt); i++) await Task.Delay(500);
+                var seen = DateTimeOffset.Now - stopAt;
+                L($"Abriss sichtbar nach {seen.TotalSeconds:0} s: {link.Status.State} – {link.Status.Text}");
+                Assert.True(link.Status.State is BlenderLinkState.VerbindetNeu or BlenderLinkState.Getrennt);
+                Assert.True(seen < TimeSpan.FromSeconds(60));
+                Assert.Equal(own, link.OwnPid); // Blender selbst läuft weiter, kein Neustart
+                var reAt = DateTimeOffset.Now;
+                var re = await link.ReconnectAsync();
+                L($"Neu verbinden nach {(DateTimeOffset.Now - reAt).TotalSeconds:0} s: {re.State} – {re.Text}");
+                Assert.Equal(BlenderLinkState.Verbunden, re.State); Assert.Equal(own, link.OwnPid); Assert.Equal(1, link.Starts);
+            }
+
             // 1) Absturz: gehaltenes Process-Objekt hart beenden (nur der selbst gestartete Prozess)
             var first = proc.Id; Assert.DoesNotContain(first, before);
             proc.Kill(); killed.Add(first); proc.WaitForExit(10000);
@@ -180,11 +198,11 @@ public class BlenderLinkEchtTests
 
             // N9: ein Hintergrund-Blender (--background, eigener Prozess) zählt nicht als „Blender offen“
             var bgPsi = new ProcessStartInfo(exe) { UseShellExecute = false, CreateNoWindow = true };
-            foreach (var x in new[] { "-b", "--factory-startup", "--python-expr", "import time; time.sleep(30)" }) bgPsi.ArgumentList.Add(x);
+            foreach (var x in new[] { "-b", "--factory-startup", "--python-expr", "import time; time.sleep(45)" }) bgPsi.ArgumentList.Add(x);
             bgPsi.Environment["BLENDER_USER_RESOURCES"] = profile;
             using (var bg = Process.Start(bgPsi)!)
             {
-                await Task.Delay(4000);
+                await Task.Delay(17000); // N9: in den ersten 15 s zählt auch ein Blender ohne Fenster (sein Fenster könnte noch kommen)
                 var counted = host.BlenderPids().Contains(bg.Id);
                 L($"Hintergrund-Blender PID {bg.Id} läuft: {!bg.HasExited}, zählt als offen: {counted}");
                 Assert.False(counted);

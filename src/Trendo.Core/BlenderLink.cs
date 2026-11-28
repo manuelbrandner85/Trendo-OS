@@ -86,7 +86,7 @@ public static class BlenderBridge
     /// <item>Sicherung alle 30 s bei Änderungen, je Quelldatei mit Begleitdatei (Quelle, Start, PID). Speichert die Person oder schließt sie Blender sauber,
     /// fliegt die Sicherung weg. Die Datei der Person wird nie überschrieben.</item>
     /// </list></summary>
-    public static string StartScript(int port, string statusFile, string consentFile, bool enableAddon, string start, string? saveAs = null, string? hint = null, bool recovery = true)
+    public static string StartScript(int port, string statusFile, string consentFile, bool enableAddon, string start, string? saveAs = null, string? hint = null, bool recovery = true, string? restartFile = null)
     {
         static string Lit(string? p) => p is null ? "None" : JsonSerializer.Serialize(p);
         static string Path_(string? p) => p is null ? "None" : JsonSerializer.Serialize(Path.GetFullPath(p));
@@ -100,6 +100,7 @@ public static class BlenderBridge
             SAVE_AS = {{Path_(saveAs)}}
             HINT = {{Lit(hint)}}
             RECOVERY = {{(recovery ? "True" : "False")}}
+            RESTART = {{Path_(restartFile)}}
             _st = {'ok': None, 'grund': 'startet', 'pid': os.getpid(), 'port': PORT, 'start': START, 'datei': '', 'sicherung': ''}
             _changed = [False]
             _saving = [False]
@@ -264,7 +265,18 @@ public static class BlenderBridge
                 _st.update(ok=False, grund='beendet')
                 _write()
 
+            def _restart_watch():
+                try:
+                    if RESTART and os.path.exists(RESTART):
+                        os.remove(RESTART)
+                        _st['grund'] = 'neustart'
+                        bpy.app.timers.register(_try_start, first_interval=0.1, persistent=True)
+                except Exception as ex:
+                    print('TRENDO-NEUSTART', ex)
+                return 2.0
+
             atexit.register(_exit)
+            bpy.app.timers.register(_restart_watch, first_interval=2.0, persistent=True)
             bpy.app.handlers.depsgraph_update_post.append(_mark)
             bpy.app.handlers.save_post.append(_saved)
             bpy.app.handlers.load_post.append(_loaded)
@@ -360,7 +372,14 @@ public sealed class ProcessBlenderHost : IBlenderHost
         try { return all.Where(Interactive).Select(p => p.Id).ToList(); } finally { foreach (var p in all) p.Dispose(); }
     }
 
-    static bool Interactive(Process p) { try { return p.MainWindowHandle != IntPtr.Zero; } catch (InvalidOperationException) { return false; } }
+    static bool Interactive(Process p)
+    {
+        try { return CountsAsOpen(p.MainWindowHandle != IntPtr.Zero, DateTime.Now - p.StartTime); }
+        catch (Exception e) when (e is InvalidOperationException or System.ComponentModel.Win32Exception or NotSupportedException) { return false; }
+    }
+
+    /// <summary>N9: ein Blender mit Fenster zählt – und eins ohne Fenster in den ersten 15 s nach dem Start (sein Fenster erscheint noch).</summary>
+    public static bool CountsAsOpen(bool hasWindow, TimeSpan age) => hasWindow || age < TimeSpan.FromSeconds(15);
 }
 
 /// <summary>T-0785: hält die Verbindung zu einem sichtbaren Blender mit MCP-Brücke. Startet Blender bei Bedarf selbst (mit Projekt und Brücke), nutzt ein
@@ -378,7 +397,7 @@ public sealed class BlenderLink : IDisposable
     readonly List<string> _events = [];
     readonly List<BlenderJob> _jobs = [];
     IBlenderProc? _proc;
-    string? _procStart, _procStatus, _procConsent, _lastFile, _hold;
+    string? _procStart, _procStatus, _procConsent, _procRestart, _lastFile, _hold;
     int _leases, _busy, _quiet, _fails, _dupChecked = -1;
     int? _connectedPid;
     Task? _probe;
@@ -433,6 +452,9 @@ public sealed class BlenderLink : IDisposable
     public int ListenFailures { get; set; } = 3;
     /// <summary>M5: Abstand der Kennungsabfragen im Herzschlag beim eigenen Blender (dazwischen nur: lebt der Prozess?).</summary>
     public TimeSpan ProbeInterval { get; set; } = TimeSpan.FromSeconds(15);
+    /// <summary>M5 (3. Prüfrunde): auch während Claude arbeitet bzw. ein Auftrag läuft, so oft GENAU EINE Prüfverbindung – sie bleibt offen, bis Blender
+    /// antwortet (kein Stau). Wird sie abgewiesen, ist die Brücke weg: „verbindet neu“ bzw. „getrennt“.</summary>
+    public TimeSpan QuietProbeInterval { get; set; } = TimeSpan.FromSeconds(30);
     /// <summary>M5: beim Blender der Person höchstens so oft eine Kennungsabfrage, sonst nur der Prozess.</summary>
     public TimeSpan ForeignProbeInterval { get; set; } = TimeSpan.FromSeconds(45);
     /// <summary>H2: wird Blender innerhalb dieser Zeit erneut beendet, startet Trendo nicht von selbst neu, sondern fragt.</summary>
@@ -456,6 +478,7 @@ public sealed class BlenderLink : IDisposable
     public string? CurrentStatusFile { get { lock (_lock) return _procStatus; } }
     public string? CurrentConsentFile { get { lock (_lock) return _procConsent; } }
     public string? CurrentStart { get { lock (_lock) return _procStart; } }
+    public string? CurrentRestartFile { get { lock (_lock) return _procRestart; } }
     /// <summary>Zuletzt nach einem Absturz wiederhergestellte Datei (eigene Datei neben dem Original).</summary>
     public string? RestoredFile { get; private set; }
     /// <summary>Wie oft der Herzschlag eine Kennungsabfrage geschickt hat (Prüfung: keine Abfragen, solange Claude arbeitet).</summary>
@@ -743,11 +766,11 @@ public sealed class BlenderLink : IDisposable
         else (projArgs, saveAs) = ProjectArgs(ProjectDir);
         Directory.CreateDirectory(StateDir);
         var run = Guid.NewGuid().ToString("N")[..12];
-        var status = Path.Combine(StateDir, $"blender-{run}.json"); var consent = Path.Combine(StateDir, $"zustimmung-{run}");
+        var status = Path.Combine(StateDir, $"blender-{run}.json"); var consent = Path.Combine(StateDir, $"zustimmung-{run}"); var restartReq = Path.Combine(StateDir, $"neustart-{run}");
         var start = DateTimeOffset.Now.ToString("O");
         var args = new List<string>(projArgs);
         args.AddRange(ExtraArgs);
-        args.AddRange(BlenderScript.Args(Path.Combine(StateDir, $"bruecke-{run}.py"), BlenderBridge.StartScript(Port, status, consent, SeparateInstance || AddonConsent, start, saveAs, hint)));
+        args.AddRange(BlenderScript.Args(Path.Combine(StateDir, $"bruecke-{run}.py"), BlenderBridge.StartScript(Port, status, consent, SeparateInstance || AddonConsent, start, saveAs, hint, restartFile: restartReq)));
         Set(BlenderLinkState.Startet, restart ? "Blender wird nach dem Absturz neu gestartet …" : "Blender startet sichtbar mit dem Projekt …");
         IBlenderProc p;
         try { p = _host.Start(Exe, args, Env); }
@@ -757,7 +780,7 @@ public sealed class BlenderLink : IDisposable
             Set(BlenderLinkState.Getrennt, "Blender ließ sich nicht starten: " + e.Message);
             return Status;
         }
-        lock (_lock) { _proc = p; _procStart = start; _procStatus = status; _procConsent = consent; _hold = null; }
+        lock (_lock) { _proc = p; _procStart = start; _procStatus = status; _procConsent = consent; _procRestart = restartReq; _hold = null; }
         Starts++;
         Log(restart ? "neustart" : "start", $"Blender gestartet (PID {p.Id}, Port {Port}{(projArgs.Count > 0 ? ", " + Path.GetFileName(projArgs[0]) : "")}).");
         return await WaitReadyAsync(p, ct);
@@ -843,12 +866,27 @@ public sealed class BlenderLink : IDisposable
     }
 
     /// <summary>„Neu verbinden“ per Knopf: Neustart-Sperre und -Zähler zurücksetzen und verbinden (startet Blender auch nach „von dir geschlossen“).</summary>
-    public Task<BlenderLinkStatus> ReconnectAsync(CancellationToken ct = default)
+    public async Task<BlenderLinkStatus> ReconnectAsync(CancellationToken ct = default)
     {
         lock (_lock) _restarts.Clear();
         _paused = false;
         Log("neu-verbinden", "Neu verbinden angefordert.");
-        return EnsureAsync(null, ct);
+        IBlenderProc? own; string? req, hold; lock (_lock) { own = _proc; req = _procRestart; hold = _hold; }
+        if (own is { HasExited: false } && req is not null && hold is null && await PingAsync(ct) is null && !await BlenderBridge.ListeningAsync(Port, TimeSpan.FromSeconds(1), ct))
+        {
+            // eigenes Blender läuft, Brücke ist aus: das Startskript in Blender startet sie neu (statt bis zur Start-Zeitgrenze zu warten)
+            try { Directory.CreateDirectory(Path.GetDirectoryName(req)!); File.WriteAllText(req, "ja"); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+            Log("neu-verbinden", "MCP-Brücke im von Trendo gestarteten Blender wird neu gestartet.");
+            Set(BlenderLinkState.VerbindetNeu, "Die MCP-Brücke in Blender wird neu gestartet …", own.Id, true);
+            for (var i = 0; i < 40; i++)
+            {
+                if (await PingAsync(ct) is { } info) { _fails = 0; return Connected(info, own); }
+                await Task.Delay(250, ct);
+            }
+            Set(BlenderLinkState.Getrennt, "Die MCP-Brücke in Blender ließ sich nicht neu starten. In Blender: Bearbeiten → Einstellungen → Add-ons → MCP → „Start MCP Bridge Server“ – Trendo verbindet dann von selbst.", own.Id, true);
+            return Status;
+        }
+        return await EnsureAsync(null, ct);
     }
 
     /// <summary>Solange jemand die Verbindung braucht (Studio, Claude-Lauf), läuft der Herzschlag. Dispose gibt sie frei – Blender bleibt offen.</summary>
@@ -899,9 +937,12 @@ public sealed class BlenderLink : IDisposable
                         continue;
                     }
                 }
-                if (busy > 0 || quiet > 0) // ein Auftrag bzw. Claude arbeitet über MCP: nur der Prozess zählt
+                if (busy > 0 || quiet > 0) // ein Auftrag bzw. Claude arbeitet über MCP: meist nur der Prozess – selten genau eine Prüfverbindung
                 {
                     if (busy > 0) Set(BlenderLinkState.Arbeitet, $"Blender arbeitet am Auftrag – die Verbindung auf Port {Port} steht.", own?.Id, own is not null);
+                    if (_probe is { IsCompleted: false } || DateTimeOffset.Now - _lastProbe < QuietProbeInterval) continue;
+                    _lastProbe = DateTimeOffset.Now;
+                    _probe = ProbeAsync(own, ct);
                     continue;
                 }
                 if (_probe is { IsCompleted: false }) continue; // höchstens eine offene Prüfverbindung
@@ -977,7 +1018,7 @@ public sealed class BlenderLink : IDisposable
     {
         string? hold; lock (_lock) hold = _hold;
         if (hold is not null) return; // wartet auf die Person (Online-Freigabe, Add-on) – Grund bleibt
-        if (Status.State == BlenderLinkState.Arbeitet && _fails == 0) { _fails++; return; } // nach „arbeitet“ kann die Warteschlange voll sein: einmal abwarten
+        if (Status.State == BlenderLinkState.Arbeitet && _fails == 0) { _fails++; _lastProbe = DateTimeOffset.MinValue; return; } // nach „arbeitet“ kann die Warteschlange voll sein: einmal abwarten, gleich noch einmal prüfen
         _fails++;
         if (_fails == 1 || Status.State == BlenderLinkState.Arbeitet) Log("abbruch", $"Verbindung zu Blender auf Port {Port} weg.");
         if (own is null)
@@ -986,7 +1027,7 @@ public sealed class BlenderLink : IDisposable
             return;
         }
         if (_fails < ListenFailures) Set(BlenderLinkState.VerbindetNeu, $"Verbindung zu Blender unterbrochen – verbinde neu (Versuch {_fails}) …", own.Id, true);
-        else Set(BlenderLinkState.Getrennt, $"Blender läuft, aber die MCP-Brücke antwortet nicht (Port {Port}). Trendo prüft weiter; „Neu verbinden“ oder in Blender den MCP-Server starten.", own.Id, true);
+        else Set(BlenderLinkState.Getrennt, $"Getrennt – die MCP-Brücke in Blender ist gestoppt (Port {Port}), Blender läuft noch. „Neu verbinden“ startet die Brücke neu.", own.Id, true);
     }
 
     /// <summary>Auftrag in Blender ausführen (Code wie über MCP). Reißt die Verbindung ab, wird neu verbunden; <paramref name="repeatable"/> Aufträge
