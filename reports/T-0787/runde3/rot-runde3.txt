@@ -1,0 +1,114 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot4\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:03.53]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:04.05]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:04.08]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:00:04.22]     T-0787 R3-1: Fehlalarm-Sätze aus allen Runden bleiben frei (keine Sperre) [FAIL]
+[xUnit.net 00:00:04.22]       gesperrt, obwohl Kochsatz: Eine gesunde Portion Butter dazugeben. → gesunde | Den Topf zum Abnehmen vom Herd nehmen. → zum Abnehmen | Beim Abnehmen des Deckels Dampf entweichen lassen. → Beim Abnehmen | Rühren, um das Risiko des Anbrennens zu senken. → Risiko des Anbrennens zu senken | Den Teig gut gegen die Schüsselwand drücken. → gut gegen die | Zitronensaft wirkt gegen das Braunwerden der Äpfel. → wirkt gegen | Ein Schuss Essig hilft gegen das Ausflocken. → hilft gegen | Etwas Milch hilft bei zu dickem Teig. → hilft bei | Dem Anbrennen vorbeugend ab und zu rühren. → vorbeugend | Den Teig beugen und vor dem Ofen kurz ruhen lassen. → beugen und vor | Mit Heilwasser aufgießen. → Heilwasser | Gesundheit! → Gesundheit
+[xUnit.net 00:00:04.22]       Stack Trace:
+[xUnit.net 00:00:04.22]         C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot4\tests\Trendo.Core.Tests\T0787Runde3Tests.cs(39,0): at Trendo.Core.Tests.T0787_Runde3.Fehlalarme_frei()
+[xUnit.net 00:00:04.22]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:04.22]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:04.23]     T-0787 R3-1: eindeutige Versprechen werden gesperrt – auch über KiCheck [FAIL]
+[xUnit.net 00:00:04.23]       weiches Wort gesperrt: Ein gesundes Frühstück.
+[xUnit.net 00:00:04.23]       Stack Trace:
+[xUnit.net 00:00:04.23]         C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot4\tests\Trendo.Core.Tests\T0787Runde3Tests.cs(47,0): at Trendo.Core.Tests.T0787_Runde3.Versprechen_gesperrt()
+[xUnit.net 00:00:04.23]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:04.23]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:04.26]     T-0787 R3-4: „1,000 g“ mit Hinweis „Menge prüfen“; „1,500 TL“ bleibt 1,5 TL; „1 Dose weiße Bohnen“ = Bohnen aus der Dose [FAIL]
+[xUnit.net 00:00:04.26]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:04.26]       Expected: 1000
+[xUnit.net 00:00:04.26]       Actual:   1
+[xUnit.net 00:00:04.26]       Stack Trace:
+[xUnit.net 00:00:04.26]         C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot4\tests\Trendo.Core.Tests\T0787Runde3Tests.cs(91,0): at Trendo.Core.Tests.T0787_Runde3.Kleinigkeiten()
+[xUnit.net 00:00:04.26]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:04.26]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:04.27]     T-0787 R3-2: Bereich mit Tausenderpunkt „1.500-2.000 g“ = 1500 bis 2000 g; „1.5-2 kg“ bleibt 1,5 bis 2 [FAIL]
+[xUnit.net 00:00:04.27]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:04.27]       Expected: 1500
+[xUnit.net 00:00:04.27]       Actual:   2
+[xUnit.net 00:00:04.27]       Stack Trace:
+[xUnit.net 00:00:04.27]         C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot4\tests\Trendo.Core.Tests\T0787Runde3Tests.cs(60,0): at Trendo.Core.Tests.T0787_Runde3.Bereich()
+[xUnit.net 00:00:04.27]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:04.27]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:04.27]     T-0787 R3-3: englische Einheiten (cups, tbsp, tsp, oz, lb, fl oz, pint, quart) und häufige englische Zutatennamen – dieselben USDA-Zeilen [FAIL]
+[xUnit.net 00:00:04.27]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:00:04.27]                  ↓ (pos 0)
+[xUnit.net 00:00:04.27]       Expected: "cup"
+[xUnit.net 00:00:04.27]       Actual:   ""
+[xUnit.net 00:00:04.27]       Stack Trace:
+[xUnit.net 00:00:04.27]         C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot4\tests\Trendo.Core.Tests\T0787Runde3Tests.cs(70,0): at Trendo.Core.Tests.T0787_Runde3.Englisch()
+[xUnit.net 00:00:04.27]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:04.27]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:04.28]   Finished:    Trendo.Core.Tests
+  Fehler T-0787 R3-1: Fehlalarm-Sätze aus allen Runden bleiben frei (keine Sperre) [104 ms]
+  Fehlermeldung:
+   gesperrt, obwohl Kochsatz: Eine gesunde Portion Butter dazugeben. → gesunde | Den Topf zum Abnehmen vom Herd nehmen. → zum Abnehmen | Beim Abnehmen des Deckels Dampf entweichen lassen. → Beim Abnehmen | Rühren, um das Risiko des Anbrennens zu senken. → Risiko des Anbrennens zu senken | Den Teig gut gegen die Schüsselwand drücken. → gut gegen die | Zitronensaft wirkt gegen das Braunwerden der Äpfel. → wirkt gegen | Ein Schuss Essig hilft gegen das Ausflocken. → hilft gegen | Etwas Milch hilft bei zu dickem Teig. → hilft bei | Dem Anbrennen vorbeugend ab und zu rühren. → vorbeugend | Den Teig beugen und vor dem Ofen kurz ruhen lassen. → beugen und vor | Mit Heilwasser aufgießen. → Heilwasser | Gesundheit! → Gesundheit
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0787_Runde3.Fehlalarme_frei() in C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot4\tests\Trendo.Core.Tests\T0787Runde3Tests.cs:line 39
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0787 R3-1: eindeutige Versprechen werden gesperrt – auch über KiCheck [< 1 ms]
+  Fehlermeldung:
+   weiches Wort gesperrt: Ein gesundes Frühstück.
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0787_Runde3.Versprechen_gesperrt() in C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot4\tests\Trendo.Core.Tests\T0787Runde3Tests.cs:line 47
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0787 R3-4: „1,000 g“ mit Hinweis „Menge prüfen“; „1,500 TL“ bleibt 1,5 TL; „1 Dose weiße Bohnen“ = Bohnen aus der Dose [49 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: 1000
+Actual:   1
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0787_Runde3.Kleinigkeiten() in C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot4\tests\Trendo.Core.Tests\T0787Runde3Tests.cs:line 91
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0787 R3-2: Bereich mit Tausenderpunkt „1.500-2.000 g“ = 1500 bis 2000 g; „1.5-2 kg“ bleibt 1,5 bis 2 [1 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: 1500
+Actual:   2
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0787_Runde3.Bereich() in C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot4\tests\Trendo.Core.Tests\T0787Runde3Tests.cs:line 60
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0787 R3-3: englische Einheiten (cups, tbsp, tsp, oz, lb, fl oz, pint, quart) und häufige englische Zutatennamen – dieselben USDA-Zeilen [4 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "cup"
+Actual:   ""
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0787_Runde3.Englisch() in C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot4\tests\Trendo.Core.Tests\T0787Runde3Tests.cs:line 70
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 5
+     Nicht bestanden: 5
+ Gesamtzeit: 16,0778 Sekunden
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0787 R3-6: Sperre schon vor dem Dateidialog – ein zweiter Klick auf „Rezept öffnen …“ öffnet keinen zweiten Dialog [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: 1
+      Actual:   0
+      Stack Trace:
+        tests\Trendo.App.Tests\T0787Runde3UiTests.cs(58,0): at Trendo.App.Tests.T0787Runde3_Ui.Sperre_vor_dialog()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    T-0787 R3-5: drei Dateien ablegen/einlesen, zwei davon fehlerhaft – „1 von 3 Dateien eingelesen“ mit Name und Grund je Fehler, die gute Datei ist übernommen [FAIL]
+      Assert.StartsWith() Failure: String start does not match
+      String:         "1 Rezepte aus 3 Dateien eingelesen."
+      Expected start: "1 von 3 Dateien eingelesen"
+      Stack Trace:
+        tests\Trendo.App.Tests\T0787Runde3UiTests.cs(40,0): at Trendo.App.Tests.T0787Runde3_Ui.Mehrere_dateien_fehler_gesammelt()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Finished:    Trendo.App.Tests (ID = '8b16631dcae266a29a9117eadb71de4a0ce3e4b44eeb02e2b5fba8d6ea52dc5d')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 2, Errors: 0, Failed: 2, Skipped: 0, Not Run: 0, Time: 5,684s

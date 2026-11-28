@@ -38,8 +38,30 @@ public static partial class NaehrwertTabelle
             list.Add((l, Norm(l.Id.Replace('-', ' '))));
             foreach (var s in l.Such.Split('|', StringSplitOptions.RemoveEmptyEntries)) list.Add((l, Norm(s)));
         }
+        foreach (var (en, id) in Englisch) if (Find(id) is { } l) list.Add((l, Norm(en)));
         return list.Where(x => x.Item2.Length > 0).ToList();
     });
+
+    /// <summary>T-0787 (3. Prüfrunde): häufige englische Zutatennamen aus Rezeptseiten (schema.org) – verweisen auf dieselben Zeilen der USDA-Tabelle.</summary>
+    public static readonly IReadOnlyList<(string En, string Id)> Englisch =
+    [
+        ("flour", "weizenmehl"), ("all-purpose flour", "weizenmehl"), ("plain flour", "weizenmehl"), ("bread flour", "brotmehl"), ("whole wheat flour", "vollkornmehl"),
+        ("sugar", "zucker"), ("granulated sugar", "zucker"), ("brown sugar", "brauner-zucker"), ("powdered sugar", "puderzucker"), ("icing sugar", "puderzucker"),
+        ("egg", "ei"), ("eggs", "ei"), ("egg yolk", "eigelb"), ("egg yolks", "eigelb"), ("egg white", "eiweiss"), ("egg whites", "eiweiss"),
+        ("milk", "vollmilch"), ("whole milk", "vollmilch"), ("butter", "butter"), ("unsalted butter", "butter"), ("salt", "salz"), ("water", "wasser"),
+        ("oil", "rapsoel"), ("vegetable oil", "rapsoel"), ("canola oil", "rapsoel"), ("olive oil", "olivenoel"), ("sunflower oil", "sonnenblumenoel"), ("coconut oil", "kokosoel"),
+        ("baking powder", "backpulver"), ("yeast", "hefe-trocken"), ("dry yeast", "hefe-trocken"), ("honey", "honig"), ("maple syrup", "ahornsirup"), ("vanilla extract", "vanillearoma"),
+        ("cinnamon", "zimt"), ("pepper", "pfeffer"), ("black pepper", "pfeffer"), ("paprika", "paprikapulver"), ("cumin", "kreuzkuemmel"), ("nutmeg", "muskat"), ("oregano", "oregano"),
+        ("garlic", "knoblauch"), ("garlic clove", "knoblauch"), ("garlic cloves", "knoblauch"), ("onion", "zwiebel"), ("onions", "zwiebel"), ("tomato", "tomate"), ("tomatoes", "tomate"),
+        ("canned tomatoes", "tomaten-dose"), ("tomato paste", "tomatenmark"), ("potato", "kartoffel"), ("potatoes", "kartoffel"), ("carrot", "karotte"), ("carrots", "karotte"),
+        ("rice", "reis"), ("pasta", "nudeln"), ("spaghetti", "nudeln"), ("oats", "haferflocken"), ("rolled oats", "haferflocken"),
+        ("heavy cream", "sahne"), ("whipping cream", "sahne"), ("cream", "sahne"), ("sour cream", "saure-sahne"), ("yogurt", "joghurt"), ("cream cheese", "frischkaese"),
+        ("parmesan", "parmesan"), ("mozzarella", "mozzarella"), ("cheddar", "cheddar"), ("lemon juice", "zitronensaft"), ("lemon", "zitrone"), ("lime", "limette"),
+        ("chicken breast", "haehnchenbrust"), ("ground beef", "rinderhack"), ("salmon", "lachs"), ("cocoa powder", "kakao"), ("dark chocolate", "zartbitter"), ("chocolate chips", "zartbitter"),
+        ("walnuts", "walnuesse"), ("almonds", "mandeln"), ("banana", "banane"), ("bananas", "banane"), ("apple", "apfel"), ("apples", "apfel"), ("spinach", "spinat"),
+        ("chicken broth", "haehnchenbruehe"), ("broth", "haehnchenbruehe"), ("stock", "haehnchenbruehe"), ("cornstarch", "speisestaerke"), ("raisins", "rosinen"),
+        ("bell pepper", "paprika-rot"), ("red bell pepper", "paprika-rot"), ("zucchini", "zucchini"), ("mushrooms", "champignons"), ("broccoli", "brokkoli"), ("kidney beans", "kidneybohnen"), ("chickpeas", "kichererbsen"),
+    ];
 
     /// <summary>Ein- und Mehrzahl: „Eier“ → „ei“, „Zwiebeln“ → „zwiebel“, „Tomaten“ → „tomate“, „Knoblauchzehen“ → „knoblauchzehe“.</summary>
     static IEnumerable<string> Formen(string w)
@@ -162,7 +184,19 @@ public static class RezeptKit
         new("handvoll", "Handvoll", "Handvoll", "anders", 1, ["handvoll"]),
         new("zweig", "Zweig", "Zweig", "anders", 1, ["zweig", "zweige"]),
         new("blatt", "Blatt", "Blatt", "anders", 1, ["blatt", "blätter"]),
+        // T-0787 (3. Prüfrunde): englische Einheiten aus Rezeptseiten (US-Maße), mit Dichte umgerechnet wie Tasse/EL/TL
+        new("cup", "cup", "Cup (US)", "volumen", 236.588, ["cup", "cups", "c"]),
+        new("tbsp", "tbsp", "Esslöffel (US)", "volumen", 14.787, ["tbsp", "tbs", "tablespoon", "tablespoons"]),
+        new("tsp", "tsp", "Teelöffel (US)", "volumen", 4.929, ["tsp", "teaspoon", "teaspoons"]),
+        new("floz", "fl oz", "Flüssigunze (US)", "volumen", 29.574, ["floz", "fl oz", "fl. oz", "fluid ounce", "fluid ounces"]),
+        new("pint", "pint", "Pint (US)", "volumen", 473.176, ["pint", "pints", "pt"]),
+        new("quart", "quart", "Quart (US)", "volumen", 946.353, ["quart", "quarts", "qt"]),
+        new("oz", "oz", "Unze", "masse", 28.3495, ["oz", "ounce", "ounces"]),
+        new("lb", "lb", "Pfund (US)", "masse", 453.592, ["lb", "lbs", "pound", "pounds"]),
     ];
+
+    /// <summary>Englische Einheiten – Zutaten mit ihnen, die Trendo nicht zuordnen kann, ergeben beim Einlesen einen eigenen Hinweis.</summary>
+    public static readonly HashSet<string> EnglischeEinheiten = ["cup", "tbsp", "tsp", "floz", "pint", "quart", "oz", "lb"];
 
     /// <summary>Gewicht je Packungseinheit (nur wo eindeutig): Dose 400 g (abgetropft 240 g), Päckchen Backpulver 15 g, Trockenhefe 7 g, Würfel Hefe 42 g.</summary>
     static readonly Dictionary<(string Lm, string Einheit), double> PackGramm = new()
@@ -177,7 +211,7 @@ public static class RezeptKit
     public static KuechenEinheit? EinheitVon(string? s)
     {
         if (s is not { Length: > 0 }) return null;
-        var k = s.Trim().TrimEnd('.').ToLowerInvariant();
+        var k = Regex.Replace(s.Trim().TrimEnd('.').ToLowerInvariant(), @"^fl\.?\s*oz$", "floz");
         return Einheiten.FirstOrDefault(e => e.Id == k || e.Kurz.TrimEnd('.').Equals(k, StringComparison.OrdinalIgnoreCase) || e.Namen.Contains(k));
     }
 
@@ -206,7 +240,7 @@ public static class RezeptKit
     {
         if (v <= 0) return "0";
         var e = EinheitVon(einheit);
-        var bruch = e is null || e.Art is "stueck" or "anders" || e.Id is "el" or "tl" or "tasse" or "becher" or "prise" or "msp";
+        var bruch = e is null || e.Art is "stueck" or "anders" || e.Id is "el" or "tl" or "tasse" or "becher" or "prise" or "msp" or "cup" or "tbsp" or "tsp" or "pint" or "quart";
         if (bruch)
         {
             var ganz = Math.Floor(v); var rest = v - ganz;
@@ -241,9 +275,40 @@ public static class RezeptKit
     static readonly Regex DeutschRx = new(@"^([1-9]\d{0,2}(?:\.\d{3})+),(\d+)(?![.,\d])", RegexOptions.Compiled);
     /// <summary>Punkt mit genau drei Ziffern („1.000“, „0.250“, „1.500“) – mehrdeutig, Regel siehe <see cref="Lies"/>.</summary>
     static readonly Regex PunktDreiRx = new(@"^(\d{1,3}(?:\.\d{3})+)(?![.,\d])", RegexOptions.Compiled);
+    static readonly Regex AnfangRx = new(@"^(?<a>\d[\d.,]*\d|\d)(?:(?<sep>\s*(?:-|–|bis)\s*)(?<b>\d[\d.,]*\d|\d))?(?<rest>(?![\d.,]).*)$", RegexOptions.Compiled);
+
+    /// <summary>Eine Zahl am Zeilenanfang in die Schreibweise mit Komma bringen. null = nicht eindeutig lesbar (Grund in <paramref name="hinweise"/>).
+    /// Regeln: „1.000,5“ deutsch; „0.250“ Dezimalpunkt; Punkt + drei Ziffern vor großen Einheiten (kg, l, Cup …) Dezimalpunkt, sonst Tausenderpunkt (mit Hinweis);
+    /// Komma + drei Ziffern vor g/ml und anderen kleinen Einheiten („1,000 g“): englisches Tausenderkomma → 1000 mit Hinweis; sonst deutsches Dezimalkomma.</summary>
+    static string? NormZahl(string t, bool gross, bool klein, string einheit, List<string> hinweise)
+    {
+        if (Regex.IsMatch(t, @"^\d+$") || Regex.IsMatch(t, @"^\d+[.,]\d{1,2}$") || Regex.IsMatch(t, @"^\d+[.,]\d{4,}$")) return t.Replace('.', ',');
+        if (Regex.IsMatch(t, @"^[1-9]\d{0,2}(?:\.\d{3})+,\d+$")) return t.Replace(".", "");
+        if (Regex.IsMatch(t, @"^\d{1,3}(?:\.\d{3})+$"))
+        {
+            if (t.StartsWith('0')) return t.Count(c => c == '.') == 1 ? t.Replace('.', ',') : null;
+            if (gross)
+            {
+                if (t.Count(c => c == '.') > 1) { hinweise.Add($"„{t}“ ist nicht eindeutig lesbar – Menge nicht übernommen."); return null; }
+                hinweise.Add($"„{t} {einheit}“ als {t.Replace('.', ',')} {einheit} gelesen (Punkt als Dezimalpunkt) – bitte prüfen.");
+                return t.Replace('.', ',');
+            }
+            hinweise.Add($"„{t}“ als {t.Replace(".", "")} gelesen (Punkt als Tausendertrennzeichen) – bitte prüfen.");
+            return t.Replace(".", "");
+        }
+        if (Regex.IsMatch(t, @"^[1-9]\d{0,2},\d{3}$") && klein)
+        {
+            hinweise.Add($"„{t} {einheit}“ als {t.Replace(",", "")} {einheit} gelesen (Komma als englisches Tausendertrennzeichen) – Menge prüfen.");
+            return t.Replace(",", "");
+        }
+        if (Regex.IsMatch(t, @"^\d+,\d+$")) return t;
+        hinweise.Add($"„{t}“ ist nicht eindeutig lesbar – Menge nicht übernommen.");
+        return null;
+    }
+
     static readonly Regex MalRx = new(@"^(\d{1,4})\s*[x×]\s*(?=\d)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
     /// <summary>Große Einheiten: dort ist „1.500“ eher 1,5 als 1500 (1,5 kg statt 1,5 t).</summary>
-    static readonly HashSet<string> GrosseEinheit = ["kg", "l", "pfund", "dl", "tasse", "becher"];
+    static readonly HashSet<string> GrosseEinheit = ["kg", "l", "pfund", "dl", "tasse", "becher", "cup", "pint", "quart", "lb"];
 
     /// <summary>Wie <see cref="LiesZutat"/>, dazu ein Hinweis, wenn etwas mehrdeutig oder nicht lesbar war (Tausenderpunkt, „1e5“, Menge 0, negativ oder riesig).
     /// Regel für den Punkt (dokumentiert in Hilfe und docs/nachbau/rezepte/anforderungen.md):
@@ -269,29 +334,18 @@ public static class RezeptKit
         // „2 x 200 g“ → 400 g, „10 x 10 x 10 g“ → 1000 g (höchstens drei Faktoren)
         double mal = 1;
         for (var f = 0; f < 3 && MalRx.Match(z) is { Success: true } mm; f++) { mal *= double.Parse(mm.Groups[1].Value, CultureInfo.InvariantCulture); z = z[mm.Length..]; }
-        // „1.000,5 g“: deutsche Schreibweise, eindeutig
-        if (DeutschRx.Match(z) is { Success: true } dm) z = dm.Groups[1].Value.Replace(".", "") + "," + dm.Groups[2].Value + z[dm.Length..];
-        // „1.000 g“ / „0.250 kg“ / „1.500 kg“: Punkt mit genau drei Ziffern – Regel siehe oben, immer mit Hinweis
-        else if (PunktDreiRx.Match(z) is { Success: true } tm)
+        // Zahlen am Anfang – die erste und die zweite eines Bereichs („1.500-2.000 g“) – nach derselben Punkt- und Komma-Regel (siehe oben)
+        if (AnfangRx.Match(z) is { Success: true } am)
         {
-            var zahl = tm.Groups[1].Value;
-            var einheitDanach = Regex.Match(z[tm.Length..], @"^\s*([\p{L}]+)\.?").Groups[1].Value;
-            var gross = EinheitVon(einheitDanach) is { } ge && GrosseEinheit.Contains(ge.Id);
-            if (zahl.StartsWith('0') || gross)
-            {
-                if (!zahl.StartsWith('0') && zahl.Count(c => c == '.') > 1) { hinweis = $"„{zahl}“ ist nicht eindeutig lesbar – Menge nicht übernommen."; z = z[tm.Length..].Trim(); }
-                else
-                {
-                    hinweis = zahl.StartsWith('0') ? null : $"„{zahl} {einheitDanach}“ als {zahl.Replace('.', ',')} {einheitDanach} gelesen (Punkt als Dezimalpunkt) – bitte prüfen.";
-                    z = zahl.Replace('.', ',') + z[tm.Length..];
-                }
-            }
-            else
-            {
-                var ohne = zahl.Replace(".", "");
-                hinweis = $"„{zahl}“ als {ohne} gelesen (Punkt als Tausendertrennzeichen) – bitte prüfen.";
-                z = ohne + z[tm.Length..];
-            }
+            var restNach = am.Groups["rest"].Value;
+            var einheitDanach = Regex.Match(restNach, @"^\s*(fl\.?\s*oz|[\p{L}]+)\.?", RegexOptions.IgnoreCase).Groups[1].Value;
+            var ein = EinheitVon(einheitDanach);
+            var gross = ein is not null && GrosseEinheit.Contains(ein.Id);
+            var klein = ein?.Id is "g" or "ml" or "mg"; // nur hier ist „1,000“ als englisches Tausenderkomma denkbar – „1,500 TL“ bleibt 1,5 TL
+            var hs = new List<string>();
+            string? A = NormZahl(am.Groups["a"].Value, gross, klein, einheitDanach, hs), B = am.Groups["b"].Success ? NormZahl(am.Groups["b"].Value, gross, klein, einheitDanach, hs) : null;
+            if (A is null || am.Groups["b"].Success && B is null) { hinweis = hs.FirstOrDefault() ?? $"„{am.Value.Trim()}“ ist nicht eindeutig lesbar – Menge nicht übernommen."; z = restNach.Trim(); }
+            else { z = A + (B is null ? "" : am.Groups["sep"].Value + B) + restNach; if (hs.Count > 0) hinweis = string.Join(" ", hs); }
         }
         var m = ZeileRx.Match(z);
         double? a = m.Groups["a"].Success ? LiesZahl(m.Groups["a"].Value) : null, b = m.Groups["b"].Success ? LiesZahl(m.Groups["b"].Value) : null;
@@ -302,14 +356,14 @@ public static class RezeptKit
         if (a is not null && Regex.IsMatch(rest, @"^[eE][+-]?\d"))
             return (new(null, null, "", z, notizVorn), $"„{z.Split(' ')[0]}“ ist keine lesbare Menge – bitte als normale Zahl schreiben.");
         if (a is not null) { a *= mal; b *= mal; }
-        if ((a is <= 0 or > MaxMenge || b is <= 0 or > MaxMenge) && !(hinweis?.Contains("nicht eindeutig") ?? false))
+        if (a is <= 0 or > MaxMenge || b is <= 0 or > MaxMenge)
         {
             hinweis = $"Menge „{m.Groups["a"].Value}“ liegt außerhalb von 0 bis 1 000 000 – nicht übernommen.";
             a = null; b = null;
         }
         var einheit = "";
         // Einheit: erstes Wort (auch direkt an der Zahl wie „200g“)
-        var um = Regex.Match(rest, @"^(?<u>[\p{L}]+\.?)(?=\s|$)");
+        var um = Regex.Match(rest, @"^(?<u>fl\.?\s*oz\.?|[\p{L}]+\.?)(?=\s|$)", RegexOptions.IgnoreCase);
         if (a is not null && um.Success && EinheitVon(um.Groups["u"].Value) is { } e && rest.Length > um.Length) { einheit = e.Id; rest = rest[um.Length..].Trim(); }
         else if (a is null && um.Success && EinheitVon(um.Groups["u"].Value) is { Art: "masse" or "volumen" } e2 && e2.Id is "prise" or "msp" && rest.Length > um.Length) { a = 1; einheit = e2.Id; rest = rest[um.Length..].Trim(); }
         // „große/kleine/mittelgroße …“ bleibt im Namen; Hinweis nach dem ersten Komma
@@ -325,12 +379,22 @@ public static class RezeptKit
         if (notizVorn.Length > 0) notiz = notiz.Length > 0 ? notizVorn + " " + notiz : notizVorn;
         if (b is not null && a is not null && b < a) (a, b) = (b, a);
         // „1 Dose Tomaten“: Dosenware vor Frischware
-        var lm = einheit == "dose" ? (NaehrwertTabelle.Suche(rest, 40) is var kd && kd.FirstOrDefault(k => k.Id.EndsWith("-dose", StringComparison.Ordinal) || DosenWare.Contains(k.Id)) is { } dk ? dk.Id : kd.FirstOrDefault()?.Id ?? "")
-            : NaehrwertTabelle.Match(rest)?.Id ?? "";
+        var lm = einheit == "dose" ? DoseZuordnung(rest) : NaehrwertTabelle.Match(rest)?.Id ?? "";
         return (new(a, b, einheit, rest, notiz, lm), hinweis);
     }
 
     static readonly HashSet<string> DosenWare = ["kidneybohnen", "kichererbsen", "kokosmilch", "mais", "oliven"];
+
+    /// <summary>„1 Dose …“: Dosenware vor Frischware – erst die Treffer der Suche, dann Dosenware, deren Name ein Wort der Zutat enthält („weiße Bohnen“ → Bohnen aus der Dose).</summary>
+    static string DoseZuordnung(string rest)
+    {
+        static bool Dose(Lebensmittel l) => l.Id.EndsWith("-dose", StringComparison.Ordinal) || DosenWare.Contains(l.Id);
+        var kd = NaehrwertTabelle.Suche(rest, 40);
+        if (kd.FirstOrDefault(Dose) is { } dk) return dk.Id;
+        var words = Regex.Split(rest.ToLowerInvariant(), @"[^\p{L}]+").Where(w => w.Length >= 4).ToList();
+        if (NaehrwertTabelle.Alle.Where(Dose).FirstOrDefault(l => words.Any(w => l.Name.Contains(w, StringComparison.OrdinalIgnoreCase) || l.Such.Contains(w, StringComparison.OrdinalIgnoreCase))) is { } wl) return wl.Id;
+        return kd.FirstOrDefault()?.Id ?? "";
+    }
 
     /// <summary>Für Wege ohne Rückfrage (Einlesen, KI): Zeile lesen; war etwas mehrdeutig, steht „Menge prüfen: …“ im Hinweis der Zutat – nichts wird still übernommen.</summary>
     public static Zutat LiesMitPruefvermerk(string zeile, List<string>? hinweise = null)
@@ -437,7 +501,7 @@ public static class RezeptKit
         var list = r.Zutaten.Select(z =>
         {
             var e = EinheitVon(z.Einheit);
-            if (z.Menge is null || e is null || e.Id is not ("el" or "tl" or "tasse" or "becher" or "pfund" or "cl" or "dl")) return z;
+            if (z.Menge is null || e is null || e.Id is not ("el" or "tl" or "tasse" or "becher" or "pfund" or "cl" or "dl" or "cup" or "tbsp" or "tsp" or "floz" or "pint" or "quart" or "oz" or "lb")) return z;
             n++;
             var lm = LmVon(z);
             if (e.Art == "masse") return Glaette(z with { Einheit = "g", Menge = z.Menge * e.Faktor, Bis = z.Bis * e.Faktor });
@@ -649,50 +713,55 @@ public static class RezeptKit
     // ------------------------------------------------------------ Keine Gesundheitsversprechen
 
     /// <summary>Heil- und Gesundheitsversprechen als ganze Wörter bzw. Wendungen (Wortgrenzen an Buchstaben: „verbeugt“ und „hilft beim Frischhalten“ sind kein Treffer).</summary>
-    /// <summary>Heil- und Gesundheitsversprechen nach Wortfamilien, als ganze Wörter bzw. Wendungen (Wortgrenzen an Buchstaben: „verbeugt“, „hilft beim Frischhalten“,
-    /// „Der Teig heilt nicht“ sind kein Treffer). <b>Ehrlich:</b> Das ist eine Wortliste – sie fängt die üblichen Formulierungen, ist aber nicht vollständig;
-    /// neue Umschreibungen erkennt sie nicht. Darum steht in Hilfe und Druck zusätzlich „Richtwerte – keine Ernährungs- oder Gesundheitsberatung“.</summary>
+    /// <summary>Krankheits- und Körperbegriffe für Stufe (a) – feste Liste. Nur zusammen mit einem Wirk-Verb („heilt“, „hilft gegen“, „stärkt“ …) ist es eine Gesundheitsaussage.
+    /// Bewusst nicht darin: „Haut“, „Haar“ (Hähnchenhaut, „schützt die Haut vor dem Austrocknen“).</summary>
+    const string Koerper = @"(?:krebs\w*|tumor\w*|erkältung\w*|grippe\w*|infekt\w*|entzündung\w*|blutdruck\w*|bluthochdruck|blutzucker\w*|zuckerspiegel|cholesterin\w*|blutfett\w*|"
+        + @"verdauung\w*|darm\w*|magen\w*|immunsystem\w*|immunabwehr|abwehrkräfte|abwehr|herz\w*|kreislauf\w*|knochen\w*|kopfschmerz\w*|migräne\w*|schmerz\w*|husten\w*|halsschmerz\w*|halsweh|"
+        + @"schnupfen|fieber\w*|übelkeit|sodbrennen|blähung\w*|verstopfung|durchfall|diabetes|arthrose|rheuma\w*|allergie\w*|stoffwechsel\w*|leber\w*|niere\w*|gelenk\w*|krankheit\w*|"
+        + @"beschwerde\w*|depression\w*|stress\w*|schlafstörung\w*|müdigkeit|nerven\w*|gedächtnis\w*|gehirn\w*|sehkraft|übergewicht|fettleibigkeit|gefäß\w*|arterie\w*|thrombose|osteoporose|"
+        + @"anämie|eisenmangel|gesundheit|wohlbefinden|zellen|zellschutz)";
+    const string WirkVerb = @"(?:heil(?:t|en)|lindert|lindern|bekämpf(?:t|en)|wirk(?:t|en|sam)\s+(?:gegen|bei)|hilft\s+(?:gegen|bei)|helfen\s+(?:gegen|bei)|schütz(?:t|en)\s+(?:vor|gegen)|"
+        + @"schutz\s+(?:vor|gegen)|gut\s+(?:gegen|für)|beug(?:t|en)|senk(?:t|en)|reduzier(?:t|en)|regulier(?:t|en)|stärk(?:t|en)|förder(?:t|n)|unterstütz(?:t|en)|verbesser(?:t|n)|"
+        + @"schont|entlastet|stabilisiert|kräftigt|aktiviert)";
+    const string WirkWort = @"(?:senkend|hemmend|fördernd|stärkend|lindernd|vorbeugend|schützend|regulierend|stabilisierend)";
+
+    /// <summary>Stufe (a) – <b>Sperre</b> (Gegenprüfung T-0787, 3. Runde: Aufbau statt Wortliste): nur eindeutige Aussagen. Wirk-Verb + Körperbegriff (höchstens fünf Wörter dazwischen),
+    /// Körperbegriff + „-senkend/-hemmend/…“, feste Begriffe (Detox, Superfood, entzündungshemmend, antioxidativ …) und Abnehmen im Sinne einer Diät
+    /// („zum Abnehmen geeignet“, „hilft beim Abnehmen“ – nicht „vom Herd abnehmen“, „beim Abnehmen des Deckels“).
+    /// <b>Ehrlich:</b> Das bleibt eine Regel aus Wortlisten – übliche Formulierungen werden erkannt, neue Umschreibungen nicht. Kochsätze wie „hilft gegen das Ausflocken“ bleiben frei.</summary>
     static readonly string[] Versprechen =
     [
-        // heilen
-        @"heil(?:t|en)(?!\s+nicht)", @"heil(?:end|ende|ender|endes|enden|sam|same|samer|sames|wirkung|wirkungen|mittel|kraft|kräfte|kräftig|kräftige|kräftigen|kräuter|kräutern|pflanze|pflanzen|nahrung)",
-        @"heil(?:-\s*|\s+)?(?:tee|kräuter\w*|pflanze\w*|nahrung|wasser|mittel)",
-        // Krebs, Krankheiten
-        @"gegen\s+(?:krebs|diabetes|krankheit\w*|erkältung\w*|entzündung\w*|bluthochdruck|cholesterin)", @"krebs(?:vorbeugend|hemmend|schützend)\w*",
-        @"schutz\s+vor\s+(?:krebs|krankheit\w*|herzinfarkt|erkältung\w*|infekt\w*|entzündung\w*)", @"schützt\s+vor\s+(?:krankheit\w*|krebs|herzinfarkt|erkältung\w*|infekt\w*|entzündung\w*)",
-        @"beug(?:t|en)\s+(?:\p{L}+\s+){0,4}vor", @"vorbeugend\w*",
-        // senken, Risiko
-        @"senk(?:t|en)\s+(?:den\s+|das\s+|die\s+)?(?:blutdruck|blutzucker\w*|cholesterin\w*|zuckerspiegel|risiko\w*|krankheitsrisiko)", @"(?:risiko|risiken)\s+(?:\p{L}+\s+){0,3}senk\w*",
-        @"(?:blutzucker|blutdruck|cholesterin)(?:\s+|-)?senkend\w*",
-        // Entzündung, Entgiften, Oxidation
-        @"entzündungshemmend\w*", @"antientzündlich\w*", @"entgift(?:et|en|end|ende|ung)", @"detox\w*", @"antioxida\w*",
-        // stärken, gut für, fördern
-        @"stärk(?:t|en)\s+(?:das\s+|die\s+|den\s+)?(?:immunsystem|abwehr\w*|knochen|herz|nerven|gedächtnis|darm|stoffwechsel)", @"immunbooster",
-        @"gut\s+(?:für\s+(?:das\s+|die\s+|den\s+)?(?:herz|knochen|haut|darm|immunsystem|gehirn|nerven|leber|blut|gesundheit)|gegen\s+\p{L}+)",
-        @"wirk(?:t|en|sam|same)\s+gegen", @"förder(?:t|n)\s+(?:die\s+|den\s+|das\s+)?(?:verdauung|gesundheit|abwehr\w*|durchblutung|stoffwechsel|fettverbrennung|heilung)",
-        @"verdauungsfördernd\w*", @"gesundheitsfördernd\w*",
-        // gesund, abnehmen, schlank
-        @"gesund\w*", @"zum\s+abnehmen", @"beim\s+abnehmen", @"abnehmen\s+(?:hilft|leicht|garantiert)", @"garantiert\s+abnehmen", @"schlankmacher\w*", @"macht\s+schlank",
-        @"schlank\s+über\s+nacht", @"fatburner", @"fettverbrennung\w*", @"fett\s*verbrennend\w*",
-        // Wunder, medizinisch, lindern
-        @"wundermittel", @"superfood\w*", @"medizinisch\w*", @"therapeutisch\w*", @"hilft\s+gegen", @"hilft\s+bei", @"lindert", @"lindern\w*",
+        WirkVerb + @"(?:\s+\p{L}+){0,5}?\s+" + Koerper,
+        Koerper + @"(?:\s*-\s*|\s+)?" + WirkWort + @"\w*",
+        @"(?:krebs|blutdruck|blutzucker|cholesterin|verdauung|entzündung|immun|abwehr|herz|knochen|gesundheit|stoffwechsel)s?" + WirkWort + @"\w*",
+        @"detox\w*", @"entgift\w*", @"entschlack\w*", @"superfood\w*", @"entzündungshemmend\w*", @"antientzündlich\w*", @"antioxida\w*", @"immunbooster\w*", @"wundermittel\w*",
+        @"fatburner\w*", @"fett\s*verbrennend\w*", @"fettverbrennung\w*", @"schlankmacher\w*", @"macht\s+schlank", @"schlank\s+über\s+nacht", @"garantiert\s+abnehmen", @"abnehmen\s+garantiert",
+        @"(?:zum|beim|fürs|für\s+das)\s+abnehmen(?!\s+(?:vom|von|der|des|den|dem|aus|mit|vorsichtig|lassen|und\s+\p{L}+en\b))",
+    ];
+
+    /// <summary>Stufe (b) – <b>Hinweis</b>: weiche Wörter ohne eindeutige Aussage („gesund“, „gesündere Variante“, „Heiltee“, „lindernd“, „senkt das Risiko“, „medizinisch“ …).
+    /// Ergibt nur „Bitte prüfen“, keine Ablehnung. „gesunde Portion Butter“, „Heilwasser“ und „Gesundheit!“ bleiben frei.</summary>
+    static readonly string[] Weich =
+    [
+        @"gesund(?:e|er|es|en|em)?(?!\s+(?:portion|prise|schuss|maß|menge|stück|löffel|handvoll|hunger|appetit|schlaf))", @"gesünder\w*", @"gesündeste\w*", @"gesundheitsbewusst\w*",
+        @"heil(?:t|en)(?!\s+nicht)", @"heil(?:-\s*|\s+)?(?:tee|kräuter\w*|pflanze\w*|nahrung|mittel\w*|kraft|kräfte|wirkung\w*)", @"heilsam\w*",
+        @"lindernd\w*", @"medizinisch\w*", @"therapeutisch\w*", @"diät\w*", @"vitalstoff\w*",
+        @"senk(?:t|en)\s+(?:das|ihr|sein|dein)\s+risiko(?!\s+(?:des|eines|beim|zu|von|dass))",
     ];
 
     /// <summary>Anfang eines Treffers, wenn die Prüfung an der Zeitgrenze abbrach (statt eines Absturzes).</summary>
     public const string Zeitgrenze = "Die Prüfung auf Gesundheitsversprechen brach an der Zeitgrenze ab";
-    /// <summary>Zeitgrenze je Wendung (nur für Tests änderbar).</summary>
-    public static TimeSpan VersprechenZeit { get => _versprechenZeit; set { _versprechenZeit = value; _versprechenRx = null; } }
-    static TimeSpan _versprechenZeit = TimeSpan.FromSeconds(2);
-    static Regex[]? _versprechenRx;
-    static Regex[] VersprechenRx => _versprechenRx ??= [.. Versprechen.Select(v => new Regex(@"(?<!\p{L})" + v + @"(?!\p{L})", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, _versprechenZeit))];
+    /// <summary>Zeitgrenze je Wendung. Fest – die Zeitgrenze für Tests geht als Argument mit (eine globale, änderbare Grenze störte parallel laufende Tests).</summary>
+    public static readonly TimeSpan VersprechenZeit = TimeSpan.FromSeconds(2);
+    static Regex[] Bauen(IEnumerable<string> muster, TimeSpan zeit) => [.. muster.Select(v => new Regex(@"(?<!\p{L})" + v + @"(?!\p{L})", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, zeit))];
+    static readonly Lazy<Regex[]> VersprechenRx = new(() => Bauen(Versprechen, VersprechenZeit));
+    static readonly Lazy<Regex[]> HinweisRx = new(() => Bauen(Weich, VersprechenZeit));
 
-    /// <summary>Gesundheits- oder Heilversprechen in einem Text (Trendo gibt keine; die KI darf keine schreiben). Liefert die gefundenen Wendungen.
-    /// Bricht eine Wendung an der Zeitgrenze ab, steht statt eines Absturzes ein Eintrag mit <see cref="Zeitgrenze"/> in der Liste (ehrlicher Hinweis, gilt als nicht bestanden).</summary>
-    public static List<string> Gesundheitsversprechen(string text)
+    static List<string> Suche(Regex[] rx, string text)
     {
         var t = text ?? ""; if (t.Length > 200_000) t = t[..200_000];
         var hits = new List<string>();
-        foreach (var r in VersprechenRx)
+        foreach (var r in rx)
         {
             try { if (r.Match(t) is { Success: true } m) hits.Add(m.Value.Trim()); }
             catch (RegexMatchTimeoutException) { return [Zeitgrenze + " (Text sehr lang oder ungewöhnlich)"]; }
@@ -700,11 +769,24 @@ public static class RezeptKit
         return hits;
     }
 
+    /// <summary>Stufe (b): weiche Gesundheitswörter („gesund“, „gesündere Variante“, „Heiltee“, „senkt das Risiko“ …) – kein Grund zur Ablehnung, nur „Bitte prüfen“.</summary>
+    public static List<string> Gesundheitshinweise(string text) => Suche(HinweisRx.Value, text);
+
+    /// <summary>Stufe (a): eindeutige Gesundheits- oder Heilversprechen (Trendo gibt keine; die KI darf keine schreiben). Liefert die gefundenen Wendungen.
+    /// Bricht eine Wendung an der Zeitgrenze ab, steht statt eines Absturzes ein Eintrag mit <see cref="Zeitgrenze"/> in der Liste (ehrlicher Hinweis, gilt als nicht bestanden).</summary>
+    public static List<string> Gesundheitsversprechen(string text) => Suche(VersprechenRx.Value, text);
+
+    /// <summary>Wie <see cref="Gesundheitsversprechen(string)"/>, mit eigener Zeitgrenze (für den Test der Zeitüberschreitung).</summary>
+    public static List<string> Gesundheitsversprechen(string text, TimeSpan zeit) => Suche(Bauen(Versprechen, zeit), text);
+
     /// <summary>Aller Text eines Rezepts, in dem ein Versprechen stehen kann – auch Zutaten und deren Hinweise („1 TL Kurkuma, heilt Entzündungen“).</summary>
     public static string AllerText(Rezept r) => string.Join(" \n ", [r.Name, r.Beschreibung, r.Notizen, r.Stichwoerter, r.Kategorie, r.Kueche, .. r.Schritte, .. r.Zutaten.Select(z => z.Name + " " + z.Notiz)]);
 
     /// <summary>Prüfung einer KI-Änderung (vorher, nachher): keine Gesundheitsversprechen, keine doppelten Kennungen, Wochenplan und Einkaufsliste nur durch die Person.</summary>
-    public static string? KiCheck(JsonObject vorher, JsonObject nachher)
+    public static string? KiCheck(JsonObject vorher, JsonObject nachher) => KiCheck(vorher, nachher, null);
+
+    /// <summary>Wie oben, mit eigener Zeitgrenze für die Versprechen-Prüfung (Test der Zeitüberschreitung).</summary>
+    public static string? KiCheck(JsonObject vorher, JsonObject nachher, TimeSpan? zeit)
     {
         if ((vorher["plan"]?.ToJsonString() ?? "") != (nachher["plan"]?.ToJsonString() ?? "") || (vorher["liste"]?.ToJsonString() ?? "") != (nachher["liste"]?.ToJsonString() ?? ""))
             return "Wochenplan und Einkaufsliste ändert nur die Person selbst – die KI schreibt nur Rezepte.";
@@ -714,7 +796,7 @@ public static class RezeptKit
         foreach (var r in Rezepte(nachher))
         {
             if (alt.TryGetValue(r.Id, out var a) && a == RezeptJson(r).ToJsonString()) continue;
-            if (Gesundheitsversprechen(AllerText(r)) is { Count: > 0 } hits)
+            if ((zeit is { } zt ? Gesundheitsversprechen(AllerText(r), zt) : Gesundheitsversprechen(AllerText(r))) is { Count: > 0 } hits)
                 return hits[0].StartsWith(Zeitgrenze, StringComparison.Ordinal) ? hits[0] + " – nicht übernommen." : $"Die KI hat ein Gesundheitsversprechen geschrieben („{hits[0]}“) – Trendo nimmt das nicht an. Nährwerte sind nur Richtwerte.";
         }
         return null;
@@ -730,6 +812,7 @@ public static class RezeptKit
         var n = Berechne(r);
         if (n.Fehlt.Count > 0) f.Add("Ohne Nährwerte (nicht zugeordnet oder ohne Gewicht): " + string.Join(", ", n.Fehlt) + ".");
         if (Gesundheitsversprechen(AllerText(r)) is { Count: > 0 } v) f.Add($"Bitte ohne Heil- oder Gesundheitsversprechen formulieren („{v[0]}“).");
+        else if (Gesundheitshinweise(AllerText(r)) is { Count: > 0 } w) f.Add($"Bitte prüfen: „{w[0]}“ – Trendo macht keine Gesundheitsaussagen (Nährwerte sind Richtwerte).");
         return f;
     }
 
@@ -881,7 +964,16 @@ public static class RezeptKit
             JsonNode? node;
             try { node = JsonNode.Parse(b, documentOptions: new JsonDocumentOptions { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip, MaxDepth = 64 }); }
             catch (JsonException e) { notes.Add("Ein JSON-LD-Block ist kein gültiges JSON: " + e.Message.Split('.')[0] + "."); continue; }
-            foreach (var o in Walk(node, 0)) if (IsRecipe(o)) { var h = new List<string>(); var rz = VonSchema(o, h); found.Add(rz); if (h.Count > 0) notes.Add($"„{rz.Name}“: {h.Count} Menge(n) mehrdeutig – in den Zutaten mit „Menge prüfen“ markiert ({h[0]})"); if (found.Count >= MaxRezepte) break; }
+            foreach (var o in Walk(node, 0))
+                if (IsRecipe(o))
+                {
+                    var h = new List<string>(); var rz = VonSchema(o, h); found.Add(rz);
+                    if (h.Count > 0) notes.Add($"„{rz.Name}“: {h.Count} Menge(n) mehrdeutig – in den Zutaten mit „Menge prüfen“ markiert ({h[0]})");
+                    var offen = rz.Zutaten.Where(z => !z.Gruppe && z.Menge is not null && LmVon(z) is null).ToList();
+                    var englisch = S(o["inLanguage"]).StartsWith("en", StringComparison.OrdinalIgnoreCase) || rz.Zutaten.Any(z => EnglischeEinheiten.Contains(z.Einheit));
+                    if (offen.Count > 0 && englisch) notes.Add($"„{rz.Name}“: {offen.Count} englische Zutatennamen nicht zugeordnet – Nährwerte fehlen ({string.Join(", ", offen.Take(3).Select(z => z.Name))}). Rechts lassen sie sich von Hand zuordnen.");
+                    if (found.Count >= MaxRezepte) break;
+                }
             if (found.Count >= MaxRezepte) { notes.Add($"Höchstens {MaxRezepte} Rezepte je Datei – der Rest wurde nicht gelesen."); break; } // Grenze über alle Blöcke
         }
         if (found.Count == 0 && notes.Count == 0) notes.Add("Die Datei enthält schema.org-Daten, aber kein „Recipe“.");

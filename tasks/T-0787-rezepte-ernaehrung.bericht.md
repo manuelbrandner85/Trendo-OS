@@ -2,6 +2,21 @@
 
 **Auftrag:** `tasks/T-0787-rezepte-ernaehrung.md` (Freigabe 26.11.2026) · **Branch:** `claude/T-0787-rezepte-ernaehrung` (Basis main 9bc135aaa = 0.9.114) · eigene Kopie in `%TEMP%\trendo-auftrag-T-0787`.
 
+## Dritte Prüfrunde (Stand b6ffe500c)
+Rot-Lauf auf b6ffe500c (`reports/T-0787/runde3/rot-runde3.txt`): Core `T0787_Runde3` **5 von 5 rot**, App `T0787Runde3_Ui` **2 von 2 rot**; auf dem neuen Stand grün.
+
+| Nr. | Befund | Behebung | Test |
+|---|---|---|---|
+| M1 | Fehlalarme der Wortfamilien bei Kochsätzen | **Aufbau zweistufig statt längerer Liste.** (a) *Sperre* (KiCheck, KI-Aktion, Adapter): Wirk-Verb (heilt, lindert, bekämpft, wirkt/hilft gegen/bei, schützt vor, gut für/gegen, senkt, stärkt, fördert, beugt … vor …) + Krankheits-/Körperbegriff aus fester Liste (Krebs, Erkältung, Entzündung, Blutdruck, Blutzucker, Cholesterin, Verdauung, Immunsystem, Herz, Knochen, Kopfschmerzen, Husten, Müdigkeit …) mit höchstens fünf Wörtern dazwischen; Körperbegriff + „-senkend/-hemmend/-fördernd …“; feste Begriffe (Detox, entgiftet, Superfood, entzündungshemmend, antioxidativ …); Abnehmen nur als Diät („zum Abnehmen geeignet“, „hilft beim Abnehmen“ – nicht „vom Herd“, „des Deckels“). (b) *Hinweis* („Bitte prüfen“, keine Ablehnung): gesund/gesünder/gesündere, Heiltee, lindernd, „senkt das Risiko“, medizinisch, Diät … „gesunde Portion“, „Heilwasser“, „Gesundheit!“ bleiben frei. Ehrlich in Hilfe und Code: Wortlisten, nicht vollständig | Core `Fehlalarme_frei` (20 Kochsätze aus allen Runden: weder Sperre noch Hinweis), `Versprechen_gesperrt` (23 Sätze gesperrt, 7 weiche nicht gesperrt, KiCheck), Neu `Hinweise`; `T0787_Runde2.Versprechen_wortfamilien` jetzt „gesperrt ODER Hinweis“ (so verlangt) |
+| M1 Nebenbefund | Der Test der Zeitgrenze aus Runde 2 setzte eine globale Zeitgrenze – parallel laufende Tests konnten dadurch „Zeitgrenze“ melden (hier beobachtet) | Zeitgrenze fest; für den Test als Argument (`Gesundheitsversprechen(text, zeit)`, `KiCheck(…, zeit)`) | `Zeitgrenze_ehrlich` (Prüfung und KiCheck) |
+| M2 | „1.500-2.000 g“ = 2 bis 1500 | Zahlen am Anfang einheitlich über `NormZahl` – erste und zweite Zahl eines Bereichs nach derselben Regel | Core `Bereich` |
+| M3 | englische Einheiten/Zutaten | Einheiten cup, tbsp, tsp, fl oz, pint, quart (US-Maße, Volumen mit Dichte), oz, lb (Masse); `InMetrisch` rechnet sie um; 96 englische Namen (`NaehrwertTabelle.Englisch`) auf dieselben USDA-Zeilen; Import meldet „… englische Zutatennamen nicht zugeordnet – Nährwerte fehlen (…)“ | Core `Englisch`, Neu `Hinweise` (alle Verweise gültig) |
+| N4 | „1,000 g“, „1.500 TL“, „1 Dose weiße Bohnen“ | Komma + drei Ziffern nur vor g/ml/mg als englisches Tausenderkomma (1000, Hinweis „Menge prüfen“), sonst Dezimalkomma („1,500 TL“ = 1,5 TL); „1.500 TL“ mit Hinweis; Dose: Dosenware, deren Name ein Wort der Zutat enthält (Bohnen → Kidneybohnen aus der Dose – SR Legacy hat keine weißen Bohnen in der Auswahl) | Core `Kleinigkeiten` |
+| N5 | Fehler beim Ablegen mehrerer Dateien | `RzImportCore`: Lese- und Übernahmefehler einheitlich gesammelt, Abschluss „1 von 3 Dateien eingelesen (… Rezepte). „kaputt.json“: …“ | UI `Mehrere_dateien_fehler_gesammelt` |
+| N6 | Sperre erst nach dem Dialog | Sperre greift vor dem Dateidialog; zweiter Klick öffnet keinen zweiten Dialog | UI `Sperre_vor_dialog` |
+
+Tests: Core (T0787*, PromptAction*, QA015*) **125 gesamt, 123 bestanden, 2 übersprungen** (`reports/T-0787/runde3/rohlog-core.txt`); App (T0787Rezepte_Ui, T0787_Rot, T0787Gegenpruefung_Ui, T0787Runde2_Ui, T0787Runde3_Ui, StudioFolds_Ui, PromptBarTests, UebersichtEinfach_Ui) **28 gesamt, 0 Fehler, 1 übersprungen** (`rohlog-app.txt`). Nicht wiederholt: Fremd- und Echtlauf.
+
 ## Zweite Prüfrunde (Stand 3496aede4)
 Rot-Lauf: `T0787_Runde2` (nur Schnittstellen von 3496aede4) dort **6 von 6 rot** (`reports/T-0787/runde2/rot-runde2.txt`), auf dem neuen Stand grün. Für R2-2, R2-6 (Einlesen im Hintergrund, Sperre, geschlossenes Buch) und R2-7 (Zeitgrenze) gibt es keinen Rot-Lauf auf altem Stand: die Tests brauchen die neuen Schnittstellen `RzImportFilesAsync` bzw. `VersprechenZeit` und übersetzen dort nicht.
 
@@ -118,6 +133,7 @@ Erster Anlauf scheiterte nur an `TRENDO_ASSIST_MODELL=qwen3:14b` („unbekanntes
 ## Geänderte Dateien
 - neu: `src/Trendo.Core/Wissen/Rezepte.cs`, `src/Trendo.Core/Wissen/NaehrwertTabelle.Daten.cs`, `src/Trendo.Core/PromptAction/RezeptPromptAdapters.cs`, `src/Trendo.App/MainWindow.Rezepte.cs`, `src/Trendo.App/Assets/studios/STUDIO-RECIPE-01.jpg`, `tools/rezepte/naehrwerte_gen.py`, `tools/rezepte/herkunft-usda-sr.tsv`, `docs/nachbau/rezepte/anforderungen.md`, `docs/programme/rezepte-programm/*`
 - gemeinsam (klein, am Listenende): `src/Trendo.App/StudioCatalog.cs`, `StudioIcons.cs`, `MainWindow.PromptChips.cs`, `MainWindow.W6.cs`, `src/Trendo.Core/PromptAction/CapabilityCatalog.cs`, `IntelligencePromptModel.cs`, `StudioKnowledge.cs`, `src/Trendo.Core/W2/StudioProfiles.cs`, `StudioTeams.cs`, `tools/studio_bilder.py`, `tools/Trendo.Render/Program.cs`, `docs/design/STUDIOBILDER.json`, `docs/improvement-42/studio-capability-matrix.md`, `docs/programme/katalog.json`, `.gitattributes`
+- Dritte Prüfrunde: `tests/Trendo.Core.Tests/T0787Runde3Tests.cs`, `tests/Trendo.App.Tests/T0787Runde3UiTests.cs`, `reports/T-0787/runde3/*`
 - Zweite Prüfrunde: `tests/Trendo.Core.Tests/T0787Runde2Tests.cs`, `tests/Trendo.App.Tests/T0787Runde2UiTests.cs`, `reports/T-0787/runde2/*`
 - Gegenprüfung: `tests/Trendo.Core.Tests/T0787GegenpruefungTests.cs`, `tests/Trendo.App.Tests/T0787GegenpruefungUiTests.cs`, `tests/Trendo.App.Tests/Daten/einfach-vorher-ausgeblendet.txt`, `reports/T-0787/gegenpruefung/*`
 - Tests: neu `tests/Trendo.Core.Tests/T0787RezepteTests.cs`, `T0787FremdTests.cs`, `tests/Trendo.App.Tests/T0787RezepteUiTests.cs`, `T0787RotTests.cs`; Zahlen in `PromptBarTests.cs`, `StudioFoldsUiTests.cs`, `PromptActionTests.cs`

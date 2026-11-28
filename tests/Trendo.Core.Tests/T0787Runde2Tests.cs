@@ -38,7 +38,7 @@ public class T0787_Runde2
     {
         foreach (var bad in new[] { "Ein gesundes Frühstück", "Ideal zum Abnehmen", "Schutz vor Krebs", "gut gegen Husten", "wirkt gegen Müdigkeit", "fördert die Verdauung", "senkt das Risiko",
                                     "Blutdruck senkend", "wirkt lindernd", "antioxidativ", "stärkt die Knochen", "gut für das Herz", "ein echtes Superfood", "Heil-Tee aus Kamille", "Heiltee" })
-            Assert.True(RezeptKit.Gesundheitsversprechen(bad).Count > 0, "nicht erkannt: " + bad);
+            Assert.True(RezeptKit.Gesundheitsversprechen(bad).Count > 0 || RezeptKit.Gesundheitshinweise(bad).Count > 0, "nicht erkannt: " + bad); // 3. Runde: gesperrt ODER „Bitte prüfen“
         foreach (var ok in new[] { "Der Teig heilt nicht", "Hilft beim Frischhalten der Kräuter.", "Er verbeugt sich vor dem Koch.", "Medium gebraten.", "Den Deckel abnehmen und rühren.", "Das Ei bleibt heil." })
             Assert.True(RezeptKit.Gesundheitsversprechen(ok).Count == 0, ok + ": " + string.Join(", ", RezeptKit.Gesundheitsversprechen(ok)));
     }
@@ -90,18 +90,12 @@ public class T0787_Runde2Neu
     [Fact(DisplayName = "T-0787 R2-7: Zeitüberschreitung der Versprechen-Prüfung wird als Hinweis gemeldet statt abzustürzen (KiCheck lehnt ab)")]
     public void Zeitgrenze_ehrlich()
     {
-        var alt = RezeptKit.VersprechenZeit;
-        try
-        {
-            RezeptKit.VersprechenZeit = TimeSpan.FromTicks(1);
-            var text = string.Concat(Enumerable.Repeat("beugt aaaa bbbb cccc dddd ", 6000));
-            var hits = RezeptKit.Gesundheitsversprechen(text);
-            Assert.StartsWith(RezeptKit.Zeitgrenze, Assert.Single(hits));
-            var vorher = RezeptKit.Neu(); var nachher = RezeptKit.Neu();
-            nachher["rezepte"] = RezeptKit.RezepteJson([new Rezept("k", "Tee", 1, [RezeptKit.LiesZutat("1 Beutel Tee")], [text])]);
-            Assert.StartsWith(RezeptKit.Zeitgrenze, RezeptKit.KiCheck(vorher, nachher));
-        }
-        finally { RezeptKit.VersprechenZeit = alt; }
+        var text = string.Concat(Enumerable.Repeat("beugt aaaa bbbb cccc dddd ", 6000));
+        var hits = RezeptKit.Gesundheitsversprechen(text, TimeSpan.FromTicks(1)); // eigene Zeitgrenze als Argument – stört keine parallelen Tests
+        Assert.StartsWith(RezeptKit.Zeitgrenze, Assert.Single(hits));
+        var vorher = RezeptKit.Neu(); var nachher = RezeptKit.Neu();
+        nachher["rezepte"] = RezeptKit.RezepteJson([new Rezept("k", "Tee", 1, [RezeptKit.LiesZutat("1 Beutel Tee")], [text])]);
+        Assert.StartsWith(RezeptKit.Zeitgrenze, RezeptKit.KiCheck(vorher, nachher, TimeSpan.FromTicks(1)));
         Assert.Empty(RezeptKit.Gesundheitsversprechen("Eine Suppe."));
     }
 

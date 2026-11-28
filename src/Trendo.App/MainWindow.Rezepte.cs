@@ -215,11 +215,17 @@ public partial class MainWindow
     /// <summary>Läuft gerade ein Einlesen im Hintergrund? (für Tests)</summary>
     public int RzImportBusy { get; private set; }
 
+    /// <summary>„Rezept öffnen …“: die Sperre greift schon VOR dem Dateidialog (3. Prüfrunde) – ein zweiter Klick öffnet keinen zweiten Dialog.</summary>
     async Task RzPickImport(ProgramDocument d)
     {
         if (RzImportBusy > 0) { _progMsg[RzKey] = "Es wird gerade schon eine Datei gelesen – bitte kurz warten."; Show(RzKey); return; }
-        if (await PickMediaFile("rz-import", "Rezept-Datei (JSON-LD oder gespeicherte Rezeptseite)", ["*.json", "*.jsonld", "*.html", "*.htm"]) is not { } f) return;
-        await RzImportFilesAsync(d, [f]);
+        RzImportBusy++;
+        try
+        {
+            if (await PickMediaFile("rz-import", "Rezept-Datei (JSON-LD oder gespeicherte Rezeptseite)", ["*.json", "*.jsonld", "*.html", "*.htm"]) is not { } f) return;
+            await RzImportCore(d, [f]);
+        }
+        finally { RzImportBusy--; }
     }
 
     /// <summary>Gegenprüfung T-0787 (Runde 2): EIN Weg für „Rezept öffnen …“ und Ziehen und Ablegen – Lesen und Auswerten im Hintergrund, Übernehmen im UI-Thread
@@ -228,27 +234,37 @@ public partial class MainWindow
     {
         if (RzImportBusy > 0) { _progMsg[RzKey] = "Es wird gerade schon eine Datei gelesen – bitte kurz warten."; Show(RzKey); return; }
         RzImportBusy++;
+        try { await RzImportCore(d, files); }
+        finally { RzImportBusy--; }
+    }
+
+    /// <summary>Lesen (Hintergrund) und Übernehmen (UI-Thread) je Datei. Lese- und Übernahmefehler werden einheitlich gesammelt und am Ende genannt
+    /// („2 von 3 Dateien eingelesen, „x.json“: …“); eine einzelne Datei meldet ihren Fehler direkt.</summary>
+    async Task RzImportCore(ProgramDocument d, IReadOnlyList<string> files)
+    {
         _progMsg[RzKey] = files.Count == 1 ? "Lese „" + Path.GetFileName(files[0]) + "“ …" : $"Lese {files.Count} Dateien …"; Show(RzKey);
-        var n = 0;
-        try
+        var n = 0; var ok = 0; var fehler = new List<string>();
+        foreach (var f in files)
         {
-            foreach (var f in files)
+            try
             {
-                (List<Rezept> Got, List<string> Notes) read;
-                try { read = await Task.Run(() => RzImportRead(f)); }
-                catch (Exception ex) when (ex is IOException or InvalidOperationException or InvalidDataException or UnauthorizedAccessException or ArgumentException)
-                { ProgramRun(RzKey, () => throw ex); return; }
+                var read = await Task.Run(() => RzImportRead(f));
                 if (!ProgramDocs(RzKey).Contains(d))
                 {
                     _progMsg[RzKey] = $"Das Rezeptbuch „{d.Title}“ wurde geschlossen, während „{Path.GetFileName(f)}“ gelesen wurde – nichts übernommen.";
                     _core.Audit.Append(Principal.LocalOwner.Name, "rezepte.import.verworfen", Path.GetFileName(f));
                     Show(RzKey); return;
                 }
-                ProgramRun(RzKey, () => n += RzImportApply(d, read, Path.GetExtension(f)));
+                n += RzImportApply(d, read, Path.GetExtension(f)); ok++;
             }
-            if (files.Count > 1 && n > 0) { _progMsg[RzKey] = $"{n} Rezepte aus {files.Count} Dateien eingelesen."; Show(RzKey); }
+            catch (Exception ex) when (ex is IOException or InvalidOperationException or InvalidDataException or UnauthorizedAccessException or ArgumentException)
+            {
+                fehler.Add($"„{Path.GetFileName(f)}“: {(ex is InvalidDataException or InvalidOperationException or ArgumentException ? ex.Message : FriendlyError.From(ex).Sentence)}"); // eigene Meldungen sind schon Alltagssätze
+            }
         }
-        finally { RzImportBusy--; }
+        if (files.Count == 1 && fehler.Count == 1) _progMsg[RzKey] = fehler[0][(fehler[0].IndexOf(':') + 2)..];
+        else if (files.Count > 1) _progMsg[RzKey] = $"{ok} von {files.Count} Dateien eingelesen ({n} Rezepte)" + (fehler.Count > 0 ? ". " + string.Join(" · ", fehler.Take(5)) + (fehler.Count > 5 ? $" (+{fehler.Count - 5} weitere)" : "") : ".");
+        Show(RzKey);
     }
 
     // ---------------- Wochenplan ----------------
@@ -382,7 +398,8 @@ public partial class MainWindow
             var list = RzRezepte(d); list.Add(r); RzSave(d, list, "Rezept: " + r.Name);
             _rzSel[d.Id] = r.Id; _rzMode[d.Id] = 0; _rzView.Remove(d.Id);
             var nw = RezeptKit.JePortion(r);
-            _progMsg[RzKey] = $"KI: „{r.Name}“ mit {zutaten.Count} Zutaten und {schritte.Count} Schritten" + (nw.Erfasst > 0 ? $" – etwa {Math.Round(nw.Kcal)} kcal je Portion (Richtwert, gerechnet von Trendo)." : ".") + (hinweise.Count > 0 ? $" ⚠ {hinweise.Count} Menge(n) mehrdeutig, in den Zutaten mit „Menge prüfen“ markiert: {hinweise[0]}" : "");
+            _progMsg[RzKey] = $"KI: „{r.Name}“ mit {zutaten.Count} Zutaten und {schritte.Count} Schritten" + (nw.Erfasst > 0 ? $" – etwa {Math.Round(nw.Kcal)} kcal je Portion (Richtwert, gerechnet von Trendo)." : ".") + (hinweise.Count > 0 ? $" ⚠ {hinweise.Count} Menge(n) mehrdeutig, in den Zutaten mit „Menge prüfen“ markiert: {hinweise[0]}" : "")
+                + (RezeptKit.Gesundheitshinweise(RezeptKit.AllerText(r)) is { Count: > 0 } weich ? $" ⚠ Bitte prüfen: „{weich[0]}“ – Trendo macht keine Gesundheitsaussagen." : "");
         },
         (_, _) => []) { MakesFile = false, OnApplyNote = "Erst bei „Ja, behalten“ kommt das Rezept ins Rezeptbuch – ein Rückgängig-Schritt nimmt es wieder heraus. Die Nährwerte rechnet Trendo selbst." };
 
@@ -451,8 +468,10 @@ public partial class MainWindow
              + "Trendo erkennt Menge, Einheit und Zutat und ordnet sie der Nährwert-Tabelle zu – Rechtsklick auf eine Zutat wählt ein anderes Lebensmittel. Mit „–“/„+“ zeigst du das Rezept für mehr oder weniger Portionen; "
              + "„Portionen übernehmen“ rechnet es um. Einheiten: 1 EL = 15 ml, 1 TL = 5 ml, 1 Tasse = 250 ml, 1 Prise ≈ 0,5 g. "
              + "Nährwerte sind Richtwerte aus der Tabelle USDA FoodData Central (SR Legacy, gemeinfrei, CC0 1.0) für rohe Zutaten, ohne Garverluste – keine Ernährungs- oder Gesundheitsberatung. "
-             + "Gesundheits- und Heilversprechen („heilt“, „gesund“, „zum Abnehmen“, „senkt den Blutzucker“ …) nimmt Trendo von der KI nicht an und meldet sie im eigenen Text – die Prüfung nutzt Wortlisten und ist nicht vollständig. "
-             + "Mengen mit Punkt: „1.000,5 g“ = 1000,5 g; „0.250 kg“ = 0,25 kg; „1.500 kg/l“ = 1,5; „1.500 g/ml/Stück“ = 1500 – Punkt mit drei Ziffern meldet Trendo immer zum Prüfen. "
+             + "Gesundheitsaussagen prüft Trendo in zwei Stufen: Eindeutige Versprechen (z. B. „heilt Erkältungen“, „senkt den Blutzucker“, „zum Abnehmen geeignet“, „Superfood“, „Detox“) nimmt Trendo von der KI nicht an; "
+             + "weiche Wörter wie „gesund“ oder „gesündere Variante“ ergeben nur „Bitte prüfen“. Kochsätze wie „hilft gegen das Ausflocken“ oder „vom Herd abnehmen“ bleiben frei. Die Prüfung nutzt Wortlisten und ist nicht vollständig. "
+             + "Englische Rezepte: cups, tbsp, tsp, oz, lb, fl oz, pint und quart werden umgerechnet, häufige englische Zutatennamen (flour, sugar, egg, milk …) zugeordnet – was nicht zugeordnet ist, meldet Trendo beim Einlesen. "
+             + "Mengen mit Punkt: „1.000,5 g“ = 1000,5 g; „0.250 kg“ = 0,25 kg; „1.500 kg/l“ = 1,5; „1.500 g/ml/Stück“ = 1500 (gilt auch für Bereiche wie „1.500-2.000 g“); „1,000 g/ml“ = 1000 – Punkt bzw. Komma mit drei Ziffern meldet Trendo zum Prüfen. "
              + "Im Wochenplan legst du Rezepte auf Tage; die Einkaufsliste fasst gleiche Zutaten zusammen und sortiert nach Abteilung im Laden. Ausgabe als PDF zum Drucken, Word, OpenDocument, "
              + "schema.org-Rezept (JSON-LD, liest z. B. Mealie oder Tandoor) und Rezeptseite. Einlesen: JSON-LD-Datei oder gespeicherte Rezeptseite öffnen oder auf die Arbeitsfläche ziehen.",
     };

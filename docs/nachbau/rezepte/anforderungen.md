@@ -45,7 +45,9 @@ Deutsche Namen, Suchwörter und Ladenabteilungen sind eigene Zuordnung. Salz = N
 ## Regeln (Prüfrunden T-0787)
 
 - **Punkt in Mengen:** „1.000,5“ = 1000,5 (deutsch, eindeutig); „0.250“ = 0,25 (führende 0 ist nie Tausenderpunkt); „1.500 kg/l/Pfund/dl/Tasse/Becher“ = 1,5; „1.500 g/ml/Stück/…“ und ohne Einheit = 1500. Punkt mit drei Ziffern meldet Trendo immer; beim Einlesen und aus der KI steht „Menge prüfen: …“ im Hinweis der Zutat.
-- **Gesundheitsversprechen:** Wortlisten nach Wortfamilien mit Wortgrenzen – fängt übliche Formulierungen, ist aber **nicht vollständig**.
+- **Gesundheitsaussagen, zweistufig (3. Prüfrunde):** (a) Sperre nur bei eindeutigen Aussagen – Wirk-Verb + Krankheits-/Körperbegriff aus fester Liste, Körperbegriff + „-senkend/-hemmend …“, feste Begriffe (Detox, Superfood, entzündungshemmend, antioxidativ), Abnehmen als Diät; (b) weiche Wörter („gesund“, „gesündere Variante“, Heiltee) nur „Bitte prüfen“. Kochsätze („hilft gegen das Ausflocken“, „vom Herd abnehmen“) bleiben frei. Wortlisten – **nicht vollständig**.
+- **Zahlen:** dieselbe Regel für beide Zahlen eines Bereichs („1.500-2.000 g“); Komma + drei Ziffern vor g/ml = englisches Tausenderkomma (mit Hinweis), sonst Dezimalkomma.
+- **Englisch:** cup, tbsp, tsp, fl oz, pint, quart, oz, lb; häufige englische Zutatennamen auf dieselben USDA-Zeilen; Nicht-Zugeordnetes meldet der Import.
 - **Einlesen:** im Hintergrund, eine Datei nach der anderen, kein zweites Einlesen gleichzeitig; ist das Buch inzwischen geschlossen, wird nichts übernommen. Zeiten höchstens 7 Tage.
 
 ## Nicht gebaut (bewusst)
