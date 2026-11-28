@@ -1,0 +1,4 @@
+﻿Kennung;Vorname;Nachname;Geschlecht;Geburt;Geburtsort;Tod;Sterbeort;Vater;Mutter;Partner
+I1;Jürgen;Größer;männlich;12. März 1850;Köln, Nordrhein-Westfalen, Deutschland;um 1920;Düsseldorf;;;Anna Muster
+I2;Anna;Muster;weiblich;zwischen 1852 und 1854;;4. Juni 1931;;;;Jürgen Größer
+I3;Erika;Größer;weiblich;1. Februar 1880;Köln;;;Jürgen Größer;Anna Muster;

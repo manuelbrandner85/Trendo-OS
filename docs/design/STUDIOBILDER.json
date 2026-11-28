@@ -897,5 +897,14 @@
     "erzeugt": "2026-11-28",
     "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
     "sha256": "959c20ea26b5accb8d6d5b8e14523645e1535e357f2a2e4aa88de67925b16df6"
+  },
+  "STUDIO-FAMILY-01": {
+    "datei": "src/Trendo.App/Assets/studios/STUDIO-FAMILY-01.jpg",
+    "seed": 20261102,
+    "prompt": "an old family photo album lying open on a dark wooden desk with empty sepia photo frames and blank name cards, a hand drawn family tree diagram with small empty circles connected by golden lines on parchment, a magnifying glass and a fountain pen, warm golden lamp light, no faces, no people, no readable text, photorealistic photograph, shot on a full-frame camera with a 35mm lens at f/2.8, natural soft light with warm golden accent light, dark charcoal and black surroundings with subtle real gold details, shallow depth of field, realistic materials and textures, cinematic but believable, high detail, no text, no letters, no logos, no watermark, no screens with readable text",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0, ComfyUI lokal",
+    "erzeugt": "2026-11-28",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "87f1869d45305da8eea2e175ab21255abf9a2f34e4341879ce74e9d6058860c0"
   }
 }

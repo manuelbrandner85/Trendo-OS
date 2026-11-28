@@ -338,6 +338,9 @@ public static class StudioTeams
         T("STUDIO-CODELEARN-01", "Programmier-Lern-Team",
             R("code-tutor", "Programmier-Tutorin", "gibt Hinweise zur Aufgabe", "nie fertigen Code, nur Denkanstöße", true),
             R("code-pruef", "Testleiter", "lässt die echten Tests laufen und erklärt Fehlermeldungen", "nur die Tests bewerten")),
+        T("STUDIO-FAMILY-01", "Familienforschungs-Team", // T-0788
+            R("fam-forscher", "Familienforscherin", "liest Personen, Eltern, Ehen und Daten aus Texten und Urkunden", "nur was im Text steht, Unsicheres als „um“", true),
+            R("fam-pruef", "Prüfer", "sucht Widersprüche und fehlende Quellen", "Geburt vor Tod, Eltern älter als Kinder, Lebende schützen")),
     ];
 
     public static StudioTeam? For(string? studioId) => All.FirstOrDefault(t => t.StudioId == studioId);

@@ -1,0 +1,254 @@
+# T-0788 Gegenprüfung – Rot-Lauf auf f42783151 (alter Code, neue Tests T0788GegenpruefungTests; Date_reversed_and_ca entfernt, weil GenDate.Reversed dort fehlt – übersetzt nicht)
+
+## Lauf 1: alle außer Laufzeit (Big_tree_fast, Cycle_once)
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0788\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:03.52]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:04.05]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:04.08]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:00:04.23]     T-0788 G8: CSV entschärft Zellen, die mit = + - @ Tab oder Zeilenumbruch beginnen [FAIL]
+[xUnit.net 00:00:04.23]       Assert.Contains() Failure: Sub-string not found
+[xUnit.net 00:00:04.23]       String:    "Kennung;Vorname;Nachname;Geschlecht;Gebur"···
+[xUnit.net 00:00:04.23]       Not found: ";'=HYPERLINK("
+[xUnit.net 00:00:04.23]       Stack Trace:
+[xUnit.net 00:00:04.23]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0788\tests\Trendo.Core.Tests\T0788GegenpruefungTests.cs(166,0): at Trendo.Core.Tests.T0788GegenpruefungTests.Csv_formula()
+[xUnit.net 00:00:04.23]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:04.23]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:04.24]     T-0788 G7: Datumsgrenzfälle – Februar v. Chr. (julianisch), julianischer 29. Februar 1700, Doppeljahr, verkehrte Spanne, „ca.1850“(raw: "1699/45", ok: False) [FAIL]
+[xUnit.net 00:00:04.24]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:04.24]       Expected: False
+[xUnit.net 00:00:04.24]       Actual:   True
+[xUnit.net 00:00:04.24]       Stack Trace:
+[xUnit.net 00:00:04.24]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0788\tests\Trendo.Core.Tests\T0788GegenpruefungTests.cs(157,0): at Trendo.Core.Tests.T0788GegenpruefungTests.Date_edges(String raw, Boolean ok)
+[xUnit.net 00:00:04.24]            at InvokeStub_T0788GegenpruefungTests.Date_edges(Object, Span`1)
+[xUnit.net 00:00:04.24]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:04.24]     T-0788 G7: Datumsgrenzfälle – Februar v. Chr. (julianisch), julianischer 29. Februar 1700, Doppeljahr, verkehrte Spanne, „ca.1850“(raw: "@#DJULIAN@ 29 FEB 1700", ok: True) [FAIL]
+[xUnit.net 00:00:04.24]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:04.24]       Expected: True
+[xUnit.net 00:00:04.24]       Actual:   False
+[xUnit.net 00:00:04.24]       Stack Trace:
+[xUnit.net 00:00:04.24]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0788\tests\Trendo.Core.Tests\T0788GegenpruefungTests.cs(157,0): at Trendo.Core.Tests.T0788GegenpruefungTests.Date_edges(String raw, Boolean ok)
+[xUnit.net 00:00:04.24]            at InvokeStub_T0788GegenpruefungTests.Date_edges(Object, Span`1)
+[xUnit.net 00:00:04.24]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:04.25]     T-0788 G7: Datumsgrenzfälle – Februar v. Chr. (julianisch), julianischer 29. Februar 1700, Doppeljahr, verkehrte Spanne, „ca.1850“(raw: "31 FEB 44 B.C.", ok: False) [FAIL]
+[xUnit.net 00:00:04.25]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:04.25]       Expected: False
+[xUnit.net 00:00:04.25]       Actual:   True
+[xUnit.net 00:00:04.25]       Stack Trace:
+[xUnit.net 00:00:04.25]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0788\tests\Trendo.Core.Tests\T0788GegenpruefungTests.cs(157,0): at Trendo.Core.Tests.T0788GegenpruefungTests.Date_edges(String raw, Boolean ok)
+[xUnit.net 00:00:04.25]            at InvokeStub_T0788GegenpruefungTests.Date_edges(Object, Span`1)
+[xUnit.net 00:00:04.25]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:04.25]     T-0788 G7: Datumsgrenzfälle – Februar v. Chr. (julianisch), julianischer 29. Februar 1700, Doppeljahr, verkehrte Spanne, „ca.1850“(raw: "29 FEB 44 B.C.", ok: False) [FAIL]
+[xUnit.net 00:00:04.25]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:04.25]       Expected: False
+[xUnit.net 00:00:04.25]       Actual:   True
+[xUnit.net 00:00:04.25]       Stack Trace:
+[xUnit.net 00:00:04.25]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0788\tests\Trendo.Core.Tests\T0788GegenpruefungTests.cs(157,0): at Trendo.Core.Tests.T0788GegenpruefungTests.Date_edges(String raw, Boolean ok)
+[xUnit.net 00:00:04.25]            at InvokeStub_T0788GegenpruefungTests.Date_edges(Object, Span`1)
+[xUnit.net 00:00:04.25]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:04.25]     T-0788 G9: lange Werte werden nie zwischen Buchstabe und Kombinationszeichen getrennt [FAIL]
+[xUnit.net 00:00:04.25]       Assert.All() Failure: 3 out of 6 items in the collection did not pass.
+[xUnit.net 00:00:04.25]       [0]: Item:  "́éééééééééééééééééééééééée"···
+[xUnit.net 00:00:04.25]            Error: Assert.NotEqual() Failure: Values are equal
+[xUnit.net 00:00:04.25]                   Expected: Not NonSpacingMark
+[xUnit.net 00:00:04.25]                   Actual:       NonSpacingMark
+[xUnit.net 00:00:04.25]       [2]: Item:  "́éééééééééééééééééééééééée"···
+[xUnit.net 00:00:04.25]            Error: Assert.NotEqual() Failure: Values are equal
+[xUnit.net 00:00:04.25]                   Expected: Not NonSpacingMark
+[xUnit.net 00:00:04.25]                   Actual:       NonSpacingMark
+[xUnit.net 00:00:04.25]       [4]: Item:  "́éééééééééééééééééééééééée"···
+[xUnit.net 00:00:04.25]            Error: Assert.NotEqual() Failure: Values are equal
+[xUnit.net 00:00:04.25]                   Expected: Not NonSpacingMark
+[xUnit.net 00:00:04.25]                   Actual:       NonSpacingMark
+[xUnit.net 00:00:04.25]       Stack Trace:
+[xUnit.net 00:00:04.25]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0788\tests\Trendo.Core.Tests\T0788GegenpruefungTests.cs(176,0): at Trendo.Core.Tests.T0788GegenpruefungTests.Chunks_keep_combining()
+[xUnit.net 00:00:04.25]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:04.25]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0788 G8: CSV entschärft Zellen, die mit = + - @ Tab oder Zeilenumbruch beginnen [118 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Sub-string not found
+String:    "Kennung;Vorname;Nachname;Geschlecht;Gebur"···
+Not found: ";'=HYPERLINK("
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0788GegenpruefungTests.Csv_formula() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0788\tests\Trendo.Core.Tests\T0788GegenpruefungTests.cs:line 166
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Bestanden T-0788 G7: Datumsgrenzfälle – Februar v. Chr. (julianisch), julianischer 29. Februar 1700, Doppeljahr, verkehrte Spanne, „ca.1850“(raw: "1699/00", ok: True) [3 ms]
+  Fehler T-0788 G7: Datumsgrenzfälle – Februar v. Chr. (julianisch), julianischer 29. Februar 1700, Doppeljahr, verkehrte Spanne, „ca.1850“(raw: "1699/45", ok: False) [< 1 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: False
+Actual:   True
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0788GegenpruefungTests.Date_edges(String raw, Boolean ok) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0788\tests\Trendo.Core.Tests\T0788GegenpruefungTests.cs:line 157
+   at InvokeStub_T0788GegenpruefungTests.Date_edges(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Bestanden T-0788 G7: Datumsgrenzfälle – Februar v. Chr. (julianisch), julianischer 29. Februar 1700, Doppeljahr, verkehrte Spanne, „ca.1850“(raw: "29 FEB 45 B.C.", ok: True) [< 1 ms]
+  Fehler T-0788 G7: Datumsgrenzfälle – Februar v. Chr. (julianisch), julianischer 29. Februar 1700, Doppeljahr, verkehrte Spanne, „ca.1850“(raw: "@#DJULIAN@ 29 FEB 1700", ok: True) [6 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: True
+Actual:   False
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0788GegenpruefungTests.Date_edges(String raw, Boolean ok) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0788\tests\Trendo.Core.Tests\T0788GegenpruefungTests.cs:line 157
+   at InvokeStub_T0788GegenpruefungTests.Date_edges(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0788 G7: Datumsgrenzfälle – Februar v. Chr. (julianisch), julianischer 29. Februar 1700, Doppeljahr, verkehrte Spanne, „ca.1850“(raw: "31 FEB 44 B.C.", ok: False) [< 1 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: False
+Actual:   True
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0788GegenpruefungTests.Date_edges(String raw, Boolean ok) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0788\tests\Trendo.Core.Tests\T0788GegenpruefungTests.cs:line 157
+   at InvokeStub_T0788GegenpruefungTests.Date_edges(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0788 G7: Datumsgrenzfälle – Februar v. Chr. (julianisch), julianischer 29. Februar 1700, Doppeljahr, verkehrte Spanne, „ca.1850“(raw: "29 FEB 44 B.C.", ok: False) [< 1 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: False
+Actual:   True
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0788GegenpruefungTests.Date_edges(String raw, Boolean ok) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0788\tests\Trendo.Core.Tests\T0788GegenpruefungTests.cs:line 157
+   at InvokeStub_T0788GegenpruefungTests.Date_edges(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Bestanden T-0788 G7: Datumsgrenzfälle – Februar v. Chr. (julianisch), julianischer 29. Februar 1700, Doppeljahr, verkehrte Spanne, „ca.1850“(raw: "29 FEB 1700", ok: False) [< 1 ms]
+  Fehler T-0788 G9: lange Werte werden nie zwischen Buchstabe und Kombinationszeichen getrennt [4 ms]
+  Fehlermeldung:
+   Assert.All() Failure: 3 out of 6 items in the collection did not pass.
+[0]: Item:  "́éééééééééééééééééééééééée"···
+     Error: Assert.NotEqual() Failure: Values are equal
+            Expected: Not NonSpacingMark
+            Actual:       NonSpacingMark
+[2]: Item:  "́éééééééééééééééééééééééée"···
+     Error: Assert.NotEqual() Failure: Values are equal
+            Expected: Not NonSpacingMark
+            Actual:       NonSpacingMark
+[4]: Item:  "́éééééééééééééééééééééééée"···
+     Error: Assert.NotEqual() Failure: Values are equal
+            Expected: Not NonSpacingMark
+            Actual:       NonSpacingMark
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0788GegenpruefungTests.Chunks_keep_combining() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0788\tests\Trendo.Core.Tests\T0788GegenpruefungTests.cs:line 176
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:04.27]     T-0788 G5: Ausblenden entfernt NOTE-, OBJE- und Quellen-Datensätze, die nur Lebende benutzen; andere bleiben [FAIL]
+[xUnit.net 00:00:04.27]       Assert.DoesNotContain() Failure: Sub-string found
+[xUnit.net 00:00:04.27]                                       ↓ (pos 485)
+[xUnit.net 00:00:04.27]       String: ···" Erika wohnt in der Gartenstraße 5\r\n0 @M1"···
+[xUnit.net 00:00:04.27]       Found:  "Gartenstraße"
+[xUnit.net 00:00:04.27]       Stack Trace:
+[xUnit.net 00:00:04.27]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0788\tests\Trendo.Core.Tests\T0788GegenpruefungTests.cs(103,0): at Trendo.Core.Tests.T0788GegenpruefungTests.Private_drops_records()
+[xUnit.net 00:00:04.27]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:04.27]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:04.28]     T-0788 G6: KI-Prüfung lehnt vorhandene Kennung, geänderte Datensätze/Kopf/Titel/Mitte und neue Kreise ab [FAIL]
+[xUnit.net 00:00:04.28]       Assert.NotNull() Failure: Value is null
+[xUnit.net 00:00:04.28]       Stack Trace:
+[xUnit.net 00:00:04.28]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0788\tests\Trendo.Core.Tests\T0788GegenpruefungTests.cs(138,0): at Trendo.Core.Tests.T0788GegenpruefungTests.Ki_check_strict()
+[xUnit.net 00:00:04.28]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:04.28]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:04.28]     T-0788 G4: „lebt noch?“ – AFT/FROM ohne Ende und Schätzung über Eltern gelten im Zweifel als lebend; sichere Schlüsse über Kinder und Heirat [FAIL]
+[xUnit.net 00:00:04.28]       Assert.True() Failure
+[xUnit.net 00:00:04.28]       Expected: True
+[xUnit.net 00:00:04.28]       Actual:   False
+[xUnit.net 00:00:04.28]       Stack Trace:
+[xUnit.net 00:00:04.28]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0788\tests\Trendo.Core.Tests\T0788GegenpruefungTests.cs(86,0): at Trendo.Core.Tests.T0788GegenpruefungTests.Living_conservative()
+[xUnit.net 00:00:04.28]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:04.28]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:04.28]     T-0788 G6: doppelte Kennungen werden gemeldet und eindeutig gemacht – beide Personen bleiben, die zweite wird nicht übersehen [FAIL]
+[xUnit.net 00:00:04.28]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:04.28]       Expected: 2
+[xUnit.net 00:00:04.28]       Actual:   1
+[xUnit.net 00:00:04.28]       Stack Trace:
+[xUnit.net 00:00:04.28]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0788\tests\Trendo.Core.Tests\T0788GegenpruefungTests.cs(114,0): at Trendo.Core.Tests.T0788GegenpruefungTests.Duplicate_xrefs()
+[xUnit.net 00:00:04.28]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:04.28]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:04.28]     T-0788 G9: überlange Kennungen werden beim Einlesen gekürzt, Verweise mitgeführt, Export hält 22 Zeichen ein [FAIL]
+[xUnit.net 00:00:04.28]       PERSON_MIT_SEHR_LANGER_KENNUNG_123
+[xUnit.net 00:00:04.28]       Stack Trace:
+[xUnit.net 00:00:04.28]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0788\tests\Trendo.Core.Tests\T0788GegenpruefungTests.cs(127,0): at Trendo.Core.Tests.T0788GegenpruefungTests.Long_xrefs()
+[xUnit.net 00:00:04.28]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:04.28]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0788 G5: Ausblenden entfernt NOTE-, OBJE- und Quellen-Datensätze, die nur Lebende benutzen; andere bleiben [21 ms]
+  Fehlermeldung:
+   Assert.DoesNotContain() Failure: Sub-string found
+                                ↓ (pos 485)
+String: ···" Erika wohnt in der Gartenstraße 5\r\n0 @M1"···
+Found:  "Gartenstraße"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0788GegenpruefungTests.Private_drops_records() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0788\tests\Trendo.Core.Tests\T0788GegenpruefungTests.cs:line 103
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0788 G6: KI-Prüfung lehnt vorhandene Kennung, geänderte Datensätze/Kopf/Titel/Mitte und neue Kreise ab [8 ms]
+  Fehlermeldung:
+   Assert.NotNull() Failure: Value is null
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0788GegenpruefungTests.Ki_check_strict() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0788\tests\Trendo.Core.Tests\T0788GegenpruefungTests.cs:line 138
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0788 G4: „lebt noch?“ – AFT/FROM ohne Ende und Schätzung über Eltern gelten im Zweifel als lebend; sichere Schlüsse über Kinder und Heirat [< 1 ms]
+  Fehlermeldung:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0788GegenpruefungTests.Living_conservative() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0788\tests\Trendo.Core.Tests\T0788GegenpruefungTests.cs:line 86
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0788 G6: doppelte Kennungen werden gemeldet und eindeutig gemacht – beide Personen bleiben, die zweite wird nicht übersehen [1 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: 2
+Actual:   1
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0788GegenpruefungTests.Duplicate_xrefs() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0788\tests\Trendo.Core.Tests\T0788GegenpruefungTests.cs:line 114
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0788 G9: überlange Kennungen werden beim Einlesen gekürzt, Verweise mitgeführt, Export hält 22 Zeichen ein [< 1 ms]
+  Fehlermeldung:
+   PERSON_MIT_SEHR_LANGER_KENNUNG_123
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0788GegenpruefungTests.Long_xrefs() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0788\tests\Trendo.Core.Tests\T0788GegenpruefungTests.cs:line 127
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:09.77]     T-0788 G3: CONC wird linear zusammengesetzt (30 000 Fortsetzungszeilen, Grenze großzügig 3 s) [FAIL]
+[xUnit.net 00:00:09.77]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:09.77]       Expected: 1230005
+[xUnit.net 00:00:09.77]       Actual:   1230006
+[xUnit.net 00:00:09.77]       Stack Trace:
+[xUnit.net 00:00:09.77]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0788\tests\Trendo.Core.Tests\T0788GegenpruefungTests.cs(73,0): at Trendo.Core.Tests.T0788GegenpruefungTests.Conc_linear()
+[xUnit.net 00:00:09.77]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:09.77]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:09.77]       Output:
+[xUnit.net 00:00:09.77]         30 000 CONC: 5479 ms
+[xUnit.net 00:00:09.78]   Finished:    Trendo.Core.Tests
+  Fehler T-0788 G3: CONC wird linear zusammengesetzt (30 000 Fortsetzungszeilen, Grenze großzügig 3 s) [5 s]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: 1230005
+Actual:   1230006
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0788GegenpruefungTests.Conc_linear() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0788\tests\Trendo.Core.Tests\T0788GegenpruefungTests.cs:line 73
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standardausgabemeldungen:
+ 30 000 CONC: 5479 ms
+
+
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 15
+     Bestanden: 3
+     Nicht bestanden: 12
+ Gesamtzeit: 11,8842 Sekunden
+
+## Lauf 2: Cycle_once (10 000 Personen mit Kreis) – nach 240 s abgebrochen (timeout, exit 124)
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0788\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.26]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:00.75]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:00.77]   Starting:    Trendo.Core.Tests
+Der aktive Testlauf wurde abgebrochen. Grund: Der Testhostprozess ist abgestürzt.
+
+Testlauf abgebrochen.exit 124

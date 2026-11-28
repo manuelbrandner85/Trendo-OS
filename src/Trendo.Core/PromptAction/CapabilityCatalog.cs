@@ -109,6 +109,7 @@ public static class CapabilityCatalog
         P("STUDIO-TUTOR-01", "Nachhilfe mit KI", "Wissen & Lernen", "Nachhilfe, Fsrs, KI auf diesem PC", "Arbeitsblatt erstellen", "Thema, Anzahl", "Arbeitsblatt (MD) mit Lösungen", "Üben, Prüfen, Hinweise und KI-Übungen nur im Studio; die KI dort läuft nur auf diesem PC."),
         P("STUDIO-CODELEARN-01", "Programmieren lernen", "Wissen & Lernen", "CodeLernen, LernSandbox (AppContainer)", "Aufgabe als Datei", "Aufgabe", "Python-Datei mit Tests", "Tests laufen nur im Studio im abgeschotteten Lauf; ohne mitgeliefertes Python blockiert."),
         P("STUDIO-RECIPE-01", "Rezepte & Ernährung", "Wissen & Lernen", "RezeptKit, NaehrwertTabelle (USDA SR Legacy, CC0)", "Rezept als schema.org-Datei", "Name, Zutaten, Schritte", "JSON-LD (schema.org/Recipe) mit Nährwert-Richtwerten", "Wochenplan, Einkaufsliste, Druck und Import nur im Studio; Nährwerte sind Richtwerte, keine Beratung."), // T-0787
+        P("STUDIO-FAMILY-01", "Stammbaum", "Wissen & Lernen", "FamilyKit, Gedcom, GenDate", "Personen als GEDCOM", "Zeilen „Name | Geschlecht | Geburt | Geburtsort | Tod | Sterbeort | Vater | Mutter“", "GEDCOM 5.5.1 (.ged) mit Prüfung; im Studio Baum (SVG, PNG, PDF), Bericht (PDF, DOCX, ODT), CSV", "Über den Auftrag nur die geprüften Zeilen; Daten werden nicht geraten, Lebende sind ausgeblendet. Abgleich mit Online-Stammbäumen gibt es nicht."), // T-0788
     ];
 
     private static StudioProfile P(string id, string title, string area, string existing, string action, string inputs, string outputs, string blocker) =>

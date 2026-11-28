@@ -376,7 +376,7 @@ public partial class MainWindow
     {
         if (!_chatUis.TryGetValue(dock, out var ui) || ui.Running || string.IsNullOrWhiteSpace(text)) return;
         if (ClaudeNoClicks && _core.Approvals.Halted) { Toast("Der Not-Stopp ist aktiv. Claude startet erst nach „Fortsetzen“."); return; }
-        if (LocalOnlyRefusal() is { } localOnly) { Toast(localOnly); _core.Audit.Append(Principal.LocalOwner.Name, "claude.chat.lokal", CurrentView); return; } // T-0782 (H1b): nichts von dieser Seite an Claude
+        if ((LocalOnlyRefusal() ?? LocalOnlyRefusal(dock.Page)) is { } localOnly) { Toast(localOnly); _claudeMsg = localOnly; _core.Audit.Append(Principal.LocalOwner.Name, "claude.chat.lokal", CurrentView); return; } // T-0782 (H1b): nichts von dieser Seite an Claude; T-0788: auch die Seite des Claude-Bereichs selbst
         text = text.Trim();
         var studio = ChatStudio(dock);
         var chats = CChats;
@@ -430,8 +430,8 @@ public partial class MainWindow
         // Studio-Dokument: ein offenes Fachprogramm-Dokument (.tdoc) liegt als Datei im Projekt – Claude bearbeitet es, Trendo übernimmt jede Änderung live (als ein Rückgängig-Schritt)
         var shell = Programs.ContainsKey(dock.Page) && ProgramActive(dock.Page) is not null;
         string? workFile = null;
-        if (shell && ProgramActive(dock.Page) is { } doc)
-            try { workFile = Regex.Replace(doc.Title, @"[\\/:*?""<>|]", "-") + ProgramDocument.Extension; var wf = Path.Combine(folder, workFile); if (!(doc.ReadOnly && doc.Path is { } own && ProgramDocument.SameFile(own, wf))) AtomicFile.WriteAllText(wf, doc.Serialize()); ClaudeDocSeen(doc, wf); } // T-0680: atomar; ein nur zum Lesen offenes Dokument (anderes Fenster) wird nicht überschrieben
+        if (shell && !AssistLocalOnly(dock.Page) && ProgramActive(dock.Page) is { } doc) // T-0788: nie eine .tdoc eines Programms nur mit lokaler KI (z. B. Stammbaum mit geschützten Lebenden) in Claudes Ordner
+            try { workFile = Regex.Replace(doc.Title, @"[\\/:*?""<>|]", "-") + ProgramDocument.Extension; var wf = Path.Combine(folder, workFile); if (!(doc.ReadOnly && doc.Path is { } own && ProgramDocument.SameFile(own, wf))) { AtomicFile.WriteAllText(wf, doc.Serialize()); _claudeWorkFiles[Path.GetFullPath(wf)] = (dock.Page, doc.Id); TrendoWrote(wf); } ClaudeDocSeen(doc, wf); } // T-0680: atomar; ein nur zum Lesen offenes Dokument (anderes Fenster) wird nicht überschrieben
             catch (Exception e) when (e is IOException or UnauthorizedAccessException) { workFile = null; }
         // Brief-Studio: der offene Brief ist das Dokument (Text UND Design) – Claude arbeitet darin, Trendo übernimmt jede Änderung live ins Brief-Programm
         var letterDoc = !shell && dock.Studio == LetterStudio;
@@ -829,6 +829,198 @@ public partial class MainWindow
     /// ist das keine „Änderung von außen“ – sonst würde das nächste Speichern nachfragen.</summary>
     static void ClaudeDocSeen(ProgramDocument doc, string file) { if (doc.Path is { } p && ProgramDocument.SameFile(p, file)) doc.AcceptDisk(); }
 
+    /// <summary>T-0788 (2. Prüfrunde): von Trendo angelegte Arbeitsdateien in Claudes Ordnern → Programm und Dokument, aus dem sie stammen.
+    /// Der Rückweg gleicht nur mit diesem Dokument ab (nie mit dem gerade aktiven), und beim Einschalten eines Schutzes lassen sich genau diese Dateien löschen.</summary>
+    readonly Dictionary<string, (string Page, string DocId)> _claudeWorkFiles = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>T-0788 (2. Prüfrunde): Arbeitsdateien, die Trendo für dieses Dokument in Claudes Ordner gelegt hat, löschen (nur diese – Pfad und Herkunft aus der eigenen Liste).
+    /// Rückgabe: Zahl gelöschter Dateien.</summary>
+    public int ClaudeDropWorkFiles(string page, string docId) => ClaudeDropWorkFiles(page, docId, out _);
+
+    /// <param name="kept">Dateien, die Trendo nicht löschen durfte oder konnte (mit Grund) – für die ehrliche Meldung.</param>
+    public int ClaudeDropWorkFiles(string page, string docId, out List<string> kept)
+    {
+        var n = 0; kept = [];
+        foreach (var (file, bind) in _claudeWorkFiles.ToList())
+        {
+            if (bind.Page != page || bind.DocId != docId) continue;
+            if (!File.Exists(file)) { _claudeWorkFiles.Remove(file); continue; }
+            if (TrendoDeleteBlocked(file) is { } why) { kept.Add($"{Path.GetFileName(file)} ({why})"); continue; }
+            try { File.Delete(file); n++; _claudeWorkFiles.Remove(file); _trendoWrote.Remove(file); }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { kept.Add($"{Path.GetFileName(file)} (geöffnet oder schreibgeschützt)"); }
+        }
+        if (n > 0) _core.Audit.Append(Principal.LocalOwner.Name, "claude.tdoc.geloescht", $"{page} {n}");
+        if (kept.Count > 0) _core.Audit.Append(Principal.LocalOwner.Name, "claude.tdoc.nicht.geloescht", $"{page} {string.Join("; ", kept)}");
+        return n;
+    }
+
+    /// <summary>T-0788 (3. Prüfrunde): SHA-256 jeder Datei, die Trendo selbst in einen Claude-Ordner geschrieben hat (Arbeitsdatei, Dokument, Zurückgesetztes).</summary>
+    readonly Dictionary<string, string> _trendoWrote = new(StringComparer.OrdinalIgnoreCase);
+    void TrendoWrote(string file) { try { _trendoWrote[Path.GetFullPath(file)] = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(file))); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } }
+
+    /// <summary>T-0788 (3. Prüfrunde): Darf Trendo diese Datei löschen? Nie, wenn sie die Datei eines offenen Dokuments ist, und nie, wenn ihr Inhalt nicht mehr genau dem entspricht,
+    /// was Trendo zuletzt geschrieben hat (eigene Datei der Person, von Claude geändert …). Rückgabe: Grund gegen das Löschen oder null.</summary>
+    string? TrendoDeleteBlocked(string file)
+    {
+        var full = Path.GetFullPath(file);
+        if (_progDocs.Values.SelectMany(l => l).Any(d => d.Path is { } p && ProgramDocument.SameFile(p, full))) return "Datei eines offenen Dokuments";
+        if (!_trendoWrote.TryGetValue(full, out var sha)) return "nicht von Trendo geschrieben";
+        try { if (Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(full))) != sha) return "seitdem verändert"; }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return "nicht lesbar"; }
+        return null;
+    }
+
+    /// <summary>T-0788 (3. Prüfrunde): Liegt die Datei in einem Projektordner von Claude (Ordner eines Claude-Projekts dieses Studios) oder ist sie als Arbeitsdatei geführt?</summary>
+    bool InClaudeFolder(string studio, string file)
+    {
+        // T-0788 (4. Prüfrunde): „liegt unterhalb“ – Wurzel der Claude-Projekte (Projekte\Claude) und die Projektordner aller Claude-Projekte aller Studios,
+        // Pfade normalisiert (voller Pfad, Groß-/Kleinschreibung egal, mit abschließendem Trenner). Ein nur verknüpftes Dokument im Studio-Ordner zählt nicht.
+        var full = Path.GetFullPath(file);
+        if (_claudeWorkFiles.ContainsKey(full)) return true;
+        var real = FinalPath(full); // T-0788 (5. Prüfrunde): Junction, Symlink und Kurzname (8.3) aufgelöst
+        return ClaudeRoots().Any(r => real.StartsWith(r, StringComparison.OrdinalIgnoreCase) || full.StartsWith(r, StringComparison.OrdinalIgnoreCase));
+    }
+
+    List<string>? _claudeRoots; DateTime _claudeRootsAt;
+    static string DirKey(string dir) => FinalPath(Path.GetFullPath(dir)).TrimEnd('\\', '/') + Path.DirectorySeparatorChar;
+
+    [System.Runtime.InteropServices.DllImport("kernel32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode, SetLastError = true)]
+    static extern Microsoft.Win32.SafeHandles.SafeFileHandle CreateFileW(string name, uint access, uint share, IntPtr security, uint disposition, uint flags, IntPtr template);
+    [System.Runtime.InteropServices.DllImport("kernel32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode, SetLastError = true)]
+    static extern uint GetFinalPathNameByHandleW(Microsoft.Win32.SafeHandles.SafeFileHandle handle, System.Text.StringBuilder buffer, uint length, uint flags);
+
+    /// <summary>T-0788 (5. Prüfrunde): echter Endpfad – der tiefste vorhandene Teil des Pfads wird über das Dateisystem aufgelöst (Junctions, symbolische Verknüpfungen,
+    /// Kurznamen ausgeschrieben; Windows: GetFinalPathNameByHandle, sonst ResolveLinkTarget je Teil), der noch nicht vorhandene Rest wird angehängt. Ohne Admin, ohne Registry.</summary>
+    internal static string FinalPath(string path)
+    {
+        var full = Path.GetFullPath(path).TrimEnd('\\', '/');
+        var rest = new Stack<string>(); var cur = full;
+        while (!Directory.Exists(cur) && !File.Exists(cur))
+        {
+            var parent = Path.GetDirectoryName(cur);
+            if (parent is null) return full;
+            rest.Push(Path.GetFileName(cur)); cur = parent;
+        }
+        string resolved = cur;
+        try
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                using var h = CreateFileW(cur, 0, 7, IntPtr.Zero, 3, 0x02000000, IntPtr.Zero); // FILE_SHARE_READ|WRITE|DELETE, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS (auch Ordner)
+                if (!h.IsInvalid)
+                {
+                    var sb = new System.Text.StringBuilder(1024);
+                    var n = GetFinalPathNameByHandleW(h, sb, (uint)sb.Capacity, 0);
+                    if (n > 0 && n < sb.Capacity)
+                    {
+                        var s = sb.ToString();
+                        resolved = s.StartsWith(@"\\?\UNC\", StringComparison.Ordinal) ? @"\\" + s[8..] : s.StartsWith(@"\\?\", StringComparison.Ordinal) ? s[4..] : s;
+                    }
+                }
+            }
+            else
+            {
+                var parts = cur.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
+                var acc = Path.GetPathRoot(cur) ?? "/";
+                foreach (var part in parts) { acc = Path.Combine(acc, part); if (new DirectoryInfo(acc).ResolveLinkTarget(true) is { } t) acc = t.FullName; }
+                resolved = acc;
+            }
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or EntryPointNotFoundException or DllNotFoundException) { }
+        while (rest.Count > 0) resolved = Path.Combine(resolved, rest.Pop());
+        return resolved;
+    }
+
+    /// <summary>T-0788 (4. Prüfrunde): Ordner, unter denen Claude arbeitet (kurz zwischengespeichert – jedes Speichern fragt danach).</summary>
+    IReadOnlyList<string> ClaudeRoots()
+    {
+        if (_claudeRoots is { } c && DateTime.UtcNow - _claudeRootsAt < TimeSpan.FromSeconds(3)) return c;
+        // T-0788 (5. Prüfrunde): günstig – liest nur die vorhandenen Projektlisten (statt 93 Studios einzeln); gefragt wird nur bei Programmen mit KiLocalOnlyDoc
+        var l = new List<string> { DirKey(WorkFolder("Claude")) };
+        try { l.AddRange(CChats.AllFolders().Select(DirKey)); }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or ArgumentException) { }
+        _claudeRoots = [.. l.Distinct(StringComparer.OrdinalIgnoreCase)]; _claudeRootsAt = DateTime.UtcNow;
+        return _claudeRoots;
+    }
+
+    /// <summary>T-0788 (4. Prüfrunde): Dokument aus Claudes Ordner verlegt – Begleitdateien nachziehen: Versionen einzeln kopieren, lesend prüfen, erst dann entfernen
+    /// (nur von Trendo geschriebene mit gleichem SHA-256); Notsicherung/Wiederherstellung (Namen nur von Trendo) kopieren, prüfen, entfernen; Zwischendateien der
+    /// atomaren Schreibweise entfernen; zuletzt die alte Dokumentdatei (Löschregel). Rückgabe: EIN Satz je Datei, die bleiben musste.</summary>
+    List<string> ClaudeRelocateSidecars(string oldFile, string newFile, bool newOk)
+    {
+        var notes = new List<string>();
+        static string Sha(string f) => Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(f)));
+        bool CopyChecked(string from, string to)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(to))!);
+            File.Copy(from, to, overwrite: false);
+            return Sha(from) == Sha(to);
+        }
+        // Versionen
+        var ov = ProgramDocument.VersionDir(oldFile); var nv = ProgramDocument.VersionDir(newFile);
+        if (Directory.Exists(ov))
+        {
+            foreach (var f in Directory.GetFiles(ov).Order(StringComparer.Ordinal))
+            {
+                var name = Path.GetFileName(f);
+                try
+                {
+                    if (!newOk) { notes.Add($"Version {name} konnte nicht verlegt werden (neue Datei nicht bestätigt) – bitte selbst löschen."); continue; }
+                    var to = Path.Combine(nv, name);
+                    for (var n = 2; File.Exists(to); n++) to = Path.Combine(nv, Path.GetFileNameWithoutExtension(name) + $"-{n}" + Path.GetExtension(name));
+                    if (!CopyChecked(f, to)) { notes.Add($"Version {name} konnte nicht verlegt werden (Kopie nicht bestätigt) – bitte selbst löschen."); continue; }
+                    if (TrendoDeleteBlocked(f) is { } why) { notes.Add($"Version {name} ist am neuen Ort, die alte konnte nicht gelöscht werden ({why}) – bitte selbst löschen."); continue; }
+                    File.Delete(f); _trendoWrote.Remove(Path.GetFullPath(f));
+                }
+                catch (Exception e) when (e is IOException or UnauthorizedAccessException) { notes.Add($"Version {name} konnte nicht verlegt werden ({Trendo.Core.FriendlyError.Say(e)}) – bitte selbst löschen."); }
+            }
+            try { if (!Directory.EnumerateFileSystemEntries(ov).Any()) { Directory.Delete(ov); var parent = Path.GetDirectoryName(ov)!; if (!Directory.EnumerateFileSystemEntries(parent).Any()) Directory.Delete(parent); } }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        }
+        // Notsicherung und Wiederherstellung (Namen vergibt nur Trendo)
+        foreach (var (o, n) in new[] { (ProgramDocument.AutosaveFile(oldFile), ProgramDocument.AutosaveFile(newFile)), (ProgramDocument.RecoveryFile(oldFile), ProgramDocument.RecoveryFile(newFile)) })
+        {
+            if (!File.Exists(o)) continue;
+            try
+            {
+                if (File.Exists(n) || !newOk || !CopyChecked(o, n)) { notes.Add($"{Path.GetFileName(o)} konnte nicht verlegt werden – bitte selbst löschen."); continue; }
+                File.Delete(o);
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { notes.Add($"{Path.GetFileName(o)} konnte nicht verlegt werden ({Trendo.Core.FriendlyError.Say(e)}) – bitte selbst löschen."); }
+        }
+        // Zwischendateien der atomaren Schreibweise („Name.xxxxxxxx.tmp“)
+        try { foreach (var t in Directory.EnumerateFiles(Path.GetDirectoryName(Path.GetFullPath(oldFile))!, Path.GetFileName(oldFile) + ".*.tmp").Where(t => AtomicFile.IsOwnTemp(Path.GetFileName(t), oldFile)).ToList()) File.Delete(t); } // T-0788 (5. Prüfrunde): nur eigene Zwischendateien
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        // die alte Dokumentdatei selbst
+        if (File.Exists(oldFile))
+        {
+            var why = !newOk ? "neue Datei nicht bestätigt" : TrendoDeleteBlocked(oldFile);
+            if (why is null) try { File.Delete(oldFile); _trendoWrote.Remove(Path.GetFullPath(oldFile)); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { why = "geöffnet oder schreibgeschützt"; }
+            if (why is not null) notes.Add($"Arbeitskopie konnte nicht gelöscht werden: {Path.GetFileName(oldFile)} ({why}) – bitte schließen bzw. selbst löschen.");
+        }
+        _claudeWorkFiles.Remove(Path.GetFullPath(oldFile)); // einmal gemeldet – nicht noch einmal über die Arbeitskopien
+        return notes;
+    }
+
+    /// <summary>T-0788 (3. Prüfrunde): Speichern eines Dokuments, für das „nur lokale KI“ gilt (z. B. Stammbaum mit geschützten Lebenden), landet nie in Claudes Ordner –
+    /// Ziel ist dann der normale Ordner des Studios. Rückgabe: neues Ziel oder null.</summary>
+    string? ClaudeSaveRedirect(ProgramDocument d, string target)
+    {
+        var spec = Programs.Values.FirstOrDefault(s => s.Studio == d.Studio && s.KiLocalOnlyDoc is not null);
+        if (spec is null || spec.KiLocalOnlyDoc!(d) != true || !InClaudeFolder(d.Studio, target)) return null;
+        var safe = ProgramNewTarget(spec, d);
+        if (InClaudeFolder(d.Studio, safe)) throw new InvalidOperationException("Der Ordner des Studios liegt in Claudes Projektordner – das geschützte Dokument wird dort nicht gespeichert. Bitte „Speichern unter“ mit einem anderen Ort.");
+        return safe;
+    }
+
+    /// <summary>T-0788 (3. Prüfrunde): Notiz für die Meldung nach dem Speichern (Dokument wurde aus Claudes Ordner verlegt).</summary>
+    string? _claudeMoveNote;
+
+    /// <summary>T-0788 (2. Prüfrunde): Gilt für dieses Dokument „nur lokale KI“ (Programm allgemein oder genau dieses Dokument, z. B. Stammbaum mit geschützten Lebenden)? Dann der Satz, sonst null.</summary>
+    string? DocLocalOnly(string page, ProgramDocument doc) =>
+        !Programs.TryGetValue(page, out var spec) ? null
+        : (spec.KiLocalOnlyDoc is { } perDoc ? perDoc(doc) : AssistLocalOnly(page)) ? spec.KiLocalOnlyWhy?.Invoke() ?? LocalOnlyRefusal(page) ?? "Dieses Dokument arbeitet nur mit der KI auf diesem PC." : null;
+
     /// <summary>T-0780 (4. Gegenprüfung): abgelehnte .tdoc-Änderungen je Programm – gehen nach der Antwort als Prüfmeldung an Claude.</summary>
     readonly Dictionary<string, List<string>> _tdocRefused = [];
 
@@ -841,8 +1033,10 @@ public partial class MainWindow
         var restored = true;
         try
         {
-            var root = System.Text.Json.Nodes.JsonNode.Parse(doc.Serialize())!.AsObject(); root["data"] = before; // Endstand, auch wenn gerade live eingespielt wird
-            AtomicFile.WriteAllText(file, root.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+            // T-0788 (2. Prüfrunde): zurück in Claudes Datei nur die Sicht, die Claude sehen darf (KiView), nie mehr
+            var view = Programs.TryGetValue(dock.Page, out var vs) && vs.KiView is { } kv ? kv(before) : before;
+            var root = System.Text.Json.Nodes.JsonNode.Parse(doc.Serialize())!.AsObject(); root["data"] = view; // Endstand, auch wenn gerade live eingespielt wird
+            AtomicFile.WriteAllText(file, root.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true })); TrendoWrote(file);
             ClaudeDocSeen(doc, file);
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException) { restored = false; }
@@ -858,7 +1052,25 @@ public partial class MainWindow
 
     void ClaudeSyncProgram(ClaudeDock dock, string file)
     {
-        if (ProgramActive(dock.Page) is not { } doc) return;
+        // T-0788 (2. Prüfrunde): an das Dokument gebunden, aus dem die Datei stammt – nie an das gerade aktive (Reiterwechsel während des Laufs)
+        var full = Path.GetFullPath(file);
+        if (!_claudeWorkFiles.TryGetValue(full, out var bind) || ProgramDocs(bind.Page).FirstOrDefault(x => x.Id == bind.DocId) is not { } doc)
+        { _claudeMsg = $"Claudes Änderung an „{Path.GetFileName(file)}“ gehört zu keinem offenen Dokument mehr – nichts übernommen."; return; }
+        // Programm oder Dokument nur mit lokaler KI (z. B. Stammbaum mit geschützten Lebenden): nichts übernehmen und NIE Daten zurückschreiben – die von Trendo angelegte Datei wird gelöscht
+        if (DocLocalOnly(bind.Page, doc) is { } local)
+        {
+            // T-0788 (3. Prüfrunde): gelöscht wird nur, was Trendo selbst so geschrieben hat und keine Dokumentdatei ist – sonst bleibt die Datei, und die Person erfährt es
+            var blocked = TrendoDeleteBlocked(file); var deleted = false;
+            if (blocked is null) try { File.Delete(file); deleted = true; _claudeWorkFiles.Remove(full); _trendoWrote.Remove(full); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { blocked = "geöffnet oder schreibgeschützt"; }
+            var text = deleted ? $"Trendo hat Claudes Änderung an „{Path.GetFileName(file)}“ nicht übernommen und die Arbeitsdatei aus Claudes Ordner gelöscht: {local}"
+                : $"Trendo hat Claudes Änderung an „{Path.GetFileName(file)}“ nicht übernommen und nichts zurückgeschrieben: {local} Arbeitskopie konnte nicht gelöscht werden: {Path.GetFileName(file)} ({blocked}) – bitte schließen bzw. selbst löschen.";
+            _claudeMsg = text;
+            if (!_tdocRefused.TryGetValue(dock.Page, out var list)) _tdocRefused[dock.Page] = list = [];
+            if (!list.Contains(text)) list.Add(text);
+            _core.Audit.Append(Principal.LocalOwner.Name, "claude.tdoc.zurueckgewiesen", $"{bind.Page} {local}");
+            if (!dock.Max) Show(CurrentView);
+            return;
+        }
         try
         {
             var fresh = ProgramDocument.Load(file);

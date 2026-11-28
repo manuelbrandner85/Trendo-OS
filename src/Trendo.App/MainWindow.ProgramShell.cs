@@ -105,6 +105,11 @@ public sealed class ProgramSpec(string key, string studio, string title)
     public Func<JsonObject, JsonObject, string?>? KiCheck { get; init; }
     /// <summary>T-0782: Die KI-Kette dieses Programms fragt nur die KI auf diesem PC (nie Claude oder einen Dienst im Internet) – z. B. für Kinder.</summary>
     public Func<bool>? KiLocalOnly { get; init; }
+    /// <summary>T-0788: eigener Satz, warum Claude dieses Programm gerade nicht bekommt (sonst der allgemeine Satz zu „nur lokale KI“).</summary>
+    public Func<string>? KiLocalOnlyWhy { get; init; }
+    /// <summary>T-0788 (2. Prüfrunde): gilt „nur lokale KI“ für genau DIESES Dokument (nicht nur für das gerade aktive)? Für den .tdoc-Rückweg,
+    /// der an das Dokument gebunden ist, aus dem die Datei stammt.</summary>
+    public Func<ProgramDocument, bool>? KiLocalOnlyDoc { get; init; }
     /// <summary>T-0782 (Gegenprüfung M2/M6): was die KI-Kette vom Dokument sieht (z. B. ohne Lösungen oder Programmausgaben); fehlt = alles.</summary>
     public Func<System.Text.Json.Nodes.JsonObject, System.Text.Json.Nodes.JsonObject>? KiView { get; init; }
     /// <summary>T-0782 (2. Gegenprüfung M6): Texte der KI-Kette vor dem Anzeigen und Protokollieren filtern (Plan, Vorschau-Meldung, Protokoll) – z. B. Lösungen verdecken.</summary>
@@ -175,18 +180,42 @@ public partial class MainWindow
     void DocSave(ProgramDocument d, string? target = null, bool keepVersion = true, bool overwriteChanged = false)
     {
         var to = ProgramDocument.TargetOf(target ?? d.Path ?? throw new InvalidOperationException("Bitte einen Speicherort wählen."));
+        // T-0788 (3. Prüfrunde): ein Dokument nur für die lokale KI (z. B. geschützter Stammbaum) wird nie in Claudes Ordner gespeichert – auch nicht mit Strg+S oder automatisch
+        string? leftBehind = null;
+        string? redirectedFrom = null;
+        // T-0788 (5. Prüfrunde): nur Programme mit „nur lokale KI je Dokument“ (KiLocalOnlyDoc) fragen nach Claudes Ordnern – alle anderen zahlen beim Speichern nichts dafür
+        var guarded = Programs.Values.Any(s => s.Studio == d.Studio && s.KiLocalOnlyDoc is not null);
+        if (guarded && ClaudeSaveRedirect(d, to) is { } safe) { leftBehind = d.Path is { } lp && ProgramDocument.SameFile(lp, to) ? lp : null; redirectedFrom = to; to = safe; }
         var old = d.Path; var same = old is not null && ProgramDocument.SameFile(old, to);
         if (!(same && d.ReadOnly) && ProgLocks.Acquire(to) is { } other)
         {
             if (same) { d.ReadOnly = true; _progLocked[d.Id] = other; } // die Sperre ging verloren (z. B. Datenordner aufgeräumt) und ein anderes Fenster hat die Datei jetzt
             throw new IOException($"„{Path.GetFileName(to)}“ ist gerade in einem anderen Trendo-Fenster geöffnet (seit {Clock(other.Since)}). Bitte wähle einen anderen Namen – so wird dort nichts überschrieben.");
         }
+        var saveStart = DateTime.Now.AddSeconds(-2);
         try { d.Save(to, keepVersion, overwriteChanged); }
         catch (FileChangedOutsideException) { if (_progConflict.Add(d.Id)) _progConflictNew = true; throw; }
         catch { if (!same) ProgLocks.Release(to); throw; }
         _progConflict.Remove(d.Id);
         if (!d.ReadOnly) _progLocked.Remove(d.Id); // unter neuem Namen gespeichert: kein „nur lesen“ mehr
         if (!same && old is not null) ProgLocks.Release(old);
+        if (guarded && InClaudeFolder(d.Studio, to))
+        {
+            TrendoWrote(to);
+            // T-0788 (4. Prüfrunde): auch die Versionen, die dieses Speichern angelegt hat, gelten als von Trendo geschrieben
+            var vd = ProgramDocument.VersionDir(to);
+            if (Directory.Exists(vd)) foreach (var v in Directory.GetFiles(vd)) if (File.GetLastWriteTime(v) >= saveStart) TrendoWrote(v);
+        }
+        if (redirectedFrom is not null && leftBehind is null)
+            _claudeMoveNote = $"Lebende Personen sind geschützt – das Dokument liegt jetzt in {to} (nicht in Claudes Projektordner {Path.GetDirectoryName(redirectedFrom)}).";
+        if (leftBehind is not null)
+        {
+            // neue Datei ist geschrieben – lesend prüfen, dann Begleitdateien und alte Datei aus Claudes Ordner (nur nach der Löschregel)
+            bool ok; try { ok = ProgramDocument.Load(to).Data.ToJsonString() == d.Data.ToJsonString(); } catch (Exception e) when (e is IOException or InvalidDataException) { ok = false; }
+            var notes = ClaudeRelocateSidecars(leftBehind, to, ok);
+            _claudeMoveNote = $"Lebende Personen sind geschützt – das Dokument liegt jetzt in {to} (nicht mehr in Claudes Projektordner)." + (notes.Count > 0 ? " " + string.Join(" ", notes.Distinct()) : "");
+            _core.Audit.Append(Principal.LocalOwner.Name, "program.verlegt", $"{d.Studio} {Path.GetFileName(leftBehind)} -> {Path.GetFileName(to)}" + (notes.Count > 0 ? " · bleibt: " + string.Join("; ", notes) : ""));
+        }
     }
 
     /// <summary>Notsicherung schreiben; die eines noch unbenannten Dokuments wird für dieses Fenster gesperrt, damit ein zweites Fenster sie nicht als „abgestürzt“ anbietet.</summary>
@@ -419,7 +448,7 @@ public partial class MainWindow
         DocSave(d, target); ProgRecent.Add(spec.Studio, d.Path!); RememberLastDoc(key, d.Path!); DropBackup(d);
         if (path is not null) _progAutoNamed.Remove(d.Id); // selbst benannt: nicht mehr umbenennen
         _core.Audit.Append(Principal.LocalOwner.Name, "program.save", $"{spec.Studio} {Path.GetFileName(d.Path)}");
-        _progMsg[key] = "Gespeichert: " + d.Path; return d.Path!;
+        _progMsg[key] = _claudeMoveNote ?? "Gespeichert: " + d.Path; _claudeMoveNote = null; return d.Path!;
     }
 
     /// <summary>Freier Dateiname im Studio-Ordner der Projekte (vorhandene Dateien werden nie überschrieben).</summary>
@@ -486,6 +515,7 @@ public partial class MainWindow
             }
             else DocSave(d, keepVersion: ProgramDocument.VersionDue(d.Path, AutoVersionGap));
             DropBackup(d);
+            if (_claudeMoveNote is { } mv) { _progMsg[key] = mv; _claudeMoveNote = null; }
             if (_progErr.TryGetValue(key, out var old) && old.Error.Kind == "speichern") { _progErr.Remove(key); if (_progMsg.GetValueOrDefault(key) == old.Error.Sentence) _progMsg.Remove(key); }
             return true;
         }

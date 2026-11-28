@@ -39,6 +39,17 @@ public sealed partial class ClaudeChats(string dataRoot)
         var tmp = FileOf(studio) + ".tmp"; File.WriteAllText(tmp, JsonSerializer.Serialize(all, Json)); SafeFile.Move(tmp, FileOf(studio)); // Virenscanner/Indexdienst kann die Datei kurz halten
     }
 
+    /// <summary>T-0788 (5. Prüfrunde): Projektordner aller Claude-Projekte aller Studios – liest nur die vorhandenen Listen (eine Datei je Studio mit Projekten).</summary>
+    public IReadOnlyList<string> AllFolders()
+    {
+        var res = new List<string>();
+        if (!Directory.Exists(Dir)) return res;
+        foreach (var f in Directory.EnumerateFiles(Dir, "*.json"))
+            try { if (JsonSerializer.Deserialize<List<Chat>>(File.ReadAllText(f), Json) is { } l) res.AddRange(l.Select(c => c.Folder).Where(x => !string.IsNullOrWhiteSpace(x))); }
+            catch (Exception e) when (e is JsonException or IOException or UnauthorizedAccessException) { }
+        return res;
+    }
+
     /// <summary>Projekte des Studios, zuletzt benutztes zuerst.</summary>
     public IReadOnlyList<Chat> All(string studio) => Load(studio).OrderByDescending(c => c.Last).ToList();
     public Chat? Get(string studio, string id) => Load(studio).FirstOrDefault(c => c.Id == id);

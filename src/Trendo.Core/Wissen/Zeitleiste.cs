@@ -624,11 +624,11 @@ public static partial class TimelineKit
     }
 
     /// <summary>Echtes SVG 1.1 (öffnet in Inkscape und jedem Browser), Bilder als eingebettete Daten.</summary>
-    public static string ToSvg(Scene s)
+    public static string ToSvg(Scene s, string title = "Zeitleiste") // T-0788: Titel wählbar (Stammbaum nutzt dieselben Bausteine)
     {
         var sb = new StringBuilder();
         sb.Append($"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" width=\"{F(s.Width)}\" height=\"{F(s.Height)}\" viewBox=\"0 0 {F(s.Width)} {F(s.Height)}\" font-family=\"Segoe UI, Arial, sans-serif\">\n");
-        sb.Append("<title>Zeitleiste</title>\n");
+        sb.Append("<title>").Append(X(title)).Append("</title>\n");
         foreach (var p in s.Prims)
         {
             switch (p)
@@ -671,11 +671,11 @@ public static partial class TimelineKit
     // ---------------- PDF ----------------
 
     /// <summary>Zeitleiste als PDF (eine Seite in Bildgröße, Vektoren und echter Text – durchsuchbar).</summary>
-    public static int ToPdf(Scene s, string path)
+    public static int ToPdf(Scene s, string path, string title = "Zeitleiste") // T-0788: Titel wählbar
     {
         System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Sys.PdfTools).TypeHandle); // Schriften einrichten
         using var pdf = new PdfSharp.Pdf.PdfDocument();
-        pdf.Info.Title = "Zeitleiste";
+        pdf.Info.Title = title;
         var page = pdf.AddPage();
         const double k = 0.75; // px → pt
         page.Width = PdfSharp.Drawing.XUnit.FromPoint(s.Width * k); page.Height = PdfSharp.Drawing.XUnit.FromPoint(s.Height * k);

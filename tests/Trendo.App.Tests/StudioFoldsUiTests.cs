@@ -27,7 +27,7 @@ public class StudioFolds_Ui
     {
         var (w, _, _) = Ui.Open(); w.Width = 1600; w.Height = 1000;
         w.Show("studios"); Settle();
-        Assert.Equal("69 Studios", w.Find<TextBlock>("studios-count").Text![..10]); // T-0784: acht neue Studios; zählt erst mit den Einträgen in requirements.yaml
+        Assert.Equal("70 Studios", w.Find<TextBlock>("studios-count").Text![..10]); // T-0788: + Stammbaum; T-0784: acht neue Studios; zählt erst mit den Einträgen in requirements.yaml
         w.Find<TextBox>("txt-studio-search").Text = "Kostenlose KI finden"; Settle();
         Assert.StartsWith("1 Studios", w.Find<TextBlock>("studios-count").Text);
         w.Find<TextBox>("txt-studio-search").Text = "Texte übersetzen"; Settle();

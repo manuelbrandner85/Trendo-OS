@@ -1,0 +1,13 @@
+# T-0788 5. Prüfrunde – Rot-Lauf auf 97340c9c1 (alter Stand)
+## Core (ohne IsOwnTemp-Theorie, die auf dem alten Stand nicht übersetzt)
+[xUnit.net 00:00:12.25]     T-0788 R5: AtomicFile räumt alte eigene Zwischendateien weg, eine fremde „Name.notiz.tmp“ bleibt [FAIL]
+Fehler!      : Fehler:     1, erfolgreich:     0, übersprungen:     0, gesamt:     1, Dauer: 155 ms - Trendo.Core.Tests.dll (net10.0)
+## App T0788Gegenpruefung6_Ui
+    T-0788 R5 NIEDRIG/MITTEL: Verlegen entfernt nur eigene Zwischendateien – eine fremde „….tdoc.notiz.tmp“ bleibt unverändert [FAIL]
+    T-0788 R5 MITTEL: „Speichern unter“ über eine Junction auf Claudes Ordner legt den geschützten Stammbaum nicht dort ab [FAIL]
+      Assert.False() Failure
+   Trendo.App.Tests  Total: 2, Errors: 0, Failed: 2, Skipped: 0, Not Run: 0, Time: 5,706s
+## App ClaudeRunFix_Ui (3 Läufe)
+   Trendo.App.Tests  Total: 3, Errors: 0, Failed: 1, Skipped: 0, Not Run: 0, Time: 11,958s
+   Trendo.App.Tests  Total: 3, Errors: 0, Failed: 1, Skipped: 0, Not Run: 0, Time: 11,645s
+   Trendo.App.Tests  Total: 3, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 13,549s

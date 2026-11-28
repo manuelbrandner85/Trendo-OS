@@ -69,6 +69,7 @@ public partial class MainWindow
         InitMatheHelfer(); InitNaturwissenschaft(); // T-0781 Wissen & Lernen
         InitTutor(); InitCodeLearn(); // T-0782: Wissen & Lernen – Nachhilfe mit KI, Programmieren lernen
         InitRezepte(); // T-0787: Wissen & Lernen – Rezepte & Ernährung
+        InitStammbaum(); // T-0788: Wissen & Lernen – Stammbaum
     }
 
     /// <summary>Aufklappbare Gruppe, damit jedes Studio übersichtlich bleibt.</summary>

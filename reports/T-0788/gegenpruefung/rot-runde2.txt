@@ -1,0 +1,17 @@
+# T-0788 2. Prüfrunde – Rot-Lauf auf 7bb702189 (alter Stand) mit T0788Gegenpruefung3Tests und T0788Gegenpruefung3_Ui
+## Core
+[xUnit.net 00:00:04.94]     T-0788 R2 MITTEL: Ausblenden entfernt auch, was nur über ausgeblendete Datensätze erreichbar war (Lebende → NOTE → SOUR „Meldeakte Erika“) [FAIL]
+[xUnit.net 00:00:04.95]     T-0788 R2: Einsender (SUBM) – bei „Lebende ausblenden“ ohne Adresse, Telefon, E-Mail; Name bleibt [FAIL]
+[xUnit.net 00:00:04.95]     T-0788 R2: doppelte Kennung – der umbenannte zweite Datensatz hängt nicht still in der Familie des ersten; neue Kennung kollidiert nicht mit verwaisten Verweisen [FAIL]
+[xUnit.net 00:00:04.96]     T-0788 R2: deutsches Datum v. Chr. – Tag erst nach v. Chr. (julianisch) prüfen(input: "29.02.45 v. Chr.", ged: "29 FEB 45 B.C.") [FAIL]
+[xUnit.net 00:00:04.96]     T-0788 R2: deutsches Datum v. Chr. – Tag erst nach v. Chr. (julianisch) prüfen(input: "29. Februar 45 v. Chr.", ged: "29 FEB 45 B.C.") [FAIL]
+[xUnit.net 00:00:04.97]     T-0788 R2: KI darf die Zahl der Generationen nicht ändern [FAIL]
+Fehler!      : Fehler:     6, erfolgreich:     3, übersprungen:     0, gesamt:     9, Dauer: 169 ms - Trendo.Core.Tests.dll (net10.0)
+## App
+    T-0788 R2 HOCH: Schutz wird während des Laufs eingeschaltet – Claudes Ordner enthält danach keine Lebenden, nichts wird übernommen [FAIL]
+      Assert.DoesNotContain() Failure: Sub-string found
+    T-0788 R2 NIEDRIG: Schutz einschalten löscht die frühere Arbeitskopie dieses Stammbaums in Claudes Ordner (nur die von Trendo angelegte) und sagt es [FAIL]
+      Assert.Equal() Failure: Strings differ
+    T-0788 R2 HOCH: Reiterwechsel während des Laufs (Chat auf Dokument nur mit Verstorbenen, dann wird der geschützte Stammbaum aktiv) – Claudes Ordner enthält danach keine Lebenden, der geschützte Stammbaum bleibt unverändert [FAIL]
+      Assert.DoesNotContain() Failure: Sub-string found
+   Trendo.App.Tests  Total: 3, Errors: 0, Failed: 3, Skipped: 0, Not Run: 0, Time: 16,625s

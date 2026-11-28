@@ -1,0 +1,21 @@
+# T-0788 Rot-Lauf: neue Testdateien gegen main 9bc135aaa (ohne Studio-Code)
+## Core
+    15 Warnung(en)
+    18 Fehler
+Fehler beim Buildvorgang.
+tests\Trendo.Core.Tests\T0788FremdnachlaufTests.cs(110,12): error CS0246: Der Typ- oder Namespacename "FamilyTree" wurde nicht gefunden (möglicherweise fehlt eine using-Direktive oder ein Assemblyverweis). [C:\Users\<user>\AppData\Local\Temp\trendo-t0788-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+tests\Trendo.Core.Tests\T0788StammbaumTests.cs(108,12): error CS0246: Der Typ- oder Namespacename "FamilyTree" wurde nicht gefunden (möglicherweise fehlt eine using-Direktive oder ein Assemblyverweis). [C:\Users\<user>\AppData\Local\Temp\trendo-t0788-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+tests\Trendo.Core.Tests\T0788StammbaumTests.cs(207,49): error CS0103: Der Name "GenDateKind" ist im aktuellen Kontext nicht vorhanden. [C:\Users\<user>\AppData\Local\Temp\trendo-t0788-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+tests\Trendo.Core.Tests\T0788StammbaumTests.cs(208,42): error CS0103: Der Name "GenDateKind" ist im aktuellen Kontext nicht vorhanden. [C:\Users\<user>\AppData\Local\Temp\trendo-t0788-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+tests\Trendo.Core.Tests\T0788StammbaumTests.cs(209,40): error CS0103: Der Name "GenDateKind" ist im aktuellen Kontext nicht vorhanden. [C:\Users\<user>\AppData\Local\Temp\trendo-t0788-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+tests\Trendo.Core.Tests\T0788StammbaumTests.cs(210,47): error CS0103: Der Name "GenDateKind" ist im aktuellen Kontext nicht vorhanden. [C:\Users\<user>\AppData\Local\Temp\trendo-t0788-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+tests\Trendo.Core.Tests\T0788StammbaumTests.cs(211,57): error CS0103: Der Name "GenDateKind" ist im aktuellen Kontext nicht vorhanden. [C:\Users\<user>\AppData\Local\Temp\trendo-t0788-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+tests\Trendo.Core.Tests\T0788StammbaumTests.cs(212,42): error CS0103: Der Name "GenDateKind" ist im aktuellen Kontext nicht vorhanden. [C:\Users\<user>\AppData\Local\Temp\trendo-t0788-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+tests\Trendo.Core.Tests\T0788StammbaumTests.cs(213,64): error CS0103: Der Name "GenDateKind" ist im aktuellen Kontext nicht vorhanden. [C:\Users\<user>\AppData\Local\Temp\trendo-t0788-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+tests\Trendo.Core.Tests\T0788StammbaumTests.cs(214,59): error CS0103: Der Name "GenDateKind" ist im aktuellen Kontext nicht vorhanden. [C:\Users\<user>\AppData\Local\Temp\trendo-t0788-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+tests\Trendo.Core.Tests\T0788StammbaumTests.cs(215,42): error CS0103: Der Name "GenDateKind" ist im aktuellen Kontext nicht vorhanden. [C:\Users\<user>\AppData\Local\Temp\trendo-t0788-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+tests\Trendo.Core.Tests\T0788StammbaumTests.cs(216,67): error CS0103: Der Name "GenDateKind" ist im aktuellen Kontext nicht vorhanden. [C:\Users\<user>\AppData\Local\Temp\trendo-t0788-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+## App
+    1 Fehler
+C:\Users\<user>\AppData\Local\Temp\trendo-t0788-rot\tests\Trendo.App.Tests\T0788StammbaumUiTests.cs(26,35): error CS0117: "MainWindow" enthält keine Definition für "FamKey". [C:\Users\<user>\AppData\Local\Temp\trendo-t0788-rot\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+Fehler beim Buildvorgang.

@@ -53,6 +53,7 @@ public static class PromptActions
             new QuizAnlegenAdapter(), new KursGliederungAdapter(), // T-0779
             new TutorSheetAdapter(), new CodeLearnTaskAdapter(), // T-0782
             new RezeptJsonLdAdapter(), // T-0787
+            new StammbaumGedcomAdapter(), // T-0788
             ..SystemActions.Create()
         ];
 }

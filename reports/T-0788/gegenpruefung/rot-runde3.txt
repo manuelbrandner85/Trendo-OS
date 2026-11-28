@@ -1,0 +1,10 @@
+# T-0788 3. Prüfrunde – Rot-Lauf auf 1dbc638b6 (alter Stand) mit T0788Gegenpruefung4Tests und T0788Gegenpruefung4_Ui
+## Core
+[xUnit.net 00:00:04.36]     T-0788 R3: Einsender-Notiz (SUBM → NOTE → SOUR) fällt bei „Lebende ausblenden“ transitiv weg, der Name bleibt [FAIL]
+Fehler!      : Fehler:     1, erfolgreich:     0, übersprungen:     0, gesamt:     1, Dauer: 211 ms - Trendo.Core.Tests.dll (net10.0)
+## App
+    T-0788 R3 HOCH: eigenes Dokument in Claudes Ordner → Schutz an → Strg+S: in Claudes Ordner keine Lebenden, Dokument am neuen Ort vollständig, Rückgängig geht [FAIL]
+    T-0788 R3 NIEDRIG: Arbeitskopie lässt sich nicht löschen (schreibgeschützt) – Meldung mit Namen statt still schlucken; gespeichertes Dokument bleibt, wo es war [FAIL]
+      Assert.Contains() Failure: Sub-string not found
+    T-0788 R3 HOCH: gleichnamige eigene Datei mit anderem Inhalt in Claudes Ordner bleibt beim Einschalten des Schutzes unverändert – ehrliche Meldung [FAIL]
+   Trendo.App.Tests  Total: 3, Errors: 0, Failed: 3, Skipped: 0, Not Run: 0, Time: 15,781s

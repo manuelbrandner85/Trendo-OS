@@ -120,6 +120,7 @@ public static class StudioCatalog
         ["STUDIO-CODELEARN-01"] = new("Programmieren lernen", "Python Schritt für Schritt mit echten Tests – abgeschottet ohne Internet, mit Hinweisen und Fortschritt je Konzept.", "Wissen & Lernen"),
         // T-0787 (Freigabe 26.11.2026, Etappe 0.9.115): Wissen & Lernen
         ["STUDIO-RECIPE-01"] = new("Rezepte & Ernährung", "Rezepte mit Zutaten und Schritten, Portionen umrechnen, Nährwerte je Portion als Richtwert, Wochenplan und Einkaufsliste – schema.org-Rezepte ein und aus.", "Wissen & Lernen"),
+        ["STUDIO-FAMILY-01"] = new("Stammbaum", "Familie erforschen: Personen, Ereignisse, Orte und Quellen – Baum der Vorfahren und Nachkommen, GEDCOM ein und aus, Prüfung auf Widersprüche, Bericht als PDF.", "Wissen & Lernen"), // T-0788
     };
 
     /// <summary>Studio-Liste mit den alltagsnahen Namen (gilt dann überall: Karten, Kacheln, Startmenü, Fenstertitel).</summary>

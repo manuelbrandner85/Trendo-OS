@@ -1,0 +1,72 @@
+# T-0788 Fremdnachlauf inkscape-stammbaum – 2026-11-28 13:00:50 +01:00
+Datei fremd-eingang.ged: 1428 Bytes, SHA-256 efa490f755c2110067d1b019ff4272783f720afd889c376cfdb3123030b9a679
+GEDCOM gelesen: 3 Personen, 1 Familien, 1 Quellen – Zeichensatz: UTF-8. 3 Personen, 1 Familien, 1 Quellen, 5 weitere Datensätze unverändert übernommen.
+Datei trendo-ausgang.ged: 1415 Bytes, SHA-256 395cb6c2ac1e8f507305121dca8a0b7b1847229770b5c50f040fa99d09cb24a0
+Rundreise (Trendo liest seinen eigenen Export): Inhalt gleich = True
+Datei trendo-stammbaum.svg: 2759 Bytes, SHA-256 5776af6970da85cb4f9093e4fec54cadcb19bddfbdcef8d842c1f0d6e046c1b3
+$ Inkscape liest stammbaum.svg (alle Objekte)
+  inkscape.com --query-all C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\a3ea51f5\baum-22dd7c\stammbaum.svg
+Exit 0 nach 1,1 s
+svg13,0,0,774,408
+rect1,0,0,774,408
+text1,21.5215,15.7129,129.382,14.519
+text2,20.0967,41.7393,213.168,8.39502
+rect2,19.25,195.25,215.5,65.5
+rect3,20,202,4,52
+text3,33.041,206.225,75.2324,9.93408
+text4,32.3896,226.228,110.804,9.12598
+text5,32.4409,243.228,87.6555,7.90063
+line5,234,227.3,23,1.4
+line6,256.3,150,1.4,78
+line7,257,149.3,23,1.4
+rect7,279.25,117.25,215.5,65.5
+rect8,280,124,4,52
+text8,292.209,128.225,87.6865,12.8286
+text9,292.39,148.484,68.5884,7.64429
+line9,234,227.3,23,1.4
+line10,256.3,228,1.4,78
+line11,257,305.3,23,1.4
+rect11,279.25,273.25,215.5,65.5
+rect12,280,280,4,52
+text12,292.063,284.897,78.5396,9.26123
+text13,292.39,304.484,87.7786,7.64429
+Inkscape: 23 Objekte, davon 9 Texte (Trendo: 9)
+$ Inkscape speichert als einfaches SVG
+  inkscape.com C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\a3ea51f5\baum-22dd7c\stammbaum.svg --export-type=svg --export-plain-svg --export-filename=C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\a3ea51f5\baum-22dd7c\inkscape-plain.svg
+Exit 0 nach 0,7 s
+Datei inkscape-plain.svg: 4058 Bytes, SHA-256 581cbd14afa8742cd015728498c4aab56bdf30db5d25c54cfa422a149ab64162
+$ Inkscape rendert den Baum als PNG
+  inkscape.com C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\a3ea51f5\baum-22dd7c\stammbaum.svg --export-type=png --export-filename=C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\a3ea51f5\baum-22dd7c\inkscape-stammbaum.png --export-width=1200
+Exit 0 nach 0,7 s
+Datei inkscape-stammbaum.png: 42687 Bytes, SHA-256 5feb2390a5f7092b3bf3c158fbca48a5c8557b256b67a4a00a4554eeded12d31
+Inkscape-PNG 1200×633
+Datei trendo-stammbaum.pdf: 71636 Bytes, SHA-256 87beb78996fcac132d304264c2b01835f8356aeee29f935878da11b6db8ef2ba
+$ pdftotext liest Trendos Baum-PDF
+  pdftotext.exe -enc UTF-8 C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\a3ea51f5\baum-22dd7c\stammbaum.pdf -
+Exit 0 nach 0,0 s
+Familie Größer
+Vorfahren von Erika Größer · 3 Generationen
+
+Erika Größer
+* 1. Februar 1880, Köln † 0 Partner · 0 Kinder
+
+Jürgen Größer
+* 1850 † ~1920
+Anna Muster
+* 1852–1854 † 1931
+Datei trendo-personen.csv: 377 Bytes, SHA-256 3cec8368423d679f9ac6e2852e4f879b4371864097b498c60f3a816c5b080002
+$ LibreOffice öffnet personen.csv und schreibt ods
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-t0788-work/a3ea51f5/baum-22dd7c/lo-profil --headless --norestore --nolockcheck --infilter=CSV:59,34,76,1 --convert-to ods --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\a3ea51f5\baum-22dd7c\lo-aus-csv-ods C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\a3ea51f5\baum-22dd7c\personen.csv
+Exit 0 nach 2,6 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\a3ea51f5\baum-22dd7c\personen.csv as a Calc document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\a3ea51f5\baum-22dd7c\lo-aus-csv-ods\personen.ods using filter : calc8
+  eigene Prozesse (6): PID 2952 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-b72531\libreoffice\program\soffice.bin; PID 12912 soffice.com: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-b72531\libreoffice\program\soffice.com; PID 13936 conhost.exe: C:\Windows\System32\conhost.exe; PID 14372 conhost.exe: C:\Windows\System32\conhost.exe; PID 25060 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-b72531\libreoffice\program\soffice.bin; PID 25356 opencltest.exe: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-b72531\libreoffice\program\opencltest.exe
+$ LibreOffice öffnet personen.ods und schreibt csv
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-t0788-work/a3ea51f5/baum-22dd7c/lo-profil --headless --norestore --nolockcheck --convert-to "csv:Text - txt - csv (StarCalc):59,34,76,1" --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\a3ea51f5\baum-22dd7c\lo-aus-ods-csv C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\a3ea51f5\baum-22dd7c\lo-aus-csv-ods\personen.ods
+Exit 0 nach 1,1 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\a3ea51f5\baum-22dd7c\lo-aus-csv-ods\personen.ods as a Calc document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\a3ea51f5\baum-22dd7c\lo-aus-ods-csv\personen.csv using filter : Text - txt - csv (StarCalc):59,34,76,1
+  eigene Prozesse (3): PID 20580 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-b72531\libreoffice\program\soffice.bin; PID 22660 soffice.com: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-b72531\libreoffice\program\soffice.com; PID 23148 conhost.exe: C:\Windows\System32\conhost.exe
+Datei libreoffice-csv-zurueck.csv: 421 Bytes, SHA-256 19858837c5f6da12d0a0c52b02fa3202c91e15d2a55c62b09ffb4ed648b73b1d
+LibreOffice Calc: 4 Zeilen, Kopf „Kennung;Vorname;Nachname;Geschlecht;Geburt;Geburtsort;Tod;Sterbeort;Vater;Mutter;Partner“
+LibreOffice läuft aus einer Kopie im eigenen Temp-Ordner (14745 Dateien, 882 MB, kopiert in 11,1 s; frei vorher 52,2 GB). Keine alte eigene LibreOffice-Kopie vorhanden.
+Original: unverändert. Trendo-Werkzeugordner (LibreOffice-Original): 15933 Einträge, keiner geändert, keiner neu, keiner fehlt. In der Kopie hat LibreOffice bisher 2 Einträge angelegt/geändert/entfernt: program\opencl, share\uno_packages\cache.
+ERGEBNIS: BESTANDEN

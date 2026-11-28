@@ -1,0 +1,89 @@
+# T-0788 Fremdnachlauf libreoffice-stammbaum-bericht – 2026-11-28 13:00:37 +01:00
+Datei fremd-eingang.ged: 1428 Bytes, SHA-256 efa490f755c2110067d1b019ff4272783f720afd889c376cfdb3123030b9a679
+GEDCOM gelesen: 3 Personen, 1 Familien, 1 Quellen – Zeichensatz: UTF-8. 3 Personen, 1 Familien, 1 Quellen, 5 weitere Datensätze unverändert übernommen.
+Datei trendo-ausgang.ged: 1415 Bytes, SHA-256 395cb6c2ac1e8f507305121dca8a0b7b1847229770b5c50f040fa99d09cb24a0
+Rundreise (Trendo liest seinen eigenen Export): Inhalt gleich = True
+Datei trendo-bericht.docx: 5113 Bytes, SHA-256 7b55c435a4ac37610d5ca9a3cc35c8b3e2ed6e9aad30e417c954c36527852f80
+$ LibreOffice öffnet bericht.docx und schreibt txt
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-t0788-work/c640eea5/bericht-312125/lo-profil --headless --norestore --nolockcheck --convert-to "txt:Text (encoded):UTF8" --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\c640eea5\bericht-312125\lo-aus-docx-txt C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\c640eea5\bericht-312125\bericht.docx
+Exit 0 nach 7,6 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\c640eea5\bericht-312125\bericht.docx as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\c640eea5\bericht-312125\lo-aus-docx-txt\bericht.txt using filter : Text (encoded):UTF8
+[stderr] Could not find platform independent libraries <prefix>
+  eigene Prozesse (6): PID 6688 opencltest.exe: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-b72531\libreoffice\program\opencltest.exe; PID 12664 conhost.exe: C:\Windows\System32\conhost.exe; PID 13228 soffice.com: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-b72531\libreoffice\program\soffice.com; PID 17324 conhost.exe: C:\Windows\System32\conhost.exe; PID 23652 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-b72531\libreoffice\program\soffice.bin; PID 25380 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-b72531\libreoffice\program\soffice.bin
+Datei libreoffice-aus-docx.txt: 1066 Bytes, SHA-256 919b38465af93b5513d470e975dc437ce3378d008ae2cfa41d0d69b5b1624090
+LibreOffice-Text aus docx: alle 9 Prüfstellen gefunden
+$ LibreOffice öffnet bericht.docx und schreibt pdf
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-t0788-work/c640eea5/bericht-312125/lo-profil --headless --norestore --nolockcheck --convert-to pdf --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\c640eea5\bericht-312125\lo-aus-docx-pdf C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\c640eea5\bericht-312125\bericht.docx
+Exit 0 nach 1,4 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\c640eea5\bericht-312125\bericht.docx as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\c640eea5\bericht-312125\lo-aus-docx-pdf\bericht.pdf using filter : writer_pdf_Export
+[stderr] Could not find platform independent libraries <prefix>
+  eigene Prozesse (3): PID 6128 soffice.com: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-b72531\libreoffice\program\soffice.com; PID 10692 conhost.exe: C:\Windows\System32\conhost.exe; PID 22816 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-b72531\libreoffice\program\soffice.bin
+Datei libreoffice-aus-docx.pdf: 72110 Bytes, SHA-256 73de39643313a38b2507915b760f95cc7f8342d39c1d0d451ccd9d4a7413b149
+LibreOffice-PDF aus docx: 2 Seite(n)
+Datei trendo-bericht.odt: 3446 Bytes, SHA-256 ee07bcb4f0367e2388dc8c8bea97f9313223686138ee54db0fc2b3190179cbdc
+$ LibreOffice öffnet bericht.odt und schreibt txt
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-t0788-work/c640eea5/bericht-312125/lo-profil --headless --norestore --nolockcheck --convert-to "txt:Text (encoded):UTF8" --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\c640eea5\bericht-312125\lo-aus-odt-txt C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\c640eea5\bericht-312125\bericht.odt
+Exit 0 nach 1,0 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\c640eea5\bericht-312125\bericht.odt as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\c640eea5\bericht-312125\lo-aus-odt-txt\bericht.txt using filter : Text (encoded):UTF8
+[stderr] Could not find platform independent libraries <prefix>
+  eigene Prozesse (3): PID 412 soffice.com: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-b72531\libreoffice\program\soffice.com; PID 12904 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-b72531\libreoffice\program\soffice.bin; PID 20652 conhost.exe: C:\Windows\System32\conhost.exe
+Datei libreoffice-aus-odt.txt: 1066 Bytes, SHA-256 919b38465af93b5513d470e975dc437ce3378d008ae2cfa41d0d69b5b1624090
+LibreOffice-Text aus odt: alle 9 Prüfstellen gefunden
+$ LibreOffice öffnet bericht.odt und schreibt pdf
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-t0788-work/c640eea5/bericht-312125/lo-profil --headless --norestore --nolockcheck --convert-to pdf --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\c640eea5\bericht-312125\lo-aus-odt-pdf C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\c640eea5\bericht-312125\bericht.odt
+Exit 0 nach 1,1 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\c640eea5\bericht-312125\bericht.odt as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\c640eea5\bericht-312125\lo-aus-odt-pdf\bericht.pdf using filter : writer_pdf_Export
+[stderr] Could not find platform independent libraries <prefix>
+  eigene Prozesse (3): PID 13584 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-b72531\libreoffice\program\soffice.bin; PID 20140 conhost.exe: C:\Windows\System32\conhost.exe; PID 24592 soffice.com: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-b72531\libreoffice\program\soffice.com
+Datei libreoffice-aus-odt.pdf: 71922 Bytes, SHA-256 af4fe233d816043d7ed1bb50f22bea13a8eba93f69663018590a9bb58554a1a4
+LibreOffice-PDF aus odt: 2 Seite(n)
+Datei trendo-bericht.pdf: 85335 Bytes, SHA-256 1867f10b51f5d9442a75a96adc00584480a8ce1777725f1298528686e64afc14
+$ pdftotext liest Trendos Bericht-PDF
+  pdftotext.exe -enc UTF-8 C:\Users\<user>\AppData\Local\Temp\trendo-t0788-work\c640eea5\bericht-312125\bericht.pdf -
+Exit 0 nach 0,0 s
+Familie Größer
+Personen- und Familienbericht · Stand 28.11.2026
+3 Personen, 1 Familien, 1 Quellen.
+
+Personen
+
+Erika Größer (weiblich)
+• Geburt: 1. Februar 1880 in Köln • Tod: • Eltern: Jürgen Größer und Anna Muster
+
+Jürgen Größer (männlich)
+• Geburt: 12. März 1850 in Köln, Nordrhein-Westfalen, Deutschland – Quelle [1] Taufbuch 1850, Nr. 34
+• Tod: um 1920 in Düsseldorf • Beruf: Bäcker • Partner: Anna Muster, Heirat 5. Mai 1878 in Köln; Kinder: Erika Größer
+Erste Zeile der Notiz zweite Zeile mit Umlauten: äöü ÄÖÜ ß – fortgesetzt
+
+Anna Muster (weiblich)
+• Geburt: zwischen 1852 und 1854 • Tod: 4. Juni 1931 • Partner: Jürgen Größer, Heirat 5. Mai 1878 in Köln; Kinder: Erika Größer
+
+Prüfung
+Keine Widersprüche gefunden.
+
+Quellen
+[1] Pfarramt Musterstadt. Kirchenbuch St. Beispiel 1840–1860
+
+Orte
+Ort Düsseldorf Köln
+
+Ereignisse 1 2
+
+Koordinaten
+
+Stammbaum – Familie Größer
+
+Seite 1 von 2
+
+Köln, Nordrhein-Westfalen, Deutschland Stand 28.11.2026 · 3 Personen
+
+1
+
+N50.9375 E6.9603
+
+Stammbaum – Familie Größer
+
+Seite 2 von 2
+LibreOffice läuft aus einer Kopie im eigenen Temp-Ordner (14745 Dateien, 882 MB, kopiert in 11,1 s; frei vorher 52,2 GB). Keine alte eigene LibreOffice-Kopie vorhanden.
+Original: unverändert. Trendo-Werkzeugordner (LibreOffice-Original): 15933 Einträge, keiner geändert, keiner neu, keiner fehlt. In der Kopie hat LibreOffice bisher 2 Einträge angelegt/geändert/entfernt: program\opencl, share\uno_packages\cache.
+ERGEBNIS: BESTANDEN

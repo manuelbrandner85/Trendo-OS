@@ -61,7 +61,7 @@ public partial class MainWindow
         if (_claudeDocks.Remove(id, out var old)) { CloseChat(old); Show(CurrentView); return; }
         // T-0782 (2. Gegenprüfung H1b): in Programmen nur mit der KI auf diesem PC (Nachhilfe, Kinderprofil) gibt es keinen Claude-Bereich
         if (ClaudeBlockedFor(studio))
-        { _core.Audit.Append(Principal.LocalOwner.Name, "claude.dock.lokal", studio ?? CurrentView); if (Programs.ContainsKey(CurrentView)) _progMsg[CurrentView] = "Hier arbeitet nur die KI auf diesem PC – Claude ist in diesem Programm aus."; Show(CurrentView); return; }
+        { _core.Audit.Append(Principal.LocalOwner.Name, "claude.dock.lokal", studio ?? CurrentView); if (Programs.TryGetValue(CurrentView, out var cvSpec)) _progMsg[CurrentView] = cvSpec.KiLocalOnlyWhy?.Invoke() ?? "Hier arbeitet nur die KI auf diesem PC – Claude ist in diesem Programm aus."; Show(CurrentView); return; } // T-0788: eigener Grund (Stammbaum)
         var dock = new ClaudeDock { Folder = ClaudeFolderFor(studio), Studio = studio, Page = CurrentView, Panel = new Border { Name = "claude-dock", Background = ClaudeBg, BorderBrush = ClaudeLine, BorderThickness = new Thickness(1, 0, 0, 0) } };
         _claudeDocks[id] = dock;
         BuildShell(dock);

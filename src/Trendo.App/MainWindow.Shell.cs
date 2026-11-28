@@ -20,8 +20,8 @@ public partial class MainWindow
     /// <summary>Designfläche der Referenz (16:9). Die Oberfläche wird darauf proportional skaliert.</summary>
     public const double DesignW = 1536, DesignH = 864;
 
-    private static readonly IBrush NavyGlass = new SolidColorBrush(Color.Parse("#C71A1A1A"));
-    private static readonly IBrush NavyEdge = new SolidColorBrush(Color.Parse("#4D3B7BD6"));
+    private static readonly IBrush NavyGlass = Brush.Parse("#C71A1A1A"); // T-0788: unveränderlich – darf in jedem Thread entstehen (ClaudeRunProcess löst den statischen Aufbau von MainWindow auch außerhalb der Oberfläche aus)
+    private static readonly IBrush NavyEdge = Brush.Parse("#4D3B7BD6"); // T-0788: unveränderlich – darf in jedem Thread entstehen (ClaudeRunProcess löst den statischen Aufbau von MainWindow auch außerhalb der Oberfläche aus)
 
     /// <summary>Dunkle Glasfläche wie im Referenzbild (heller im hellen Design).</summary>
     private static Border Glass2(Control c, double pad = 12) => new()

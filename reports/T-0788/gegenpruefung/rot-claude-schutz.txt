@@ -1,0 +1,36 @@
+# T-0788 Claude-Schutz – Rot-Lauf auf 95e567750 (alter Stand) mit der endgültigen Testklasse T0788ClaudeSchutz_Ui
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0788 Claude-Schutz: Plan-Zeilen (ClaudeRunPlan) im geschützten Stammbaum werden nicht ausgeführt; Schutz aus: ausgeführt [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: 1
+      Actual:   0
+      Stack Trace:
+        tests\Trendo.App.Tests\T0788ClaudeSchutzUiTests.cs(135,0): at Trendo.App.Tests.T0788ClaudeSchutz_Ui.Plan_refused_then_allowed()
+        --- End of stack trace from previous location ---
+    T-0788 Claude-Schutz: Brücke dokument_lesen/dokument_setzen mit Lebenden und Schutz an abgelehnt; ohne Lebende oder mit Schutz aus erlaubt [FAIL]
+      Assert.True() Failure
+      Expected: True
+      Actual:   False
+      Stack Trace:
+        tests\Trendo.App.Tests\T0788ClaudeSchutzUiTests.cs(165,0): at Trendo.App.Tests.T0788ClaudeSchutz_Ui.Bridge_refused_then_allowed()
+        --- End of stack trace from previous location ---
+    T-0788 Claude-Schutz: Chat mit Studio-.tdoc – Schutz an + Lebende: kein Claude-Aufruf, keine .tdoc, ehrliche Meldung; Schutz aus: Claude bekommt die .tdoc [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: 0
+      Actual:   1
+      Stack Trace:
+        tests\Trendo.App.Tests\T0788ClaudeSchutzUiTests.cs(67,0): at Trendo.App.Tests.T0788ClaudeSchutz_Ui.Chat_tdoc_refused_then_allowed()
+        --- End of stack trace from previous location ---
+    T-0788 Claude-Schutz: Claudes .tdoc-Änderung wird nicht übernommen, wenn während des Laufs der Schutz eingeschaltet wurde (Rückweg des Abgleichs) [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: 1
+      Actual:   3
+      Stack Trace:
+        tests\Trendo.App.Tests\T0788ClaudeSchutzUiTests.cs(108,0): at Trendo.App.Tests.T0788ClaudeSchutz_Ui.Tdoc_sync_back_refused()
+        --- End of stack trace from previous location ---
+  Finished:    Trendo.App.Tests (ID = '34f732ee83dd1028413084321bfeb063acc30693da87f4d9fc013f5b2aec57da')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 4, Errors: 0, Failed: 4, Skipped: 0, Not Run: 0, Time: 15,279s
