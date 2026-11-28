@@ -873,10 +873,85 @@ public partial class MainWindow
     /// <summary>T-0788 (3. Prüfrunde): Liegt die Datei in einem Projektordner von Claude (Ordner eines Claude-Projekts dieses Studios) oder ist sie als Arbeitsdatei geführt?</summary>
     bool InClaudeFolder(string studio, string file)
     {
-        var full = Path.GetFullPath(file); var dir = Path.GetDirectoryName(full) ?? "";
+        // T-0788 (4. Prüfrunde): „liegt unterhalb“ – Wurzel der Claude-Projekte (Projekte\Claude) und die Projektordner aller Claude-Projekte aller Studios,
+        // Pfade normalisiert (voller Pfad, Groß-/Kleinschreibung egal, mit abschließendem Trenner). Ein nur verknüpftes Dokument im Studio-Ordner zählt nicht.
+        var full = Path.GetFullPath(file);
         if (_claudeWorkFiles.ContainsKey(full)) return true;
-        try { return CChats.All(studio).Any(c => string.Equals(Path.GetFullPath(c.Folder).TrimEnd('\\', '/'), dir.TrimEnd('\\', '/'), StringComparison.OrdinalIgnoreCase)); } // nur der Projektordner selbst – ein mit dem Projekt verknüpftes Dokument woanders (z. B. im Studio-Ordner) zählt nicht
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Text.Json.JsonException) { return false; }
+        return ClaudeRoots().Any(r => full.StartsWith(r, StringComparison.OrdinalIgnoreCase));
+    }
+
+    List<string>? _claudeRoots; DateTime _claudeRootsAt;
+    static string DirKey(string dir) => Path.GetFullPath(dir).TrimEnd('\\', '/') + Path.DirectorySeparatorChar;
+
+    /// <summary>T-0788 (4. Prüfrunde): Ordner, unter denen Claude arbeitet (kurz zwischengespeichert – jedes Speichern fragt danach).</summary>
+    IReadOnlyList<string> ClaudeRoots()
+    {
+        if (_claudeRoots is { } c && DateTime.UtcNow - _claudeRootsAt < TimeSpan.FromSeconds(3)) return c;
+        var l = new List<string> { DirKey(WorkFolder("Claude")) };
+        foreach (var studio in StudioCatalog.ById.Keys)
+            try { l.AddRange(CChats.All(studio).Select(x => DirKey(x.Folder))); }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Text.Json.JsonException or ArgumentException) { }
+        _claudeRoots = [.. l.Distinct(StringComparer.OrdinalIgnoreCase)]; _claudeRootsAt = DateTime.UtcNow;
+        return _claudeRoots;
+    }
+
+    /// <summary>T-0788 (4. Prüfrunde): Dokument aus Claudes Ordner verlegt – Begleitdateien nachziehen: Versionen einzeln kopieren, lesend prüfen, erst dann entfernen
+    /// (nur von Trendo geschriebene mit gleichem SHA-256); Notsicherung/Wiederherstellung (Namen nur von Trendo) kopieren, prüfen, entfernen; Zwischendateien der
+    /// atomaren Schreibweise entfernen; zuletzt die alte Dokumentdatei (Löschregel). Rückgabe: EIN Satz je Datei, die bleiben musste.</summary>
+    List<string> ClaudeRelocateSidecars(string oldFile, string newFile, bool newOk)
+    {
+        var notes = new List<string>();
+        static string Sha(string f) => Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(f)));
+        bool CopyChecked(string from, string to)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(to))!);
+            File.Copy(from, to, overwrite: false);
+            return Sha(from) == Sha(to);
+        }
+        // Versionen
+        var ov = ProgramDocument.VersionDir(oldFile); var nv = ProgramDocument.VersionDir(newFile);
+        if (Directory.Exists(ov))
+        {
+            foreach (var f in Directory.GetFiles(ov).Order(StringComparer.Ordinal))
+            {
+                var name = Path.GetFileName(f);
+                try
+                {
+                    if (!newOk) { notes.Add($"Version {name} konnte nicht verlegt werden (neue Datei nicht bestätigt) – bitte selbst löschen."); continue; }
+                    var to = Path.Combine(nv, name);
+                    for (var n = 2; File.Exists(to); n++) to = Path.Combine(nv, Path.GetFileNameWithoutExtension(name) + $"-{n}" + Path.GetExtension(name));
+                    if (!CopyChecked(f, to)) { notes.Add($"Version {name} konnte nicht verlegt werden (Kopie nicht bestätigt) – bitte selbst löschen."); continue; }
+                    if (TrendoDeleteBlocked(f) is { } why) { notes.Add($"Version {name} ist am neuen Ort, die alte konnte nicht gelöscht werden ({why}) – bitte selbst löschen."); continue; }
+                    File.Delete(f); _trendoWrote.Remove(Path.GetFullPath(f));
+                }
+                catch (Exception e) when (e is IOException or UnauthorizedAccessException) { notes.Add($"Version {name} konnte nicht verlegt werden ({Trendo.Core.FriendlyError.Say(e)}) – bitte selbst löschen."); }
+            }
+            try { if (!Directory.EnumerateFileSystemEntries(ov).Any()) { Directory.Delete(ov); var parent = Path.GetDirectoryName(ov)!; if (!Directory.EnumerateFileSystemEntries(parent).Any()) Directory.Delete(parent); } }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        }
+        // Notsicherung und Wiederherstellung (Namen vergibt nur Trendo)
+        foreach (var (o, n) in new[] { (ProgramDocument.AutosaveFile(oldFile), ProgramDocument.AutosaveFile(newFile)), (ProgramDocument.RecoveryFile(oldFile), ProgramDocument.RecoveryFile(newFile)) })
+        {
+            if (!File.Exists(o)) continue;
+            try
+            {
+                if (File.Exists(n) || !newOk || !CopyChecked(o, n)) { notes.Add($"{Path.GetFileName(o)} konnte nicht verlegt werden – bitte selbst löschen."); continue; }
+                File.Delete(o);
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { notes.Add($"{Path.GetFileName(o)} konnte nicht verlegt werden ({Trendo.Core.FriendlyError.Say(e)}) – bitte selbst löschen."); }
+        }
+        // Zwischendateien der atomaren Schreibweise („Name.xxxxxxxx.tmp“)
+        try { foreach (var t in Directory.EnumerateFiles(Path.GetDirectoryName(Path.GetFullPath(oldFile))!, Path.GetFileName(oldFile) + ".*.tmp").ToList()) File.Delete(t); }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        // die alte Dokumentdatei selbst
+        if (File.Exists(oldFile))
+        {
+            var why = !newOk ? "neue Datei nicht bestätigt" : TrendoDeleteBlocked(oldFile);
+            if (why is null) try { File.Delete(oldFile); _trendoWrote.Remove(Path.GetFullPath(oldFile)); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { why = "geöffnet oder schreibgeschützt"; }
+            if (why is not null) notes.Add($"Arbeitskopie konnte nicht gelöscht werden: {Path.GetFileName(oldFile)} ({why}) – bitte schließen bzw. selbst löschen.");
+        }
+        _claudeWorkFiles.Remove(Path.GetFullPath(oldFile)); // einmal gemeldet – nicht noch einmal über die Arbeitskopien
+        return notes;
     }
 
     /// <summary>T-0788 (3. Prüfrunde): Speichern eines Dokuments, für das „nur lokale KI“ gilt (z. B. Stammbaum mit geschützten Lebenden), landet nie in Claudes Ordner –
@@ -885,7 +960,9 @@ public partial class MainWindow
     {
         var spec = Programs.Values.FirstOrDefault(s => s.Studio == d.Studio && s.KiLocalOnlyDoc is not null);
         if (spec is null || spec.KiLocalOnlyDoc!(d) != true || !InClaudeFolder(d.Studio, target)) return null;
-        return ProgramNewTarget(spec, d);
+        var safe = ProgramNewTarget(spec, d);
+        if (InClaudeFolder(d.Studio, safe)) throw new InvalidOperationException("Der Ordner des Studios liegt in Claudes Projektordner – das geschützte Dokument wird dort nicht gespeichert. Bitte „Speichern unter“ mit einem anderen Ort.");
+        return safe;
     }
 
     /// <summary>T-0788 (3. Prüfrunde): Notiz für die Meldung nach dem Speichern (Dokument wurde aus Claudes Ordner verlegt).</summary>

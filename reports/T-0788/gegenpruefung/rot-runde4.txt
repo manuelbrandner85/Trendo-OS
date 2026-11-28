@@ -1,0 +1,43 @@
+# T-0788 4. Prüfrunde – Rot-Lauf auf 56396d26d (alter Stand) mit T0788Gegenpruefung5_Ui
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0788 R4 NIEDRIG: Verlegen scheitert (Ziel nicht schreibbar) – Schutz gilt trotzdem, nichts geht verloren, die Meldung sagt, dass die Kopie noch in Claudes Ordner liegt [FAIL]
+      System.UnauthorizedAccessException : Access to the path is denied.
+      Stack Trace:
+           at System.IO.FileSystem.MoveFile(String sourceFullPath, String destFullPath, Boolean overwrite)
+        src\Trendo.Core\SafeFile.cs(13,0): at Trendo.Core.SafeFile.Move(String source, String destination)
+        src\Trendo.Core\AtomicFile.cs(30,0): at Trendo.Core.AtomicFile.WriteAllBytes(String path, Byte[] bytes)
+        src\Trendo.Core\Programs\ProgramDocument.cs(226,0): at Trendo.Core.Programs.ProgramDocument.Save(String path, Boolean keepVersion, Boolean overwriteChanged)
+        src\Trendo.App\MainWindow.ProgramShell.cs(192,0): at Trendo.App.MainWindow.DocSave(ProgramDocument d, String target, Boolean keepVersion, Boolean overwriteChanged)
+        src\Trendo.App\MainWindow.Stammbaum.cs(337,0): at Trendo.App.MainWindow.FamSetOption(ProgramDocument d, String field, String value)
+        tests\Trendo.App.Tests\T0788Gegenpruefung5UiTests.cs(125,0): at Trendo.App.Tests.T0788Gegenpruefung5_Ui.Move_fails_honestly()
+        --- End of stack trace from previous location ---
+    T-0788 R4 HOCH: Begleitdateien (Wiederherstellung, Notsicherung, Zwischendatei) bleiben nicht in Claudes Ordner – die Wiederherstellung liegt am neuen Ort [FAIL]
+      Assert.DoesNotContain() Failure: Sub-string found
+                                             ↓ (pos 2360)
+      String: ···""I5",\r\n        "given": "Erika",\r\n        "surname"···
+      Found:  "Erika"
+      Stack Trace:
+        tests\Trendo.App.Tests\T0788Gegenpruefung5UiTests.cs(87,0): at Trendo.App.Tests.T0788Gegenpruefung5_Ui.Companions_moved()
+        --- End of stack trace from previous location ---
+    T-0788 R4 MITTEL: „Speichern unter“ in einen Unterordner unterhalb von Claudes Ordnern legt den geschützten Stammbaum nicht dort ab; das neue Ziel liegt nie darunter [FAIL]
+      Assert.False() Failure
+      Expected: False
+      Actual:   True
+      Stack Trace:
+        tests\Trendo.App.Tests\T0788Gegenpruefung5UiTests.cs(106,0): at Trendo.App.Tests.T0788Gegenpruefung5_Ui.Subfolder_save_as()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    T-0788 R4 HOCH: Versionen ziehen beim Verlegen einzeln mit (kopiert, geprüft, dann entfernt) – in Claudes Ordner bleibt nichts mit Lebenden, die Meldung widerspricht sich nicht [FAIL]
+      Assert.DoesNotContain() Failure: Sub-string found
+                                             ↓ (pos 3720)
+      String: ···""I5",\r\n        "given": "Erika",\r\n        "surname"···
+      Found:  "Erika"
+      Stack Trace:
+        tests\Trendo.App.Tests\T0788Gegenpruefung5UiTests.cs(68,0): at Trendo.App.Tests.T0788Gegenpruefung5_Ui.Versions_moved()
+        --- End of stack trace from previous location ---
+  Finished:    Trendo.App.Tests (ID = '4f98640b239c6ed2beedf7f8caf81fc7d94f21708381eba96c961b7829fb62f0')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 4, Errors: 0, Failed: 4, Skipped: 0, Not Run: 0, Time: 21,443s

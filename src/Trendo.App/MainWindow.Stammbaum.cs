@@ -334,7 +334,14 @@ public partial class MainWindow
             // T-0788 (3. Prüfrunde): liegt das Dokument selbst in Claudes Projektordner, wird es in den Ordner des Studios verlegt (neue Datei schreiben, prüfen,
             // dann erst die alte entfernen – nur wenn Trendo sie so geschrieben hat); danach die übrigen Arbeitskopien dieses Dokuments (gleiche Regel)
             string? moved = null;
-            if (d.Path is { } p && InClaudeFolder(FamStudio, p)) { DocSave(d); moved = _claudeMoveNote; _claudeMoveNote = null; }
+            if (d.Path is { } p && InClaudeFolder(FamStudio, p))
+                try { DocSave(d); moved = _claudeMoveNote; _claudeMoveNote = null; }
+                catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException)
+                {
+                    // T-0788 (4. Prüfrunde): z. B. voller Datenträger – der Schutz gilt trotzdem (Claude bekommt nichts), das Dokument bleibt offen und vollständig
+                    _claudeMoveNote = null;
+                    moved = $"Lebende Personen sind geschützt, aber das Verlegen ging nicht ({Trendo.Core.FriendlyError.Say(e)}). Die Kopie liegt noch in Claudes Ordner: {p} – bitte Platz schaffen und erneut speichern oder die Datei selbst löschen.";
+                }
             var dropped = ClaudeDropWorkFiles(FamKey, d.Id, out var kept);
             var parts = new List<string>();
             if (moved is not null) parts.Add(moved);

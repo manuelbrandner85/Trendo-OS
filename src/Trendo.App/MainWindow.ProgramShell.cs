@@ -182,35 +182,37 @@ public partial class MainWindow
         var to = ProgramDocument.TargetOf(target ?? d.Path ?? throw new InvalidOperationException("Bitte einen Speicherort wählen."));
         // T-0788 (3. Prüfrunde): ein Dokument nur für die lokale KI (z. B. geschützter Stammbaum) wird nie in Claudes Ordner gespeichert – auch nicht mit Strg+S oder automatisch
         string? leftBehind = null;
-        if (ClaudeSaveRedirect(d, to) is { } safe) { leftBehind = d.Path is { } lp && ProgramDocument.SameFile(lp, to) ? lp : null; to = safe; }
+        string? redirectedFrom = null;
+        if (ClaudeSaveRedirect(d, to) is { } safe) { leftBehind = d.Path is { } lp && ProgramDocument.SameFile(lp, to) ? lp : null; redirectedFrom = to; to = safe; }
         var old = d.Path; var same = old is not null && ProgramDocument.SameFile(old, to);
         if (!(same && d.ReadOnly) && ProgLocks.Acquire(to) is { } other)
         {
             if (same) { d.ReadOnly = true; _progLocked[d.Id] = other; } // die Sperre ging verloren (z. B. Datenordner aufgeräumt) und ein anderes Fenster hat die Datei jetzt
             throw new IOException($"„{Path.GetFileName(to)}“ ist gerade in einem anderen Trendo-Fenster geöffnet (seit {Clock(other.Since)}). Bitte wähle einen anderen Namen – so wird dort nichts überschrieben.");
         }
+        var saveStart = DateTime.Now.AddSeconds(-2);
         try { d.Save(to, keepVersion, overwriteChanged); }
         catch (FileChangedOutsideException) { if (_progConflict.Add(d.Id)) _progConflictNew = true; throw; }
         catch { if (!same) ProgLocks.Release(to); throw; }
         _progConflict.Remove(d.Id);
         if (!d.ReadOnly) _progLocked.Remove(d.Id); // unter neuem Namen gespeichert: kein „nur lesen“ mehr
         if (!same && old is not null) ProgLocks.Release(old);
-        if (InClaudeFolder(d.Studio, to)) TrendoWrote(to);
+        if (InClaudeFolder(d.Studio, to))
+        {
+            TrendoWrote(to);
+            // T-0788 (4. Prüfrunde): auch die Versionen, die dieses Speichern angelegt hat, gelten als von Trendo geschrieben
+            var vd = ProgramDocument.VersionDir(to);
+            if (Directory.Exists(vd)) foreach (var v in Directory.GetFiles(vd)) if (File.GetLastWriteTime(v) >= saveStart) TrendoWrote(v);
+        }
+        if (redirectedFrom is not null && leftBehind is null)
+            _claudeMoveNote = $"Lebende Personen sind geschützt – das Dokument liegt jetzt in {to} (nicht in Claudes Projektordner {Path.GetDirectoryName(redirectedFrom)}).";
         if (leftBehind is not null)
         {
-            // neue Datei ist geschrieben und gelesen geprüft – erst dann die alte (von Trendo geschriebene) Datei in Claudes Ordner entfernen; Versionen ziehen mit
-            var ok = ProgramDocument.Load(to).Data.ToJsonString() == d.Data.ToJsonString();
-            string? why = ok ? TrendoDeleteBlocked(leftBehind) : "neue Datei nicht bestätigt";
-            try
-            {
-                var ov = ProgramDocument.VersionDir(leftBehind); var nv = ProgramDocument.VersionDir(to);
-                if (ok && Directory.Exists(ov) && !Directory.Exists(nv)) Directory.Move(ov, nv);
-                if (why is null) { File.Delete(leftBehind); _trendoWrote.Remove(Path.GetFullPath(leftBehind)); _claudeWorkFiles.Remove(Path.GetFullPath(leftBehind)); }
-            }
-            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { why ??= "geöffnet oder schreibgeschützt"; }
-            _claudeMoveNote = $"Lebende Personen sind geschützt – das Dokument liegt jetzt in {to} (nicht mehr in Claudes Projektordner)."
-                + (why is null ? "" : $" Arbeitskopie konnte nicht gelöscht werden: {Path.GetFileName(leftBehind)} ({why}) – bitte schließen bzw. selbst löschen.");
-            _core.Audit.Append(Principal.LocalOwner.Name, "program.verlegt", $"{d.Studio} {Path.GetFileName(leftBehind)} -> {Path.GetFileName(to)}" + (why is null ? "" : " alte Datei bleibt: " + why));
+            // neue Datei ist geschrieben – lesend prüfen, dann Begleitdateien und alte Datei aus Claudes Ordner (nur nach der Löschregel)
+            bool ok; try { ok = ProgramDocument.Load(to).Data.ToJsonString() == d.Data.ToJsonString(); } catch (Exception e) when (e is IOException or InvalidDataException) { ok = false; }
+            var notes = ClaudeRelocateSidecars(leftBehind, to, ok);
+            _claudeMoveNote = $"Lebende Personen sind geschützt – das Dokument liegt jetzt in {to} (nicht mehr in Claudes Projektordner)." + (notes.Count > 0 ? " " + string.Join(" ", notes.Distinct()) : "");
+            _core.Audit.Append(Principal.LocalOwner.Name, "program.verlegt", $"{d.Studio} {Path.GetFileName(leftBehind)} -> {Path.GetFileName(to)}" + (notes.Count > 0 ? " · bleibt: " + string.Join("; ", notes) : ""));
         }
     }
 
