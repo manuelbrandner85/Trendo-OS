@@ -52,6 +52,7 @@ public static class PromptActions
             new MatheLoesungAdapter(), new NaturRechnungAdapter(), // T-0781 Wissen & Lernen
             new QuizAnlegenAdapter(), new KursGliederungAdapter(), // T-0779
             new TutorSheetAdapter(), new CodeLearnTaskAdapter(), // T-0782
+            new StammbaumGedcomAdapter(), // T-0788
             ..SystemActions.Create()
         ];
 }

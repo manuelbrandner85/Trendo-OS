@@ -1356,6 +1356,21 @@ public static class StudioKnowledgeBase
             ["Bewertung nur durch echte Tests", "Code läuft ohne Netz und mit Zeitgrenze", "KI schreibt keinen fertigen Code"],
             ["STUDIO-CODEAI-01", "CORE-07"],
             true),
+        ["STUDIO-FAMILY-01"] = new("STUDIO-FAMILY-01", // T-0788
+            "Stammbaum wie in bekannten Genealogie-Programmen: Personen, Familien, Ereignisse mit ungefähren Daten, Orte mit Koordinaten und Quellen mit Fundstelle; Baum der Vorfahren und Nachkommen mit Zoom; GEDCOM 5.5.1 ein und aus (unbekannte Angaben bleiben erhalten, ANSEL wird erkannt); Prüfung auf Widersprüche; Bericht als PDF, DOCX und ODT; lebende Personen in Ausgaben ausgeblendet.",
+            [
+                T("personen", "Personen aus Text", "Die KI liest Personen und Eltern aus deinem Text", "Füge die Personen aus diesem Text ein: ", ["person", "familie", "eltern", "aus dem text", "chronik"], "Text"),
+                T("gedcom", "GEDCOM einlesen", "Datei aus einem anderen Stammbaum-Programm", "Lies meine GEDCOM-Datei ein", ["gedcom", ".ged", "einlesen", "importier"], "Datei"),
+                T("pruefen", "Prüfen", "Widersprüche wie Geburt nach Tod", "Prüf den Stammbaum auf Widersprüche", ["prüf", "fehler", "widerspruch"]),
+            ],
+            [],
+            ["Personen mit Daten und Orten", "GEDCOM-Datei (.ged)", "Quellen"],
+            ["GEDCOM 5.5.1 (.ged)", "Bericht (PDF, DOCX, ODT)", "Baum (SVG, PNG, PDF)", "Personenliste (CSV)"],
+            [".tdoc", ".ged", ".pdf", ".docx", ".odt", ".svg", ".png", ".csv"],
+            ["Erste Person → Eltern, Partner, Kinder → Daten und Orte → Quellen angeben → prüfen → Bericht oder GEDCOM ausgeben"],
+            ["Unbekannte GEDCOM-Angaben gehen nicht verloren", "Lebende Personen werden in Ausgaben ausgeblendet", "Daten werden nicht geraten"],
+            ["STUDIO-TIMELINE-01", "STUDIO-REFERAT-01"],
+            true),
     };
 
     /// <summary>Wissen zu einem Studio. Ohne ausführliche Beschreibung wird es ehrlich aus dem Fachprofil abgeleitet und ist dann als nicht ausführlich markiert.</summary>

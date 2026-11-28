@@ -118,6 +118,7 @@ public static class StudioCatalog
         // T-0782 (Freigabe 26.11.2026, Etappe 0.9.113): Wissen & Lernen
         ["STUDIO-TUTOR-01"] = new("Nachhilfe mit KI", "Üben nach Lernpfad je Fach und Klasse – Hinweise statt fertiger Lösung, Fortschritt je Thema und Wiederholung zur rechten Zeit, KI nur auf diesem PC.", "Wissen & Lernen"),
         ["STUDIO-CODELEARN-01"] = new("Programmieren lernen", "Python Schritt für Schritt mit echten Tests – abgeschottet ohne Internet, mit Hinweisen und Fortschritt je Konzept.", "Wissen & Lernen"),
+        ["STUDIO-FAMILY-01"] = new("Stammbaum", "Familie erforschen: Personen, Ereignisse, Orte und Quellen – Baum der Vorfahren und Nachkommen, GEDCOM ein und aus, Prüfung auf Widersprüche, Bericht als PDF.", "Wissen & Lernen"), // T-0788
     };
 
     /// <summary>Studio-Liste mit den alltagsnahen Namen (gilt dann überall: Karten, Kacheln, Startmenü, Fenstertitel).</summary>

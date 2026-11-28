@@ -62,6 +62,7 @@ public partial class MainWindow
         ["STUDIO-COURSE-01"] = ["Schreib eine Lektion zum Thema", "Kurs in drei Kapiteln gliedern", "Quiz am Ende jeder Lektion"], // T-0779
         ["STUDIO-TUTOR-01"] = ["Gib mir eine Übung zu diesem Thema", "Erklär mir das mit einem Beispiel", "Was soll ich heute wiederholen?"],
         ["STUDIO-CODELEARN-01"] = ["Warum schlägt mein Test fehl?", "Gib mir einen kleinen Hinweis", "Was bedeutet diese Fehlermeldung?"],
+        ["STUDIO-FAMILY-01"] = ["Füge die Personen aus diesem Text ein", "Lies meine GEDCOM-Datei ein", "Prüf den Stammbaum auf Widersprüche"], // T-0788
     };
 
     /// <summary>Chips für ein Studio (leer = keine Vorschläge hinterlegt).</summary>

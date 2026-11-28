@@ -126,6 +126,7 @@ PROMPTS = {
     # T-0782 (Wissen & Lernen)
     'STUDIO-TUTOR-01': 'a school exercise book with handwritten fractions and arithmetic, a pencil, an eraser and a small desk lamp on a dark wooden desk, warm evening light, no readable text, no faces',
     'STUDIO-CODELEARN-01': 'a laptop with abstract colorful program code lines out of focus on a dark desk, a paper notebook with hand drawn flowchart boxes and a pencil beside it, warm light, no readable text, no faces',
+    'STUDIO-FAMILY-01': 'an old family photo album lying open on a dark wooden desk with empty sepia photo frames and blank name cards, a hand drawn family tree diagram with small empty circles connected by golden lines on parchment, a magnifying glass and a fountain pen, warm golden lamp light, no faces, no people, no readable text',
 }
 
 def req(path, data=None, timeout=30):

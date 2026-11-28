@@ -108,6 +108,7 @@ public static class CapabilityCatalog
         P("STUDIO-COURSE-01", "Kurse erstellen", "Wissen & Lernen", "KursKit, KursHtml, Quiz aus STUDIO-QUIZ-01", "Kurs aus Gliederung", "Titel, Gliederung mit Kapiteln und Lektionen", "Kurs als Webseite (HTML), im Studio auch SCORM-1.2-Paket und Fortschritt (CSV)", "Lädt nichts auf eine Lernplattform hoch; das SCORM-Paket lädst du selbst hoch."), // T-0779
         P("STUDIO-TUTOR-01", "Nachhilfe mit KI", "Wissen & Lernen", "Nachhilfe, Fsrs, KI auf diesem PC", "Arbeitsblatt erstellen", "Thema, Anzahl", "Arbeitsblatt (MD) mit Lösungen", "Üben, Prüfen, Hinweise und KI-Übungen nur im Studio; die KI dort läuft nur auf diesem PC."),
         P("STUDIO-CODELEARN-01", "Programmieren lernen", "Wissen & Lernen", "CodeLernen, LernSandbox (AppContainer)", "Aufgabe als Datei", "Aufgabe", "Python-Datei mit Tests", "Tests laufen nur im Studio im abgeschotteten Lauf; ohne mitgeliefertes Python blockiert."),
+        P("STUDIO-FAMILY-01", "Stammbaum", "Wissen & Lernen", "FamilyKit, Gedcom, GenDate", "Personen als GEDCOM", "Zeilen „Name | Geschlecht | Geburt | Geburtsort | Tod | Sterbeort | Vater | Mutter“", "GEDCOM 5.5.1 (.ged) mit Prüfung; im Studio Baum (SVG, PNG, PDF), Bericht (PDF, DOCX, ODT), CSV", "Über den Auftrag nur die geprüften Zeilen; Daten werden nicht geraten, Lebende sind ausgeblendet. Abgleich mit Online-Stammbäumen gibt es nicht."), // T-0788
     ];
 
     private static StudioProfile P(string id, string title, string area, string existing, string action, string inputs, string outputs, string blocker) =>

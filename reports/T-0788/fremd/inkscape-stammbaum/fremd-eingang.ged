@@ -1,0 +1,83 @@
+0 HEAD
+1 SOUR FREMDPROGRAMM
+2 NAME Genealogie-Programm
+2 VERS 5.2
+1 DATE 3 OCT 2026
+1 SUBM @U1@
+1 GEDC
+2 VERS 5.5.1
+2 FORM LINEAGE-LINKED
+1 CHAR UTF-8
+1 LANG German
+1 PLAC
+2 FORM Ort, Kreis, Land
+0 @U1@ SUBM
+1 NAME Erika Muster
+0 @I1@ INDI
+1 NAME Jürgen /Größer/
+2 GIVN Jürgen
+2 SURN Größer
+1 SEX M
+1 BIRT
+2 DATE 12 MAR 1850
+2 PLAC Köln, Nordrhein-Westfalen, Deutschland
+3 MAP
+4 LATI N50.9375
+4 LONG E6.9603
+2 SOUR @S1@
+3 PAGE Taufbuch 1850, Nr. 34
+3 QUAY 3
+1 DEAT
+2 DATE ABT 1920
+2 PLAC Düsseldorf
+1 OCCU Bäcker
+1 NOTE Erste Zeile der Notiz
+2 CONT zweite Zeile mit Umlauten: äöü ÄÖÜ ß
+2 CONC  – fortgesetzt
+1 _UID 4F2A11C0E1B44C7A9F0A
+1 OBJE @M1@
+1 CHAN
+2 DATE 3 OCT 2026
+3 TIME 10:15:00
+1 FAMS @F1@
+0 @I2@ INDI
+1 NAME Anna /Muster/
+1 SEX F
+1 BIRT
+2 DATE BET 1852 AND 1854
+1 DEAT
+2 DATE 4 JUN 1931
+1 NOTE @N1@
+1 FAMS @F1@
+0 @I3@ INDI
+1 NAME Erika /Größer/
+1 SEX F
+1 BIRT
+2 DATE 1 FEB 1880
+2 PLAC Köln
+1 DEAT Y
+1 FAMC @F1@
+2 PEDI birth
+0 @F1@ FAM
+1 HUSB @I1@
+1 WIFE @I2@
+1 CHIL @I3@
+2 _FREL Natural
+2 _MREL Natural
+1 MARR
+2 DATE 5 MAY 1878
+2 PLAC Köln
+1 _STAT verheiratet
+0 @S1@ SOUR
+1 TITL Kirchenbuch St. Beispiel 1840–1860
+1 AUTH Pfarramt Musterstadt
+1 REPO @R1@
+0 @R1@ REPO
+1 NAME Archiv Musterstadt
+0 @N1@ NOTE Notiz als eigener Datensatz
+0 @M1@ OBJE
+1 FILE bild.jpg
+2 FORM jpg
+0 _PLAC Köln
+1 _GOV KOELNJO30RW
+0 TRLR

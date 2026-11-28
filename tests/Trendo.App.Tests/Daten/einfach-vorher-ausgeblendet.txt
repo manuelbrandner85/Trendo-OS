@@ -2270,3 +2270,21 @@ quiz-programm (Dokument): quiz-shuffle-a
 quiz-programm (Dokument): quiz-source-text
 quiz-programm (Dokument): quiz-time
 quiz-programm (Dokument): quiz-title
+# T-0788 (Stammbaum, 0.9.115): wie bei Referate/Zeitleisten liegen in „Einfach“ die Bedienstufen-Knöpfe, weitere Ausgaben (DOCX, ODT, PNG, Baum-PDF, CSV) und die rechte Spalte
+#   (Titel, Lebende ausblenden, Generationen, Zeilen einfügen) unter „Mehr Werkzeuge“ (prog-tools-more); Personen, Daten und Orte bleiben in der Zeile über dem Baum.
+stammbaum-programm: prog-level-einfach
+stammbaum-programm: prog-level-erweitert
+stammbaum-programm: prog-level-profi
+stammbaum-programm (Dokument): fam-p-gens
+stammbaum-programm (Dokument): fam-p-hideliving
+stammbaum-programm (Dokument): fam-p-lines
+stammbaum-programm (Dokument): fam-p-lines-add
+stammbaum-programm (Dokument): fam-p-title
+stammbaum-programm (Dokument): prog-export-baum-pdf
+stammbaum-programm (Dokument): prog-export-csv
+stammbaum-programm (Dokument): prog-export-docx
+stammbaum-programm (Dokument): prog-export-odt
+stammbaum-programm (Dokument): prog-export-png
+stammbaum-programm (Dokument): prog-level-einfach
+stammbaum-programm (Dokument): prog-level-erweitert
+stammbaum-programm (Dokument): prog-level-profi

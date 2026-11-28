@@ -1,0 +1,4 @@
+"Kennung";"Vorname";"Nachname";"Geschlecht";"Geburt";"Geburtsort";"Tod";"Sterbeort";"Vater";"Mutter";"Partner"
+"I1";"Jürgen";"Größer";"männlich";12.03.50;"Köln, Nordrhein-Westfalen, Deutschland";"um 1920";"Düsseldorf";;;"Anna Muster"
+"I2";"Anna";"Muster";"weiblich";"zwischen 1852 und 1854";;04.06.31;;;;"Jürgen Größer"
+"I3";"Erika";"Größer";"weiblich";01.02.80;"Köln";;;"Jürgen Größer";"Anna Muster";

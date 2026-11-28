@@ -68,6 +68,7 @@ public partial class MainWindow
         InitSpec01(); InitSpec02(); InitSpec03(); InitSpec04(); InitLibrary3D(); InitSpec05(); InitSpec06(); InitSpec08(); InitSpec09(); InitSpec10(); InitSpec13(); InitSpec14(); InitSpec15(); InitTv(); InitMusikStudio(); InitFilm(); InitConsolePort(); InitPod(); InitKreativStudios(); InitKreativStudios2(); InitKreativStudios3(); InitKreativStudios4(); InitKuenstlerstudio(); InitBueroStudios(); InitDeckDesign(); InitDocScan(); InitPdfWerkstatt(); InitFormulare(); InitReferateZeitleisten(); InitQuizKurse();
         InitMatheHelfer(); InitNaturwissenschaft(); // T-0781 Wissen & Lernen
         InitTutor(); InitCodeLearn(); // T-0782: Wissen & Lernen – Nachhilfe mit KI, Programmieren lernen
+        InitStammbaum(); // T-0788: Wissen & Lernen – Stammbaum
     }
 
     /// <summary>Aufklappbare Gruppe, damit jedes Studio übersichtlich bleibt.</summary>
