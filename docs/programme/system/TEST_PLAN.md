@@ -1,8 +1,8 @@
 # System & Sicherheit – Testplan
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `system` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `system` · Stand: 0.9.113 (Stand 1978f1a)
 
-65 Tests sprechen dieses Programm an.
+67 Tests sprechen dieses Programm an.
 
 - Am Programm vorbei gearbeitet (nur eigene Dateien, Studio-Dokument unverändert) – Trendo schickt Claude zurück ins Programm-Dokument; neue Projekte übernehmen keine bloß geöffnete Vorlage
 - Annehmen/Verwerfen im Programm: Claude ändert das Studio-Dokument – Vorher/Nachher vergleichen, verwerfen stellt alles her, behalten übernimmt
@@ -34,6 +34,7 @@ Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `sy
 - Freihändig sprechen: zuhören, abschicken, Antwort vorlesen, bis man es ausschaltet
 - Genauere Leser (Kalender, Programm-Dokument), Design „Wie Windows“, Hilfe „?“ auf Seiten ohne eigenen Hilfetext, Hinweis statt stummer Knöpfe
 - Gutachter: zweite Meinung mit Note, ändert nichts; „Verbessern lassen“ gibt die Punkte an Claude
+- H1b Plan-Zeilen: Claude-Bereich aus einem anderen Programm, dann Wechsel in die Nachhilfe – Chat sendet nichts, ein offener Plan wird nicht ausgeführt, die Übung bleibt unverändert
 - Markieren & Claude fragen: Zellbereich in Trendo Tabelle geht mit ins Eingabefeld; Knopf auf der Seite; Strg+Umschalt+A
 - Not-Stopp: Bricht laufende Claude-Arbeit ab und lässt keinen neuen Durchgang starten
 - Projekt-Gedächtnis: Claude merkt sich „Merken:“-Zeilen, sie gehen bei jeder Nachricht mit; ansehen, ergänzen, vergessen
@@ -62,6 +63,7 @@ Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `sy
 - Spiele-Studio: eingebaute Spielregeln; mit GAMEFORGE dessen Regeln, Skills und Agenten (im sicheren Modus als Projekt-Skills); Regeln-Feld zeigt den Stand
 - T-0621: Abgelaufene Claude-Anmeldung wird kein Liedtext – Ersatz-KI antwortet, Claude gilt bis zur neuen Anmeldung als nicht bereit
 - T-0726 A6: Kartenkacheln aus dem Internet nur nach Zustimmung über das Freigabe-Tor – Nein lädt nichts, Ja gilt als Einstellung (im Protokoll), ausschaltbar; offline kein Angebot
+- T-0780 H1 (2. Gegenprüfung): Claude-Brücke – „befehl“, „klicken“ und „feld_setzen“ kommen an Quellen-Sperre, Zitatprüfung und Ordner-Sperre nicht vorbei; Schritt wird zurückgerollt und Claude bekommt den Fehler
 - Unterlagen: nur Freigegebenes geht an Claude (als Datei im Projekt); passende Unterlagen werden vorgeschlagen – erst nach Ja
 - Verbindungen: GitHub-Anmeldung im eigenen gh-Ordner der Person (sichtbar, im Browser), Netlify-Schlüssel nur im Tresor, Claude-Plugins nur nach Ja geändert
 - Veröffentlichen: erst nach Ja; Projekt als ZIP im Ordner „Veröffentlicht“, ohne Hilfsdateien – hochgeladen wird nichts

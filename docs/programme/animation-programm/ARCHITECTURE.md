@@ -1,6 +1,6 @@
 # Animation & Motion – Architektur
 
-Studio: Animation & Motion (STUDIO-ANIM-01) · Bereich: Kreativ & Medien · Seite: `animation-programm` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Animation & Motion (STUDIO-ANIM-01) · Bereich: Kreativ & Medien · Seite: `animation-programm` · Stand: 0.9.113 (Stand 1978f1a)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.KreativStudios2.cs`

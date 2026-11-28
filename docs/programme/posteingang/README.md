@@ -1,6 +1,6 @@
 # Posteingang – Produktionspaket
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `posteingang` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `posteingang` · Stand: 0.9.113 (Stand 1978f1a)
 
 Arbeitsfläche: keine eigene Arbeitsfläche erkannt (Seite aus Listen, Feldern und Knöpfen)  
 Modulstatus (Register, Belege, Testlauf): IMPLEMENTED / Test TESTED (Lauf: 12 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

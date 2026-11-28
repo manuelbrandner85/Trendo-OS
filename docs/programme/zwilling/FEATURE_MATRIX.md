@@ -1,6 +1,6 @@
 # Geräte überwachen – Funktionsmatrix
 
-Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.113 (Stand 1978f1a)
 
 Quelle: `docs/w6-katalog/SPEC-10.md`
 

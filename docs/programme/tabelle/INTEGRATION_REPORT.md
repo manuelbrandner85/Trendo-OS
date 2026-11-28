@@ -1,6 +1,6 @@
 # Trendo Tabelle – Einbindung in Trendo OS
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `tabelle` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `tabelle` · Stand: 0.9.113 (Stand 1978f1a)
 
 - Seite `tabelle` im Studio „Texte & Tabellen“ (Arbeiten & Büro) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

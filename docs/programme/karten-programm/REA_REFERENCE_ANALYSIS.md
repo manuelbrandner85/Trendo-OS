@@ -1,6 +1,6 @@
 # Karten & Einladungen – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Karten & Einladungen (STUDIO-CARDS-01) · Bereich: Arbeiten & Büro · Seite: `karten-programm` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Karten & Einladungen (STUDIO-CARDS-01) · Bereich: Arbeiten & Büro · Seite: `karten-programm` · Stand: 0.9.113 (Stand 1978f1a)
 
 Analyse: [Vorbild-Analyse Karten: Canva, Greetings Island, Paperless Post (Clean-Room)](../../../docs/claude/vorbilder/karten-canva-greetings-island.md)
 

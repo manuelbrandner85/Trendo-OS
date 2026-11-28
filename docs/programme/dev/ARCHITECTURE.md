@@ -1,6 +1,6 @@
 # Webseite bauen – Architektur
 
-Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.113 (Stand 1978f1a)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.CodeEditor.cs`

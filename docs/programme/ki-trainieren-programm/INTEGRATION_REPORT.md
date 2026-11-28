@@ -1,6 +1,6 @@
 # Eigene KI trainieren – Einbindung in Trendo OS
 
-Studio: Eigene KI trainieren (STUDIO-TRAIN-01) · Bereich: KI & Automatik · Seite: `ki-trainieren-programm` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Eigene KI trainieren (STUDIO-TRAIN-01) · Bereich: KI & Automatik · Seite: `ki-trainieren-programm` · Stand: 0.9.113 (Stand 1978f1a)
 
 - Seite `ki-trainieren-programm` im Studio „Eigene KI trainieren“ (KI & Automatik) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: ja (Dokumente .tdoc, Zuletzt, Wiederherstellen, Bedienstufen)

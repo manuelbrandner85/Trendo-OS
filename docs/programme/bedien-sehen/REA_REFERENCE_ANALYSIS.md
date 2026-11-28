@@ -1,6 +1,6 @@
 # Sehen – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `bedien-sehen` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `bedien-sehen` · Stand: 0.9.113 (Stand 1978f1a)
 
 Analyse: [Vorbild-Analyse System: Windows-Einstellungen, GNOME-Einstellungen, macOS Systemeinstellungen, Windows-Kurzhelfer (Clean-Room)](../../../docs/claude/vorbilder/system-einstellungen-windows-gnome.md)
 

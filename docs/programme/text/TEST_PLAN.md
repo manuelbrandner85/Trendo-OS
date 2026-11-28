@@ -1,8 +1,8 @@
 # Trendo Text – Testplan
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.113 (Stand 1978f1a)
 
-104 Tests sprechen dieses Programm an.
+108 Tests sprechen dieses Programm an.
 
 - 108-49: KI-Vorschlag mit Änderungen – erst „Übernehmen“ ersetzt, „Verwerfen“ lässt alles, geänderter Text wird nicht überschrieben
 - 3D: Text wird zu Flächen, OBJ/STL/GLB kommen wieder herein
@@ -36,6 +36,7 @@ Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` 
 - Freihändig sprechen: zuhören, abschicken, Antwort vorlesen, bis man es ausschaltet
 - Genauere Leser (Kalender, Programm-Dokument), Design „Wie Windows“, Hilfe „?“ auf Seiten ohne eigenen Hilfetext, Hinweis statt stummer Knöpfe
 - Gutachter: zweite Meinung mit Note, ändert nichts; „Verbessern lassen“ gibt die Punkte an Claude
+- H1b Plan-Zeilen: Claude-Bereich aus einem anderen Programm, dann Wechsel in die Nachhilfe – Chat sendet nichts, ein offener Plan wird nicht ausgeführt, die Übung bleibt unverändert
 - JSON: alle Eigenschaften überstehen Speichern und Laden; kaputte Werte fallen auf sichere Standards
 - Kostenlose KI-Werkzeuge: Claude bestellt ein Bild – erst als Entwurf zum Ansehen, ins Projekt erst nach „Übernehmen“; neu erzeugen, verwerfen; Knöpfe; Diktieren
 - Live ohne Schreibwerkzeug (z. B. per Befehl): Trendo sieht die Änderung im Projektordner und zeigt sie noch während Claude arbeitet – auch in Trendo Text
@@ -99,6 +100,9 @@ Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` 
 - T-0730 Umzug: liegengebliebene „text.docx.uebernahme-<PID>“ eines beendeten Prozesses wird wieder angeboten
 - T-0747-fix 6: Windows-1252 (€), Sonderzeichen nur in fremden DXF, kaputter SVG-Pfad mit verständlicher Meldung
 - T-0776 echt: Texte (SYS-10) – Trendo schreibt DOCX und ODT, LibreOffice 26 öffnet beide und liefert Überschrift, Absätze, Liste und Tabelle als Text zurück
+- T-0779 FREMD: Chrome spielt HTML-Quiz und Kurs durch, 7-Zip prüft/entpackt SCORM, Chrome öffnet entpackte index.html, pdftotext und qpdf lesen das PDF (nur mit TRENDO_T0779_FREMD)
+- T-0779 Quiz: HTML ist eine Datei ohne fremde Quellen, Daten sicher eingebettet; PDF hat mindestens zwei Seiten (Fragen, Lösungsblatt; Text prüft der App-Test mit PDFium)
+- T-0780 H1 (2. Gegenprüfung): Claude-Brücke – „befehl“, „klicken“ und „feld_setzen“ kommen an Quellen-Sperre, Zitatprüfung und Ordner-Sperre nicht vorbei; Schritt wird zurückgerollt und Claude bekommt den Fehler
 - Text F3: 1.-Liste, Enter und Tab rückt ein (a), Tab noch einmal (i.), Umschalt+Tab zurück; ⇤/⇥-Knöpfe; Rückgängig; Tab ohne Liste ändert nichts
 - Text F3: „Formatierung löschen“ – erst nur das Markierte, ohne Markierung der ganze Absatz (Absatzart, Ausrichtung zurück)
 - Unterlagen: nur Freigegebenes geht an Claude (als Datei im Projekt); passende Unterlagen werden vorgeschlagen – erst nach Ja

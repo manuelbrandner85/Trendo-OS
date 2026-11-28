@@ -1,6 +1,6 @@
 # Karten & Einladungen – Produktionspaket
 
-Studio: Karten & Einladungen (STUDIO-CARDS-01) · Bereich: Arbeiten & Büro · Seite: `karten-programm` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Karten & Einladungen (STUDIO-CARDS-01) · Bereich: Arbeiten & Büro · Seite: `karten-programm` · Stand: 0.9.113 (Stand 1978f1a)
 
 Arbeitsfläche: keine eigene Arbeitsfläche erkannt (Seite aus Listen, Feldern und Knöpfen)  
 Modulstatus (Register, Belege, Testlauf): IN_PROGRESS / Test TESTED (Lauf: 7 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

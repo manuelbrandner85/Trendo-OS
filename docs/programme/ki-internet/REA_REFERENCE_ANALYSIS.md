@@ -1,6 +1,6 @@
 # Kostenlose Internet-KIs – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-internet` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-internet` · Stand: 0.9.113 (Stand 1978f1a)
 
 Analyse: [Vorbild-Analyse Kostenlose KI finden: Ollama, LM Studio, Pinokio, Hugging Face, OpenRouter (Clean-Room)](../../../docs/claude/vorbilder/ki-bibliothek-ollama-lmstudio.md)
 

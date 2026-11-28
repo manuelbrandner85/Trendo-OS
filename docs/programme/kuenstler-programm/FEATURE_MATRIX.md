@@ -1,6 +1,6 @@
 # Künstlerstudio – Funktionsmatrix
 
-Studio: Künstlerstudio (STUDIO-ART-01) · Bereich: Kreativ & Medien · Seite: `kuenstler-programm` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Künstlerstudio (STUDIO-ART-01) · Bereich: Kreativ & Medien · Seite: `kuenstler-programm` · Stand: 0.9.113 (Stand 1978f1a)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

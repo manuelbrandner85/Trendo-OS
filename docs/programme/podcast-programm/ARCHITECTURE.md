@@ -1,6 +1,6 @@
 # Podcast aufnehmen – Architektur
 
-Studio: Podcast aufnehmen (STUDIO-PODCAST-01) · Bereich: Kreativ & Medien · Seite: `podcast-programm` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Podcast aufnehmen (STUDIO-PODCAST-01) · Bereich: Kreativ & Medien · Seite: `podcast-programm` · Stand: 0.9.113 (Stand 1978f1a)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.PodcastStudio.cs`

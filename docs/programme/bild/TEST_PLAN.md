@@ -1,8 +1,8 @@
 # Bildbearbeitung – Testplan
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `bild` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `bild` · Stand: 0.9.113 (Stand 1978f1a)
 
-18 Tests sprechen dieses Programm an.
+21 Tests sprechen dieses Programm an.
 
 - Bild-Dokument: Ebenen-Reihenfolge, Treffer oberste Ebene, Zuschnitt verschiebt Ebenen und Striche, Filter-Grenzen, Farbmatrix Invertieren
 - Bildbearbeitung Profi (Profi 24): Zauberstab wählt die Farbfläche, Maske daraus, Lasso umfährt, inhaltsbasiert füllen entfernt Fleck, Kurvenpunkte frei ziehen
@@ -22,3 +22,6 @@ Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seit
 - T-0733 Gegenprüfung: Zoom-Werkzeug in der Leiste – „Einfach“ mit Symbol und Wort, Hinweis mit Taste Z, gewählt = goldener Rand (nicht golden gefüllt, kein Blau)
 - T-0733 Tasten: Bildbearbeitung V B E M T Z im Menü „Werkzeuge“ und im Tooltip, ohne Konflikt; Z + Klick zoomt an der Stelle, Alt+Klick zurück; Künstlerstudio M = Auswahl
 - T-0764 H1 (Kern): „Einstellungen einlesen“ übernimmt nie Rolle, Name, Bild, Projektordner, Sperren – für jede Rolle; Bedienfelder schon
+- T-0779 2. Gegenprüfung: Bilder im Kurs am Inhalt geprüft (PNG/JPG/GIF/WEBP-Kennung, SVG mit Wurzel svg) – falsche Inhalte sind Fehler und werden nicht eingebettet
+- T-0779 Kurs: SCORM-1.2-Paket – Manifest mit Namensräumen, ein SCO auf index.html, Bestehensgrenze; Seite spricht die SCORM-API an; keine lokalen Pfade, Bilder eingebettet
+- T-0779 M2: Kurs bettet nur Bilder (PNG/JPG/GIF/WEBP/SVG, höchstens 15 MB) ein – andere Dateien sind ein Fehler in der Prüfung und fehlen im Export

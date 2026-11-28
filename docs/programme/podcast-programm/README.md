@@ -1,6 +1,6 @@
 # Podcast aufnehmen – Produktionspaket
 
-Studio: Podcast aufnehmen (STUDIO-PODCAST-01) · Bereich: Kreativ & Medien · Seite: `podcast-programm` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Podcast aufnehmen (STUDIO-PODCAST-01) · Bereich: Kreativ & Medien · Seite: `podcast-programm` · Stand: 0.9.113 (Stand 1978f1a)
 
 Arbeitsfläche: keine eigene Arbeitsfläche erkannt (Seite aus Listen, Feldern und Knöpfen)  
 Modulstatus (Register, Belege, Testlauf): IN_PROGRESS / Test TESTED (Lauf: 11 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

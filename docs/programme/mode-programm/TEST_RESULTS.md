@@ -1,6 +1,6 @@
 # Kleidung & Produkte – Testergebnisse
 
-Studio: Kleidung & Produkte entwerfen (SPEC-08) · Bereich: Kreativ & Medien · Seite: `mode-programm` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Kleidung & Produkte entwerfen (SPEC-08) · Bereich: Kreativ & Medien · Seite: `mode-programm` · Stand: 0.9.113 (Stand 1978f1a)
 
 Lauf: `api.trx, app.trx, core.trx`
 

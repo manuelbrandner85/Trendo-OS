@@ -1,8 +1,8 @@
 # Recherche mit Quellen – Testplan
 
-Studio: Recherche mit Quellen (STUDIO-CITE-01) · Bereich: KI & Automatik · Seite: `quellen-programm` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Recherche mit Quellen (STUDIO-CITE-01) · Bereich: KI & Automatik · Seite: `quellen-programm` · Stand: 0.9.113 (Stand 1978f1a)
 
-8 Tests sprechen dieses Programm an.
+9 Tests sprechen dieses Programm an.
 
 - Recherche mit Quellen: Beispiel, Stil wechseln, Quelle anlegen und ausfüllen, Doppelte, Zitat mit Seite, BibTeX hin und zurück, aus der Recherche übernehmen
 - STUDIO-CITE-01 (UI): DOI eintippen füllt die Quelle mit Herkunft, Rückgängig nimmt sie weg; RIS und CSL-JSON aus, RIS wieder ein (Netz ersetzt)
@@ -11,4 +11,5 @@ Studio: Recherche mit Quellen (STUDIO-CITE-01) · Bereich: KI & Automatik · Sei
 - SYS-08 echt: Wikipedia-Suche und Lesen des ersten Treffers über den echten Lese-Weg (übersprungen nur ohne Internet)
 - SYS-08: Sammlung behalten ausschalten fragt vorher; Fehler beim Verschieben zeigt eine Meldung ohne halben Zustand
 - SYS-08: ohne Sammlung behalten beginnt jede Sitzung leer (wie bisher)
+- T-0780 Referate (UI): Quellen aus „Recherche mit Quellen“ übernehmen (offenes Dokument) und RIS aus Zotero einlesen – Kennungen bleiben, Doppelte nicht doppelt
 - X-07 echt: KI-Auftrag „Quelle holen“ lädt nach Freigabe ein HDRI von Poly Haven mit Beleg je Datei (übersprungen nur ohne Internet)

@@ -1,6 +1,6 @@
 # Medien – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `medien` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `medien` · Stand: 0.9.113 (Stand 1978f1a)
 
 Analyse: [Vorbild-Analyse Medien: VLC, foobar2000, Windows Fotos (Clean-Room)](../../../docs/claude/vorbilder/medien-vlc-foobar.md)
 

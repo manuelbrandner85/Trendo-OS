@@ -1,6 +1,6 @@
 # Print on Demand – Testplan
 
-Studio: Print on Demand (STUDIO-POD-01) · Bereich: Business & Geld · Seite: `pod-programm` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Print on Demand (STUDIO-POD-01) · Bereich: Business & Geld · Seite: `pod-programm` · Stand: 0.9.113 (Stand 1978f1a)
 
 19 Tests sprechen dieses Programm an.
 

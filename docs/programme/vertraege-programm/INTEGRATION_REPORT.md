@@ -1,6 +1,6 @@
 # Verträge-Ordner – Einbindung in Trendo OS
 
-Studio: Verträge-Ordner (STUDIO-CONTRACTS-01) · Bereich: Arbeiten & Büro · Seite: `vertraege-programm` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Verträge-Ordner (STUDIO-CONTRACTS-01) · Bereich: Arbeiten & Büro · Seite: `vertraege-programm` · Stand: 0.9.113 (Stand 1978f1a)
 
 - Seite `vertraege-programm` im Studio „Verträge-Ordner“ (Arbeiten & Büro) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: ja (Dokumente .tdoc, Zuletzt, Wiederherstellen, Bedienstufen)

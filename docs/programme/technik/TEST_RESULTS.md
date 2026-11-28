@@ -1,6 +1,6 @@
 # Tragwerk & Mechanik – Testergebnisse
 
-Studio: Statik nachrechnen (SPEC-03) · Bereich: Technik & Fachgebiete · Seite: `technik` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Statik nachrechnen (SPEC-03) · Bereich: Technik & Fachgebiete · Seite: `technik` · Stand: 0.9.113 (Stand 1978f1a)
 
 Lauf: `api.trx, app.trx, core.trx`
 

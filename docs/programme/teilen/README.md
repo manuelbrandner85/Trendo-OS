@@ -1,6 +1,6 @@
 # Ordner im Heimnetz teilen – Produktionspaket
 
-Studio: Dateien teilen (SYS-06) · Bereich: System & Sicherheit · Seite: `teilen` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Dateien teilen (SYS-06) · Bereich: System & Sicherheit · Seite: `teilen` · Stand: 0.9.113 (Stand 1978f1a)
 
 Arbeitsfläche: Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)  
 Modulstatus (Register, Belege, Testlauf): IMPLEMENTED / Test PC_VERIFIED (Beleg reports/pc-t0003/UEBERSICHT.md; Lauf: 10 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

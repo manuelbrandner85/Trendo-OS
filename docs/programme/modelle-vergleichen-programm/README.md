@@ -1,6 +1,6 @@
 # KI-Modelle vergleichen – Produktionspaket
 
-Studio: KI-Modelle vergleichen (STUDIO-MODELS-01) · Bereich: KI & Automatik · Seite: `modelle-vergleichen-programm` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: KI-Modelle vergleichen (STUDIO-MODELS-01) · Bereich: KI & Automatik · Seite: `modelle-vergleichen-programm` · Stand: 0.9.113 (Stand 1978f1a)
 
 Arbeitsfläche: keine eigene Arbeitsfläche erkannt (Seite aus Listen, Feldern und Knöpfen)  
 Modulstatus (Register, Belege, Testlauf): IN_PROGRESS / Test TESTED (Lauf: 5 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

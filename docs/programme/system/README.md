@@ -1,9 +1,9 @@
 # System & Sicherheit – Produktionspaket
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `system` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `system` · Stand: 0.9.113 (Stand 1978f1a)
 
 Arbeitsfläche: Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)  
-Modulstatus (Register, Belege, Testlauf): IMPLEMENTED / Test TESTED (Lauf: 65 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  
+Modulstatus (Register, Belege, Testlauf): IMPLEMENTED / Test TESTED (Lauf: 67 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  
 Programm-Hülle (Dokumente, Rückgängig, Autosave, Bedienstufen): nein – eigene Arbeitsseite
 
 ## Inhalt

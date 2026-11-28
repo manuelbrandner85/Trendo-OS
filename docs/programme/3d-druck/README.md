@@ -1,6 +1,6 @@
 # Trendo 3D-Druck – Produktionspaket
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D & Spiele · Seite: `3d-druck` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D & Spiele · Seite: `3d-druck` · Stand: 0.9.113 (Stand 1978f1a)
 
 Arbeitsfläche: CAD-/3D-Zeichenfläche  
 Modulstatus (Register, Belege, Testlauf): IMPLEMENTED / Test TESTED (Lauf: 32 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

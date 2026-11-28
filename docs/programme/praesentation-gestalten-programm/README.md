@@ -1,6 +1,6 @@
 # Präsentationen gestalten – Produktionspaket
 
-Studio: Präsentationen gestalten (STUDIO-DECKDESIGN-01) · Bereich: Arbeiten & Büro · Seite: `praesentation-gestalten-programm` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Präsentationen gestalten (STUDIO-DECKDESIGN-01) · Bereich: Arbeiten & Büro · Seite: `praesentation-gestalten-programm` · Stand: 0.9.113 (Stand 1978f1a)
 
 Arbeitsfläche: Folienansicht, Texteditor  
 Modulstatus (Register, Belege, Testlauf): IN_PROGRESS / Test TESTED (Lauf: 10 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

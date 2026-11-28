@@ -1,10 +1,10 @@
 # System & Sicherheit – Testergebnisse
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `system` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `system` · Stand: 0.9.113 (Stand 1978f1a)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 65 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 67 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -38,6 +38,7 @@ Bestanden 65 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | Freihändig sprechen: zuhören, abschicken, Antwort vorlesen, bis man es ausschaltet | ✓ bestanden |
 | Genauere Leser (Kalender, Programm-Dokument), Design „Wie Windows“, Hilfe „?“ auf Seiten ohne eigenen Hilfetext, Hinweis statt stummer Knöpfe | ✓ bestanden |
 | Gutachter: zweite Meinung mit Note, ändert nichts; „Verbessern lassen“ gibt die Punkte an Claude | ✓ bestanden |
+| H1b Plan-Zeilen: Claude-Bereich aus einem anderen Programm, dann Wechsel in die Nachhilfe – Chat sendet nichts, ein offener Plan wird nicht ausgeführt, die Übung bleibt unverändert | ✓ bestanden |
 | Markieren & Claude fragen: Zellbereich in Trendo Tabelle geht mit ins Eingabefeld; Knopf auf der Seite; Strg+Umschalt+A | ✓ bestanden |
 | Not-Stopp: Bricht laufende Claude-Arbeit ab und lässt keinen neuen Durchgang starten | ✓ bestanden |
 | Projekt-Gedächtnis: Claude merkt sich „Merken:“-Zeilen, sie gehen bei jeder Nachricht mit; ansehen, ergänzen, vergessen | ✓ bestanden |
@@ -66,6 +67,7 @@ Bestanden 65 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | Spiele-Studio: eingebaute Spielregeln; mit GAMEFORGE dessen Regeln, Skills und Agenten (im sicheren Modus als Projekt-Skills); Regeln-Feld zeigt den Stand | ✓ bestanden |
 | T-0621: Abgelaufene Claude-Anmeldung wird kein Liedtext – Ersatz-KI antwortet, Claude gilt bis zur neuen Anmeldung als nicht bereit | ✓ bestanden |
 | T-0726 A6: Kartenkacheln aus dem Internet nur nach Zustimmung über das Freigabe-Tor – Nein lädt nichts, Ja gilt als Einstellung (im Protokoll), ausschaltbar; offline kein Angebot | ✓ bestanden |
+| T-0780 H1 (2. Gegenprüfung): Claude-Brücke – „befehl“, „klicken“ und „feld_setzen“ kommen an Quellen-Sperre, Zitatprüfung und Ordner-Sperre nicht vorbei; Schritt wird zurückgerollt und Claude bekommt den Fehler | ✓ bestanden |
 | Unterlagen: nur Freigegebenes geht an Claude (als Datei im Projekt); passende Unterlagen werden vorgeschlagen – erst nach Ja | ✓ bestanden |
 | Verbindungen: GitHub-Anmeldung im eigenen gh-Ordner der Person (sichtbar, im Browser), Netlify-Schlüssel nur im Tresor, Claude-Plugins nur nach Ja geändert | ✓ bestanden |
 | Veröffentlichen: erst nach Ja; Projekt als ZIP im Ordner „Veröffentlicht“, ohne Hilfsdateien – hochgeladen wird nichts | ✓ bestanden |

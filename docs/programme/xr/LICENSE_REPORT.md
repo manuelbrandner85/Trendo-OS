@@ -1,6 +1,6 @@
 # 3D-Modelle ansehen – Lizenzen
 
-Studio: 3D-Modelle ansehen (SPEC-04) · Bereich: 3D & Spiele · Seite: `xr` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: 3D-Modelle ansehen (SPEC-04) · Bereich: 3D & Spiele · Seite: `xr` · Stand: 0.9.113 (Stand 1978f1a)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

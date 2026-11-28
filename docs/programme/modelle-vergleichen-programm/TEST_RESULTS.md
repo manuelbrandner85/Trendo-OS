@@ -1,6 +1,6 @@
 # KI-Modelle vergleichen – Testergebnisse
 
-Studio: KI-Modelle vergleichen (STUDIO-MODELS-01) · Bereich: KI & Automatik · Seite: `modelle-vergleichen-programm` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: KI-Modelle vergleichen (STUDIO-MODELS-01) · Bereich: KI & Automatik · Seite: `modelle-vergleichen-programm` · Stand: 0.9.113 (Stand 1978f1a)
 
 Lauf: `api.trx, app.trx, core.trx`
 

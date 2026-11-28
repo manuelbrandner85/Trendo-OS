@@ -1,6 +1,6 @@
 # Bücher schreiben – Testplan
 
-Studio: Bücher schreiben (STUDIO-BOOK-01) · Bereich: Kreativ & Medien · Seite: `buch-programm` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Bücher schreiben (STUDIO-BOOK-01) · Bereich: Kreativ & Medien · Seite: `buch-programm` · Stand: 0.9.113 (Stand 1978f1a)
 
 16 Tests sprechen dieses Programm an.
 

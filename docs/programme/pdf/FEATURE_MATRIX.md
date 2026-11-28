@@ -1,6 +1,6 @@
 # Trendo PDF – Funktionsmatrix
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` · Stand: 0.9.113 (Stand 1978f1a)
 
 Quelle: `docs/spec/kataloge/SYS-10_KATALOG.md`
 

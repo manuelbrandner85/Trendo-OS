@@ -1,6 +1,6 @@
 # Fotos verwalten – Testplan
 
-Studio: Fotos verwalten (STUDIO-PHOTOS-01) · Bereich: Kreativ & Medien · Seite: `fotos-verwalten-programm` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Fotos verwalten (STUDIO-PHOTOS-01) · Bereich: Kreativ & Medien · Seite: `fotos-verwalten-programm` · Stand: 0.9.113 (Stand 1978f1a)
 
 2 Tests sprechen dieses Programm an.
 

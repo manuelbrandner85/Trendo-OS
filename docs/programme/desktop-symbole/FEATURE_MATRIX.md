@@ -1,6 +1,6 @@
 # Desktop-Symbole – Funktionsmatrix
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `desktop-symbole` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `desktop-symbole` · Stand: 0.9.113 (Stand 1978f1a)
 
 Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 
@@ -95,7 +95,7 @@ Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 - desk-toggle-SPEC-06
 - desk-toggle-CORE-10
 - desk-toggle-SYS-08
-- desk-toggle-CORE-07
-- desk-toggle-X-04
-- desk-toggle-CORE-11
-- desk-toggle-SPEC-12
+- desk-toggle-STUDIO-MATH-01
+- desk-toggle-STUDIO-SCIENCE-01
+- desk-toggle-STUDIO-QUIZ-01
+- desk-toggle-STUDIO-COURSE-01

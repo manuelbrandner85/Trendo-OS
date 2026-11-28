@@ -1,6 +1,6 @@
 # Bewerbung & Lebenslauf – Testplan
 
-Studio: Bewerbung & Lebenslauf (STUDIO-CV-01) · Bereich: Arbeiten & Büro · Seite: `bewerbung-programm` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Bewerbung & Lebenslauf (STUDIO-CV-01) · Bereich: Arbeiten & Büro · Seite: `bewerbung-programm` · Stand: 0.9.113 (Stand 1978f1a)
 
 8 Tests sprechen dieses Programm an.
 

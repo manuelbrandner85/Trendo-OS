@@ -1,6 +1,6 @@
 # Geräte & Laufwerke – Produktionspaket
 
-Studio: Geräte erkennen (SYS-07) · Bereich: System & Sicherheit · Seite: `geraete` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Geräte erkennen (SYS-07) · Bereich: System & Sicherheit · Seite: `geraete` · Stand: 0.9.113 (Stand 1978f1a)
 
 Arbeitsfläche: Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)  
 Modulstatus (Register, Belege, Testlauf): IMPLEMENTED / Test TESTED (PC_VERIFIED zurückgenommen: echter Stick-Auswurf nie gelaufen; Lauf: 12 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

@@ -1,6 +1,6 @@
 # Alle Studios – Funktionsmatrix
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `studios` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `studios` · Stand: 0.9.113 (Stand 1978f1a)
 
 Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 
@@ -48,7 +48,7 @@ Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 - Kreativ & Medien (13)
 - 3D & Spiele (4)
 - Technik & Fachgebiete (5)
-- Wissen & Lernen (4)
+- Wissen & Lernen (12)
 - KI & Automatik (12)
 - Entwickeln (2)
 - System & Sicherheit (6)

@@ -1,6 +1,6 @@
 # Trendo 3D-Druck – Funktionsmatrix
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D & Spiele · Seite: `3d-druck` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D & Spiele · Seite: `3d-druck` · Stand: 0.9.113 (Stand 1978f1a)
 
 Quelle: `docs/spec/kataloge/CORE-05_KATALOG.md`
 

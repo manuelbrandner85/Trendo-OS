@@ -1,6 +1,6 @@
 # Quiz erstellen – Architektur
 
-Studio: Quiz erstellen (STUDIO-QUIZ-01) · Bereich: Wissen & Lernen · Seite: `quiz-programm` · Stand: 0.9.112 (Stand 184fcbb)
+Studio: Quiz erstellen (STUDIO-QUIZ-01) · Bereich: Wissen & Lernen · Seite: `quiz-programm` · Stand: 0.9.113 (Stand 1978f1a)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.QuizKurse.cs`

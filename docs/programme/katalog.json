@@ -76,9 +76,9 @@
       "src/Trendo.App/MainWindow.Bewerbung.cs"
     ],
     "Status": "IN_PROGRESS / Test TESTED (Lauf: 8 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 55,
+    "WarmMs": 38,
     "WindowsOnly": []
   },
   {
@@ -354,9 +354,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED (Beleg reports/w1/pc/README.md; Lauf: 35 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 103,
+    "WarmMs": 86,
     "WindowsOnly": []
   },
   {
@@ -433,13 +433,15 @@
       "T-0774 Gegenprüfung 6: Wiederholen bei belegtem Namen trifft keine fremde Datei – Meldung, beiseitegelegte Fassung bleibt",
       "T-0774 Gegenprüfung 8–10: „3 bis Ende“ → 3-z, Unbekanntes gemeldet; nach „Nein“ keine Meldung stehen; Regel-Planer setzt Modus „foto“ nicht ungefragt",
       "T-0774 PDF-Werkstatt: falsche Seiten („Seite 9“ bei 5 Seiten) – Fehler schon in der Vorschau, keine Datei, Dokument unverändert (KI ersetzt)",
-      "T-0774 PDF-Werkstatt: „Seiten 1–3 heraus“ – Klick → KI-Plan → Vorschau ohne Datei → Ja → neue PDF mit 3 Seiten, EIN Rückgängig-Schritt, Rückgängig/Wiederholen bringen die Datei mit (KI ersetzt)"
+      "T-0774 PDF-Werkstatt: „Seiten 1–3 heraus“ – Klick → KI-Plan → Vorschau ohne Datei → Ja → neue PDF mit 3 Seiten, EIN Rückgängig-Schritt, Rückgängig/Wiederholen bringen die Datei mit (KI ersetzt)",
+      "T-0780 H1 (2. Gegenprüfung): Claude-Brücke – „befehl“, „klicken“ und „feld_setzen“ kommen an Quellen-Sperre, Zitatprüfung und Ordner-Sperre nicht vorbei; Schritt wird zurückgerollt und Claude bekommt den Fehler",
+      "T-0780 H3: Claude-Brücke hält KiLocked ein – „sources“ (Referate) und „folder“ (Dokumente scannen) setzt Claude nicht, freie Felder weiter schon"
     ],
     "SourceFiles": [],
-    "Status": "IN_PROGRESS / Test TESTED (Lauf: 28 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 30 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 20,
+    "WarmMs": 41,
     "WindowsOnly": []
   },
   {
@@ -594,9 +596,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 8 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 20,
     "WindowsOnly": []
   },
   {
@@ -747,9 +749,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 11 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 22,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -955,9 +957,9 @@
       "src/Trendo.App/MainWindow.Pim.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 26 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 28,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -1120,9 +1122,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 12 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 36,
+    "WarmMs": 28,
     "WindowsOnly": []
   },
   {
@@ -1272,9 +1274,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 12 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -1330,9 +1332,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test TESTED (Lauf: 9 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 18,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -1396,9 +1398,9 @@
       "src/Trendo.App/MainWindow.Karten.cs"
     ],
     "Status": "IN_PROGRESS / Test TESTED (Lauf: 7 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 20,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -1642,9 +1644,9 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 31 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -1900,7 +1902,7 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 24 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -2138,9 +2140,9 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 24 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -2235,9 +2237,9 @@
       "src/Trendo.App/MainWindow.W4Suite.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 10 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 22,
+    "WarmMs": 21,
     "WindowsOnly": []
   },
   {
@@ -2319,9 +2321,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test TESTED (Lauf: 33 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 13,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -2386,7 +2388,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test TESTED (Lauf: 10 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
     "WarmMs": 13,
     "WindowsOnly": []
@@ -2644,9 +2646,9 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 22 bestanden · 2 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 22,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -2881,9 +2883,9 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 29 bestanden · 2 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -3151,9 +3153,9 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 30 bestanden · 2 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 22,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -3438,9 +3440,9 @@
       "src/Trendo.App/MainWindow.Tabelle.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 42 bestanden · 2 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 26,
+    "WarmMs": 32,
     "WindowsOnly": []
   },
   {
@@ -3702,6 +3704,7 @@
       "Freihändig sprechen: zuhören, abschicken, Antwort vorlesen, bis man es ausschaltet",
       "Genauere Leser (Kalender, Programm-Dokument), Design „Wie Windows“, Hilfe „?“ auf Seiten ohne eigenen Hilfetext, Hinweis statt stummer Knöpfe",
       "Gutachter: zweite Meinung mit Note, ändert nichts; „Verbessern lassen“ gibt die Punkte an Claude",
+      "H1b Plan-Zeilen: Claude-Bereich aus einem anderen Programm, dann Wechsel in die Nachhilfe – Chat sendet nichts, ein offener Plan wird nicht ausgeführt, die Übung bleibt unverändert",
       "JSON: alle Eigenschaften überstehen Speichern und Laden; kaputte Werte fallen auf sichere Standards",
       "Kostenlose KI-Werkzeuge: Claude bestellt ein Bild – erst als Entwurf zum Ansehen, ins Projekt erst nach „Übernehmen“; neu erzeugen, verwerfen; Knöpfe; Diktieren",
       "Live ohne Schreibwerkzeug (z. B. per Befehl): Trendo sieht die Änderung im Projektordner und zeigt sie noch während Claude arbeitet – auch in Trendo Text",
@@ -3765,6 +3768,9 @@
       "T-0730 Umzug: liegengebliebene „text.docx.uebernahme-<PID>“ eines beendeten Prozesses wird wieder angeboten",
       "T-0747-fix 6: Windows-1252 (€), Sonderzeichen nur in fremden DXF, kaputter SVG-Pfad mit verständlicher Meldung",
       "T-0776 echt: Texte (SYS-10) – Trendo schreibt DOCX und ODT, LibreOffice 26 öffnet beide und liefert Überschrift, Absätze, Liste und Tabelle als Text zurück",
+      "T-0779 FREMD: Chrome spielt HTML-Quiz und Kurs durch, 7-Zip prüft/entpackt SCORM, Chrome öffnet entpackte index.html, pdftotext und qpdf lesen das PDF (nur mit TRENDO_T0779_FREMD)",
+      "T-0779 Quiz: HTML ist eine Datei ohne fremde Quellen, Daten sicher eingebettet; PDF hat mindestens zwei Seiten (Fragen, Lösungsblatt; Text prüft der App-Test mit PDFium)",
+      "T-0780 H1 (2. Gegenprüfung): Claude-Brücke – „befehl“, „klicken“ und „feld_setzen“ kommen an Quellen-Sperre, Zitatprüfung und Ordner-Sperre nicht vorbei; Schritt wird zurückgerollt und Claude bekommt den Fehler",
       "Text F3: 1.-Liste, Enter und Tab rückt ein (a), Tab noch einmal (i.), Umschalt+Tab zurück; ⇤/⇥-Knöpfe; Rückgängig; Tab ohne Liste ändert nichts",
       "Text F3: „Formatierung löschen“ – erst nur das Markierte, ohne Markierung der ganze Absatz (Absatzart, Ausrichtung zurück)",
       "Unterlagen: nur Freigegebenes geht an Claude (als Datei im Projekt); passende Unterlagen werden vorgeschlagen – erst nach Ja",
@@ -3779,10 +3785,10 @@
       "src/Trendo.App/MainWindow.Sys10.cs",
       "src/Trendo.App/MainWindow.Text.cs"
     ],
-    "Status": "IMPLEMENTED / Test TESTED (Lauf: 102 bestanden · 2 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 105 bestanden · 3 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 36,
+    "WarmMs": 20,
     "WindowsOnly": []
   },
   {
@@ -3846,9 +3852,9 @@
       "src/Trendo.App/MainWindow.Vertraege.cs"
     ],
     "Status": "IN_PROGRESS / Test TESTED (Lauf: 7 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 14,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -3958,9 +3964,9 @@
       "src/Trendo.App/MainWindow.W5Finance.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 18 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 51,
+    "WarmMs": 41,
     "WindowsOnly": []
   },
   {
@@ -4113,9 +4119,9 @@
       "src/Trendo.App/MainWindow.W5Business.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 13 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -4183,7 +4189,7 @@
       "src/Trendo.App/MainWindow.PodStudio.cs"
     ],
     "Status": "IN_PROGRESS / Test TESTED (Lauf: 19 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
     "WarmMs": 11,
     "WindowsOnly": []
@@ -4256,9 +4262,9 @@
       "src/Trendo.App/MainWindow.KreativStudios2.cs"
     ],
     "Status": "IN_PROGRESS / Test TESTED (Lauf: 6 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 21,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -4346,9 +4352,9 @@
       "src/Trendo.App/MainWindow.KreativStudios2.cs"
     ],
     "Status": "IN_PROGRESS / Test TESTED (Lauf: 15 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 11,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -4445,9 +4451,9 @@
       "src/Trendo.App/MainWindow.ComicStudio.cs"
     ],
     "Status": "IN_PROGRESS / Test TESTED (Lauf: 10 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 13,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -4517,9 +4523,9 @@
       "src/Trendo.App/MainWindow.FilmStudio.cs"
     ],
     "Status": "IN_PROGRESS / Test TESTED (Lauf: 7 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 17,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -4580,9 +4586,9 @@
       "src/Trendo.App/MainWindow.KreativStudios2.cs"
     ],
     "Status": "IN_PROGRESS / Test TESTED (Lauf: 2 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 16,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -4754,9 +4760,9 @@
       "src/Trendo.App/MainWindow.W4Assets.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 17 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -4971,9 +4977,9 @@
       "src/Trendo.App/MainWindow.ProgMode.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 47 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 12,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -5045,9 +5051,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test TESTED (Lauf: 9 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 18,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -5313,9 +5319,9 @@
       "src/Trendo.App/MainWindow.Spec15.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 36 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 98,
+    "WarmMs": 68,
     "WindowsOnly": []
   },
   {
@@ -5388,9 +5394,9 @@
       "src/Trendo.App/MainWindow.KreativStudios.cs"
     ],
     "Status": "IN_PROGRESS / Test TESTED (Lauf: 7 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 12,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -5465,9 +5471,9 @@
       "src/Trendo.App/MainWindow.PodcastStudio.cs"
     ],
     "Status": "IN_PROGRESS / Test TESTED (Lauf: 11 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 12,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -5777,9 +5783,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED (Beleg reports/echtlauf/2026-11-16/acestep.log; Lauf: 70 bestanden · 2 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 58,
+    "WarmMs": 46,
     "WindowsOnly": []
   },
   {
@@ -5837,9 +5843,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test TESTED (Lauf: 15 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 7,
     "WindowsOnly": []
   },
   {
@@ -6213,9 +6219,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 25 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 14,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -6538,7 +6544,10 @@
       "T-0733 Bild: TIFF (echtes FFmpeg) als Ebene öffnen, malen, als WebP exportieren – ffprobe liest webp 400×200, WebP wieder als Ebene",
       "T-0733 Gegenprüfung: Zoom-Werkzeug in der Leiste – „Einfach“ mit Symbol und Wort, Hinweis mit Taste Z, gewählt = goldener Rand (nicht golden gefüllt, kein Blau)",
       "T-0733 Tasten: Bildbearbeitung V B E M T Z im Menü „Werkzeuge“ und im Tooltip, ohne Konflikt; Z + Klick zoomt an der Stelle, Alt+Klick zurück; Künstlerstudio M = Auswahl",
-      "T-0764 H1 (Kern): „Einstellungen einlesen“ übernimmt nie Rolle, Name, Bild, Projektordner, Sperren – für jede Rolle; Bedienfelder schon"
+      "T-0764 H1 (Kern): „Einstellungen einlesen“ übernimmt nie Rolle, Name, Bild, Projektordner, Sperren – für jede Rolle; Bedienfelder schon",
+      "T-0779 2. Gegenprüfung: Bilder im Kurs am Inhalt geprüft (PNG/JPG/GIF/WEBP-Kennung, SVG mit Wurzel svg) – falsche Inhalte sind Fehler und werden nicht eingebettet",
+      "T-0779 Kurs: SCORM-1.2-Paket – Manifest mit Namensräumen, ein SCO auf index.html, Bestehensgrenze; Seite spricht die SCORM-API an; keine lokalen Pfade, Bilder eingebettet",
+      "T-0779 M2: Kurs bettet nur Bilder (PNG/JPG/GIF/WEBP/SVG, höchstens 15 MB) ein – andere Dateien sind ein Fehler in der Prüfung und fehlen im Export"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.AudioEditor.cs",
@@ -6546,10 +6555,10 @@
       "src/Trendo.App/MainWindow.VideoSchnitt.cs",
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
-    "Status": "IMPLEMENTED / Test TESTED (Lauf: 18 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 21 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 14,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -6894,9 +6903,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 14 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 63,
+    "WarmMs": 50,
     "WindowsOnly": []
   },
   {
@@ -7258,9 +7267,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 41 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 12,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -7457,9 +7466,9 @@
       "src/Trendo.App/MainWindow.Spec04.cs"
     ],
     "Status": "Studio entfernt, nicht mehr angeboten – kein gültiger Prüfstand (Register: IMPLEMENTED / Test TESTED (Lauf: 16 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf))",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 52,
+    "WarmMs": 37,
     "WindowsOnly": []
   },
   {
@@ -7877,9 +7886,9 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 59 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 34,
+    "WarmMs": 45,
     "WindowsOnly": []
   },
   {
@@ -8235,9 +8244,9 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 32 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -8623,9 +8632,9 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 39 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 74,
+    "WarmMs": 55,
     "WindowsOnly": []
   },
   {
@@ -8838,9 +8847,9 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 30 bestanden · 2 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 17,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -9054,9 +9063,9 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 27 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 14,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -9148,9 +9157,9 @@
       "src/Trendo.App/MainWindow.ConsolePort.cs"
     ],
     "Status": "IN_PROGRESS / Test TESTED (Lauf: 12 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 10,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -9555,9 +9564,9 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 106 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 15,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -9904,9 +9913,9 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 36 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 57,
+    "WarmMs": 31,
     "WindowsOnly": []
   },
   {
@@ -10114,9 +10123,9 @@
       "src/Trendo.App/MainWindow.Spec14.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 26 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 12,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -10345,9 +10354,9 @@
       "src/Trendo.App/MainWindow.Spec10.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 25 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 60,
+    "WarmMs": 48,
     "WindowsOnly": []
   },
   {
@@ -10553,9 +10562,9 @@
       "src/Trendo.App/MainWindow.Spec13.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 22 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 17,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -10742,9 +10751,9 @@
       "src/Trendo.App/MainWindow.Spec02.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 19 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 19,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -10937,9 +10946,9 @@
       "src/Trendo.App/MainWindow.Spec03.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 26 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 13,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -11143,9 +11152,88 @@
       "src/Trendo.App/MainWindow.Spec01.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 31 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 16,
+    "WarmMs": 11,
+    "WindowsOnly": []
+  },
+  {
+    "Id": "kurse-programm",
+    "Name": "Kurse erstellen",
+    "Studio": "STUDIO-COURSE-01",
+    "StudioName": "Kurse erstellen",
+    "Area": "Wissen & Lernen",
+    "Type": [],
+    "Functions": [],
+    "Engine": [
+      "KursKit",
+      "QuizKit",
+      "QuizText",
+      "AssistParam",
+      "Quiz",
+      "QuizSpiel",
+      "AtomicFile",
+      "QuizEingabe",
+      "QuizGift",
+      "AssistAction"
+    ],
+    "Tools": [
+      "＋ Lektion (Gliederung)",
+      "＋ Kapitel (Gliederung)",
+      "Lektion nach oben (Gliederung)",
+      "Lektion nach unten (Gliederung)",
+      "Lektion löschen (Gliederung)",
+      "＋ Text (Inhalt)",
+      "＋ Überschrift (Inhalt)",
+      "＋ Liste (Inhalt)",
+      "＋ Hinweis (Inhalt)",
+      "Bild … (Inhalt)",
+      "Quiz einbinden … (Inhalt)",
+      "Offenes Quiz einbinden (Inhalt)",
+      "Kursansicht (Lernen)",
+      "Prüfen (Lernen)",
+      "Kurs als Webseite (HTML) (Exportieren)",
+      "SCORM-Paket für Lernplattformen (ZIP) (Exportieren)",
+      "Fortschritt der Lernenden (CSV) (Exportieren)"
+    ],
+    "Formats": [
+      ".csv",
+      ".html",
+      ".tdoc",
+      ".zip"
+    ],
+    "Dependencies": [
+      "LibreOffice (optional)"
+    ],
+    "Ui": [
+      "Menüband",
+      "Eigenschaften",
+      "Statusleiste",
+      "Dokument-Reiter"
+    ],
+    "Tabs": [
+      "Kurse erstellen"
+    ],
+    "Tests": [
+      "T-0779 ECHT: lokale KI (Ollama) – Fragen aus einem Text ins offene Quiz und eine Lektion in den offenen Kurs, Rückgängig (nur mit TRENDO_T0779_ECHT)",
+      "T-0779 Einbindung: beide Studios im Katalog (Wissen & Lernen), Seite, Symbol, Fähigkeit, Profil, Team, Fachwissen, Bildbeschreibung; Vorlagen öffnen; genau eine goldene Hauptaktion",
+      "T-0779 H2: „In Karteikarten übernehmen“ ist keine Aktion des Assistenten – weder Plan noch Probelauf (wie die Live-Vorschau beim Tippen) noch KI-Plan schreiben Karteikarten",
+      "T-0779 KI Kurs: „Schreib eine Lektion“ → neue Lektion mit Überschrift, Liste, Merksatz im offenen Kurs, EIN Rückgängig-Schritt (KI ersetzt)",
+      "T-0779 KI Quiz: „Mach Fragen aus dem Text“ → Vorschau zeigt die Fragen, Original unverändert → „Ja, behalten“ → EIN Rückgängig-Schritt „KI: …“, Rückgängig nimmt alle zurück (KI ersetzt)",
+      "T-0779 Kurs: leere Vorlage → Text, Kapitel, Lektion, Bild und Quiz-Datei per Ziehen, Rechtsklick; Kursansicht mit Person, Quiz spielen, Lektion abschließen; HTML, SCORM, CSV",
+      "T-0779 M2: KI setzt im Kurs weder Bildpfade („…/bloecke/0/bild“) noch Fortschritt („lernende/0/erledigt“) noch das ganze Kurs-Objekt mit Lernenden – abgelehnt, Kurs unverändert",
+      "T-0779 M4/Niedrig: andere Aktionen zeigen den vollen Wert; zu viele KI-Fragen werden gemeldet; zu große Dateien abgelehnt; keine fremden Markennamen im Fachwissen",
+      "T-0779 Quiz: Spielmodus per Klick und Tasten – Antwort wählen (1–4), prüfen (Eingabe), Rückmeldung, Lücke tippen, Zuordnen wählen, Auswertung mit Prozent; Zeitlimit läuft ab",
+      "T-0779 Quiz: fremde GIFT-Datei laden (Knopf) und Text für die KI per Ziehen und Ablegen; CSV-Karteikarten werden Auswahlfragen; Quiz → Karteikarten",
+      "T-0779 Quiz: leere Vorlage → erster Schritt, Frage tippen, Lücke, Zuordnen, richtige Antwort klicken, Rechtsklick duplizieren/löschen + Rückgängig → HTML, PDF (PDFium-Text), GIFT als Datei"
+    ],
+    "SourceFiles": [
+      "src/Trendo.App/MainWindow.QuizKurse.cs"
+    ],
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 10 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.113 (Stand 1978f1a)",
+    "Shell": true,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -11326,9 +11414,68 @@
       "src/Trendo.App/MainWindow.Spec06.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 18 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 17,
+    "WarmMs": 9,
+    "WindowsOnly": []
+  },
+  {
+    "Id": "mathe-helfer-programm",
+    "Name": "Mathe-Helfer",
+    "Studio": "STUDIO-MATH-01",
+    "StudioName": "Mathe-Helfer",
+    "Area": "Wissen & Lernen",
+    "Type": [],
+    "Functions": [],
+    "Engine": [],
+    "Tools": [
+      "Rechnen (Rechnen)",
+      "Beispiel einsetzen (Rechnen)",
+      "Rechnung löschen (Bearbeiten)",
+      "Rechnung kopieren (Bearbeiten)",
+      "Nach oben (Bearbeiten)",
+      "Nach unten (Bearbeiten)",
+      "Aufgabenblatt öffnen … (Datei)",
+      "Lösungswege als PDF (Exportieren)",
+      "LaTeX (.tex) (Exportieren)",
+      "Markdown (.md) (Exportieren)"
+    ],
+    "Formats": [
+      ".md",
+      ".pdf",
+      ".tdoc",
+      ".tex"
+    ],
+    "Dependencies": [],
+    "Ui": [
+      "Menüband",
+      "Eigenschaften",
+      "Statusleiste",
+      "Dokument-Reiter"
+    ],
+    "Tabs": [
+      "Mathe-Helfer"
+    ],
+    "Tests": [
+      "T-0781 ECHT: lokale KI (Ollama) übersetzt Textaufgaben – Mathe-Helfer (Rechteck) und Naturwissenschaft (Glucose), gerechnet vom Kern, Rückgängig (nur mit TRENDO_T0781_ECHT)",
+      "T-0781 FREMD: Aufgabenblatt aus LibreOffice (Text) über die Oberfläche einlesen, rechnen, als PDF/Markdown exportieren; Laborheft als CSV/PDF – Dateien für die Gegenprobe im Fremdprogramm (nur mit TRENDO_T0781_FREMD)",
+      "T-0781 Gegenprüfung (Einfrieren): Riesenaufgabe hält die Oberfläche nicht an – klare Meldung, nichts angelegt; unsichere Probe wird gelb („?“) angezeigt",
+      "T-0781 Gegenprüfung (MITTEL): fertige Ergebnisse wie „x + 0 = 5“ und „1x = 5“ lehnt die Sperre ab; Löschen/Kopieren sind für die KI gesperrt (KI ersetzt)",
+      "T-0781 Mathe-Helfer: Absturz vor dem Speichern – die automatische Sicherung (20-s-Takt der Hülle) bringt die Rechnungen zurück",
+      "T-0781 Mathe-Helfer: Aufgabenblatt aus einer Fremddatei (Text) über „Aufgabenblatt öffnen …“ – jede Zeile gerechnet, Unverständliches übergangen, Datei unverändert",
+      "T-0781 Mathe-Helfer: Fehler verständlich, nichts wird angelegt; Entf und Rechtsklick „Kopieren“ wirken",
+      "T-0781 Mathe-Helfer: KI übersetzt eine Textaufgabe – Vorschau ändert nichts, „Ja, behalten“ legt die vom Kern gerechnete Rechnung an (ein Rückgängig-Schritt), Rückgängig nimmt sie heraus (KI ersetzt)",
+      "T-0781 Mathe-Helfer: die KI darf kein Ergebnis liefern – „x = 5“ und direkt gesetzte Rechnungen werden abgelehnt, das Dokument bleibt unverändert (KI ersetzt)",
+      "T-0781 Mathe-Helfer: leeres Rechenblatt → Aufgabe tippen → „Rechnen“ → Ergebnis, Lösungsweg, Probe und Graph; Rückgängig; Export PDF, LaTeX, Markdown",
+      "T-0781 Naturwissenschaft: KI übersetzt „Wie lange fällt ein Stein aus 20 m?“ in die Formel – gerechnet vom Programm, ein Rückgängig-Schritt; Faktoren der KI werden abgelehnt (KI ersetzt)",
+      "T-0781 Naturwissenschaft: Periodensystem anklicken → Steckbrief; Reaktion, Molmasse, Physik und Einheiten → „Ins Laborheft“; Export PDF und CSV",
+      "T-0781 Studios eingebunden: Katalog (Wissen & Lernen), Symbol, Profil, Team, Fähigkeiten, KI-Fachaktion, Bild"
+    ],
+    "SourceFiles": [],
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 11 bestanden · 2 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.113 (Stand 1978f1a)",
+    "Shell": true,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -11525,9 +11672,364 @@
       "src/Trendo.App/MainWindow.Spec05.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 27 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 14,
+    "WarmMs": 9,
+    "WindowsOnly": []
+  },
+  {
+    "Id": "nachhilfe-programm",
+    "Name": "Nachhilfe mit KI",
+    "Studio": "STUDIO-TUTOR-01",
+    "StudioName": "Nachhilfe mit KI",
+    "Area": "Wissen & Lernen",
+    "Type": [],
+    "Functions": [],
+    "Engine": [],
+    "Tools": [
+      "Nächste Übung (Üben)",
+      "Prüfen (Üben)",
+      "Hinweis (Üben)",
+      "Lösungsweg zeigen (Üben)",
+      "KI erklärt das Thema (Üben)",
+      "Heute wiederholen (Lernpfad)",
+      "Übungen einlesen … (Lernpfad)",
+      "In Karteikarten übernehmen (Lernpfad)",
+      "Sokratischer Modus an/aus (Einstellen)",
+      "Arbeitsblatt (.odt) (Exportieren)",
+      "Arbeitsblatt (.docx) (Exportieren)",
+      "Eigene Übungen (.csv) (Exportieren)"
+    ],
+    "Formats": [
+      ".csv",
+      ".docx",
+      ".odt",
+      ".tdoc"
+    ],
+    "Dependencies": [],
+    "Ui": [
+      "Menüband",
+      "Eigenschaften",
+      "Statusleiste",
+      "Dokument-Reiter"
+    ],
+    "Tabs": [
+      "Nachhilfe mit KI"
+    ],
+    "Tests": [
+      "App-Profil: Deinstallation entfernt das Profil (hier ein eigenes Test-Profil); eine Prüf-Instanz lässt es stehen",
+      "H1: Kinderprofil – „Programmieren lernen“ geht auch mit „Claude ohne Klicks“ nie an Claude (Route Dokument, Studio-Leiste lehnt ab)",
+      "H1: „Claude ohne Klicks“ und Claude angemeldet – Nachhilfe bleibt lokal (Auftragszeile, Menüband-Weg, Studio-Leiste): 0 Claude-Aufrufe; Gegenprobe: ein anderes Programm geht an Claude",
+      "H1b Plan-Zeilen: Claude-Bereich aus einem anderen Programm, dann Wechsel in die Nachhilfe – Chat sendet nichts, ein offener Plan wird nicht ausgeführt, die Übung bleibt unverändert",
+      "H1b: Nachhilfe – kein Claude-Menü (ClaudeBelongs false), kein Claude-Bereich, kein „Claude fragen“ an Fehlern; Brücke lehnt dokument_lesen/setzen, feld_setzen, befehl, klicken ab; Gegenprobe anderes Programm",
+      "M2: Programmausgabe und Testmeldungen gehen weder über die KI-Kette noch über „Hinweis von der KI“ an eine nicht lokale KI; Hinweis in der App nennt Grenzen und App-Profil",
+      "M6 (3.): KI setzt „thema“ auf freien Text → abgelehnt, Dokument unverändert; gültige Kennung → Vorschau",
+      "M6-Rest: dokument.setzen nur für Fach, Klasse, Thema (Positivliste); Plan, Meldung und Protokoll zeigen keine Lösung",
+      "M6: die KI-Kette der Nachhilfe sieht die Frage, aber keine Antwort, keinen Lösungsweg und keinen Hinweis",
+      "N4: eine „lokale“ Quelle mit entfernter Adresse wird in der Nachhilfe nie gefragt",
+      "T-0782 ECHT: lokale KI (Ollama) – Nachhilfe „Übung erzeugen“ und Programmieren „Hinweis geben“ im offenen Dokument, Rückgängig; Code-Tests echt (nur mit TRENDO_T0782_ECHT)",
+      "T-0782 Nachhilfe KI-Fachaktion: Übung mit Link oder ohne Antwort wird in der Vorschau abgelehnt; Fortschritt ist für die KI gesperrt",
+      "T-0782 Nachhilfe KI-Fachaktion: „Gib mir eine Übung …“ → Plan uebung.erzeugen → Vorschau ändert nichts → Ja → Übung im Dokument, EIN Rückgängig-Schritt; nur die KI auf diesem PC (Claude nie gefragt)",
+      "T-0782 Nachhilfe Klick bis Datei: leere Vorlage → erster Schritt → falsch → Hinweis → Lösungsweg erst nach Versuch → richtig → Fortschritt; Arbeitsblatt als ODT und DOCX",
+      "T-0782 Nachhilfe „KI fragen“: verrät die lokale KI die Lösung, wird die Antwort zurückgehalten; Links werden entfernt; Frage ohne Lösung",
+      "T-0782 Nachhilfe: CSV aus dem Explorer ablegen → Übungen im Dokument (ein Schritt); Rechtsklick „Dieses Thema üben“; Kinderprofil kann sokratisch nicht ausschalten",
+      "T-0782 Programmieren lernen ECHT: Endlosschleife → Zeitgrenze, Syntaxfehler → verständliche Meldung; .py ablegen ersetzt den Code (ein Schritt)",
+      "T-0782 Programmieren lernen ECHT: Klick → Startcode fällt durch → Code getippt → alle Tests grün (AppContainer) → nächste Aufgabe frei; Export .py läuft in fremdem Python",
+      "T-0782 Programmieren lernen KI-Fachaktion: hinweis.geben → Vorschau → Ja → Hinweis bei der Aufgabe, EIN Rückgängig-Schritt; fertiger Code als „Hinweis“ wird abgelehnt; die KI bewertet nicht"
+    ],
+    "SourceFiles": [],
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 18 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.113 (Stand 1978f1a)",
+    "Shell": true,
+    "WarmMs": 10,
+    "WindowsOnly": []
+  },
+  {
+    "Id": "naturwissenschaft-programm",
+    "Name": "Naturwissenschaft",
+    "Studio": "STUDIO-SCIENCE-01",
+    "StudioName": "Naturwissenschaft",
+    "Area": "Wissen & Lernen",
+    "Type": [],
+    "Functions": [],
+    "Engine": [],
+    "Tools": [
+      "Ins Laborheft (Rechnen)",
+      "Periodensystem (Ansicht)",
+      "Molmasse (Ansicht)",
+      "Reaktionen ausgleichen (Ansicht)",
+      "Physik-Formeln (Ansicht)",
+      "Einheiten (Ansicht)",
+      "Nach Art färben (Periodensystem)",
+      "Nach Elektronegativität (Periodensystem)",
+      "Nach Atommasse (Periodensystem)",
+      "Eintrag löschen (Bearbeiten)",
+      "Messreihe auswerten … (Messwerte)",
+      "Laborheft als PDF (Exportieren)",
+      "Ergebnisse als Tabelle (.csv) (Exportieren)",
+      "Markdown (.md) (Exportieren)",
+      "Periodensystem als Tabelle (.csv) (Exportieren)"
+    ],
+    "Formats": [
+      ".csv",
+      ".md",
+      ".pdf",
+      ".tdoc"
+    ],
+    "Dependencies": [],
+    "Ui": [
+      "Menüband",
+      "Eigenschaften",
+      "Statusleiste",
+      "Dokument-Reiter"
+    ],
+    "Tabs": [
+      "Naturwissenschaft"
+    ],
+    "Tests": [
+      "T-0781 ECHT: lokale KI (Ollama) übersetzt Textaufgaben – Mathe-Helfer (Rechteck) und Naturwissenschaft (Glucose), gerechnet vom Kern, Rückgängig (nur mit TRENDO_T0781_ECHT)",
+      "T-0781 FREMD: Aufgabenblatt aus LibreOffice (Text) über die Oberfläche einlesen, rechnen, als PDF/Markdown exportieren; Laborheft als CSV/PDF – Dateien für die Gegenprobe im Fremdprogramm (nur mit TRENDO_T0781_FREMD)",
+      "T-0781 Gegenprüfung (Einfrieren): Riesenaufgabe hält die Oberfläche nicht an – klare Meldung, nichts angelegt; unsichere Probe wird gelb („?“) angezeigt",
+      "T-0781 Gegenprüfung (MITTEL): fertige Ergebnisse wie „x + 0 = 5“ und „1x = 5“ lehnt die Sperre ab; Löschen/Kopieren sind für die KI gesperrt (KI ersetzt)",
+      "T-0781 Mathe-Helfer: Absturz vor dem Speichern – die automatische Sicherung (20-s-Takt der Hülle) bringt die Rechnungen zurück",
+      "T-0781 Mathe-Helfer: Aufgabenblatt aus einer Fremddatei (Text) über „Aufgabenblatt öffnen …“ – jede Zeile gerechnet, Unverständliches übergangen, Datei unverändert",
+      "T-0781 Mathe-Helfer: Fehler verständlich, nichts wird angelegt; Entf und Rechtsklick „Kopieren“ wirken",
+      "T-0781 Mathe-Helfer: KI übersetzt eine Textaufgabe – Vorschau ändert nichts, „Ja, behalten“ legt die vom Kern gerechnete Rechnung an (ein Rückgängig-Schritt), Rückgängig nimmt sie heraus (KI ersetzt)",
+      "T-0781 Mathe-Helfer: die KI darf kein Ergebnis liefern – „x = 5“ und direkt gesetzte Rechnungen werden abgelehnt, das Dokument bleibt unverändert (KI ersetzt)",
+      "T-0781 Mathe-Helfer: leeres Rechenblatt → Aufgabe tippen → „Rechnen“ → Ergebnis, Lösungsweg, Probe und Graph; Rückgängig; Export PDF, LaTeX, Markdown",
+      "T-0781 Naturwissenschaft: KI übersetzt „Wie lange fällt ein Stein aus 20 m?“ in die Formel – gerechnet vom Programm, ein Rückgängig-Schritt; Faktoren der KI werden abgelehnt (KI ersetzt)",
+      "T-0781 Naturwissenschaft: Periodensystem anklicken → Steckbrief; Reaktion, Molmasse, Physik und Einheiten → „Ins Laborheft“; Export PDF und CSV",
+      "T-0781 Studios eingebunden: Katalog (Wissen & Lernen), Symbol, Profil, Team, Fähigkeiten, KI-Fachaktion, Bild"
+    ],
+    "SourceFiles": [],
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 11 bestanden · 2 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.113 (Stand 1978f1a)",
+    "Shell": true,
+    "WarmMs": 10,
+    "WindowsOnly": []
+  },
+  {
+    "Id": "programmieren-lernen-programm",
+    "Name": "Programmieren lernen",
+    "Studio": "STUDIO-CODELEARN-01",
+    "StudioName": "Programmieren lernen",
+    "Area": "Wissen & Lernen",
+    "Type": [
+      "Code-Editor (Dateibaum, Reiter, Farben je Sprache – wie VS Code)"
+    ],
+    "Functions": [],
+    "Engine": [],
+    "Tools": [
+      "Tests ausführen (Code)",
+      "Zurücksetzen (Code)",
+      "Python-Datei öffnen … (Code)",
+      "Hinweis (Hilfe)",
+      "KI-Hinweis (Hilfe)",
+      "Lösung mit Tests (.py) (Exportieren)"
+    ],
+    "Formats": [
+      ".py",
+      ".tdoc"
+    ],
+    "Dependencies": [],
+    "Ui": [
+      "Code-Editor (Dateibaum, Reiter, Farben je Sprache – wie VS Code)",
+      "Menüband",
+      "Eigenschaften",
+      "Statusleiste",
+      "Dokument-Reiter"
+    ],
+    "Tabs": [
+      "Programmieren lernen"
+    ],
+    "Tests": [
+      "App-Profil: Deinstallation entfernt das Profil (hier ein eigenes Test-Profil); eine Prüf-Instanz lässt es stehen",
+      "H1: Kinderprofil – „Programmieren lernen“ geht auch mit „Claude ohne Klicks“ nie an Claude (Route Dokument, Studio-Leiste lehnt ab)",
+      "H1: „Claude ohne Klicks“ und Claude angemeldet – Nachhilfe bleibt lokal (Auftragszeile, Menüband-Weg, Studio-Leiste): 0 Claude-Aufrufe; Gegenprobe: ein anderes Programm geht an Claude",
+      "M2: Programmausgabe und Testmeldungen gehen weder über die KI-Kette noch über „Hinweis von der KI“ an eine nicht lokale KI; Hinweis in der App nennt Grenzen und App-Profil",
+      "M6: die KI-Kette der Nachhilfe sieht die Frage, aber keine Antwort, keinen Lösungsweg und keinen Hinweis",
+      "N4: eine „lokale“ Quelle mit entfernter Adresse wird in der Nachhilfe nie gefragt",
+      "T-0782 ECHT: lokale KI (Ollama) – Nachhilfe „Übung erzeugen“ und Programmieren „Hinweis geben“ im offenen Dokument, Rückgängig; Code-Tests echt (nur mit TRENDO_T0782_ECHT)",
+      "T-0782 Nachhilfe KI-Fachaktion: Übung mit Link oder ohne Antwort wird in der Vorschau abgelehnt; Fortschritt ist für die KI gesperrt",
+      "T-0782 Nachhilfe KI-Fachaktion: „Gib mir eine Übung …“ → Plan uebung.erzeugen → Vorschau ändert nichts → Ja → Übung im Dokument, EIN Rückgängig-Schritt; nur die KI auf diesem PC (Claude nie gefragt)",
+      "T-0782 Nachhilfe Klick bis Datei: leere Vorlage → erster Schritt → falsch → Hinweis → Lösungsweg erst nach Versuch → richtig → Fortschritt; Arbeitsblatt als ODT und DOCX",
+      "T-0782 Nachhilfe „KI fragen“: verrät die lokale KI die Lösung, wird die Antwort zurückgehalten; Links werden entfernt; Frage ohne Lösung",
+      "T-0782 Nachhilfe: CSV aus dem Explorer ablegen → Übungen im Dokument (ein Schritt); Rechtsklick „Dieses Thema üben“; Kinderprofil kann sokratisch nicht ausschalten",
+      "T-0782 Programmieren lernen ECHT: Endlosschleife → Zeitgrenze, Syntaxfehler → verständliche Meldung; .py ablegen ersetzt den Code (ein Schritt)",
+      "T-0782 Programmieren lernen ECHT: Klick → Startcode fällt durch → Code getippt → alle Tests grün (AppContainer) → nächste Aufgabe frei; Export .py läuft in fremdem Python",
+      "T-0782 Programmieren lernen KI-Fachaktion: hinweis.geben → Vorschau → Ja → Hinweis bei der Aufgabe, EIN Rückgängig-Schritt; fertiger Code als „Hinweis“ wird abgelehnt; die KI bewertet nicht"
+    ],
+    "SourceFiles": [],
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 14 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.113 (Stand 1978f1a)",
+    "Shell": true,
+    "WarmMs": 9,
+    "WindowsOnly": []
+  },
+  {
+    "Id": "quiz-programm",
+    "Name": "Quiz erstellen",
+    "Studio": "STUDIO-QUIZ-01",
+    "StudioName": "Quiz erstellen",
+    "Area": "Wissen & Lernen",
+    "Type": [],
+    "Functions": [],
+    "Engine": [
+      "KursKit",
+      "QuizKit",
+      "QuizText",
+      "AssistParam",
+      "Quiz",
+      "QuizSpiel",
+      "AtomicFile",
+      "QuizEingabe",
+      "QuizGift",
+      "AssistAction"
+    ],
+    "Tools": [
+      "＋ Frage (Fragen)",
+      "＋ Mehrfachauswahl (Fragen)",
+      "＋ Wahr/Falsch (Fragen)",
+      "＋ Lückentext (Fragen)",
+      "＋ Zuordnen (Fragen)",
+      "Duplizieren (Fragen)",
+      "Nach oben (Fragen)",
+      "Nach unten (Fragen)",
+      "Frage löschen (Fragen)",
+      "▶ Quiz spielen (Spielen)",
+      "Prüfen (Spielen)",
+      "Fragen laden (Text, GIFT) … (Laden)",
+      "Aus Karteikarten (Laden)",
+      "In Karteikarten übernehmen (Laden)",
+      "Text für die KI laden … (Laden)",
+      "Quiz zum Weitergeben (HTML) (Exportieren)",
+      "Zum Ausdrucken mit Lösungen (PDF) (Exportieren)",
+      "Für Moodle (GIFT) (Exportieren)",
+      "Fragen als Text (Exportieren)"
+    ],
+    "Formats": [
+      ".html",
+      ".pdf",
+      ".tdoc",
+      ".txt"
+    ],
+    "Dependencies": [
+      "LibreOffice (optional)"
+    ],
+    "Ui": [
+      "Menüband",
+      "Eigenschaften",
+      "Statusleiste",
+      "Dokument-Reiter"
+    ],
+    "Tabs": [
+      "Quiz erstellen"
+    ],
+    "Tests": [
+      "T-0779 ECHT: lokale KI (Ollama) – Fragen aus einem Text ins offene Quiz und eine Lektion in den offenen Kurs, Rückgängig (nur mit TRENDO_T0779_ECHT)",
+      "T-0779 Einbindung: beide Studios im Katalog (Wissen & Lernen), Seite, Symbol, Fähigkeit, Profil, Team, Fachwissen, Bildbeschreibung; Vorlagen öffnen; genau eine goldene Hauptaktion",
+      "T-0779 H2: „In Karteikarten übernehmen“ ist keine Aktion des Assistenten – weder Plan noch Probelauf (wie die Live-Vorschau beim Tippen) noch KI-Plan schreiben Karteikarten",
+      "T-0779 KI Kurs: „Schreib eine Lektion“ → neue Lektion mit Überschrift, Liste, Merksatz im offenen Kurs, EIN Rückgängig-Schritt (KI ersetzt)",
+      "T-0779 KI Quiz: „Mach Fragen aus dem Text“ → Vorschau zeigt die Fragen, Original unverändert → „Ja, behalten“ → EIN Rückgängig-Schritt „KI: …“, Rückgängig nimmt alle zurück (KI ersetzt)",
+      "T-0779 Kurs: leere Vorlage → Text, Kapitel, Lektion, Bild und Quiz-Datei per Ziehen, Rechtsklick; Kursansicht mit Person, Quiz spielen, Lektion abschließen; HTML, SCORM, CSV",
+      "T-0779 M2: KI setzt im Kurs weder Bildpfade („…/bloecke/0/bild“) noch Fortschritt („lernende/0/erledigt“) noch das ganze Kurs-Objekt mit Lernenden – abgelehnt, Kurs unverändert",
+      "T-0779 M4/Niedrig: andere Aktionen zeigen den vollen Wert; zu viele KI-Fragen werden gemeldet; zu große Dateien abgelehnt; keine fremden Markennamen im Fachwissen",
+      "T-0779 Quiz: Spielmodus per Klick und Tasten – Antwort wählen (1–4), prüfen (Eingabe), Rückmeldung, Lücke tippen, Zuordnen wählen, Auswertung mit Prozent; Zeitlimit läuft ab",
+      "T-0779 Quiz: fremde GIFT-Datei laden (Knopf) und Text für die KI per Ziehen und Ablegen; CSV-Karteikarten werden Auswahlfragen; Quiz → Karteikarten",
+      "T-0779 Quiz: leere Vorlage → erster Schritt, Frage tippen, Lücke, Zuordnen, richtige Antwort klicken, Rechtsklick duplizieren/löschen + Rückgängig → HTML, PDF (PDFium-Text), GIFT als Datei"
+    ],
+    "SourceFiles": [
+      "src/Trendo.App/MainWindow.QuizKurse.cs"
+    ],
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 10 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.113 (Stand 1978f1a)",
+    "Shell": true,
+    "WarmMs": 11,
+    "WindowsOnly": []
+  },
+  {
+    "Id": "referate-programm",
+    "Name": "Referate & Hausarbeiten",
+    "Studio": "STUDIO-REFERAT-01",
+    "StudioName": "Referate & Hausarbeiten",
+    "Area": "Wissen & Lernen",
+    "Type": [
+      "Texteditor"
+    ],
+    "Functions": [],
+    "Engine": [],
+    "Tools": [
+      "Abschnitt (Gliederung)",
+      "Unterabschnitt (Gliederung)",
+      "Nach oben (Gliederung)",
+      "Nach unten (Gliederung)",
+      "Ebene höher (Gliederung)",
+      "Ebene tiefer (Gliederung)",
+      "Abschnitt löschen (Gliederung)",
+      "Buch (Quellen)",
+      "Artikel (Quellen)",
+      "Webseite (Quellen)",
+      "Aus „Recherche mit Quellen“ (Quellen)",
+      "BibTeX/RIS einlesen … (Quellen)",
+      "APA 7 (Stil)",
+      "Harvard (Stil)",
+      "DIN ISO 690 (nah) (Stil)",
+      "Formvorgaben prüfen (Prüfen)",
+      "In Trendo Text öffnen (Prüfen)",
+      "In Trendo Präsentation öffnen (Prüfen)",
+      "Word-Dokument (.docx) (Exportieren)",
+      "PDF zum Abgeben (.pdf) (Exportieren)",
+      "Folien für PowerPoint (.pptx) (Exportieren)",
+      "OpenDocument-Text (.odt) (Exportieren)",
+      "Folien für Impress (.odp) (Exportieren)",
+      "Markdown für Notion/Obsidian (.md) (Exportieren)",
+      "Quellen als BibTeX (.bib) (Exportieren)"
+    ],
+    "Formats": [
+      ".bib",
+      ".docx",
+      ".md",
+      ".odp",
+      ".odt",
+      ".pdf",
+      ".pptx",
+      ".tdoc"
+    ],
+    "Dependencies": [],
+    "Ui": [
+      "Texteditor",
+      "Menüband",
+      "Eigenschaften",
+      "Statusleiste",
+      "Dokument-Reiter"
+    ],
+    "Tabs": [
+      "Referate & Hausarbeiten"
+    ],
+    "Tests": [
+      "T-0780 (3. Gegenprüfung): Plan im Chat läuft durch denselben Wächter – [[trendo:klick]] auf „Buch“ und [[trendo:feld]] mit erfundenem Beleg werden zurückgerollt, ein erlaubter Plan wird übernommen",
+      "T-0780 (4. Gegenprüfung): Claude schreibt die Studio-.tdoc im Projektordner – neue Quelle oder erfundener Beleg wird nicht übernommen, die Datei steht wieder auf dem alten Stand, Claude bekommt die Meldung, Protokolleintrag; erlaubte Änderung wird übernommen",
+      "T-0780 (4. Gegenprüfung): Hilfe des Studios verspricht nicht mehr, als die Prüfung hält – nur echte Quellen im Verzeichnis, eindeutige Formen gesperrt, lose Klammern nur markiert",
+      "T-0780 ECHT: lokale KI (Ollama) – Referate „Gliederung“ und „Abschnitt“, Zeitleisten „Ereignisse aus Text“ im offenen Programm, Rückgängig (nur mit TRENDO_T0780_ECHT)",
+      "T-0780 H1 (2. Gegenprüfung): Claude-Brücke – „befehl“, „klicken“ und „feld_setzen“ kommen an Quellen-Sperre, Zitatprüfung und Ordner-Sperre nicht vorbei; Schritt wird zurückgerollt und Claude bekommt den Fehler",
+      "T-0780 H1/H2: Claude-Brücke und Assistent („dokument.setzen“) prüfen Zitate wie die Fachaktion – freier Kurzbeleg und unbekannter Verweis abgelehnt, Verweis auf eigene Quelle übernommen",
+      "T-0780 H3: Claude-Brücke hält KiLocked ein – „sources“ (Referate) und „folder“ (Dokumente scannen) setzt Claude nicht, freie Felder weiter schon",
+      "T-0780 Referate (UI): Abschnitt mit der Maus in der Gliederung verschieben, Rechtsklick-Menü, Rückgängig; Verweis ohne Quelle sperrt die Ausgabe sichtbar",
+      "T-0780 Referate (UI): Quellen aus „Recherche mit Quellen“ übernehmen (offenes Dokument) und RIS aus Zotero einlesen – Kennungen bleiben, Doppelte nicht doppelt",
+      "T-0780 Referate (UI): Stufe Einfach – eine goldene Hauptaktion, Kette und Gliederung sichtbar, Thema auch ohne rechte Spalte eintragbar",
+      "T-0780 Referate (UI): leere Vorlage → Thema → Gliederung → Text → Quelle → Zitat per Klick → Word, PDF, ODT, PPTX, ODP als echte Dateien",
+      "T-0780 Referate KI: „Abschnitt schreiben“ mit Zitat aus der Liste kommt ins Dokument; erfundene Quelle ([@neu] oder „(Müller, 2019)“) und neue Quellen per „dokument.setzen“ werden abgelehnt (KI ersetzt)",
+      "T-0780 Referate KI: „Gliederung“ – Vorschau ändert nichts, „Ja, behalten“ schreibt die Gliederung ins offene Dokument als EIN Rückgängig-Schritt, Rückgängig stellt alles her (KI ersetzt)",
+      "T-0780 Zeitleisten (UI): Eintrag mit der Maus in der Zeit verschieben, Mausrad zoomt, Ziehen auf freier Fläche verschiebt die Ansicht, Rechtsklick-Menü, Entf löscht, Rückgängig",
+      "T-0780 Zeitleisten (UI): TimelineJS-Tabelle einlesen, Bild an ein Ereignis hängen (verkleinert, in SVG eingebettet), Zeilen aus Text einfügen",
+      "T-0780 Zeitleisten (UI): leere Vorlage → erstes Ereignis (44 v. Chr.) → Zeitraum → Spur → SVG, PNG, PDF, CSV, JSON als echte Dateien",
+      "T-0780 Zeitleisten KI: „Ereignisse aus Text einfügen“ – Vorschau ändert nichts, „Ja, behalten“ fügt die Ereignisse als EIN Rückgängig-Schritt ein; unlesbare Daten werden abgelehnt (KI ersetzt)"
+    ],
+    "SourceFiles": [],
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 16 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.113 (Stand 1978f1a)",
+    "Shell": true,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -11586,9 +12088,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED (Beleg reports/pc-t0003/UEBERSICHT.md; Lauf: 14 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 22,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -11651,9 +12153,79 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED (Beleg reports/pc-t0003/UEBERSICHT.md; Lauf: 11 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 13,
+    "WindowsOnly": []
+  },
+  {
+    "Id": "zeitleisten-programm",
+    "Name": "Zeitleisten",
+    "Studio": "STUDIO-TIMELINE-01",
+    "StudioName": "Zeitleisten",
+    "Area": "Wissen & Lernen",
+    "Type": [],
+    "Functions": [],
+    "Engine": [],
+    "Tools": [
+      "Ereignis (Einfügen)",
+      "Zeitraum (Einfügen)",
+      "Spur (Einfügen)",
+      "Bild anhängen … (Einfügen)",
+      "CSV/JSON einlesen … (Einfügen)",
+      "Verdoppeln (Eintrag)",
+      "Löschen (Eintrag)",
+      "Vergrößern (Ansicht)",
+      "Verkleinern (Ansicht)",
+      "Alles zeigen (Ansicht)",
+      "◀ (Ansicht)",
+      "▶ (Ansicht)",
+      "SVG für Inkscape (.svg) (Exportieren)",
+      "Bild (.png) (Exportieren)",
+      "PDF (.pdf) (Exportieren)",
+      "Tabelle (.csv) (Exportieren)",
+      "Austausch (.json) (Exportieren)",
+      "SVG dunkel wie am Bildschirm (.svg) (Exportieren)"
+    ],
+    "Formats": [
+      ".csv",
+      ".json",
+      ".pdf",
+      ".png",
+      ".svg",
+      ".tdoc"
+    ],
+    "Dependencies": [],
+    "Ui": [
+      "Menüband",
+      "Eigenschaften",
+      "Statusleiste",
+      "Dokument-Reiter"
+    ],
+    "Tabs": [
+      "Zeitleisten"
+    ],
+    "Tests": [
+      "T-0780 ECHT: lokale KI (Ollama) – Referate „Gliederung“ und „Abschnitt“, Zeitleisten „Ereignisse aus Text“ im offenen Programm, Rückgängig (nur mit TRENDO_T0780_ECHT)",
+      "T-0780 H4: ungültige Farbe im Modell – Zeichenfläche und PNG-Ausgabe brechen nicht ab, Standardfarbe statt Fehler",
+      "T-0780 M1: JSON-Datei mit Nicht-Bild als „image“ einlesen – Bild weggelassen und gemeldet, echtes Bild neu kodiert (JPEG)",
+      "T-0780 M2 (2. Gegenprüfung): unechtes PNG mit gültigem Kopf – Import verwirft und meldet es, PNG-Export und Zeichenfläche laufen weiter",
+      "T-0780 Referate (UI): Abschnitt mit der Maus in der Gliederung verschieben, Rechtsklick-Menü, Rückgängig; Verweis ohne Quelle sperrt die Ausgabe sichtbar",
+      "T-0780 Referate (UI): Quellen aus „Recherche mit Quellen“ übernehmen (offenes Dokument) und RIS aus Zotero einlesen – Kennungen bleiben, Doppelte nicht doppelt",
+      "T-0780 Referate (UI): Stufe Einfach – eine goldene Hauptaktion, Kette und Gliederung sichtbar, Thema auch ohne rechte Spalte eintragbar",
+      "T-0780 Referate (UI): leere Vorlage → Thema → Gliederung → Text → Quelle → Zitat per Klick → Word, PDF, ODT, PPTX, ODP als echte Dateien",
+      "T-0780 Referate KI: „Abschnitt schreiben“ mit Zitat aus der Liste kommt ins Dokument; erfundene Quelle ([@neu] oder „(Müller, 2019)“) und neue Quellen per „dokument.setzen“ werden abgelehnt (KI ersetzt)",
+      "T-0780 Referate KI: „Gliederung“ – Vorschau ändert nichts, „Ja, behalten“ schreibt die Gliederung ins offene Dokument als EIN Rückgängig-Schritt, Rückgängig stellt alles her (KI ersetzt)",
+      "T-0780 Zeitleisten (UI): Eintrag mit der Maus in der Zeit verschieben, Mausrad zoomt, Ziehen auf freier Fläche verschiebt die Ansicht, Rechtsklick-Menü, Entf löscht, Rückgängig",
+      "T-0780 Zeitleisten (UI): TimelineJS-Tabelle einlesen, Bild an ein Ereignis hängen (verkleinert, in SVG eingebettet), Zeilen aus Text einfügen",
+      "T-0780 Zeitleisten (UI): leere Vorlage → erstes Ereignis (44 v. Chr.) → Zeitraum → Spur → SVG, PNG, PDF, CSV, JSON als echte Dateien",
+      "T-0780 Zeitleisten KI: „Ereignisse aus Text einfügen“ – Vorschau ändert nichts, „Ja, behalten“ fügt die Ereignisse als EIN Rückgängig-Schritt ein; unlesbare Daten werden abgelehnt (KI ersetzt)"
+    ],
+    "SourceFiles": [],
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 13 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.113 (Stand 1978f1a)",
+    "Shell": true,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -11780,9 +12352,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED (Beleg reports/pc-t0003/UEBERSICHT.md; Lauf: 22 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 20,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -11865,9 +12437,9 @@
       "src/Trendo.App/MainWindow.KreativStudios4.cs"
     ],
     "Status": "IN_PROGRESS / Test TESTED (Lauf: 4 bestanden · 3 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 24,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -11943,9 +12515,9 @@
       "src/Trendo.App/MainWindow.KreativStudios2.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED (Beleg reports/echtlauf/2026-11-16/sdcli.log; Lauf: 4 bestanden · 2 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 12,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -12034,9 +12606,9 @@
       "src/Trendo.App/MainWindow.KreativStudios4.cs"
     ],
     "Status": "IN_PROGRESS / Test TESTED (Lauf: 9 bestanden · 2 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 14,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -12112,9 +12684,9 @@
       "src/Trendo.App/MainWindow.KreativStudios3.cs"
     ],
     "Status": "IN_PROGRESS / Test TESTED (Lauf: 13 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 16,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -12197,9 +12769,9 @@
       "src/Trendo.App/MainWindow.W5Fusion.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 15 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 26,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -12264,9 +12836,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 10 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -12356,9 +12928,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 16 bestanden · 2 übersprungen · 0 fehlgeschlagen · 1 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 38,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -12434,9 +13006,9 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 5 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -12501,9 +13073,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 7 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 27,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -12608,9 +13180,9 @@
       "src/Trendo.App/MainWindow.Connections.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 6 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 21,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -12682,9 +13254,9 @@
       "src/Trendo.App/MainWindow.KreativStudios3.cs"
     ],
     "Status": "IN_PROGRESS / Test TESTED (Lauf: 6 bestanden · 2 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 11,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -12751,9 +13323,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 8 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -12831,9 +13403,9 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 8 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 28,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -12901,9 +13473,9 @@
       "src/Trendo.App/MainWindow.KreativStudios3.cs"
     ],
     "Status": "IN_PROGRESS / Test TESTED (Lauf: 5 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 20,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -12978,9 +13550,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED (Beleg reports/pc-t0003/UEBERSICHT.md; Lauf: 10 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 30,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -13088,9 +13660,9 @@
       "src/Trendo.App/MainWindow.KiLibrary.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 8 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -13182,9 +13754,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 21 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 36,
+    "WarmMs": 32,
     "WindowsOnly": []
   },
   {
@@ -13251,9 +13823,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 8 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 22,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -13338,15 +13910,16 @@
       "SYS-08 echt: Wikipedia-Suche und Lesen des ersten Treffers über den echten Lese-Weg (übersprungen nur ohne Internet)",
       "SYS-08: Sammlung behalten ausschalten fragt vorher; Fehler beim Verschieben zeigt eine Meldung ohne halben Zustand",
       "SYS-08: ohne Sammlung behalten beginnt jede Sitzung leer (wie bisher)",
+      "T-0780 Referate (UI): Quellen aus „Recherche mit Quellen“ übernehmen (offenes Dokument) und RIS aus Zotero einlesen – Kennungen bleiben, Doppelte nicht doppelt",
       "X-07 echt: KI-Auftrag „Quelle holen“ lädt nach Freigabe ein HDRI von Poly Haven mit Beleg je Datei (übersprungen nur ohne Internet)"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.KreativStudios4.cs"
     ],
-    "Status": "IN_PROGRESS / Test TESTED (Lauf: 8 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Status": "IN_PROGRESS / Test TESTED (Lauf: 9 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 11,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -13432,9 +14005,9 @@
       "src/Trendo.App/MainWindow.KreativStudios4.cs"
     ],
     "Status": "IN_PROGRESS / Test TESTED (Lauf: 14 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 29,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -13490,9 +14063,9 @@
       "src/Trendo.App/MainWindow.KreativStudios.cs"
     ],
     "Status": "IN_PROGRESS / Test TESTED (Lauf: 3 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 16,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -13569,9 +14142,9 @@
       "src/Trendo.App/MainWindow.KreativStudios3.cs"
     ],
     "Status": "IN_PROGRESS / Test TESTED (Lauf: 4 bestanden · 2 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": true,
-    "WarmMs": 18,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -13694,9 +14267,9 @@
       "src/Trendo.App/MainWindow.W4Builder.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 21 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 19,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -13771,9 +14344,9 @@
       "src/Trendo.App/MainWindow.W5CleanRoom.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 15 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -13873,9 +14446,9 @@
       "src/Trendo.App/MainWindow.W4Oss.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 26 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 16,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -13955,9 +14528,9 @@
       "src/Trendo.App/MainWindow.W5Ext.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 11 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 16,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -14143,9 +14716,9 @@
       "src/Trendo.App/MainWindow.W4Dev.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 67 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 35,
+    "WarmMs": 44,
     "WindowsOnly": [
       "cmd.exe"
     ]
@@ -14203,9 +14776,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED (Beleg reports/pc-t0003/UEBERSICHT.md; Lauf: 10 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 26,
+    "WarmMs": 24,
     "WindowsOnly": []
   },
   {
@@ -14259,9 +14832,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED (Beleg reports/pc-t0003/UEBERSICHT.md; Lauf: 12 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -14320,9 +14893,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED (Beleg reports/pc-t0003/UEBERSICHT.md; Lauf: 11 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 17,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -14377,7 +14950,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED (Beleg reports/pc-t0003/UEBERSICHT.md; Lauf: 12 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -14591,7 +15164,7 @@
       "Kreativ & Medien (13)",
       "3D & Spiele (4)",
       "Technik & Fachgebiete (5)",
-      "Wissen & Lernen (4)",
+      "Wissen & Lernen (12)",
       "KI & Automatik (12)",
       "Entwickeln (2)",
       "System & Sicherheit (6)",
@@ -14657,9 +15230,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED (Beleg reports/w1/pc/README.md; Lauf: 19 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -14909,9 +15482,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED (Beleg reports/w1/pc/README.md; Lauf: 13 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -15170,10 +15743,10 @@
       "desk-toggle-SPEC-06",
       "desk-toggle-CORE-10",
       "desk-toggle-SYS-08",
-      "desk-toggle-CORE-07",
-      "desk-toggle-X-04",
-      "desk-toggle-CORE-11",
-      "desk-toggle-SPEC-12"
+      "desk-toggle-STUDIO-MATH-01",
+      "desk-toggle-STUDIO-SCIENCE-01",
+      "desk-toggle-STUDIO-QUIZ-01",
+      "desk-toggle-STUDIO-COURSE-01"
     ],
     "Formats": [],
     "Dependencies": [],
@@ -15199,9 +15772,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED (Beleg reports/w1/pc/README.md; Lauf: 10 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 31,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -15441,9 +16014,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED (Beleg reports/w1/pc/README.md; Lauf: 14 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -15687,9 +16260,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED (Beleg reports/w1/pc/README.md; Lauf: 19 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 7,
     "WindowsOnly": []
   },
   {
@@ -15962,9 +16535,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED (Beleg reports/w1/pc/README.md; Lauf: 38 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 8,
+    "WarmMs": 6,
     "WindowsOnly": []
   },
   {
@@ -16200,9 +16773,9 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 19 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 22,
+    "WarmMs": 30,
     "WindowsOnly": []
   },
   {
@@ -16439,9 +17012,9 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 18 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -16496,9 +17069,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED (Beleg reports/pc-t0003/UEBERSICHT.md; Lauf: 11 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 20,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -16553,9 +17126,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test TESTED (PC_VERIFIED zurückgenommen: echter Stick-Auswurf nie gelaufen; Lauf: 12 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -16631,9 +17204,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test TESTED (PC_VERIFIED zurückgenommen: kein echtes Android-Gerät, adb und Bluetooth nachgebaut; Lauf: 21 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 41,
+    "WarmMs": 34,
     "WindowsOnly": []
   },
   {
@@ -16690,7 +17263,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED (Beleg reports/w1/pc/README.md; Lauf: 8 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -16753,9 +17326,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test TESTED (PC_VERIFIED zurückgenommen: Gegenstelle (Pi, Handy) fehlt, nur nachgebaute Geräte; Lauf: 11 bestanden · 5 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 23,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -16821,9 +17394,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test TESTED (PC_VERIFIED zurückgenommen: kein echter winget-Lauf, Installieren nur mit ersetztem Werkzeug geprüft; Lauf: 12 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 22,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -17052,9 +17625,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 20 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 28,
+    "WarmMs": 27,
     "WindowsOnly": []
   },
   {
@@ -17292,9 +17865,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 19 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 16,
+    "WarmMs": 27,
     "WindowsOnly": []
   },
   {
@@ -17537,9 +18110,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 25 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -17785,9 +18358,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 31 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 22,
+    "WarmMs": 20,
     "WindowsOnly": []
   },
   {
@@ -18011,9 +18584,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 18 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -18233,9 +18806,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 19 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 36,
+    "WarmMs": 21,
     "WindowsOnly": []
   },
   {
@@ -18452,9 +19025,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 19 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 30,
+    "WarmMs": 28,
     "WindowsOnly": []
   },
   {
@@ -18680,6 +19253,7 @@
       "Freihändig sprechen: zuhören, abschicken, Antwort vorlesen, bis man es ausschaltet",
       "Genauere Leser (Kalender, Programm-Dokument), Design „Wie Windows“, Hilfe „?“ auf Seiten ohne eigenen Hilfetext, Hinweis statt stummer Knöpfe",
       "Gutachter: zweite Meinung mit Note, ändert nichts; „Verbessern lassen“ gibt die Punkte an Claude",
+      "H1b Plan-Zeilen: Claude-Bereich aus einem anderen Programm, dann Wechsel in die Nachhilfe – Chat sendet nichts, ein offener Plan wird nicht ausgeführt, die Übung bleibt unverändert",
       "Markieren & Claude fragen: Zellbereich in Trendo Tabelle geht mit ins Eingabefeld; Knopf auf der Seite; Strg+Umschalt+A",
       "Not-Stopp: Bricht laufende Claude-Arbeit ab und lässt keinen neuen Durchgang starten",
       "Projekt-Gedächtnis: Claude merkt sich „Merken:“-Zeilen, sie gehen bei jeder Nachricht mit; ansehen, ergänzen, vergessen",
@@ -18708,6 +19282,7 @@
       "Spiele-Studio: eingebaute Spielregeln; mit GAMEFORGE dessen Regeln, Skills und Agenten (im sicheren Modus als Projekt-Skills); Regeln-Feld zeigt den Stand",
       "T-0621: Abgelaufene Claude-Anmeldung wird kein Liedtext – Ersatz-KI antwortet, Claude gilt bis zur neuen Anmeldung als nicht bereit",
       "T-0726 A6: Kartenkacheln aus dem Internet nur nach Zustimmung über das Freigabe-Tor – Nein lädt nichts, Ja gilt als Einstellung (im Protokoll), ausschaltbar; offline kein Angebot",
+      "T-0780 H1 (2. Gegenprüfung): Claude-Brücke – „befehl“, „klicken“ und „feld_setzen“ kommen an Quellen-Sperre, Zitatprüfung und Ordner-Sperre nicht vorbei; Schritt wird zurückgerollt und Claude bekommt den Fehler",
       "Unterlagen: nur Freigegebenes geht an Claude (als Datei im Projekt); passende Unterlagen werden vorgeschlagen – erst nach Ja",
       "Verbindungen: GitHub-Anmeldung im eigenen gh-Ordner der Person (sichtbar, im Browser), Netlify-Schlüssel nur im Tresor, Claude-Plugins nur nach Ja geändert",
       "Veröffentlichen: erst nach Ja; Projekt als ZIP im Ordner „Veröffentlicht“, ohne Hilfsdateien – hochgeladen wird nichts",
@@ -18719,10 +19294,10 @@
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
-    "Status": "IMPLEMENTED / Test TESTED (Lauf: 65 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Status": "IMPLEMENTED / Test TESTED (Lauf: 67 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -18943,9 +19518,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test TESTED (Lauf: 20 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -19215,9 +19790,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test TESTED (Lauf: 44 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 147,
+    "WarmMs": 99,
     "WindowsOnly": []
   },
   {
@@ -19379,7 +19954,7 @@
       "Mehr Einstellungen (22)",
       "Mehr",
       "Freischalten",
-      "Studios auf diesem PC: alle 83 zeigen",
+      "Studios auf diesem PC: alle 91 zeigen",
       "Systemcheck ansehen"
     ],
     "Formats": [
@@ -19434,9 +20009,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test TESTED (Lauf: 17 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 25,
+    "WarmMs": 21,
     "WindowsOnly": []
   },
   {
@@ -19632,9 +20207,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test TESTED (Lauf: 17 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -19846,9 +20421,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test TESTED (Lauf: 18 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -20045,9 +20620,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test TESTED (Lauf: 17 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 27,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -20094,9 +20669,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED (Beleg reports/pc-0.9.1/tests-pc-7092ce1.txt; Lauf: 4 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -20154,163 +20729,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED (Beleg reports/pc-t0003/UEBERSICHT.md; Lauf: 11 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)",
-    "Version": "0.9.112 (Stand d6f9fcd)",
+    "Version": "0.9.113 (Stand 1978f1a)",
     "Shell": false,
-    "WarmMs": 15,
-    "WindowsOnly": []
-  },
-  {
-    "Id": "kurse-programm",
-    "Name": "Kurse erstellen",
-    "Studio": "STUDIO-COURSE-01",
-    "StudioName": "Kurse erstellen",
-    "Area": "Wissen & Lernen",
-    "Type": [],
-    "Functions": [],
-    "Engine": [
-      "KursKit",
-      "QuizKit",
-      "QuizText",
-      "AssistParam",
-      "Quiz",
-      "QuizSpiel",
-      "AtomicFile",
-      "QuizEingabe",
-      "QuizGift",
-      "AssistAction"
-    ],
-    "Tools": [
-      "＋ Lektion (Gliederung)",
-      "＋ Kapitel (Gliederung)",
-      "Lektion nach oben (Gliederung)",
-      "Lektion nach unten (Gliederung)",
-      "Lektion löschen (Gliederung)",
-      "＋ Text (Inhalt)",
-      "＋ Überschrift (Inhalt)",
-      "＋ Liste (Inhalt)",
-      "＋ Hinweis (Inhalt)",
-      "Bild … (Inhalt)",
-      "Quiz einbinden … (Inhalt)",
-      "Offenes Quiz einbinden (Inhalt)",
-      "Kursansicht (Lernen)",
-      "Prüfen (Lernen)",
-      "Kurs als Webseite (HTML) (Exportieren)",
-      "SCORM-Paket für Lernplattformen (ZIP) (Exportieren)",
-      "Fortschritt der Lernenden (CSV) (Exportieren)"
-    ],
-    "Formats": [
-      ".csv",
-      ".html",
-      ".tdoc",
-      ".zip"
-    ],
-    "Dependencies": [
-      "LibreOffice (optional)"
-    ],
-    "Ui": [
-      "Menüband",
-      "Eigenschaften",
-      "Statusleiste",
-      "Dokument-Reiter"
-    ],
-    "Tabs": [
-      "Kurse erstellen"
-    ],
-    "Tests": [
-      "T-0779 ECHT: lokale KI (Ollama) – Fragen aus einem Text ins offene Quiz und eine Lektion in den offenen Kurs, Rückgängig (nur mit TRENDO_T0779_ECHT)",
-      "T-0779 Einbindung: beide Studios im Katalog (Wissen & Lernen), Seite, Symbol, Fähigkeit, Profil, Team, Fachwissen, Bildbeschreibung; Vorlagen öffnen; genau eine goldene Hauptaktion",
-      "T-0779 KI Kurs: „Schreib eine Lektion“ → neue Lektion mit Überschrift, Liste, Merksatz im offenen Kurs, EIN Rückgängig-Schritt (KI ersetzt)",
-      "T-0779 KI Quiz: „Mach Fragen aus dem Text“ → Vorschau zeigt die Fragen, Original unverändert → „Ja, behalten“ → EIN Rückgängig-Schritt „KI: …“, Rückgängig nimmt alle zurück (KI ersetzt)",
-      "T-0779 Kurs: leere Vorlage → Text, Kapitel, Lektion, Bild und Quiz-Datei per Ziehen, Rechtsklick; Kursansicht mit Person, Quiz spielen, Lektion abschließen; HTML, SCORM, CSV",
-      "T-0779 Quiz: Spielmodus per Klick und Tasten – Antwort wählen (1–4), prüfen (Eingabe), Rückmeldung, Lücke tippen, Zuordnen wählen, Auswertung mit Prozent; Zeitlimit läuft ab",
-      "T-0779 Quiz: fremde GIFT-Datei laden (Knopf) und Text für die KI per Ziehen und Ablegen; CSV-Karteikarten werden Auswahlfragen; Quiz → Karteikarten",
-      "T-0779 Quiz: leere Vorlage → erster Schritt, Frage tippen, Lücke, Zuordnen, richtige Antwort klicken, Rechtsklick duplizieren/löschen + Rückgängig → HTML, PDF (PDFium-Text), GIFT als Datei"
-    ],
-    "SourceFiles": [
-      "src/Trendo.App/MainWindow.QuizKurse.cs"
-    ],
-    "Status": "nicht im Modulregister",
-    "Version": "0.9.112 (Stand 184fcbb)",
-    "Shell": true,
-    "WarmMs": 17,
-    "WindowsOnly": []
-  },
-  {
-    "Id": "quiz-programm",
-    "Name": "Quiz erstellen",
-    "Studio": "STUDIO-QUIZ-01",
-    "StudioName": "Quiz erstellen",
-    "Area": "Wissen & Lernen",
-    "Type": [],
-    "Functions": [],
-    "Engine": [
-      "KursKit",
-      "QuizKit",
-      "QuizText",
-      "AssistParam",
-      "Quiz",
-      "QuizSpiel",
-      "AtomicFile",
-      "QuizEingabe",
-      "QuizGift",
-      "AssistAction"
-    ],
-    "Tools": [
-      "＋ Frage (Fragen)",
-      "＋ Mehrfachauswahl (Fragen)",
-      "＋ Wahr/Falsch (Fragen)",
-      "＋ Lückentext (Fragen)",
-      "＋ Zuordnen (Fragen)",
-      "Duplizieren (Fragen)",
-      "Nach oben (Fragen)",
-      "Nach unten (Fragen)",
-      "Frage löschen (Fragen)",
-      "▶ Quiz spielen (Spielen)",
-      "Prüfen (Spielen)",
-      "Fragen laden (Text, GIFT) … (Laden)",
-      "Aus Karteikarten (Laden)",
-      "In Karteikarten übernehmen (Laden)",
-      "Text für die KI laden … (Laden)",
-      "Quiz zum Weitergeben (HTML) (Exportieren)",
-      "Zum Ausdrucken mit Lösungen (PDF) (Exportieren)",
-      "Für Moodle (GIFT) (Exportieren)",
-      "Fragen als Text (Exportieren)"
-    ],
-    "Formats": [
-      ".html",
-      ".pdf",
-      ".tdoc",
-      ".txt"
-    ],
-    "Dependencies": [
-      "LibreOffice (optional)"
-    ],
-    "Ui": [
-      "Menüband",
-      "Eigenschaften",
-      "Statusleiste",
-      "Dokument-Reiter"
-    ],
-    "Tabs": [
-      "Quiz erstellen"
-    ],
-    "Tests": [
-      "T-0779 ECHT: lokale KI (Ollama) – Fragen aus einem Text ins offene Quiz und eine Lektion in den offenen Kurs, Rückgängig (nur mit TRENDO_T0779_ECHT)",
-      "T-0779 Einbindung: beide Studios im Katalog (Wissen & Lernen), Seite, Symbol, Fähigkeit, Profil, Team, Fachwissen, Bildbeschreibung; Vorlagen öffnen; genau eine goldene Hauptaktion",
-      "T-0779 KI Kurs: „Schreib eine Lektion“ → neue Lektion mit Überschrift, Liste, Merksatz im offenen Kurs, EIN Rückgängig-Schritt (KI ersetzt)",
-      "T-0779 KI Quiz: „Mach Fragen aus dem Text“ → Vorschau zeigt die Fragen, Original unverändert → „Ja, behalten“ → EIN Rückgängig-Schritt „KI: …“, Rückgängig nimmt alle zurück (KI ersetzt)",
-      "T-0779 Kurs: leere Vorlage → Text, Kapitel, Lektion, Bild und Quiz-Datei per Ziehen, Rechtsklick; Kursansicht mit Person, Quiz spielen, Lektion abschließen; HTML, SCORM, CSV",
-      "T-0779 Quiz: Spielmodus per Klick und Tasten – Antwort wählen (1–4), prüfen (Eingabe), Rückmeldung, Lücke tippen, Zuordnen wählen, Auswertung mit Prozent; Zeitlimit läuft ab",
-      "T-0779 Quiz: fremde GIFT-Datei laden (Knopf) und Text für die KI per Ziehen und Ablegen; CSV-Karteikarten werden Auswahlfragen; Quiz → Karteikarten",
-      "T-0779 Quiz: leere Vorlage → erster Schritt, Frage tippen, Lücke, Zuordnen, richtige Antwort klicken, Rechtsklick duplizieren/löschen + Rückgängig → HTML, PDF (PDFium-Text), GIFT als Datei"
-    ],
-    "SourceFiles": [
-      "src/Trendo.App/MainWindow.QuizKurse.cs"
-    ],
-    "Status": "nicht im Modulregister",
-    "Version": "0.9.112 (Stand 184fcbb)",
-    "Shell": true,
-    "WarmMs": 26,
+    "WarmMs": 13,
     "WindowsOnly": []
   }
 ]

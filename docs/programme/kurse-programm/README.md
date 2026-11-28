@@ -1,9 +1,9 @@
 # Kurse erstellen – Produktionspaket
 
-Studio: Kurse erstellen (STUDIO-COURSE-01) · Bereich: Wissen & Lernen · Seite: `kurse-programm` · Stand: 0.9.112 (Stand 184fcbb)
+Studio: Kurse erstellen (STUDIO-COURSE-01) · Bereich: Wissen & Lernen · Seite: `kurse-programm` · Stand: 0.9.113 (Stand 1978f1a)
 
 Arbeitsfläche: keine eigene Arbeitsfläche erkannt (Seite aus Listen, Feldern und Knöpfen)  
-Modulstatus (Register, Belege, Testlauf): nicht im Modulregister  
+Modulstatus (Register, Belege, Testlauf): IN_PROGRESS / Test TESTED (Lauf: 10 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  
 Programm-Hülle (Dokumente, Rückgängig, Autosave, Bedienstufen): ja
 
 ## Inhalt

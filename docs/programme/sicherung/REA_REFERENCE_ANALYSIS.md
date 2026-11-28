@@ -1,6 +1,6 @@
 # Sicherung – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `sicherung` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `sicherung` · Stand: 0.9.113 (Stand 1978f1a)
 
 Analyse: [Vorbild-Analyse Schutz: Windows-Sicherheit, Dateiversionsverlauf/Time Machine, TCPView, Bitwarden-Bericht (Clean-Room)](../../../docs/claude/vorbilder/schutz-windows-sicherheit-timemachine.md)
 

@@ -1,6 +1,6 @@
 # Skills – Umsetzungsstand
 
-Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: KI & Automatik · Seite: `ki-skills` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: KI & Automatik · Seite: `ki-skills` · Stand: 0.9.113 (Stand 1978f1a)
 
 Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getestet“ nur, wenn der zugehörige Test im letzten echten Lauf bestanden hat.
 

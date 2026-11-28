@@ -1,6 +1,6 @@
 # Audio bearbeiten – Einbindung in Trendo OS
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `ton` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `ton` · Stand: 0.9.113 (Stand 1978f1a)
 
 - Seite `ton` im Studio „Videos & Fotos bearbeiten“ (Kreativ & Medien) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: ja (Dokumente .tdoc, Zuletzt, Wiederherstellen, Bedienstufen)

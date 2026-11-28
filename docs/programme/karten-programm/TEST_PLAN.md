@@ -1,6 +1,6 @@
 # Karten & Einladungen – Testplan
 
-Studio: Karten & Einladungen (STUDIO-CARDS-01) · Bereich: Arbeiten & Büro · Seite: `karten-programm` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Karten & Einladungen (STUDIO-CARDS-01) · Bereich: Arbeiten & Büro · Seite: `karten-programm` · Stand: 0.9.113 (Stand 1978f1a)
 
 7 Tests sprechen dieses Programm an.
 

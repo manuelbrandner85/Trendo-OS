@@ -1,6 +1,6 @@
 # Kurse erstellen – Lizenzen
 
-Studio: Kurse erstellen (STUDIO-COURSE-01) · Bereich: Wissen & Lernen · Seite: `kurse-programm` · Stand: 0.9.112 (Stand 184fcbb)
+Studio: Kurse erstellen (STUDIO-COURSE-01) · Bereich: Wissen & Lernen · Seite: `kurse-programm` · Stand: 0.9.113 (Stand 1978f1a)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

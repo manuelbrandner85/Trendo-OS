@@ -1,6 +1,6 @@
 # Hardware & Leistung – Funktionsmatrix
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `hardware` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `hardware` · Stand: 0.9.113 (Stand 1978f1a)
 
 Quelle: `docs/spec/kataloge/SYS-13_KATALOG.md`
 

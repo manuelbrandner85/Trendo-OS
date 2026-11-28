@@ -1,6 +1,6 @@
 # Freie Bilder & Klänge – Produktionspaket
 
-Studio: Freie Bilder & Klänge finden (X-07) · Bereich: Kreativ & Medien · Seite: `assets` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Freie Bilder & Klänge finden (X-07) · Bereich: Kreativ & Medien · Seite: `assets` · Stand: 0.9.113 (Stand 1978f1a)
 
 Arbeitsfläche: Medien-Browser (Themen/Raster, Vorschau mit Lizenz)  
 Modulstatus (Register, Belege, Testlauf): IMPLEMENTED / Test TESTED (Lauf: 17 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

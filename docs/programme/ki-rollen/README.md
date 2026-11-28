@@ -1,6 +1,6 @@
 # KI-Rollen und Teams – Produktionspaket
 
-Studio: KI-Team einsetzen (CORE-03) · Bereich: KI & Automatik · Seite: `ki-rollen` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: KI-Team einsetzen (CORE-03) · Bereich: KI & Automatik · Seite: `ki-rollen` · Stand: 0.9.113 (Stand 1978f1a)
 
 Arbeitsfläche: KI-Zentrale (Bereiche, Suche, Seite – wie LM Studio)  
 Modulstatus (Register, Belege, Testlauf): IMPLEMENTED / Test PC_VERIFIED (Beleg reports/pc-t0003/UEBERSICHT.md; Lauf: 10 bestanden · 1 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

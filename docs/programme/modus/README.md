@@ -1,6 +1,6 @@
 # Betriebsmodus – Produktionspaket
 
-Studio: Startmodus wählen (SYS-01) · Bereich: System & Sicherheit · Seite: `modus` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Startmodus wählen (SYS-01) · Bereich: System & Sicherheit · Seite: `modus` · Stand: 0.9.113 (Stand 1978f1a)
 
 Arbeitsfläche: Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)  
 Modulstatus (Register, Belege, Testlauf): IN_PROGRESS / Test PC_VERIFIED (Beleg reports/pc-0.9.1/tests-pc-7092ce1.txt; Lauf: 4 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

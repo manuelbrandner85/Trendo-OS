@@ -1,6 +1,6 @@
 # KI fragen – Produktionspaket
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki-fragen` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki-fragen` · Stand: 0.9.113 (Stand 1978f1a)
 
 Arbeitsfläche: KI-Zentrale (Bereiche, Suche, Seite – wie LM Studio)  
 Modulstatus (Register, Belege, Testlauf): IMPLEMENTED / Test TESTED (Lauf: 16 bestanden · 2 übersprungen · 0 fehlgeschlagen · 1 nicht im Lauf)  

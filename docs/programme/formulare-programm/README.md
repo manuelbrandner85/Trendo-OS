@@ -1,6 +1,6 @@
 # Formulare ausfüllen – Produktionspaket
 
-Studio: Formulare ausfüllen (STUDIO-FORMS-01) · Bereich: Arbeiten & Büro · Seite: `formulare-programm` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Formulare ausfüllen (STUDIO-FORMS-01) · Bereich: Arbeiten & Büro · Seite: `formulare-programm` · Stand: 0.9.113 (Stand 1978f1a)
 
 Arbeitsfläche: Bildansicht  
 Modulstatus (Register, Belege, Testlauf): IN_PROGRESS / Test TESTED (Lauf: 9 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

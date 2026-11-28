@@ -1,6 +1,6 @@
 # Kleidung & Produkte – Produktionspaket
 
-Studio: Kleidung & Produkte entwerfen (SPEC-08) · Bereich: Kreativ & Medien · Seite: `mode-programm` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Kleidung & Produkte entwerfen (SPEC-08) · Bereich: Kreativ & Medien · Seite: `mode-programm` · Stand: 0.9.113 (Stand 1978f1a)
 
 Arbeitsfläche: Figur mit Maßen, Schnittlage (Teile auf der Stoffbahn)  
 Modulstatus (Register, Belege, Testlauf): IMPLEMENTED / Test TESTED (Lauf: 47 bestanden · 0 übersprungen · 0 fehlgeschlagen · 0 nicht im Lauf)  

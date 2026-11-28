@@ -1,6 +1,6 @@
 # Recherche mit Quellen – Funktionsmatrix
 
-Studio: Recherche mit Quellen (STUDIO-CITE-01) · Bereich: KI & Automatik · Seite: `quellen-programm` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Recherche mit Quellen (STUDIO-CITE-01) · Bereich: KI & Automatik · Seite: `quellen-programm` · Stand: 0.9.113 (Stand 1978f1a)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

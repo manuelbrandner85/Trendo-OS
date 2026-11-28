@@ -1,6 +1,6 @@
 # Bilder erkennen – Funktionsmatrix
 
-Studio: Bilder erkennen (STUDIO-VISION-01) · Bereich: KI & Automatik · Seite: `bilder-erkennen-programm` · Stand: 0.9.112 (Stand d6f9fcd)
+Studio: Bilder erkennen (STUDIO-VISION-01) · Bereich: KI & Automatik · Seite: `bilder-erkennen-programm` · Stand: 0.9.113 (Stand 1978f1a)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
