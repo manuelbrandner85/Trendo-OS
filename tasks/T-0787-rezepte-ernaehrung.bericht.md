@@ -1,0 +1,89 @@
+# Bericht T-0787: Rezepte & Ernährung (Etappe 0.9.115 „Wissen & Lernen E“)
+
+**Auftrag:** `tasks/T-0787-rezepte-ernaehrung.md` (Freigabe 26.11.2026) · **Branch:** `claude/T-0787-rezepte-ernaehrung` (Basis main 9bc135aaa = 0.9.114) · eigene Kopie in `%TEMP%\trendo-auftrag-T-0787`.
+
+## Was war → was ist
+| Punkt | Vorher (Beleg) | Jetzt | Nachweis |
+|---|---|---|---|
+| Studio | fehlte (`docs/audit/2026-11-26-neubewertung/fehlende-studios.md` Z. 117: „Rezept“ im Code nur Studio-Ablauf in `Fusion.cs`) | Programm `rezepte-programm` (STUDIO-RECIPE-01) in der Programm-Hülle: Rezeptbuch mit drei Ansichten (Rezepte · Wochenplan · Einkaufsliste), Nährwerte rechts | App `T0787Rezepte_Ui` (4 Fälle), Rot-Grün `T0787_Rot` |
+| Rezepte | – | Name, Beschreibung, Portionen (+ Wort), Zeiten, Kategorie, Stichwörter, Notizen, Quelle; Zutaten zeilenweise wie im Kochbuch, Trendo erkennt Menge (½, 1/2, 1,5, 2–3), Einheit (g, kg, ml, l, EL, TL, Tasse, Becher, Prise, Msp., Stück, Zehe, Dose, Pck., Bund, Stange …), Zutat, Hinweis, Zwischenüberschrift; Schritte zeilenweise; Rezept aus eingefügtem Text | Core `Zutaten_lesen`, `Aus_text`; App `Klick_bis_datei`, `Woche_und_einkauf` |
+| Portionen und Einheiten | – | „–/+“ zeigt Mengen für n Portionen (nur Ansicht, Tabelle mit Gramm/kcal), „So ins Rezept übernehmen“ (ein Rückgängig-Schritt), halbe/doppelte Menge, passende Einheit (1000 ml → 1 l, 3 TL → 1 EL), Löffel/Tasse → g (über Dichte) bzw. ml | Core `Portionen_und_einheiten`; App `Klick_bis_datei` |
+| Nährwerte | – | je Portion: kcal/kJ, Fett, gesättigte FS, KH, Zucker, Ballaststoffe, Eiweiß, Salz – **Richtwerte** mit Quelle und Lizenz, Fehlendes und „ohne Menge“ genannt; Zuordnung per Klick/Rechtsklick änderbar | Core `Naehrwerte` (gegen Tabellenwerte nachgerechnet); App `Klick_bis_datei`, `Import_und_bedienung` |
+| Nährwert-Tabelle | – | **USDA FoodData Central, SR Legacy (April 2018), CC0 1.0** – 160 Lebensmittel mit FDC-Nummer; Generator `tools/rezepte/naehrwerte_gen.py`, Herkunft je Zeile `tools/rezepte/herkunft-usda-sr.tsv`; Download 28.11.2026, 6 074 592 Bytes, SHA-256 `b80817294b8850530aaedf2e515c02593b1824f763a0ff356e5c2081643e6fd0` | Generator erneut laufen lassen → gleiche Datei (SHA-256 `a4480c1a…`) |
+| Keine Gesundheitsversprechen | – | Hinweis „Richtwerte – keine Ernährungsberatung“ in Ansicht, Druck, JSON-LD; Heil-/Gesundheitsversprechen in KI-Text abgelehnt (`RezeptKit.KiCheck`), im eigenen Text als Hinweis | Core `Keine_versprechen`; App `Ki_rezept` |
+| Wochenplan | – | Montag–Sonntag, Mahlzeit, Portionen; Woche vor/zurück; Rechtsklick: anderer Tag, ±1 Portion, entfernen | App `Woche_und_einkauf` |
+| Einkaufsliste | – | aus dem Plan, gleiche Zutaten über alle Rezepte zusammengefasst (g/ml/Stück, gemischt über Dichte), nach Abteilung im Laden, „für: …“, abhaken, eigene Einträge; TXT, CSV (Formel-Schutz) | Core `Einkaufsliste`; App `Woche_und_einkauf` |
+| schema.org/Recipe | – | Export JSON-LD (`Recipe`, mehrere als `@graph`, `nutrition` als Richtwert) und Rezeptseite HTML mit eingebettetem JSON-LD; Import aus JSON-LD oder gespeicherter Rezeptseite (`@graph`, `@type`-Liste, HowToSection, Ertrag als Liste, ISO-Dauer), Datei unverändert; Ziehen auf die Arbeitsfläche | Core `JsonLd_hin_und_zurueck`; App `Import_und_bedienung`; **echt**: Chrome |
+| Druck | – | Rezept (in angezeigter Portionenzahl), Kochbuch mit Inhaltsverzeichnis, Wochenplan + Einkaufsliste als PDF; Rezept als DOCX/ODT | Core `Druck_dateien`; App (PDFium-Text); **echt**: LibreOffice, pdftotext, qpdf |
+| KI-Fachaktion | – | `rezept.anlegen` über `ProgramSpec.KiActions` (`MakesFile = false`): Vorschau → „Ja, behalten“ → ein Rückgängig-Schritt; `KiLocked = plan, liste`; Nährwerte rechnet der Kern | App `Ki_rezept` (KI ersetzt); **Echtlauf qwen3:14b** |
+
+Einbindung (am Listenende, klein): `StudioCatalog` (Wissen & Lernen), `StudioIcons` (eigener Pfad Kochtopf), `CapabilityCatalog` + Adapter `RezeptJsonLdAdapter` (`rezept.jsonld`), `StudioProfiles`, `StudioTeams` (Küchen-Team), `StudioKnowledge`, Startideen (`PromptChips`, je ≥ 8 Wörter, damit die KI zuerst gefragt wird), `InitRezepte()` in `MainWindow.W6.cs`, Bild `STUDIO-RECIPE-01.jpg` (lokal ComfyUI + FLUX.2 klein 4B, Prüfsummen ok; danach ComfyUI beendet), `docs/design/STUDIOBILDER.json`, Fähigkeitsmatrix (`TRENDO_UPDATE_MATRIX=1`), eine Zeile `TRENDO_RZ_MODE` in `tools/Trendo.Render/Program.cs` (Bildprüfung Wochenplan/Einkaufsliste).
+Zählungen angepasst (nicht geschwächt): Studios 91 → 92 (`PromptBarTests`), Übersicht-Katalog 69 → 70 (`StudioFolds_Ui.Plan_is_consistent`), Adapter 115 → 116, Teilweise 86 → 87 (`PromptActionTests`).
+
+## Vorbilder (Details in `docs/nachbau/rezepte/anforderungen.md`)
+| Vorbild | Stärken (Bedienkonzept) | Lizenz | Quelle (28.11.2026) |
+|---|---|---|---|
+| Paprika | Plan, Einkaufsliste fasst zusammen und sortiert nach Abteilung, Nährwerte aus USDA | proprietär | paprikaapp.com; cooklang.org „Best Recipe Management Software in 2026“ (aktualisiert 19.11.2026) |
+| Mealie | Zutaten-Erkennung, Mahlzeiten im Plan, Einkaufsliste, schema.org-Import | AGPL-3.0 – Clean-Room | docs.mealie.io; cooklang.org-Vergleich 2026 |
+| Tandoor | Nährwerte je Rezept aus Lebensmittel-Eigenschaften, Einheitenumrechnung | Repo ohne SPDX (NOASSERTION) – nicht verwendet | newreleases.io (Tandoor 1.5.0) |
+| AnyList / Cooklang | Skalieren, Einkaufsliste aus mehreren Rezepten | proprietär / MIT | cooklang.org; github.com/cooklang/cooklang-rs |
+| schema.org Recipe | offenes Austauschformat | CC BY-SA 3.0 (nur gelesen) | schema.org/Recipe |
+Nicht verwendet: BLS 4.0 (kostenfrei, aber **ohne benannte Lizenz** – blsdb.de/faq), Open Food Facts (ODbL).
+
+## Anforderungen (RZ-01 … RZ-16)
+Erfüllt 14; **teilweise**: RZ-01 und RZ-11 (Ziehen zum Umsortieren bzw. Datei-Ablegen nur über die gemeinsamen Bausteine `BueroReorder`/`BueroFileDrop`, nicht eigens getestet), RZ-16 (Menüleisten-Kürzel nicht einzeln getestet). RZ-12: Import in Mealie/Tandoor selbst nicht geprüft (nicht vorhanden).
+
+## Echtlauf mit lokaler KI (nichts installiert)
+Ollama aus `%LOCALAPPDATA%\TrendoWerkzeuge\ollama` (eigener Start, danach beendet), automatische Wahl **qwen3:14b**. Bedienung über die Oberfläche. Beleg `reports/T-0787/echtlauf-lokale-ki.md`, Rohlog `rohlog-echtlauf.txt` (1/1 bestanden, Exit 0).
+Rezepttext „Kartoffelsuppe für 4 Personen …“ → Plan `rezept.anlegen` (21 s) → Vorschau unverändert → „Ja, behalten“ → 6 Zutaten (alle zugeordnet), 4 Schritte, ≈ 305 kcal je Portion (Kern), ein Rückgängig-Schritt → Rückgängig: Buch wie vorher.
+**Befund:** „Gemüsebrühe“ rechnet mit „Hühnerbrühe“ (SR Legacy hat keine passende Gemüsebrühe als fertige Brühe) – in der Tabelle sichtbar, per Rechtsklick änderbar.
+Erster Anlauf scheiterte nur an `TRENDO_ASSIST_MODELL=qwen3:14b` („unbekanntes Modell“ in `KiModel.Select`) – ohne die Variable wählt Trendo dasselbe Modell selbst.
+
+## Fremdprogramme (Beleg `reports/T-0787/`, Rohlog `rohlog-core-fremd.txt`, 2/2 bestanden)
+- **Google Chrome** (headless, eigenes Profil): öffnet die Rezeptseite, `JSON.parse` des Browsers liest das eingebettete JSON-LD: 2 Rezepte vom Typ `Recipe`, 11 Zutaten, Energie je Portion `411 kcal|289 kcal` = Werte von Trendo. Ehrlich: Die Prüfschrift steht in der Seite selbst (`#pruefen`), Chrome führt sie aus – ein unabhängiger schema.org-Validator (z. B. Google Rich Results) wurde nicht benutzt (würde Daten ins Internet senden).
+- **LibreOffice** (nur aus der Kopie `T0776_LoKopie`, eigenes Profil): öffnet Rezept-DOCX und -ODT (12 Prüfstellen), Calc öffnet die CSV-Einkaufsliste und schreibt ein PDF.
+- **pdftotext** liest Rezept-, Kochbuch- und Wochen-PDF; **qpdf** `--check`: lesbar, keine Fehler (Warnungen zu PDFsharp-Flate-Strömen wie in T-0779).
+
+## Rot-Grün
+`T0787_Rot` (nur Namen/Kennungen) im eigenen Worktree auf 9bc135aaa: **rot** („rezepte-programm fehlt“, `reports/T-0787/rot-alter-stand.txt`), auf dem neuen Stand grün. Übrige neue Tests nutzen neue Typen und übersetzen auf dem alten Stand nicht.
+
+## Tests (gezielt, kein Volltest)
+- `dotnet build Trendo.sln -c Release`: 0 Fehler.
+- Core (T0787, PromptActionTests, StudioKnowledge, Assist, NoFixedUser, Tests): **115 gesamt, 113 bestanden, 0 Fehler, 2 übersprungen** (Fremdläufe ohne Variable) – `reports/T-0787/rohlog-core-tests.txt`; QA015_StudioStatus 4/4 (`rohlog-core-qa015.txt`); Fremdlauf mit `TRENDO_T0787_FREMD` 10/10 (`rohlog-core-fremd.txt`).
+- App (T0787Rezepte_Ui, T0787_Rot, AssistChain_Ui, ClaudeEverywhere_Ui, DeadButtonTests, ProgramCatalog_Ui, PromptBarTests, StartMenu_Ui, StudioBilder, StudioClickTests, StudioFolds_Ui, StudioIconTests, StudioOrder_Ui, StudioTeams_Ui, StudiosAlle_Ui, StudiosTechnikWissen_Ui, T0728_Bedienung_Ui, T0774KiDokument_Ui): **313 gesamt, 2 Fehler, 1 Errors, 3 übersprungen** (`rohlog-app-tests.txt`). Die 2 Fehler waren veraltete Zahlen/der fehlende Katalogeintrag (`StudioFolds_Ui` 69 → 70, `ProgramCatalog_Ui` „fehlt: rezepte-programm“) – behoben, Nachlauf beider Klassen **4/4 grün** (`rohlog-app-nachlauf.txt`). Das 1 „Error“ ist ein Aufräumfehler der Avalonia-Headless-Plattform („calling thread cannot access this object“) bei `StudioFolds_Ui`; im Nachlauf nicht wieder aufgetreten, nicht aus diesem Paket.
+- Echtlauf `Real_local_ki` mit `TRENDO_T0787_ECHT`: 1/1 (`rohlog-echtlauf.txt`).
+- Bilder mit Trendo.Render (`reports/T-0787/bilder/`): Profi mit Beispiel (Rezepte, Wochenplan, Einkaufsliste), Einfach leer – Dunkel-Gold, eine goldene Hauptaktion („Neues Rezept“ bzw. im Leerzustand „Erstes Rezept anlegen“), erster Schritt sichtbar. Befund behoben: „1 Stange Lauch“ – „Stange“ ist jetzt Einheit.
+
+## Abnahmekriterien
+1. Aus leerer Vorlage echtes Ergebnis: **VOLLWERTIG** – leeres Buch → erster Schritt → Rezept → PDF/JSON-LD/HTML/DOCX (`Klick_bis_datei`), Plan → Einkaufsliste → PDF/CSV/TXT (`Woche_und_einkauf`).
+2. Fremddatei rein/raus, Export im Fremdprogramm: **TEILWEISE** – Import: Rezeptseite mit JSON-LD nach Google-Doku-Struktur (selbst nachgebaut, keine fremde Seite geladen); Export öffnet echt in Chrome, LibreOffice, pdftotext, qpdf. Nicht geprüft: Import in Mealie/Tandoor (nicht vorhanden), echte Seite eines Rezeptportals.
+3. Abbruch ≤ 30 s: **TEILWEISE / NICHT GETESTET** – Programm-Hülle (Autosicherung 20 s, Wiederherstellung); alle Exporte schreiben erst daneben und ersetzen dann (`RzAtomic`, `AtomicFile`); kein eigener Absturztest.
+4. KI im offenen Dokument, rückgängig: **VOLLWERTIG** – Echtlauf qwen3:14b, ein Rückgängig-Schritt.
+5. Test vom Klick bis zur Datei: **VOLLWERTIG**.
+6. Einfach/Profi, Kürzel, Rechtsklick, Ziehen: **TEILWEISE** – Einfach/Profi (Bild + Test), Rechtsklick (Rezeptliste, Zutat-Zuordnung, Planeinträge) getestet; Ziehen (Umsortieren, Datei ablegen) eingebaut über gemeinsame Bausteine, nicht eigens getestet; Kürzel der Hülle (Strg+Z) nur über Knöpfe getestet.
+
+## Nicht geprüft / offene Punkte
+- **QA-015** bleibt bei 91 und ist **grün** (zählt `requirements.yaml`); sie wird rot (bzw. braucht 93), sobald die Hauptsitzung STUDIO-RECIPE-01 (und T-0788) in `requirements.yaml` einträgt. Ebenso „69 Studios“ in der Studio-Übersicht (`StudioFolds_Ui.Overview_*`) und das Startmenü-Register erst mit dem Eintrag.
+- `docs/programme/katalog.json`: nur der Eintrag `rezepte-programm` angehängt (aus dem Katalog-Erzeuger); `KATALOG.md` und Testzuordnung erzeugt die Hauptsitzung nach dem Zusammenführen neu.
+- Kein Claude-Echtlauf (Vorgabe). Keine Mikronährstoffe, Allergene, Preise, Bilder im Rezept, kein Laden von Webadressen.
+- Nährwerte roh, ohne Garverluste; Stückgewichte aus USDA-Portionsangaben (z. B. Ei 50 g, Zwiebel 110 g) – Richtwerte.
+- Ein Rest des Rot-Worktrees (`%TEMP%\trendo-T0787-rot`) war beim ersten Aufräumen durch einen Build-Prozess gesperrt (siehe Abgabe).
+
+## requirements.yaml-Vorschlag
+```yaml
+- id: STUDIO-RECIPE-01
+  name: Rezepte & Ernährung
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios), 26.11.2026 Etappe 0.9.115 Wissen & Lernen E (T-0787)
+```
+
+## Geänderte Dateien
+- neu: `src/Trendo.Core/Wissen/Rezepte.cs`, `src/Trendo.Core/Wissen/NaehrwertTabelle.Daten.cs`, `src/Trendo.Core/PromptAction/RezeptPromptAdapters.cs`, `src/Trendo.App/MainWindow.Rezepte.cs`, `src/Trendo.App/Assets/studios/STUDIO-RECIPE-01.jpg`, `tools/rezepte/naehrwerte_gen.py`, `tools/rezepte/herkunft-usda-sr.tsv`, `docs/nachbau/rezepte/anforderungen.md`, `docs/programme/rezepte-programm/*`
+- gemeinsam (klein, am Listenende): `src/Trendo.App/StudioCatalog.cs`, `StudioIcons.cs`, `MainWindow.PromptChips.cs`, `MainWindow.W6.cs`, `src/Trendo.Core/PromptAction/CapabilityCatalog.cs`, `IntelligencePromptModel.cs`, `StudioKnowledge.cs`, `src/Trendo.Core/W2/StudioProfiles.cs`, `StudioTeams.cs`, `tools/studio_bilder.py`, `tools/Trendo.Render/Program.cs`, `docs/design/STUDIOBILDER.json`, `docs/improvement-42/studio-capability-matrix.md`, `docs/programme/katalog.json`, `.gitattributes`
+- Tests: neu `tests/Trendo.Core.Tests/T0787RezepteTests.cs`, `T0787FremdTests.cs`, `tests/Trendo.App.Tests/T0787RezepteUiTests.cs`, `T0787RotTests.cs`; Zahlen in `PromptBarTests.cs`, `StudioFoldsUiTests.cs`, `PromptActionTests.cs`
+- Belege: `reports/T-0787/*` (mit `SHA256.txt`), `tasks/T-0787-rezepte-ernaehrung.md`, dieser Bericht
+
+**Status:** umgesetzt und gezielt getestet; Merge erst nach OK.

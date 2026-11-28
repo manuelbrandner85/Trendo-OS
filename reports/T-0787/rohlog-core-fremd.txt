@@ -1,0 +1,22 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0787\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:01.62]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:02.20]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:02.23]   Starting:    Trendo.Core.Tests
+  Bestanden T-0787 Freitext → Rezept: Name, Portionen, Zutaten und nummerierte Schritte aus eingefügtem Text [72 ms]
+  Bestanden T-0787 schema.org/Recipe: Export als JSON-LD und Rezeptseite, Import zurück (auch @graph, HowToSection, ISO-Dauer, Ertrag als Liste) ohne Verlust [91 ms]
+  Bestanden T-0787 Einkaufsliste: gleiche Zutaten aus mehreren Rezepten zusammengefasst, nach Portionen im Plan umgerechnet, nach Abteilung sortiert; CSV mit Schutz vor Formeln [38 ms]
+  Bestanden T-0787 Druck: Rezept, Kochbuch und Wochenplan als PDF/DOCX/ODT – Inhalt mit Richtwert-Hinweis und Quelle der Nährwerte [271 ms]
+  Bestanden T-0787 Nährwerte je Portion aus USDA SR Legacy: Rechnung nachvollziehbar, Stückgewicht, Dichte, Fehlendes und Ohne-Menge benannt [21 ms]
+  Bestanden T-0787 Zutaten lesen: Mengen (Bruch, Komma, Bereich), Einheiten, Hinweis nach Komma, ohne Menge, Zwischenüberschrift; Zuordnung zur Tabelle [33 ms]
+  Bestanden T-0787 Portionen umrechnen: Mengen mal neu/alt, Brüche bei Löffel und Stück, Einheiten werden glatt (g→kg, TL→EL) [29 ms]
+  Bestanden T-0787 Keine Gesundheitsversprechen: KI-Text mit Heilversprechen wird abgelehnt, Plan und Liste ändert nur die Person; Prüfung nennt fehlende Nährwerte [51 ms]
+  Bestanden T-0787 FREMD: LibreOffice öffnet Rezept als DOCX und ODT sowie die Einkaufsliste (CSV); pdftotext und qpdf lesen die PDFs von Trendo (nur mit TRENDO_T0787_FREMD) [25 s]
+  Bestanden T-0787 FREMD: Chrome öffnet die Rezeptseite und liest das eingebettete schema.org-JSON-LD (Recipe, Zutaten, Nährwerte); JSON-LD-Datei zurück in Trendo (nur mit TRENDO_T0787_FREMD) [635 ms]
+[xUnit.net 00:00:30.92]   Finished:    Trendo.Core.Tests
+
+Der Testlauf war erfolgreich.
+Gesamtzahl Tests: 10
+     Bestanden: 10
+ Gesamtzeit: 32,2055 Sekunden

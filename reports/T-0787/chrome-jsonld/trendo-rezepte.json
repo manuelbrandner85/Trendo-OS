@@ -1,0 +1,96 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Recipe",
+      "name": "Pfannkuchen",
+      "inLanguage": "de",
+      "recipeYield": [
+        "4",
+        "4 Portionen"
+      ],
+      "recipeIngredient": [
+        "250 g Weizenmehl",
+        "500 ml Milch",
+        "3 Eier",
+        "1 Prise Salz",
+        "2 EL Butter, zum Ausbacken"
+      ],
+      "description": "Dünne Pfannkuchen.",
+      "prepTime": "PT15M",
+      "cookTime": "PT20M",
+      "totalTime": "PT35M",
+      "recipeCategory": "Hauptgericht",
+      "recipeInstructions": [
+        {
+          "@type": "HowToStep",
+          "position": 1,
+          "text": "Mehl, Milch, Eier und Salz zu einem glatten Teig verrühren."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 2,
+          "text": "In heißer Butter von beiden Seiten goldbraun backen."
+        }
+      ],
+      "nutrition": {
+        "@type": "NutritionInformation",
+        "servingSize": "1 Portion (von 4)",
+        "calories": "411 kcal",
+        "proteinContent": "15.2 g",
+        "fatContent": "14.1 g",
+        "saturatedFatContent": "7.4 g",
+        "carbohydrateContent": "54.1 g",
+        "sugarContent": "6.8 g",
+        "fiberContent": "1.7 g",
+        "sodiumContent": "161 mg",
+        "description": "Richtwert je Portion, berechnet aus USDA FoodData Central, SR Legacy (April 2018), fdc.nal.usda.gov"
+      }
+    },
+    {
+      "@type": "Recipe",
+      "name": "Linsensuppe",
+      "inLanguage": "de",
+      "recipeYield": [
+        "4",
+        "4 Portionen"
+      ],
+      "recipeIngredient": [
+        "250 g Linsen",
+        "2 Karotten",
+        "1 Zwiebel",
+        "1 l Gemüsebrühe",
+        "1 EL Olivenöl",
+        "Salz und Pfeffer, nach Geschmack"
+      ],
+      "cookTime": "PT35M",
+      "totalTime": "PT35M",
+      "recipeCategory": "Suppe",
+      "recipeInstructions": [
+        {
+          "@type": "HowToStep",
+          "position": 1,
+          "text": "Zwiebel und Karotten würfeln und im Öl andünsten."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 2,
+          "text": "Linsen und Brühe dazugeben und 30 Minuten köcheln."
+        }
+      ],
+      "nutrition": {
+        "@type": "NutritionInformation",
+        "servingSize": "1 Portion (von 4)",
+        "calories": "289 kcal",
+        "proteinContent": "17.5 g",
+        "fatContent": "4.7 g",
+        "saturatedFatContent": "0.6 g",
+        "carbohydrateContent": "46.2 g",
+        "sugarContent": "4.9 g",
+        "fiberContent": "8 g",
+        "sodiumContent": "1001 mg",
+        "description": "Richtwert je Portion, berechnet aus USDA FoodData Central, SR Legacy (April 2018), fdc.nal.usda.gov"
+      }
+    }
+  ]
+}

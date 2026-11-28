@@ -1,0 +1,198 @@
+# T-0787 Fremdnachlauf libreoffice-pdf – 2026-11-28 12:35:05 +01:00
+Datei trendo-pfannkuchen.docx: 4620 Bytes, SHA-256 3fed8052570711d9251c67d1aeb02d943713afb01051d9d64cf267cf7533cdbc
+$ LibreOffice öffnet pfannkuchen.docx und schreibt txt
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-t0787-work/b107a1a6/lo/lo-profil --headless --norestore --nolockcheck --convert-to "txt:Text (encoded):UTF8" --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\lo-aus-docx-txt C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\pfannkuchen.docx
+Exit 0 nach 7,7 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\pfannkuchen.docx as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\lo-aus-docx-txt\pfannkuchen.txt using filter : Text (encoded):UTF8
+[stderr] Could not find platform independent libraries <prefix>
+  eigene Prozesse (6): PID 3648 conhost.exe: C:\Windows\System32\conhost.exe; PID 3764 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-7e6ae3\libreoffice\program\soffice.bin; PID 13980 soffice.com: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-7e6ae3\libreoffice\program\soffice.com; PID 14808 conhost.exe: C:\Windows\System32\conhost.exe; PID 15448 opencltest.exe: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-7e6ae3\libreoffice\program\opencltest.exe; PID 15984 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-7e6ae3\libreoffice\program\soffice.bin
+Datei libreoffice-aus-docx.txt: 800 Bytes, SHA-256 36988a1ad8b6d5e50be666f10709e8282ba40fd8af291cb31659411692566153
+LibreOffice-Text aus docx: alle 12 Prüfstellen gefunden
+Datei trendo-pfannkuchen.odt: 3395 Bytes, SHA-256 17b55b553dcc825e9094f80cf5b722e7d70563a79630b12de970891ed446de8a
+$ LibreOffice öffnet pfannkuchen.odt und schreibt txt
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-t0787-work/b107a1a6/lo/lo-profil --headless --norestore --nolockcheck --convert-to "txt:Text (encoded):UTF8" --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\lo-aus-odt-txt C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\pfannkuchen.odt
+Exit 0 nach 1,1 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\pfannkuchen.odt as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\lo-aus-odt-txt\pfannkuchen.txt using filter : Text (encoded):UTF8
+[stderr] Could not find platform independent libraries <prefix>
+  eigene Prozesse (3): PID 8296 conhost.exe: C:\Windows\System32\conhost.exe; PID 14892 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-7e6ae3\libreoffice\program\soffice.bin; PID 24032 soffice.com: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-7e6ae3\libreoffice\program\soffice.com
+Datei libreoffice-aus-odt.txt: 800 Bytes, SHA-256 36988a1ad8b6d5e50be666f10709e8282ba40fd8af291cb31659411692566153
+LibreOffice-Text aus odt: alle 12 Prüfstellen gefunden
+Datei trendo-einkaufsliste.csv: 608 Bytes, SHA-256 fb4e63b8a05b2500e1b0ed0c4837a73026f7e6701505923f00bacb92ff2fc1f6
+$ LibreOffice öffnet einkaufsliste.csv und schreibt pdf
+  soffice.com -env:UserInstallation=file:///C:/Users/<user>/AppData/Local/Temp/trendo-t0787-work/b107a1a6/lo/lo-profil --headless --norestore --nolockcheck --infilter=CSV:59,34,76,1 --convert-to pdf --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\lo-aus-csv-pdf C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\einkaufsliste.csv
+Exit 0 nach 1,2 s
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\einkaufsliste.csv as a Calc document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\lo-aus-csv-pdf\einkaufsliste.pdf using filter : calc_pdf_Export
+  eigene Prozesse (3): PID 984 conhost.exe: C:\Windows\System32\conhost.exe; PID 3792 soffice.com: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-7e6ae3\libreoffice\program\soffice.com; PID 8068 soffice.bin: C:\Users\<user>\AppData\Local\Temp\trendo-t0776-work\lo-kopie-7e6ae3\libreoffice\program\soffice.bin
+Datei libreoffice-einkaufsliste.pdf: 53256 Bytes, SHA-256 81fb027fb200d218de31e4a610f5fc7fcae3548c6f275275938e5b1c37c49790
+$ pdftotext liest das Calc-PDF der Einkaufsliste
+  pdftotext.exe -enc UTF-8 C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\lo-aus-csv-pdf\einkaufsliste.pdf -
+Exit 0 nach 0,0 s
+einkaufsliste
+
+Abteilung Obst & Gemüse Obst & Gemüse Brot & Backzutaten Milch, Käse & Eier Milch, Käse & Eier Milch, Käse & Eier Vorrat Vorrat Öle & Fette Gewürze & Soßen Gewürze & Soßen
+
+Menge Einheit 2 1
+500 g 60 ml 6 1l 1l
+250 g 15 ml
+1g
+
+Zutat Karotte (Möhre) Zwiebel Weizenmehl (Type 405/550) Butter Ei (Hühnerei) Vollmilch (3,5 %) Hühnerbrühe Linsen (getrocknet) Olivenöl Pfeffer (schwarz) Salz
+
+Für Linsensuppe Linsensuppe Pfannkuchen Pfannkuchen Pfannkuchen Pfannkuchen Linsensuppe Linsensuppe Linsensuppe Linsensuppe Pfannkuchen
+
+Erledigt nein nein nein nein nein nein nein nein nein nein nein
+
+Seite 1
+LibreOffice läuft aus einer Kopie im eigenen Temp-Ordner (14745 Dateien, 882 MB, kopiert in 12,7 s; frei vorher 51,7 GB). Keine alte eigene LibreOffice-Kopie vorhanden.
+Original: unverändert. Trendo-Werkzeugordner (LibreOffice-Original): 15933 Einträge, keiner geändert, keiner neu, keiner fehlt. In der Kopie hat LibreOffice bisher 2 Einträge angelegt/geändert/entfernt: program\opencl, share\uno_packages\cache.
+Datei trendo-rezept.pdf: 109607 Bytes, SHA-256 67ae452073b570b05665a259635c32f636f9adebe7e002e7e5b091933cb1e278
+$ pdftotext liest rezept.pdf
+  pdftotext.exe -enc UTF-8 C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\rezept.pdf -
+Exit 0 nach 0,0 s
+Pfannkuchen
+Dünne Pfannkuchen. 4 Portionen · Vorbereitung 15 min · Garzeit 20 min · Hauptgericht
+
+Zutaten
+250 g 500 ml 3 1 Prise 2 EL
+
+Weizenmehl Milch Eier Salz Butter, zum Ausbacken
+
+Zubereitung
+1. Mehl, Milch, Eier und Salz zu einem glatten Teig verrühren. 2. In heißer Butter von beiden Seiten goldbraun backen.
+
+Nährwerte je Portion (Richtwerte)
+Energie Fett davon gesättigte Fettsäuren Kohlenhydrate davon Zucker Ballaststoffe Eiweiß Salz
+
+411 kcal / 1721 kJ 14,1 g 7,4 g 54,1 g 6,8 g 1,7 g 15,2 g 0,4 g
+
+Richtwerte: berechnet aus Durchschnittswerten der Nährwert-Tabelle (rohe Zutaten, ohne Garverluste). Keine Ernährungsoder Gesundheitsberatung. Quelle: USDA FoodData Central, SR Legacy (April 2018), fdc.nal.usda.gov (gemeinfrei, CC0 1.0 Universal).
+$ qpdf prüft den Aufbau von rezept.pdf
+  qpdf.exe --check C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\rezept.pdf
+Exit 3 nach 0,0 s
+checking C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\rezept.pdf
+PDF Version: 1.7
+File is not encrypted
+File is not linearized
+[stderr] WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\rezept.pdf (offset 614): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\rezept.pdf (offset 3957): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\rezept.pdf (offset 34651): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\rezept.pdf (offset 77849): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\rezept.pdf (offset 614): input stream is complete but output may still be valid
+qpdf: operation succeeded with warnings
+→ qpdf rezept: lesbar, keine Fehler; Warnungen zu den Datenströmen (PDFsharp-Flate)
+Datei trendo-kochbuch.pdf: 118328 Bytes, SHA-256 cc24efa4a3dda958156b33117762fee0aca03241635e20237ba34d077331a03e
+$ pdftotext liest kochbuch.pdf
+  pdftotext.exe -enc UTF-8 C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\kochbuch.pdf -
+Exit 0 nach 0,0 s
+Unser Kochbuch
+2 Rezepte
+Seite 1 von 4
+
+Inhalt
+Pfannkuchen . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3 Zutaten . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3 Zubereitung . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3 Nährwerte je Portion (Richtwerte) . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3
+Linsensuppe . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 4 Zutaten . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 4 Zubereitung . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 4 Nährwerte je Portion (Richtwerte) . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 4
+Seite 2 von 4
+
+Pfannkuchen
+Dünne Pfannkuchen. 4 Portionen · Vorbereitung 15 min · Garzeit 20 min · Hauptgericht
+
+Zutaten
+250 g 500 ml 3 1 Prise 2 EL
+
+Weizenmehl Milch Eier Salz Butter, zum Ausbacken
+
+Zubereitung
+1. Mehl, Milch, Eier und Salz zu einem glatten Teig verrühren. 2. In heißer Butter von beiden Seiten goldbraun backen.
+
+Nährwerte je Portion (Richtwerte)
+Energie Fett davon gesättigte Fettsäuren Kohlenhydrate davon Zucker Ballaststoffe Eiweiß Salz
+
+411 kcal / 1721 kJ 14,1 g 7,4 g 54,1 g 6,8 g 1,7 g 15,2 g 0,4 g
+
+Richtwerte: berechnet aus Durchschnittswerten der Nährwert-Tabelle (rohe Zutaten, ohne Garverluste). Keine Ernährungsoder Gesundheitsberatung. Quelle: USDA FoodData Central, SR Legacy (April 2018), fdc.nal.usda.gov (gemeinfrei, CC0 1.0 Universal).
+
+Seite 3 von 4
+
+Linsensuppe
+4 Portionen · Garzeit 35 min · Suppe
+
+Zutaten
+250 g 2 1 1l 1 EL
+
+Linsen Karotten Zwiebel Gemüsebrühe Olivenöl Salz und Pfeffer, nach Geschmack
+
+Zubereitung
+1. Zwiebel und Karotten würfeln und im Öl andünsten. 2. Linsen und Brühe dazugeben und 30 Minuten köcheln.
+
+Nährwerte je Portion (Richtwerte)
+Energie Fett davon gesättigte Fettsäuren Kohlenhydrate davon Zucker Ballaststoffe Eiweiß Salz
+
+289 kcal / 1211 kJ 4,7 g 0,6 g 46,2 g 4,9 g 8g 17,5 g 2,5 g
+
+Richtwerte: berechnet aus Durchschnittswerten der Nährwert-Tabelle (rohe Zutaten, ohne Garverluste). Keine Ernährungsoder Gesundheitsberatung. Quelle: USDA FoodData Central, SR Legacy (April 2018), fdc.nal.usda.gov (gemeinfrei, CC0 1.0 Universal).
+
+Seite 4 von 4
+$ qpdf prüft den Aufbau von kochbuch.pdf
+  qpdf.exe --check C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\kochbuch.pdf
+Exit 3 nach 0,0 s
+checking C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\kochbuch.pdf
+PDF Version: 1.7
+File is not encrypted
+File is not linearized
+[stderr] WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\kochbuch.pdf (offset 616): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\kochbuch.pdf (offset 1826): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\kochbuch.pdf (offset 2521): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\kochbuch.pdf (offset 5420): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\kochbuch.pdf (offset 7572): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\kochbuch.pdf (offset 40419): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\kochbuch.pdf (offset 86157): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\kochbuch.pdf (offset 616): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\kochbuch.pdf (offset 1826): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\kochbuch.pdf (offset 2521): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\kochbuch.pdf (offset 5420): input stream is complete but output may still be valid
+qpdf: operation succeeded with warnings
+→ qpdf kochbuch: lesbar, keine Fehler; Warnungen zu den Datenströmen (PDFsharp-Flate)
+Datei trendo-woche.pdf: 86820 Bytes, SHA-256 fea6010c037bfd13298102cfdbd1c7d26aeb3ea045a1da7611c1ebe04780a956
+$ pdftotext liest woche.pdf
+  pdftotext.exe -enc UTF-8 C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\woche.pdf -
+Exit 0 nach 0,0 s
+Wochenplan ab Montag, 30. November 2026
+
+Tag Montag, 30. 11. Mittwoch, 2. 12.
+
+Mahlzeit Mittag Abend
+
+Rezept Linsensuppe Pfannkuchen
+
+Einkaufsliste
+Obst & Gemüse
+ 2 Karotte (Möhre)  1 Zwiebel
+Brot & Backzutaten
+ 500 g Weizenmehl (Type 405/550)
+Milch, Käse & Eier
+ 60 ml Butter  6 Ei (Hühnerei)  1 l Vollmilch (3,5 %)
+Vorrat
+ 1 l Hühnerbrühe  250 g Linsen (getrocknet)
+Öle & Fette
+ 15 ml Olivenöl
+Gewürze & Soßen
+ Pfeffer (schwarz)  1 g Salz
+
+Portionen 4 8
+
+Seite 1 von 1
+$ qpdf prüft den Aufbau von woche.pdf
+  qpdf.exe --check C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\woche.pdf
+Exit 3 nach 0,0 s
+checking C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\woche.pdf
+PDF Version: 1.7
+File is not encrypted
+File is not linearized
+[stderr] WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\woche.pdf (offset 613): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\woche.pdf (offset 3105): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\woche.pdf (offset 4490): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\woche.pdf (offset 40582): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\b107a1a6\lo\woche.pdf (offset 613): input stream is complete but output may still be valid
+qpdf: operation succeeded with warnings
+→ qpdf woche: lesbar, keine Fehler; Warnungen zu den Datenströmen (PDFsharp-Flate)
+ERGEBNIS: BESTANDEN

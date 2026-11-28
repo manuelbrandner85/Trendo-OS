@@ -93,5 +93,6 @@ Erzeugt aus `CapabilityCatalog` und den wirklich registrierten Adaptern. `ready`
 | STUDIO-COURSE-01 | Kurse erstellen | Wissen & Lernen | KursKit, KursHtml, Quiz aus STUDIO-QUIZ-01 | Kurs aus Gliederung | Titel, Gliederung mit Kapiteln und Lektionen | kurs.gliederung | Kurs als Webseite (HTML), im Studio auch SCORM-1.2-Paket und Fortschritt (CSV) | partial | T0779QuizKurseTests.Kurs_Adapter | Lädt nichts auf eine Lernplattform hoch; das SCORM-Paket lädst du selbst hoch. |
 | STUDIO-TUTOR-01 | Nachhilfe mit KI | Wissen & Lernen | Nachhilfe, Fsrs, KI auf diesem PC | Arbeitsblatt erstellen | Thema, Anzahl | arbeitsblatt.erstellen | Arbeitsblatt (MD) mit Lösungen | partial | T0782_Nachhilfe | Üben, Prüfen, Hinweise und KI-Übungen nur im Studio; die KI dort läuft nur auf diesem PC. |
 | STUDIO-CODELEARN-01 | Programmieren lernen | Wissen & Lernen | CodeLernen, LernSandbox (AppContainer) | Aufgabe als Datei | Aufgabe | aufgabe.datei | Python-Datei mit Tests | partial | T0782_CodeLernen | Tests laufen nur im Studio im abgeschotteten Lauf; ohne mitgeliefertes Python blockiert. |
+| STUDIO-RECIPE-01 | Rezepte & Ernährung | Wissen & Lernen | RezeptKit, NaehrwertTabelle (USDA SR Legacy, CC0) | Rezept als schema.org-Datei | Name, Zutaten, Schritte | rezept.jsonld | JSON-LD (schema.org/Recipe) mit Nährwert-Richtwerten | partial | T0787_Rezepte | Wochenplan, Einkaufsliste, Druck und Import nur im Studio; Nährwerte sind Richtwerte, keine Beratung. |
 
-Anzahl: 89 Katalogeinträge, 115 registrierte Aktionen.
+Anzahl: 90 Katalogeinträge, 116 registrierte Aktionen.

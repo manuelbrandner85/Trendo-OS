@@ -1,0 +1,47 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    [Test Case Cleanup Failure (Studio-Ordnung: Zusammengelegtes fehlt in der Übersicht, Suche findet es, SPEC-07 nirgends)] System.InvalidOperationException
+      System.InvalidOperationException : The calling thread cannot access this object because a different thread owns it.
+      Stack Trace:
+           at Avalonia.Threading.Dispatcher.<VerifyAccess>g__ThrowVerifyAccess|17_0()
+           at Avalonia.Threading.Dispatcher.VerifyAccess()
+           at Avalonia.Rendering.DefaultRenderLoop.Add(IRenderLoopTask i)
+           at Avalonia.Rendering.Composition.Server.ServerCompositor..ctor(IRenderLoop renderLoop, IPlatformGraphics platformGraphics, CompositionOptions options, BatchStreamObjectPool`1 batchObjectPool, BatchStreamMemoryPool batchMemoryPool)
+           at Avalonia.Rendering.Composition.Compositor..ctor(IRenderLoop loop, IPlatformGraphics gpu, Boolean useUiThreadForSynchronousCommits, ICompositorScheduler scheduler, Boolean reclaimBuffersImmediately, Dispatcher dispatcher, CompositionOptions options)
+           at Avalonia.Rendering.Composition.Compositor..ctor(IRenderLoop loop, IPlatformGraphics gpu, Boolean useUiThreadForSynchronousCommits)
+           at Avalonia.Rendering.Composition.Compositor..ctor(IPlatformGraphics gpu, Boolean useUiThreadForSynchronousCommits)
+           at Avalonia.Headless.AvaloniaHeadlessPlatform.Initialize(AvaloniaHeadlessPlatformOptions opts)
+           at Avalonia.Headless.AvaloniaHeadlessPlatformExtensions.<>c__DisplayClass0_0.<UseHeadless>b__0()
+           at Avalonia.AppBuilder.SetupUnsafe()
+           at Avalonia.Headless.HeadlessUnitTestSession.EnsureIsolatedApplication()
+           at Avalonia.Headless.HeadlessUnitTestSession.<>c__DisplayClass12_0`1.<DispatchCore>b__0()
+        --- End of stack trace from previous location ---
+           at Avalonia.Headless.XUnit.AvaloniaTestRunner.Run(IXunitTest test, IMessageBus messageBus, Object[] constructorArguments, ExplicitOption explicitOption, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, IReadOnlyCollection`1 beforeAfterAttributes, HeadlessUnitTestSession session)
+           at Avalonia.Headless.XUnit.AvaloniaTestRunner.Run(IXunitTest test, IMessageBus messageBus, Object[] constructorArguments, ExplicitOption explicitOption, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, IReadOnlyCollection`1 beforeAfterAttributes, HeadlessUnitTestSession session)
+    Programmkatalog UI: mitgelieferter Katalog ist aktuell (alle angemeldeten Programme), Suche nach Format, Bereich filtern, Öffnen startet das Programm [FAIL]
+      Katalog neu erzeugen (TRENDO_KATALOG), fehlt: rezepte-programm
+      Stack Trace:
+        tests\Trendo.App.Tests\ProgramCatalogUiTests.cs(18,0): at Trendo.App.Tests.ProgramCatalog_Ui.Catalog_page()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    Studio-Ordnung: 49 Studios in der Übersicht; jedes Ziel einer Zusammenlegung existiert und bleibt selbst sichtbar [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: 69
+      Actual:   70
+      Stack Trace:
+        tests\Trendo.App.Tests\StudioFoldsUiTests.cs(16,0): at Trendo.App.Tests.StudioFolds_Ui.Plan_is_consistent()
+           at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    T-0787 ECHT: lokale KI (Ollama) macht aus einem eingefügten Rezepttext ein Rezept im offenen Buch – Vorschau, „Ja, behalten“, Nährwerte vom Kern, Rückgängig (nur mit TRENDO_T0787_ECHT) [SKIP]
+      Echtlauf nur mit TRENDO_T0787_ECHT=<Belegordner> (braucht Ollama mit Modell auf diesem PC).
+    T-0774 ECHT: lokale KI (Ollama) – PDF-Werkstatt „Seiten 1–3 heraus“ und Scannen „Fotos → PDF“ im offenen Programm, echte PDFs, Rückgängig (nur mit TRENDO_T0774_ECHT) [SKIP]
+      Echtlauf nur mit TRENDO_T0774_ECHT=<Belegordner> (braucht Ollama mit Modell auf diesem PC).
+    T-0707 ECHT: lokale KI (Ollama, bestes Modell nach T-0703) ändert in drei Programmen das offene Dokument, Datei auf der Platte, Rückgängig (nur mit TRENDO_ASSIST_ECHT) [SKIP]
+      Übersprungen – Echtlauf nur mit TRENDO_ASSIST_ECHT=<Belegordner> und laufendem Ollama.
+  Finished:    Trendo.App.Tests (ID = 'c0de8c963dd2d885c004ae1485b149dc321aa1a9a210938a388a72accb844bd7')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 313, Errors: 1, Failed: 2, Skipped: 3, Not Run: 0, Time: 559,626s
+Waiting 10 seconds for foreground threads to exit...
