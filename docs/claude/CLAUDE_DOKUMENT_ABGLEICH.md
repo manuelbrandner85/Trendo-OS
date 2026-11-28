@@ -1,6 +1,6 @@
 # Claude-Abgleich mit Studio-Dokumenten (.tdoc)
 
-Stand: T-0788 (Stammbaum, 4. Prüfrunde, 28.11.2026). Gilt für alle Programme der Programm-Hülle.
+Stand: T-0788 (Stammbaum, 5. Prüfrunde, 28.11.2026). Gilt für alle Programme der Programm-Hülle.
 
 ## Wie der Abgleich arbeitet
 - Beim Senden im Claude-Bereich schreibt Trendo das offene Dokument als Arbeitsdatei (`<Titel>.tdoc`) in Claudes Projektordner. Ist das Dokument noch nie gespeichert, legt Trendo es dort als Dokumentdatei an (seit T-0680: die Arbeitsdatei ist dann das Dokument selbst). Trendo merkt sich zu jeder selbst geschriebenen Datei **Programm, Dokument-Id und SHA-256** (nur im Speicher dieser Sitzung); ebenso für Versionen, die ein Speichern dort anlegt.
@@ -8,7 +8,7 @@ Stand: T-0788 (Stammbaum, 4. Prüfrunde, 28.11.2026). Gilt für alle Programme d
 - Lehnt der Wächter eine Änderung ab (gesperrte Felder, `KiCheck`, Vorab-Ablehnung), setzt Trendo die Datei auf den Stand davor zurück – nur mit der Sicht, die Claude sehen darf (`ProgramSpec.KiView`).
 
 ## Was als „Claudes Ordner“ gilt
-Alles **unterhalb** von `Projekte\Claude` (Wurzel der Claude-Projekte) und unterhalb der Projektordner aller Claude-Projekte aller Studios (auch eigene Projektordner wie Web- oder Spieleordner), dazu jede als Arbeitsdatei geführte Datei. Pfade werden normalisiert verglichen (voller Pfad, Groß-/Kleinschreibung egal, mit abschließendem Trenner). Ein mit einem Projekt nur verknüpftes Dokument im Studio-Ordner zählt nicht.
+Alles **unterhalb** von `Projekte\Claude` (Wurzel der Claude-Projekte) und unterhalb der Projektordner aller Claude-Projekte aller Studios (auch eigene Projektordner wie Web- oder Spieleordner), dazu jede als Arbeitsdatei geführte Datei. Pfade werden über den **aufgelösten Endpfad** verglichen (Windows: `GetFinalPathNameByHandle` auf den tiefsten vorhandenen Teil – Junctions, symbolische Verknüpfungen und Kurznamen 8.3 sind damit ausgeschrieben; sonst `ResolveLinkTarget` je Teil), Groß-/Kleinschreibung egal, mit abschließendem Trenner. Die Liste der Projektordner kommt aus den vorhandenen Projektlisten (`ClaudeChats.AllFolders`) und wird nur bei Programmen mit `KiLocalOnlyDoc` gefragt – andere Programme zahlen beim Speichern nichts dafür. Ein mit einem Projekt nur verknüpftes Dokument im Studio-Ordner zählt nicht.
 
 ## „Nur lokale KI“ – Programm oder einzelnes Dokument
 - `ProgramSpec.KiLocalOnly` (Programm, z. B. Nachhilfe, Kinderprofil) und `ProgramSpec.KiLocalOnlyDoc` (genau dieses Dokument, z. B. Stammbaum mit „Lebende ausblenden“ und lebenden Personen) sperren Claude auf allen Wegen: Bereich, Chat samt .tdoc, Plan-Zeilen, Brücke. Den Satz liefert `ProgramSpec.KiLocalOnlyWhy`.
@@ -16,8 +16,8 @@ Alles **unterhalb** von `Projekte\Claude` (Wurzel der Claude-Projekte) und unter
 - Ein solches Dokument wird **nie** in Claudes Ordner gespeichert – Strg+S, „Speichern unter“ (auch in Unterordner) und automatisches Speichern landen im Ordner des Studios (`ProgramNewTarget`; läge der selbst unter Claudes Ordner, wird abgelehnt). Meldung: „Lebende Personen sind geschützt – das Dokument liegt jetzt in <Ort> …“.
 - Liegt das Dokument beim Einschalten des Schutzes oder beim Speichern in Claudes Ordner, **verlegt** Trendo es: neue Datei schreiben und lesend prüfen, dann die Begleitdateien nachziehen, zuletzt die alte Datei entfernen:
   - **Versionen** (`.versionen\<Name>\*.tdoc`): einzeln kopieren, Kopie per SHA-256 prüfen, das Original nur nach der Löschregel entfernen; leere Versionsordner werden entfernt.
-  - **Notsicherung** (`<Datei>.autosave`) und **Wiederherstellung** (`<Datei>.wiederherstellen`): Namen vergibt nur Trendo – kopieren, prüfen, entfernen (die Notsicherung entfernt schon das Speichern am neuen Ort).
-  - **Zwischendateien** der atomaren Schreibweise (`<Datei>.xxxxxxxx.tmp`): entfernt.
+  - **Notsicherung** (`<Datei>.autosave`) und **Wiederherstellung** (`<Datei>.wiederherstellen`): Namen vergibt nur Trendo – kopieren, Prüfsumme (SHA-256) der Kopie mit dem Original vergleichen, erst dann entfernen (die Notsicherung entfernt schon das Speichern am neuen Ort).
+  - **Zwischendateien** der atomaren Schreibweise: nur genau das eigene Muster `<Datei>.<8 Hexziffern klein>.tmp` (`AtomicFile.IsOwnTemp`) wird entfernt; fremde Dateien wie `<Datei>.notiz.tmp` bleiben. `AtomicFile` räumt beim Schreiben ebenfalls nur dieses Muster auf.
   - Vorschaubilder oder `.bak`-Dateien legt die Programm-Hülle für .tdoc nicht an (geprüft im Code: `ProgramDocument`, `AtomicFile`, `ProgramShell`).
   - Rückgängig, Versionen und Wiederherstellung funktionieren am neuen Ort weiter.
 - Schlägt das Verlegen fehl (z. B. voller Datenträger), gilt der Schutz trotzdem (Claude bekommt nichts), das Dokument bleibt offen und vollständig, und die Meldung sagt: „… Die Kopie liegt noch in Claudes Ordner: <Pfad> – bitte Platz schaffen und erneut speichern oder die Datei selbst löschen.“

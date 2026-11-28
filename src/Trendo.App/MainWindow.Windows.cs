@@ -29,7 +29,7 @@ public partial class MainWindow
     private bool _windowsReady;
     static readonly BoxShadows WindowShadow = BoxShadows.Parse("0 10 30 0 #66000000");
     /// <summary>Gold-Blau-Stil (Logo C): Rahmen des aktiven Fensters in Gold.</summary>
-    static readonly IBrush GoldEdge = new SolidColorBrush(Color.Parse("#D4A84B"));
+    static readonly IBrush GoldEdge = Brush.Parse("#D4A84B"); // T-0788: unveränderlich – darf in jedem Thread entstehen (ClaudeRunProcess löst den statischen Aufbau von MainWindow auch außerhalb der Oberfläche aus)
 
     /// <summary>Wurzel der gerade sichtbaren Seite (aktives Fenster oder Startbildschirm).</summary>
     /// <summary>Für Tests: Wurzel der gerade gezeigten Seite.</summary>

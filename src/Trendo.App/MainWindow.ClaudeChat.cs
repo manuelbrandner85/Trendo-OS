@@ -877,20 +877,68 @@ public partial class MainWindow
         // Pfade normalisiert (voller Pfad, Groß-/Kleinschreibung egal, mit abschließendem Trenner). Ein nur verknüpftes Dokument im Studio-Ordner zählt nicht.
         var full = Path.GetFullPath(file);
         if (_claudeWorkFiles.ContainsKey(full)) return true;
-        return ClaudeRoots().Any(r => full.StartsWith(r, StringComparison.OrdinalIgnoreCase));
+        var real = FinalPath(full); // T-0788 (5. Prüfrunde): Junction, Symlink und Kurzname (8.3) aufgelöst
+        return ClaudeRoots().Any(r => real.StartsWith(r, StringComparison.OrdinalIgnoreCase) || full.StartsWith(r, StringComparison.OrdinalIgnoreCase));
     }
 
     List<string>? _claudeRoots; DateTime _claudeRootsAt;
-    static string DirKey(string dir) => Path.GetFullPath(dir).TrimEnd('\\', '/') + Path.DirectorySeparatorChar;
+    static string DirKey(string dir) => FinalPath(Path.GetFullPath(dir)).TrimEnd('\\', '/') + Path.DirectorySeparatorChar;
+
+    [System.Runtime.InteropServices.DllImport("kernel32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode, SetLastError = true)]
+    static extern Microsoft.Win32.SafeHandles.SafeFileHandle CreateFileW(string name, uint access, uint share, IntPtr security, uint disposition, uint flags, IntPtr template);
+    [System.Runtime.InteropServices.DllImport("kernel32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode, SetLastError = true)]
+    static extern uint GetFinalPathNameByHandleW(Microsoft.Win32.SafeHandles.SafeFileHandle handle, System.Text.StringBuilder buffer, uint length, uint flags);
+
+    /// <summary>T-0788 (5. Prüfrunde): echter Endpfad – der tiefste vorhandene Teil des Pfads wird über das Dateisystem aufgelöst (Junctions, symbolische Verknüpfungen,
+    /// Kurznamen ausgeschrieben; Windows: GetFinalPathNameByHandle, sonst ResolveLinkTarget je Teil), der noch nicht vorhandene Rest wird angehängt. Ohne Admin, ohne Registry.</summary>
+    internal static string FinalPath(string path)
+    {
+        var full = Path.GetFullPath(path).TrimEnd('\\', '/');
+        var rest = new Stack<string>(); var cur = full;
+        while (!Directory.Exists(cur) && !File.Exists(cur))
+        {
+            var parent = Path.GetDirectoryName(cur);
+            if (parent is null) return full;
+            rest.Push(Path.GetFileName(cur)); cur = parent;
+        }
+        string resolved = cur;
+        try
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                using var h = CreateFileW(cur, 0, 7, IntPtr.Zero, 3, 0x02000000, IntPtr.Zero); // FILE_SHARE_READ|WRITE|DELETE, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS (auch Ordner)
+                if (!h.IsInvalid)
+                {
+                    var sb = new System.Text.StringBuilder(1024);
+                    var n = GetFinalPathNameByHandleW(h, sb, (uint)sb.Capacity, 0);
+                    if (n > 0 && n < sb.Capacity)
+                    {
+                        var s = sb.ToString();
+                        resolved = s.StartsWith(@"\\?\UNC\", StringComparison.Ordinal) ? @"\\" + s[8..] : s.StartsWith(@"\\?\", StringComparison.Ordinal) ? s[4..] : s;
+                    }
+                }
+            }
+            else
+            {
+                var parts = cur.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
+                var acc = Path.GetPathRoot(cur) ?? "/";
+                foreach (var part in parts) { acc = Path.Combine(acc, part); if (new DirectoryInfo(acc).ResolveLinkTarget(true) is { } t) acc = t.FullName; }
+                resolved = acc;
+            }
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or EntryPointNotFoundException or DllNotFoundException) { }
+        while (rest.Count > 0) resolved = Path.Combine(resolved, rest.Pop());
+        return resolved;
+    }
 
     /// <summary>T-0788 (4. Prüfrunde): Ordner, unter denen Claude arbeitet (kurz zwischengespeichert – jedes Speichern fragt danach).</summary>
     IReadOnlyList<string> ClaudeRoots()
     {
         if (_claudeRoots is { } c && DateTime.UtcNow - _claudeRootsAt < TimeSpan.FromSeconds(3)) return c;
+        // T-0788 (5. Prüfrunde): günstig – liest nur die vorhandenen Projektlisten (statt 93 Studios einzeln); gefragt wird nur bei Programmen mit KiLocalOnlyDoc
         var l = new List<string> { DirKey(WorkFolder("Claude")) };
-        foreach (var studio in StudioCatalog.ById.Keys)
-            try { l.AddRange(CChats.All(studio).Select(x => DirKey(x.Folder))); }
-            catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Text.Json.JsonException or ArgumentException) { }
+        try { l.AddRange(CChats.AllFolders().Select(DirKey)); }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or ArgumentException) { }
         _claudeRoots = [.. l.Distinct(StringComparer.OrdinalIgnoreCase)]; _claudeRootsAt = DateTime.UtcNow;
         return _claudeRoots;
     }
@@ -941,7 +989,7 @@ public partial class MainWindow
             catch (Exception e) when (e is IOException or UnauthorizedAccessException) { notes.Add($"{Path.GetFileName(o)} konnte nicht verlegt werden ({Trendo.Core.FriendlyError.Say(e)}) – bitte selbst löschen."); }
         }
         // Zwischendateien der atomaren Schreibweise („Name.xxxxxxxx.tmp“)
-        try { foreach (var t in Directory.EnumerateFiles(Path.GetDirectoryName(Path.GetFullPath(oldFile))!, Path.GetFileName(oldFile) + ".*.tmp").ToList()) File.Delete(t); }
+        try { foreach (var t in Directory.EnumerateFiles(Path.GetDirectoryName(Path.GetFullPath(oldFile))!, Path.GetFileName(oldFile) + ".*.tmp").Where(t => AtomicFile.IsOwnTemp(Path.GetFileName(t), oldFile)).ToList()) File.Delete(t); } // T-0788 (5. Prüfrunde): nur eigene Zwischendateien
         catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
         // die alte Dokumentdatei selbst
         if (File.Exists(oldFile))

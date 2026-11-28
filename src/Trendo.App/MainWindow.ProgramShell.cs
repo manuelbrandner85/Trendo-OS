@@ -183,7 +183,9 @@ public partial class MainWindow
         // T-0788 (3. Prüfrunde): ein Dokument nur für die lokale KI (z. B. geschützter Stammbaum) wird nie in Claudes Ordner gespeichert – auch nicht mit Strg+S oder automatisch
         string? leftBehind = null;
         string? redirectedFrom = null;
-        if (ClaudeSaveRedirect(d, to) is { } safe) { leftBehind = d.Path is { } lp && ProgramDocument.SameFile(lp, to) ? lp : null; redirectedFrom = to; to = safe; }
+        // T-0788 (5. Prüfrunde): nur Programme mit „nur lokale KI je Dokument“ (KiLocalOnlyDoc) fragen nach Claudes Ordnern – alle anderen zahlen beim Speichern nichts dafür
+        var guarded = Programs.Values.Any(s => s.Studio == d.Studio && s.KiLocalOnlyDoc is not null);
+        if (guarded && ClaudeSaveRedirect(d, to) is { } safe) { leftBehind = d.Path is { } lp && ProgramDocument.SameFile(lp, to) ? lp : null; redirectedFrom = to; to = safe; }
         var old = d.Path; var same = old is not null && ProgramDocument.SameFile(old, to);
         if (!(same && d.ReadOnly) && ProgLocks.Acquire(to) is { } other)
         {
@@ -197,7 +199,7 @@ public partial class MainWindow
         _progConflict.Remove(d.Id);
         if (!d.ReadOnly) _progLocked.Remove(d.Id); // unter neuem Namen gespeichert: kein „nur lesen“ mehr
         if (!same && old is not null) ProgLocks.Release(old);
-        if (InClaudeFolder(d.Studio, to))
+        if (guarded && InClaudeFolder(d.Studio, to))
         {
             TrendoWrote(to);
             // T-0788 (4. Prüfrunde): auch die Versionen, die dieses Speichern angelegt hat, gelten als von Trendo geschrieben

@@ -53,8 +53,8 @@ public sealed partial class MainWindow
     /// <summary>V-17 (T-0700): eine Flächenfarbe für alle Programmseiten mit eigenem Rahmen (Text, Tabelle, Präsentation, PDF, CAD, 3D-Druck) – neutral grau, nie blau.</summary>
     internal static IBrush PageSurface => Brush.Parse(C("#F21A1A1A", "#F7F4F7FC"));
     /// <summary>V-17 (T-0700): Schrift auf einer gewählten (goldenen) Kachel – dunkel, damit sie lesbar bleibt (vorher Gold auf Gold).</summary>
-    internal static readonly IBrush OnGold = new SolidColorBrush(Color.Parse("#FF1B1B1B"));
-    internal static readonly IBrush OnGoldMuted = new SolidColorBrush(Color.Parse("#C21B1B1B"));
+    internal static readonly IBrush OnGold = Brush.Parse("#FF1B1B1B"); // T-0788: unveränderlich – darf in jedem Thread entstehen (ClaudeRunProcess löst den statischen Aufbau von MainWindow auch außerhalb der Oberfläche aus)
+    internal static readonly IBrush OnGoldMuted = Brush.Parse("#C21B1B1B"); // T-0788: unveränderlich – darf in jedem Thread entstehen (ClaudeRunProcess löst den statischen Aufbau von MainWindow auch außerhalb der Oberfläche aus)
 
     /// <summary>Für Tests: statt Windows zu fragen, ob es hell eingestellt ist.</summary>
     public static Func<bool>? SystemLightOverride { get; set; }

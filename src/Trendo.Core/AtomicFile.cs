@@ -37,6 +37,17 @@ public static class AtomicFile
         Sweep(dir, Path.GetFileName(full));
     }
 
+    /// <summary>T-0788 (5. Prüfrunde): Ist <paramref name="fileName"/> genau eine Zwischendatei dieser Schreibweise für <paramref name="target"/> –
+    /// „&lt;Name&gt;.&lt;8 Hexziffern&gt;.tmp“ (siehe <see cref="WriteAllBytes"/>)? Fremde Dateien wie „Name.notiz.tmp“ zählen nicht.</summary>
+    public static bool IsOwnTemp(string fileName, string target)
+    {
+        var name = Path.GetFileName(target);
+        if (fileName.Length != name.Length + 13 || !fileName.StartsWith(name + ".", StringComparison.OrdinalIgnoreCase) || !fileName.EndsWith(".tmp", StringComparison.OrdinalIgnoreCase)) return false;
+        var mid = fileName.AsSpan(name.Length + 1, 8);
+        foreach (var c in mid) if (!char.IsAsciiHexDigitLower(c)) return false;
+        return true;
+    }
+
     /// <summary>Zwischendateien früherer, abgebrochener Schreibvorgänge dieser Datei aufräumen (nur ältere – ein anderes Fenster kann gerade schreiben).</summary>
     static void Sweep(string dir, string name)
     {
@@ -44,7 +55,7 @@ public static class AtomicFile
         {
             var limit = DateTime.UtcNow - StaleAfter;
             foreach (var f in Directory.EnumerateFiles(dir, name + ".*.tmp"))
-                if (File.GetLastWriteTimeUtc(f) < limit) File.Delete(f);
+                if (IsOwnTemp(Path.GetFileName(f), name) && File.GetLastWriteTimeUtc(f) < limit) File.Delete(f); // T-0788: nur die eigenen Zwischendateien, nie „Name.notiz.tmp“
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
     }

@@ -1,0 +1,18 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0775 ECHT KI fragen: Frage mit angehängter Textdatei geht an Claude (Abo), Antwort nennt den Inhalt der Datei (nur mit TRENDO_ECHT_CLAUDE) [SKIP]
+      übersprungen – Echtlauf mit Claude nur mit TRENDO_ECHT_CLAUDE=<Belegordner> (nutzt das Claude-Abo dieses PCs).
+    T-0775 ECHT Büro: Claude kürzt im Programm „Briefe schreiben“ den offenen Brief – Änderung im Brief, Strg+Z stellt ihn wieder her (nur mit TRENDO_ECHT_CLAUDE) [SKIP]
+      übersprungen – Echtlauf mit Claude nur mit TRENDO_ECHT_CLAUDE=<Belegordner> (nutzt das Claude-Abo dieses PCs).
+    T-0775 ECHT Kreativ: „Ideen mit Claude“ in Logos & Marken färbt das offene Logo um – Vorschau, Ja, Datei, Strg+Z (nur mit TRENDO_ECHT_CLAUDE) [SKIP]
+      übersprungen – Echtlauf mit Claude nur mit TRENDO_ECHT_CLAUDE=<Belegordner> (nutzt das Claude-Abo dieses PCs).
+    T-0775 ECHT Technik: Claude verschiebt im Programm „Grundriss & Wohnen“ eine Wand im offenen Plan – Strg+Z nimmt es zurück (nur mit TRENDO_ECHT_CLAUDE) [SKIP]
+      übersprungen – Echtlauf mit Claude nur mit TRENDO_ECHT_CLAUDE=<Belegordner> (nutzt das Claude-Abo dieses PCs).
+    T-0775 ECHT Code mit KI: „Mit Claude ändern“ ändert im Projektordner eine Python-Datei, Diff, „Zurücknehmen“ stellt sie her (nur mit TRENDO_ECHT_CLAUDE) [SKIP]
+      übersprungen – Echtlauf mit Claude nur mit TRENDO_ECHT_CLAUDE=<Belegordner> (nutzt das Claude-Abo dieses PCs).
+  Finished:    Trendo.App.Tests (ID = '7dc638206158a0fac27504d96b3f280e57f448d5fdb273c26c97976064f6fd80')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 82, Errors: 0, Failed: 0, Skipped: 5, Not Run: 0, Time: 355,793s
+Waiting 10 seconds for foreground threads to exit...
