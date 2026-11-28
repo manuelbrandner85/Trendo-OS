@@ -196,6 +196,33 @@
 - App (BlenderLink_Ui, StudioMcp_Ui): Total 9, Failed 0.
 - **Rot-Grün:** Der neue Test nutzt die neuen Parameter von `CountsAsOpen` und lässt sich mit dem Stand von fix3 nicht bauen. Fachlich wäre er dort rot: Ein Hintergrundlauf jünger als 15 s galt als offen.
 
+## Volltest 0.9.114 (Sammel-Zweig T-0786): drei Funde behoben
+
+1. **QA-019: Der Kern kennt keine Sockets mehr.**
+   - Der Transport zur Brücke liegt hinter `IBlenderWire` (Core): Verbinden über 127.0.0.1 mit dem Ergebnis angenommen, abgewiesen oder Zeitgrenze, außerdem ein freier Port. Der Kern arbeitet nur noch mit Datenströmen (`Stream`).
+   - Die echte TCP-Umsetzung ist `Trendo.App.LoopbackBlenderWire`. Sie wird beim Laden der App gesetzt (`ModuleInitializer` → `BlenderBridge.Wire`).
+   - Die Core-Tests setzen eine eigene Test-Umsetzung (`BlenderTestWire`, im Testprojekt).
+   - Der App-Test `Loopback_wire_real` belegt die App-Umsetzung echt: annehmen, senden und lesen (auch über `BlenderBridge.ExecuteAsync`), Abweisung bei geschlossenem Port, freier Port.
+   - Der Test QA-019 ist **unverändert**.
+2. **T-0764 N3: Entscheidung für eine eng begründete Ausnahme, nicht für `--factory-startup`.**
+   - Warum: Mit `--factory-startup` startet Blender ohne Einstellungen und ohne Add-ons der Person. Dann fehlen ihr MCP-Add-on (die Brücke), ihre übrigen Add-ons, Tastenbelegung und Ansicht. Trendo müsste das Add-on dann mit `addon_utils.enable` aus dem Erweiterungsordner der Person nachladen. Das umgeht genau den Schutz, den N3 will (keine Benutzerskripte), und liefert trotzdem kein Blender, wie die Person es kennt.
+   - Das sichtbare Blender ist ausdrücklich das der Person (Erwachsenenprofil; das Kinderprofil bekommt keine Blender-Oberfläche). Das Startskript ist wie überall per SHA-256 geprüft.
+   - Umsetzung: Die Ausnahme greift nur in `BlenderLink.cs`, nur mit der Markierung `T-0785-AUSNAHME-N3` und nur an der Zeile, die das Brücken-Skript (`bruecke-…`) startet.
+   - Gegenprobe im Test: genau eine Ausnahme (`Assert.Single`), mindestens drei weitere Stellen werden weiter geprüft. Ein zweiter Test (`Blender_factory_startup_exception_is_narrow`) zeigt, dass die Markierung in einer anderen Datei oder an einer anderen Zeile nichts freistellt.
+3. **V10 (Übersicht Einfach):**
+   - Nachweis im Code: `QualityView` (MainWindow.Qualitaet.cs) baut je Programm einen Knopf `ql-open-<n>`. In „Einfach“ kürzt `SimplifyPage` (MainWindow.SimpleMode.cs) die Seite nach den ersten Bereichen; die Liste `ql-list` liegt dann hinter „Mehr anzeigen …“ (`page-more`) und erscheint nach einem Klick vollständig.
+   - Statt die eingefrorene Liste zu verlängern, steht in `Replaced` jetzt der Präfix `ql-open-` mit genau diesem Ersatzweg.
+   - Belegt durch `Quality_list_behind_more`: In „Einfach“ fehlt `ql-open-0`, „Mehr anzeigen“ zeigt die ganze Liste bis zum letzten Programm, und „Öffnen“ öffnet das Programm.
+   - Gegenprobe `Quality_replacement_is_narrow`: andere Elemente der Seite (`ql-filter-…`, `ql-summary`, `ql-list`, ein unbekanntes `ql-neuer-knopf`, `page-more`) fallen weiter auf.
+
+**Ergebnisse (einzeln gelaufen):**
+- Build: 0 Fehler.
+- QA-019 (`QA019_Offline`) und N3 (`Blender_factory_startup`, `Blender_factory_startup_exception_is_narrow`): „Bestanden! erfolgreich: 3“.
+- V10 (`UebersichtEinfach_Ui`, darunter `Simple_keeps_every_function` und die zwei neuen Tests): Total 5, Failed 0.
+- BlenderLink im Kern (BlenderLink*, StudioMcp*): „Bestanden! erfolgreich: 45, übersprungen: 1“ (ECHT ohne Umgebungsvariable).
+- BlenderLink in der App (`BlenderLink_Ui`, `StudioMcp_Ui`, mit `Loopback_wire_real`): Total 10, Failed 0. Der erste Lauf hatte einen Fehler in meinem neuen Test (der Ersatz-Server nahm nur eine Verbindung an); danach 10 von 10.
+- Ein ECHT-Lauf mit Blender fand in dieser Runde nicht statt, denn nur der Transport wurde verlegt. Das Protokoll ist unverändert, die App-Umsetzung ist echt über Loopback geprüft.
+
 ## Abnahmekriterien
 1. Echtes Ergebnis aus leerer Vorlage: **TEILWEISE**. Echt über die Verbindung (leere `szene.blend`, Würfel angelegt); der Weg über den Klick in der Oberfläche ist nur mit Ersatz-Blender geprüft.
 2. Fremdprogramm/Export: **TEILWEISE**. Die echte .blend öffnet sich im echten Blender, Beleg mit SHA-256. Ein Import-Export-Kreislauf gehört nicht zu diesem Paket.

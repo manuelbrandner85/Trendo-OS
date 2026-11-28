@@ -13,6 +13,8 @@ namespace Trendo.Core.Tests;
 /// steht in <see cref="BlenderLinkEchtTests"/>.</summary>
 public class BlenderLinkTests
 {
+    static BlenderLinkTests() => BlenderTestWire.Install(); // QA-019: Transport kommt von außen
+
     /// <summary>Ersatz für die MCP-Brücke im Blender-Add-on.</summary>
     internal sealed class FakeAddon : IDisposable
     {

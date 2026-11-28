@@ -54,7 +54,7 @@ public class RechteKernFix9
     [Fact(DisplayName = "T-0764 N3: jeder Blender-Lauf mit Trendo-Skript (--python-expr) startet mit --factory-startup (Quelltext durchsucht)")]
     public void Blender_factory_startup()
     {
-        var bad = new List<string>();
+        var bad = new List<string>(); var exceptions = new List<string>(); var checkedSites = 0;
         foreach (var f in Directory.EnumerateFiles(Repo("src"), "*.cs", SearchOption.AllDirectories).Where(f => !f.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}") && !f.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}")))
         {
             if (f.EndsWith("BlenderScript.cs", StringComparison.Ordinal) || f.EndsWith("ExternalApps.cs", StringComparison.Ordinal)) continue; // Hilfsfunktion selbst; Erwachsenen-Oberfläche (eigene Einstellungen, siehe Bericht)
@@ -62,11 +62,31 @@ public class RechteKernFix9
             for (var i = 0; i < lines.Length; i++)
             {
                 if (!Regex.IsMatch(lines[i], @"""--python-expr""|BlenderScript\.Args\(") || lines[i].TrimStart().StartsWith("//", StringComparison.Ordinal)) continue;
+                checkedSites++;
                 var near = string.Join("\n", lines[Math.Max(0, i - 3)..Math.Min(lines.Length, i + 2)]);
+                // T-0785: genau EINE begründete Ausnahme – der sichtbare Start des Blender der Person mit MCP-Brücke (BlenderLink.StartLockedAsync). Mit
+                // --factory-startup fehlten dort ihr MCP-Add-on, ihre Add-ons und Einstellungen; das Skript ist trotzdem per SHA-256 geprüft (BlenderScript).
+                // Gilt nur in BlenderLink.cs, nur mit Markierung UND nur an der Zeile, die das Brücken-Skript („bruecke-…“) startet.
+                if (f.EndsWith($"{Path.DirectorySeparatorChar}BlenderLink.cs", StringComparison.Ordinal) && near.Contains("T-0785-AUSNAHME-N3", StringComparison.Ordinal) && lines[i].Contains("bruecke-", StringComparison.Ordinal))
+                { exceptions.Add($"{Path.GetFileName(f)}:{i + 1}"); continue; }
                 if (!near.Contains("--factory-startup", StringComparison.Ordinal)) bad.Add($"{Path.GetFileName(f)}:{i + 1}");
             }
         }
         Assert.True(bad.Count == 0, string.Join(", ", bad));
+        Assert.Single(exceptions); // Gegenprobe: genau diese eine Stelle ist ausgenommen …
+        Assert.True(checkedSites - exceptions.Count >= 3, $"nur {checkedSites} Stellen gefunden"); // … alle übrigen Blender-Skriptstarts werden weiter geprüft
+    }
+
+    [Fact(DisplayName = "T-0785: Gegenprobe zur N3-Ausnahme – die Markierung allein befreit keine andere Stelle")]
+    public void Blender_factory_startup_exception_is_narrow()
+    {
+        // dieselbe Regel wie oben auf nachgebildete Zeilen: Markierung in einer anderen Datei bzw. an einer anderen Zeile zählt nicht
+        static bool Exempt(string file, string near, string line) => file.EndsWith($"{Path.DirectorySeparatorChar}BlenderLink.cs", StringComparison.Ordinal) && near.Contains("T-0785-AUSNAHME-N3", StringComparison.Ordinal) && line.Contains("bruecke-", StringComparison.Ordinal);
+        var sep = Path.DirectorySeparatorChar;
+        Assert.True(Exempt($"src{sep}BlenderLink.cs", "// T-0785-AUSNAHME-N3", "args.AddRange(BlenderScript.Args(Path.Combine(StateDir, $\"bruecke-{run}.py\"), x));"));
+        Assert.False(Exempt($"src{sep}Kreatur.cs", "// T-0785-AUSNAHME-N3", "BlenderScript.Args(\"bruecke-x.py\", s)")); // andere Datei
+        Assert.False(Exempt($"src{sep}BlenderLink.cs", "// T-0785-AUSNAHME-N3", "BlenderScript.Args(\"render.py\", s)")); // andere Zeile in BlenderLink.cs
+        Assert.False(Exempt($"src{sep}BlenderLink.cs", "// ohne Markierung", "BlenderScript.Args(\"bruecke-x.py\", s)"));
     }
 
     [Fact(DisplayName = "T-0764 N4: sichere Tasten erweitert (Untertitel, Tonspur, Tempo, Bildschirmfoto, Kapitel, 60 s, Einzelbild); weiter ohne run, subprocess, script-*, Pfad-Optionen, Ketten")]

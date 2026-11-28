@@ -143,6 +143,11 @@ public class UebersichtEinfach_Ui(ITestOutputHelper log)
         ("prog-export-reihe-csv", "Menüleiste „Datei ▸ Exportieren ▸ Fragenreihe (.csv)“"), ("prog-export-reihe-md", "Menüleiste „Datei ▸ Exportieren ▸ Fragenreihe (.md)“"),
         // T-0748: Gegenprobe der Statik – Bericht über die Menüleiste, das Ergebnis („Gegenprobe ✓ Abweichung …“) steht in jeder Stufe in der Statuszeile
         ("prog-export-gegenprobe", "Menüleiste „Datei ▸ Exportieren ▸ Gegenprobe (Bericht)“ (geprüft in T0748_Ui.Statik_Einfach_Menue); Ergebnis in der Statuszeile"),
+        // 0.9.114 (T-0786): Die Entwickler-Ampel (MainWindow.Qualitaet.cs, ein „Öffnen“ je Programm, ql-open-<n>) wächst mit jedem Studio. In „Einfach“ kürzt
+        // SimplifyPage (MainWindow.SimpleMode.cs) die Seite nach den ersten Bereichen – die Liste „ql-list“ liegt hinter „Mehr anzeigen …“ (page-more) und erscheint
+        // nach einem Klick vollständig (geprüft in Quality_list_behind_more). Jedes Programm öffnet außerdem über Start/Suche. Statt die eingefrorene Liste
+        // (Daten/einfach-vorher-ausgeblendet.txt, nur ql-open-0…124) zu verlängern, gilt dieser Präfix nur für ql-open-.
+        ("ql-open-", "Seite „Qualitäts-Ampel“: „Mehr anzeigen …“ (page-more) blendet die Programmliste ein; jedes Programm auch über Start/Suche"),
     ];
 
     /// <summary>T-0784 (Naturwissenschaft, 0.9.113; fix3): Periodensystem in „Einfach“ als Auswahl „Element wählen“ (nw-el-wahl) und Suche statt 118 Knöpfen.
@@ -167,6 +172,34 @@ public class UebersichtEinfach_Ui(ITestOutputHelper log)
         Assert.Equal(118 * 3, ReplacedExact.Count);
         Assert.True(IsReplaced("nw-el-Fe")); Assert.True(IsReplaced("nw-el-Og")); Assert.True(IsReplaced("nw-ctx-mol-H")); Assert.True(IsReplaced("nw-ctx-heft-Cl"));
         foreach (var n in new[] { "nw-el-molmasse", "nw-el-name", "nw-el-wahl", "nw-el-Zz", "nw-el-fe", "nw-ctx-mol-Xy", "nw-suche" }) Assert.False(IsReplaced(n), n);
+    }
+
+    [Fact(DisplayName = "T-0786: Ersatzweg der Ampel gilt nur für „ql-open-…“ – andere Elemente der Seite „Qualitäts-Ampel“ fallen weiter auf")]
+    public void Quality_replacement_is_narrow()
+    {
+        Assert.True(IsReplaced("ql-open-0")); Assert.True(IsReplaced("ql-open-125")); Assert.True(IsReplaced("ql-open-999"));
+        foreach (var n in new[] { "ql-filter-rot", "ql-filter-neu", "ql-summary", "ql-list", "ql-root", "ql-dev-note", "ql-neuer-knopf", "ql-open", "page-more" })
+            Assert.False(IsReplaced(n), n);
+    }
+
+    [AvaloniaFact(DisplayName = "T-0786: „Einfach“ zeigt die Ampel-Liste nicht sofort – „Mehr anzeigen …“ blendet sie ein, „Öffnen“ öffnet das Programm")]
+    public void Quality_list_behind_more()
+    {
+        var (w, _, _) = Ui.Open(); w.Width = 1600; w.Height = 1000;
+        try
+        {
+            w.Settings.SetupDone = true;
+            w.ProgramSetLevel(Trendo.Core.Programs.UserLevel.Einfach); w.Show("qualitaet"); W2Ui.Settle();
+            var simple = Names(w, "qualitaet", false);
+            Assert.DoesNotContain("ql-open-0", simple); Assert.Contains("page-more", simple);
+            w.Find<Button>("page-more").Press(); W2Ui.Settle();
+            var opened = Names(w, "qualitaet", false);
+            var count = w.QualityRanking().Count;
+            Assert.Contains("ql-open-0", opened); Assert.Contains($"ql-open-{count - 1}", opened); // die ganze Liste, auch Programme über 124
+            w.Find<Button>("ql-open-0").Press(); W2Ui.Settle();
+            Assert.NotEqual("qualitaet", w.CurrentView);
+        }
+        finally { w.ProgramSetLevel(Trendo.Core.Programs.UserLevel.Erweitert); w.Close(); }
     }
 
     [AvaloniaFact(DisplayName = "V10 Übersicht: „Einfach“ verliert keine Funktion – jedes Bedienelement aus „Erweitert“ ist da oder hat einen genannten Ersatzweg")]

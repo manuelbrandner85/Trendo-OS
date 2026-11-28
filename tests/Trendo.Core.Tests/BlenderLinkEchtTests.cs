@@ -12,6 +12,8 @@ namespace Trendo.Core.Tests;
 /// Rohlog nach TRENDO_ECHT_LOG (Pfade mit Benutzernamen ersetzt).</summary>
 public class BlenderLinkEchtTests
 {
+    static BlenderLinkEchtTests() => BlenderTestWire.Install(); // QA-019: Transport kommt von außen
+
     public sealed class EchtFactAttribute : FactAttribute
     {
         public EchtFactAttribute()

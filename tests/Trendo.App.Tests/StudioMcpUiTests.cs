@@ -30,6 +30,46 @@ public class StudioMcp_Ui
 /// der Echt-Test steht in Trendo.Core.Tests.BlenderLinkEchtTests).</summary>
 public class BlenderLink_Ui
 {
+    static BlenderLink_Ui() => Trendo.Core.BlenderBridge.Wire ??= new LoopbackBlenderWire(); // QA-019: der App-Transport
+
+    [Fact(DisplayName = "T-0786 QA-019: die App-Umsetzung LoopbackBlenderWire spricht echt über 127.0.0.1 – annehmen, senden, lesen, abgewiesen, freier Port")]
+    public async Task Loopback_wire_real()
+    {
+        var wire = new LoopbackBlenderWire();
+        var l = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0); l.Start();
+        var port = ((System.Net.IPEndPoint)l.LocalEndpoint).Port;
+        try
+        {
+            var server = Task.Run(async () =>
+            {
+                while (true) // erste Verbindung (nur Verbinden + Schließen) ohne Anfrage, zweite mit Anfrage
+                {
+                using var s = await l.AcceptSocketAsync(); var b = new byte[4096]; var got = new List<byte>();
+                var closed = false;
+                while (!got.Contains(0)) { var n = await s.ReceiveAsync(b); if (n == 0) { closed = true; break; } got.AddRange(b.Take(n)); }
+                if (closed) continue;
+                await s.SendAsync(System.Text.Encoding.UTF8.GetBytes("{\"status\":\"ok\",\"result\":{\"pid\":4242}}\0"));
+                return System.Text.Encoding.UTF8.GetString([.. got.TakeWhile(x => x != 0)]);
+                }
+            });
+            var (state, stream, _) = await wire.ConnectAsync(port, TimeSpan.FromSeconds(5), CancellationToken.None);
+            Assert.Equal(Trendo.Core.WireConnect.Ok, state); Assert.NotNull(stream); stream!.Dispose();
+            var prev = Trendo.Core.BlenderBridge.Wire; Trendo.Core.BlenderBridge.Wire = wire;
+            try
+            {
+                // zweite Verbindung: der ganze Weg über BlenderBridge mit der App-Umsetzung
+                var res = await Trendo.Core.BlenderBridge.ExecuteAsync(port, Trendo.Core.BlenderBridge.PingCode, TimeSpan.FromSeconds(10));
+                Assert.Equal(4242, (int)res["result"]!["pid"]!);
+            }
+            finally { Trendo.Core.BlenderBridge.Wire = prev; }
+            Assert.Contains("\"type\":\"execute\"", await server);
+        }
+        finally { l.Stop(); }
+        var free = wire.FreePort(); Assert.InRange(free, 1024, 65535);
+        var (refused, none, detail) = await wire.ConnectAsync(free, TimeSpan.FromSeconds(8), CancellationToken.None);
+        Assert.Equal(Trendo.Core.WireConnect.Refused, refused); Assert.Null(none); Assert.False(string.IsNullOrEmpty(detail));
+    }
+
     sealed class Proc(int id) : Trendo.Core.IBlenderProc { public int Id => id; public bool HasExited => false; public int? ExitCode => null; }
 
     sealed class Host(int port) : Trendo.Core.IBlenderHost

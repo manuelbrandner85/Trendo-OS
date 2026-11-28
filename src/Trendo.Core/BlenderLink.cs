@@ -1,6 +1,4 @@
 using System.Diagnostics;
-using System.Net;
-using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -21,36 +19,35 @@ public static class BlenderBridge
     /// <summary>Kennungsabfrage: welche Blender-Instanz antwortet (PID), welche Datei offen ist, ungespeicherte Änderungen.</summary>
     public const string PingCode = "import bpy,os\nresult={'pid':os.getpid(),'datei':bpy.data.filepath,'version':bpy.app.version_string,'geaendert':bool(bpy.data.is_dirty)}";
 
+    /// <summary>QA-019: Der Kern hat keine Netz-Abhängigkeit. Den Transport zur Brücke (nur 127.0.0.1) setzt die App beim Start
+    /// (<c>Trendo.App.LoopbackBlenderWire</c>); Tests setzen eine eigene Umsetzung.</summary>
+    public static IBlenderWire? Wire { get; set; }
+    internal static IBlenderWire W => Wire ?? throw new InvalidOperationException("Kein Transport zur Blender-Brücke gesetzt (BlenderBridge.Wire).");
+
     /// <summary>Nimmt jemand auf dem Port an? (Betriebssystem-Ebene – klappt auch, wenn Blender gerade lange rechnet.)</summary>
     public static async Task<bool> ListeningAsync(int port, TimeSpan timeout, CancellationToken ct = default)
     {
-        using var c = new TcpClient();
-        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct); cts.CancelAfter(timeout);
-        try { await c.ConnectAsync("127.0.0.1", port, cts.Token); return true; }
-        catch (Exception e) when (e is SocketException or OperationCanceledException or IOException) { if (ct.IsCancellationRequested) throw; return false; }
+        var (state, stream, _) = await W.ConnectAsync(port, timeout, ct);
+        stream?.Dispose();
+        return state == WireConnect.Ok;
     }
 
     /// <summary>Freier Port auf 127.0.0.1 (für eine eigene Brücke, wenn der gewünschte belegt ist).</summary>
-    public static int FreePort()
-    {
-        var l = new TcpListener(IPAddress.Loopback, 0); l.Start();
-        try { return ((IPEndPoint)l.LocalEndpoint).Port; } finally { l.Stop(); }
-    }
+    public static int FreePort() => W.FreePort();
 
     /// <summary>Code in Blender ausführen. <paramref name="timeout"/> gilt für die ganze Anfrage (lange Läufe: Stunden). Wirft <see cref="BlenderBridgeException"/>.</summary>
     public static async Task<JsonObject> ExecuteAsync(int port, string code, TimeSpan timeout, CancellationToken ct = default, bool strictJson = true)
     {
-        using var c = new TcpClient { NoDelay = true };
         // Verbinden hat eine eigene, längere Zeitgrenze: Windows meldet „abgewiesen“ auf 127.0.0.1 erst nach etwa 2 s – das darf nicht als „beschäftigt“ gelten.
-        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct); cts.CancelAfter(timeout > ConnectTimeout ? timeout : ConnectTimeout);
-        try { await c.ConnectAsync("127.0.0.1", port, cts.Token); cts.CancelAfter(timeout); }
-        catch (SocketException e) { throw new BlenderBridgeException(BlenderBridgeError.Refused, $"Keine Verbindung zu Blender auf Port {port} ({e.SocketErrorCode})."); }
-        catch (OperationCanceledException) when (!ct.IsCancellationRequested) { throw new BlenderBridgeException(BlenderBridgeError.ConnectTimeout, $"Blender auf Port {port} nimmt gerade nicht an (Warteschlange voll oder beschäftigt)."); }
+        var (state, stream, detail) = await W.ConnectAsync(port, timeout > ConnectTimeout ? timeout : ConnectTimeout, ct);
+        if (state == WireConnect.Refused) throw new BlenderBridgeException(BlenderBridgeError.Refused, $"Keine Verbindung zu Blender auf Port {port} ({detail}).");
+        if (state == WireConnect.Timeout || stream is null) throw new BlenderBridgeException(BlenderBridgeError.ConnectTimeout, $"Blender auf Port {port} nimmt gerade nicht an (Warteschlange voll oder beschäftigt).");
+        using var s = stream;
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct); cts.CancelAfter(timeout);
         var req = new JsonObject { ["type"] = "execute", ["code"] = code, ["strict_json"] = strictJson }.ToJsonString() + "\0";
         var buf = new MemoryStream();
         try
         {
-            var s = c.GetStream();
             await s.WriteAsync(Encoding.UTF8.GetBytes(req), cts.Token);
             var chunk = new byte[65536];
             while (true)
@@ -63,7 +60,7 @@ public static class BlenderBridge
         }
         catch (OperationCanceledException) when (!ct.IsCancellationRequested) { throw new BlenderBridgeException(BlenderBridgeError.Timeout, $"Zeitgrenze erreicht ({timeout.TotalMinutes:0.#} min) – Blender rechnet noch."); }
         catch (IOException e) { throw new BlenderBridgeException(BlenderBridgeError.Broken, "Verbindung zu Blender abgerissen: " + (e.InnerException?.Message ?? e.Message)); }
-        catch (SocketException e) { throw new BlenderBridgeException(BlenderBridgeError.Broken, "Verbindung zu Blender abgerissen: " + e.SocketErrorCode); }
+        catch (ObjectDisposedException e) { throw new BlenderBridgeException(BlenderBridgeError.Broken, "Verbindung zu Blender abgerissen: " + e.Message); }
         var bytes = buf.ToArray(); var end = Array.IndexOf(bytes, (byte)0);
         if (end < 0) throw new BlenderBridgeException(BlenderBridgeError.Broken, bytes.Length == 0 ? "Blender hat die Verbindung ohne Antwort geschlossen." : "Antwort von Blender unvollständig.");
         try { return JsonNode.Parse(Encoding.UTF8.GetString(bytes, 0, end)) as JsonObject ?? throw new JsonException(); }
@@ -288,6 +285,19 @@ public static class BlenderBridge
 }
 
 public enum BlenderBridgeError { Refused, Timeout, ConnectTimeout, Broken, Invalid }
+
+/// <summary>Ergebnis eines Verbindungsversuchs: angenommen, abgewiesen (Port zu) oder keine Annahme in der Zeit (Warteschlange voll bzw. beschäftigt).</summary>
+public enum WireConnect { Ok, Refused, Timeout }
+
+/// <summary>QA-019: Transport zur Blender-Brücke (nur 127.0.0.1). Der Kern kennt nur Datenströme; die Umsetzung über TCP liegt in der App.
+/// Lese- und Schreibfehler eines geöffneten Stroms meldet die Umsetzung als <see cref="IOException"/>.</summary>
+public interface IBlenderWire
+{
+    /// <summary>Verbinden. Bricht nur ab (OperationCanceledException), wenn <paramref name="ct"/> abgebrochen ist; eine Zeitüberschreitung ist <see cref="WireConnect.Timeout"/>.</summary>
+    Task<(WireConnect State, Stream? Stream, string Detail)> ConnectAsync(int port, TimeSpan timeout, CancellationToken ct);
+    /// <summary>Freier Port auf 127.0.0.1.</summary>
+    int FreePort();
+}
 
 public sealed class BlenderBridgeException(BlenderBridgeError kind, string message) : Exception(message)
 {
@@ -802,6 +812,8 @@ public sealed class BlenderLink : IDisposable
         var start = DateTimeOffset.Now.ToString("O");
         var args = new List<string>(projArgs);
         args.AddRange(ExtraArgs);
+        // T-0785-AUSNAHME-N3: das sichtbare Blender der Person startet bewusst OHNE --factory-startup – sonst fehlen ihr MCP-Add-on, ihre Add-ons und
+        // Einstellungen. Das Skript selbst ist wie überall per SHA-256 geprüft (BlenderScript); Kinderprofil: keine Blender-Oberfläche (BlenderEnsure).
         args.AddRange(BlenderScript.Args(Path.Combine(StateDir, $"bruecke-{run}.py"), BlenderBridge.StartScript(Port, status, consent, SeparateInstance || AddonConsent, start, saveAs, hint, restartFile: restartReq)));
         Set(BlenderLinkState.Startet, restart ? "Blender wird nach dem Absturz neu gestartet …" : "Blender startet sichtbar mit dem Projekt …");
         IBlenderProc p;
@@ -985,7 +997,7 @@ public sealed class BlenderLink : IDisposable
                 _probe = ProbeAsync(own, ct);
             }
             catch (OperationCanceledException) { return; }
-            catch (Exception e) when (e is IOException or SocketException or ObjectDisposedException or InvalidOperationException) { Log("fehler", "Herzschlag: " + e.Message); }
+            catch (Exception e) when (e is IOException or ObjectDisposedException or InvalidOperationException) { Log("fehler", "Herzschlag: " + e.Message); }
         }
     }
 
@@ -996,15 +1008,10 @@ public sealed class BlenderLink : IDisposable
         try
         {
             HeartbeatPings++;
-            using var c = new TcpClient { NoDelay = true };
-            using (var cc = CancellationTokenSource.CreateLinkedTokenSource(ct))
-            {
-                cc.CancelAfter(BlenderBridge.ConnectTimeout);
-                try { await c.ConnectAsync("127.0.0.1", Port, cc.Token); }
-                catch (OperationCanceledException) when (!ct.IsCancellationRequested) { Busy(own); return; } // Warteschlange voll / beschäftigt: arbeitet
-                catch (SocketException) { Refused(own); return; }
-            }
-            var s = c.GetStream();
+            var (state, stream, _) = await BlenderBridge.W.ConnectAsync(Port, BlenderBridge.ConnectTimeout, ct);
+            if (state == WireConnect.Timeout) { Busy(own); return; } // Warteschlange voll / beschäftigt: arbeitet
+            if (state == WireConnect.Refused || stream is null) { Refused(own); return; }
+            using var s = stream;
             await s.WriteAsync(Encoding.UTF8.GetBytes(new JsonObject { ["type"] = "execute", ["code"] = BlenderBridge.PingCode, ["strict_json"] = true }.ToJsonString() + "\0"), ct);
             using var alive = CancellationTokenSource.CreateLinkedTokenSource(ct);
             var read = ReadAnswerAsync(s, alive.Token);
@@ -1018,15 +1025,15 @@ public sealed class BlenderLink : IDisposable
                 if (gone || DateTimeOffset.Now - started > JobTimeout || _disposed) { alive.Cancel(); break; }
             }
             JsonObject? info = null;
-            try { var r = await read; info = (string?)r?["status"] == "ok" ? r!["result"] as JsonObject : null; } catch (Exception e) when (e is OperationCanceledException or IOException or JsonException or SocketException) { }
+            try { var r = await read; info = (string?)r?["status"] == "ok" ? r!["result"] as JsonObject : null; } catch (Exception e) when (e is OperationCanceledException or IOException or JsonException or ObjectDisposedException) { }
             if (info is not null) Connected(info, own);
         }
-        catch (Exception e) when (e is IOException or SocketException or ObjectDisposedException) { Refused(own); }
+        catch (Exception e) when (e is IOException or ObjectDisposedException) { Refused(own); }
         catch (OperationCanceledException) { }
         finally { Interlocked.Decrement(ref _openProbes); }
     }
 
-    static async Task<JsonObject?> ReadAnswerAsync(NetworkStream s, CancellationToken ct)
+    static async Task<JsonObject?> ReadAnswerAsync(Stream s, CancellationToken ct)
     {
         var buf = new MemoryStream(); var chunk = new byte[65536];
         while (true)
