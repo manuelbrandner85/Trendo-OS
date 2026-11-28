@@ -129,7 +129,7 @@ public partial class MainWindow
                     Act("3d-folder", "Ordner zeigen", ShowFolder),
                 },
             };
-        return new WrapPanel
+        var row = new WrapPanel
         {
             Children =
             {
@@ -138,6 +138,8 @@ public partial class MainWindow
                 Act("3d-folder", "Ordner zeigen", ShowFolder),
             },
         };
+        if (_blenderLink is not null) row.Children.Add(BlenderStatusField()); // T-0785: verbunden / verbindet neu / getrennt mit Grund
+        return row;
     }
 
     private Control PartsList(TextBox objName)
@@ -729,6 +731,13 @@ public partial class MainWindow
         var (r, _) = Studio3D.ExportBlend(bl, spec, blend);
         if (!r.Ok || !File.Exists(blend)) { Say("Blender konnte das Objekt nicht öffnen: " + Short(r.Err.Length > 0 ? r.Err : r.Out), "3d"); return; }
         _last3dFile = blend;
+        if (BlenderLinkGet() is not null) // T-0785: verbundenes Blender weiternutzen bzw. sichtbar mit MCP-Brücke starten – kein zweites Blender
+        {
+            Say($"Blender öffnet {Path.GetFileName(blend)} …", "3d");
+            var why = await BlenderShowFile(blend);
+            Say(why is null ? $"Blender öffnet {Path.GetFileName(blend)} – verbunden, Claude kann darin weiterarbeiten." : why, "3d");
+            return;
+        }
         LaunchAs(bl, blend);
         Say($"Blender öffnet {Path.GetFileName(blend)}.", "3d");
     }

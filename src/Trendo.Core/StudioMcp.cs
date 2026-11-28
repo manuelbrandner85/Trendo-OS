@@ -32,6 +32,35 @@ public static class StudioMcp
         return null;
     }
 
+    /// <summary>T-0785 (H3): lesende bzw. ungefährliche Werkzeuge des Blender-MCP, die Claude ohne Rückfrage nutzen darf. <c>execute_blender_code*</c> bleibt
+    /// nutzbar, ist aber NICHT vorab erlaubt – es läuft durch die Auto-Prüfung von Claude Code (beliebiges Python).</summary>
+    public static readonly IReadOnlyList<string> BlenderSafeTools =
+    [
+        "get_blendfile_summary_datablocks", "get_blendfile_summary_datablocks_for_cli", "get_blendfile_summary_missing_files", "get_blendfile_summary_missing_files_for_cli",
+        "get_blendfile_summary_of_linked_libraries", "get_blendfile_summary_of_linked_libraries_for_cli", "get_blendfile_summary_path_info", "get_blendfile_summary_path_info_for_cli",
+        "get_blendfile_summary_usage_guess", "get_blendfile_summary_usage_guess_for_cli", "get_object_detail_summary", "get_objects_summary", "get_python_api_docs",
+        "get_screenshot_of_area_as_image", "get_screenshot_of_window_as_image", "get_screenshot_of_window_as_json",
+        "jump_to_tab_by_name", "jump_to_tab_by_space_type", "jump_to_view3d_object_by_name", "jump_to_view3d_object_data_by_name",
+        "render_thumbnail_to_path", "render_viewport_to_path", "search_api_docs", "search_manual_docs",
+    ];
+
+    /// <summary>Freigabeliste für <c>--allowedTools</c> (einzelne Werkzeuge, kein ganzer Server).</summary>
+    public static string BlenderAllowedTools => string.Join(" ", BlenderSafeTools.Select(t => "mcp__" + Prefix + "blender__" + t));
+
+    /// <summary>Steht ein Server in der Projektdatei?</summary>
+    public static bool HasServer(string? mcpFile, string name)
+    {
+        try { return mcpFile is not null && File.Exists(mcpFile) && JsonNode.Parse(File.ReadAllText(mcpFile))?["mcpServers"]?[name] is JsonObject; }
+        catch (Exception e) when (e is JsonException or IOException or UnauthorizedAccessException) { return false; }
+    }
+
+    /// <summary>T-0785: Hinweis an Claude, wenn Blender verbunden ist – Trendo hält die Verbindung und startet Blender nach einem Absturz neu.</summary>
+    public static string BlenderRule(bool maySave) => "Blender ist über den MCP-Server „trendo-blender“ sichtbar verbunden; du hast alle seine Werkzeuge (Szene lesen, Python ausführen, rendern, exportieren). " +
+        "Trendo hält die Verbindung: Scheitert ein Blender-Werkzeug mit einem Verbindungsfehler, verbindet Trendo neu (nach einem Absturz startet es Blender neu) – warte dann etwa 10 Sekunden und wiederhole den Schritt. " +
+        (maySave ? "Die offene Datei gehört zum Projekt: wichtige Zwischenstände speicherst du mit bpy.ops.wm.save_mainfile(). "
+                 : "Die offene Datei gehört der Person und nicht zum Projekt: speichere sie NICHT (kein save_mainfile, kein save_as über ihre Datei), außer die Person sagt es ausdrücklich. Trendo kann das nicht technisch sperren – halte dich daran. ") +
+        "Vor dem Löschen oder Überschreiben von Dateien außerhalb der Szene fragst du nach.";
+
     public static JsonObject? ReadUserConfig(string? path = null)
     {
         path ??= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".claude.json");
@@ -41,7 +70,7 @@ public static class StudioMcp
     public sealed record Result(string ProjectDir, IReadOnlyList<string> Added, IReadOnlyList<string> Missing);
 
     /// <summary>Legt bzw. aktualisiert <c>.mcp.json</c> im Projektordner und liefert den Ordner. Fehlende Server stehen in <see cref="Result.Missing"/>.</summary>
-    public static Result EnsureProjectConfig(string projectDir, string studioId, string? engine = null, JsonObject? userConfig = null, bool kittl = false)
+    public static Result EnsureProjectConfig(string projectDir, string studioId, string? engine = null, JsonObject? userConfig = null, bool kittl = false, int? blenderPort = null)
     {
         Directory.CreateDirectory(projectDir);
         var file = Path.Combine(projectDir, FileName);
@@ -54,7 +83,12 @@ public static class StudioMcp
         engine ??= EngineOfProject(projectDir); // Spiele: Engine aus den Projektdateien, wenn der Aufrufer sie nicht kennt
         var added = new List<string>(); var missing = new List<string>();
         foreach (var p in Needs(studioId, engine))
-            if (FindServer(userConfig, p) is { } s) { servers[Prefix + p] = s; added.Add(p); }
+            if (FindServer(userConfig, p) is { } s)
+            {
+                // T-0785: Blender-Brücke auf dem Port, den Trendos Verbindung hält (eigene Instanz) – die Einstellung der Person bleibt unverändert
+                if (p == "blender" && blenderPort is { } port) { if (s["env"] is not JsonObject env) s["env"] = env = new JsonObject(); env[BlenderBridge.PortVariable] = port.ToString(System.Globalization.CultureInfo.InvariantCulture); }
+                servers[Prefix + p] = s; added.Add(p);
+            }
             else missing.Add(p);
         if (kittl) { servers[Prefix + "kittl"] = new JsonObject { ["type"] = "http", ["url"] = KittlMcpUrl }; added.Add("kittl"); } // offizieller Zugang; die Anmeldung läuft über Claude im Browser, Trendo sieht keine Zugangsdaten
         File.WriteAllText(file, doc.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
@@ -83,7 +117,7 @@ public static class StudioMcp
         {
             "unreal" => Newest("*.uproject") is { } u ? [u] : [],
             "godot" => File.Exists(Path.Combine(projectDir, "project.godot")) ? ["--editor", "--path", projectDir] : [],
-            "blender" => Newest("*.blend") is { } b ? [b] : [],
+            "blender" => Directory.Exists(projectDir) && Directory.EnumerateFiles(projectDir, "*.blend", SearchOption.TopDirectoryOnly).Where(BlenderLink.IsProjectBlend).OrderByDescending(File.GetLastWriteTimeUtc).FirstOrDefault() is { } b ? [b] : [], // T-0785: ohne Trendos Sicherungen und wiederhergestellte Kopien
             _ => [],
         };
     }
