@@ -567,7 +567,13 @@ public static partial class FamilyKit
             f.ChildExtra.RemoveAll(c => living.Contains(c.Person));
         }
         // T-0788 (2. Prüfrunde): Einsender (SUBM) ist oft eine lebende Person – Adresse, Telefon, E-Mail und Webseite fallen weg, der Name bleibt (Herkunft der Datei)
-        foreach (var r in t.Records.Where(r => r.Tag == "SUBM")) r.Kids.RemoveAll(k => k.Tag is "ADDR" or "ADR1" or "ADR2" or "ADR3" or "CITY" or "POST" or "STAE" or "CTRY" or "PHON" or "EMAIL" or "FAX" or "WWW" || k.Tag.StartsWith('_'));
+        foreach (var r in t.Records.Where(r => r.Tag == "SUBM"))
+        {
+            // T-0788 (3. Prüfrunde): auch Notizen (und Medien) des Einsenders – verwiesene Datensätze fallen transitiv weg wie bei Personen
+            bool Drop(GedNode k) => k.Tag is "ADDR" or "ADR1" or "ADR2" or "ADR3" or "CITY" or "POST" or "STAE" or "CTRY" or "PHON" or "EMAIL" or "FAX" or "WWW" or "NOTE" or "OBJE" || k.Tag.StartsWith('_');
+            hiddenRefs.UnionWith(Refs(r.Kids.Where(Drop)));
+            r.Kids.RemoveAll(Drop);
+        }
         if (hiddenRefs.Count > 0)
         {
             // was nach dem Kürzen noch erreichbar ist (von Personen, Familien, Kopf und von dort aus über Datensätze und Quellen)

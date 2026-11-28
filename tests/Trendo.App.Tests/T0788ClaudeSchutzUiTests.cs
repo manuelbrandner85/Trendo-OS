@@ -95,21 +95,23 @@ public class T0788ClaudeSchutz_Ui
             var d = Beispiel(w);
             w.FamSetOption(d, "hideLiving", "false"); w.Show(Fam); Settle();
             w.ClaudeDockToggle(Studio); Dispatcher.UIThread.RunJobs();
+            string? claudeWrote = null;
             claude.During = cwd =>
             {
                 // Claude schreibt in die .tdoc (Geburtsjahr von Erika geändert); gleichzeitig schaltet die Person den Schutz ein
                 var f = Tdoc(cwd)!; var doc = ProgramDocument.Load(f);
                 var t = FamilyKit.FromJson(doc.Data); t.P("I5")!.Ev("BIRT")!.Date = "1953"; t.HideLiving = false;
                 doc.ReplaceData(FamilyKit.ToJson(t).ToJsonString()); doc.Save(f, keepVersion: false, overwriteChanged: true);
+                claudeWrote = File.ReadAllText(f);
                 w.FamSetOption(w.ProgramActive(Fam)!, "hideLiving", "true");
             };
             await Run(w.ClaudeChatSend("Korrigiere Erikas Geburtsjahr"));
             for (var i = 0; i < 30; i++) Settle();
             Assert.Equal(1, claude.Calls);
             Assert.Equal("15 AUG 1952", MainWindow.FamData(w.ProgramActive(Fam)!).P("I5")!.Birth!.Date);
-            // T-0788 (2. Prüfrunde): das Einschalten des Schutzes löscht Claudes Arbeitskopie sofort – nichts wird übernommen, nichts zurückgeschrieben
-            Assert.Null(Tdoc(claude.Folders[0]));
-            Assert.Contains(w.Core.Audit.ReadAll(), a => a.Action == "claude.tdoc.geloescht");
+            // T-0788 (3. Prüfrunde): Claudes geänderte Datei ist nicht mehr Trendos Fassung – Trendo löscht und überschreibt sie nicht, schreibt nichts zurück und meldet es
+            Assert.Equal(claudeWrote, File.ReadAllText(Tdoc(claude.Folders[0])!));
+            Assert.Contains(w.Core.Audit.ReadAll(), a => a.Action is "claude.tdoc.nicht.geloescht" or "program.verlegt");
         }
         finally { FakeClaude.Off(); w.Close(); }
     }

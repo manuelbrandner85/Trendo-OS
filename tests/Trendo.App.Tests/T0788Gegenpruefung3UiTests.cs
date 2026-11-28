@@ -77,7 +77,8 @@ public class T0788Gegenpruefung3_Ui
     {
         var w = Window(out _);
         ProgramDocument? d = null;
-        var folders = On(cwd => { ClaudeEdits(cwd); w.FamSetOption(d!, "hideLiving", "true"); });
+        string? claudeWrote = null;
+        var folders = On(cwd => { ClaudeEdits(cwd); claudeWrote = TdocText(cwd); w.FamSetOption(d!, "hideLiving", "true"); });
         try
         {
             await Run(w.ClaudeCheck(true));
@@ -87,9 +88,12 @@ public class T0788Gegenpruefung3_Ui
             await Run(w.ClaudeChatSend("Ergänze Erikas Geschwister"));
             for (var i = 0; i < 30; i++) Settle();
             Assert.Single(folders);
-            var text = TdocText(folders[0]);
-            foreach (var s in Secret) Assert.DoesNotContain(s, text);
+            // T-0788 (3. Prüfrunde, Regel a): Claude hat die Datei geändert – sie ist nicht mehr, was Trendo geschrieben hat, und wird deshalb weder gelöscht noch
+            // überschrieben. Prüfung: Trendo hat NICHTS dazugeschrieben (Inhalt genau Claudes Fassung, die Claude ohnehin hatte); die Person bekommt die Meldung.
+            Assert.Equal(claudeWrote, TdocText(folders[0]));
+            Assert.Contains("bitte schließen bzw. selbst löschen", w.ProgramMessage(Fam) + w.ClaudeMessage);
             Assert.DoesNotContain(MainWindow.FamData(d).Persons, p => p.Given == "Neu");
+            Assert.DoesNotContain(folders[0], d.Path!); // das Dokument selbst liegt nicht mehr in Claudes Ordner
         }
         finally { Off(); w.Close(); }
     }
@@ -112,7 +116,7 @@ public class T0788Gegenpruefung3_Ui
             w.FamSetOption(d, "hideLiving", "true"); w.Show(Fam); Settle();
             Assert.Equal("", TdocText(folders[0]));
             Assert.True(File.Exists(other));
-            Assert.Contains("gelöscht", w.ProgramMessage(Fam));
+            Assert.Contains("liegt jetzt in", w.ProgramMessage(Fam)); // T-0788 (3. Prüfrunde): das Dokument selbst lag dort – es wurde verlegt, die alte (von Trendo geschriebene) Datei entfernt
         }
         finally { Off(); w.Close(); }
     }

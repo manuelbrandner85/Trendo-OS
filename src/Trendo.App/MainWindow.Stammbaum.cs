@@ -329,8 +329,19 @@ public partial class MainWindow
         }
         FamSave(d, t, field switch { "title" => "Titel", "hideLiving" => "Lebende ausblenden", _ => "Generationen" });
         // T-0788 (2. Prüfrunde): Schutz eingeschaltet → frühere Arbeitskopie dieses Stammbaums in Claudes Ordner (von Trendo angelegt) löschen
-        if (field == "hideLiving" && FamProtected(d) && ClaudeDropWorkFiles(FamKey, d.Id) is var dropped and > 0)
-            _progMsg[FamKey] = $"Lebende Personen sind jetzt geschützt – {dropped} Arbeitskopie(n) dieses Stammbaums in Claudes Ordner gelöscht.";
+        if (field == "hideLiving" && FamProtected(d))
+        {
+            // T-0788 (3. Prüfrunde): liegt das Dokument selbst in Claudes Projektordner, wird es in den Ordner des Studios verlegt (neue Datei schreiben, prüfen,
+            // dann erst die alte entfernen – nur wenn Trendo sie so geschrieben hat); danach die übrigen Arbeitskopien dieses Dokuments (gleiche Regel)
+            string? moved = null;
+            if (d.Path is { } p && InClaudeFolder(FamStudio, p)) { DocSave(d); moved = _claudeMoveNote; _claudeMoveNote = null; }
+            var dropped = ClaudeDropWorkFiles(FamKey, d.Id, out var kept);
+            var parts = new List<string>();
+            if (moved is not null) parts.Add(moved);
+            if (dropped > 0) parts.Add($"{dropped} Arbeitskopie(n) dieses Stammbaums in Claudes Ordner gelöscht.");
+            foreach (var k in kept) parts.Add($"Arbeitskopie konnte nicht gelöscht werden: {k} – bitte schließen bzw. selbst löschen.");
+            if (parts.Count > 0) _progMsg[FamKey] = (moved is null ? "Lebende Personen sind jetzt geschützt – " : "") + string.Join(" ", parts);
+        }
     }
 
     /// <summary>Zeilen „Name | Geschlecht | Geburt | Geburtsort | Tod | Sterbeort | Vater | Mutter“ und „Ehe: A + B | Datum | Ort“ übernehmen.</summary>

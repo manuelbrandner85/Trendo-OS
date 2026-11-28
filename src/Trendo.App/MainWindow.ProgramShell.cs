@@ -180,6 +180,9 @@ public partial class MainWindow
     void DocSave(ProgramDocument d, string? target = null, bool keepVersion = true, bool overwriteChanged = false)
     {
         var to = ProgramDocument.TargetOf(target ?? d.Path ?? throw new InvalidOperationException("Bitte einen Speicherort wählen."));
+        // T-0788 (3. Prüfrunde): ein Dokument nur für die lokale KI (z. B. geschützter Stammbaum) wird nie in Claudes Ordner gespeichert – auch nicht mit Strg+S oder automatisch
+        string? leftBehind = null;
+        if (ClaudeSaveRedirect(d, to) is { } safe) { leftBehind = d.Path is { } lp && ProgramDocument.SameFile(lp, to) ? lp : null; to = safe; }
         var old = d.Path; var same = old is not null && ProgramDocument.SameFile(old, to);
         if (!(same && d.ReadOnly) && ProgLocks.Acquire(to) is { } other)
         {
@@ -192,6 +195,23 @@ public partial class MainWindow
         _progConflict.Remove(d.Id);
         if (!d.ReadOnly) _progLocked.Remove(d.Id); // unter neuem Namen gespeichert: kein „nur lesen“ mehr
         if (!same && old is not null) ProgLocks.Release(old);
+        if (InClaudeFolder(d.Studio, to)) TrendoWrote(to);
+        if (leftBehind is not null)
+        {
+            // neue Datei ist geschrieben und gelesen geprüft – erst dann die alte (von Trendo geschriebene) Datei in Claudes Ordner entfernen; Versionen ziehen mit
+            var ok = ProgramDocument.Load(to).Data.ToJsonString() == d.Data.ToJsonString();
+            string? why = ok ? TrendoDeleteBlocked(leftBehind) : "neue Datei nicht bestätigt";
+            try
+            {
+                var ov = ProgramDocument.VersionDir(leftBehind); var nv = ProgramDocument.VersionDir(to);
+                if (ok && Directory.Exists(ov) && !Directory.Exists(nv)) Directory.Move(ov, nv);
+                if (why is null) { File.Delete(leftBehind); _trendoWrote.Remove(Path.GetFullPath(leftBehind)); _claudeWorkFiles.Remove(Path.GetFullPath(leftBehind)); }
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { why ??= "geöffnet oder schreibgeschützt"; }
+            _claudeMoveNote = $"Lebende Personen sind geschützt – das Dokument liegt jetzt in {to} (nicht mehr in Claudes Projektordner)."
+                + (why is null ? "" : $" Arbeitskopie konnte nicht gelöscht werden: {Path.GetFileName(leftBehind)} ({why}) – bitte schließen bzw. selbst löschen.");
+            _core.Audit.Append(Principal.LocalOwner.Name, "program.verlegt", $"{d.Studio} {Path.GetFileName(leftBehind)} -> {Path.GetFileName(to)}" + (why is null ? "" : " alte Datei bleibt: " + why));
+        }
     }
 
     /// <summary>Notsicherung schreiben; die eines noch unbenannten Dokuments wird für dieses Fenster gesperrt, damit ein zweites Fenster sie nicht als „abgestürzt“ anbietet.</summary>
@@ -424,7 +444,7 @@ public partial class MainWindow
         DocSave(d, target); ProgRecent.Add(spec.Studio, d.Path!); RememberLastDoc(key, d.Path!); DropBackup(d);
         if (path is not null) _progAutoNamed.Remove(d.Id); // selbst benannt: nicht mehr umbenennen
         _core.Audit.Append(Principal.LocalOwner.Name, "program.save", $"{spec.Studio} {Path.GetFileName(d.Path)}");
-        _progMsg[key] = "Gespeichert: " + d.Path; return d.Path!;
+        _progMsg[key] = _claudeMoveNote ?? "Gespeichert: " + d.Path; _claudeMoveNote = null; return d.Path!;
     }
 
     /// <summary>Freier Dateiname im Studio-Ordner der Projekte (vorhandene Dateien werden nie überschrieben).</summary>
@@ -491,6 +511,7 @@ public partial class MainWindow
             }
             else DocSave(d, keepVersion: ProgramDocument.VersionDue(d.Path, AutoVersionGap));
             DropBackup(d);
+            if (_claudeMoveNote is { } mv) { _progMsg[key] = mv; _claudeMoveNote = null; }
             if (_progErr.TryGetValue(key, out var old) && old.Error.Kind == "speichern") { _progErr.Remove(key); if (_progMsg.GetValueOrDefault(key) == old.Error.Sentence) _progMsg.Remove(key); }
             return true;
         }
