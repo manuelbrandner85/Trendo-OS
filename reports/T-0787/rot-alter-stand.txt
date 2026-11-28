@@ -1,0 +1,13 @@
+    0 Fehler
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0787 Rot-Grün: „Rezepte & Ernährung“ ist ein Programm der Hülle in „Wissen & Lernen“ mit Vorlagen, JSON-LD- und PDF-Ausgabe und KI-Fachaktion [FAIL]
+      rezepte-programm fehlt
+      Stack Trace:
+        tests\Trendo.App.Tests\T0787RotTests.cs(16,0): at Trendo.App.Tests.T0787_Rot.Studio_exists()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Finished:    Trendo.App.Tests (ID = '26a844dcaa6650fabb6a53fa38be9dde3d6a54ca47028ad588c42fe609bc00b3')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 1, Skipped: 0, Not Run: 0, Time: 3,798s

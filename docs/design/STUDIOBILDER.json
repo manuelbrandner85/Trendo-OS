@@ -888,5 +888,14 @@
     "erzeugt": "2026-11-26",
     "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
     "sha256": "fa656c95602dad001f500ba0a75b1ff33dc48b6d890b20bcaea5d5c7d4c50227"
+  },
+  "STUDIO-RECIPE-01": {
+    "datei": "src/Trendo.App/Assets/studios/STUDIO-RECIPE-01.jpg",
+    "seed": 20261102,
+    "prompt": "a rustic dark wooden kitchen table with fresh vegetables, a ceramic bowl of flour, two brown eggs, a wooden spoon and an open handwritten recipe notebook, warm evening light, no readable text, no faces, no people, photorealistic photograph, shot on a full-frame camera with a 35mm lens at f/2.8, natural soft light with warm golden accent light, dark charcoal and black surroundings with subtle real gold details, shallow depth of field, realistic materials and textures, cinematic but believable, high detail, no text, no letters, no logos, no watermark, no screens with readable text",
+    "modell": "FLUX.2 [klein] 4B (flux-2-klein-4b, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0, ComfyUI lokal",
+    "erzeugt": "2026-11-28",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos; Modell Apache-2.0 (https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Ausgabe kommerziell frei, keine Hinweispflicht",
+    "sha256": "959c20ea26b5accb8d6d5b8e14523645e1535e357f2a2e4aa88de67925b16df6"
   }
 }

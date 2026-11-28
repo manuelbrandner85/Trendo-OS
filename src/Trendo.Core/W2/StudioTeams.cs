@@ -332,6 +332,9 @@ public static class StudioTeams
         T("STUDIO-TUTOR-01", "Nachhilfe-Team",
             R("tutor-lehrer", "Nachhilfe-Lehrerin", "erklärt, stellt Rückfragen und baut Übungen", "nie die Lösung vorwegnehmen, einfache Sprache", true),
             R("tutor-plan", "Lernplanerin", "achtet auf Fortschritt und Wiederholung", "fällige Themen zuerst, kleine Schritte")),
+        T("STUDIO-RECIPE-01", "Küchen-Team", // T-0787
+            R("rezept-koch", "Köchin", "schreibt nachkochbare Rezepte mit Mengen und Schritten", "Mengen mit Einheit, Schritte in Reihenfolge, keine Gesundheitsversprechen", true),
+            R("rezept-plan", "Wochenplanerin", "plant Gerichte auf Tage und hält die Einkaufsliste kurz", "Reste weiterverwenden, Zutaten zusammenfassen")),
         T("STUDIO-CODELEARN-01", "Programmier-Lern-Team",
             R("code-tutor", "Programmier-Tutorin", "gibt Hinweise zur Aufgabe", "nie fertigen Code, nur Denkanstöße", true),
             R("code-pruef", "Testleiter", "lässt die echten Tests laufen und erklärt Fehlermeldungen", "nur die Tests bewerten")),

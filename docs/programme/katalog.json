@@ -20733,5 +20733,75 @@
     "Shell": false,
     "WarmMs": 14,
     "WindowsOnly": []
+  },
+  {
+    "Id": "rezepte-programm",
+    "Name": "Rezepte & Ernährung",
+    "Studio": "STUDIO-RECIPE-01",
+    "StudioName": "Rezepte & Ernährung",
+    "Area": "Wissen & Lernen",
+    "Type": [
+      "Texteditor"
+    ],
+    "Functions": [],
+    "Engine": [],
+    "Tools": [
+      "Neues Rezept (Rezept)",
+      "Rezept öffnen … (Rezept)",
+      "Kopieren (Rezept)",
+      "Löschen (Rezept)",
+      "Halbe Menge (Umrechnen)",
+      "Doppelte Menge (Umrechnen)",
+      "Portionen übernehmen (Umrechnen)",
+      "In g/ml umrechnen (Umrechnen)",
+      "Auf den Plan (Woche)",
+      "Wochenplan (Woche)",
+      "Einkaufsliste (Woche)",
+      "Nächste Woche (Woche)",
+      "Plan leeren (Woche)",
+      "Rezept drucken (PDF) (Exportieren)",
+      "Wochenplan und Einkaufsliste (PDF) (Exportieren)",
+      "schema.org-Rezept (JSON-LD) (Exportieren)",
+      "Rezeptseite (HTML mit JSON-LD) (Exportieren)",
+      "Kochbuch mit allen Rezepten (PDF) (Exportieren)",
+      "Rezept als Word-Dokument (.docx) (Exportieren)",
+      "Rezept als OpenDocument (.odt) (Exportieren)",
+      "Einkaufsliste als Text (.txt) (Exportieren)",
+      "Einkaufsliste als Tabelle (.csv) (Exportieren)"
+    ],
+    "Formats": [
+      ".csv",
+      ".docx",
+      ".html",
+      ".json",
+      ".odt",
+      ".pdf",
+      ".tdoc",
+      ".txt"
+    ],
+    "Dependencies": [],
+    "Ui": [
+      "Texteditor",
+      "Menüband",
+      "Eigenschaften",
+      "Statusleiste",
+      "Dokument-Reiter"
+    ],
+    "Tabs": [
+      "Rezepte & Ernährung"
+    ],
+    "Tests": [
+      "T-0787 ECHT: lokale KI (Ollama) macht aus einem eingefügten Rezepttext ein Rezept im offenen Buch – Vorschau, „Ja, behalten“, Nährwerte vom Kern, Rückgängig (nur mit TRENDO_T0787_ECHT)",
+      "T-0787 Fremddatei: gespeicherte Rezeptseite mit JSON-LD (@graph, HowToSection) über „Rezept öffnen …“ einlesen, Datei unverändert; Rechtsklick wählt anderes Lebensmittel; Einfach zeigt die Grundbefehle",
+      "T-0787 KI schreibt ein Rezept ins offene Buch: Vorschau ändert nichts, „Ja, behalten“ legt es an (ein Rückgängig-Schritt, Nährwerte vom Kern), Rückgängig nimmt es heraus; Heilversprechen wird abgelehnt (KI ersetzt)",
+      "T-0787 Rezepte: leeres Buch → „Erstes Rezept anlegen“ → Name, Zutaten, Schritte tippen → Tabelle mit Gramm/kcal → für 8 anzeigen und übernehmen (ein Rückgängig-Schritt) → PDF, JSON-LD, HTML, DOCX",
+      "T-0787 Wochenplan und Einkaufsliste über die Oberfläche: Rezept aus Text, auf Tage legen, Liste zusammengefasst, abhaken, eigener Eintrag, Rechtsklick „auf Freitag“, Export PDF und CSV"
+    ],
+    "SourceFiles": [],
+    "Status": "nicht im Modulregister",
+    "Version": "0.9.114 (Stand 9bc135a)",
+    "Shell": true,
+    "WarmMs": 11,
+    "WindowsOnly": []
   }
 ]

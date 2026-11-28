@@ -13,7 +13,7 @@ public class StudioFolds_Ui
     [Fact(DisplayName = "Studio-Ordnung: 49 Studios in der Übersicht; jedes Ziel einer Zusammenlegung existiert und bleibt selbst sichtbar")]
     public void Plan_is_consistent()
     {
-        Assert.Equal(69, StudioCatalog.ById.Keys.Count(StudioCatalog.InOverview)); // + acht Studios Wissen & Lernen (T-0779 Quiz/Kurse, T-0780 Referate/Zeitleisten, T-0781 Mathe/Naturwissenschaft, T-0782 Nachhilfe/Programmieren lernen; T-0784), + sieben Büro-Studios, + Künstlerstudio (15.11.2026)
+        Assert.Equal(70, StudioCatalog.ById.Keys.Count(StudioCatalog.InOverview)); // + Rezepte & Ernährung (T-0787), + acht Studios Wissen & Lernen (T-0779 Quiz/Kurse, T-0780 Referate/Zeitleisten, T-0781 Mathe/Naturwissenschaft, T-0782 Nachhilfe/Programmieren lernen; T-0784), + sieben Büro-Studios, + Künstlerstudio (15.11.2026)
         Assert.Equal(18, StudioCatalog.FoldedInto.Count);
         foreach (var (id, host) in StudioCatalog.FoldedInto)
         {

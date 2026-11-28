@@ -1356,6 +1356,23 @@ public static class StudioKnowledgeBase
             ["Bewertung nur durch echte Tests", "Code läuft ohne Netz und mit Zeitgrenze", "KI schreibt keinen fertigen Code"],
             ["STUDIO-CODEAI-01", "CORE-07"],
             true),
+        // T-0787 (Wissen & Lernen)
+        ["STUDIO-RECIPE-01"] = new("STUDIO-RECIPE-01",
+            "Rezeptbuch: Rezepte mit Zutaten und Schritten, Portionen und Einheiten umrechnen, Nährwerte je Portion als Richtwert (USDA FoodData Central, CC0), Wochenplan und zusammengefasste Einkaufsliste.",
+            [
+                T("rezept", "Rezept anlegen", "Zutaten und Schritte ins Rezeptbuch", "Schreib ein Rezept für ", ["rezept", "kochen", "backen", "gericht"], "Gericht"),
+                T("umrechnen", "Portionen umrechnen", "Alle Mengen auf neue Portionen", "Rechne das Rezept auf 6 Portionen um", ["portion", "umrechnen", "personen", "doppelt", "halb"], "Portionen"),
+                T("plan", "Wochenplan", "Gerichte auf Tage legen", "Plane drei Gerichte für diese Woche", ["woche", "plan", "essensplan"]),
+                T("einkauf", "Einkaufsliste", "Zutaten zusammengefasst nach Abteilung", "Was muss ich einkaufen?", ["einkauf", "einkaufen", "liste"]),
+            ],
+            [],
+            ["Rezepttext", "schema.org-Rezept (JSON-LD)", "gespeicherte Rezeptseite (HTML)"],
+            ["Rezept als PDF, DOCX, ODT", "schema.org-Rezept (JSON-LD)", "Rezeptseite (HTML)", "Wochenplan und Einkaufsliste (PDF, TXT, CSV)"],
+            [".tdoc", ".json", ".html", ".pdf", ".docx", ".odt", ".txt", ".csv"],
+            ["Rezept anlegen → Zutaten zeilenweise → Zuordnung prüfen → Portionen umrechnen → auf den Wochenplan → Einkaufsliste → drucken"],
+            ["Nährwerte nur als Richtwert, mit Quelle", "Keine Gesundheits- oder Diätversprechen", "Wochenplan und Liste ändert nur die Person"],
+            ["SYS-02", "CORE-10"],
+            true),
     };
 
     /// <summary>Wissen zu einem Studio. Ohne ausführliche Beschreibung wird es ehrlich aus dem Fachprofil abgeleitet und ist dann als nicht ausführlich markiert.</summary>

@@ -1,0 +1,59 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot5\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:12.22]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:12.74]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:12.76]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:00:12.89]     T-0787 R4-1: eindeutige Versprechen dieser Runde gesperrt; weichere Körperbegriffe (Stoffwechsel, Stress, Leber, Haut …) nicht gesperrt [FAIL]
+[xUnit.net 00:00:12.89]       nicht gesperrt: Gut gegen Kopfweh. | Ein natürliches Antibiotikum. | Hält jung und fit. | Verlängert das Leben. | Ein echtes Abnehmrezept. | Gegen Bluthochdruck. | Hilft gegen Rückenschmerzen.
+[xUnit.net 00:00:12.89]       Stack Trace:
+[xUnit.net 00:00:12.89]         C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot5\tests\Trendo.Core.Tests\T0787Runde4Tests.cs(48,0): at Trendo.Core.Tests.T0787_Runde4.Gesperrt_und_weich()
+[xUnit.net 00:00:12.89]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:12.89]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:12.90]     T-0787 R4-1: harmlose Sätze (herzhaft, Hühnerherzen, Deckel/Topflappen/Tuch beim Abnehmen …) – weder Sperre noch Hinweis [FAIL]
+[xUnit.net 00:00:12.90]       gesperrt: Den Deckel zum Abnehmen anheben. → zum Abnehmen | Topflappen zum Abnehmen bereitlegen. → zum Abnehmen | Ein Tuch hilft beim Abnehmen. → beim Abnehmen
+[xUnit.net 00:00:12.90]       Stack Trace:
+[xUnit.net 00:00:12.90]         C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot5\tests\Trendo.Core.Tests\T0787Runde4Tests.cs(41,0): at Trendo.Core.Tests.T0787_Runde4.Frei_bleibt_frei()
+[xUnit.net 00:00:12.90]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:12.90]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:12.94]     T-0787 R4-2: englisch – „paprika“ mit Löffel ist das Gewürz; can, stick (Butter 113 g), pinch; „8 oz milk“ mit Hinweis oz/fl oz [FAIL]
+[xUnit.net 00:00:12.94]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:00:12.94]                         ↓ (pos 7)
+[xUnit.net 00:00:12.94]       Expected: "paprikapulver"
+[xUnit.net 00:00:12.94]       Actual:   "paprika-rot"
+[xUnit.net 00:00:12.94]                         ↑ (pos 7)
+[xUnit.net 00:00:12.94]       Stack Trace:
+[xUnit.net 00:00:12.94]         C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot5\tests\Trendo.Core.Tests\T0787Runde4Tests.cs(56,0): at Trendo.Core.Tests.T0787_Runde4.Englisch()
+[xUnit.net 00:00:12.94]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:12.94]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:12.94]   Finished:    Trendo.Core.Tests
+  Fehler T-0787 R4-1: eindeutige Versprechen dieser Runde gesperrt; weichere Körperbegriffe (Stoffwechsel, Stress, Leber, Haut …) nicht gesperrt [94 ms]
+  Fehlermeldung:
+   nicht gesperrt: Gut gegen Kopfweh. | Ein natürliches Antibiotikum. | Hält jung und fit. | Verlängert das Leben. | Ein echtes Abnehmrezept. | Gegen Bluthochdruck. | Hilft gegen Rückenschmerzen.
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0787_Runde4.Gesperrt_und_weich() in C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot5\tests\Trendo.Core.Tests\T0787Runde4Tests.cs:line 48
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0787 R4-1: harmlose Sätze (herzhaft, Hühnerherzen, Deckel/Topflappen/Tuch beim Abnehmen …) – weder Sperre noch Hinweis [< 1 ms]
+  Fehlermeldung:
+   gesperrt: Den Deckel zum Abnehmen anheben. → zum Abnehmen | Topflappen zum Abnehmen bereitlegen. → zum Abnehmen | Ein Tuch hilft beim Abnehmen. → beim Abnehmen
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0787_Runde4.Frei_bleibt_frei() in C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot5\tests\Trendo.Core.Tests\T0787Runde4Tests.cs:line 41
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0787 R4-2: englisch – „paprika“ mit Löffel ist das Gewürz; can, stick (Butter 113 g), pinch; „8 oz milk“ mit Hinweis oz/fl oz [51 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+                  ↓ (pos 7)
+Expected: "paprikapulver"
+Actual:   "paprika-rot"
+                  ↑ (pos 7)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0787_Runde4.Englisch() in C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot5\tests\Trendo.Core.Tests\T0787Runde4Tests.cs:line 56
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 3
+     Nicht bestanden: 3
+ Gesamtzeit: 14,9441 Sekunden

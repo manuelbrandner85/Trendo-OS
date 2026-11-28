@@ -1,0 +1,157 @@
+# T-0787 Fremdnachlauf chrome-jsonld – 2026-11-28 12:35:17 +01:00
+Datei trendo-rezepte.html: 6568 Bytes, SHA-256 30e948296c45df4d182da784e2540b0f1a027ac7cd33d385bfd5b49e03965794
+Datei trendo-rezepte.json: 2824 Bytes, SHA-256 812ffe3af4afe8e99903c395579d5c730438259daa81511dc55bba278946bccf
+$ Chrome (headless, eigenes Profil) öffnet die Rezeptseite mit #pruefen und gibt das DOM aus
+  chrome.exe --headless=new --disable-gpu --no-first-run --no-default-browser-check --user-data-dir=C:\Users\<user>\AppData\Local\Temp\trendo-t0787-work\7e27feac\chrome-profil --virtual-time-budget=8000 --dump-dom file:///C:/Users/<user>/AppData/Local/Temp/trendo-t0787-work/7e27feac/chrome/rezepte.html#pruefen
+Exit 0 nach 0,5 s
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rezepte</title>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Recipe",
+      "name": "Pfannkuchen",
+      "inLanguage": "de",
+      "recipeYield": [
+        "4",
+        "4 Portionen"
+      ],
+      "recipeIngredient": [
+        "250 g Weizenmehl",
+        "500 ml Milch",
+        "3 Eier",
+        "1 Prise Salz",
+        "2 EL Butter, zum Ausbacken"
+      ],
+      "description": "Dünne Pfannkuchen.",
+      "prepTime": "PT15M",
+      "cookTime": "PT20M",
+      "totalTime": "PT35M",
+      "recipeCategory": "Hauptgericht",
+      "recipeInstructions": [
+        {
+          "@type": "HowToStep",
+          "position": 1,
+          "text": "Mehl, Milch, Eier und Salz zu einem glatten Teig verrühren."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 2,
+          "text": "In heißer Butter von beiden Seiten goldbraun backen."
+        }
+      ],
+      "nutrition": {
+        "@type": "NutritionInformation",
+        "servingSize": "1 Portion (von 4)",
+        "calories": "411 kcal",
+        "proteinContent": "15.2 g",
+        "fatContent": "14.1 g",
+        "saturatedFatContent": "7.4 g",
+        "carbohydrateContent": "54.1 g",
+        "sugarContent": "6.8 g",
+        "fiberContent": "1.7 g",
+        "sodiumContent": "161 mg",
+        "description": "Richtwert je Portion, berechnet aus USDA FoodData Central, SR Legacy (April 2018), fdc.nal.usda.gov"
+      }
+    },
+    {
+      "@type": "Recipe",
+      "name": "Linsensuppe",
+      "inLanguage": "de",
+      "recipeYield": [
+        "4",
+        "4 Portionen"
+      ],
+      "recipeIngredient": [
+        "250 g Linsen",
+        "2 Karotten",
+        "1 Zwiebel",
+        "1 l Gemüsebrühe",
+        "1 EL Olivenöl",
+        "Salz und Pfeffer, nach Geschmack"
+      ],
+      "cookTime": "PT35M",
+      "totalTime": "PT35M",
+      "recipeCategory": "Suppe",
+      "recipeInstructions": [
+        {
+          "@type": "HowToStep",
+          "position": 1,
+          "text": "Zwiebel und Karotten würfeln und im Öl andünsten."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 2,
+          "text": "Linsen und Brühe dazugeben und 30 Minuten köcheln."
+        }
+      ],
+      "nutrition": {
+        "@type": "NutritionInformation",
+        "servingSize": "1 Portion (von 4)",
+        "calories": "289 kcal",
+        "proteinContent": "17.5 g",
+        "fatContent": "4.7 g",
+        "saturatedFatContent": "0.6 g",
+        "carbohydrateContent": "46.2 g",
+        "sugarContent": "4.9 g",
+        "fiberContent": "8 g",
+        "sodiumContent": "1001 mg",
+        "description": "Richtwert je Portion, berechnet aus USDA FoodData Central, SR Legacy (April 2018), fdc.nal.usda.gov"
+      }
+    }
+  ]
+}
+</script>
+<style>body{font-family:Georgia,serif;max-width:820px;margin:2em auto;padding:0 16px;color:#222;background:#fffdf8}h1{color:#7a5a00;margin-bottom:.2em}.meta{color:#666}table{border-collapse:collapse}td{padding:2px 10px 2px 0;vertical-align:top}.nw td{border-bottom:1px solid #eee}.hinweis{color:#666;font-size:.9em}article{page-break-after:always;margin-bottom:3em}</style></head><body data-ld-ok="ja" data-ld-rezepte="2" data-ld-zutaten="11" data-ld-kcal="411 kcal|289 kcal">
+<article class="rezept">
+<h1>Pfannkuchen</h1>
+<p>Dünne Pfannkuchen.</p>
+<p class="meta">4 Portionen · Vorbereitung 15 min · Garzeit 20 min</p>
+<h2>Zutaten</h2>
+<ul>
+<li>250 g Weizenmehl</li>
+<li>500 ml Milch</li>
+<li>3 Eier</li>
+<li>1 Prise Salz</li>
+<li>2 EL Butter, zum Ausbacken</li>
+</ul>
+<h2>Zubereitung</h2>
+<ol>
+<li>Mehl, Milch, Eier und Salz zu einem glatten Teig verrühren.</li>
+<li>In heißer Butter von beiden Seiten goldbraun backen.</li>
+</ol>
+<h2>Nährwerte je Portion (Richtwerte)</h2>
+<table class="nw"><tbody><tr><td>Energie</td><td>411 kcal / 1721 kJ</td></tr><tr><td>Fett</td><td>14,1 g</td></tr><tr><td>davon gesättigte Fettsäuren</td><td>7,4 g</td></tr><tr><td>Kohlenhydrate</td><td>54,1 g</td></tr><tr><td>davon Zucker</td><td>6,8 g</td></tr><tr><td>Ballaststoffe</td><td>1,7 g</td></tr><tr><td>Eiweiß</td><td>15,2 g</td></tr><tr><td>Salz</td><td>0,4 g</td></tr></tbody></table>
+<p class="hinweis">Richtwerte: berechnet aus Durchschnittswerten der Nährwert-Tabelle (rohe Zutaten, ohne Garverluste). Keine Ernährungs- oder Gesundheitsberatung. Quelle: USDA FoodData Central, SR Legacy (April 2018), fdc.nal.usda.gov (gemeinfrei, CC0 1.0 Universal).</p>
+</article>
+<article class="rezept">
+<h1>Linsensuppe</h1>
+<p class="meta">4 Portionen · Garzeit 35 min</p>
+<h2>Zutaten</h2>
+<ul>
+<li>250 g Linsen</li>
+<li>2 Karotten</li>
+<li>1 Zwiebel</li>
+<li>1 l Gemüsebrühe</li>
+<li>1 EL Olivenöl</li>
+<li>Salz und Pfeffer, nach Geschmack</li>
+</ul>
+<h2>Zubereitung</h2>
+<ol>
+<li>Zwiebel und Karotten würfeln und im Öl andünsten.</li>
+<li>Linsen und Brühe dazugeben und 30 Minuten köcheln.</li>
+</ol>
+<h2>Nährwerte je Portion (Richtwerte)</h2>
+<table class="nw"><tbody><tr><td>Energie</td><td>289 kcal / 1211 kJ</td></tr><tr><td>Fett</td><td>4,7 g</td></tr><tr><td>davon gesättigte Fettsäuren</td><td>0,6 g</td></tr><tr><td>Kohlenhydrate</td><td>46,2 g</td></tr><tr><td>davon Zucker</td><td>4,9 g</td></tr><tr><td>Ballaststoffe</td><td>8 g</td></tr><tr><td>Eiweiß</td><td>17,5 g</td></tr><tr><td>Salz</td><td>2,5 g</td></tr></tbody></table>
+<p class="hinweis">Richtwerte: berechnet aus Durchschnittswerten der Nährwert-Tabelle (rohe Zutaten, ohne Garverluste). Keine Ernährungs- oder Gesundheitsberatung. Quelle: USDA FoodData Central, SR Legacy (April 2018), fdc.nal.usda.gov (gemeinfrei, CC0 1.0 Universal).</p>
+</article>
+<script>if(location.hash==='#pruefen'){var b=document.body;try{var s=document.querySelector('script[type="application/ld+json"]');v …(gekürzt)
+[stderr] [18864:17032:1128/123517.792:ERROR:chrome\browser\extensions\external_registry_loader_win.cc:147] Missing value path for key Software\Google\Chrome\Extensions\dngcpimnedloihjnnfngkgjoidhnaolf.
+[18864:17032:1128/123517.792:ERROR:chrome\browser\extensions\external_registry_loader_win.cc:147] Missing value path for key Software\Google\Chrome\Extensions\fcoeoabgfenejglbffodgkkbkcdhcgfn.
+body-Element laut Chrome: <body data-ld-ok="ja" data-ld-rezepte="2" data-ld-zutaten="11" data-ld-kcal="411 kcal|289 kcal">
+Chrome liest im JSON-LD 2 Rezepte vom Typ Recipe mit 11 Zutaten, Energie je Portion 411 kcal|289 kcal – gleich den Werten von Trendo.
+Trendo liest die JSON-LD-Datei wieder: 2 Rezepte, Zutaten gleich.
+ERGEBNIS: BESTANDEN

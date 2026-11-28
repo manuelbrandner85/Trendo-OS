@@ -118,6 +118,8 @@ public static class StudioCatalog
         // T-0782 (Freigabe 26.11.2026, Etappe 0.9.113): Wissen & Lernen
         ["STUDIO-TUTOR-01"] = new("Nachhilfe mit KI", "Üben nach Lernpfad je Fach und Klasse – Hinweise statt fertiger Lösung, Fortschritt je Thema und Wiederholung zur rechten Zeit, KI nur auf diesem PC.", "Wissen & Lernen"),
         ["STUDIO-CODELEARN-01"] = new("Programmieren lernen", "Python Schritt für Schritt mit echten Tests – abgeschottet ohne Internet, mit Hinweisen und Fortschritt je Konzept.", "Wissen & Lernen"),
+        // T-0787 (Freigabe 26.11.2026, Etappe 0.9.115): Wissen & Lernen
+        ["STUDIO-RECIPE-01"] = new("Rezepte & Ernährung", "Rezepte mit Zutaten und Schritten, Portionen umrechnen, Nährwerte je Portion als Richtwert, Wochenplan und Einkaufsliste – schema.org-Rezepte ein und aus.", "Wissen & Lernen"),
     };
 
     /// <summary>Studio-Liste mit den alltagsnahen Namen (gilt dann überall: Karten, Kacheln, Startmenü, Fenstertitel).</summary>

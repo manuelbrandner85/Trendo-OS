@@ -1,0 +1,161 @@
+kennung	name	fdc_id	beschreibung_usda	dichte_g_ml	stueck_g	abteilung
+ei	Ei (Hühnerei)	171287	Egg, whole, raw, fresh	1.027	50	Milch, Käse & Eier
+eigelb	Eigelb	172184	Egg, yolk, raw, fresh	1.027	17.0	Milch, Käse & Eier
+eiweiss	Eiweiß (Eiklar)	172183	Egg, white, raw, fresh	1.027	33.0	Milch, Käse & Eier
+weizenmehl	Weizenmehl (Type 405/550)	168936	Wheat flour, white, all-purpose, enriched, unbleached	0.528	0	Brot & Backzutaten
+vollkornmehl	Weizenvollkornmehl	168893	Wheat flour, whole-grain (Includes foods for USDA's Food Distribution Program)	0.507	0	Brot & Backzutaten
+brotmehl	Weizenmehl Type 812 (Brotmehl)	168896	Wheat flour, white, bread, enriched	0.579	0	Brot & Backzutaten
+roggenmehl	Roggenmehl	168886	Rye flour, medium	0.431	0	Brot & Backzutaten
+dinkel	Dinkel (Korn)	169745	Spelt, uncooked	0.735	0	Getreide, Nudeln & Reis
+griess	Hartweizengrieß	168933	Semolina, unenriched	0.706	0	Brot & Backzutaten
+speisestaerke	Speisestärke (Mais)	169698	Cornstarch	0.541	0	Brot & Backzutaten
+backpulver	Backpulver	172803	Leavening agents, baking powder, double-acting, sodium aluminum sulfate	0.933	0	Brot & Backzutaten
+hefe-frisch	Hefe, frisch	175042	Leavening agents, yeast, baker's, compressed	0	0	Brot & Backzutaten
+hefe-trocken	Trockenhefe	175043	Leavening agents, yeast, baker's, active dry	0.812	0	Brot & Backzutaten
+zucker	Zucker	169655	Sugars, granulated	0.852	0	Süßes & Backzutaten
+brauner-zucker	Brauner Zucker	168833	Sugars, brown	0.649	0	Süßes & Backzutaten
+puderzucker	Puderzucker	169656	Sugars, powdered	0.507	0	Süßes & Backzutaten
+honig	Honig	169640	Honey	1.433	0	Süßes & Backzutaten
+ahornsirup	Ahornsirup	169661	Syrups, maple	1.353	0	Süßes & Backzutaten
+marmelade	Konfitüre	169641	Jams and preserves	1.353	0	Süßes & Backzutaten
+kakao	Kakaopulver (ungesüßt)	169593	Cocoa, dry powder, unsweetened	0.364	0	Süßes & Backzutaten
+zartbitter	Zartbitterschokolade (70–85 %)	170273	Chocolate, dark, 70-85% cacao solids	0	0	Süßes & Backzutaten
+salz	Salz	173468	Salt, table	1.217	0	Gewürze & Soßen
+butter	Butter	173430	Butter, without salt	0.96	0	Milch, Käse & Eier
+margarine	Margarine	171435	Margarine, regular, 80% fat, composite, stick, with salt, with added vitamin D	0.947	0	Milch, Käse & Eier
+olivenoel	Olivenöl	171413	Oil, olive, salad or cooking	0.913	0	Öle & Fette
+rapsoel	Rapsöl	172336	Oil, canola	0.947	0	Öle & Fette
+sonnenblumenoel	Sonnenblumenöl	172338	Oil, sunflower, high oleic (70% and over)	0.947	0	Öle & Fette
+kokosoel	Kokosöl	171412	Oil, coconut	0.92	0	Öle & Fette
+vollmilch	Vollmilch (3,25 %)	171265	Milk, whole, 3.25% milkfat, with added vitamin D	1.031	0	Milch, Käse & Eier
+fettarme-milch	Fettarme Milch (1 %)	170872	Milk, lowfat, fluid, 1% milkfat, with added vitamin A and vitamin D	1.031	0	Milch, Käse & Eier
+sahne	Schlagsahne (36 %)	170859	Cream, fluid, heavy whipping	1.014	0	Milch, Käse & Eier
+kochsahne	Sahne (31 %)	170858	Cream, fluid, light whipping	1.014	0	Milch, Käse & Eier
+saure-sahne	Saure Sahne / Schmand	171257	Cream, sour, cultured	0.812	0	Milch, Käse & Eier
+joghurt	Naturjoghurt (3,3 %)	171284	Yogurt, plain, whole milk	1.036	0	Milch, Käse & Eier
+frischkaese	Frischkäse	173418	Cheese, cream	0.981	0	Milch, Käse & Eier
+huettenkaese	Hüttenkäse	172179	Cheese, cottage, creamed, large or small curd	0	0	Milch, Käse & Eier
+ricotta	Ricotta	170851	Cheese, ricotta, whole milk	1.048	0	Milch, Käse & Eier
+mozzarella	Mozzarella	170845	Cheese, mozzarella, whole milk	0	0	Milch, Käse & Eier
+parmesan	Parmesan / Hartkäse	170848	Cheese, parmesan, hard	0	0	Milch, Käse & Eier
+gouda	Gouda	171241	Cheese, gouda	0	0	Milch, Käse & Eier
+emmentaler	Emmentaler	171251	Cheese, swiss	1.031	0	Milch, Käse & Eier
+cheddar	Cheddar	173414	Cheese, cheddar (Includes foods for USDA's Food Distribution Program)	1.031	0	Milch, Käse & Eier
+feta	Feta (Schafskäse)	173420	Cheese, feta	0	0	Milch, Käse & Eier
+haehnchenbrust	Hähnchenbrust (ohne Haut)	171077	Chicken, broiler or fryers, breast, skinless, boneless, meat only, raw	0	0	Fleisch & Fisch
+putenbrust	Putenbrust	171098	Turkey, whole, breast, meat only, raw	0	0	Fleisch & Fisch
+rinderhack	Rinderhackfleisch (20 % Fett)	174036	Beef, ground, 80% lean meat / 20% fat, raw	0	0	Fleisch & Fisch
+rindersteak	Rindersteak (Hüfte)	168726	Beef, top sirloin, steak, separable lean and fat, trimmed to 1/8" fat, all grades, raw	0	0	Fleisch & Fisch
+schweinehack	Schweinehackfleisch	167902	Pork, fresh, ground, raw	0	0	Fleisch & Fisch
+schweinelende	Schweinelende / Kotelett	167818	Pork, fresh, loin, whole, separable lean and fat, raw	0	0	Fleisch & Fisch
+kochschinken	Kochschinken	173864	Ham, sliced, regular (approximately 11% fat)	0	0	Fleisch & Fisch
+lachs	Lachs	175167	Fish, salmon, Atlantic, farmed, raw	0	0	Fleisch & Fisch
+kabeljau	Kabeljau (Dorsch)	171955	Fish, cod, Atlantic, raw	0	0	Fleisch & Fisch
+thunfisch-dose	Thunfisch (Dose, im eigenen Saft)	173709	Fish, tuna, light, canned in water, drained solids (Includes foods for USDA's Food Distribution Program)	0.651	0	Vorrat
+garnelen	Garnelen	175179	Crustaceans, shrimp, raw	0	0	Fleisch & Fisch
+tofu	Tofu (fest)	172475	Tofu, raw, firm, prepared with calcium sulfate	1.065	0	Kühlregal
+kartoffel	Kartoffeln	170026	Potatoes, flesh and skin, raw	0	150	Obst & Gemüse
+suesskartoffel	Süßkartoffel	168482	Sweet potato, raw, unprepared (Includes foods for USDA's Food Distribution Program)	0	200	Obst & Gemüse
+zwiebel	Zwiebel	170000	Onions, raw	0	110.0	Obst & Gemüse
+lauchzwiebel	Frühlingszwiebel	170005	Onions, spring or scallions (includes tops and bulb), raw	0	15.0	Obst & Gemüse
+schalotte	Schalotte	170499	Shallots, raw	0	25	Obst & Gemüse
+knoblauch	Knoblauch	169230	Garlic, raw	0.575	3.0	Obst & Gemüse
+lauch	Lauch (Porree)	169246	Leeks, (bulb and lower leaf-portion), raw	0.376	0	Obst & Gemüse
+tomate	Tomate	170457	Tomatoes, red, ripe, raw, year round average	0.63	123.0	Obst & Gemüse
+tomaten-dose	Tomaten (Dose, stückig)	170051	Tomatoes, red, ripe, canned, packed in tomato juice	1.014	111.0	Vorrat
+tomatenmark	Tomatenmark	170459	Tomato products, canned, paste, without salt added (Includes foods for USDA's Food Distribution Program)	1.116	0	Vorrat
+karotte	Karotte (Möhre)	170393	Carrots, raw	0.516	61.0	Obst & Gemüse
+paprika-rot	Paprika (rot)	170108	Peppers, sweet, red, raw	0.629	119.0	Obst & Gemüse
+chili	Chilischote (rot)	170106	Peppers, hot chili, red, raw	0	45.0	Obst & Gemüse
+gurke	Salatgurke	168409	Cucumber, with peel, raw	0.44	0	Obst & Gemüse
+zucchini	Zucchini	169291	Squash, summer, zucchini, includes skin, raw	0	196.0	Obst & Gemüse
+aubergine	Aubergine	169228	Eggplant, raw	0	0	Obst & Gemüse
+brokkoli	Brokkoli	170379	Broccoli, raw	0	0	Obst & Gemüse
+blumenkohl	Blumenkohl	169986	Cauliflower, raw	0	0	Obst & Gemüse
+weisskohl	Weißkohl	169975	Cabbage, raw	0	0	Obst & Gemüse
+gruenkohl	Grünkohl	168421	Kale, raw	0.089	0	Obst & Gemüse
+spinat	Spinat	168462	Spinach, raw	0.127	0	Obst & Gemüse
+champignons	Champignons	169251	Mushrooms, white, raw	0.406	18.0	Obst & Gemüse
+eisbergsalat	Eisbergsalat	169248	Lettuce, iceberg (includes crisphead types), raw	0	0	Obst & Gemüse
+blattsalat	Blattsalat	169249	Lettuce, green leaf, raw	0	0	Obst & Gemüse
+sellerie	Staudensellerie	169988	Celery, raw	0.507	0	Obst & Gemüse
+erbsen	Erbsen (TK)	170016	Peas, green, frozen, unprepared (Includes foods for USDA's Food Distribution Program)	0.566	0	Obst & Gemüse
+mais	Zuckermais	169998	Corn, sweet, yellow, raw	0.613	0	Obst & Gemüse
+gruene-bohnen	Grüne Bohnen	169961	Beans, snap, green, raw	0	0	Obst & Gemüse
+spargel	Spargel (grün)	168389	Asparagus, raw	0.566	0	Obst & Gemüse
+kuerbis	Kürbis	168448	Pumpkin, raw	0	0	Obst & Gemüse
+rote-bete	Rote Bete	169145	Beets, raw	0.575	0	Obst & Gemüse
+radieschen	Radieschen	169276	Radishes, raw	0.49	4.5	Obst & Gemüse
+ingwer	Ingwer (frisch)	169231	Ginger root, raw	0.406	0	Obst & Gemüse
+kidneybohnen	Kidneybohnen (Dose, abgetropft)	174285	Beans, kidney, red, mature seeds, canned, drained solids	0	0	Vorrat
+kichererbsen	Kichererbsen (Dose, abgetropft)	173800	Chickpeas (garbanzo beans, bengal gram), mature seeds, canned, drained solids	0	0	Vorrat
+linsen	Linsen (getrocknet)	172420	Lentils, raw	0.812	0	Vorrat
+reis	Reis (weiß, roh)	169756	Rice, white, long-grain, regular, raw, unenriched	0.782	0	Getreide, Nudeln & Reis
+vollkornreis	Naturreis (roh)	169703	Rice, brown, long-grain, raw (Includes foods for USDA's Food Distribution Program)	0.782	0	Getreide, Nudeln & Reis
+nudeln	Nudeln (Hartweizen, roh)	168927	Pasta, dry, unenriched	0.385	0	Getreide, Nudeln & Reis
+eiernudeln	Eiernudeln (roh)	169755	Noodles, egg, dry, unenriched	0.161	0	Getreide, Nudeln & Reis
+reisnudeln	Reisnudeln (roh)	169742	Rice noodles, dry	0	0	Getreide, Nudeln & Reis
+couscous	Couscous (roh)	169699	Couscous, dry	0.731	0	Getreide, Nudeln & Reis
+bulgur	Bulgur (roh)	170688	Bulgur, dry	0.592	0	Getreide, Nudeln & Reis
+quinoa	Quinoa (roh)	168874	Quinoa, uncooked	0.719	0	Getreide, Nudeln & Reis
+haferflocken	Haferflocken	173904	Cereals, oats, regular and quick, not fortified, dry	0.342	0	Getreide, Nudeln & Reis
+vollkornbrot	Vollkornbrot (Weizen)	172688	Bread, whole-wheat, commercially prepared	0	0	Brot & Backzutaten
+weissbrot	Weißbrot / Toast	174924	Bread, white, commercially prepared (includes soft bread crumbs)	0.19	0	Brot & Backzutaten
+roggenbrot	Roggenbrot	172684	Bread, rye	0	0	Brot & Backzutaten
+apfel	Apfel	171688	Apples, raw, with skin (Includes foods for USDA's Food Distribution Program)	0.461	180	Obst & Gemüse
+banane	Banane	173944	Bananas, raw	0	118.0	Obst & Gemüse
+birne	Birne	167776	Pears, raw, bartlett (Includes foods for USDA's Food Distribution Program)	0	180	Obst & Gemüse
+orange	Orange	169097	Oranges, raw, all commercial varieties	0.761	184.0	Obst & Gemüse
+zitrone	Zitrone	167746	Lemons, raw, without peel	0.896	58.0	Obst & Gemüse
+zitronensaft	Zitronensaft	167747	Lemon juice, raw	1.031	0	Obst & Gemüse
+limette	Limette	168155	Limes, raw	0	67.0	Obst & Gemüse
+orangensaft	Orangensaft (frisch)	169098	Orange juice, raw (Includes foods for USDA's Food Distribution Program)	1.048	86.0	Obst & Gemüse
+erdbeeren	Erdbeeren	167762	Strawberries, raw	0.609	12.0	Obst & Gemüse
+heidelbeeren	Heidelbeeren	171711	Blueberries, raw	0.626	0	Obst & Gemüse
+himbeeren	Himbeeren	167755	Raspberries, raw	0.52	0	Obst & Gemüse
+trauben	Weintrauben	174683	Grapes, red or green (European type, such as Thompson seedless), raw	0.638	0	Obst & Gemüse
+kirschen	Süßkirschen	171719	Cherries, sweet, raw	0.583	0	Obst & Gemüse
+pfirsich	Pfirsich	169928	Peaches, yellow, raw	0.651	150.0	Obst & Gemüse
+pflaume	Pflaumen / Zwetschgen	169949	Plums, raw	0	66.0	Obst & Gemüse
+ananas	Ananas	169124	Pineapple, raw, all varieties	0.697	905.0	Obst & Gemüse
+kiwi	Kiwi	168153	Kiwifruit, green, raw	0	69.0	Obst & Gemüse
+mango	Mango	169910	Mangos, raw	0	336.0	Obst & Gemüse
+avocado	Avocado	171705	Avocados, raw, all commercial varieties	0	0	Obst & Gemüse
+rosinen	Rosinen	168165	Raisins, dark, seedless (Includes foods for USDA's Food Distribution Program)	0	43.0	Nüsse & Samen
+aprikosen-getrocknet	Aprikosen (getrocknet)	173941	Apricots, dried, sulfured, uncooked	0	0	Nüsse & Samen
+oliven	Oliven (schwarz)	169094	Olives, ripe, canned (small-extra large)	0.568	4.4	Vorrat
+mandeln	Mandeln	170567	Nuts, almonds	0.604	0	Nüsse & Samen
+walnuesse	Walnüsse	170187	Nuts, walnuts, english	0.338	0	Nüsse & Samen
+haselnuesse	Haselnüsse	170581	Nuts, hazelnuts or filberts	0.317	0	Nüsse & Samen
+erdnussbutter	Erdnussbutter (ohne Salz)	172470	Peanut butter, smooth style, without salt	1.082	0	Vorrat
+sonnenblumenkerne	Sonnenblumenkerne	170562	Seeds, sunflower seed kernels, dried	0.194	0	Nüsse & Samen
+kuerbiskerne	Kürbiskerne	170556	Seeds, pumpkin and squash seed kernels, dried	0.545	0	Nüsse & Samen
+sesam	Sesam	170150	Seeds, sesame seeds, whole, dried	0.609	0	Nüsse & Samen
+leinsamen	Leinsamen	169414	Seeds, flaxseed	0.697	0	Nüsse & Samen
+kokosmilch	Kokosmilch (Dose)	170173	Nuts, coconut milk, canned (liquid expressed from grated meat and water)	0.955	0	Vorrat
+sojadrink	Sojadrink	172446	Soymilk, original and vanilla, unfortified	1.027	0	Getränke
+mandeldrink	Mandeldrink (ungesüßt)	174832	Beverages, almond milk, unsweetened, shelf stable	1.107	0	Getränke
+haehnchenbruehe	Hühnerbrühe	174536	Soup, chicken broth, ready-to-serve	1.052	0	Vorrat
+wasser	Wasser	173647	Beverages, water, tap, drinking	1.001	0	Getränke
+kaffee	Kaffee (gebrüht)	171890	Beverages, coffee, brewed, prepared with tap water	1.001	0	Getränke
+sojasauce	Sojasauce	174278	Soy sauce made from soy (tamari)	1.217	0	Vorrat
+senf	Senf (mittelscharf)	172234	Mustard, prepared, yellow	1.014	0	Gewürze & Soßen
+ketchup	Ketchup	168556	Catsup	1.15	0	Obst & Gemüse
+mayonnaise	Mayonnaise	171009	Salad dressing, mayonnaise, regular	0.933	0	Öle & Fette
+apfelessig	Essig (Apfelessig)	173469	Vinegar, cider	1.008	0	Gewürze & Soßen
+balsamico	Balsamico-Essig	172241	Vinegar, balsamic	1.082	0	Gewürze & Soßen
+pfeffer	Pfeffer (schwarz)	170931	Spices, pepper, black	0.467	0	Gewürze & Soßen
+paprikapulver	Paprikapulver	171329	Spices, paprika	0.467	0	Gewürze & Soßen
+zimt	Zimt (gemahlen)	171320	Spices, cinnamon, ground	0.527	0	Gewürze & Soßen
+kreuzkuemmel	Kreuzkümmel	170923	Spices, cumin seed	0.426	0	Gewürze & Soßen
+curry	Currypulver	170924	Spices, curry powder	0.406	0	Gewürze & Soßen
+muskat	Muskatnuss (gemahlen)	171326	Spices, nutmeg, ground	0.446	0	Gewürze & Soßen
+oregano	Oregano (getrocknet)	171328	Spices, oregano, dried	0.203	0	Gewürze & Soßen
+thymian	Thymian (getrocknet)	170938	Spices, thyme, dried	0.203	0	Gewürze & Soßen
+knoblauchpulver	Knoblauchpulver	171325	Spices, garlic powder	0.629	0	Gewürze & Soßen
+ingwerpulver	Ingwer (gemahlen)	170926	Spices, ginger, ground	0.365	0	Gewürze & Soßen
+basilikum	Basilikum (frisch)	172232	Basil, fresh	0.101	0	Obst & Gemüse
+petersilie	Petersilie (frisch)	170416	Parsley, fresh	0.257	0	Obst & Gemüse
+schnittlauch	Schnittlauch	169994	Chives, raw	0	0	Obst & Gemüse
+dill	Dill (frisch)	172233	Dill weed, fresh	0.038	0	Obst & Gemüse
+vanillearoma	Vanillearoma (flüssig)	172236	Vanilla extract, imitation, no alcohol	0.852	0	Gewürze & Soßen
