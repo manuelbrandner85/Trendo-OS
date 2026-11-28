@@ -680,6 +680,20 @@ modules:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: Freigabe im Chat 09.11.2026 (79 neue Studios), Etappe 0.9.113 Wissen & Lernen 26.11.2026 (T-0782)
+- id: STUDIO-RECIPE-01
+  name: Rezepte & Ernährung
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios), Etappe 0.9.115 Wissen & Lernen E, requirements.yaml einmalig freigegeben 28.11.2026 (T-0787)
+- id: STUDIO-FAMILY-01
+  name: Stammbaum
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios), Etappe 0.9.115 Wissen & Lernen E, requirements.yaml einmalig freigegeben 28.11.2026 (T-0788)
 - id: STUDIO-MUSIK-01
   name: Trendo Musik (Lieder mit ACE-Step)
   approved_expansion_functions: '0'
