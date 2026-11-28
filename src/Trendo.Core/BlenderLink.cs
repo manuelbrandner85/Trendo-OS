@@ -392,7 +392,8 @@ public sealed class ProcessBlenderHost : IBlenderHost
         return age < TimeSpan.FromSeconds(15);
     }
 
-    /// <summary>Hat die Befehlszeile das Argument <c>-b</c> oder <c>--background</c>? (Anführungszeichen werden beachtet, „-b“ in einem Dateinamen zählt nicht.)</summary>
+    /// <summary>Hat die Befehlszeile das Argument <c>-b</c>/<c>--background</c> oder <c>-c</c>/<c>--command</c> (beide ohne Fenster)? Nur Argumente vor <c>--</c>;
+    /// Anführungszeichen werden beachtet, „-b“ oder „-c“ in einem Dateinamen zählt nicht.</summary>
     public static bool IsBackground(string? commandLine)
     {
         if (string.IsNullOrWhiteSpace(commandLine)) return false;
@@ -407,7 +408,7 @@ public sealed class ProcessBlenderHost : IBlenderHost
         foreach (var t in tokens.Skip(1)) // das erste ist das Programm selbst
         {
             if (t == "--") break; // danach folgen Skript-Argumente
-            if (t is "-b" or "--background") return true;
+            if (t is "-b" or "--background" or "-c" or "--command") return true; // T-0786: auch -c/--command (Befehlsmodus ohne Fenster, z. B. CLI-Modus des MCP-Add-ons)
         }
         return false;
     }

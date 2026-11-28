@@ -375,6 +375,11 @@ public class BlenderLinkTests
         Assert.False(ProcessBlenderHost.CountsAsOpen(false, young, "blender.exe C:\\p\\szene.blend", ownChild: true)); // Trendos eigener Kindprozess ohne Fenster
         Assert.True(ProcessBlenderHost.CountsAsOpen(false, young, "\"C:\\Program Files\\Blender Foundation\\Blender 5.2\\blender.exe\" \"C:\\p\\-b-entwurf.blend\"")); // Blender der Person, startet gerade
         Assert.True(ProcessBlenderHost.CountsAsOpen(false, young, "blender.exe szene.blend -- -b")); // -b nach „--“ gehört dem Skript
+        // T-0786: -c/--command startet Blender ebenfalls ohne Fenster (CLI-Modus des MCP-Add-ons) – gleiche Regeln wie -b
+        Assert.False(ProcessBlenderHost.CountsAsOpen(false, young, "\"C:\\Program Files\\Blender Foundation\\Blender 5.2\\blender.exe\" -c extension list"));
+        Assert.False(ProcessBlenderHost.CountsAsOpen(false, young, "blender.exe --factory-startup --command server"));
+        Assert.True(ProcessBlenderHost.CountsAsOpen(false, young, "blender.exe \"C:\\p\\-c entwurf.blend\"")); // „-c“ im Dateinamen in Anführungszeichen
+        Assert.True(ProcessBlenderHost.CountsAsOpen(false, young, "blender.exe szene.blend -- -c --command")); // nach „--“ gehören sie dem Skript
         Assert.True(ProcessBlenderHost.CountsAsOpen(false, young, null)); // Befehlszeile nicht lesbar: bisherige Zeitregel
         Assert.False(ProcessBlenderHost.CountsAsOpen(false, TimeSpan.FromSeconds(20), "blender.exe szene.blend"));
         Assert.True(ProcessBlenderHost.CountsAsOpen(true, young, "blender.exe -b")); // mit Fenster zählt immer
