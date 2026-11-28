@@ -99,6 +99,60 @@
 - App: 41 berührte Testklassen, „Total: 254, Errors: 0, Failed: 0, Skipped: 8“ (die übersprungenen sind ECHT-Läufe anderer Pakete). Exitcode 0.
 - **Rot-Grün:** Die neuen Tests nutzen neue Schnittstellen (`Geschlossen`, `TakeRecovery`, `RecoveryFor`, `Quiet`, `AskAddonConsent`, `BlenderSafeTools`, `BlenderAskOverride` …) und lassen sich mit dem Stand der ersten Runde nicht bauen, schlagen also fehl. Fachlich wären sie dort rot: H1a (das alte Skript speicherte über die Originaldatei), H1b und H2 (der alte Code startete neu), H3 (dort stand der ganze Server in der Freigabe).
 
+## Korrekturrunde 2 (zweite Prüfrunde: M5, M6, M3-Rest, H2-Grenzfälle, N6–N10)
+
+### Pflicht vor dem Merge
+- **M5: Herzschlag ohne Stau.** Das Add-on nimmt Verbindungen nur im Hauptfaden an, mit einer Warteschlange von 5. Deshalb gilt jetzt:
+  - Zwischen den Kennungsabfragen prüft Trendo nur, ob der Prozess lebt. Abfragen gibt es beim eigenen Blender höchstens alle 15 s, beim Blender der Person alle 45 s.
+  - Unter Quiet (Claude arbeitet) und während eines Auftrags gibt es **keine** TCP-Prüfung.
+  - Es ist **nie mehr als eine** Prüfverbindung offen. Bekommt sie keine Antwort, bleibt sie offen, bis Blender antwortet, statt neu zu verbinden. Der Status heißt dann „arbeitet“.
+  - Verbinden hat eine eigene Zeitgrenze von 5 s. Windows meldet einen geschlossenen Port auf 127.0.0.1 erst nach etwa 2 s; eine echte Zeitüberschreitung bei lebendem Prozess heißt „arbeitet“, nicht Abbruch.
+  - Das Schließen von Blender durch die Person erkennt Trendo am Prozess, ohne TCP.
+- **M6:** Das Speicherverbot lässt sich in Blender nicht sicher technisch durchsetzen. `save_pre`-Handler können das Speichern nicht abbrechen. Die Texte sagen das jetzt ehrlich: „Claude soll sie nicht speichern – technisch sperren kann Trendo das nicht.“ Das steht in der Frage, im Schritt und in der Regel an Claude.
+- **M3-Rest:** Nach jedem neuen Verbindungsaufbau macht Trendo fünf Kennungsabfragen.
+  - Liefern sie verschiedene PIDs, lauschen zwei Brücken auf demselben Port (SO_REUSEADDR). Trendo warnt deutlich.
+  - Ist Trendos eigenes Blender dabei, zieht **nur dessen** Brücke auf einen freien Port um (Code prüft die eigene PID).
+  - Sind es zwei fremde Blender, verbindet Trendo sich mit keinem und erklärt, warum.
+  - Ein PID-Wechsel im laufenden Betrieb löst die Prüfung neu aus.
+
+### Mitgenommen
+- **H2-Grenzfälle:**
+  - Wird Blender innerhalb von 2 min ein zweites Mal hart beendet (z. B. „Task beenden“), fragt Trendo „Neu starten?“, statt weiter neu zu starten. Bei „Nein“ hilft nur „Neu verbinden“.
+  - Beim Schließen von Trendo wird die Verbindung freigegeben (`Dispose`); während des Herunterfahrens startet nichts neu.
+- **N6:** Speichern einer Kopie (`copy=True`, die `_for_cli`-Werkzeuge) lässt die Sicherung stehen: Der `save_post`-Pfad weicht dann von der offenen Datei ab. Bei „Speichern unter“ fällt auch die alte Sicherung weg.
+- **N7:** Verwaiste Sicherungen (deren Blender läuft nicht mehr) zeigt das Statusfeld als Knopf „Sicherung von … öffnen“. Sie öffnen nie automatisch, sondern als eigene Datei; das Original bleibt unverändert.
+- **N8:** `…-wiederhergestellt-…`-Dateien zählen nie als Projektdatei (`BlenderLink.IsProjectBlend`, auch in `StudioMcp.LaunchArgs`).
+- **N9:** Als „Blender offen“ zählt nur ein Blender mit Fenster; Hintergrundläufe (`-b`) nicht.
+- **N10:** Ein „Nein“ zum Add-on wird gemerkt. Trendo fragt erst nach „Neu verbinden“ wieder.
+
+### Tests der Runde 2
+- **Core `BlenderLinkTests`: 31 Tests**, zwei Läufe der berührten Klassen mit je 91 Tests (die vorhandene N1-Prüfung war an das neue Verhalten anzupassen: unter Quiet gibt es jetzt auch kein „verbindet neu“ mehr). Neu:
+  - `M5_blocked_bridge`: blockierte Ersatz-Brücke mit Warteschlange 5, höchstens eine Prüfverbindung, kein „getrennt“, Claudes Aufruf geht danach durch
+  - `M5_quiet_no_tcp` und `M5_foreign_interval`
+  - `M3_duplicate_bridges`: eigenes Blender zieht um; bei zwei fremden keine Verbindung
+  - `H2_quick_restart_asks` (Ja/Nein) und `H2_dispose_no_restart`
+  - `N7_N8_orphans` und `N6_copy_save_keeps_recovery` (mit M6-Text)
+- **App:** `N10_no_remembered`, `Close_disposes_link`, M4-Text angepasst.
+- **ECHT** (eigener Port, eigenes Temp-Profil, kein fremdes Blender), zusätzlich zu Runde 1:
+  - **N6:** Kopie gespeichert, die Sicherung blieb.
+  - **M5:** Blender 40 s blockiert, ohne Quiet, Herzschlag alle 2 s. Status nur „Verbunden → Arbeitet“, nie „getrennt“ oder „verbindet neu“; höchstens eine offene Prüfverbindung. Ein MCP-Aufruf über den echten MCP-Server der Person, 12 s nach Beginn der Blockade gestartet, ging nach dem Ende der Blockade durch.
+  - **N9:** Ein eigener Hintergrund-Blender zählte nicht als offen und wurde danach beendet.
+  - Absturz → eigene Datei (Original SHA-gleich) und sauberes Schließen → kein Neustart, wie in Runde 1.
+  - Rohlog SHA-256 `6608641e…`.
+
+**Ergebnisse Runde 2:**
+- Build: 0 Fehler.
+- Core, berührte Klassen: zweimal „Fehler: 0“ bei 91 Tests. Nach der Anpassung der N1-Prüfung wurden N1 und M5 (7 Tests) noch einmal geprüft: grün.
+- Core ECHT: „Bestanden! erfolgreich: 1“ (1 min 47 s).
+- App, 41 berührte Klassen: Total 256, 1 Fehler. Das war eine Textprüfung im M4-Test, die nicht zum neuen ehrlichen Text passte. Danach `BlenderLink_Ui` und `StudioMcp_Ui`: Total 9, Failed 0. Die übrigen 247 Tests waren im 256er-Lauf grün.
+- **Rot-Grün:** Die neuen Tests nutzen neue Schnittstellen (`MaxOpenProbes`, `ProbeInterval`, `AskRestart`, `IsDisposed`, `OrphanRecoveries`, `OpenOrphan`, `IsProjectBlend`, `BlenderReconnectClick` …) und sind auf dem Stand von fix1 nicht baubar. Fachlich wären M5 (dort gab es einen TCP-Test bei jedem Herzschlag) und H2-quick (dort wurde ohne Frage neu gestartet) rot.
+
+### Nicht geprüft (Runde 2)
+- Das Speicherverbot ist nicht technisch durchgesetzt (M6), nur ehrlich benannt.
+- Die Frage „Neu starten?“ nach zweimaligem Beenden ist nicht echt mit dem Task-Manager geprüft, nur mit Ersatz.
+- Zwei echte Blender-Brücken auf einem Port sind nicht echt nachgestellt, nur mit Ersatz.
+- Eine volle Warteschlange beim **Verbinden** (Abweisung sofort) ist nur über die Toleranz „nach ‚arbeitet‘ einmal abwarten“ abgedeckt. Fremde Programme, die die Warteschlange füllen, kann Trendo nicht verhindern.
+
 ## Abnahmekriterien
 1. Echtes Ergebnis aus leerer Vorlage: **TEILWEISE**. Echt über die Verbindung (leere `szene.blend`, Würfel angelegt); der Weg über den Klick in der Oberfläche ist nur mit Ersatz-Blender geprüft.
 2. Fremdprogramm/Export: **TEILWEISE**. Die echte .blend öffnet sich im echten Blender, Beleg mit SHA-256. Ein Import-Export-Kreislauf gehört nicht zu diesem Paket.

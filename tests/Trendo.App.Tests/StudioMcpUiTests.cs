@@ -174,7 +174,7 @@ public class BlenderLink_Ui
             Assert.Equal(["projekt"], asked); Assert.Equal(0, host.Starts);
             Assert.Contains(steps, s => s.Text.Contains("fremd.blend")); // die offene Datei wird gezeigt
             if (openProject) { Assert.Equal(1, person.Opened); Assert.Equal(blend, person.File); Assert.True(maySave); }
-            else { Assert.Equal(0, person.Opened); Assert.False(maySave); Assert.Contains(steps, s => s.Text.Contains("speichert sie nicht")); }
+            else { Assert.Equal(0, person.Opened); Assert.False(maySave); Assert.Contains(steps, s => s.Text.Contains("soll sie nicht speichern") && s.Text.Contains("technisch sperren")); }
         }
         finally { MainWindow.BlenderLinkOverride = null; MainWindow.BlenderAskOverride = null; w.Close(); try { Directory.Delete(d, true); } catch (IOException) { } }
     }
@@ -191,12 +191,49 @@ public class BlenderLink_Ui
         try
         {
             var link = w.BlenderLinkGet()!;
-            Assert.False(link.AddonConsent); Assert.False(w.BlenderAddonConsentStored);
+            Assert.False(link.AddonConsent); Assert.Null(w.BlenderAddonConsentStored);
             Assert.True(await link.AskAddonConsent!());
             Assert.Equal(1, asked); Assert.True(w.BlenderAddonConsentStored);
             Assert.Contains("dauerhaft an", MainWindow.BlenderAddonPermanentText);
             Assert.Contains(w.Core.Audit.ReadAll(), e => e.Action == "blender.link.addon-frage");
         }
         finally { MainWindow.BlenderLinkOverride = null; MainWindow.BlenderAskOverride = null; w.Close(); try { Directory.Delete(d, true); } catch (IOException) { } }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0785 N10: „Nein“ zum MCP-Add-on wird gemerkt – keine neue Frage, bis „Neu verbinden“ gedrückt wird")]
+    public async Task N10_no_remembered()
+    {
+        var d = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "trendo-blink-ui-" + Guid.NewGuid().ToString("N"))).FullName;
+        var exe = Path.Combine(d, "blender.exe"); System.IO.File.WriteAllText(exe, "");
+        var asked = 0;
+        MainWindow.BlenderLinkOverride = () => new Trendo.Core.BlenderLink(exe, new PersonHost(), Trendo.Core.BlenderBridge.FreePort());
+        MainWindow.BlenderAskOverride = k => { if (k == "addon") asked++; return false; };
+        var (w, _, _) = Ui.Open();
+        try
+        {
+            var link = w.BlenderLinkGet()!;
+            Assert.False(await link.AskAddonConsent!()); Assert.Equal(1, asked); Assert.False(w.BlenderAddonConsentStored);
+            Assert.False(await link.AskAddonConsent!()); Assert.Equal(1, asked); // gemerkt, keine zweite Frage
+            await w.BlenderReconnectClick(); // Knopf „Neu verbinden“
+            Assert.False(await link.AskAddonConsent!()); Assert.Equal(2, asked); // fragt wieder
+        }
+        finally { MainWindow.BlenderLinkOverride = null; MainWindow.BlenderAskOverride = null; w.Close(); try { Directory.Delete(d, true); } catch (IOException) { } }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0785 H2: Trendo schließen gibt die Blender-Verbindung frei (kein Neustart beim Herunterfahren)")]
+    public void Close_disposes_link()
+    {
+        var d = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "trendo-blink-ui-" + Guid.NewGuid().ToString("N"))).FullName;
+        var exe = Path.Combine(d, "blender.exe"); System.IO.File.WriteAllText(exe, "");
+        MainWindow.BlenderLinkOverride = () => new Trendo.Core.BlenderLink(exe, new PersonHost(), Trendo.Core.BlenderBridge.FreePort());
+        var (w, _, _) = Ui.Open();
+        try
+        {
+            var link = w.BlenderLinkGet()!;
+            Assert.False(link.IsDisposed);
+            w.Close();
+            Assert.True(link.IsDisposed);
+        }
+        finally { MainWindow.BlenderLinkOverride = null; try { Directory.Delete(d, true); } catch (IOException) { } }
     }
 }

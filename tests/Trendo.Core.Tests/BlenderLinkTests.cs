@@ -21,21 +21,25 @@ public class BlenderLinkTests
         readonly CancellationTokenSource _cts = new();
         public int Pid { get; }
         public volatile string File = "";
-        public int Requests, Sleeps;
+        public int Requests, Sleeps, Accepted;
+        /// <summary>Hauptfaden von Blender blockiert: Verbindungen landen nur in der Warteschlange des Betriebssystems.</summary>
+        public volatile bool Blocked;
 
         public FakeAddon(int port, int pid, string file = "")
         {
             Pid = pid; File = file; _l = new TcpListener(IPAddress.Loopback, port);
             _l.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-            _l.Start(); _ = Task.Run(Loop);
+            _l.Start(5); _ = Task.Run(Loop); // Warteschlange 5 wie im Add-on
         }
 
         async Task Loop()
         {
             while (!_cts.IsCancellationRequested)
             {
+                while (Blocked && !_cts.IsCancellationRequested) await Task.Delay(20);
                 Socket s;
                 try { s = await _l.AcceptSocketAsync(_cts.Token); } catch (Exception) { return; }
+                Interlocked.Increment(ref Accepted);
                 _clients.Add(s); _ = Task.Run(() => Serve(s));
             }
         }
@@ -121,7 +125,8 @@ public class BlenderLinkTests
             var exe = Path.Combine(Dir, "blender.exe"); File.WriteAllText(exe, "");
             File.WriteAllText(Blend, "original");
             Link = link = new BlenderLink(exe, Host, port ?? FreePort(), separateInstance: separate, log: (k, t) => { lock (Log) Log.Add(k + ": " + t); }, stateDir: Path.Combine(Dir, "zustand"))
-            { Heartbeat = TimeSpan.FromMilliseconds(100), PingTimeout = TimeSpan.FromMilliseconds(400), StartTimeout = TimeSpan.FromSeconds(8), Backoff = _ => TimeSpan.FromMilliseconds(50) };
+            { Heartbeat = TimeSpan.FromMilliseconds(100), PingTimeout = TimeSpan.FromMilliseconds(400), StartTimeout = TimeSpan.FromSeconds(8), Backoff = _ => TimeSpan.FromMilliseconds(50),
+              ProbeInterval = TimeSpan.FromMilliseconds(100), ForeignProbeInterval = TimeSpan.FromMilliseconds(100), QuickRestartWindow = TimeSpan.Zero };
         }
         public bool Logged(string kind) { lock (Log) return Log.Any(l => l.StartsWith(kind + ":")); }
         public string LastScript => File.ReadAllText(Directory.EnumerateFiles(State, "bruecke-*.py").OrderBy(File.GetLastWriteTimeUtc).Last());
@@ -325,14 +330,14 @@ public class BlenderLinkTests
         using (r.Link.Quiet())
         {
             lock (r.Host.Addons) { r.Host.Addons[p.Id].Dispose(); r.Host.Addons.Remove(p.Id); }
-            await Until(() => r.Link.Status.State == BlenderLinkState.VerbindetNeu);
+            await Task.Delay(600); // M5: unter Quiet keine TCP-Prüfung – also auch kein „verbindet neu“, solange der Prozess lebt
+            Assert.Equal(BlenderLinkState.Verbunden, r.Link.Status.State);
             r.Host.Bridge(p); a = r.Host.AddonOf(p);
-            await Until(() => r.Link.Status.State == BlenderLinkState.Arbeitet);
             await Task.Delay(600);
             Assert.Equal(0, a.Requests);
         }
-        await Until(() => r.Link.Status.State == BlenderLinkState.Verbunden); // danach wieder mit Kennungsabfrage
-        Assert.True(a.Requests > 0);
+        await Until(() => a.Requests > 0); // danach wieder mit Kennungsabfrage
+        Assert.Equal(BlenderLinkState.Verbunden, r.Link.Status.State);
     }
 
     [Fact(DisplayName = "T-0785: langer Lauf (3 s bei 0,4 s Lebenszeichen-Grenze) bricht nicht ab und löst keinen Neustart aus")]
@@ -513,5 +518,178 @@ public class BlenderLinkTests
             Assert.True(StudioMcp.HasServer(file, "trendo-blender")); Assert.False(StudioMcp.HasServer(file, "trendo-unreal"));
         }
         finally { Directory.Delete(d, true); }
+    }
+
+    /// <summary>Zwei Brücken auf demselben Port (SO_REUSEADDR): Antworten wechseln zwischen zwei PIDs. Der Umzugs-Code zieht nur die Brücke mit Trendos PID um.</summary>
+    sealed class DualAddon : IDisposable
+    {
+        readonly TcpListener _l; readonly CancellationTokenSource _cts = new();
+        readonly int[] _pids; int _turn;
+        public FakeAddon? Moved;
+        public DualAddon(int port, params int[] pids)
+        {
+            _pids = pids; _l = new TcpListener(IPAddress.Loopback, port); _l.Start();
+            _ = Task.Run(async () =>
+            {
+                while (!_cts.IsCancellationRequested)
+                {
+                    Socket s; try { s = await _l.AcceptSocketAsync(_cts.Token); } catch (Exception) { return; }
+                    _ = Task.Run(async () =>
+                    {
+                        using var _s = s; var buf = new List<byte>(); var chunk = new byte[65536];
+                        while (!buf.Contains(0)) { var n = await s.ReceiveAsync(chunk); if (n == 0) return; buf.AddRange(chunk.Take(n)); }
+                        var code = (string)JsonNode.Parse(Encoding.UTF8.GetString([.. buf.TakeWhile(b => b != 0)]))!["code"]!;
+                        var pid = _pids[Interlocked.Increment(ref _turn) % _pids.Length];
+                        JsonObject res;
+                        if (code.Contains("umgezogen"))
+                        {
+                            var own = int.Parse(code[(code.IndexOf("os.getpid()==") + 13)..code.IndexOf(":", code.IndexOf("os.getpid()=="))]);
+                            var a = code.IndexOf("srv.start('127.0.0.1', ") + 23; var neu = int.Parse(code[a..code.IndexOf(")", a)]);
+                            var moved = pid == own;
+                            if (moved) Moved = new FakeAddon(neu, own);
+                            res = new() { ["status"] = "ok", ["result"] = new JsonObject { ["pid"] = pid, ["umgezogen"] = moved } };
+                        }
+                        else res = new() { ["status"] = "ok", ["result"] = new JsonObject { ["pid"] = pid, ["datei"] = "", ["geaendert"] = false } };
+                        await s.SendAsync(Encoding.UTF8.GetBytes(res.ToJsonString() + "\0"));
+                    });
+                }
+            });
+        }
+        public void Dispose() { _cts.Cancel(); _l.Stop(); Moved?.Dispose(); }
+    }
+
+    [Fact(DisplayName = "T-0785 M5: blockierte Brücke (Hauptfaden steht) – höchstens eine Prüfverbindung, kein „getrennt“, Claudes Aufruf geht danach durch")]
+    public async Task M5_blocked_bridge()
+    {
+        using var r = new Rig();
+        await r.Link.EnsureAsync(r.Dir);
+        using var keep = r.Link.Keep();
+        var a = r.Host.AddonOf(r.Host.Last);
+        var states = new ConcurrentBag<BlenderLinkState>(); r.Link.Changed += s => states.Add(s.State);
+        var acceptedBefore = a.Accepted;
+        a.Blocked = true;
+        var claude = BlenderBridge.ExecuteAsync(r.Link.Port, "claude", TimeSpan.FromSeconds(30)); // wie ein MCP-Aufruf von Claude, wartet in der Warteschlange
+        await Task.Delay(3000); // 30 Herzschläge
+        Assert.DoesNotContain(BlenderLinkState.Getrennt, states); Assert.DoesNotContain(BlenderLinkState.VerbindetNeu, states);
+        Assert.Equal(BlenderLinkState.Arbeitet, r.Link.Status.State);
+        Assert.Equal(1, r.Link.MaxOpenProbes);
+        a.Blocked = false;
+        var res = await claude.WaitAsync(TimeSpan.FromSeconds(10));
+        Assert.Equal("ok", (string?)res["status"]);
+        await Until(() => r.Link.Status.State == BlenderLinkState.Verbunden);
+        Assert.True(a.Accepted - acceptedBefore <= 3, $"{a.Accepted - acceptedBefore} Verbindungen in der Warteschlange"); // Claude + eine Prüfverbindung (+ höchstens eine nach dem Lösen)
+        Assert.Equal(1, r.Link.MaxOpenProbes);
+        Assert.Equal(1, r.Link.Starts);
+    }
+
+    [Fact(DisplayName = "T-0785 M5: unter Quiet (Claude arbeitet) und während eines Auftrags keine einzige TCP-Prüfung")]
+    public async Task M5_quiet_no_tcp()
+    {
+        using var r = new Rig();
+        await r.Link.EnsureAsync(r.Dir);
+        using var keep = r.Link.Keep();
+        var a = r.Host.AddonOf(r.Host.Last);
+        await Task.Delay(300);
+        using (r.Link.Quiet())
+        {
+            var before = a.Accepted;
+            await Task.Delay(1000);
+            Assert.Equal(before, a.Accepted);
+        }
+    }
+
+    [Fact(DisplayName = "T-0785 M5: Blender der Person – Kennungsabfrage höchstens im langen Abstand, sonst nur der Prozess")]
+    public async Task M5_foreign_interval()
+    {
+        using var r = new Rig();
+        r.Link.ForeignProbeInterval = TimeSpan.FromSeconds(30);
+        using var open = new FakeAddon(r.Link.Port, 777); r.Host.Foreign.Add(777);
+        await r.Link.EnsureAsync(r.Dir);
+        using var keep = r.Link.Keep();
+        var before = open.Accepted;
+        await Task.Delay(1500); // 15 Herzschläge
+        Assert.True(open.Accepted - before <= 1);
+        r.Host.Foreign.Clear(); // Person schließt Blender: erkannt am Prozess, ohne TCP
+        await Until(() => r.Link.Status.State == BlenderLinkState.Geschlossen, 3000);
+    }
+
+    [Fact(DisplayName = "T-0785 M3-Rest: zwei Brücken auf demselben Port – deutliche Warnung, Trendos Brücke zieht auf einen eigenen freien Port")]
+    public async Task M3_duplicate_bridges()
+    {
+        using var r = new Rig();
+        r.Host.AutoBridge = false;
+        var port = r.Link.Port;
+        var ensure = r.Link.EnsureAsync(r.Dir);
+        await Until(() => r.Link.CurrentStatusFile is not null);
+        using var dual = new DualAddon(port, r.Host.Last.Id, 777); r.Host.Foreign.Add(777);
+        var s = await ensure;
+        Assert.Equal(BlenderLinkState.Verbunden, s.State); Assert.NotEqual(port, r.Link.Port); Assert.Contains("zwei Blender-Brücken", s.Text);
+        Assert.True(r.Logged("doppelt")); Assert.NotNull(dual.Moved);
+
+        using var r2 = new Rig(); // zwei fremde Blender: Trendo verbindet sich mit keinem
+        using var dual2 = new DualAddon(r2.Link.Port, 777, 888); r2.Host.Foreign.AddRange([777, 888]);
+        var s2 = await r2.Link.EnsureAsync(r2.Dir);
+        Assert.Equal(BlenderLinkState.Getrennt, s2.State); Assert.Contains("zwei verschiedene Blender", s2.Text); Assert.Empty(r2.Host.Started);
+    }
+
+    [Theory(DisplayName = "T-0785 H2: zweimal kurz hintereinander beendet (z. B. Task-Manager) – Trendo fragt statt weiter neu zu starten")]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task H2_quick_restart_asks(bool yes)
+    {
+        using var r = new Rig();
+        r.Link.QuickRestartWindow = TimeSpan.FromMinutes(2); var asked = 0;
+        r.Link.AskRestart = () => { Interlocked.Increment(ref asked); return Task.FromResult(yes); };
+        await r.Link.EnsureAsync(r.Dir);
+        using var keep = r.Link.Keep();
+        r.Host.End(r.Host.Last, 1); // „Task beenden“
+        await Until(() => r.Link.Starts == 2 && r.Link.Status.State == BlenderLinkState.Verbunden);
+        Assert.Equal(0, asked);
+        r.Host.End(r.Host.Last, 1);
+        if (yes) await Until(() => r.Link.Starts == 3 && r.Link.Status.State == BlenderLinkState.Verbunden);
+        else { await Until(() => r.Link.Status.State == BlenderLinkState.Getrennt); await Task.Delay(400); Assert.Equal(2, r.Link.Starts); Assert.Contains("zweimal", r.Link.Status.Text); }
+        Assert.Equal(1, asked);
+    }
+
+    [Fact(DisplayName = "T-0785 H2: Trendo beendet (Dispose) – kein Neustart während des Herunterfahrens")]
+    public async Task H2_dispose_no_restart()
+    {
+        using var r = new Rig();
+        r.Link.Backoff = _ => TimeSpan.FromMilliseconds(600);
+        await r.Link.EnsureAsync(r.Dir);
+        var keep = r.Link.Keep();
+        r.Host.End(r.Host.Last);
+        await Until(() => r.Link.Status.State == BlenderLinkState.VerbindetNeu);
+        r.Link.Dispose();
+        await Task.Delay(1500);
+        Assert.Equal(1, r.Link.Starts); Assert.True(r.Link.IsDisposed);
+        keep.Dispose();
+    }
+
+    [Fact(DisplayName = "T-0785 N7/N8: verwaiste Sicherung wird angeboten (nicht geöffnet), öffnet als eigene Datei; wiederhergestellte Dateien sind nie Projektdatei")]
+    public async Task N7_N8_orphans()
+    {
+        using var r = new Rig();
+        var (rec, meta) = r.Recovery(r.Blend, 99999, "alt", "gesichert"); // Blender von damals läuft nicht mehr
+        await r.Link.EnsureAsync(r.Dir);
+        Assert.Equal(r.Blend, r.Host.Started[0].Args[0]); // nicht automatisch geöffnet
+        var o = Assert.Single(r.Link.OrphanRecoveries());
+        Assert.Equal(Path.GetFullPath(r.Blend), Path.GetFullPath(o.Source));
+        var file = BlenderLink.OpenOrphan(o.Source)!;
+        Assert.StartsWith(Path.Combine(r.Dir, "projekt-wiederhergestellt-"), file); Assert.Equal("gesichert", File.ReadAllText(file));
+        Assert.Equal("original", File.ReadAllText(r.Blend)); Assert.False(File.Exists(rec)); Assert.False(File.Exists(meta));
+        Assert.Empty(r.Link.OrphanRecoveries());
+        File.SetLastWriteTimeUtc(r.Blend, DateTime.UtcNow.AddMinutes(-5)); // die wiederhergestellte Kopie ist jünger …
+        Assert.Equal([r.Blend], BlenderLink.ProjectArgs(r.Dir).Args); // … zählt aber nie als Projektdatei
+        Assert.Equal([r.Blend], StudioMcp.LaunchArgs("blender", r.Dir));
+    }
+
+    [Fact(DisplayName = "T-0785 N6/M6: Kopie-Speichern lässt die Sicherung stehen; Speicherverbot ehrlich als Bitte formuliert")]
+    public void N6_copy_save_keeps_recovery()
+    {
+        var s = BlenderBridge.StartScript(1, "s", "c", false, "t");
+        Assert.Contains("path = _a[0] if _a and isinstance(_a[0], str) else ''", s);
+        Assert.Contains("if path and bpy.data.filepath and os.path.normcase(os.path.abspath(path)) != os.path.normcase(os.path.abspath(bpy.data.filepath)):", s);
+        Assert.Contains("nicht technisch sperren", StudioMcp.BlenderRule(false));
     }
 }

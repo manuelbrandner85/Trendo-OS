@@ -35,28 +35,35 @@ public partial class MainWindow
         _blenderLink = link;
         link.Changed += st => _ui.Post(() => BlenderStatusRefresh(st));
         link.Logged += (kind, text) => _core.Audit.Append(Principal.LocalOwner.Name, "blender.link." + kind, text); // Protokoll: jeder Abbruch, jedes Neuverbinden
-        link.AddonConsent = BlenderAddonConsentStored; // M2: gemerkte Zustimmung
+        link.AddonConsent = BlenderAddonConsentStored == true; // M2: gemerkte Zustimmung
         link.AskAddonConsent = () => _ui.InvokeAsync(async () =>
         {
+            if (BlenderAddonConsentStored == false && !_blenderAskAgain) return false; // N10: gemerktes „Nein“ – erst „Neu verbinden“ fragt wieder
+            _blenderAskAgain = false;
             var ok = await BlenderAsk("addon", "MCP-Add-on in Blender einschalten?",
                 "Damit Claude in Blender arbeiten kann, braucht Blender das Add-on „MCP“ (Blender Lab). Es ist installiert, aber ausgeschaltet.\n\n" +
                 BlenderAddonPermanentText, "Einschalten", "Nicht einschalten");
-            if (ok) BlenderAddonConsentStored = true;
+            BlenderAddonConsentStored = ok;
             _core.Audit.Append(Principal.LocalOwner.Name, "blender.link.addon-frage", ok ? "ja" : "nein");
             return ok;
         });
+        link.AskRestart = () => _ui.InvokeAsync(() => BlenderAsk("neustart", "Blender schon wieder beendet",
+            "Blender wurde kurz hintereinander zweimal beendet – vielleicht hast du es selbst beendet (z. B. im Task-Manager).\n\nSoll Trendo es noch einmal starten?", "Neu starten", "Nicht starten"));
+        Closed += (_, _) => { _blenderStudioKeep?.Dispose(); link.Dispose(); }; // H2: beim Beenden von Trendo freigeben – kein Neustart beim Herunterfahren
         return link;
     }
+
+    bool _blenderAskAgain;
 
     public const string BlenderAddonPermanentText = "Trendo schaltet es jetzt ein. Hinweis: Speichert dein Blender seine Einstellungen automatisch, bleibt das Add-on danach dauerhaft an.";
 
     /// <summary>Für Tests: Antworten auf Trendos Blender-Fragen („addon“, „projekt“) statt Dialog.</summary>
     public static Func<string, bool>? BlenderAskOverride { get; set; }
 
-    /// <summary>M2: Zustimmung zum Einschalten des MCP-Add-ons, gemerkt im Datenordner.</summary>
-    public bool BlenderAddonConsentStored
+    /// <summary>M2/N10: Antwort zum Einschalten des MCP-Add-ons, gemerkt im Datenordner (null = noch nicht gefragt).</summary>
+    public bool? BlenderAddonConsentStored
     {
-        get { try { var f = Path.Combine(_core.DataRoot, "blender-link.json"); return File.Exists(f) && System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(f))?["addonOk"]?.GetValue<bool>() == true; } catch (Exception e) when (e is IOException or System.Text.Json.JsonException or InvalidOperationException or UnauthorizedAccessException) { return false; } }
+        get { try { var f = Path.Combine(_core.DataRoot, "blender-link.json"); return File.Exists(f) && System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(f))?["addonOk"] is { } v ? v.GetValue<bool>() : null; } catch (Exception e) when (e is IOException or System.Text.Json.JsonException or InvalidOperationException or UnauthorizedAccessException) { return null; } }
         set { try { AtomicFile.WriteAllText(Path.Combine(_core.DataRoot, "blender-link.json"), new System.Text.Json.Nodes.JsonObject { ["addonOk"] = value }.ToJsonString()); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } }
     }
 
@@ -107,19 +114,40 @@ public partial class MainWindow
         lock (_blenderStatusFields) { _blenderStatusFields.RemoveAll(w => !w.TryGetTarget(out _)); _blenderStatusFields.Add(new(text)); }
         var again = new Button { Name = name + "-neu", Content = "Neu verbinden", Padding = new Thickness(10, 3), FontSize = 12, VerticalAlignment = VerticalAlignment.Center };
         ToolTip.SetTip(again, "Blender-Verbindung neu aufbauen – startet Blender, falls es nicht offen ist");
-        again.Click += async (_, _) =>
+        again.Click += async (_, _) => await BlenderReconnectClick();
+        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { text, again } };
+        if (_blenderLink?.OrphanRecoveries() is { Count: > 0 } orphans) // N7: verwaiste Sicherung sichtbar anbieten, nie automatisch öffnen
         {
-            if (BlenderLinkGet() is not { } l) { BlenderStatusRefresh(new(BlenderLinkState.Getrennt, BlenderMissingText, BlenderBridge.DefaultPort, null, false)); return; }
-            if (!CanManageSoftware) return;
-            using var keep = l.Keep();
-            await l.ReconnectAsync();
-        };
+            var (src, _, at) = orphans[0];
+            var open = new Button { Name = name + "-sicherung", Content = $"Sicherung von {Path.GetFileName(src)} öffnen", Padding = new Thickness(10, 3), FontSize = 12, VerticalAlignment = VerticalAlignment.Center };
+            ToolTip.SetTip(open, $"Nach einem Absturz am {at:dd.MM. HH:mm} gesichert. Öffnet als eigene Datei – dein Original bleibt unverändert.");
+            open.Click += async (_, _) => await BlenderOpenOrphan(src);
+            row.Children.Add(open);
+        }
         return new Border
         {
             Name = name + "-feld", CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 5), BorderThickness = new Thickness(1),
             BorderBrush = Brush.Parse("#55C9A227"), Background = Brush.Parse("#14C9A227"), HorizontalAlignment = HorizontalAlignment.Left,
-            Child = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { text, again } },
+            Child = row,
         };
+    }
+
+    /// <summary>Knopf „Neu verbinden“: Sperren aufheben, ein gemerktes „Nein“ zum Add-on noch einmal fragen (N10), verbinden bzw. starten.</summary>
+    internal async Task BlenderReconnectClick()
+    {
+        if (BlenderLinkGet() is not { } l) { BlenderStatusRefresh(new(BlenderLinkState.Getrennt, BlenderMissingText, BlenderBridge.DefaultPort, null, false)); return; }
+        if (!CanManageSoftware) return;
+        _blenderAskAgain = true;
+        using var keep = l.Keep();
+        await l.ReconnectAsync();
+    }
+
+    /// <summary>N7: verwaiste Sicherung als eigene Datei anlegen und in Blender zeigen.</summary>
+    public async Task<string?> BlenderOpenOrphan(string source)
+    {
+        if (BlenderLink.OpenOrphan(source) is not { } file) return "Die Sicherung ließ sich nicht öffnen.";
+        _core.Audit.Append(Principal.LocalOwner.Name, "blender.link.sicherung-geoeffnet", Path.GetFileName(file));
+        return await BlenderShowFile(file);
     }
 
     static void BlenderStatusApply(TextBlock t, BlenderLinkStatus st)
@@ -192,10 +220,10 @@ public partial class MainWindow
                 var name = link.OpenFile is { } f ? Path.GetFileName(f) : "eine ungespeicherte Szene";
                 var proj = BlenderLink.ProjectArgs(folder).Args;
                 var open = proj.Count > 0 && await BlenderAsk("projekt", "Welche Datei soll Claude bearbeiten?",
-                    $"In deinem offenen Blender ist {name} offen – sie gehört nicht zu diesem Projekt.\n\nProjekt öffnen: {Path.GetFileName(proj[0])} (nur, wenn in Blender nichts Ungespeichertes ist).\nIn der offenen Datei arbeiten: Claude ändert sie, speichert sie aber nicht ohne dich.",
+                    $"In deinem offenen Blender ist {name} offen – sie gehört nicht zu diesem Projekt.\n\nProjekt öffnen: {Path.GetFileName(proj[0])} (nur, wenn in Blender nichts Ungespeichertes ist).\nIn der offenen Datei arbeiten: Claude ändert sie und soll sie nicht ohne dich speichern – technisch sperren kann Trendo das in deinem Blender nicht.",
                     "Projekt öffnen", "In der offenen Datei arbeiten");
                 if (open && await link.OpenFileAsync(proj[0], ct) is { } why) { Step("Blender: " + why, true); maySave = false; }
-                else if (!open) { maySave = false; Step($"Blender: Claude arbeitet in deiner offenen Datei ({name}) und speichert sie nicht ohne dich."); }
+                else if (!open) { maySave = false; Step($"Blender: Claude arbeitet in deiner offenen Datei ({name}). Claude soll sie nicht speichern – technisch sperren kann Trendo das nicht."); }
                 else Step($"Blender: Projekt {Path.GetFileName(proj[0])} geöffnet.");
             }
         }

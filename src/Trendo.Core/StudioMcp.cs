@@ -58,7 +58,7 @@ public static class StudioMcp
     public static string BlenderRule(bool maySave) => "Blender ist über den MCP-Server „trendo-blender“ sichtbar verbunden; du hast alle seine Werkzeuge (Szene lesen, Python ausführen, rendern, exportieren). " +
         "Trendo hält die Verbindung: Scheitert ein Blender-Werkzeug mit einem Verbindungsfehler, verbindet Trendo neu (nach einem Absturz startet es Blender neu) – warte dann etwa 10 Sekunden und wiederhole den Schritt. " +
         (maySave ? "Die offene Datei gehört zum Projekt: wichtige Zwischenstände speicherst du mit bpy.ops.wm.save_mainfile(). "
-                 : "Die offene Datei gehört der Person und nicht zum Projekt: speichere sie NICHT (kein save_mainfile, kein save_as über ihre Datei), außer die Person sagt es ausdrücklich. ") +
+                 : "Die offene Datei gehört der Person und nicht zum Projekt: speichere sie NICHT (kein save_mainfile, kein save_as über ihre Datei), außer die Person sagt es ausdrücklich. Trendo kann das nicht technisch sperren – halte dich daran. ") +
         "Vor dem Löschen oder Überschreiben von Dateien außerhalb der Szene fragst du nach.";
 
     public static JsonObject? ReadUserConfig(string? path = null)
@@ -117,7 +117,7 @@ public static class StudioMcp
         {
             "unreal" => Newest("*.uproject") is { } u ? [u] : [],
             "godot" => File.Exists(Path.Combine(projectDir, "project.godot")) ? ["--editor", "--path", projectDir] : [],
-            "blender" => Directory.Exists(projectDir) && Directory.EnumerateFiles(projectDir, "*.blend", SearchOption.TopDirectoryOnly).Where(f => !Path.GetFileName(f).StartsWith('.')).OrderByDescending(File.GetLastWriteTimeUtc).FirstOrDefault() is { } b ? [b] : [], // T-0785: ohne Trendos Punkt-Dateien (Wiederherstellung)
+            "blender" => Directory.Exists(projectDir) && Directory.EnumerateFiles(projectDir, "*.blend", SearchOption.TopDirectoryOnly).Where(BlenderLink.IsProjectBlend).OrderByDescending(File.GetLastWriteTimeUtc).FirstOrDefault() is { } b ? [b] : [], // T-0785: ohne Trendos Sicherungen und wiederhergestellte Kopien
             _ => [],
         };
     }

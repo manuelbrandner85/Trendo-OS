@@ -88,7 +88,7 @@ public class BlenderLinkEchtTests
         var env = new Dictionary<string, string> { ["BLENDER_USER_RESOURCES"] = profile };
         var host = new ProcessBlenderHost();
         var link = new BlenderLink(exe, host, port, env, separateInstance: true, log: (k, t) => L($"[protokoll] {k}: {t}"), stateDir: Path.Combine(root, "zustand"))
-        { Heartbeat = TimeSpan.FromSeconds(2), StartTimeout = TimeSpan.FromMinutes(3), ExtraArgs = ["--online-mode"] }; // nur das eigene Temp-Profil; das Produkt setzt das nie
+        { Heartbeat = TimeSpan.FromSeconds(2), ProbeInterval = TimeSpan.FromSeconds(2), StartTimeout = TimeSpan.FromMinutes(3), ExtraArgs = ["--online-mode"] }; // nur das eigene Temp-Profil; das Produkt setzt das nie
         link.Changed += s => L($"[status] {s.State}: {s.Text}");
         int? own = null; var killed = new List<int>();
         static string Sha(string f) => Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(f)));
@@ -118,6 +118,32 @@ public class BlenderLinkEchtTests
             for (var i = 0; i < 90 && !(File.Exists(rec) && File.Exists(meta)); i++) await Task.Delay(500); // Sicherung spätestens nach 30 s
             L($"Sicherung vorhanden: {File.Exists(rec)}, Begleitdatei: {(File.Exists(meta) ? File.ReadAllText(meta) : "fehlt")}");
             Assert.True(File.Exists(rec)); Assert.True(File.Exists(meta));
+
+            // N6: eine Kopie speichern (wie „Kopie speichern“ bzw. die _for_cli-Werkzeuge) lässt die Sicherung stehen
+            var copyPath = Path.Combine(root, "kopie.blend");
+            var copied = await link.RunAsync("Kopie speichern", "import bpy\nbpy.ops.wm.save_as_mainfile(filepath=" + System.Text.Json.JsonSerializer.Serialize(copyPath) + ", copy=True)\nresult={'datei':bpy.data.filepath,'geaendert':bool(bpy.data.is_dirty)}");
+            L("Kopie gespeichert: " + copied.ToJsonString());
+            Assert.True(File.Exists(copyPath));
+            L($"Sicherung nach Kopie-Speichern noch da: {File.Exists(rec) && File.Exists(meta)}");
+            Assert.True(File.Exists(rec)); Assert.True(File.Exists(meta));
+
+            // M5: Blender blockiert 40 s (wie ein langer Render/Code-Lauf von außen, ohne Quiet) – Herzschlag alle 2 s darf nichts verstopfen
+            var states = new System.Collections.Concurrent.ConcurrentBag<string>(); link.Changed += x => states.Add(x.State.ToString());
+            var blockStart = DateTimeOffset.Now;
+            var block = BlenderBridge.ExecuteAsync(link.Port, "import time\ntime.sleep(40)\nresult={'geblockt':True}", TimeSpan.FromMinutes(2));
+            await Task.Delay(12000);
+            L($"während der Blockade (12 s): Status {link.Status.State}, offene Prüfverbindungen höchstens {link.MaxOpenProbes}");
+            Task mcpDuring = Environment.GetEnvironmentVariable("TRENDO_ECHT_MCP_SERVER") is { Length: > 0 } srv2 && File.Exists(srv2)
+                ? McpServerCheck(srv2, link.Port, exe, L) : Task.CompletedTask; // Claudes Weg MITTEN in der Blockade
+            var blocked = await block;
+            L($"Blockade fertig nach {(DateTimeOffset.Now - blockStart).TotalSeconds:0} s: {blocked.ToJsonString()}");
+            await mcpDuring;
+            L($"MCP-Aufruf aus der Blockade heraus: durchgegangen ({(DateTimeOffset.Now - blockStart).TotalSeconds:0} s nach Beginn)");
+            L($"Status-Wechsel während der Blockade: [{string.Join(", ", states.Distinct())}], offene Prüfverbindungen höchstens {link.MaxOpenProbes}");
+            Assert.DoesNotContain("Getrennt", states); Assert.DoesNotContain("VerbindetNeu", states);
+            Assert.True(link.MaxOpenProbes <= 1);
+            for (var i = 0; i < 20 && link.Status.State != BlenderLinkState.Verbunden; i++) await Task.Delay(500);
+            Assert.Equal(BlenderLinkState.Verbunden, link.Status.State);
 
             // 1) Absturz: gehaltenes Process-Objekt hart beenden (nur der selbst gestartete Prozess)
             var first = proc.Id; Assert.DoesNotContain(first, before);
@@ -151,6 +177,19 @@ public class BlenderLinkEchtTests
             var after = Process.GetProcessesByName("blender").Select(x => x.Id).Where(x => !before.Contains(x)).ToList();
             L($"eigene Blender-Prozesse danach: [{string.Join(",", after)}]");
             Assert.Empty(after);
+
+            // N9: ein Hintergrund-Blender (--background, eigener Prozess) zählt nicht als „Blender offen“
+            var bgPsi = new ProcessStartInfo(exe) { UseShellExecute = false, CreateNoWindow = true };
+            foreach (var x in new[] { "-b", "--factory-startup", "--python-expr", "import time; time.sleep(30)" }) bgPsi.ArgumentList.Add(x);
+            bgPsi.Environment["BLENDER_USER_RESOURCES"] = profile;
+            using (var bg = Process.Start(bgPsi)!)
+            {
+                await Task.Delay(4000);
+                var counted = host.BlenderPids().Contains(bg.Id);
+                L($"Hintergrund-Blender PID {bg.Id} läuft: {!bg.HasExited}, zählt als offen: {counted}");
+                Assert.False(counted);
+                if (!bg.HasExited) { bg.Kill(); killed.Add(bg.Id); bg.WaitForExit(10000); }
+            }
             L("ERGEBNIS: BESTANDEN");
         }
         catch (Exception e) { L("ERGEBNIS: FEHLER " + e.GetType().Name + ": " + e.Message); throw; }

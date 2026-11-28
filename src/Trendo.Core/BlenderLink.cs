@@ -15,6 +15,8 @@ public static class BlenderBridge
 {
     public const int DefaultPort = 9876;
     public const string PortVariable = "BLENDER_MCP_PORT";
+    /// <summary>Zeitgrenze fürs Verbinden (länger als die ~2 s, nach denen Windows einen geschlossenen Port meldet).</summary>
+    public static readonly TimeSpan ConnectTimeout = TimeSpan.FromSeconds(5);
 
     /// <summary>Kennungsabfrage: welche Blender-Instanz antwortet (PID), welche Datei offen ist, ungespeicherte Änderungen.</summary>
     public const string PingCode = "import bpy,os\nresult={'pid':os.getpid(),'datei':bpy.data.filepath,'version':bpy.app.version_string,'geaendert':bool(bpy.data.is_dirty)}";
@@ -39,10 +41,11 @@ public static class BlenderBridge
     public static async Task<JsonObject> ExecuteAsync(int port, string code, TimeSpan timeout, CancellationToken ct = default, bool strictJson = true)
     {
         using var c = new TcpClient { NoDelay = true };
-        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct); cts.CancelAfter(timeout);
-        try { await c.ConnectAsync("127.0.0.1", port, cts.Token); }
+        // Verbinden hat eine eigene, längere Zeitgrenze: Windows meldet „abgewiesen“ auf 127.0.0.1 erst nach etwa 2 s – das darf nicht als „beschäftigt“ gelten.
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct); cts.CancelAfter(timeout > ConnectTimeout ? timeout : ConnectTimeout);
+        try { await c.ConnectAsync("127.0.0.1", port, cts.Token); cts.CancelAfter(timeout); }
         catch (SocketException e) { throw new BlenderBridgeException(BlenderBridgeError.Refused, $"Keine Verbindung zu Blender auf Port {port} ({e.SocketErrorCode})."); }
-        catch (OperationCanceledException) when (!ct.IsCancellationRequested) { throw new BlenderBridgeException(BlenderBridgeError.Timeout, $"Blender auf Port {port} nimmt nicht an."); }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested) { throw new BlenderBridgeException(BlenderBridgeError.ConnectTimeout, $"Blender auf Port {port} nimmt gerade nicht an (Warteschlange voll oder beschäftigt)."); }
         var req = new JsonObject { ["type"] = "execute", ["code"] = code, ["strict_json"] = strictJson }.ToJsonString() + "\0";
         var buf = new MemoryStream();
         try
@@ -217,7 +220,13 @@ public static class BlenderBridge
             def _saved(*_a):
                 if _saving[0]:
                     return
+                path = _a[0] if _a and isinstance(_a[0], str) else ''
+                if path and bpy.data.filepath and os.path.normcase(os.path.abspath(path)) != os.path.normcase(os.path.abspath(bpy.data.filepath)):
+                    return
                 _changed[0] = False
+                old = _st.get('datei')
+                if old and os.path.normcase(os.path.abspath(old)) != os.path.normcase(os.path.abspath(bpy.data.filepath)):
+                    _drop_rec(old)
                 _drop_rec(bpy.data.filepath)
                 _st['datei'] = bpy.data.filepath
                 _write()
@@ -266,7 +275,7 @@ public static class BlenderBridge
     }
 }
 
-public enum BlenderBridgeError { Refused, Timeout, Broken, Invalid }
+public enum BlenderBridgeError { Refused, Timeout, ConnectTimeout, Broken, Invalid }
 
 public sealed class BlenderBridgeException(BlenderBridgeError kind, string message) : Exception(message)
 {
@@ -344,11 +353,14 @@ public sealed class ProcessBlenderHost : IBlenderHost
         return new Proc(p);
     }
 
+    /// <summary>N9: nur Blender mit Fenster zählt als „offen“ – Hintergrundläufe (<c>--background</c>, ohne Fenster) nicht.</summary>
     public IReadOnlyList<int> BlenderPids()
     {
         var all = Process.GetProcessesByName("blender");
-        try { return all.Select(p => p.Id).ToList(); } finally { foreach (var p in all) p.Dispose(); }
+        try { return all.Where(Interactive).Select(p => p.Id).ToList(); } finally { foreach (var p in all) p.Dispose(); }
     }
+
+    static bool Interactive(Process p) { try { return p.MainWindowHandle != IntPtr.Zero; } catch (InvalidOperationException) { return false; } }
 }
 
 /// <summary>T-0785: hält die Verbindung zu einem sichtbaren Blender mit MCP-Brücke. Startet Blender bei Bedarf selbst (mit Projekt und Brücke), nutzt ein
@@ -367,7 +379,10 @@ public sealed class BlenderLink : IDisposable
     readonly List<BlenderJob> _jobs = [];
     IBlenderProc? _proc;
     string? _procStart, _procStatus, _procConsent, _lastFile, _hold;
-    int _leases, _busy, _quiet;
+    int _leases, _busy, _quiet, _fails, _dupChecked = -1;
+    int? _connectedPid;
+    Task? _probe;
+    DateTimeOffset _lastProbe = DateTimeOffset.MinValue, _lastCrash = DateTimeOffset.MinValue;
     CancellationTokenSource? _watch;
     bool _everConnected, _disposed, _paused;
     BlenderLinkStatus _status;
@@ -416,6 +431,18 @@ public sealed class BlenderLink : IDisposable
     public Func<int, TimeSpan> Backoff { get; set; } = n => TimeSpan.FromSeconds(Math.Min(30, Math.Pow(2, Math.Max(0, n - 1))));
     /// <summary>So oft hintereinander darf der Port fehlen, bevor „getrennt“ gemeldet wird (Blender läuft noch).</summary>
     public int ListenFailures { get; set; } = 3;
+    /// <summary>M5: Abstand der Kennungsabfragen im Herzschlag beim eigenen Blender (dazwischen nur: lebt der Prozess?).</summary>
+    public TimeSpan ProbeInterval { get; set; } = TimeSpan.FromSeconds(15);
+    /// <summary>M5: beim Blender der Person höchstens so oft eine Kennungsabfrage, sonst nur der Prozess.</summary>
+    public TimeSpan ForeignProbeInterval { get; set; } = TimeSpan.FromSeconds(45);
+    /// <summary>H2: wird Blender innerhalb dieser Zeit erneut beendet, startet Trendo nicht von selbst neu, sondern fragt.</summary>
+    public TimeSpan QuickRestartWindow { get; set; } = TimeSpan.FromMinutes(2);
+    /// <summary>H2: Frage „Blender schon wieder beendet – neu starten?“. null = nicht neu starten.</summary>
+    public Func<Task<bool>>? AskRestart { get; set; }
+    public bool IsDisposed => _disposed;
+    /// <summary>Höchstzahl gleichzeitig offener Prüfverbindungen des Herzschlags (Prüfung für M5).</summary>
+    public int MaxOpenProbes { get; private set; }
+    int _openProbes;
 
     public BlenderLinkStatus Status { get { lock (_lock) return _status; } }
     public event Action<BlenderLinkStatus>? Changed;
@@ -453,18 +480,70 @@ public sealed class BlenderLink : IDisposable
     {
         if (projectDir is null || !Directory.Exists(projectDir)) return ([], null);
         var blend = Directory.EnumerateFiles(projectDir, "*.blend", SearchOption.TopDirectoryOnly)
-            .Where(f => !Path.GetFileName(f).StartsWith('.') && f.EndsWith(".blend", StringComparison.OrdinalIgnoreCase)).OrderByDescending(File.GetLastWriteTimeUtc).FirstOrDefault();
+            .Where(IsProjectBlend).OrderByDescending(File.GetLastWriteTimeUtc).FirstOrDefault();
         return blend is null ? ([], Path.Combine(projectDir, "szene.blend")) : ([blend], null);
     }
 
-    async Task<JsonObject?> PingAsync(CancellationToken ct)
+    /// <summary>Projektdatei: keine Punkt-Dateien (Trendos Sicherungen), keine „…-wiederhergestellt-…“-Kopien (N8).</summary>
+    public static bool IsProjectBlend(string f)
+    {
+        var n = Path.GetFileName(f);
+        return !n.StartsWith('.') && n.EndsWith(".blend", StringComparison.OrdinalIgnoreCase) && !n.Contains("-wiederhergestellt-", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>N7: verwaiste Sicherungen (ihr Blender läuft nicht mehr) im Projektordner und im Ordner der zuletzt offenen Datei – zum Öffnen anbieten, nie automatisch.</summary>
+    public IReadOnlyList<(string Source, string Meta, DateTime At)> OrphanRecoveries()
+    {
+        var dirs = new[] { ProjectDir, OpenFile is { } f ? Path.GetDirectoryName(f) : null }.OfType<string>().Where(Directory.Exists).Distinct(StringComparer.OrdinalIgnoreCase);
+        var alive = _host.BlenderPids().ToHashSet(); if (OwnPid is { } op) alive.Add(op);
+        var list = new List<(string, string, DateTime)>();
+        foreach (var d in dirs)
+            foreach (var meta in Directory.EnumerateFiles(d, ".trendo-wiederherstellung-*.json"))
+                try
+                {
+                    var m = JsonNode.Parse(File.ReadAllText(meta));
+                    if ((string?)m?["quelle"] is not { } src || (int?)m?["pid"] is not { } pid || alive.Contains(pid)) continue;
+                    if (!File.Exists(BlenderBridge.RecoveryFor(src).Blend)) continue;
+                    list.Add((src, meta, File.GetLastWriteTime(meta)));
+                }
+                catch (Exception e) when (e is IOException or JsonException or UnauthorizedAccessException or InvalidOperationException or ArgumentException) { }
+        return list;
+    }
+
+    /// <summary>N7: eine verwaiste Sicherung als eigene Datei neben dem Original anlegen (nichts überschrieben); danach fliegt die Sicherung weg.</summary>
+    public static string? OpenOrphan(string source)
+    {
+        var (rec, meta) = BlenderBridge.RecoveryFor(source);
+        try
+        {
+            if (!File.Exists(rec)) return null;
+            var target = RestoredName(source);
+            File.Copy(rec, target, overwrite: false);
+            File.Delete(rec); if (File.Exists(meta)) File.Delete(meta);
+            return target;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or ArgumentException) { return null; }
+    }
+
+    static string RestoredName(string source)
+    {
+        var dir = Path.GetDirectoryName(Path.GetFullPath(source))!; var stem = Path.GetFileNameWithoutExtension(source);
+        var target = Path.Combine(dir, $"{stem}-wiederhergestellt-{DateTime.Now:yyyyMMdd-HHmmss}.blend");
+        for (var i = 2; File.Exists(target); i++) target = Path.Combine(dir, $"{stem}-wiederhergestellt-{DateTime.Now:yyyyMMdd-HHmmss}-{i}.blend");
+        return target;
+    }
+
+    async Task<JsonObject?> PingAsync(CancellationToken ct) => (await PingExAsync(ct)).Info;
+
+    /// <summary>Kennungsabfrage; <c>Slow</c>: die Brücke nimmt an, antwortet aber nicht rechtzeitig (Blender rechnet) bzw. die Warteschlange ist voll.</summary>
+    async Task<(JsonObject? Info, bool Slow)> PingExAsync(CancellationToken ct)
     {
         try
         {
             var r = await BlenderBridge.ExecuteAsync(Port, BlenderBridge.PingCode, PingTimeout, ct);
-            return (string?)r["status"] == "ok" ? r["result"] as JsonObject ?? new JsonObject() : null;
+            return ((string?)r["status"] == "ok" ? r["result"] as JsonObject ?? new JsonObject() : null, false);
         }
-        catch (BlenderBridgeException) { return null; }
+        catch (BlenderBridgeException e) { return (null, e.Kind is BlenderBridgeError.Timeout or BlenderBridgeError.ConnectTimeout); }
     }
 
     /// <summary>Verbindung herstellen: vorhandenes verbundenes Blender weiternutzen, sonst Blender sichtbar mit dem Projekt und der MCP-Brücke starten.
@@ -485,10 +564,15 @@ public sealed class BlenderLink : IDisposable
     async Task<BlenderLinkStatus> EnsureLockedAsync(CancellationToken ct)
     {
         IBlenderProc? own; lock (_lock) own = _proc;
-        if (await PingAsync(ct) is { } info) return Connected(info, own);
+        var (info, slow) = await PingExAsync(ct);
+        if (info is not null)
+        {
+            if (_dupChecked != Port && await DuplicateCheckLockedAsync(info, own, ct) is { } dup) return dup;
+            return Connected(info, own);
+        }
         if (_paused) return Status;
-        var listening = await BlenderBridge.ListeningAsync(Port, TimeSpan.FromSeconds(1), ct);
-        if (listening && (own is { HasExited: false } || _host.BlenderPids().Count > 0))
+        if (own is { HasExited: true }) return await HandleExitLockedAsync(own, ct);
+        if (slow && (own is { HasExited: false } || _host.BlenderPids().Count > 0))
         {
             Set(BlenderLinkState.Arbeitet, $"Blender rechnet gerade – die Verbindung auf Port {Port} steht.", own?.Id, own is not null);
             return Status;
@@ -519,6 +603,20 @@ public sealed class BlenderLink : IDisposable
         }
         Log("abbruch", $"Blender (PID {own.Id}) ist abgestürzt bzw. wurde hart beendet{(own.ExitCode is { } x ? $" (Code {x})" : "")}.");
         var now = DateTimeOffset.Now; int n;
+        if (_disposed) return Status;
+        if (now - _lastCrash < QuickRestartWindow) // z. B. zweimal „Task beenden“: nicht weiter von selbst neu starten, sondern fragen
+        {
+            _lastCrash = now;
+            var again = AskRestart is { } ask && await ask();
+            Log("neustart-frage", again ? "Neu starten: ja." : "Neu starten: nein.");
+            if (!again)
+            {
+                _paused = true;
+                Set(BlenderLinkState.Getrennt, "Blender wurde kurz hintereinander zweimal beendet. Trendo startet es nicht weiter von selbst – „Neu verbinden“ startet es.");
+                return Status;
+            }
+        }
+        _lastCrash = now;
         lock (_lock) { _restarts.RemoveAll(t => now - t > RestartWindow); _restarts.Add(now); n = _restarts.Count; }
         if (n > MaxRestarts)
         {
@@ -530,7 +628,8 @@ public sealed class BlenderLink : IDisposable
         var wait = Backoff(n);
         Set(BlenderLinkState.VerbindetNeu, $"Blender ist abgestürzt – starte neu in {wait.TotalSeconds:0} s (Versuch {n} von {MaxRestarts}).");
         await Task.Delay(wait, ct);
-        if (await PingAsync(ct) is { } again) return Connected(again, null);
+        if (_disposed) return Status;
+        if (await PingAsync(ct) is { } back) return Connected(back, null);
         if (!SeparateInstance && _host.BlenderPids().Count > 0) // inzwischen ist ein anderes Blender offen: keins dazu starten
         {
             Set(BlenderLinkState.Getrennt, "Blender ist abgestürzt; inzwischen ist ein anderes Blender offen. Trendo startet kein zweites – „Neu verbinden“ nutzt das offene, wenn sein MCP-Server läuft.");
@@ -557,9 +656,7 @@ public sealed class BlenderLink : IDisposable
             var m = JsonNode.Parse(File.ReadAllText(meta));
             if (!string.Equals(Path.GetFullPath((string?)m?["quelle"] ?? "?"), Path.GetFullPath(source), StringComparison.OrdinalIgnoreCase)) return null;
             if ((int?)m?["pid"] != pid || start is null || (string?)m?["start"] != start) return null;
-            var dir = Path.GetDirectoryName(Path.GetFullPath(source))!; var stem = Path.GetFileNameWithoutExtension(source);
-            var target = Path.Combine(dir, $"{stem}-wiederhergestellt-{DateTime.Now:yyyyMMdd-HHmmss}.blend");
-            for (var i = 2; File.Exists(target); i++) target = Path.Combine(dir, $"{stem}-wiederhergestellt-{DateTime.Now:yyyyMMdd-HHmmss}-{i}.blend");
+            var target = RestoredName(source);
             File.Copy(rec, target, overwrite: false);
             File.Delete(rec); File.Delete(meta);
             return target;
@@ -578,8 +675,45 @@ public sealed class BlenderLink : IDisposable
         catch (Exception e) when (e is IOException or JsonException or UnauthorizedAccessException or InvalidOperationException or ArgumentException) { }
     }
 
+    static int? PidOf(JsonObject info) => info["pid"]?.GetValueKind() == JsonValueKind.Number ? info["pid"]!.GetValue<int>() : null;
+
+    /// <summary>M3-Rest: Lauschen zwei Brücken auf demselben Port (SO_REUSEADDR), liefern wiederholte Kennungsabfragen verschiedene PIDs. Dann deutlich
+    /// warnen; ist Trendos eigenes Blender dabei, zieht NUR dessen Brücke auf einen freien Port um. Das Blender der Person wird nie umgesetzt.</summary>
+    async Task<BlenderLinkStatus?> DuplicateCheckLockedAsync(JsonObject first, IBlenderProc? own, CancellationToken ct)
+    {
+        var pids = new HashSet<int>(); if (PidOf(first) is { } p0) pids.Add(p0);
+        for (var i = 0; i < 4; i++) if (await PingAsync(ct) is { } more && PidOf(more) is { } p) pids.Add(p);
+        if (pids.Count <= 1) { _dupChecked = Port; return null; }
+        var old = Port;
+        Log("doppelt", $"Auf Port {old} antworten zwei Blender-Brücken (PID {string.Join(", ", pids)}).");
+        if (own is { HasExited: false } && pids.Contains(own.Id))
+        {
+            var neu = BlenderBridge.FreePort();
+            var code = "import os, bpy, importlib\nresult={'pid':os.getpid(),'umgezogen':False}\nif os.getpid()==OWN:\n n=[k for k in bpy.context.preferences.addons.keys() if k.startswith('bl_ext.') and k.endswith('.mcp')][0]\n srv=importlib.import_module(n+'.mcp_to_blender_server'); ei=importlib.import_module(n+'.execute_interactive')\n def _mv():\n  srv.stop(); srv.start('127.0.0.1', NEU)\n  if not bpy.app.timers.is_registered(ei.run): bpy.app.timers.register(ei.run, first_interval=0.05, persistent=True)\n  return None\n bpy.app.timers.register(_mv, first_interval=0.3)\n result['umgezogen']=True".Replace("OWN", own.Id.ToString(System.Globalization.CultureInfo.InvariantCulture)).Replace("NEU", neu.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            for (var i = 0; i < 12; i++)
+            {
+                try { if ((bool?)(await BlenderBridge.ExecuteAsync(old, code, PingTimeout, ct))["result"]?["umgezogen"] == true) { Port = neu; break; } }
+                catch (BlenderBridgeException) { }
+            }
+            if (Port == neu)
+            {
+                for (var i = 0; i < 40; i++) { if (await PingAsync(ct) is { } inf && PidOf(inf) == own.Id) { _dupChecked = Port; Log("port", $"Trendos Blender lauscht jetzt auf dem eigenen Port {neu}."); Connected(inf, own); Set(BlenderLinkState.Verbunden, $"Achtung: Auf Port {old} lauschten zwei Blender-Brücken. Trendos Blender ist jetzt auf dem eigenen Port {neu} – verbunden.", own.Id, true); return Status; } await Task.Delay(250, ct); }
+            }
+        }
+        _dupChecked = -1;
+        Set(BlenderLinkState.Getrennt, $"Achtung: Auf Port {old} antworten zwei verschiedene Blender (PID {string.Join(", ", pids)}). Trendo verbindet sich mit keinem – schließe eines oder stelle in einem einen anderen MCP-Port ein.");
+        return Status;
+    }
+
     BlenderLinkStatus Connected(JsonObject info, IBlenderProc? own)
     {
+        if (PidOf(info) is { } np && _connectedPid is { } cp && np != cp && _host.BlenderPids().Contains(cp) && (own is null || own.Id == cp || own.Id == np))
+        {
+            Log("doppelt", $"Kennungsabfrage lieferte PID {np} statt {cp} – zwei Brücken auf Port {Port}? Trendo prüft neu.");
+            _dupChecked = -1;
+        }
+        _connectedPid = PidOf(info);
+        _fails = 0;
         var pid = info["pid"]?.GetValueKind() == JsonValueKind.Number ? info["pid"]!.GetValue<int>() : (int?)null;
         var isOwn = own is not null && pid == own.Id;
         var file = info["datei"]?.GetValueKind() == JsonValueKind.String ? (string?)info["datei"] : null;
@@ -596,6 +730,7 @@ public sealed class BlenderLink : IDisposable
 
     async Task<BlenderLinkStatus> StartLockedAsync(CancellationToken ct, bool restart, string? file, string? hint)
     {
+        if (_disposed) return Status; // Trendo fährt herunter: nichts mehr starten
         if (!File.Exists(Exe)) { Set(BlenderLinkState.Getrennt, "Blender wurde nicht gefunden – „Blender einrichten“ im 3D-Studio richtet es ein."); return Status; }
         if (await BlenderBridge.ListeningAsync(Port, TimeSpan.FromSeconds(1), ct)) // Port belegt, aber keine Blender-Brücke antwortet (Kennungsabfrage oben): eigenen freien Port nehmen
         {
@@ -692,7 +827,7 @@ public sealed class BlenderLink : IDisposable
                         Hold(p, "Die MCP-Brücke in Blender startet nicht: " + st.Grund); return Status;
                 }
             }
-            if (await PingAsync(ct) is { } info) return Connected(info, p);
+            if (await PingAsync(ct) is { } info) return _dupChecked != Port && await DuplicateCheckLockedAsync(info, p, ct) is { } dup ? dup : Connected(info, p);
             await Task.Delay(TimeSpan.FromMilliseconds(400), ct);
         }
         Hold(p, $"Blender ist offen, die MCP-Brücke hat sich aber nach {StartTimeout.TotalSeconds:0} s nicht gemeldet (Port {Port}).");
@@ -739,50 +874,119 @@ public sealed class BlenderLink : IDisposable
         public void Dispose() { if (Interlocked.Exchange(ref _done, 1) == 0) release(); }
     }
 
+    /// <summary>Herzschlag (M5). Die Brücke nimmt Verbindungen nur im Hauptfaden an (Warteschlange 5). Darum: zwischen den Kennungsabfragen nur schauen, ob der
+    /// Prozess lebt; keine TCP-Prüfung, solange Claude arbeitet (<see cref="Quiet"/>), ein Auftrag läuft oder die Brücke gerade nicht antwortet; nie mehr als
+    /// eine offene Prüfverbindung – eine unbeantwortete bleibt offen, bis Blender antwortet (statt neu zu verbinden). Beim Blender der Person höchstens alle
+    /// <see cref="ForeignProbeInterval"/>. Zeitüberschreitung beim Verbinden mit lebendem Prozess heißt „arbeitet“, nicht Abbruch.</summary>
     async Task WatchAsync(CancellationToken ct)
     {
-        var fails = 0;
         while (!ct.IsCancellationRequested)
         {
             try
             {
                 await Task.Delay(Heartbeat, ct);
-                if (_paused) continue;
-                IBlenderProc? own; int busy, quiet; string? hold; lock (_lock) { own = _proc; busy = _busy; quiet = _quiet; hold = _hold; }
-                if (own is { HasExited: true }) { fails = 0; await EnsureAsync(null, ct); continue; } // Absturz → Neustart; sauber geschlossen → kein Neustart
+                if (_paused || _disposed) continue;
+                IBlenderProc? own; int busy, quiet; lock (_lock) { own = _proc; busy = _busy; quiet = _quiet; }
+                if (own is { HasExited: true }) { await EnsureAsync(null, ct); continue; } // Absturz → Neustart; sauber geschlossen → kein Neustart
                 if (own is not null && ReadStatus(_procStatus) is { Ok: true, Port: { } sp } && sp != Port) { Log("port", $"Brücke läuft jetzt auf Port {sp} – übernommen."); Port = sp; }
-                if (await BlenderBridge.ListeningAsync(Port, TimeSpan.FromSeconds(2), ct))
+                if (own is null)
                 {
-                    fails = 0;
-                    if (busy > 0 || quiet > 0) { if (Status.State != BlenderLinkState.Verbunden || busy > 0) Set(BlenderLinkState.Arbeitet, $"Blender arbeitet – die Verbindung auf Port {Port} steht.", own?.Id, own is not null); }
-                    else if (!Status.Usable || Status.State == BlenderLinkState.Arbeitet)
-                    {
-                        if (!await _gate.WaitAsync(0, ct)) continue; // ein Start oder Auftrag läuft gerade
-                        try { HeartbeatPings++; if (await PingAsync(ct) is { } info) Connected(info, own); else Set(BlenderLinkState.Arbeitet, $"Blender rechnet gerade – die Verbindung auf Port {Port} steht.", own?.Id, own is not null); }
-                        finally { _gate.Release(); }
-                    }
-                    continue;
-                }
-                if (hold is not null) continue; // wartet auf die Person (Online-Freigabe, Add-on) – Grund bleibt stehen
-                if (!_everConnected && own is null) continue;
-                fails++;
-                if (fails == 1) Log("abbruch", $"Verbindung zu Blender auf Port {Port} weg.");
-                if (own is null) // das Blender der Person: nie selbst starten
-                {
-                    if (_host.BlenderPids().Count == 0)
+                    if (!_everConnected) continue;
+                    if (_connectedPid is { } fp && !_host.BlenderPids().Contains(fp)) // nur der Prozess, kein TCP
                     {
                         if (Status.State != BlenderLinkState.Geschlossen) Log("geschlossen", "Dein Blender wurde geschlossen – kein Neustart.");
                         Set(BlenderLinkState.Geschlossen, "Dein Blender wurde geschlossen. Trendo startet es nicht von selbst – „Neu verbinden“ öffnet es wieder.");
+                        continue;
                     }
-                    else Set(BlenderLinkState.Getrennt, $"Die MCP-Brücke in deinem Blender ist aus (Port {Port}). In Blender unter Einstellungen → Add-ons → MCP den Server starten – Trendo verbindet dann von selbst.");
+                }
+                if (busy > 0 || quiet > 0) // ein Auftrag bzw. Claude arbeitet über MCP: nur der Prozess zählt
+                {
+                    if (busy > 0) Set(BlenderLinkState.Arbeitet, $"Blender arbeitet am Auftrag – die Verbindung auf Port {Port} steht.", own?.Id, own is not null);
                     continue;
                 }
-                if (fails < ListenFailures) Set(BlenderLinkState.VerbindetNeu, $"Verbindung zu Blender unterbrochen – verbinde neu (Versuch {fails}) …", own.Id, true);
-                else Set(BlenderLinkState.Getrennt, $"Blender läuft, aber die MCP-Brücke antwortet nicht (Port {Port}). Trendo prüft weiter; „Neu verbinden“ oder in Blender den MCP-Server starten.", own.Id, true);
+                if (_probe is { IsCompleted: false }) continue; // höchstens eine offene Prüfverbindung
+                var every = own is null ? ForeignProbeInterval : ProbeInterval;
+                if (DateTimeOffset.Now - _lastProbe < every && Status.Usable) continue;
+                if (own is null && DateTimeOffset.Now - _lastProbe < ForeignProbeInterval) continue;
+                _lastProbe = DateTimeOffset.Now;
+                _probe = ProbeAsync(own, ct);
             }
             catch (OperationCanceledException) { return; }
             catch (Exception e) when (e is IOException or SocketException or ObjectDisposedException or InvalidOperationException) { Log("fehler", "Herzschlag: " + e.Message); }
         }
+    }
+
+    /// <summary>Eine Prüfverbindung: Kennungsabfrage senden und auf die Antwort warten – solange der Prozess lebt, auch lange (eine Verbindung, kein Stau).</summary>
+    async Task ProbeAsync(IBlenderProc? own, CancellationToken ct)
+    {
+        var n = Interlocked.Increment(ref _openProbes); lock (_lock) MaxOpenProbes = Math.Max(MaxOpenProbes, n);
+        try
+        {
+            HeartbeatPings++;
+            using var c = new TcpClient { NoDelay = true };
+            using (var cc = CancellationTokenSource.CreateLinkedTokenSource(ct))
+            {
+                cc.CancelAfter(BlenderBridge.ConnectTimeout);
+                try { await c.ConnectAsync("127.0.0.1", Port, cc.Token); }
+                catch (OperationCanceledException) when (!ct.IsCancellationRequested) { Busy(own); return; } // Warteschlange voll / beschäftigt: arbeitet
+                catch (SocketException) { Refused(own); return; }
+            }
+            var s = c.GetStream();
+            await s.WriteAsync(Encoding.UTF8.GetBytes(new JsonObject { ["type"] = "execute", ["code"] = BlenderBridge.PingCode, ["strict_json"] = true }.ToJsonString() + "\0"), ct);
+            using var alive = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            var read = ReadAnswerAsync(s, alive.Token);
+            var started = DateTimeOffset.Now;
+            while (!read.IsCompleted)
+            {
+                await Task.WhenAny(read, Task.Delay(250, ct));
+                if (read.IsCompleted) break;
+                if (DateTimeOffset.Now - started > PingTimeout) Busy(own);
+                var gone = own is not null ? own.HasExited : _connectedPid is { } fp && !_host.BlenderPids().Contains(fp);
+                if (gone || DateTimeOffset.Now - started > JobTimeout || _disposed) { alive.Cancel(); break; }
+            }
+            JsonObject? info = null;
+            try { var r = await read; info = (string?)r?["status"] == "ok" ? r!["result"] as JsonObject : null; } catch (Exception e) when (e is OperationCanceledException or IOException or JsonException or SocketException) { }
+            if (info is not null) Connected(info, own);
+        }
+        catch (Exception e) when (e is IOException or SocketException or ObjectDisposedException) { Refused(own); }
+        catch (OperationCanceledException) { }
+        finally { Interlocked.Decrement(ref _openProbes); }
+    }
+
+    static async Task<JsonObject?> ReadAnswerAsync(NetworkStream s, CancellationToken ct)
+    {
+        var buf = new MemoryStream(); var chunk = new byte[65536];
+        while (true)
+        {
+            var n = await s.ReadAsync(chunk, ct);
+            if (n == 0) break;
+            buf.Write(chunk, 0, n);
+            if (Array.IndexOf(chunk, (byte)0, 0, n) >= 0) break;
+        }
+        var bytes = buf.ToArray(); var end = Array.IndexOf(bytes, (byte)0);
+        return end < 0 ? null : JsonNode.Parse(Encoding.UTF8.GetString(bytes, 0, end)) as JsonObject;
+    }
+
+    void Busy(IBlenderProc? own)
+    {
+        if (Status.State is BlenderLinkState.Geschlossen) return;
+        Set(BlenderLinkState.Arbeitet, $"Blender rechnet gerade – die Verbindung auf Port {Port} steht.", own?.Id ?? _connectedPid, own is not null);
+    }
+
+    void Refused(IBlenderProc? own)
+    {
+        string? hold; lock (_lock) hold = _hold;
+        if (hold is not null) return; // wartet auf die Person (Online-Freigabe, Add-on) – Grund bleibt
+        if (Status.State == BlenderLinkState.Arbeitet && _fails == 0) { _fails++; return; } // nach „arbeitet“ kann die Warteschlange voll sein: einmal abwarten
+        _fails++;
+        if (_fails == 1 || Status.State == BlenderLinkState.Arbeitet) Log("abbruch", $"Verbindung zu Blender auf Port {Port} weg.");
+        if (own is null)
+        {
+            Set(BlenderLinkState.Getrennt, $"Die MCP-Brücke in deinem Blender ist aus (Port {Port}). In Blender unter Einstellungen → Add-ons → MCP den Server starten – Trendo verbindet dann von selbst.");
+            return;
+        }
+        if (_fails < ListenFailures) Set(BlenderLinkState.VerbindetNeu, $"Verbindung zu Blender unterbrochen – verbinde neu (Versuch {_fails}) …", own.Id, true);
+        else Set(BlenderLinkState.Getrennt, $"Blender läuft, aber die MCP-Brücke antwortet nicht (Port {Port}). Trendo prüft weiter; „Neu verbinden“ oder in Blender den MCP-Server starten.", own.Id, true);
     }
 
     /// <summary>Auftrag in Blender ausführen (Code wie über MCP). Reißt die Verbindung ab, wird neu verbunden; <paramref name="repeatable"/> Aufträge
@@ -816,7 +1020,7 @@ public sealed class BlenderLink : IDisposable
                     job.State = "wird wiederholt";
                     await Task.Delay(TimeSpan.FromMilliseconds(300), ct);
                 }
-                catch (BlenderBridgeException e) when (e.Kind == BlenderBridgeError.Timeout)
+                catch (BlenderBridgeException e) when (e.Kind is BlenderBridgeError.Timeout or BlenderBridgeError.ConnectTimeout)
                 {
                     job.State = "Zeitgrenze";
                     Log("auftrag", $"„{label}“: {e.Message}");
