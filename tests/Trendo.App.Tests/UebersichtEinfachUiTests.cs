@@ -118,8 +118,6 @@ public class UebersichtEinfach_Ui(ITestOutputHelper log)
     public static readonly (string Prefix, string Weg)[] Replaced =
     [
         ("prog-cmd-", "Fachwerkzeuge der Stufe: „Mehr Werkzeuge“ und Strg+K (E2)"),
-        // T-0784 (Naturwissenschaft, 0.9.113): Periodensystem in „Einfach“ als Auswahl „Element wählen“ (nw-el-wahl) und Suche statt 118 Knöpfen; Rechtsklick je Element: „Molmasse mit diesem Element …“ (nw-el-molmasse) im Steckbrief bzw. „Ins Laborheft“ (nw-run-laborheft) im Menüband
-        ("nw-el-", "Auswahl „Element wählen“ (nw-el-wahl) und Suche (nw-suche)"), ("nw-ctx-mol-", "Steckbrief „Molmasse mit diesem Element …“ (nw-el-molmasse)"), ("nw-ctx-heft-", "Menüband „Ins Laborheft“ (nw-run-laborheft) nimmt den Steckbrief des gewählten Elements"),
         // T-0768 (aus T-0763): neue Einstellungsseite „Alles prüfen“ – in „Einfach“ wie die übrigen Seiten von „Zustand & Leistung“ hinter „Mehr Einstellungen (…)“ und in der Suche; dazu der Link „Alles prüfen“ auf der Seite „System“
         ("settings-nav-qual-check", "Einstellungen ▸ „Mehr Einstellungen (…)“ bzw. Suche; Link „Alles prüfen“ auf der Seite „System“"),
         ("text-gallery-", "Formatvorlagen über die Liste „Absatzart“"),
@@ -147,8 +145,29 @@ public class UebersichtEinfach_Ui(ITestOutputHelper log)
         ("prog-export-gegenprobe", "Menüleiste „Datei ▸ Exportieren ▸ Gegenprobe (Bericht)“ (geprüft in T0748_Ui.Statik_Einfach_Menue); Ergebnis in der Statuszeile"),
     ];
 
+    /// <summary>T-0784 (Naturwissenschaft, 0.9.113; fix3): Periodensystem in „Einfach“ als Auswahl „Element wählen“ (nw-el-wahl) und Suche statt 118 Knöpfen.
+    /// Ausgenommen sind GENAU die Knöpfe und Rechtsklick-Einträge je Element (aus <see cref="Trendo.Core.Wissen.Elemente.Alle"/>) – nicht „nw-el-molmasse“,
+    /// „nw-el-name“, „nw-el-wahl“ oder künftige „nw-el-…“.</summary>
+    public static readonly IReadOnlyDictionary<string, string> ReplacedExact = Trendo.Core.Wissen.Elemente.Alle.SelectMany(e => new[]
+    {
+        ("nw-el-" + e.Symbol, "Auswahl „Element wählen“ (nw-el-wahl) und Suche (nw-suche)"),
+        ("nw-ctx-mol-" + e.Symbol, "Steckbrief „Molmasse mit diesem Element …“ (nw-el-molmasse)"),
+        ("nw-ctx-heft-" + e.Symbol, "Menüband „Ins Laborheft“ (nw-run-laborheft) nimmt den Steckbrief des gewählten Elements"),
+    }).ToDictionary(x => x.Item1, x => x.Item2, StringComparer.Ordinal);
+
+    /// <summary>Hat ein Bedienelement, das in „Einfach“ fehlt, einen genannten Ersatzweg (Präfix aus <see cref="Replaced"/> oder genauer Name aus <see cref="ReplacedExact"/>)?</summary>
+    public static bool IsReplaced(string name) => ReplacedExact.ContainsKey(name) || Replaced.Any(r => name.StartsWith(r.Prefix, StringComparison.Ordinal));
+
     /// <summary>Was „Einfach“ schon vor T-0663 bewusst nicht baute (Stand origin/main 1fc842acc) – siehe Kopf der Datei.</summary>
     static HashSet<string> Before() => File.ReadAllLines(Path.Combine(AppContext.BaseDirectory, "Daten", "einfach-vorher-ausgeblendet.txt")).Where(l => l.Length > 0 && !l.StartsWith('#')).ToHashSet();
+
+    [Fact(DisplayName = "T-0784 fix3: Ersatzwege für das Periodensystem gelten genau für die 118 Elementknöpfe – fehlt „nw-el-molmasse“, „nw-el-name“ oder „nw-el-wahl“ in „Einfach“, ist das ein Fund")]
+    public void Element_replacements_are_exact()
+    {
+        Assert.Equal(118 * 3, ReplacedExact.Count);
+        Assert.True(IsReplaced("nw-el-Fe")); Assert.True(IsReplaced("nw-el-Og")); Assert.True(IsReplaced("nw-ctx-mol-H")); Assert.True(IsReplaced("nw-ctx-heft-Cl"));
+        foreach (var n in new[] { "nw-el-molmasse", "nw-el-name", "nw-el-wahl", "nw-el-Zz", "nw-el-fe", "nw-ctx-mol-Xy", "nw-suche" }) Assert.False(IsReplaced(n), n);
+    }
 
     [AvaloniaFact(DisplayName = "V10 Übersicht: „Einfach“ verliert keine Funktion – jedes Bedienelement aus „Erweitert“ ist da oder hat einen genannten Ersatzweg")]
     public void Simple_keeps_every_function()
@@ -168,7 +187,7 @@ public class UebersichtEinfach_Ui(ITestOutputHelper log)
                         var full = Names(w, key, doc);
                         w.ProgramSetLevel(Trendo.Core.Programs.UserLevel.Einfach);
                         var simple = Names(w, key, doc);
-                        foreach (var n in full.Except(simple).Where(n => !Replaced.Any(r => n.StartsWith(r.Prefix, StringComparison.Ordinal))).Order())
+                        foreach (var n in full.Except(simple).Where(n => !IsReplaced(n)).Order())
                             if (!before.Contains($"{key}{(doc ? " (Dokument)" : "")}: {n}")) missing.Add($"{key}{(doc ? " (Dokument)" : "")}: {n}");
                     }
                     catch (Exception e) when (e is InvalidOperationException or ArgumentException or IOException or NotSupportedException) { }

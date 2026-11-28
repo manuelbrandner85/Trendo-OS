@@ -780,7 +780,7 @@ public static class VectorKit
     {
         PdfTools.EnsureFonts();
         using var doc = new PdfDocument();
-        doc.Info.Title = "Logo"; doc.Info.Creator = "Trendo";
+        doc.Info.Title = "Logo"; doc.Info.Creator = "" /* T-0784 */;
         var page = doc.AddPage(); const double pt = 0.75;
         page.Width = XUnit.FromPoint(d.W * pt); page.Height = XUnit.FromPoint(d.H * pt);
         using (var g = XGraphics.FromPdfPage(page))

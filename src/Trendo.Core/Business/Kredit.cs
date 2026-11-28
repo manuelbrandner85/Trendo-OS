@@ -110,7 +110,7 @@ public static class Kredit
     /// <summary>Tilgungsplan als PDF (Kennzahlen oben, dann die Tabelle mit Seitenumbruch).</summary>
     public static int Pdf(KreditPlan p, string path)
     {
-        using var pdf = new BizPdf("Tilgungsplan", "Trendo OS") { Footer = Hinweis };
+        using var pdf = new BizPdf("Tilgungsplan", "") /* T-0784: Trendo ist nicht der Autor */ { Footer = Hinweis };
         pdf.Write("Tilgungsplan", 16, true, pdf.Accent); pdf.Y += 2;
         pdf.Write($"Kreditbetrag {BizJson.Euro(p.Betrag)} · Sollzins {BizJson.Num(p.SollzinsPa, "0.###")} % p. a. · Monatsrate {BizJson.Euro(p.Monatsrate)} · Laufzeit {p.Laufzeit}", 10);
         pdf.Write($"Zinsen gesamt {BizJson.Euro(p.ZinsenGesamt)} · Sondertilgungen {BizJson.Euro(p.SonderGesamt)} · insgesamt gezahlt {BizJson.Euro(p.Gezahlt)} · Restschuld am Ende {BizJson.Euro(p.Restschuld)} · Effektivzins etwa {BizJson.Num(p.EffektivPa, "0.00")} % p. a.", 10);

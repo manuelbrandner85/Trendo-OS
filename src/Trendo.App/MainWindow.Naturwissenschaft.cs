@@ -59,7 +59,7 @@ public partial class MainWindow
             ]),
             ("Ansicht", [.. NwModi.Select(m => new ProgramCmd("nw-modus-" + m.Id, m.Label, d => NwModus(d, m.Id)))]),
             ("Periodensystem", [
-                new ProgramCmd("nw-farbe-kategorie", "Nach Art färben", d => d.Set("faerben", "kategorie", "Färbung")),
+                new ProgramCmd("nw-farbe-kategorie", "Nach Art färben", d => d.Set("faerben", "kategorie", "Färbung"), Level: 1), // T-0784 fix3: in „Einfach“ ohne Tabelle wirkungslos
                 new ProgramCmd("nw-farbe-en", "Nach Elektronegativität", d => d.Set("faerben", "en", "Färbung"), Level: 1),
                 new ProgramCmd("nw-farbe-masse", "Nach Atommasse", d => d.Set("faerben", "masse", "Färbung"), Level: 1),
             ]),
