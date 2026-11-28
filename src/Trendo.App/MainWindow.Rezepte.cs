@@ -104,8 +104,10 @@ public partial class MainWindow
         var old = r.Zutaten.GroupBy(z => RezeptKit.Zeile(z)).ToDictionary(g => g.Key, g => g.First());
         var lines = (text ?? "").Replace("\r", "").Split('\n').Where(l => l.Trim().Length > 0).ToList();
         if (lines.Count > RezeptKit.MaxZutaten) throw new InvalidOperationException($"Höchstens {RezeptKit.MaxZutaten} Zutaten je Rezept.");
-        var neu = lines.Select(l => { var z = RezeptKit.LiesZutat(l); return old.TryGetValue(RezeptKit.Zeile(z), out var o) ? z with { Lm = o.Lm } : z; }).Where(z => z.Name.Length > 0).ToList();
+        var hinweise = new List<string>();
+        var neu = lines.Select(l => { var (z, h) = RezeptKit.Lies(l); if (h is not null) hinweise.Add(h); return old.TryGetValue(RezeptKit.Zeile(z), out var o) ? z with { Lm = o.Lm } : z; }).Where(z => z.Name.Length > 0).ToList();
         RzReplace(d, r with { Zutaten = neu }, "Zutaten");
+        if (hinweise.Count > 0) _progMsg[RzKey] = "⚠ " + string.Join(" ", hinweise.Take(3)) + (hinweise.Count > 3 ? $" (+{hinweise.Count - 3} weitere)" : "");
     }
 
     public void RzSetSchritte(ProgramDocument d, string id, string text)
@@ -174,10 +176,19 @@ public partial class MainWindow
     }
 
     /// <summary>Rezepte aus JSON-LD oder einer gespeicherten Rezeptseite (HTML) übernehmen – die Datei bleibt unverändert.</summary>
-    public int RzImportFile(ProgramDocument d, string file)
+    public int RzImportFile(ProgramDocument d, string file) => RzImportApply(d, RzImportRead(file), Path.GetExtension(file));
+
+    /// <summary>Datei lesen und auswerten – ohne Dokument und ohne Oberfläche, darum auch im Hintergrund lauffähig (Gegenprüfung T-0787: nicht im UI-Thread).</summary>
+    static (List<Rezept> Got, List<string> Notes) RzImportRead(string file)
     {
         if (!KreativSafe.LocalFile(file, 20_000_000)) throw new InvalidOperationException("Wähle eine Rezept-Datei (JSON-LD oder Webseite, höchstens 20 MB) auf diesem Rechner.");
-        var (got, notes) = RezeptKit.Import(File.ReadAllText(file));
+        return RezeptKit.Import(File.ReadAllText(file));
+    }
+
+    /// <summary>Gelesene Rezepte ins Buch übernehmen (ein Rückgängig-Schritt).</summary>
+    int RzImportApply(ProgramDocument d, (List<Rezept> Got, List<string> Notes) read, string ext)
+    {
+        var (got, notes) = read;
         if (got.Count == 0) throw new InvalidDataException(notes.FirstOrDefault() ?? "In der Datei steht kein Rezept.");
         var list = RzRezepte(d);
         if (list.Count + got.Count > RezeptKit.MaxRezepte) throw new InvalidOperationException($"Höchstens {RezeptKit.MaxRezepte} Rezepte je Rezeptbuch.");
@@ -185,24 +196,38 @@ public partial class MainWindow
         RzSelect(d, got[0].Id); _rzMode[d.Id] = 0;
         var miss = got.Sum(r => RezeptKit.Berechne(r).Fehlt.Count);
         _progMsg[RzKey] = (got.Count == 1 ? $"„{got[0].Name}“ eingelesen" : $"{got.Count} Rezepte eingelesen") + (miss > 0 ? $" – {miss} Zutat(en) ohne Nährwerte, rechts lassen sie sich zuordnen." : ".") + (notes.Count > 0 ? " " + notes[0] : "");
-        _core.Audit.Append(Principal.LocalOwner.Name, "rezepte.import", $"{got.Count} {Path.GetExtension(file)}");
+        _core.Audit.Append(Principal.LocalOwner.Name, "rezepte.import", $"{got.Count} {ext}");
         return got.Count;
     }
 
     public Rezept RzFromText(ProgramDocument d, string text)
     {
         if ((text ?? "").Trim().Length < 10) throw new ArgumentException("Füg zuerst den Rezepttext ein (Name, Zutaten, Zubereitung).");
-        var r = RezeptKit.AusText(text!);
+        var hinweise = new List<string>();
+        var r = RezeptKit.AusText(text!, hinweise);
         if (r.Zutaten.Count == 0 && r.Schritte.Count == 0) throw new InvalidOperationException("Im Text stehen keine Zutaten oder Schritte.");
         var list = RzRezepte(d); list.Add(r); RzSave(d, list, "Rezept aus Text");
         RzSelect(d, r.Id); _rzMode[d.Id] = 0;
-        _progMsg[RzKey] = $"„{r.Name}“ übernommen: {r.Zutaten.Count} Zutaten, {r.Schritte.Count} Schritte – bitte kurz prüfen.";
+        _progMsg[RzKey] = $"„{r.Name}“ übernommen: {r.Zutaten.Count} Zutaten, {r.Schritte.Count} Schritte – bitte kurz prüfen." + (hinweise.Count > 0 ? " ⚠ " + string.Join(" ", hinweise.Take(3)) : "");
         return r;
     }
 
+    /// <summary>Läuft gerade ein Einlesen im Hintergrund? (für Tests)</summary>
+    public int RzImportBusy { get; private set; }
+
     async Task RzPickImport(ProgramDocument d)
     {
-        if (await PickMediaFile("rz-import", "Rezept-Datei (JSON-LD oder gespeicherte Rezeptseite)", ["*.json", "*.jsonld", "*.html", "*.htm"]) is { } f) ProgramRun(RzKey, () => RzImportFile(d, f));
+        if (await PickMediaFile("rz-import", "Rezept-Datei (JSON-LD oder gespeicherte Rezeptseite)", ["*.json", "*.jsonld", "*.html", "*.htm"]) is not { } f) return;
+        // Lesen und Auswerten im Hintergrund, Übernehmen im UI-Thread (ein Rückgängig-Schritt)
+        _progMsg[RzKey] = "Lese „" + Path.GetFileName(f) + "“ …"; RzImportBusy++; Show(RzKey);
+        try
+        {
+            var read = await Task.Run(() => RzImportRead(f));
+            ProgramRun(RzKey, () => RzImportApply(d, read, Path.GetExtension(f)));
+        }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException or InvalidDataException or UnauthorizedAccessException or ArgumentException)
+        { ProgramRun(RzKey, () => throw ex); }
+        finally { RzImportBusy--; }
     }
 
     // ---------------- Wochenplan ----------------
@@ -331,7 +356,7 @@ public partial class MainWindow
             if (name.Length == 0 || zutaten.Count == 0 || schritte.Count == 0) throw new InvalidOperationException("Die KI hat kein vollständiges Rezept geliefert (Name, Zutaten und Schritte). Nichts übernommen.");
             var n = int.TryParse(System.Text.RegularExpressions.Regex.Match(a.GetValueOrDefault("portionen") ?? "", @"\d+").Value, out var p) ? Math.Clamp(p, 1, 100) : 4;
             var r = new Rezept(RezeptKit.NewId("r"), name.Length > 200 ? name[..200] : name, n, zutaten, schritte) { Beschreibung = (a.GetValueOrDefault("beschreibung") ?? "").Trim() is { } b && b.Length > 600 ? b[..600] : (a.GetValueOrDefault("beschreibung") ?? "").Trim() };
-            if (RezeptKit.Gesundheitsversprechen(string.Join(" ", [r.Name, r.Beschreibung, .. r.Schritte])) is { Count: > 0 } v) throw new InvalidOperationException($"Die KI hat ein Gesundheitsversprechen geschrieben („{v[0]}“) – Trendo nimmt das nicht an.");
+            if (RezeptKit.Gesundheitsversprechen(RezeptKit.AllerText(r)) is { Count: > 0 } v) throw new InvalidOperationException($"Die KI hat ein Gesundheitsversprechen geschrieben („{v[0]}“) – Trendo nimmt das nicht an."); // auch Zutaten und Hinweise (Gegenprüfung T-0787)
             var list = RzRezepte(d); list.Add(r); RzSave(d, list, "Rezept: " + r.Name);
             _rzSel[d.Id] = r.Id; _rzMode[d.Id] = 0; _rzView.Remove(d.Id);
             var nw = RezeptKit.JePortion(r);

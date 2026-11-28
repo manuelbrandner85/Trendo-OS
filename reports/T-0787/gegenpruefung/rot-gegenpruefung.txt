@@ -1,0 +1,156 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot2\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:03.94]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:04.65]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:04.68]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:00:04.86]     T-0787 G6: riesige Portionenzahl im Text – kein Überlauf, Portionen bleiben gültig [FAIL]
+[xUnit.net 00:00:04.86]       System.OverflowException : Value was either too large or too small for an Int32.
+[xUnit.net 00:00:04.86]       Stack Trace:
+[xUnit.net 00:00:04.86]            at System.Number.ThrowOverflowException[TInteger]()
+[xUnit.net 00:00:04.86]            at System.Int32.Parse(String s, IFormatProvider provider)
+[xUnit.net 00:00:04.87]         C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot2\src\Trendo.Core\Wissen\Rezepte.cs(597,0): at Trendo.Core.Wissen.RezeptKit.AusText(String text)
+[xUnit.net 00:00:04.87]         C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot2\tests\Trendo.Core.Tests\T0787GegenpruefungTests.cs(86,0): at Trendo.Core.Tests.T0787_Gegenpruefung.AusText_ueberlauf()
+[xUnit.net 00:00:04.87]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:04.87]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:04.93]     T-0787 G4/G7: Mengen – „ca./etwa 200 g“, Tausenderpunkt „1.000 g“, Aufzählungsstrich „–2 Eier“, „2 x 200 g“; „1e5 g“, „0 g“ und riesige Mengen nicht übernommen [FAIL]
+[xUnit.net 00:00:04.93]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:04.93]       Expected: 200
+[xUnit.net 00:00:04.93]       Actual:   null
+[xUnit.net 00:00:04.93]       Stack Trace:
+[xUnit.net 00:00:04.93]         C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot2\tests\Trendo.Core.Tests\T0787GegenpruefungTests.cs(49,0): at Trendo.Core.Tests.T0787_Gegenpruefung.Mengen_parser()
+[xUnit.net 00:00:04.93]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:04.93]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0787 G6: riesige Portionenzahl im Text – kein Überlauf, Portionen bleiben gültig [139 ms]
+  Fehlermeldung:
+   System.OverflowException : Value was either too large or too small for an Int32.
+  Stapelverfolgung:
+     at System.Number.ThrowOverflowException[TInteger]()
+   at System.Int32.Parse(String s, IFormatProvider provider)
+   at Trendo.Core.Wissen.RezeptKit.AusText(String text) in C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot2\src\Trendo.Core\Wissen\Rezepte.cs:line 597
+   at Trendo.Core.Tests.T0787_Gegenpruefung.AusText_ueberlauf() in C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot2\tests\Trendo.Core.Tests\T0787GegenpruefungTests.cs:line 86
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0787 G4/G7: Mengen – „ca./etwa 200 g“, Tausenderpunkt „1.000 g“, Aufzählungsstrich „–2 Eier“, „2 x 200 g“; „1e5 g“, „0 g“ und riesige Mengen nicht übernommen [66 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: 200
+Actual:   null
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0787_Gegenpruefung.Mengen_parser() in C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot2\tests\Trendo.Core.Tests\T0787GegenpruefungTests.cs:line 49
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:01:30.10]     T-0787 G2: offene <script>-Marken (300 KB) – Import in linearer Zeit mit ehrlicher Meldung, kein quadratischer Regex [FAIL]
+[xUnit.net 00:01:30.10]       Import brauchte 85,2 s
+[xUnit.net 00:01:30.10]       Stack Trace:
+[xUnit.net 00:01:30.10]         C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot2\tests\Trendo.Core.Tests\T0787GegenpruefungTests.cs(24,0): at Trendo.Core.Tests.T0787_Gegenpruefung.Import_offene_script_marken_linear()
+[xUnit.net 00:01:30.10]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:01:30.10]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0787 G2: offene <script>-Marken (300 KB) – Import in linearer Zeit mit ehrlicher Meldung, kein quadratischer Regex [1 m 25 s]
+  Fehlermeldung:
+   Import brauchte 85,2 s
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0787_Gegenpruefung.Import_offene_script_marken_linear() in C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot2\tests\Trendo.Core.Tests\T0787GegenpruefungTests.cs:line 24
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:01:30.10]     T-0787 G5: Gesundheitsversprechen auch in Zutaten und Hinweisen; ganze Wörter statt Teilstring (keine Fehlalarme), weitere Wendungen erkannt [FAIL]
+[xUnit.net 00:01:30.11]       Assert.Empty() Failure: Collection was not empty
+[xUnit.net 00:01:30.11]       Collection: ["hilft bei"]
+[xUnit.net 00:01:30.11]       Stack Trace:
+[xUnit.net 00:01:30.11]         C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot2\tests\Trendo.Core.Tests\T0787GegenpruefungTests.cs(71,0): at Trendo.Core.Tests.T0787_Gegenpruefung.Versprechen_genauer()
+[xUnit.net 00:01:30.11]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:01:30.11]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:01:30.11]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0787 G5: Gesundheitsversprechen auch in Zutaten und Hinweisen; ganze Wörter statt Teilstring (keine Fehlalarme), weitere Wendungen erkannt [1 ms]
+  Fehlermeldung:
+   Assert.Empty() Failure: Collection was not empty
+Collection: ["hilft bei"]
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0787_Gegenpruefung.Versprechen_genauer() in C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot2\tests\Trendo.Core.Tests\T0787GegenpruefungTests.cs:line 71
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:01:32.81]     T-0787 G9: Import-Grenzen – höchstens MaxRezepte über alle Blöcke, negative/riesige Zeiten begrenzt [FAIL]
+[xUnit.net 00:01:32.81]       Assert.NotEmpty() Failure: Collection was empty
+[xUnit.net 00:01:32.81]       Stack Trace:
+[xUnit.net 00:01:32.81]         C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot2\tests\Trendo.Core.Tests\T0787GegenpruefungTests.cs(112,0): at Trendo.Core.Tests.T0787_Gegenpruefung.Import_grenzen()
+[xUnit.net 00:01:32.81]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:01:32.81]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:01:32.81]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:01:32.81]     T-0787 G10: Fett-Prozent in den Namen wie in den USDA-Daten (Vollmilch 3,25 %, Schlagsahne 36 %) [FAIL]
+[xUnit.net 00:01:32.81]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:01:32.81]                               ↓ (pos 13)
+[xUnit.net 00:01:32.81]       Expected: "Vollmilch (3,25 %)"
+[xUnit.net 00:01:32.81]       Actual:   "Vollmilch (3,5 %)"
+[xUnit.net 00:01:32.81]                               ↑ (pos 13)
+[xUnit.net 00:01:32.81]       Stack Trace:
+[xUnit.net 00:01:32.81]         C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot2\tests\Trendo.Core.Tests\T0787GegenpruefungTests.cs(119,0): at Trendo.Core.Tests.T0787_Gegenpruefung.Fettprozent_wie_usda()
+[xUnit.net 00:01:32.81]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:01:32.81]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:01:32.81]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:01:32.82]     T-0787 G3: doppelte und leere Rezept-Kennungen – Einkaufsliste, Wochendruck und KiCheck werfen nicht, Kennungen danach eindeutig und stabil [FAIL]
+[xUnit.net 00:01:32.82]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:01:32.82]       Expected: 3
+[xUnit.net 00:01:32.82]       Actual:   1
+[xUnit.net 00:01:32.82]       Stack Trace:
+[xUnit.net 00:01:32.82]         C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot2\tests\Trendo.Core.Tests\T0787GegenpruefungTests.cs(34,0): at Trendo.Core.Tests.T0787_Gegenpruefung.Doppelte_kennungen()
+[xUnit.net 00:01:32.82]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:01:32.82]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:01:32.82]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:01:32.82]     T-0787 G8: Einkaufsliste – „1 Dose Tomaten“ ist Dosenware; Stück und Gramm derselben Zutat mit Stückgewicht zusammengelegt [FAIL]
+[xUnit.net 00:01:32.82]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:01:32.82]                        ↓ (pos 6)
+[xUnit.net 00:01:32.82]       Expected: "tomaten-dose"
+[xUnit.net 00:01:32.82]       Actual:   "tomate"
+[xUnit.net 00:01:32.82]       Stack Trace:
+[xUnit.net 00:01:32.82]         C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot2\tests\Trendo.Core.Tests\T0787GegenpruefungTests.cs(95,0): at Trendo.Core.Tests.T0787_Gegenpruefung.Einkauf_dose_und_stueck()
+[xUnit.net 00:01:32.82]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:01:32.82]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:01:32.82]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:01:32.82]   Finished:    Trendo.Core.Tests
+  Fehler T-0787 G9: Import-Grenzen – höchstens MaxRezepte über alle Blöcke, negative/riesige Zeiten begrenzt [2 s]
+  Fehlermeldung:
+   Assert.NotEmpty() Failure: Collection was empty
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0787_Gegenpruefung.Import_grenzen() in C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot2\tests\Trendo.Core.Tests\T0787GegenpruefungTests.cs:line 112
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0787 G10: Fett-Prozent in den Namen wie in den USDA-Daten (Vollmilch 3,25 %, Schlagsahne 36 %) [1 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+                        ↓ (pos 13)
+Expected: "Vollmilch (3,25 %)"
+Actual:   "Vollmilch (3,5 %)"
+                        ↑ (pos 13)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0787_Gegenpruefung.Fettprozent_wie_usda() in C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot2\tests\Trendo.Core.Tests\T0787GegenpruefungTests.cs:line 119
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0787 G3: doppelte und leere Rezept-Kennungen – Einkaufsliste, Wochendruck und KiCheck werfen nicht, Kennungen danach eindeutig und stabil [9 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: 3
+Actual:   1
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0787_Gegenpruefung.Doppelte_kennungen() in C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot2\tests\Trendo.Core.Tests\T0787GegenpruefungTests.cs:line 34
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0787 G8: Einkaufsliste – „1 Dose Tomaten“ ist Dosenware; Stück und Gramm derselben Zutat mit Stückgewicht zusammengelegt [1 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+                 ↓ (pos 6)
+Expected: "tomaten-dose"
+Actual:   "tomate"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0787_Gegenpruefung.Einkauf_dose_und_stueck() in C:\Users\<user>\AppData\Local\Temp\trendo-T0787-rot2\tests\Trendo.Core.Tests\T0787GegenpruefungTests.cs:line 95
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 8
+     Nicht bestanden: 8
+ Gesamtzeit: 1,5925 Minuten

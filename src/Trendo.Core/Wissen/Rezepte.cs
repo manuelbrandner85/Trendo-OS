@@ -232,15 +232,46 @@ public static class RezeptKit
     static readonly string[] OhneMengeWoerter = ["etwas", "einige", "einen schuss", "ein schuss", "nach belieben", "nach geschmack", "n. b.", "n.b.", "evtl.", "optional", "zum bestreuen", "zum braten"];
 
     /// <summary>Eine Zutatenzeile lesen: „200 g Mehl“, „1/2 TL Salz“, „2–3 Eier, Größe M“, „1 ½ EL Olivenöl“, „Salz und Pfeffer nach Geschmack“, „Für den Teig:“ (Zwischenüberschrift).</summary>
-    public static Zutat LiesZutat(string zeile)
+    public static Zutat LiesZutat(string zeile) => Lies(zeile).Zutat;
+
+    /// <summary>Größte Menge, die eine Zeile haben darf (1 000 000 g/ml/Stück) – mehr ist ein Tippfehler.</summary>
+    public const double MaxMenge = 1_000_000;
+    static readonly Regex UngefaehrRx = new(@"^(?:ca\.?|circa|zirka|etwa|ungefähr|rund)\s+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    static readonly Regex TausenderRx = new(@"^(\d{1,3}(?:\.\d{3})+)(?![.,\d])", RegexOptions.Compiled);
+    static readonly Regex MalRx = new(@"^(\d{1,4})\s*[x×]\s*(?=\d)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    /// <summary>Wie <see cref="LiesZutat"/>, dazu ein Hinweis, wenn etwas mehrdeutig oder nicht lesbar war (Tausenderpunkt, „1e5“, Menge 0 oder riesig).</summary>
+    public static (Zutat Zutat, string? Hinweis) Lies(string zeile)
     {
-        var z = Regex.Replace((zeile ?? "").Replace('\t', ' '), @"\s+", " ").Trim().TrimStart('-', '*', '•', '·').Trim();
+        var z = Regex.Replace((zeile ?? "").Replace('\t', ' '), @"\s+", " ").Trim().TrimStart('-', '–', '—', '*', '•', '·').Trim();
         if (z.Length > MaxZeile) z = z[..MaxZeile];
-        if (z.Length == 0) return new(null, null, "", "");
-        if (z.EndsWith(':') && !Regex.IsMatch(z, @"^\s*\d")) return new(null, null, "", z.TrimEnd(':').Trim(), Gruppe: true);
+        if (z.Length == 0) return (new(null, null, "", ""), null);
+        if (z.EndsWith(':') && !Regex.IsMatch(z, @"^\s*\d")) return (new(null, null, "", z.TrimEnd(':').Trim(), Gruppe: true), null);
+        string? hinweis = null; var notizVorn = "";
+        // „ca. 200 g“, „etwa 200 g“: Menge gilt, „ca.“ wandert in den Hinweis der Zutat
+        if (UngefaehrRx.Match(z) is { Success: true } um0 && z.Length > um0.Length && char.IsDigit(z[um0.Length])) { notizVorn = "ca."; z = z[um0.Length..]; }
+        // „2 x 200 g“ → 400 g
+        double mal = 1;
+        if (MalRx.Match(z) is { Success: true } mm) { mal = double.Parse(mm.Groups[1].Value, CultureInfo.InvariantCulture); z = z[mm.Length..]; }
+        // „1.000 g“: Punkt mit genau drei Ziffern danach = Tausenderpunkt (deutsche Schreibweise) – wird gemeldet
+        if (TausenderRx.Match(z) is { Success: true } tm)
+        {
+            var ohne = tm.Groups[1].Value.Replace(".", "");
+            hinweis = $"„{tm.Groups[1].Value}“ als {ohne} gelesen (Punkt als Tausendertrennzeichen).";
+            z = ohne + z[tm.Length..];
+        }
         var m = ZeileRx.Match(z);
         double? a = m.Groups["a"].Success ? LiesZahl(m.Groups["a"].Value) : null, b = m.Groups["b"].Success ? LiesZahl(m.Groups["b"].Value) : null;
         var rest = m.Groups["rest"].Value.Trim();
+        // „1e5 g“, „1E+20 g“: keine Küchenzahl
+        if (a is not null && Regex.IsMatch(rest, @"^[eE][+-]?\d"))
+            return (new(null, null, "", z, notizVorn), $"„{z.Split(' ')[0]}“ ist keine lesbare Menge – bitte als normale Zahl schreiben.");
+        if (a is not null) { a *= mal; b *= mal; }
+        if (a is <= 0 or > MaxMenge || b is <= 0 or > MaxMenge)
+        {
+            hinweis = $"Menge „{m.Groups["a"].Value}“ liegt außerhalb von 0 bis 1 000 000 – nicht übernommen.";
+            a = null; b = null;
+        }
         var einheit = "";
         // Einheit: erstes Wort (auch direkt an der Zahl wie „200g“)
         var um = Regex.Match(rest, @"^(?<u>[\p{L}]+\.?)(?=\s|$)");
@@ -256,10 +287,15 @@ public static class RezeptKit
             if (i >= 0) { notiz = (rest[i..].Trim() + (notiz.Length > 0 ? ", " + notiz : "")).Trim(); rest = (rest[..i]).Trim(); }
         }
         if (rest.Length == 0 && notiz.Length > 0) { rest = notiz; notiz = ""; }
+        if (notizVorn.Length > 0) notiz = notiz.Length > 0 ? notizVorn + " " + notiz : notizVorn;
         if (b is not null && a is not null && b < a) (a, b) = (b, a);
-        var lm = NaehrwertTabelle.Match(rest)?.Id ?? "";
-        return new(a, b, einheit, rest, notiz, lm);
+        // „1 Dose Tomaten“: Dosenware vor Frischware
+        var lm = einheit == "dose" ? (NaehrwertTabelle.Kandidaten(rest, 6) is var kd && kd.FirstOrDefault(k => k.Id.EndsWith("-dose", StringComparison.Ordinal) || DosenWare.Contains(k.Id)) is { } dk ? dk.Id : kd.FirstOrDefault()?.Id ?? "")
+            : NaehrwertTabelle.Match(rest)?.Id ?? "";
+        return (new(a, b, einheit, rest, notiz, lm), hinweis);
     }
+
+    static readonly HashSet<string> DosenWare = ["kidneybohnen", "kichererbsen", "kokosmilch", "mais", "oliven"];
 
     /// <summary>Zeile wieder als Text (für das Eingabefeld und den Druck); <paramref name="faktor"/> für umgerechnete Portionen.</summary>
     public static string Zeile(Zutat z, double faktor = 1)
@@ -422,7 +458,21 @@ public static class RezeptKit
         };
     }
 
-    public static List<Rezept> Rezepte(JsonObject doc) => (doc["rezepte"] as JsonArray ?? []).Take(MaxRezepte).Select(RezeptVon).ToList();
+    /// <summary>Rezepte des Dokuments. Kennungen sind danach eindeutig und stabil: leere Kennung → „r-&lt;Stelle&gt;“, doppelte → „&lt;id&gt;-2“, „-3“ … (Gegenprüfung T-0787:
+    /// sonst warfen Einkaufsliste, Wochendruck und KiCheck beim Zeichnen ArgumentException). Der Wochenplan zeigt auf das erste Rezept mit der Kennung.</summary>
+    public static List<Rezept> Rezepte(JsonObject doc)
+    {
+        var list = new List<Rezept>(); var seen = new HashSet<string>(StringComparer.Ordinal);
+        var i = 0;
+        foreach (var n in (doc["rezepte"] as JsonArray ?? []).Take(MaxRezepte))
+        {
+            var raw = (n as JsonObject)?["id"] is JsonValue jv && jv.TryGetValue<string>(out var sid) ? sid.Trim() : "";
+            var id = raw.Length > 0 ? Cut(raw, 60) : "r-" + i.ToString(CultureInfo.InvariantCulture);
+            var basis = id; for (var k = 2; !seen.Add(id); k++) id = basis + "-" + k.ToString(CultureInfo.InvariantCulture);
+            list.Add(RezeptVon(n) with { Id = id }); i++;
+        }
+        return list;
+    }
     public static JsonArray RezepteJson(IEnumerable<Rezept> list) => new([.. list.Take(MaxRezepte).Select(r => (JsonNode)RezeptJson(r))]);
 
     public static DateTime PlanStart(JsonObject doc) => DateTime.TryParseExact(S(doc["plan"]?["start"]), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var d) ? Montag(d) : Montag(DateTime.Today);
@@ -486,6 +536,8 @@ public static class RezeptKit
             if (lm is { Dichte: > 0 } && byArt.ContainsKey("masse") && byArt.TryGetValue("volumen", out var vol)) { byArt["masse"] = (byArt["masse"].Sum + vol.Sum * lm.Dichte, "g"); byArt.Remove("volumen"); }
             // Stück ohne Einheit und „Stück“ sind dasselbe
             if (byArt.TryGetValue("stueck:stueck", out var st)) { byArt["stueck"] = (byArt.GetValueOrDefault("stueck").Sum + st.Sum, ""); byArt.Remove("stueck:stueck"); }
+            // Stück und Gramm derselben Zutat (Gegenprüfung T-0787): mit bekanntem Stückgewicht in Gramm zusammenlegen; ohne bleiben es getrennte, beschriftete Zeilen
+            if (lm is { Stueck: > 0 } && byArt.ContainsKey("masse") && byArt.TryGetValue("stueck", out var stk)) { byArt["masse"] = (byArt["masse"].Sum + stk.Sum * lm.Stueck, "g"); byArt.Remove("stueck"); }
             var i = 0;
             foreach (var (art, (sum, einheit)) in byArt.OrderBy(kv => kv.Key))
             {
@@ -537,30 +589,40 @@ public static class RezeptKit
 
     // ------------------------------------------------------------ Keine Gesundheitsversprechen
 
+    /// <summary>Heil- und Gesundheitsversprechen als ganze Wörter bzw. Wendungen (Wortgrenzen an Buchstaben: „verbeugt“ und „hilft beim Frischhalten“ sind kein Treffer).</summary>
     static readonly string[] Versprechen =
     [
-        "heilt", "heilen", "heilend", "heilmittel", "gegen krebs", "beugt", "vorbeug", "senkt den blutdruck", "senkt den cholesterin", "senkt cholesterin", "entgiftet", "entgiften", "detox",
-        "stärkt das immunsystem", "stärkt die abwehr", "immunbooster", "fatburner", "fettverbrennung", "schlank über nacht", "garantiert abnehmen", "abnehmen garantiert", "macht schlank", "wundermittel", "medizinisch", "therapeut", "gegen diabetes", "hilft gegen", "hilft bei",
+        @"heil(?:t|en|end|ende|ender|endes|wirkung|wirkungen|mittel|kraft|kräfte|kräftig|kräftige)", @"gegen\s+krebs", @"krebs(?:vorbeugend|hemmend|schützend)\w*",
+        @"beug(?:t|en)\s+(?:\p{L}+\s+){0,4}vor", @"vorbeugend\w*", @"senk(?:t|en)\s+(?:den\s+|das\s+|die\s+)?(?:blutdruck|blutzucker\w*|cholesterin\w*|zuckerspiegel)",
+        @"(?:blutzucker|blutdruck|cholesterin)senkend\w*", @"entzündungshemmend\w*", @"entgift(?:et|en|end|ende|ung)", @"detox\w*",
+        @"stärk(?:t|en)\s+(?:das\s+|die\s+)?(?:immunsystem|abwehr\w*|abwehrkräfte)", @"immunbooster", @"fatburner", @"fettverbrennung\w*", @"schlank\s+über\s+nacht",
+        @"garantiert\s+abnehmen", @"abnehmen\s+garantiert", @"macht\s+schlank", @"wundermittel", @"medizinisch\w*", @"therapeutisch\w*", @"gegen\s+diabetes",
+        @"hilft\s+gegen", @"hilft\s+bei", @"lindert", @"lindern", @"schützt\s+vor\s+(?:krankheit\w*|krebs|herzinfarkt|erkältung\w*|infekt\w*)",
     ];
+    static readonly Regex[] VersprechenRx = [.. Versprechen.Select(v => new Regex(@"(?<!\p{L})" + v + @"(?!\p{L})", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled, TimeSpan.FromSeconds(2)))];
 
     /// <summary>Gesundheits- oder Heilversprechen in einem Text (Trendo gibt keine; die KI darf keine schreiben). Liefert die gefundenen Wendungen.</summary>
     public static List<string> Gesundheitsversprechen(string text)
     {
-        var t = " " + (text ?? "").ToLowerInvariant() + " ";
-        return Versprechen.Where(v => t.Contains(v, StringComparison.Ordinal)).ToList();
+        var t = text ?? ""; if (t.Length > 200_000) t = t[..200_000];
+        return VersprechenRx.Select(r => r.Match(t)).Where(m => m.Success).Select(m => m.Value.Trim()).ToList();
     }
 
-    /// <summary>Prüfung einer KI-Änderung (vorher, nachher): keine Gesundheitsversprechen, Wochenplan und Einkaufsliste nur durch die Person.</summary>
+    /// <summary>Aller Text eines Rezepts, in dem ein Versprechen stehen kann – auch Zutaten und deren Hinweise („1 TL Kurkuma, heilt Entzündungen“).</summary>
+    public static string AllerText(Rezept r) => string.Join(" \n ", [r.Name, r.Beschreibung, r.Notizen, r.Stichwoerter, r.Kategorie, r.Kueche, .. r.Schritte, .. r.Zutaten.Select(z => z.Name + " " + z.Notiz)]);
+
+    /// <summary>Prüfung einer KI-Änderung (vorher, nachher): keine Gesundheitsversprechen, keine doppelten Kennungen, Wochenplan und Einkaufsliste nur durch die Person.</summary>
     public static string? KiCheck(JsonObject vorher, JsonObject nachher)
     {
         if ((vorher["plan"]?.ToJsonString() ?? "") != (nachher["plan"]?.ToJsonString() ?? "") || (vorher["liste"]?.ToJsonString() ?? "") != (nachher["liste"]?.ToJsonString() ?? ""))
             return "Wochenplan und Einkaufsliste ändert nur die Person selbst – die KI schreibt nur Rezepte.";
+        var roh = (nachher["rezepte"] as JsonArray ?? []).OfType<JsonObject>().Select(o => S(o["id"])).Where(id => id.Length > 0).ToList();
+        if (roh.Count != roh.Distinct().Count()) return "Die KI hat zwei Rezepte mit derselben Kennung geschrieben – Trendo nimmt das nicht an.";
         var alt = Rezepte(vorher).ToDictionary(r => r.Id, r => RezeptJson(r).ToJsonString());
         foreach (var r in Rezepte(nachher))
         {
             if (alt.TryGetValue(r.Id, out var a) && a == RezeptJson(r).ToJsonString()) continue;
-            var text = string.Join(" ", [r.Name, r.Beschreibung, r.Notizen, r.Stichwoerter, .. r.Schritte]);
-            if (Gesundheitsversprechen(text) is { Count: > 0 } hits) return $"Die KI hat ein Gesundheitsversprechen geschrieben („{hits[0]}“) – Trendo nimmt das nicht an. Nährwerte sind nur Richtwerte.";
+            if (Gesundheitsversprechen(AllerText(r)) is { Count: > 0 } hits) return $"Die KI hat ein Gesundheitsversprechen geschrieben („{hits[0]}“) – Trendo nimmt das nicht an. Nährwerte sind nur Richtwerte.";
         }
         return null;
     }
@@ -574,14 +636,23 @@ public static class RezeptKit
         if (r.Schritte.Count == 0) f.Add("Es fehlen die Arbeitsschritte.");
         var n = Berechne(r);
         if (n.Fehlt.Count > 0) f.Add("Ohne Nährwerte (nicht zugeordnet oder ohne Gewicht): " + string.Join(", ", n.Fehlt) + ".");
-        if (Gesundheitsversprechen(string.Join(" ", [r.Name, r.Beschreibung, r.Notizen, .. r.Schritte])) is { Count: > 0 } v) f.Add($"Bitte ohne Heil- oder Gesundheitsversprechen formulieren („{v[0]}“).");
+        if (Gesundheitsversprechen(AllerText(r)) is { Count: > 0 } v) f.Add($"Bitte ohne Heil- oder Gesundheitsversprechen formulieren („{v[0]}“).");
         return f;
     }
 
     // ------------------------------------------------------------ Freitext → Rezept
 
-    /// <summary>Rezept aus eingefügtem Text: erste Zeile = Name, Zeilen mit Menge/Einheit (oder unter „Zutaten“) = Zutaten, der Rest = Schritte. Für Text aus einer Webseite oder Mail.</summary>
-    public static Rezept AusText(string text)
+    /// <summary>Portionen aus einer Zahl im Text – zu groß oder nicht lesbar: Hinweis statt Absturz.</summary>
+    static int Portionen(string zahl, int bisher, List<string>? hinweise)
+    {
+        if (int.TryParse(zahl, NumberStyles.Integer, CultureInfo.InvariantCulture, out var n) && n is >= 1 and <= MaxPortionen) return n;
+        hinweise?.Add($"„{(zahl.Length > 12 ? zahl[..12] + "…" : zahl)} Portionen“ ist keine gültige Angabe (1 bis {MaxPortionen}) – es bleibt bei {bisher}.");
+        return bisher;
+    }
+
+    /// <summary>Rezept aus eingefügtem Text: erste Zeile = Name, Zeilen mit Menge/Einheit (oder unter „Zutaten“) = Zutaten, der Rest = Schritte. Für Text aus einer Webseite oder Mail.
+    /// <paramref name="hinweise"/> sammelt, was nicht eindeutig war (Portionen, Mengen).</summary>
+    public static Rezept AusText(string text, List<string>? hinweise = null)
     {
         var lines = (text ?? "").Replace("\r", "").Split('\n').Select(l => l.Trim()).ToList();
         while (lines.Count > 0 && lines[0].Length == 0) lines.RemoveAt(0);
@@ -589,22 +660,23 @@ public static class RezeptKit
         var zutaten = new List<Zutat>(); var schritte = new List<string>(); var portionen = 4; var mode = "";
         var absatz = new StringBuilder();
         void Absatz() { if (absatz.Length > 0) { schritte.Add(absatz.ToString().Trim()); absatz.Clear(); } }
-        foreach (var l in lines)
+        foreach (var l0 in lines)
         {
+            var l = l0.Length > MaxZeile * 10 ? l0[..(MaxZeile * 10)] : l0;
             var low = l.ToLowerInvariant().TrimEnd(':');
-            if (low is "zutaten" or "zutaten für" || low.StartsWith("zutaten für") || low.StartsWith("zutaten (")) { mode = "z"; if (Regex.Match(low, @"(\d+)\s*(portion|person|stück)") is { Success: true } pm) portionen = int.Parse(pm.Groups[1].Value, CultureInfo.InvariantCulture); continue; }
+            if (low is "zutaten" or "zutaten für" || low.StartsWith("zutaten für") || low.StartsWith("zutaten (")) { mode = "z"; if (Regex.Match(low, @"(\d+)\s*(portion|person|stück)") is { Success: true } pm) portionen = Portionen(pm.Groups[1].Value, portionen, hinweise); continue; }
             if (low is "zubereitung" or "anleitung" or "so geht's" or "so gehts" or "schritte" or "arbeitsschritte") { mode = "s"; continue; }
-            if (Regex.Match(low, @"^(?:für\s+)?(\d+)\s*(portionen|personen|portion|person)\b") is { Success: true } pp) { portionen = int.Parse(pp.Groups[1].Value, CultureInfo.InvariantCulture); continue; }
+            if (Regex.Match(low, @"^(?:für\s+)?(\d+)\s*(portionen|personen|portion|person)\b") is { Success: true } pp) { portionen = Portionen(pp.Groups[1].Value, portionen, hinweise); continue; }
             if (l.Length == 0) { Absatz(); continue; }
             var istZutat = mode == "z" || mode == "" && Regex.IsMatch(l, @"^\s*[-•*]?\s*" + ZahlMuster + @"\s*\p{L}");
-            if (istZutat && mode != "s") { zutaten.Add(LiesZutat(l)); continue; }
+            if (istZutat && mode != "s") { var (z, h) = Lies(l); zutaten.Add(z); if (h is not null) hinweise?.Add(h); continue; }
             mode = "s";
             var step = Regex.Replace(l, @"^\s*(?:\d+[.)]|schritt\s*\d+:?)\s*", "", RegexOptions.IgnoreCase);
             if (Regex.IsMatch(l, @"^\s*(?:\d+[.)]|schritt\s*\d+)", RegexOptions.IgnoreCase)) { Absatz(); absatz.Append(step); Absatz(); }
             else absatz.Append(absatz.Length > 0 ? " " : "").Append(step);
         }
         Absatz();
-        return new(NewId("r"), Cut(name, 200), Math.Clamp(portionen, 1, MaxPortionen), zutaten.Where(z => z.Name.Length > 0).Take(MaxZutaten).ToList(), schritte.Take(MaxSchritte).ToList());
+        return new(NewId("r"), Cut(name, 200), Math.Clamp(portionen, 1, MaxPortionen), zutaten.Where(z => z.Name.Length > 0).Take(MaxZutaten).ToList(), schritte.Take(MaxSchritte).Select(s => Cut(s, 4000)).ToList());
     }
 
     // ------------------------------------------------------------ schema.org/Recipe (JSON-LD)
@@ -614,9 +686,9 @@ public static class RezeptKit
     {
         if (iso is not { Length: > 0 }) return null;
         var m = Regex.Match(iso.Trim(), @"^P(?:(?<d>\d+)D)?(?:T(?:(?<h>\d+(?:\.\d+)?)H)?(?:(?<m>\d+(?:\.\d+)?)M)?(?:(?<s>\d+)S)?)?$", RegexOptions.IgnoreCase);
-        if (!m.Success) return int.TryParse(iso, out var plain) ? plain : null;
+        if (!m.Success) return int.TryParse(iso, out var plain) ? Math.Clamp(plain, 0, 100_000) : null;
         double v(string g) => m.Groups[g].Success ? double.Parse(m.Groups[g].Value, CultureInfo.InvariantCulture) : 0;
-        return (int)Math.Round(v("d") * 1440 + v("h") * 60 + v("m") + v("s") / 60);
+        return (int)Math.Clamp(Math.Round(v("d") * 1440 + v("h") * 60 + v("m") + v("s") / 60), 0, 100_000);
     }
     public static string Iso(int minuten) => minuten <= 0 ? "PT0M" : "PT" + (minuten >= 60 ? $"{minuten / 60}H" : "") + (minuten % 60 > 0 || minuten < 60 ? $"{minuten % 60}M" : "");
 
@@ -706,7 +778,7 @@ public static class RezeptKit
         var blocks = new List<string>();
         var t = (text ?? "").TrimStart('﻿').Trim();
         if (t.StartsWith('{') || t.StartsWith('[')) blocks.Add(t);
-        else foreach (Match m in Regex.Matches(t, @"<script[^>]*type\s*=\s*[""']?application/ld\+json[""']?[^>]*>(.*?)</script>", RegexOptions.Singleline | RegexOptions.IgnoreCase)) blocks.Add(m.Groups[1].Value.Trim()); // Inhalt eines script-Elements ist kein HTML – unverändert lesen
+        else ScriptBloecke(t, blocks, notes);
         if (blocks.Count == 0) { notes.Add("Kein schema.org-Rezept (JSON-LD) gefunden."); return (found, notes); }
         foreach (var b in blocks)
         {
@@ -714,9 +786,27 @@ public static class RezeptKit
             try { node = JsonNode.Parse(b, documentOptions: new JsonDocumentOptions { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip, MaxDepth = 64 }); }
             catch (JsonException e) { notes.Add("Ein JSON-LD-Block ist kein gültiges JSON: " + e.Message.Split('.')[0] + "."); continue; }
             foreach (var o in Walk(node, 0)) if (IsRecipe(o)) { found.Add(VonSchema(o)); if (found.Count >= MaxRezepte) break; }
+            if (found.Count >= MaxRezepte) { notes.Add($"Höchstens {MaxRezepte} Rezepte je Datei – der Rest wurde nicht gelesen."); break; } // Grenze über alle Blöcke
         }
         if (found.Count == 0 && notes.Count == 0) notes.Add("Die Datei enthält schema.org-Daten, aber kein „Recipe“.");
         return (found, notes);
+    }
+
+    /// <summary>JSON-LD-Blöcke einer HTML-Seite in EINEM Durchlauf mit IndexOf (linear – auch bei offenen &lt;script&gt;-Marken ohne Ende, Gegenprüfung T-0787).
+    /// Der Inhalt eines script-Elements ist kein HTML und wird unverändert gelesen. Höchstens 200 Blöcke.</summary>
+    static void ScriptBloecke(string t, List<string> blocks, List<string> notes)
+    {
+        var pos = 0;
+        while (pos < t.Length && blocks.Count < 200)
+        {
+            var i = t.IndexOf("<script", pos, StringComparison.OrdinalIgnoreCase); if (i < 0) return;
+            var j = t.IndexOf('>', i); if (j < 0) { notes.Add("Die Seite endet mitten in einer <script>-Marke."); return; }
+            var k = t.IndexOf("</script", j, StringComparison.OrdinalIgnoreCase);
+            var ld = t.AsSpan(i, j - i).Contains("application/ld+json", StringComparison.OrdinalIgnoreCase);
+            if (k < 0) { if (ld) notes.Add("Ein JSON-LD-Block der Seite ist nicht geschlossen (</script> fehlt) – nicht gelesen."); return; }
+            if (ld) blocks.Add(t[(j + 1)..k].Trim());
+            pos = k + 8;
+        }
     }
 
     static IEnumerable<JsonObject> Walk(JsonNode? n, int depth)
@@ -745,7 +835,20 @@ public static class RezeptKit
         _ => [],
     };
 
-    static string Plain(string s) => Regex.Replace(System.Net.WebUtility.HtmlDecode(Regex.Replace(s ?? "", "<[^>]+>", " ")), @"\s+", " ").Trim();
+    /// <summary>Text ohne HTML-Marken – linear (eine offene „&lt;“ ohne „&gt;“ bleibt stehen), höchstens 20 000 Zeichen.</summary>
+    static string Plain(string s)
+    {
+        s ??= ""; if (s.Length > 20_000) s = s[..20_000];
+        var sb = new StringBuilder(s.Length);
+        for (var i = 0; i < s.Length;)
+        {
+            if (s[i] != '<') { sb.Append(s[i++]); continue; }
+            var close = s.IndexOf('>', i + 1);
+            if (close < 0) { sb.Append(s, i, s.Length - i); break; }
+            sb.Append(' '); i = close + 1;
+        }
+        return Regex.Replace(System.Net.WebUtility.HtmlDecode(sb.ToString()), @"\s+", " ").Trim();
+    }
 
     /// <summary>schema.org „recipeInstructions“: Text, Liste von Texten, HowToStep, HowToSection (mit Zwischenüberschrift im Schritt).</summary>
     static List<string> Schritte(JsonNode? n)
@@ -789,8 +892,8 @@ public static class RezeptKit
         {
             Beschreibung = Cut(Plain(S(o["description"])), 4000),
             PortionWort = yieldWord is { Length: > 1 } w ? Cut(char.ToUpper(w[0]) + w[1..], 40) : "Portionen",
-            Vorbereitung = Minuten(S(o["prepTime"])) ?? 0,
-            Garzeit = Minuten(S(o["cookTime"])) ?? Math.Max(0, (Minuten(S(o["totalTime"])) ?? 0) - (Minuten(S(o["prepTime"])) ?? 0)),
+            Vorbereitung = Math.Clamp(Minuten(S(o["prepTime"])) ?? 0, 0, 100_000), // Grenze schon beim Einlesen (negativ oder riesig: 0 bzw. 100 000)
+            Garzeit = Math.Clamp(Minuten(S(o["cookTime"])) ?? Math.Max(0, (Minuten(S(o["totalTime"])) ?? 0) - (Minuten(S(o["prepTime"])) ?? 0)), 0, 100_000),
             Kategorie = Cut(Liste(o["recipeCategory"]), 100), Kueche = Cut(Liste(o["recipeCuisine"]), 100), Stichwoerter = Cut(Liste(o["keywords"]), 400),
             Quelle = Cut(S(o["url"]) is { Length: > 0 } url ? url : S(o["@id"]), 1000),
         };

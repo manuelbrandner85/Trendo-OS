@@ -1,0 +1,9 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0787 ECHT: lokale KI (Ollama) macht aus einem eingefügten Rezepttext ein Rezept im offenen Buch – Vorschau, „Ja, behalten“, Nährwerte vom Kern, Rückgängig (nur mit TRENDO_T0787_ECHT) [SKIP]
+      Echtlauf nur mit TRENDO_T0787_ECHT=<Belegordner> (braucht Ollama mit Modell auf diesem PC).
+  Finished:    Trendo.App.Tests (ID = '1912c70a5838d6e1ae1d114878e17d308cde675d960b424ec34023ac904fffd5')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 23, Errors: 0, Failed: 0, Skipped: 1, Not Run: 0, Time: 104,354s

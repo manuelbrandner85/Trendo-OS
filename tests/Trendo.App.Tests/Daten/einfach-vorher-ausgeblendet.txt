@@ -2270,3 +2270,19 @@ quiz-programm (Dokument): quiz-shuffle-a
 quiz-programm (Dokument): quiz-source-text
 quiz-programm (Dokument): quiz-time
 quiz-programm (Dokument): quiz-title
+# T-0787 (0.9.115, Rezepte & Ernährung; Gegenprüfung): genau wie T-0780 (Referate/Zeitleisten) und T-0784 (Quiz, Kurse, Mathe, Natur, Nachhilfe, Programmieren lernen)
+#   liegen in „Einfach“ die Bedienstufen-Knöpfe unter „Mehr Werkzeuge“ (prog-tools-more), dazu „Ansicht ▸ Bedienstufe“ und „Mehr ▸ Bedienstufe“; die weiteren Ausgaben
+#   (Kochbuch, HTML, DOCX, ODT, Einkaufsliste TXT/CSV) in der Menüleiste „Datei ▸ Exportieren“ (in jeder Stufe alle Formate, T-0710).
+#   Beide Ersatzwege geklickt in T0787Gegenpruefung_Ui.Einfach_ersatzwege (Stufe wechselt, jede Ausgabe schreibt ihre Datei).
+rezepte-programm: prog-level-einfach
+rezepte-programm: prog-level-erweitert
+rezepte-programm: prog-level-profi
+rezepte-programm (Dokument): prog-export-docx
+rezepte-programm (Dokument): prog-export-html
+rezepte-programm (Dokument): prog-export-kochbuch
+rezepte-programm (Dokument): prog-export-liste-csv
+rezepte-programm (Dokument): prog-export-liste-txt
+rezepte-programm (Dokument): prog-export-odt
+rezepte-programm (Dokument): prog-level-einfach
+rezepte-programm (Dokument): prog-level-erweitert
+rezepte-programm (Dokument): prog-level-profi

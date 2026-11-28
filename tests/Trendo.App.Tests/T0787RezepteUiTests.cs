@@ -149,7 +149,7 @@ public class T0787Rezepte_Ui
             var t = string.Join("\n", Enumerable.Range(0, PdfView.PageCount(pdf)).Select(i => PdfView.Text(pdf, i)));
             Assert.Contains("Freitag", t); Assert.Contains("Einkaufsliste", t); Assert.Contains("Spülmittel", t);
             var csv = File.ReadAllText(Exportiere(w, "liste-csv"));
-            Assert.Contains("1,2;l;Vollmilch (3,5 %)", csv); Assert.Contains(";ja", csv);
+            Assert.Contains("1,2;l;Vollmilch (3,25 %)", csv); Assert.Contains(";ja", csv);
             Assert.Contains("[x]", File.ReadAllText(Exportiere(w, "liste-txt")));
         }
         finally { w.Close(); }
@@ -173,7 +173,7 @@ public class T0787Rezepte_Ui
             var vorher = Hash(f);
             w.PickOverride = _ => Task.FromResult<string[]?>([f]);
             Tap(w, "prog-cmd-rz-import"); Settle();
-            for (var i = 0; i < 50 && MainWindow.RzRezepte(d).Count == 0; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); }
+            for (var i = 0; i < 500 && (MainWindow.RzRezepte(d).Count == 0 || w.RzImportBusy > 0); i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); } // Einlesen läuft im Hintergrund
             var r = Assert.Single(MainWindow.RzRezepte(d));
             Assert.Equal("Linsensuppe", r.Name); Assert.Equal(6, r.Portionen); Assert.Equal("Teller", r.PortionWort); Assert.Equal(45, r.Garzeit);
             Assert.Equal(["Vorbereiten: Gemüse würfeln.", "Alles 45 Minuten kochen."], r.Schritte);
@@ -191,7 +191,7 @@ public class T0787Rezepte_Ui
             // kaputte Datei: verständliche Meldung, nichts angelegt
             var bad = Path.Combine(root, "kaputt.json"); File.WriteAllText(bad, "{ kein json");
             w.PickOverride = _ => Task.FromResult<string[]?>([bad]);
-            Tap(w, "prog-cmd-rz-import"); for (var i = 0; i < 20; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(10); }
+            Tap(w, "prog-cmd-rz-import"); for (var i = 0; i < 500 && (w.RzImportBusy > 0 || !w.ProgramMessage(K).Contains("JSON")); i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); }
             Assert.Single(MainWindow.RzRezepte(d)); Assert.Contains("JSON", w.ProgramMessage(K));
             // Einfach: Grundbefehle direkt sichtbar, eine goldene Hauptaktion
             w.ProgramSetLevel(UserLevel.Einfach); w.Show(K); Settle();
