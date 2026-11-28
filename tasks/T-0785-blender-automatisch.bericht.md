@@ -177,6 +177,25 @@
 - **Core** (BlenderLink*, StudioMcp*, NoFixedUser, Claude*, Studio3D*, Kreatur*, KittlConnect, GameTools, BlenderScript): „Bestanden! Fehler: 0, erfolgreich: 148, übersprungen: 2“. Übersprungen sind der ECHT-Test ohne Umgebungsvariable (separat bestanden) und T-0688 ECHT.
 - **Core ECHT:** „Bestanden! erfolgreich: 1“ (2 min 36 s); Rohlog SHA-256 `89254a5a…`.
 
+## Korrekturrunde 4 (vierte Nachprüfung, N9-Nebenwirkung)
+- **Problem:** `CountsAsOpen` zählte jedes Blender ohne Fenster, das jünger als 15 s ist, als offen, auch Trendos eigene `blender -b`-Läufe und die `_for_cli`-Hintergrundläufe des MCP. Fiel ein Absturz in so ein Zeitfenster, startete Trendo fälschlich nicht neu.
+- **Jetzt:** Ohne Fenster zählt ein Blender nicht, wenn seine Befehlszeile `-b` oder `--background` enthält. Gezählt wird nur vor einem `--`, Anführungszeichen werden beachtet, „-b“ in einem Dateinamen zählt nicht. Ebenso nicht, wenn es ein Kindprozess von Trendo ist (Elternprozess = Trendo).
+- **Befehlszeile und Elternprozess** liest `ProcessFacts` nur lesend: unter Windows über `NtQueryInformationProcess` (dieselbe Angabe wie `Win32_Process.CommandLine`, ohne neues WMI-Paket), unter Linux über `/proc`.
+- Ist die Befehlszeile nicht lesbar, bleibt die bisherige Zeitregel.
+- **Test** `N9_background_young_not_counted` mit nachgebildeten Prozessdaten:
+  - Hintergrundlauf jünger als 15 s: nicht offen
+  - eigener Kindprozess ohne Fenster: nicht offen
+  - Blender der Person ohne Fenster, jünger als 15 s: offen
+  - `-b` nach `--`: offen
+  - Befehlszeile unlesbar: Zeitregel
+  - dazu eine echte Leseprobe am eigenen Testprozess
+
+**Ergebnisse Runde 4:**
+- Build: 0 Fehler.
+- Core (BlenderLink*, StudioMcp*, QualityLight, NoFixedUser): „Bestanden! Fehler: 0, erfolgreich: 49, übersprungen: 1“. Übersprungen ist der ECHT-Test ohne gesetzte Umgebungsvariable; ein ECHT-Lauf war für diese Runde nicht verlangt.
+- App (BlenderLink_Ui, StudioMcp_Ui): Total 9, Failed 0.
+- **Rot-Grün:** Der neue Test nutzt die neuen Parameter von `CountsAsOpen` und lässt sich mit dem Stand von fix3 nicht bauen. Fachlich wäre er dort rot: Ein Hintergrundlauf jünger als 15 s galt als offen.
+
 ## Abnahmekriterien
 1. Echtes Ergebnis aus leerer Vorlage: **TEILWEISE**. Echt über die Verbindung (leere `szene.blend`, Würfel angelegt); der Weg über den Klick in der Oberfläche ist nur mit Ersatz-Blender geprüft.
 2. Fremdprogramm/Export: **TEILWEISE**. Die echte .blend öffnet sich im echten Blender, Beleg mit SHA-256. Ein Import-Export-Kreislauf gehört nicht zu diesem Paket.

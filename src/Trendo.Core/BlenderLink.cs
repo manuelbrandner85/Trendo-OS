@@ -374,12 +374,43 @@ public sealed class ProcessBlenderHost : IBlenderHost
 
     static bool Interactive(Process p)
     {
-        try { return CountsAsOpen(p.MainWindowHandle != IntPtr.Zero, DateTime.Now - p.StartTime); }
+        try
+        {
+            var info = ProcessFacts.Read(p.Id);
+            return CountsAsOpen(p.MainWindowHandle != IntPtr.Zero, DateTime.Now - p.StartTime, info.CommandLine, info.ParentPid == Environment.ProcessId);
+        }
         catch (Exception e) when (e is InvalidOperationException or System.ComponentModel.Win32Exception or NotSupportedException) { return false; }
     }
 
-    /// <summary>N9: ein Blender mit Fenster zählt – und eins ohne Fenster in den ersten 15 s nach dem Start (sein Fenster erscheint noch).</summary>
-    public static bool CountsAsOpen(bool hasWindow, TimeSpan age) => hasWindow || age < TimeSpan.FromSeconds(15);
+    /// <summary>N9: ein Blender mit Fenster zählt. Ohne Fenster zählt es nur in den ersten 15 s nach dem Start (sein Fenster erscheint vielleicht noch) –
+    /// aber nie, wenn es ein Hintergrundlauf ist (<c>-b</c>/<c>--background</c> in der Befehlszeile, z. B. Trendos eigene Läufe oder die <c>_for_cli</c>-Werkzeuge)
+    /// oder ein eigener Kindprozess von Trendo. Ist die Befehlszeile nicht lesbar (<paramref name="commandLine"/> null), gilt nur die Zeitregel.</summary>
+    public static bool CountsAsOpen(bool hasWindow, TimeSpan age, string? commandLine = null, bool ownChild = false)
+    {
+        if (hasWindow) return true;
+        if (ownChild || IsBackground(commandLine)) return false;
+        return age < TimeSpan.FromSeconds(15);
+    }
+
+    /// <summary>Hat die Befehlszeile das Argument <c>-b</c> oder <c>--background</c>? (Anführungszeichen werden beachtet, „-b“ in einem Dateinamen zählt nicht.)</summary>
+    public static bool IsBackground(string? commandLine)
+    {
+        if (string.IsNullOrWhiteSpace(commandLine)) return false;
+        var tokens = new List<string>(); var cur = new StringBuilder(); var quoted = false;
+        foreach (var ch in commandLine)
+        {
+            if (ch == '"') { quoted = !quoted; continue; }
+            if (char.IsWhiteSpace(ch) && !quoted) { if (cur.Length > 0) { tokens.Add(cur.ToString()); cur.Clear(); } continue; }
+            cur.Append(ch);
+        }
+        if (cur.Length > 0) tokens.Add(cur.ToString());
+        foreach (var t in tokens.Skip(1)) // das erste ist das Programm selbst
+        {
+            if (t == "--") break; // danach folgen Skript-Argumente
+            if (t is "-b" or "--background") return true;
+        }
+        return false;
+    }
 }
 
 /// <summary>T-0785: hält die Verbindung zu einem sichtbaren Blender mit MCP-Brücke. Startet Blender bei Bedarf selbst (mit Projekt und Brücke), nutzt ein
@@ -1087,5 +1118,65 @@ public sealed class BlenderLink : IDisposable
     public void Dispose()
     {
         lock (_lock) { if (_disposed) return; _disposed = true; _watch?.Cancel(); _watch = null; }
+    }
+}
+
+/// <summary>T-0785 (N9): Befehlszeile und Elternprozess eines fremden Prozesses – nur lesen. Windows: NtQueryInformationProcess (wie Win32_Process.CommandLine,
+/// ohne WMI-Paket); Linux: /proc. Nicht lesbar → null (dann bleibt die bisherige Zeitregel).</summary>
+public static class ProcessFacts
+{
+    public readonly record struct Facts(string? CommandLine, int? ParentPid);
+
+    public static Facts Read(int pid)
+    {
+        try
+        {
+            if (OperatingSystem.IsLinux())
+            {
+                var cmd = File.Exists($"/proc/{pid}/cmdline") ? File.ReadAllText($"/proc/{pid}/cmdline").Replace('\0', ' ').Trim() : null;
+                int? parent = null;
+                if (File.Exists($"/proc/{pid}/stat")) { var st = File.ReadAllText($"/proc/{pid}/stat"); var f = st[(st.LastIndexOf(')') + 2)..].Split(' '); if (f.Length > 1 && int.TryParse(f[1], out var pp)) parent = pp; }
+                return new(cmd, parent);
+            }
+            if (OperatingSystem.IsWindows()) return ReadWindows(pid);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or FormatException or ArgumentException) { }
+        return new(null, null);
+    }
+
+    const uint QueryLimited = 0x1000;
+    [System.Runtime.InteropServices.DllImport("kernel32.dll", SetLastError = true)] static extern IntPtr OpenProcess(uint access, bool inherit, int pid);
+    [System.Runtime.InteropServices.DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr h);
+    [System.Runtime.InteropServices.DllImport("ntdll.dll")] static extern int NtQueryInformationProcess(IntPtr h, int cls, IntPtr buf, int len, out int ret);
+
+    static Facts ReadWindows(int pid)
+    {
+        var h = OpenProcess(QueryLimited, false, pid);
+        if (h == IntPtr.Zero) return new(null, null);
+        try
+        {
+            int? parent = null;
+            var pbiLen = IntPtr.Size * 6; var pbi = System.Runtime.InteropServices.Marshal.AllocHGlobal(pbiLen);
+            try { if (NtQueryInformationProcess(h, 0, pbi, pbiLen, out _) == 0) parent = (int)System.Runtime.InteropServices.Marshal.ReadIntPtr(pbi, IntPtr.Size * 5); }
+            finally { System.Runtime.InteropServices.Marshal.FreeHGlobal(pbi); }
+            string? cmd = null;
+            NtQueryInformationProcess(h, 60, IntPtr.Zero, 0, out var need); // ProcessCommandLineInformation: Größe erfragen
+            if (need > 0 && need < 1 << 20)
+            {
+                var buf = System.Runtime.InteropServices.Marshal.AllocHGlobal(need);
+                try
+                {
+                    if (NtQueryInformationProcess(h, 60, buf, need, out _) == 0)
+                    {
+                        var len = (ushort)System.Runtime.InteropServices.Marshal.ReadInt16(buf); // UNICODE_STRING.Length (Bytes)
+                        var ptr = System.Runtime.InteropServices.Marshal.ReadIntPtr(buf, IntPtr.Size); // UNICODE_STRING.Buffer
+                        if (ptr != IntPtr.Zero && len > 0) cmd = System.Runtime.InteropServices.Marshal.PtrToStringUni(ptr, len / 2);
+                    }
+                }
+                finally { System.Runtime.InteropServices.Marshal.FreeHGlobal(buf); }
+            }
+            return new(cmd, parent);
+        }
+        finally { CloseHandle(h); }
     }
 }

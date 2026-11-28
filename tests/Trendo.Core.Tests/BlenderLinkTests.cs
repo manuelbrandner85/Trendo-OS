@@ -366,6 +366,22 @@ public class BlenderLinkTests
         Assert.False(ProcessBlenderHost.CountsAsOpen(false, TimeSpan.FromSeconds(20)));
     }
 
+    [Fact(DisplayName = "T-0785 N9: nachgebildete Prozessdaten – Hintergrundlauf (-b/--background) bzw. eigener Kindprozess jünger als 15 s zählt nicht, Blender der Person ohne Fenster schon")]
+    public void N9_background_young_not_counted()
+    {
+        var young = TimeSpan.FromSeconds(3);
+        Assert.False(ProcessBlenderHost.CountsAsOpen(false, young, "\"C:\\Program Files\\Blender Foundation\\Blender 5.2\\blender.exe\" -b \"C:\\p\\haus.blend\" --python-expr x"));
+        Assert.False(ProcessBlenderHost.CountsAsOpen(false, young, "blender.exe --factory-startup --background --python export.py"));
+        Assert.False(ProcessBlenderHost.CountsAsOpen(false, young, "blender.exe C:\\p\\szene.blend", ownChild: true)); // Trendos eigener Kindprozess ohne Fenster
+        Assert.True(ProcessBlenderHost.CountsAsOpen(false, young, "\"C:\\Program Files\\Blender Foundation\\Blender 5.2\\blender.exe\" \"C:\\p\\-b-entwurf.blend\"")); // Blender der Person, startet gerade
+        Assert.True(ProcessBlenderHost.CountsAsOpen(false, young, "blender.exe szene.blend -- -b")); // -b nach „--“ gehört dem Skript
+        Assert.True(ProcessBlenderHost.CountsAsOpen(false, young, null)); // Befehlszeile nicht lesbar: bisherige Zeitregel
+        Assert.False(ProcessBlenderHost.CountsAsOpen(false, TimeSpan.FromSeconds(20), "blender.exe szene.blend"));
+        Assert.True(ProcessBlenderHost.CountsAsOpen(true, young, "blender.exe -b")); // mit Fenster zählt immer
+        var me = ProcessFacts.Read(Environment.ProcessId); // echte Abfrage (nur lesen) am eigenen Testprozess
+        if (OperatingSystem.IsWindows() || OperatingSystem.IsLinux()) { Assert.False(string.IsNullOrEmpty(me.CommandLine)); Assert.NotNull(me.ParentPid); }
+    }
+
     [Fact(DisplayName = "T-0785: langer Lauf (3 s bei 0,4 s Lebenszeichen-Grenze) bricht nicht ab und löst keinen Neustart aus")]
     public async Task Long_run()
     {
