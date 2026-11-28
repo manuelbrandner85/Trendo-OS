@@ -295,7 +295,7 @@ public class T0788StammbaumTests
         t.Families.Add(new() { Id = "F2", Wife = "I2", Children = ["I5"], Events = [new() { Tag = "MARR", Date = "2008", Place = "Musterstadt" }] });
         var now = T0788Fixtures.Now;
         Assert.False(FamilyKit.IsLiving(t, t.P("I1")!, now)); Assert.True(FamilyKit.IsLiving(t, t.P("I2")!, now)); Assert.False(FamilyKit.IsLiving(t, t.P("I3")!, now));
-        Assert.False(FamilyKit.IsLiving(t, t.P("I4")!, now)); // geschätzt: Vater 1890 + 20 = 1910 → vor mehr als 110 Jahren
+        Assert.True(FamilyKit.IsLiving(t, t.P("I4")!, now)); // T-0788 G4: Vater 1890 – das Kind kann bis 1970 geboren sein, im Zweifel lebend
         var ged = FamilyKit.ToGedcom(t, hideLiving: true, now: now);
         Assert.DoesNotContain("Erika", ged); Assert.DoesNotContain("1985", ged); Assert.DoesNotContain("privat", ged); Assert.DoesNotContain("Musterstadt", ged); Assert.DoesNotContain("2010", ged);
         Assert.Contains("1 NAME Lebende Person /Muster/", ged); Assert.Contains("1 NAME Max /Muster/", ged); Assert.Contains("2 DATE 1980", ged);

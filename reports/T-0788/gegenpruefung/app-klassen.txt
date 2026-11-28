@@ -1,0 +1,40 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    Studio-Ordnung: Zusammengelegtes fehlt in der Übersicht, Suche findet es, SPEC-07 nirgends [FAIL]
+      Assert.Equal() Failure: Strings differ
+                 ↓ (pos 0)
+      Expected: "70 Studios"
+      Actual:   "69 Studios"
+                 ↑ (pos 0)
+      Stack Trace:
+        tests\Trendo.App.Tests\StudioFoldsUiTests.cs(30,0): at Trendo.App.Tests.StudioFolds_Ui.Overview_and_search()
+           at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    SYS-13-P13: Jede Seite gehört zu einem Modul aus requirements.yaml [FAIL]
+      Assert.Empty() Failure: Collection was not empty
+      Collection: ["STUDIO-FAMILY-01"]
+      Stack Trace:
+        tests\Trendo.App.Tests\Sys13UiTests.cs(17,0): at Trendo.App.Tests.Sys13_Qualitaet_Ui.Modules()
+           at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    Startmenü: jedes Katalog-Studio öffnet das eigene Fenster, Taskleiste, Minimieren, Wiederherstellen, Schließen [FAIL]
+      Assert.Contains() Failure: Filter not matched in collection
+      Collection: [StudioEntry { Id = CORE-01, Name = Desktop einrichten, ApprovalStatus = APPROVED_SPEC, ImplementationStatus = IN_PROGRESS, TestStatus = PC_VERIFIED, Capability = InProgress, Reason = Teilweise gebaut – einige Funktionen fehlen noch }, StudioEntry { Id = CORE-02, Name = KI fragen, ApprovalStatus = APPROVED_SPEC, ImplementationStatus = IMPLEMENTED, TestStatus = NOT_RUN, Capability = InProgress, Reason = Teilweise gebaut – einige Funktionen fehlen noch }, StudioEntry { Id = CORE-03, Name = KI-Team einsetzen, ApprovalStatus = APPROVED_SPEC, ImplementationStatus = IMPLEMENTED, TestStatus = PC_VERIFIED, Capability = Ready, Reason = Gebaut, getestet und auf dem PC geprüft }, StudioEntry { Id = CORE-04, Name = PC, Pi & Handy verbinden, ApprovalStatus = APPROVED_SPEC, ImplementationStatus = IN_PROGRESS, TestStatus = TESTED, Capability = InProgress, Reason = Teilweise gebaut – einige Funktionen fehlen noch }, StudioEntry { Id = CORE-05, Name = 3D-Modelle erstellen, ApprovalStatus = APPROVED_SPEC, ImplementationStatus = IMPLEMENTED, TestStatus = NOT_RUN, Capability = Blocked, Reason = Benötigtes Programm nicht gefunden: blender }, ···]
+      Stack Trace:
+        tests\Trendo.App.Tests\StartMenuWindowTests.cs(57,0): at Trendo.App.Tests.StartMenu_StudioFenster.Jedes_Studio()
+        --- End of stack trace from previous location ---
+    T-0707 ECHT: lokale KI (Ollama, bestes Modell nach T-0703) ändert in drei Programmen das offene Dokument, Datei auf der Platte, Rückgängig (nur mit TRENDO_ASSIST_ECHT) [SKIP]
+      Übersprungen – Echtlauf nur mit TRENDO_ASSIST_ECHT=<Belegordner> und laufendem Ollama.
+    T-0782 ECHT: lokale KI (Ollama) – Nachhilfe „Übung erzeugen“ und Programmieren „Hinweis geben“ im offenen Dokument, Rückgängig; Code-Tests echt (nur mit TRENDO_T0782_ECHT) [SKIP]
+      Echtlauf nur mit TRENDO_T0782_ECHT=<Belegordner> (braucht Ollama mit Modell auf diesem PC).
+    T-0780 ECHT: lokale KI (Ollama) – Referate „Gliederung“ und „Abschnitt“, Zeitleisten „Ereignisse aus Text“ im offenen Programm, Rückgängig (nur mit TRENDO_T0780_ECHT) [SKIP]
+      Echtlauf nur mit TRENDO_T0780_ECHT=<Belegordner> (braucht Ollama mit Modell auf diesem PC).
+    T-0788 ECHT: lokale KI (Ollama) – „Personen aus Text“ im offenen Stammbaum, Prüfung, GEDCOM, Rückgängig (nur mit TRENDO_T0788_ECHT) [SKIP]
+      Echtlauf nur mit TRENDO_T0788_ECHT=<Belegordner> (braucht Ollama mit Modell auf diesem PC).
+  Finished:    Trendo.App.Tests (ID = '7dc638206158a0fac27504d96b3f280e57f448d5fdb273c26c97976064f6fd80')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 90, Errors: 0, Failed: 3, Skipped: 4, Not Run: 0, Time: 408,307s

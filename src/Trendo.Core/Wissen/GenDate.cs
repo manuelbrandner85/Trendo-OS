@@ -68,7 +68,19 @@ public sealed partial record GenDate(string Raw, GenDateKind Kind, DayKey? A, Da
     private static partial Regex CalRx();
 
     /// <summary>GEDCOM-Datum lesen (Groß-/Kleinschreibung egal). Unlesbares bleibt als <see cref="GenDateKind.Unreadable"/> mit Rohtext erhalten.</summary>
+    /// <summary>T-0788 (Gegenprüfung G2): gleiche Datumstexte kommen in großen Stammbäumen oft vor – gelesene Daten werden wiederverwendet (unveränderlich).</summary>
+    static readonly System.Collections.Concurrent.ConcurrentDictionary<string, GenDate> Seen = new(StringComparer.Ordinal);
+
     public static GenDate Parse(string? raw)
+    {
+        var key = raw ?? "";
+        if (Seen.TryGetValue(key, out var hit)) return hit;
+        var g = ParseNew(key);
+        if (Seen.Count < 200_000) Seen.TryAdd(key, g);
+        return g;
+    }
+
+    static GenDate ParseNew(string? raw)
     {
         var r = (raw ?? "").Trim();
         if (r.Length == 0) return None;
@@ -98,11 +110,12 @@ public sealed partial record GenDate(string Raw, GenDateKind Kind, DayKey? A, Da
 
     static DayKey? One(string s)
     {
-        s = s.Trim();
+        s = s.Trim(); var julian = false;
         if (CalRx().Match(s) is { Success: true } cm)
         {
             var cal = cm.Groups[1].Value.Trim();
             if (cal is not ("GREGORIAN" or "JULIAN")) return null; // hebräisch, französisch republikanisch: nicht vergleichbar
+            julian = cal == "JULIAN";
             s = s[cm.Length..];
         }
         var m = DateRx().Match(s);
@@ -112,10 +125,15 @@ public sealed partial record GenDate(string Raw, GenDateKind Kind, DayKey? A, Da
         if (m.Groups[2].Success) { mon = Array.IndexOf(Ged, m.Groups[2].Value) + 1; if (mon == 0) return null; }
         else if (day > 0) return null;
         var year = int.Parse(m.Groups[3].Value, CultureInfo.InvariantCulture);
-        if (m.Groups[4].Success) year++; // Doppeljahr 1699/00 → neues Jahr
+        if (m.Groups[4].Success)
+        {
+            // Doppeljahr 1699/00: nur das Folgejahr ist erlaubt (T-0788 Gegenprüfung G7) → neues Jahr
+            if (int.Parse(m.Groups[4].Value, CultureInfo.InvariantCulture) != (year + 1) % 100) return null;
+            year++;
+        }
         if (year == 0) return null;
         if (m.Groups[5].Success) year = -year;
-        if (day > 0 && (mon == 0 || day > (year > 0 ? DateTime.DaysInMonth(Math.Clamp(year, 1, 9999), mon) : 31))) return null;
+        if (day > 0 && (mon == 0 || day > DaysIn(year, mon, julian || year < 0))) return null;
         return new DayKey(year, mon, day);
     }
 
@@ -145,7 +163,7 @@ public sealed partial record GenDate(string Raw, GenDateKind Kind, DayKey? A, Da
             if (mon > 0) k = Make(m3.Groups[1].Success ? m3.Groups[1].Value : "0", mon.ToString(CultureInfo.InvariantCulture), m3.Groups[3].Value);
         }
         else if (DeY().Match(s) is { Success: true } m4) k = Make("0", "0", m4.Groups[1].Value);
-        if (k is { } kk && bc) k = kk with { Year = -kk.Year };
+        if (k is { } kk && bc) k = kk.Day > 0 && kk.Day > DaysIn(-kk.Year, kk.Month, true) ? null : kk with { Year = -kk.Year }; // v. Chr.: julianisch prüfen (G7)
         return k;
     }
 
@@ -153,9 +171,22 @@ public sealed partial record GenDate(string Raw, GenDateKind Kind, DayKey? A, Da
     {
         var day = int.Parse(d, CultureInfo.InvariantCulture); var mon = int.Parse(m, CultureInfo.InvariantCulture); var year = int.Parse(y, CultureInfo.InvariantCulture);
         if (year == 0 || mon > 12 || (day > 0 && mon == 0)) return null;
-        if (day > 0 && day > DateTime.DaysInMonth(Math.Clamp(year, 1, 9999), mon)) return null;
+        if (day > 0 && day > DaysIn(year, mon, year < 0)) return null;
         return new DayKey(year, mon, day);
     }
+
+    /// <summary>T-0788 (Gegenprüfung G7): Tage im Monat – gregorianisch, julianisch (auch proleptisch für Jahre vor Christus: Schaltjahr, wenn das
+    /// astronomische Jahr durch 4 teilbar ist, z. B. 45 v. Chr. = −44).</summary>
+    public static int DaysIn(int year, int month, bool julian)
+    {
+        if (month != 2) return month is 4 or 6 or 9 or 11 ? 30 : 31;
+        var astro = year < 0 ? year + 1 : year;
+        var leap = julian ? astro % 4 == 0 : astro % 4 == 0 && (astro % 100 != 0 || astro % 400 == 0);
+        return leap ? 29 : 28;
+    }
+
+    /// <summary>T-0788 (Gegenprüfung G7): Spanne „zwischen“/„von … bis“ mit Ende vor dem Anfang.</summary>
+    public bool Reversed => Kind is GenDateKind.Between or GenDateKind.Period && A is { } a && B is { } b && a.Start > b.End;
 
     /// <summary>Deutsche Schreibweisen (auch von anderen Programmen exportiert): „12.03.1850“, „März 1850“, „ca. 1850“, „um 1850“, „vor 1850“, „nach 1850“,
     /// „zwischen 1850 und 1860“, „von 1850 bis 1860“, „1850–1860“, „44 v. Chr.“, „(Text)“. Liefert null, wenn nichts davon passt.</summary>
@@ -163,6 +194,7 @@ public sealed partial record GenDate(string Raw, GenDateKind Kind, DayKey? A, Da
     {
         var s = Regex.Replace((input ?? "").Trim(), @"\s+", " "); raw ??= s;
         if (s.Length == 0) return None;
+        s = Regex.Replace(s, @"^(ca\.|ca|um|etwa|circa|vor|nach|ab|bis)(?=\d)", "$1 ", RegexOptions.IgnoreCase); // „ca.1850“ (Gegenprüfung G7)
         if (s.StartsWith('(') && s.EndsWith(')')) return new(raw, GenDateKind.Phrase, null, null, Phrase: s[1..^1].Trim());
         var low = s.ToLowerInvariant();
         foreach (var (p, q) in new[] { ("ca. ", "ABT"), ("ca ", "ABT"), ("um ", "ABT"), ("etwa ", "ABT"), ("circa ", "ABT"), ("errechnet ", "CAL"), ("geschätzt ", "EST") })
@@ -189,6 +221,7 @@ public sealed partial record GenDate(string Raw, GenDateKind Kind, DayKey? A, Da
         var g = Parse(s);
         if (g.Kind is GenDateKind.Unreadable || g.NonStandard && g.Kind != GenDateKind.Phrase)
             g = ParseGerman(s) ?? throw new ArgumentException($"Datum „{s}“ nicht lesbar. Beispiele: 12.03.1850, März 1850, 1850, um 1850, vor 1850, zwischen 1850 und 1860, 44 v. Chr.");
+        if (g.Reversed) throw new ArgumentException($"Spanne verkehrt: „{s}“ – das Ende liegt vor dem Anfang.");
         return g.ToGedcom();
     }
 

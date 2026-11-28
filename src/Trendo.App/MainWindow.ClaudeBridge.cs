@@ -183,7 +183,8 @@ public partial class MainWindow
             S("dokument_lesen", "Liest die Daten des offenen Dokuments als JSON, ganz oder ab einem Pfad wie „levels/0“.", TrendoMcp.Schema(("pfad", "string", "Pfad, leer für alles", false), programArg), a =>
             {
                 var pageData = a["programm"] is null && BridgeKey(run) is null && CurrentView == "3d" ? JsonNode.Parse(_scene.ToJson())!.AsObject() : null;
-                var node = DocPath.Get(pageData ?? BridgeOpenDoc(BridgeSpec(run, a)).Data, a["pfad"].AsText());
+                JsonObject Data() { var spec = BridgeSpec(run, a); var data = BridgeOpenDoc(spec).Data; return spec.KiView?.Invoke(data) ?? data; } // T-0788 (Gegenprüfung G1): dieselbe Sicht wie die KI-Kette
+                var node = DocPath.Get(pageData ?? Data(), a["pfad"].AsText());
                 if (node is null) return McpResult.Fail("An diesem Pfad steht nichts.");
                 var json = node.ToJsonString();
                 if (json.Length <= MaxToolText) return new McpResult(json);

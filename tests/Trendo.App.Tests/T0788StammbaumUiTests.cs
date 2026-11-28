@@ -192,7 +192,7 @@ public class T0788Stammbaum_Ui
     }
 
     [AvaloniaFact(DisplayName = "T-0788 Stammbaum (UI): GEDCOM aus einem Fremdprogramm einlesen (Knopf), zweite Datei in ANSEL per Ziehen in neuen Reiter; Export behält unbekannte Angaben")]
-    public void Import_gedcom()
+    public async Task Import_gedcom()
     {
         var (w, _, root) = Ui.Open();
         try
@@ -203,7 +203,7 @@ public class T0788Stammbaum_Ui
             w.Show(Fam); Settle(); Tap(w, "prog-tpl-leer");
             var d = w.ProgramActive(Fam)!;
             w.PickOverride = _ => Task.FromResult<string[]?>([ged]);
-            Tap(w, "prog-cmd-fam-import"); for (var i = 0; i < 30; i++) Settle();
+            Tap(w, "prog-cmd-fam-import"); await Until(() => MainWindow.FamData(d).Persons.Count == 3); // T-0788 G3: liest im Hintergrund
             var t = MainWindow.FamData(d);
             Assert.Equal(["Jürgen Größer", "Anna Muster", "Erika Größer"], t.Persons.Select(p => p.Name));
             Assert.Contains("Zeichensatz: UTF-8", w.ProgramMessage(Fam));
@@ -215,6 +215,7 @@ public class T0788Stammbaum_Ui
             var ansel = Path.Combine(root, "ansel.ged");
             File.WriteAllBytes(ansel, Gedcom.EncodeAnsel("0 HEAD\r\n1 CHAR ANSEL\r\n0 @I1@ INDI\r\n1 NAME Zoë /Weiß/\r\n1 BIRT\r\n2 DATE 1901\r\n2 PLAC Mönchengladbach\r\n0 TRLR\r\n"));
             Assert.Equal(DragDropEffects.Copy, BueroAusbau_Ui.Drop(w, "fam-canvas", ansel));
+            await Until(() => w.ProgramDocs(Fam).Count == 2);
             Assert.Equal(2, w.ProgramDocs(Fam).Count);
             var d2 = w.ProgramActive(Fam)!; Assert.NotSame(d, d2);
             var z = MainWindow.FamData(d2).Persons.Single();
@@ -340,7 +341,10 @@ public class T0788Stammbaum_Ui
             Tap(w, "assist-undo");
             L($"- Rückgängig: Dokument wie vorher = {before == w.ProgramActive(Fam)!.Data.ToJsonString()}");
             Assert.Equal(before, w.ProgramActive(Fam)!.Data.ToJsonString());
-            L(""); L("Ergebnis: bestanden.");
+            // T-0788 Gegenprüfung G10: ehrlich führen – fehlt die Heirat aus dem Text, ist der Lauf nur teilweise gelungen
+            var marr = t.Families.FirstOrDefault(f => t.P(f.Husband)?.Name == "Hans Muster")?.Marriage;
+            L($"- Heirat im Dokument: {(marr is null ? "fehlt" : marr.When.Show() + " " + marr.Place)}");
+            L(""); L(marr?.Date == "1950" && marr.Place == "Neustadt" ? "Ergebnis: bestanden." : "Ergebnis: TEILWEISE – Personen, Eltern und Daten stimmen, die Heirat (1950 in Neustadt) hat die KI nicht geliefert; Trendo ergänzt nichts selbst.");
         }
         catch (Exception e) { L(""); L("FEHLER: " + e.Message); throw; }
         finally

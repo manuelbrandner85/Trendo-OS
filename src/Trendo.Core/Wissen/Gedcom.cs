@@ -186,6 +186,7 @@ public static partial class Gedcom
     public static (List<GedNode> Records, List<string> Problems) Parse(string text)
     {
         var records = new List<GedNode>(); var probs = new List<string>();
+        var joined = new Dictionary<GedNode, StringBuilder>(ReferenceEqualityComparer.Instance); // T-0788 (Gegenprüfung G3): CONC/CONT linear zusammensetzen
         var stack = new List<GedNode>(); var lineNo = 0; var longLines = 0;
         foreach (var raw in text.Split(["\r\n", "\n\r", "\r", "\n"], StringSplitOptions.None))
         {
@@ -204,7 +205,9 @@ public static partial class Gedcom
             var parent = stack[level - 1];
             if (node.Tag is "CONC" or "CONT" && node.Xref is null)
             {
-                parent.Value += (node.Tag == "CONT" ? "\n" : "") + node.Value;
+                if (!joined.TryGetValue(parent, out var sb)) joined[parent] = sb = new StringBuilder(parent.Value);
+                if (node.Tag == "CONT") sb.Append('\n');
+                sb.Append(node.Value);
                 continue;
             }
             parent.Kids.Add(node);
@@ -214,6 +217,7 @@ public static partial class Gedcom
         if (longLines > 0) probs.Add($"{longLines} Zeile(n) länger als 255 Byte – trotzdem gelesen");
         if (records.Count == 0 || records[0].Tag != "HEAD") probs.Add("Kein Kopf (HEAD) am Anfang – vermutlich keine GEDCOM-Datei");
         if (records.Count > 0 && records[^1].Tag != "TRLR") probs.Add("Kein Abschluss (TRLR) – Datei womöglich unvollständig");
+        foreach (var (n, sb) in joined) n.Value = sb.ToString();
         return (records, probs);
     }
 
@@ -247,6 +251,8 @@ public static partial class Gedcom
         foreach (var k in n.Kids) WriteNode(sb, k, level + 1);
     }
 
+    static bool IsMark(char c) => char.GetUnicodeCategory(c) is System.Globalization.UnicodeCategory.NonSpacingMark or System.Globalization.UnicodeCategory.SpacingCombiningMark or System.Globalization.UnicodeCategory.EnclosingMark;
+
     static void Line(StringBuilder sb, int level, string? xref, string tag, string value)
     {
         sb.Append(level.ToString(CultureInfo.InvariantCulture)).Append(' ');
@@ -276,7 +282,7 @@ public static partial class Gedcom
             if (end < v.Length)
             {
                 var cut = end;
-                while (cut > i + 1 && (v[cut - 1] == ' ' || v[cut] == ' ' || char.IsLowSurrogate(v[cut]))) cut--;
+                while (cut > i + 1 && (v[cut - 1] == ' ' || v[cut] == ' ' || char.IsLowSurrogate(v[cut]) || IsMark(v[cut]))) cut--; // T-0788 G9: nie vor einem Kombinationszeichen trennen
                 if (cut > i + 1) end = cut;
             }
             res.Add(v[i..end]); i = end;

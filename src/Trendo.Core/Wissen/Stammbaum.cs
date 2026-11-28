@@ -19,7 +19,8 @@ public sealed class FamEvent
     public string Tag { get; set; } = "EVEN";
     public string Type { get; set; } = "";
     public string Value { get; set; } = "";
-    public string Date { get; set; } = "";
+    string _date = ""; GenDate? _when;
+    public string Date { get => _date; set { _date = value ?? ""; _when = null; } }
     public string Place { get; set; } = "";
     public string Lat { get; set; } = "";
     public string Long { get; set; } = "";
@@ -27,7 +28,8 @@ public sealed class FamEvent
     public string Note { get; set; } = "";
     public List<FamCite> Cites { get; set; } = [];
     public List<GedNode> Extra { get; set; } = [];
-    public GenDate When => GenDate.Parse(Date);
+    /// <summary>Gelesenes Datum (zwischengespeichert, bis <see cref="Date"/> sich ändert – Gegenprüfung G2).</summary>
+    public GenDate When => _when ??= GenDate.Parse(_date);
 }
 
 /// <summary>Unterzeilen an einer Verknüpfung (FAMC/FAMS/CHIL), z. B. „PEDI adopted“ – bleiben erhalten.</summary>
@@ -97,10 +99,38 @@ public sealed class FamilyTree
     public List<GedNode> Head { get; set; } = [];
     public string ImportNote { get; set; } = "";
 
-    public FamPerson? P(string? id) => id is null ? null : Persons.FirstOrDefault(p => p.Id == id);
-    public FamFamily? F(string? id) => id is null ? null : Families.FirstOrDefault(f => f.Id == id);
-    public IEnumerable<FamFamily> ParentFamilies(string id) => Families.Where(f => f.Children.Contains(id));
-    public IEnumerable<FamFamily> OwnFamilies(string id) => Families.Where(f => f.Husband == id || f.Wife == id);
+    /// <summary>T-0788 (Gegenprüfung G2): Nachschlage-Tabellen für große Stammbäume. Nur gültig, solange niemand Personen oder Familien ändert –
+    /// deshalb nur in einem <c>using (t.Indexed())</c>-Block um lesende Arbeit (Prüfung, Ausblenden, Baum, Bericht). Ohne Block: Suche über die Listen.</summary>
+    sealed class Index
+    {
+        public readonly Dictionary<string, FamPerson> Persons = new(StringComparer.Ordinal);
+        public readonly Dictionary<string, FamFamily> Families = new(StringComparer.Ordinal);
+        public readonly Dictionary<string, List<FamFamily>> Parent = new(StringComparer.Ordinal);
+        public readonly Dictionary<string, List<FamFamily>> Own = new(StringComparer.Ordinal);
+        public Index(FamilyTree t)
+        {
+            foreach (var p in t.Persons) Persons.TryAdd(p.Id, p);
+            foreach (var f in t.Families)
+            {
+                Families.TryAdd(f.Id, f);
+                foreach (var c in f.Children.Distinct()) Add(Parent, c, f);
+                if (f.Husband is { } h) Add(Own, h, f);
+                if (f.Wife is { } w && w != f.Husband) Add(Own, w, f);
+            }
+        }
+        static void Add(Dictionary<string, List<FamFamily>> d, string k, FamFamily f) { if (!d.TryGetValue(k, out var l)) d[k] = l = []; l.Add(f); }
+    }
+    Index? _ix; int _ixDepth;
+
+    sealed class IndexScope(FamilyTree t) : IDisposable { public void Dispose() { if (--t._ixDepth == 0) t._ix = null; } }
+
+    /// <summary>Tabellen bauen (verschachtelt erlaubt); beim Verlassen des äußersten Blocks werden sie verworfen.</summary>
+    public IDisposable Indexed() { if (_ixDepth++ == 0) _ix = new Index(this); return new IndexScope(this); }
+
+    public FamPerson? P(string? id) => id is null ? null : _ix is { } ix ? ix.Persons.GetValueOrDefault(id) : Persons.FirstOrDefault(p => p.Id == id);
+    public FamFamily? F(string? id) => id is null ? null : _ix is { } ix ? ix.Families.GetValueOrDefault(id) : Families.FirstOrDefault(f => f.Id == id);
+    public IEnumerable<FamFamily> ParentFamilies(string id) => _ix is { } ix ? ix.Parent.GetValueOrDefault(id) ?? [] : Families.Where(f => f.Children.Contains(id));
+    public IEnumerable<FamFamily> OwnFamilies(string id) => _ix is { } ix ? ix.Own.GetValueOrDefault(id) ?? [] : Families.Where(f => f.Husband == id || f.Wife == id);
     public (FamPerson? Father, FamPerson? Mother) Parents(string id) { var f = ParentFamilies(id).FirstOrDefault(); return (P(f?.Husband), P(f?.Wife)); }
     public IEnumerable<FamPerson> Spouses(string id) => OwnFamilies(id).Select(f => P(f.Husband == id ? f.Wife : f.Husband)).OfType<FamPerson>();
     public IEnumerable<FamPerson> Children(string id) => OwnFamilies(id).SelectMany(f => f.Children).Distinct().Select(P).OfType<FamPerson>();
@@ -166,9 +196,51 @@ public static partial class FamilyKit
         $"Zeichensatz: {r.Encoding}. {t.Persons.Count} Personen, {t.Families.Count} Familien, {t.Sources.Count} Quellen, {t.Records.Count} weitere Datensätze unverändert übernommen." +
         (r.Problems.Count > 0 ? $" {r.Problems.Count} Hinweis(e): {string.Join("; ", r.Problems.Take(3))}" : "");
 
+    public const int MaxXref = 20;
+
+    /// <summary>T-0788 (Gegenprüfung G6/G9): überlange Kennungen (über 20 Zeichen) bekommen eine kurze neue – alle Verweise darauf werden mitgeführt;
+    /// doppelte Kennungen werden gemeldet und der zweite Datensatz eindeutig umbenannt (Verweise zeigen weiter auf den ersten, das ist in der Datei nicht eindeutig).</summary>
+    static void FixXrefs(List<GedNode> records, List<string> problems)
+    {
+        var used = new HashSet<string>(records.Where(r => r.Xref is not null).Select(r => Strip(r.Xref!)), StringComparer.Ordinal);
+        string Fresh(string tag)
+        {
+            var prefix = tag switch { "INDI" => "I", "FAM" => "F", "SOUR" => "S", "NOTE" => "N", "OBJE" => "M", "REPO" => "R", "SUBM" => "U", _ => "X" };
+            var n = used.Count + 1; while (used.Contains(prefix + n)) n++;
+            used.Add(prefix + n); return prefix + n;
+        }
+        var rename = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var r in records.Where(r => r.Xref is not null && Strip(r.Xref).Length > MaxXref))
+        {
+            var old = Strip(r.Xref!); if (rename.ContainsKey(old)) continue;
+            var neu = Fresh(r.Tag); rename[old] = neu;
+            problems.Insert(0, $"Kennung @{(old.Length > 30 ? old[..30] + "…" : old)}@ zu lang (höchstens {MaxXref} Zeichen) – heißt jetzt @{neu}@, Verweise mitgeführt");
+        }
+        if (rename.Count > 0)
+        {
+            void Walk(GedNode n, int depth)
+            {
+                if (depth > Gedcom.MaxDepth) return;
+                if (n.Xref is not null && rename.TryGetValue(Strip(n.Xref), out var x)) n.Xref = Ptr(x);
+                if (n.IsPointer && rename.TryGetValue(Strip(n.Value), out var v)) n.Value = Ptr(v);
+                foreach (var k in n.Kids) Walk(k, depth + 1);
+            }
+            foreach (var r in records) Walk(r, 0);
+        }
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var r in records.Where(r => r.Xref is not null))
+        {
+            var id = Strip(r.Xref!);
+            if (seen.Add(id)) continue;
+            var neu = Fresh(r.Tag); r.Xref = Ptr(neu); seen.Add(neu);
+            problems.Insert(0, $"Kennung @{id}@ doppelt – der zweite Datensatz ({r.Tag}) heißt jetzt @{neu}@; Verweise auf @{id}@ gelten dem ersten");
+        }
+    }
+
     public static FamilyTree FromRecords(List<GedNode> records, List<string>? problems = null)
     {
         var t = new FamilyTree(); problems ??= [];
+        FixXrefs(records, problems);
         var links = new List<FamLinkExtra>();
         foreach (var r in records)
         {
@@ -187,6 +259,7 @@ public static partial class FamilyKit
             }
         }
         // Verknüpfungen: Familien sind maßgeblich; FAMC/FAMS ohne Gegenstück werden ergänzt und gemeldet
+        using var ix = t.Indexed();
         foreach (var l in links)
         {
             var f = t.F(l.Fam);
@@ -352,6 +425,7 @@ public static partial class FamilyKit
     {
         var day = now ?? DateTime.Today;
         var t = hideLiving ?? src.HideLiving ? Private(src, day) : src;
+        using var ix = t.Indexed(); // G2: FAMC/FAMS je Person über Tabellen
         var recs = new List<GedNode>();
         var head = new GedNode("HEAD");
         var sour = new GedNode("SOUR", "TRENDO") { Kids = { new("NAME", "Trendo OS Stammbaum"), new("VERS", "1.0") } };
@@ -429,35 +503,79 @@ public static partial class FamilyKit
     /// Ohne Geburt wird über Eltern (+20 Jahre), Ehepartner und Kinder (−20 Jahre) geschätzt. Ohne jeden Anhalt: ja (im Zweifel schützen).</summary>
     public static bool IsLiving(FamilyTree t, FamPerson p, DateTime now)
     {
+        // T-0788 (Gegenprüfung G4): im Zweifel lebend. Tot nur bei eingetragenem Tod/Begräbnis oder wenn die SPÄTESTE mögliche Geburt mehr als 110 Jahre zurückliegt.
         if (p.Death is not null) return false;
         var limit = now.Year - 110;
-        double? Year(FamPerson? x) => x?.Birth?.When is { Comparable: true } g ? (double.IsFinite(g.Hi) ? g.Hi : g.Lo) : null;
-        if (Year(p) is { } y && double.IsFinite(y)) return y > limit;
-        var est = new List<double>();
-        var (fa, mo) = t.Parents(p.Id);
-        foreach (var par in new[] { fa, mo }) if (Year(par) is { } py && double.IsFinite(py)) est.Add(py + 20);
-        foreach (var c in t.Children(p.Id)) if (Year(c) is { } cy && double.IsFinite(cy)) est.Add(cy - 20);
-        foreach (var s in t.Spouses(p.Id)) if (Year(s) is { } sy && double.IsFinite(sy)) est.Add(sy);
-        foreach (var f in t.OwnFamilies(p.Id)) if (f.Marriage?.When is { Comparable: true } mw && double.IsFinite(mw.Lo)) est.Add(mw.Lo - 20);
-        if (est.Count > 0) return est.Max() > limit;
-        return true;
+        if (p.Birth?.When is { Comparable: true } own) return !double.IsFinite(own.Hi) || own.Hi > limit; // „nach 1900“, „ab 1890“: kann jung sein
+        double Hi(FamEvent? e) => e?.When is { Comparable: true } g ? g.Hi : double.PositiveInfinity;
+        var latest = double.PositiveInfinity; // späteste mögliche Geburt
+        foreach (var f in t.ParentFamilies(p.Id))
+        {
+            if (t.P(f.Husband) is { } fa) latest = Math.Min(latest, Math.Min(Hi(fa.Birth) + 80, Hi(fa.Death) + 1));
+            if (t.P(f.Wife) is { } mo) latest = Math.Min(latest, Math.Min(Hi(mo.Birth) + 60, Hi(mo.Death)));
+        }
+        foreach (var f in t.OwnFamilies(p.Id))
+        {
+            latest = Math.Min(latest, Hi(f.Marriage) - 12);
+            foreach (var c in f.Children) if (t.P(c) is { } ch) latest = Math.Min(latest, Hi(ch.Birth) - 12);
+        }
+        return !(latest <= limit);
     }
 
+    static IEnumerable<string> Refs(IEnumerable<GedNode> nodes)
+    {
+        var stack = new Stack<(GedNode, int)>(nodes.Select(n => (n, 0)));
+        while (stack.Count > 0)
+        {
+            var (n, d) = stack.Pop();
+            if (n.Xref is null && n.IsPointer) yield return Strip(n.Value);
+            if (d < Gedcom.MaxDepth) foreach (var k in n.Kids) stack.Push((k, d + 1));
+        }
+    }
+    static IEnumerable<string> Refs(FamCite c) => Refs(c.Extra).Append(c.Source);
+    static IEnumerable<string> Refs(FamEvent e) => Refs(e.Extra).Concat(Refs(e.PlaceExtra)).Concat(e.Cites.SelectMany(Refs));
+    static IEnumerable<string> Refs(FamPerson p) => Refs(p.Extra).Concat(Refs(p.NameExtra)).Concat(p.Events.SelectMany(Refs)).Concat(p.Cites.SelectMany(Refs)).Concat(p.Links.SelectMany(l => Refs(l.Nodes)));
+    static IEnumerable<string> Refs(FamFamily f) => Refs(f.Extra).Concat(f.Events.SelectMany(Refs)).Concat(f.Cites.SelectMany(Refs)).Concat(f.ChildExtra.SelectMany(l => Refs(l.Nodes)));
+
     /// <summary>Kopie mit gekürzten lebenden Personen: Name „Lebende Person“ (Nachname bleibt), keine Ereignisse, Notizen, Quellen und Zusatzzeilen;
-    /// Ereignisse der Familie (Heirat …) fallen weg, sobald ein Partner lebt. Verknüpfungen bleiben, damit der Baum zusammenhängt.</summary>
+    /// Ereignisse der Familie (Heirat …) fallen weg, sobald ein Partner lebt. Verknüpfungen bleiben, damit der Baum zusammenhängt.
+    /// T-0788 (Gegenprüfung G5): Datensätze (Notizen, Medien, Quellen …), auf die nur noch Lebende verwiesen haben, fallen ebenfalls weg.</summary>
     public static FamilyTree Private(FamilyTree src, DateTime now)
     {
         var t = FromJson(ToJson(src));
-        var living = t.Persons.Where(p => IsLiving(src, src.P(p.Id)!, now)).Select(p => p.Id).ToHashSet();
+        HashSet<string> living;
+        using (src.Indexed()) living = src.Persons.Where(p => IsLiving(src, p, now)).Select(p => p.Id).ToHashSet(StringComparer.Ordinal);
+        var hiddenRefs = new HashSet<string>(StringComparer.Ordinal);
         foreach (var p in t.Persons.Where(p => living.Contains(p.Id)))
         {
+            hiddenRefs.UnionWith(Refs(p));
             p.Given = "Lebende Person"; p.NameRaw = $"Lebende Person /{p.Surname}/"; p.NameExtra = [new("SURN", p.Surname)];
             if (p.Surname.Length == 0) p.NameExtra.Clear();
             p.Events.Clear(); p.Note = ""; p.Cites.Clear(); p.Extra.Clear(); p.Links.Clear();
         }
         foreach (var f in t.Families.Where(f => new[] { f.Husband, f.Wife }.Any(x => x is not null && living.Contains(x))))
-        { f.Events.Clear(); f.Note = ""; f.Cites.Clear(); f.Extra.Clear(); }
-        foreach (var f in t.Families) f.ChildExtra.RemoveAll(c => living.Contains(c.Person));
+        { hiddenRefs.UnionWith(Refs(f)); f.Events.Clear(); f.Note = ""; f.Cites.Clear(); f.Extra.Clear(); }
+        foreach (var f in t.Families)
+        {
+            foreach (var c in f.ChildExtra.Where(c => living.Contains(c.Person))) hiddenRefs.UnionWith(Refs(c.Nodes));
+            f.ChildExtra.RemoveAll(c => living.Contains(c.Person));
+        }
+        if (hiddenRefs.Count > 0)
+        {
+            // was nach dem Kürzen noch erreichbar ist (von Personen, Familien, Kopf und von dort aus über Datensätze und Quellen)
+            var kept = new HashSet<string>(t.Persons.SelectMany(Refs).Concat(t.Families.SelectMany(Refs)).Concat(Refs(t.Head)), StringComparer.Ordinal);
+            var recs = t.Records.Where(r => r.Xref is not null).GroupBy(r => Strip(r.Xref!)).ToDictionary(g => g.Key, g => g.ToList(), StringComparer.Ordinal);
+            var srcs = t.Sources.GroupBy(x => x.Id).ToDictionary(g => g.Key, g => g.ToList(), StringComparer.Ordinal);
+            var todo = new Queue<string>(kept);
+            while (todo.Count > 0)
+            {
+                var id = todo.Dequeue();
+                var more = (recs.TryGetValue(id, out var rl) ? rl.SelectMany(r => Refs(r.Kids)) : []).Concat(srcs.TryGetValue(id, out var sl) ? sl.SelectMany(x => Refs(x.Extra)) : []);
+                foreach (var m in more) if (kept.Add(m)) todo.Enqueue(m);
+            }
+            t.Records.RemoveAll(r => r.Xref is not null && hiddenRefs.Contains(Strip(r.Xref)) && !kept.Contains(Strip(r.Xref)));
+            t.Sources.RemoveAll(x => hiddenRefs.Contains(x.Id) && !kept.Contains(x.Id));
+        }
         return t;
     }
 

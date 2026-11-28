@@ -1,0 +1,24 @@
+# T-0788 Gegenprüfung – Rot-Lauf UI (G1) auf f42783151: T0788Gegenpruefung_Ui ohne die zwei Tests, die neue Mitglieder brauchen (FamChecks, FamImportOnUiThread – übersetzen dort nicht)
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0788 G1: Die KI-Kette sieht im Stammbaum keine lebenden Personen (Name, Datum), solange „Lebende ausblenden“ an ist – ohne Schutz sieht sie alles [FAIL]
+      Assert.DoesNotContain() Failure: Sub-string found
+                                           ↓ (pos 2225)
+      String: ···""}]},{"id":"I5","given":"Erika","surname":"Muster""···
+      Found:  "Erika"
+      Stack Trace:
+        tests\Trendo.App.Tests\T0788GegenpruefungUiTests.cs(51,0): at Trendo.App.Tests.T0788Gegenpruefung_Ui.Ki_sees_no_living()
+        --- End of stack trace from previous location ---
+    T-0788 G1: Claude-Brücke „dokument_lesen“ liefert die geschützte Sicht (keine Lebenden), ganz und für Teilpfade [FAIL]
+      Assert.DoesNotContain() Failure: Sub-string found
+                                           ↓ (pos 985)
+      String: ···""}]},{"id":"I5","given":"Erika","surname":"Muster""···
+      Found:  "Erika"
+      Stack Trace:
+        tests\Trendo.App.Tests\T0788GegenpruefungUiTests.cs(79,0): at Trendo.App.Tests.T0788Gegenpruefung_Ui.Bridge_read_private()
+        --- End of stack trace from previous location ---
+  Finished:    Trendo.App.Tests (ID = '8fba5582bfe23b1f63feaafdb9ad24498ceec529f557bae1054d15300659a1d5')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 2, Errors: 0, Failed: 2, Skipped: 0, Not Run: 0, Time: 5,583s

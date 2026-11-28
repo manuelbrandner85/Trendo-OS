@@ -69,9 +69,27 @@ public partial class MainWindow
     }
 
     /// <summary>Gewählte Person; solange nichts gewählt wurde, die Person in der Mitte des Baums.</summary>
+    /// <summary>T-0788 (Gegenprüfung G2): gelesener Stammbaum und Prüfergebnis je Dokumentstand – Statusleiste, Prüfbereich, Liste, Baum und Auswahl
+    /// teilen sich EINE Rechnung je Stand. Nur lesen: wer ändert, holt sich mit <see cref="FamData"/> eine eigene Kopie.</summary>
+    readonly Dictionary<string, (string Stamp, FamilyTree Tree, Lazy<List<FamIssue>> Issues)> _famCache = [];
+    /// <summary>Für Tests: wie oft die Prüfung wirklich gerechnet wurde.</summary>
+    public static int FamChecks;
+    static string FamStamp(ProgramDocument d) => $"{System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(d.Data)}|{d.TopStep}|{d.History.Count}|{d.Changed.Ticks}|{d.Dirty}";
+    (FamilyTree Tree, Lazy<List<FamIssue>> Issues) FamCached(ProgramDocument d)
+    {
+        var stamp = FamStamp(d);
+        if (_famCache.TryGetValue(d.Id, out var c) && c.Stamp == stamp) return (c.Tree, c.Issues);
+        var t = FamData(d);
+        var issues = new Lazy<List<FamIssue>>(() => { Interlocked.Increment(ref FamChecks); return FamilyKit.Check(t); });
+        _famCache[d.Id] = (stamp, t, issues);
+        return (t, issues);
+    }
+    FamilyTree FamView(ProgramDocument d) => FamCached(d).Tree;
+    List<FamIssue> FamIssues(ProgramDocument d) => FamCached(d).Issues.Value;
+
     public string? FamSelected(ProgramDocument d)
     {
-        var t = FamData(d);
+        var t = FamView(d);
         if (!_famSel.TryGetValue(d.Id, out var id)) return t.P(t.Root)?.Id ?? t.Persons.FirstOrDefault()?.Id;
         return id is not null && t.P(id) is not null ? id : null;
     }
@@ -317,18 +335,39 @@ public partial class MainWindow
         var (ps, ms, bad) = FamilyKit.ParseLines(text);
         var t = FamData(d);
         var (np, nl) = FamilyKit.AddLines(t, ps, ms);
-        t.Root ??= t.Persons.FirstOrDefault()?.Id;
         if (np + nl > 0) { FamSave(d, t, label); _famZoom.Remove(d.Id); }
         _progMsg[FamKey] = np + nl == 0 && bad.Count == 0 ? "Nichts Neues (alle Personen und Verknüpfungen gibt es schon)." : $"{np} Personen und {nl} Verknüpfungen eingefügt" + (bad.Count > 0 ? $", {bad.Count} Zeile(n) nicht lesbar: {bad[0]}." : ".");
         return (np, nl, bad);
     }
 
-    /// <summary>GEDCOM-Datei einlesen. Ist der Stammbaum leer, kommt sie in dieses Dokument (ein Rückgängig-Schritt); sonst in ein neues Dokument (Reiter).</summary>
-    public ProgramDocument FamImport(ProgramDocument d, string file)
+    /// <summary>Für Tests: lief das Lesen und Zerlegen der letzten GEDCOM-Datei im UI-Thread?</summary>
+    public static bool? FamImportOnUiThread;
+
+    /// <summary>Datei lesen und zerlegen – ohne das Dokument anzufassen (darf im Hintergrund laufen).</summary>
+    static FamilyTree FamParse(string file)
     {
+        FamImportOnUiThread = Avalonia.Threading.Dispatcher.UIThread.CheckAccess();
         if (!KreativSafe.LocalFile(file, Gedcom.MaxBytes)) throw new InvalidOperationException($"Wähle eine GEDCOM-Datei (.ged) auf diesem Rechner (höchstens {Gedcom.MaxBytes / 1_000_000} MB).");
         var t = FamilyKit.FromGedcom(File.ReadAllBytes(file));
         if (t.Persons.Count == 0 && t.Families.Count == 0) throw new InvalidDataException($"In „{Path.GetFileName(file)}“ stehen keine Personen. {t.ImportNote}");
+        return t;
+    }
+
+    /// <summary>T-0788 (Gegenprüfung G3): GEDCOM im Hintergrund lesen (Knopf und Ablegen), danach im UI-Thread übernehmen – das Fenster bleibt bedienbar.</summary>
+    public async Task FamImportAsync(ProgramDocument d, string file)
+    {
+        _progMsg[FamKey] = $"Lese „{Path.GetFileName(file)}“ ein …"; Show(FamKey);
+        FamilyTree t;
+        try { t = await Task.Run(() => FamParse(file)); }
+        catch (Exception e) when (e is IOException or InvalidOperationException or InvalidDataException or UnauthorizedAccessException or ArgumentException) { ProgramRun(FamKey, () => throw e); return; }
+        ProgramRun(FamKey, () => FamApplyImport(d, t, file));
+    }
+
+    /// <summary>GEDCOM-Datei einlesen (im aufrufenden Thread). Ist der Stammbaum leer, kommt sie in dieses Dokument (ein Rückgängig-Schritt); sonst in ein neues Dokument (Reiter).</summary>
+    public ProgramDocument FamImport(ProgramDocument d, string file) => FamApplyImport(d, FamParse(file), file);
+
+    ProgramDocument FamApplyImport(ProgramDocument d, FamilyTree t, string file)
+    {
         if (t.Title.Length == 0) t.Title = Path.GetFileNameWithoutExtension(file);
         t.Root = t.Persons[0].Id;
         var cur = FamData(d);
@@ -347,7 +386,7 @@ public partial class MainWindow
 
     async Task FamPickImport(ProgramDocument d)
     {
-        if (await PickMediaFile("fam-import", "GEDCOM-Datei", ["*.ged", "*.gedcom", "*.txt"]) is { } f) ProgramRun(FamKey, () => FamImport(d, f));
+        if (await PickMediaFile("fam-import", "GEDCOM-Datei", ["*.ged", "*.gedcom", "*.txt"]) is { } f) await FamImportAsync(d, f);
     }
 
     // ---------------- Ausgabe ----------------
@@ -444,6 +483,7 @@ public partial class MainWindow
         KiActions = [FamKiPersons],
         KiLocked = ["sources", "hideLiving"],
         KiCheck = FamilyKit.KiProblem,
+        KiView = FamKiView, // T-0788 (Gegenprüfung G1): KI und Claude sehen keine Lebenden, solange der Schutz an ist
         KiHint = "Personen fügst du nur mit „stammbaum.personen“ ein (alle in einem Schritt): eine Zeile je Person „Name | m oder w | Geburt | Geburtsort | Tod | Sterbeort | Vater | Mutter“ "
                + "(leere Felder dürfen fehlen), Ehen als „Ehe: Name + Name | Datum | Ort“. Daten wie „12.03.1850“, „1850“, „um 1850“, „vor 1900“. Nimm nur Personen und Daten, die im Text stehen – erfinde nichts. "
                + "Vorhandene Personen änderst du nicht.",
@@ -454,7 +494,7 @@ public partial class MainWindow
         Bottom = new ProgramPanel("Prüfung", FamIssuesPanel, 110),
         Status = d =>
         {
-            var t = FamData(d); var issues = FamilyKit.Check(t);
+            var t = FamView(d); var issues = FamIssues(d);
             return $"{t.Persons.Count} Personen · {t.Families.Count} Familien · {t.Sources.Count} Quellen · Prüfung: {issues.Count(i => i.Error)} Fehler, {issues.Count(i => !i.Error)} Hinweise"
                    + (t.HideLiving ? " · Lebende werden in Ausgaben ausgeblendet" : " · Achtung: Lebende stehen in den Ausgaben");
         },
@@ -464,6 +504,15 @@ public partial class MainWindow
              + "Angaben, die Trendo nicht bearbeitet, bleiben beim Speichern als GEDCOM erhalten. Unten stehen Widersprüche (Geburt nach Tod, Eltern jünger als Kinder …). "
              + "Lebende Personen werden in allen Ausgaben ausgeblendet, solange der Haken rechts gesetzt ist.",
     }, "stammbaum", "ahnen", "ahnentafel", "ahnenforschung", "genealogie", "familienforschung", "gedcom", "vorfahren", "nachkommen", "familie", "gramps", "familysearch", "ahnenliste");
+
+    /// <summary>T-0788 (Gegenprüfung G1): Sicht für KI-Kette und Claude-Brücke – bei „Lebende ausblenden“ dieselbe Kürzung wie in den Ausgaben.</summary>
+    JsonObject FamKiView(JsonObject data)
+    {
+        var t = FamilyKit.FromJson(data);
+        if (!t.HideLiving) return data;
+        var p = FamilyKit.Private(t, FamToday); p.ImportNote = "";
+        return FamilyKit.ToJson(p);
+    }
 
     void FamZoomBy(ProgramDocument d, double k)
     {
@@ -475,7 +524,7 @@ public partial class MainWindow
 
     Control FamWorkspace(ProgramDocument d)
     {
-        var t = FamData(d); var view = FamViewOf(d);
+        var t = FamView(d); var view = FamViewOf(d);
         var sel = FamSelected(d);
         var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("240,10,*"), RowDefinitions = new RowDefinitions("Auto,*"), Margin = new Thickness(4, 0, 10, 4) };
         var editor = FamEditor(d, t, sel); Grid.SetColumnSpan(editor, 3); grid.Children.Add(editor);
@@ -483,7 +532,7 @@ public partial class MainWindow
         Control main = view switch { "orte" => FamPlacesView(d, t), "quellen" => FamSourcesView(d, t), _ => FamCanvas(d, t, sel, view) };
         var frame = new Border { Name = "fam-frame", CornerRadius = new CornerRadius(8), ClipToBounds = true, BorderBrush = Brush.Parse("#33D4A017"), BorderThickness = new Thickness(1), Child = main };
         Grid.SetRow(frame, 1); Grid.SetColumn(frame, 2); grid.Children.Add(frame);
-        BueroFileDrop(grid, FamKey, BueroExt(".ged", ".gedcom"), "GEDCOM-Dateien (.ged)", (doc, files) => { foreach (var f in files) FamImport(doc, f); });
+        BueroFileDrop(grid, FamKey, BueroExt(".ged", ".gedcom"), "GEDCOM-Dateien (.ged)", (doc, files) => { foreach (var f in files) _ = FamImportAsync(doc, f); });
         return grid;
     }
 
@@ -623,7 +672,7 @@ public partial class MainWindow
 
     Control FamIssuesPanel(ProgramDocument d)
     {
-        var t = FamData(d); var issues = FamilyKit.Check(t);
+        var t = FamView(d); var issues = FamIssues(d);
         var sp = new StackPanel { Name = "fam-issues", Spacing = 2 };
         if (issues.Count == 0) sp.Children.Add(P("Keine Widersprüche gefunden.", Muted, 12));
         var i = 0;
@@ -640,7 +689,7 @@ public partial class MainWindow
 
     Control FamProperties(ProgramDocument d)
     {
-        var t = FamData(d); var sel = FamSelected(d); var p = t.P(sel);
+        var t = FamView(d); var sel = FamSelected(d); var p = t.P(sel);
         var sp = new StackPanel { Spacing = 6 };
         sp.Children.Add(H("Stammbaum", 13));
         var title = new TextBox { Name = "fam-p-title", Text = t.Title, PlaceholderText = "Titel, z. B. Familie Muster" };

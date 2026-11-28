@@ -16,6 +16,7 @@ public static partial class FamilyKit
     /// <summary>Widersprüche und Auffälligkeiten. Fehler = sicher unmöglich (auch bei ungefähren Daten mit ±10 Jahren Spielraum), Hinweis = ungewöhnlich.</summary>
     public static List<FamIssue> Check(FamilyTree t)
     {
+        using var ix = t.Indexed(); // T-0788 (Gegenprüfung G2): Nachschlagen über Tabellen statt Listen
         var res = new List<FamIssue>();
         void E(string? p, string? f, string text) => res.Add(new(true, p, f, text));
         void H(string? p, string? f, string text) => res.Add(new(false, p, f, text));
@@ -29,6 +30,7 @@ public static partial class FamilyKit
             {
                 var w = e.When;
                 if (w.Kind == GenDateKind.Unreadable) H(p.Id, null, $"{p.Name}: {EventName(e.Tag)} „{e.Date}“ ist kein lesbares Datum");
+                else if (w.Reversed) E(p.Id, null, $"{p.Name}: {EventName(e.Tag)} „{w.Show()}“ – Spanne verkehrt (Ende vor dem Anfang)");
                 else if (w.NonStandard) H(p.Id, null, $"{p.Name}: {EventName(e.Tag)} „{e.Date}“ nicht in GEDCOM-Schreibweise (gelesen als {w.Show()})");
             }
             if (born is not null && died is not null && born.Lo > died.Hi) E(p.Id, null, $"{p.Name}: Geburt ({born.Show()}) nach dem Tod ({died.Show()})");
@@ -67,21 +69,42 @@ public static partial class FamilyKit
                 }
             }
         }
-        // Person ist ihr eigener Vorfahre
-        foreach (var p in t.Persons)
+        // Person ist ihr eigener Vorfahre: einmal über alle Personen starke Zusammenhangskomponenten der Eltern-Kanten (iterativ, linear)
+        foreach (var id in CycleMembers(t)) if (t.P(id) is { } p) E(p.Id, null, $"{p.Name} ist ihr/sein eigener Vorfahre (Kreis in den Verknüpfungen)");
+        return res;
+    }
+
+    /// <summary>T-0788 (Gegenprüfung G2): alle Personen, die auf einem Kreis „Kind → Elternteil → … → Kind“ liegen (Tarjan, ohne Rekursion).</summary>
+    public static HashSet<string> CycleMembers(FamilyTree t)
+    {
+        using var ix = t.Indexed();
+        IEnumerable<string> Parents(string id) => t.ParentFamilies(id).SelectMany(f => new[] { f.Husband, f.Wife }).OfType<string>().Where(x => t.P(x) is not null);
+        var index = new Dictionary<string, int>(StringComparer.Ordinal); var low = new Dictionary<string, int>(StringComparer.Ordinal);
+        var onStack = new HashSet<string>(StringComparer.Ordinal); var stack = new Stack<string>(); var res = new HashSet<string>(StringComparer.Ordinal);
+        var next = 0;
+        foreach (var start in t.Persons.Select(p => p.Id))
         {
-            var seen = new HashSet<string>(); var stack = new Stack<string>(); stack.Push(p.Id); var loop = false;
-            while (stack.Count > 0 && !loop && seen.Count < 20000)
+            if (index.ContainsKey(start)) continue;
+            var work = new Stack<(string Node, IEnumerator<string> Edges)>();
+            void Open(string v) { index[v] = low[v] = next++; stack.Push(v); onStack.Add(v); work.Push((v, Parents(v).ToList().GetEnumerator())); }
+            Open(start);
+            while (work.Count > 0)
             {
-                var cur = stack.Pop();
-                foreach (var f in t.ParentFamilies(cur))
-                    foreach (var par in new[] { f.Husband, f.Wife }.OfType<string>())
-                    {
-                        if (par == p.Id) { loop = true; break; }
-                        if (seen.Add(par)) stack.Push(par);
-                    }
+                var (v, edges) = work.Peek();
+                if (edges.MoveNext())
+                {
+                    var w = edges.Current;
+                    if (!index.ContainsKey(w)) Open(w);
+                    else if (onStack.Contains(w)) low[v] = Math.Min(low[v], index[w]);
+                    continue;
+                }
+                work.Pop();
+                if (work.Count > 0) { var u = work.Peek().Node; low[u] = Math.Min(low[u], low[v]); }
+                if (low[v] != index[v]) continue;
+                var comp = new List<string>(); string x;
+                do { x = stack.Pop(); onStack.Remove(x); comp.Add(x); } while (x != v);
+                if (comp.Count > 1 || Parents(v).Contains(v)) res.UnionWith(comp);
             }
-            if (loop) E(p.Id, null, $"{p.Name} ist ihr/sein eigener Vorfahre (Kreis in den Verknüpfungen)");
         }
         return res;
     }
@@ -133,6 +156,7 @@ public static partial class FamilyKit
     /// (Treffer „+vater:&lt;Kind&gt;“ / „+mutter:&lt;Kind&gt;“, nicht in Ausgaben).</summary>
     public static Scene Ancestors(FamilyTree t, string? rootId, int gens, string? selected = null, bool paper = false)
     {
+        using var ix = t.Indexed();
         gens = Math.Clamp(gens, 2, 6); var c = Pal(paper);
         var prims = new List<Prim>(); var hits = new Dictionary<string, (double, double, double, double)>();
         const double top = 72, rowH = BoxH + 14;
@@ -173,6 +197,7 @@ public static partial class FamilyKit
     /// <summary>Nachkommen: die Person oben, darunter Kinder, Enkel … (je Generation eine Reihe), Partner im Kasten („⚭ …“).</summary>
     public static Scene Descendants(FamilyTree t, string? rootId, int gens, string? selected = null, bool paper = false)
     {
+        using var ix = t.Indexed();
         gens = Math.Clamp(gens, 2, 6); var c = Pal(paper);
         var prims = new List<Prim>(); var hits = new Dictionary<string, (double, double, double, double)>();
         const double top = 72; const int maxBoxes = 800;
@@ -228,6 +253,7 @@ public static partial class FamilyKit
     public static TextDoc BuildReport(FamilyTree src, DateTime now)
     {
         var t = src.HideLiving ? Private(src, now) : src;
+        using var ix = t.Indexed(); using var ix2 = src.Indexed();
         var doc = new TextDoc { Blocks = [] };
         doc.Page.PageNumbers = true;
         doc.Page.Footer = "Stammbaum – " + (t.Title.Length > 0 ? t.Title : "Bericht");
@@ -302,12 +328,18 @@ public static partial class FamilyKit
 
     public static readonly string[] CsvHeader = ["Kennung", "Vorname", "Nachname", "Geschlecht", "Geburt", "Geburtsort", "Tod", "Sterbeort", "Vater", "Mutter", "Partner"];
 
-    static string Csv(string s) => s.IndexOfAny([';', '"', '\n', '\r']) >= 0 ? "\"" + s.Replace("\"", "\"\"") + "\"" : s;
+    /// <summary>T-0788 (Gegenprüfung G8): Zellen, die mit = + - @ Tab oder Zeilenumbruch beginnen, bekommen ein „'“ davor – sonst rechnet ein Tabellenprogramm sie als Formel.</summary>
+    static string Csv(string s)
+    {
+        if (s.Length > 0 && s[0] is '=' or '+' or '-' or '@' or '\t' or '\r' or '\n') s = "'" + s;
+        return s.IndexOfAny([';', '"', '\n', '\r']) >= 0 ? "\"" + s.Replace("\"", "\"\"") + "\"" : s;
+    }
 
     /// <summary>Personenliste (Semikolon, UTF-8) – öffnet in Tabellenprogrammen; Lebende bei <see cref="FamilyTree.HideLiving"/> gekürzt.</summary>
     public static string ToCsv(FamilyTree src, DateTime now)
     {
         var t = src.HideLiving ? Private(src, now) : src;
+        using var ix = t.Indexed();
         var sb = new StringBuilder(string.Join(";", CsvHeader)).Append("\r\n");
         foreach (var p in t.Persons)
         {
@@ -421,8 +453,20 @@ public static partial class FamilyKit
     public static string? KiProblem(JsonObject before, JsonObject after)
     {
         var a = FromJson(before); var b = FromJson(after);
+        // T-0788 (Gegenprüfung G6): doppelte Kennungen, Datensätze, Kopf, Titel und Mitte – nie mit der ersten Kennung urteilen und die zweite durchlassen
+        if (b.Persons.GroupBy(p => p.Id).Any(g => g.Count() > 1) || b.Families.GroupBy(f => f.Id).Any(g => g.Count() > 1) || b.Sources.GroupBy(x => x.Id).Any(g => g.Count() > 1)
+            || b.Persons.Select(p => p.Id).Intersect(b.Families.Select(f => f.Id)).Any())
+            return "Die KI hat eine Kennung doppelt vergeben – nicht übernommen.";
+        if (GedNode.ListJson(a.Records).ToJsonString() != GedNode.ListJson(b.Records).ToJsonString() || GedNode.ListJson(a.Head).ToJsonString() != GedNode.ListJson(b.Head).ToJsonString())
+            return "Die KI darf weitere Datensätze und den Dateikopf nicht ändern – nicht übernommen.";
+        if (a.Title != b.Title || a.Root != b.Root) return "Die KI darf Titel und Mitte des Stammbaums nicht ändern – nicht übernommen.";
+        if (b.Persons.Any(p => a.P(p.Id) is null && p.Given.StartsWith("Lebende Person", StringComparison.OrdinalIgnoreCase)))
+            return "Die KI hat eine ausgeblendete „Lebende Person“ als neue Person angelegt – nicht übernommen.";
+        if (CycleMembers(b).Except(CycleMembers(a)).FirstOrDefault() is { } loop)
+            return $"Die KI hat einen Kreis in den Verknüpfungen erzeugt ({b.P(loop)?.Name ?? loop} wäre ihr/sein eigener Vorfahre) – nicht übernommen.";
         if (ToJsonText(a.Sources) != ToJsonText(b.Sources)) return "Die KI darf Quellen nicht ändern – nur du legst Quellen an. Nichts übernommen.";
         if (a.HideLiving != b.HideLiving) return "Die KI darf den Schutz lebender Personen nicht umstellen. Nichts übernommen.";
+        using var ixa = a.Indexed(); using var ixb = b.Indexed();
         foreach (var p in a.Persons)
         {
             var q = b.P(p.Id);
