@@ -41,10 +41,13 @@ public partial class MainWindow
 
     /// <summary>T-0782 (H1b): EINE Prüfung für alle Claude-Wege (Brücke, Plan-Zeilen, Chat): Ist die Seite <paramref name="page"/> oder die offene Seite ein Programm
     /// nur mit der KI auf diesem PC, kommt der Satz für Claude bzw. den Chat zurück, sonst null.</summary>
-    public string? LocalOnlyRefusal(string? page = null) =>
-        AssistLocalOnly(page) || AssistLocalOnly(CurrentView)
-            ? "Dieses Programm arbeitet nur mit der KI auf diesem PC (z. B. Nachhilfe oder Kinderprofil). Claude darf es weder lesen noch ändern – bitte nichts weiter versuchen."
-            : null;
+    public string? LocalOnlyRefusal(string? page = null)
+    {
+        // T-0788: der Satz kommt vom Programm, wenn es einen eigenen Grund hat (Stammbaum: lebende Personen geschützt)
+        string? Why(string? key) => AssistLocalOnly(key) ? Programs[key!].KiLocalOnlyWhy?.Invoke()
+            ?? "Dieses Programm arbeitet nur mit der KI auf diesem PC (z. B. Nachhilfe oder Kinderprofil). Claude darf es weder lesen noch ändern – bitte nichts weiter versuchen." : null;
+        return Why(page) ?? Why(CurrentView);
+    }
 
     /// <summary>T-0782 (H1b): Claude ist hier aus – die offene Seite oder das Studio gehört zu einem Programm nur mit der KI auf diesem PC.</summary>
     public bool ClaudeBlockedFor(string? studio) =>

@@ -71,18 +71,19 @@ public partial class MainWindow
     /// <summary>Gewählte Person; solange nichts gewählt wurde, die Person in der Mitte des Baums.</summary>
     /// <summary>T-0788 (Gegenprüfung G2): gelesener Stammbaum und Prüfergebnis je Dokumentstand – Statusleiste, Prüfbereich, Liste, Baum und Auswahl
     /// teilen sich EINE Rechnung je Stand. Nur lesen: wer ändert, holt sich mit <see cref="FamData"/> eine eigene Kopie.</summary>
-    readonly Dictionary<string, (string Stamp, FamilyTree Tree, Lazy<List<FamIssue>> Issues)> _famCache = [];
+    readonly Dictionary<string, (string Stamp, FamilyTree Tree, Lazy<List<FamIssue>> Issues, Lazy<bool> Living)> _famCache = [];
     /// <summary>Für Tests: wie oft die Prüfung wirklich gerechnet wurde.</summary>
     public static int FamChecks;
     static string FamStamp(ProgramDocument d) => $"{System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(d.Data)}|{d.TopStep}|{d.History.Count}|{d.Changed.Ticks}|{d.Dirty}";
-    (FamilyTree Tree, Lazy<List<FamIssue>> Issues) FamCached(ProgramDocument d)
+    (FamilyTree Tree, Lazy<List<FamIssue>> Issues, Lazy<bool> Living) FamCached(ProgramDocument d)
     {
         var stamp = FamStamp(d);
-        if (_famCache.TryGetValue(d.Id, out var c) && c.Stamp == stamp) return (c.Tree, c.Issues);
+        if (_famCache.TryGetValue(d.Id, out var c) && c.Stamp == stamp) return (c.Tree, c.Issues, c.Living);
         var t = FamData(d);
         var issues = new Lazy<List<FamIssue>>(() => { Interlocked.Increment(ref FamChecks); return FamilyKit.Check(t); });
-        _famCache[d.Id] = (stamp, t, issues);
-        return (t, issues);
+        var living = new Lazy<bool>(() => { using var ix = t.Indexed(); return t.Persons.Any(p => FamilyKit.IsLiving(t, p, FamToday)); });
+        _famCache[d.Id] = (stamp, t, issues, living);
+        return (t, issues, living);
     }
     FamilyTree FamView(ProgramDocument d) => FamCached(d).Tree;
     List<FamIssue> FamIssues(ProgramDocument d) => FamCached(d).Issues.Value;
@@ -483,7 +484,11 @@ public partial class MainWindow
         KiActions = [FamKiPersons],
         KiLocked = ["sources", "hideLiving"],
         KiCheck = FamilyKit.KiProblem,
-        KiView = FamKiView, // T-0788 (Gegenprüfung G1): KI und Claude sehen keine Lebenden, solange der Schutz an ist
+        KiView = FamKiView, // T-0788 (Gegenprüfung G1): die lokale KI sieht keine Lebenden, solange der Schutz an ist
+        // T-0788 (Nachtrag Gegenprüfung): Schutz an UND Lebende im offenen Stammbaum → Claude bekommt das Dokument auf keinem Weg (Chat/.tdoc, Plan-Zeilen, Brücke);
+        // derselbe gemeinsame Wächter wie Nachhilfe/Kinderprofil (LocalOnlyRefusal, KiStepPreReject). Die KI-Kette nimmt dann nur die KI auf diesem PC.
+        KiLocalOnly = FamClaudeBlocked,
+        KiLocalOnlyWhy = () => FamClaudeWhy,
         KiHint = "Personen fügst du nur mit „stammbaum.personen“ ein (alle in einem Schritt): eine Zeile je Person „Name | m oder w | Geburt | Geburtsort | Tod | Sterbeort | Vater | Mutter“ "
                + "(leere Felder dürfen fehlen), Ehen als „Ehe: Name + Name | Datum | Ort“. Daten wie „12.03.1850“, „1850“, „um 1850“, „vor 1900“. Nimm nur Personen und Daten, die im Text stehen – erfinde nichts. "
                + "Vorhandene Personen änderst du nicht.",
@@ -504,6 +509,11 @@ public partial class MainWindow
              + "Angaben, die Trendo nicht bearbeitet, bleiben beim Speichern als GEDCOM erhalten. Unten stehen Widersprüche (Geburt nach Tod, Eltern jünger als Kinder …). "
              + "Lebende Personen werden in allen Ausgaben ausgeblendet, solange der Haken rechts gesetzt ist.",
     }, "stammbaum", "ahnen", "ahnentafel", "ahnenforschung", "genealogie", "familienforschung", "gedcom", "vorfahren", "nachkommen", "familie", "gramps", "familysearch", "ahnenliste");
+
+    public const string FamClaudeWhy = "Lebende Personen sind geschützt – Claude bekommt diesen Stammbaum nicht. Nimm dafür die KI auf diesem PC oder schalte rechts „Lebende Personen in Ausgaben ausblenden“ aus.";
+
+    /// <summary>T-0788: Claude ist für den Stammbaum gesperrt, solange im offenen Dokument der Schutz an ist und es (vermutlich) lebende Personen enthält.</summary>
+    public bool FamClaudeBlocked() => ProgramActive(FamKey) is { } d && FamCached(d) is var c && c.Tree.HideLiving && c.Living.Value;
 
     /// <summary>T-0788 (Gegenprüfung G1): Sicht für KI-Kette und Claude-Brücke – bei „Lebende ausblenden“ dieselbe Kürzung wie in den Ausgaben.</summary>
     JsonObject FamKiView(JsonObject data)

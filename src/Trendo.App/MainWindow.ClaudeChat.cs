@@ -376,7 +376,7 @@ public partial class MainWindow
     {
         if (!_chatUis.TryGetValue(dock, out var ui) || ui.Running || string.IsNullOrWhiteSpace(text)) return;
         if (ClaudeNoClicks && _core.Approvals.Halted) { Toast("Der Not-Stopp ist aktiv. Claude startet erst nach „Fortsetzen“."); return; }
-        if (LocalOnlyRefusal() is { } localOnly) { Toast(localOnly); _core.Audit.Append(Principal.LocalOwner.Name, "claude.chat.lokal", CurrentView); return; } // T-0782 (H1b): nichts von dieser Seite an Claude
+        if ((LocalOnlyRefusal() ?? LocalOnlyRefusal(dock.Page)) is { } localOnly) { Toast(localOnly); _claudeMsg = localOnly; _core.Audit.Append(Principal.LocalOwner.Name, "claude.chat.lokal", CurrentView); return; } // T-0782 (H1b): nichts von dieser Seite an Claude; T-0788: auch die Seite des Claude-Bereichs selbst
         text = text.Trim();
         var studio = ChatStudio(dock);
         var chats = CChats;
@@ -430,7 +430,7 @@ public partial class MainWindow
         // Studio-Dokument: ein offenes Fachprogramm-Dokument (.tdoc) liegt als Datei im Projekt – Claude bearbeitet es, Trendo übernimmt jede Änderung live (als ein Rückgängig-Schritt)
         var shell = Programs.ContainsKey(dock.Page) && ProgramActive(dock.Page) is not null;
         string? workFile = null;
-        if (shell && ProgramActive(dock.Page) is { } doc)
+        if (shell && !AssistLocalOnly(dock.Page) && ProgramActive(dock.Page) is { } doc) // T-0788: nie eine .tdoc eines Programms nur mit lokaler KI (z. B. Stammbaum mit geschützten Lebenden) in Claudes Ordner
             try { workFile = Regex.Replace(doc.Title, @"[\\/:*?""<>|]", "-") + ProgramDocument.Extension; var wf = Path.Combine(folder, workFile); if (!(doc.ReadOnly && doc.Path is { } own && ProgramDocument.SameFile(own, wf))) AtomicFile.WriteAllText(wf, doc.Serialize()); ClaudeDocSeen(doc, wf); } // T-0680: atomar; ein nur zum Lesen offenes Dokument (anderes Fenster) wird nicht überschrieben
             catch (Exception e) when (e is IOException or UnauthorizedAccessException) { workFile = null; }
         // Brief-Studio: der offene Brief ist das Dokument (Text UND Design) – Claude arbeitet darin, Trendo übernimmt jede Änderung live ins Brief-Programm

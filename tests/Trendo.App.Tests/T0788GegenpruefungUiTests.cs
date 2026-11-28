@@ -60,7 +60,7 @@ public class T0788Gegenpruefung_Ui
         finally { MainWindow.AssistStepDelayMs = 140; w.KiBackendsOverride = null; w.Close(); }
     }
 
-    [AvaloniaFact(DisplayName = "T-0788 G1: Claude-Brücke „dokument_lesen“ liefert die geschützte Sicht (keine Lebenden), ganz und für Teilpfade")]
+    [AvaloniaFact(DisplayName = "T-0788 G1: Claude-Brücke „dokument_lesen“ gibt bei Lebenden und Schutz an nichts heraus (ganz und für Teilpfade)")]
     public async Task Bridge_read_private()
     {
         var (w, _, _) = Ui.Open(); var dir = Path.Combine(Path.GetTempPath(), "trendo-t0788-bridge-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(dir);
@@ -74,11 +74,12 @@ public class T0788Gegenpruefung_Ui
                 var r = await m.HandleAsync(new JsonObject { ["jsonrpc"] = "2.0", ["id"] = 1, ["method"] = "tools/call", ["params"] = new JsonObject { ["name"] = "dokument_lesen", ["arguments"] = new JsonObject { ["programm"] = Fam, ["pfad"] = path } } });
                 return (string)r!["result"]!["content"]![0]!["text"]!;
             }
+            // seit dem Nachtrag zur Gegenprüfung: mit Lebenden und Schutz an bekommt Claude das Dokument gar nicht (ehrliche Meldung) – ganz und für Teilpfade
             var all = await Read("");
-            Assert.Contains("Karl", all);
-            foreach (var s in Living) Assert.DoesNotContain(s, all);
+            Assert.StartsWith("Lebende Personen sind geschützt", all);
+            foreach (var s in Living.Append("Karl")) Assert.DoesNotContain(s, all);
             var one = await Read("persons/4"); // im Dokument: Erika
-            Assert.DoesNotContain("Erika", one); Assert.Contains("Lebende Person", one);
+            Assert.DoesNotContain("Erika", one); Assert.StartsWith("Lebende Personen sind geschützt", one);
         }
         finally { w.Close(); try { Directory.Delete(dir, true); } catch (IOException) { } }
     }
